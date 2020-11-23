@@ -1,8 +1,20 @@
 server:
   port: 9999
+  address: localhost
+  servlet:
+    context-path: /service-taskman
 spring:
-  datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://106.52.160.142:13307/taskman?characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: Abcd1234
+  profiles:
+    active: dev
+  messages:
+    basename: message/service_mgmt_err_message
+    encoding: UTF-8
+  banner:
+    location: classpath:/banner.txt
+
+mybatis-plus:
+  mapper-locations: mapper/*.xml
+
+logging:
+  level:
+    root: info

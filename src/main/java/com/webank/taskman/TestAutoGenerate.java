@@ -44,7 +44,7 @@ public class TestAutoGenerate {
         // Step3：数据源配置（需要修改）
         DataSourceConfig dsc = new DataSourceConfig();
         // 配置数据库 url 地址
-        dsc.setUrl("jdbc:mysql://127.0.0.1:13307/service_mgmt?characterEncoding=utf8&serverTimezone=Asia/Shanghai");
+        dsc.setUrl("jdbc:mysql://127.0.0.1:13307/taskman?characterEncoding=utf8&serverTimezone=Asia/Shanghai");
         // dsc.setSchemaName("testMyBatisPlus"); // 可以直接在 url 中指定数据库名
         // 配置数据库驱动
         dsc.setDriverName("com.mysql.cj.jdbc.Driver");

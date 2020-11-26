@@ -1,102 +1,159 @@
-SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS role_info;
+CREATE TABLE role_info(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    name VARCHAR(255) NOT NULL   COMMENT '角色名' ,
+    PRIMARY KEY (id)
+) COMMENT = '角色信息表';
 
-drop table if exists `service_catalogue`;
-CREATE TABLE `service_catalogue` (
-    `id` VARCHAR(32) NOT NULL ,
-    `name` VARCHAR(255) NOT NULL,
-    `description` VARCHAR(255) NULL,
-    `status` VARCHAR(32) NULL default null,
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+DROP TABLE IF EXISTS template_group;
+CREATE TABLE template_group(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    manage_role VARCHAR(50)    COMMENT '所属角色' ,
+    name VARCHAR(128)    COMMENT '名称' ,
+    description VARCHAR(512)    COMMENT '描述' ,
+    version VARCHAR(50)   DEFAULT 1 COMMENT '版本号' ,
+    status TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '模板组信息表 ';
 
-drop table if exists `attach_file`;
-CREATE TABLE `attach_file` (
-    `id` VARCHAR(32) NOT NULL,
-    `attach_file_name` VARCHAR(255) NULL,
-    `s3_url` VARCHAR(2048) NULL,
-    `s3_bucket_name` VARCHAR(64) NULL,
-    `s3_key_name` VARCHAR(256) NULL,
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+DROP TABLE IF EXISTS temp_group_role;
+CREATE TABLE temp_group_role(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    group_id VARCHAR(32)    COMMENT '模板组编号' ,
+    role_id VARCHAR(32)    COMMENT '角色编号' ,
+    type TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '类型' ,
+    PRIMARY KEY (id)
+) COMMENT = '模板角色关系表 ';
 
-drop table if exists `service_pipeline`;
-CREATE TABLE `service_pipeline` (
-    `id` VARCHAR(32) NOT NULL ,
-    `service_catalogue_id` VARCHAR(32) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `description` VARCHAR(255) NULL,
-    `owner_role` VARCHAR(64) NULL,
-    `status` VARCHAR(32) NULL DEFAULT null,
-    PRIMARY KEY (`id`),
-    CONSTRAINT `fk_service_catalogue_service_pipeline` FOREIGN KEY (`service_catalogue_id`) REFERENCES `service_catalogue` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+DROP TABLE IF EXISTS form_template;
+CREATE TABLE form_template(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    name VARCHAR(50)    COMMENT '名称' ,
+    description VARCHAR(50)    COMMENT '描述' ,
+    style VARCHAR(50)    COMMENT '表单风格' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '表单模板信息表 ';
 
-drop table if exists `service_request_template`;
-CREATE TABLE `service_request_template` (
-    `id` VARCHAR(32) NOT NULL ,
-    `service_pipeline_id` VARCHAR(32) NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `description` VARCHAR(255) NULL,
-    `process_definition_key`  VARCHAR(255) NOT NULL,
-    `status` VARCHAR(32) NULL DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `service_pipeline_and_name` (`service_pipeline_id`, `name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+DROP TABLE IF EXISTS request_template;
+CREATE TABLE request_template(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    deal_role VARCHAR(32)    COMMENT '所属角色' ,
+    manage_role VARCHAR(32)    COMMENT '管理角色' ,
+    group_id VARCHAR(32)    COMMENT '模板组编号' ,
+    form_temp_id VARCHAR(32)    COMMENT '表单模板编号' ,
+    proc_def_key VARCHAR(255)    COMMENT '流程编排key' ,
+    name VARCHAR(128)    COMMENT '名称' ,
+    version VARCHAR(50)    COMMENT '版本号' ,
+    status TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '请求模板信息表 ';
 
-drop table if exists `service_request`;
-CREATE TABLE `service_request` (
-    `id` VARCHAR(32) NOT NULL ,
-    `template_id` VARCHAR(32) NOT NULL ,
-    `name` VARCHAR(255) NOT NULL,
-    `reporter` VARCHAR(64) NULL DEFAULT NULL,
-    `report_role` VARCHAR(64) NULL DEFAULT NULL,
-    `report_time` datetime DEFAULT NULL,
-    `emergency` VARCHAR(32) NULL,
-    `description` VARCHAR(255) NOT NULL,
-    `attach_file_id` VARCHAR(32) NULL DEFAULT NULL,
-    `result` VARCHAR(1024) NULL,
-    `status` VARCHAR(32) NULL DEFAULT NULL,
-    `env_type` VARCHAR(32) NULL DEFAULT 'TEST',
-    `request_no` BIGINT NOT NULL,
-    PRIMARY KEY (`id`),
-    INDEX `idx_template_id` (`template_id`),
-    CONSTRAINT `fk_service_request_template_service_request` FOREIGN KEY (`template_id`) REFERENCES `service_request_template` (`id`),
-    CONSTRAINT `fk_attach_file_service_request` FOREIGN KEY (`attach_file_id`) REFERENCES `attach_file` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+DROP TABLE IF EXISTS task_template;
+CREATE TABLE task_template(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    form_temp_id VARCHAR(32)    COMMENT '表单模板编号' ,
+    request_temp_id VARCHAR(32)    COMMENT '请求模板编号' ,
+    deal_role VARCHAR(128)    COMMENT '所属角色' ,
+    proc_node_temp VARCHAR(255)    COMMENT '流程节点模板' ,
+    name VARCHAR(255) NOT NULL   COMMENT '名称' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '任务模板信息表 ';
 
-drop table if exists `task`;
-CREATE TABLE `task` (
-    `id` VARCHAR(32) NOT NULL ,
-    `service_request_id` INT(11) NULL ,
-    `callback_url` VARCHAR(255) NULL DEFAULT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `reporter` VARCHAR(64) NULL DEFAULT NULL,
-    `report_time` datetime DEFAULT NULL,
-    `operator_role` VARCHAR(64) NULL DEFAULT NULL,
-    `operator` VARCHAR(64) NULL DEFAULT NULL,
-    `operate_time` datetime DEFAULT NULL,
-    `input_parameters` TEXT NULL DEFAULT NULL,
-    `description` VARCHAR(2048) NULL DEFAULT NULL,
-    `result` VARCHAR(32) NULL DEFAULT NULL,
-    `result_message` VARCHAR(255) NULL DEFAULT NULL,
-    `status` VARCHAR(32) NULL DEFAULT NULL,
-    `request_id` VARCHAR(255) NULL ,
-    `callback_parameter` VARCHAR(255) NULL ,
-    `allowed_options` text NULL,
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+DROP TABLE IF EXISTS form_item_template;
+CREATE TABLE form_item_template(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    temp_id VARCHAR(50)    COMMENT '模板id' ,
+    temp_type VARCHAR(50)    COMMENT '模板类型' ,
+    name VARCHAR(50)    COMMENT '名称' ,
+    title VARCHAR(50)    COMMENT '标题' ,
+    type VARCHAR(50)    COMMENT '类型' ,
+    required TINYINT(2)    COMMENT '必填' ,
+    正则 VARCHAR(50)    COMMENT 'evl' ,
+    is_view VARCHAR(50)    COMMENT '是否显示' ,
+    is_edit VARCHAR(50)    COMMENT '是否可编辑' ,
+    width VARCHAR(50)    COMMENT '长度' ,
+    def_value VARCHAR(50)    COMMENT '默认值' ,
+    sort VARCHAR(50)    COMMENT '排序' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '表单项模板表 ';
 
-SET FOREIGN_KEY_CHECKS = 1;
+DROP TABLE IF EXISTS currency_item_temolate;
+CREATE TABLE currency_item_temolate(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    status TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '通用表单项模板表 ';
 
+DROP TABLE IF EXISTS form_info;
+CREATE TABLE form_info(
+    status TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' 
+) COMMENT = '表单记录表 ';
 
-#@v0.5.1.11-begin@;
-ALTER TABLE `task` ADD COLUMN `over_time` DATETIME NULL DEFAULT NULL;
-ALTER TABLE `task` ADD COLUMN `due_date` VARCHAR(32) NULL DEFAULT NULL ;
-#@v0.5.1.11-end@;
+DROP TABLE IF EXISTS form_item_info;
+CREATE TABLE form_item_info(
+    status TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' 
+) COMMENT = '表单项记录表 ';
 
-#@v0.6.3.0-begin@;
-ALTER TABLE `service_request` ADD COLUMN `root_data_id` VARCHAR(255) NULL DEFAULT NULL;
-ALTER TABLE `service_request` ADD COLUMN `proc_inst_id` VARCHAR(255) NULL DEFAULT NULL;
-ALTER TABLE `service_request_template` ADD COLUMN `proc_def_name` VARCHAR(255) NULL DEFAULT NULL;
-ALTER TABLE `task` modify service_request_id varchar(32);
-#@v0.6.3.0-end@;
+DROP TABLE IF EXISTS request_info;
+CREATE TABLE request_info(
+    status TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    created_by VARCHAR(255) NOT NULL   COMMENT '创建人' ,
+    created_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    updated_by VARCHAR(255) NOT NULL   COMMENT '更新人' ,
+    updated_time DATETIME NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    del_flag TINYINT(2) NOT NULL  DEFAULT 0 COMMENT '是否删除' 
+) COMMENT = '请求记录表 ';
+
+DROP TABLE IF EXISTS task_info;
+CREATE TABLE task_info(
+    id VARCHAR(32) NOT NULL   COMMENT '主键' ,
+    STATUS TINYINT(2)   DEFAULT 0 COMMENT '状态' ,
+    VERSION VARCHAR(50)    COMMENT '版本号' ,
+    CREATED_BY VARCHAR(255)    COMMENT '创建人' ,
+    CREATED_TIME DATETIME   DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间' ,
+    UPDATED_BY VARCHAR(255)    COMMENT '更新人' ,
+    UPDATED_TIME DATETIME   DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间' ,
+    DEL_FLAG TINYINT(2)   DEFAULT 0 COMMENT '是否删除' ,
+    PRIMARY KEY (id)
+) COMMENT = '任务记录表 ';
+

@@ -1,9 +1,9 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormTemplateService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 /**

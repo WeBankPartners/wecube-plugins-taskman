@@ -1,7 +1,7 @@
 package com.webank.taskman.service;
 
-import com.webank.taskman.domain.TemplateGroup;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.webank.taskman.domain.TemplateGroup;
 import com.webank.taskman.dto.TemplateGroupDTO;
 import com.webank.taskman.dto.TemplateGroupVO;
 

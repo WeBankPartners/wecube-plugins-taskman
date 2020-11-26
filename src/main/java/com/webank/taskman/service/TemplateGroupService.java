@@ -2,6 +2,10 @@ package com.webank.taskman.service;
 
 import com.webank.taskman.domain.TemplateGroup;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.webank.taskman.dto.TemplateGroupDTO;
+import com.webank.taskman.dto.TemplateGroupVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface TemplateGroupService extends IService<TemplateGroup> {
 
+    void createTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
+
+    void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
+
+    List<TemplateGroupDTO> selectAllTemplateGroupService() throws Exception;
 }

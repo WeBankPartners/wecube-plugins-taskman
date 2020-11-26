@@ -14,6 +14,14 @@ spring:
 
 mybatis-plus:
   mapper-locations: mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-not-delete-value: 0
+      logic-delete-value: 1
+
+
 
 logging:
   level:

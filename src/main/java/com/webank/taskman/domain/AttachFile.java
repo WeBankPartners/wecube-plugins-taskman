@@ -7,13 +7,13 @@ import java.io.Serializable;
 
 /**
  * <p>
- * 通用表单项模板表 
+ * 附件信息表
  * </p>
  *
  * @author ${author}
  * @since 2020-11-26
  */
-public class CurrencyItemTemolate implements Serializable {
+public class AttachFile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -24,9 +24,24 @@ public class CurrencyItemTemolate implements Serializable {
     private String id;
 
     /**
-     * 状态
+     * 附件文件名
      */
-    private Integer status;
+    private String attachFileName;
+
+    /**
+     * s3服务url
+     */
+    private String s3Url;
+
+    /**
+     * s3_bucket名称
+     */
+    private String s3BucketName;
+
+    /**
+     * s3_key名称
+     */
+    private String s3KeyName;
 
     /**
      * 创建人
@@ -62,12 +77,36 @@ public class CurrencyItemTemolate implements Serializable {
         this.id = id;
     }
 
-    public Integer getStatus() {
-        return status;
+    public String getAttachFileName() {
+        return attachFileName;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setAttachFileName(String attachFileName) {
+        this.attachFileName = attachFileName;
+    }
+
+    public String gets3Url() {
+        return s3Url;
+    }
+
+    public void sets3Url(String s3Url) {
+        this.s3Url = s3Url;
+    }
+
+    public String gets3BucketName() {
+        return s3BucketName;
+    }
+
+    public void sets3BucketName(String s3BucketName) {
+        this.s3BucketName = s3BucketName;
+    }
+
+    public String gets3KeyName() {
+        return s3KeyName;
+    }
+
+    public void sets3KeyName(String s3KeyName) {
+        this.s3KeyName = s3KeyName;
     }
 
     public String getCreatedBy() {
@@ -112,9 +151,12 @@ public class CurrencyItemTemolate implements Serializable {
 
     @Override
     public String toString() {
-        return "CurrencyItemTemolate{" +
+        return "AttachFile{" +
         "id=" + id +
-        ", status=" + status +
+        ", attachFileName=" + attachFileName +
+        ", s3Url=" + s3Url +
+        ", s3BucketName=" + s3BucketName +
+        ", s3KeyName=" + s3KeyName +
         ", createdBy=" + createdBy +
         ", createdTime=" + createdTime +
         ", updatedBy=" + updatedBy +

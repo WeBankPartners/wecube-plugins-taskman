@@ -57,7 +57,7 @@ public class TestAutoGenerate {
         // Step:4：包配置
         PackageConfig pc = new PackageConfig();
         // 配置父包名（需要修改）
-        pc.setParent("com.webank.taskman");
+        pc.setParent("com.webank.taskman.demo");
         // 配置模块名（需要修改）
 //        pc.setModuleName("test_mybatis_plus");
         // 配置 entity 包名

@@ -54,14 +54,14 @@ public class FormItemTemplate implements Serializable {
     private Integer required;
 
     /**
-     * evl
+     * 正则表达式
      */
-    private String 正则;
+    private String regular;
 
     /**
      * 是否显示
      */
-    private String isView;
+    private Boolean isView;
 
     /**
      * 是否可编辑
@@ -165,19 +165,19 @@ public class FormItemTemplate implements Serializable {
         this.required = required;
     }
 
-    public String get正则() {
-        return 正则;
+    public String getRegular() {
+        return regular;
     }
 
-    public void set正则(String 正则) {
-        this.正则 = 正则;
+    public void setRegular(String regular) {
+        this.regular = regular;
     }
 
-    public String getIsView() {
+    public Boolean getIsView() {
         return isView;
     }
 
-    public void setIsView(String isView) {
+    public void setIsView(Boolean isView) {
         this.isView = isView;
     }
 
@@ -263,7 +263,7 @@ public class FormItemTemplate implements Serializable {
         ", title=" + title +
         ", type=" + type +
         ", required=" + required +
-        ", 正则=" + 正则 +
+        ", regular=" + regular +
         ", isView=" + isView +
         ", isEdit=" + isEdit +
         ", width=" + width +

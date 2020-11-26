@@ -1,6 +1,5 @@
 package com.webank.taskman;
 
-import com.webank.taskman.domain.TemplateGroup;
 import com.webank.taskman.dto.TemplateGroupVO;
 import com.webank.taskman.service.TemplateGroupService;
 import org.junit.Test;

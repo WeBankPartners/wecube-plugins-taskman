@@ -1,7 +1,7 @@
 package com.webank.taskman.mapper;
 
-import com.webank.taskman.domain.RoleInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.webank.taskman.domain.RoleInfo;
 
 /**
  * <p>

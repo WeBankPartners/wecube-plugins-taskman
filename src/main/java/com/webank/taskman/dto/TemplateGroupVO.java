@@ -10,8 +10,6 @@ public class TemplateGroupVO {
 
     private String version;
 
-    private Integer status;
-
     private String createdBy;
 
     private String updatedBy;
@@ -48,14 +46,6 @@ public class TemplateGroupVO {
         this.version = version;
     }
 
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
     public String getCreatedBy() {
         return createdBy;
     }
@@ -79,7 +69,6 @@ public class TemplateGroupVO {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", version='" + version + '\'' +
-                ", status=" + status +
                 ", createdBy='" + createdBy + '\'' +
                 ", updatedBy='" + updatedBy + '\'' +
                 '}';

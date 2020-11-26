@@ -22,4 +22,6 @@ public interface TemplateGroupService extends IService<TemplateGroup> {
     void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
 
     List<TemplateGroupDTO> selectAllTemplateGroupService() throws Exception;
+
+    void deleteTemplateGroupByIDService(String id) throws Exception;
 }

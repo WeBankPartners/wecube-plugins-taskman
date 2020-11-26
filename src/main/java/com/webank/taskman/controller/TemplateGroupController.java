@@ -33,5 +33,10 @@ public class TemplateGroupController {
         return JsonResponse.okayWithData(templateGroupService.selectAllTemplateGroupService());
     }
 
+    @GetMapping("/delete/{id}")
+    public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
+        templateGroupService.deleteTemplateGroupByIDService(id);
+        return JsonResponse.okay();
+    }
 }
 

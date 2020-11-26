@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.TemplateGroupConverter;
 import com.webank.taskman.domain.TemplateGroup;
@@ -44,5 +45,15 @@ public class TemplateGroupServiceImpl extends ServiceImpl<TemplateGroupMapper, T
     public List<TemplateGroupDTO> selectAllTemplateGroupService() throws Exception {
         List<TemplateGroup> templateGroups = templateGroupMapper.selectList(null);
         return templateGroupConverter.toDto(templateGroups);
+    }
+
+    @Override
+    public void deleteTemplateGroupByIDService(String id) throws Exception {
+        LambdaUpdateWrapper<TemplateGroup> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(TemplateGroup::getId, id).set(TemplateGroup::getDelFlag, 1);
+        int update = templateGroupMapper.update(null, lambdaUpdateWrapper);
+        if (update != 1) {
+            throw new Exception("Template group deletion failed");
+        }
     }
 }

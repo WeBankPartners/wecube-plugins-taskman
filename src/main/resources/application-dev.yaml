@@ -2,6 +2,6 @@ spring:
   profiles: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://106.52.160.142:13307/service_mgmt?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://106.52.160.142:13307/taskman?characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: Abcd1234

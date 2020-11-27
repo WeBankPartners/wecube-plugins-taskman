@@ -2,17 +2,25 @@ package com.webank.taskman.dto;
 
 
 public class TemplateGroupVO {
+    private String id;
+
     private String manageRole;
 
     private String name;
 
     private String description;
 
-    private String version;
-
     private String createdBy;
 
     private String updatedBy;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getManageRole() {
         return manageRole;
@@ -38,14 +46,6 @@ public class TemplateGroupVO {
         this.description = description;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public String getCreatedBy() {
         return createdBy;
     }
@@ -65,10 +65,10 @@ public class TemplateGroupVO {
     @Override
     public String toString() {
         return "TemplateGroupVO{" +
-                "manageRole='" + manageRole + '\'' +
+                "id='" + id + '\'' +
+                ", manageRole='" + manageRole + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", version='" + version + '\'' +
                 ", createdBy='" + createdBy + '\'' +
                 ", updatedBy='" + updatedBy + '\'' +
                 '}';

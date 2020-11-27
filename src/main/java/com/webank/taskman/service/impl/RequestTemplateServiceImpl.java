@@ -1,6 +1,7 @@
 package com.webank.taskman.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.RequestTemplateDTO;
@@ -51,20 +52,17 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public void deleteRequestTemplate(RequestTemplateVO requestTemplateVO) throws Exception {
-        if (requestTemplateVO == null) {
-            throw new Exception("Template group objects cannot be empty");
+    public void deleteRequestTemplate(String id) throws Exception {
+        LambdaUpdateWrapper<RequestTemplate> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, 1);
+        int update = requestTemplateMapper.update(null, lambdaUpdateWrapper);
+        if (update != 1) {
+            throw new Exception("Template group deletion failed");
         }
-        RequestTemplate requestTemplate=requestTemplateConverter.voToDomain(requestTemplateVO);
-        requestTemplate.setDelFlag(1);
-        requestTemplateMapper.updateById(requestTemplate);
     }
 
     @Override
-    public List<RequestTemplateDTO> selectRequestTemplate(RequestTemplateVO requestTemplateVO) throws Exception  {
-        if (requestTemplateVO == null) {
-            throw new Exception("Template group objects cannot be empty");
-        }
+    public List<RequestTemplateDTO> selectRequestTemplate(RequestTemplateVO requestTemplateVO){
         QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
         queryWrapper.like(requestTemplateVO.getId() != null, "id", requestTemplateVO.getId());
         List<RequestTemplate> list=requestTemplateMapper.selectList(queryWrapper);

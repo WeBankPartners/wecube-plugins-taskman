@@ -1,16 +1,27 @@
 package com.webank.taskman.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel(value = "TemplateGroup输出对象",description = "TemplateGroupDTO")
 public class TemplateGroupDTO {
+
+    @ApiModelProperty(value = "主键")
     private String id;
 
+    @ApiModelProperty(value = "所属角色")
     private String manageRole;
 
+    @ApiModelProperty(value = "名称")
     private String name;
 
+    @ApiModelProperty(value = "描述")
     private String description;
 
+    @ApiModelProperty(value = "版本号")
     private String version;
 
+    @ApiModelProperty(value = "状态")
     private Integer status;
 
     public String getId() {

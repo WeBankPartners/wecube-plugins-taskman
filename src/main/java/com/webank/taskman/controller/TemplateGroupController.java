@@ -42,6 +42,7 @@ public class TemplateGroupController {
     @GetMapping("/delete/{id}")
     @ApiOperation(value = "删除模板组",notes = "需要传入id")
     public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
+        System.out.println("-------------------"+id);
         templateGroupService.deleteTemplateGroupByIDService(id);
         return JsonResponse.okay();
     }

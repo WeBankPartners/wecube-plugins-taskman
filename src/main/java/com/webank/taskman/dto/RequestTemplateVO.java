@@ -1,29 +1,43 @@
 package com.webank.taskman.dto;
 
-import java.util.Date;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Date;
+@ApiModel(value = "RequestTemplate对象",description = "RequestTemplate")
 public class RequestTemplateVO {
 
+    @ApiModelProperty(value = "主键")
     private String id;
 
+    @ApiModelProperty(value = "所属角色")
     private String dealRole;
 
+    @ApiModelProperty(value = "管理角色")
     private String manageRole;
 
+    @ApiModelProperty(value = "模板组编号")
     private String groupId;
 
+    @ApiModelProperty(value = "表单模板编号")
     private String formTempId;
 
+    @ApiModelProperty(value = "流程编排key")
     private String procDefKey;
 
+    @ApiModelProperty(value = "名称")
     private String name;
 
+    @ApiModelProperty(value = "版本号")
     private String version;
 
+    @ApiModelProperty(value = "状态")
     private Integer status;
 
+    @ApiModelProperty(value = "创建人")
     private String createdBy;
 
+    @ApiModelProperty(value = "更新人")
     private String updatedBy;
 
     public String getId() {

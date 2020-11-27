@@ -20,8 +20,8 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     void updateRequestTemplate(RequestTemplateVO requestTemplateVO) throws Exception;
 
-    void deleteRequestTemplate(RequestTemplateVO requestTemplateVO) throws Exception;
+    void deleteRequestTemplate(String id) throws Exception;
 
-    List<RequestTemplateDTO> selectRequestTemplate(RequestTemplateVO requestTemplateVO) throws Exception;
+    List<RequestTemplateDTO> selectRequestTemplate(RequestTemplateVO requestTemplateVO);
 
 }

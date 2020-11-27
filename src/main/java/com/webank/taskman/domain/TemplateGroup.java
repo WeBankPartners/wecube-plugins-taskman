@@ -3,6 +3,7 @@ package com.webank.taskman.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -86,6 +87,7 @@ public class TemplateGroup implements Serializable {
      * 是否删除
      */
     @ApiModelProperty(value = "是否删除")
+    @TableLogic
     private Integer delFlag;
 
 

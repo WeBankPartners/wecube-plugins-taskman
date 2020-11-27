@@ -5,6 +5,9 @@ import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.io.Serializable;
 
 /**
@@ -15,6 +18,7 @@ import java.io.Serializable;
  * @author ${author}
  * @since 2020-11-26
  */
+@ApiModel(value = "TemplateGroup对象",description = "TemplateGroup")
 public class TemplateGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -23,57 +27,67 @@ public class TemplateGroup implements Serializable {
      * 主键
      */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
+    @ApiModelProperty(value = "主键")
     private String id;
 
     /**
      * 所属角色
      */
+    @ApiModelProperty(value = "所属角色")
     private String manageRole;
 
     /**
      * 名称
      */
+    @ApiModelProperty(value = "名称")
     private String name;
 
     /**
      * 描述
      */
+    @ApiModelProperty(value = "描述")
     private String description;
 
     /**
      * 版本号
      */
+    @ApiModelProperty(value = "版本号")
     private String version;
 
     /**
      * 状态
      */
+    @ApiModelProperty(value = "状态")
     private Integer status;
 
     /**
      * 创建人
      */
+    @ApiModelProperty(value = "创建人")
     private String createdBy;
 
     /**
      * 创建时间
      */
+    @ApiModelProperty(value = "创建时间")
     private Date createdTime;
 
     /**
      * 更新人
      */
+    @ApiModelProperty(value = "更新人")
     private String updatedBy;
 
     /**
      * 更新时间
      */
+    @ApiModelProperty(value = "更新时间")
     private Date updatedTime;
 
     /**
      * 是否删除
      */
-    @TableLogic
+    @ApiModelProperty(value = "是否删除")
     private Integer delFlag;
 
 

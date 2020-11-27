@@ -1,11 +1,18 @@
 package com.webank.taskman.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel(value = "返回对象",description = "JsonResponse")
 public class JsonResponse {
 	public final static String STATUS_OK = "OK";
 	public final static String STATUS_ERROR = "ERROR";
 
+	@ApiModelProperty(value = "状态")
 	private String status;
+	@ApiModelProperty(value = "消息")
 	private String message;
+	@ApiModelProperty(value = "数据")
 	private Object data;
 
 	public String getStatus() {

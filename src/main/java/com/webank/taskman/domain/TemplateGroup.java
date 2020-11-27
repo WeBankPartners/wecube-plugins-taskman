@@ -3,6 +3,8 @@ package com.webank.taskman.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+
 import java.io.Serializable;
 
 /**
@@ -71,6 +73,7 @@ public class TemplateGroup implements Serializable {
     /**
      * 是否删除
      */
+    @TableLogic
     private Integer delFlag;
 
 

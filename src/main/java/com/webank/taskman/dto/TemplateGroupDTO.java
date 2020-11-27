@@ -3,26 +3,25 @@ package com.webank.taskman.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "TemplateGroup输出对象",description = "TemplateGroupDTO")
+@ApiModel(value = "TemplateGroup respone object",description = "TemplateGroupDTO")
 public class TemplateGroupDTO {
 
-    @ApiModelProperty(value = "主键")
+    @ApiModelProperty(value = "主键",position = 1)
     private String id;
 
-    @ApiModelProperty(value = "所属角色")
-    private String manageRole;
-
-    @ApiModelProperty(value = "名称")
+    @ApiModelProperty(value = "名称",position = 2)
     private String name;
 
-    @ApiModelProperty(value = "描述")
+    @ApiModelProperty(value = "描述",position = 3)
     private String description;
 
-    @ApiModelProperty(value = "版本号")
+    @ApiModelProperty(value = "版本号",position = 4)
     private String version;
 
-    @ApiModelProperty(value = "状态")
+    @ApiModelProperty(value = "状态",position = 5)
     private Integer status;
+
+
 
     public String getId() {
         return id;
@@ -32,13 +31,6 @@ public class TemplateGroupDTO {
         this.id = id;
     }
 
-    public String getManageRole() {
-        return manageRole;
-    }
-
-    public void setManageRole(String manageRole) {
-        this.manageRole = manageRole;
-    }
 
     public String getName() {
         return name;
@@ -71,4 +63,6 @@ public class TemplateGroupDTO {
     public void setStatus(Integer status) {
         this.status = status;
     }
+
+
 }

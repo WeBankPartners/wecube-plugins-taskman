@@ -1,6 +1,5 @@
 server:
   port: 9999
-  address: localhost
   servlet:
     context-path: /taskman
 spring:

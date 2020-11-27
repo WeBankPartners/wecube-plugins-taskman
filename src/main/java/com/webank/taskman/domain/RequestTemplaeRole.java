@@ -5,38 +5,22 @@ import com.baomidou.mybatisplus.annotation.TableId;
 
 import java.io.Serializable;
 
-/**
- * <p>
- * 模板角色关系表
- * </p>
- *
- * @author ${author}
- * @since 2020-11-27
- */
-public class TempGroupRole implements Serializable {
+public class RequestTemplaeRole implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 模板组编号
-     */
-    private String groupId;
+    
+    private String requestTemplateId;
 
-    /**
-     * 角色编号
-     */
+    
     private String roleId;
 
-    /**
-     * 类型
-     */
-    private Integer type;
+    
+    private Integer roleType;
 
 
     public String getId() {
@@ -47,12 +31,12 @@ public class TempGroupRole implements Serializable {
         this.id = id;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getRequestTemplateId() {
+        return requestTemplateId;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setRequestTemplateId(String requestTemplateId) {
+        this.requestTemplateId = requestTemplateId;
     }
 
     public String getRoleId() {
@@ -63,21 +47,21 @@ public class TempGroupRole implements Serializable {
         this.roleId = roleId;
     }
 
-    public Integer getType() {
-        return type;
+    public Integer getRoleType() {
+        return roleType;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setRoleType(Integer roleType) {
+        this.roleType = roleType;
     }
 
     @Override
     public String toString() {
-        return "TempGroupRole{" +
+        return "RequestTemplaeRole{" +
         "id=" + id +
-        ", groupId=" + groupId +
+        ", requestTemplateId=" + requestTemplateId +
         ", roleId=" + roleId +
-        ", type=" + type +
+        ", roleType=" + roleType +
         "}";
     }
 }

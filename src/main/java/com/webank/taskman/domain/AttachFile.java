@@ -2,71 +2,45 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * <p>
- * 附件信息表
- * </p>
- *
- * @author ${author}
- * @since 2020-11-27
- */
 public class AttachFile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 附件文件名
-     */
+    
     private String attachFileName;
 
-    /**
-     * s3服务url
-     */
+    
     private String s3Url;
 
-    /**
-     * s3_bucket名称
-     */
+    
     private String s3BucketName;
 
-    /**
-     * s3_key名称
-     */
+    
     private String s3KeyName;
 
-    /**
-     * 创建人
-     */
+    
     private String createdBy;
 
-    /**
-     * 创建时间
-     */
+    
     private Date createdTime;
 
-    /**
-     * 更新人
-     */
+    
     private String updatedBy;
 
-    /**
-     * 更新时间
-     */
+    
     private Date updatedTime;
 
-    /**
-     * 是否删除
-     */
+
+    @TableLogic
     private Integer delFlag;
 
 

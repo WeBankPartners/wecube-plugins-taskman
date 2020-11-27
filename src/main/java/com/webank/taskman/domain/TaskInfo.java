@@ -1,150 +1,87 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * <p>
- * 任务记录表
- * </p>
- *
- * @author ${author}
- * @since 2020-11-27
- */
 public class TaskInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 父级任务id
-     */
+    
     private String parentId;
 
-    /**
-     * 任务模板id
-     */
+    
     private String taskTempId;
 
-    /**
-     * 请求id
-     */
+    
     private String requestId;
 
-    /**
-     * 流程节点
-     */
+    
     private String procNode;
 
-    /**
-     * 处理角色
-     */
+    
     private String dealRole;
 
-    /**
-     * 任务名称
-     */
+    
     private String name;
 
-    /**
-     * 请求编号
-     */
+    
     private String requestNo;
 
-    /**
-     * 回调url
-     */
+    
     private String callbackUrl;
 
-    /**
-     * 回调参数
-     */
+    
     private String callbackParameter;
 
-    /**
-     * 上报人
-     */
+    
     private String reporter;
 
-    /**
-     * 上报角色
-     */
+    
     private String reportRole;
 
-    /**
-     * 上报时间
-     */
+    
     private Date reportTime;
 
-    /**
-     * 执行结果
-     */
+    
     private String result;
 
-    /**
-     * 紧急程度
-     */
+    
     private String emergency;
 
-    /**
-     * 描述
-     */
+    
     private String description;
 
-    /**
-     * 附件id
-     */
+    
     private String attachFileId;
 
-    /**
-     * 状态
-     */
-    @TableField("STATUS")
+    
     private Integer status;
 
-    /**
-     * 版本号
-     */
-    @TableField("VERSION")
+    
     private String version;
 
-    /**
-     * 创建人
-     */
-    @TableField("CREATED_BY")
+    
     private String createdBy;
 
-    /**
-     * 创建时间
-     */
-    @TableField("CREATED_TIME")
+    
     private Date createdTime;
 
-    /**
-     * 更新人
-     */
-    @TableField("UPDATED_BY")
+    
     private String updatedBy;
 
-    /**
-     * 更新时间
-     */
-    @TableField("UPDATED_TIME")
+    
     private Date updatedTime;
 
-    /**
-     * 是否删除
-     */
-    @TableField("DEL_FLAG")
+    @TableLogic
     private Integer delFlag;
 
 

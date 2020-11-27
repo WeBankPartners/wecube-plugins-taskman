@@ -5,22 +5,23 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "TemplateGroup传入对象",description = "TemplateGroupVO")
 public class TemplateGroupVO {
-    @ApiModelProperty(value = "主键")
-    private String id;
 
-    @ApiModelProperty(value = "所属角色")
-    private String manageRole;
+    @ApiModelProperty(value = "主键",hidden = true)
+    private String id;
 
     @ApiModelProperty(value = "名称")
     private String name;
 
+    @ApiModelProperty(value = "管理角色id")
+    private String manageRoleId;
+
     @ApiModelProperty(value = "描述")
     private String description;
 
-    @ApiModelProperty(value = "创建人")
+    @ApiModelProperty(value = "创建人",hidden = true)
     private String createdBy;
 
-    @ApiModelProperty(value = "更新人")
+    @ApiModelProperty(value = "更新人",hidden = true)
     private String updatedBy;
 
     public String getId() {
@@ -31,12 +32,12 @@ public class TemplateGroupVO {
         this.id = id;
     }
 
-    public String getManageRole() {
-        return manageRole;
+    public String getManageRoleId() {
+        return manageRoleId;
     }
 
-    public void setManageRole(String manageRole) {
-        this.manageRole = manageRole;
+    public void setManageRoleId(String manageRoleId) {
+        this.manageRoleId = manageRoleId;
     }
 
     public String getName() {
@@ -75,7 +76,6 @@ public class TemplateGroupVO {
     public String toString() {
         return "TemplateGroupVO{" +
                 "id='" + id + '\'' +
-                ", manageRole='" + manageRole + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", createdBy='" + createdBy + '\'' +

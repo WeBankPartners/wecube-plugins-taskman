@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "返回对象",description = "JsonResponse")
-public class JsonResponse {
+public class JsonResponse<T> {
 	public final static String STATUS_OK = "OK";
 	public final static String STATUS_ERROR = "ERROR";
 
@@ -12,8 +12,9 @@ public class JsonResponse {
 	private String status;
 	@ApiModelProperty(value = "消息")
 	private String message;
+
 	@ApiModelProperty(value = "数据")
-	private Object data;
+	private T data;
 
 	public String getStatus() {
 		return status;
@@ -31,15 +32,15 @@ public class JsonResponse {
 		this.message = message;
 	}
 
-	public Object getData() {
+	public T getData() {
 		return data;
 	}
 
-	public void setData(Object data) {
+	public void setData(T data) {
 		this.data = data;
 	}
 
-	public JsonResponse withData(Object data) {
+	public JsonResponse withData(T data) {
 		this.data = data;
 		return this;
 	}
@@ -50,6 +51,7 @@ public class JsonResponse {
 		result.setMessage("Success");
 		return result;
 	}
+
 
 	public static JsonResponse okayWithData(Object data) {
 		return okay().withData(data);

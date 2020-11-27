@@ -2,116 +2,72 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * <p>
- * 表单项模板表
- * </p>
- *
- * @author ${author}
- * @since 2020-11-27
- */
 public class FormItemTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 模板id
-     */
+    
     private String tempId;
 
-    /**
-     * 模板类型
-     */
+    
     private String tempType;
 
-    /**
-     * 名称
-     */
+    
     private String name;
 
-    /**
-     * 标题
-     */
+    
     private String title;
 
-    /**
-     * 类型
-     */
+    
     private Integer type;
 
-    /**
-     * 是否通用
-     */
+    
     private Integer isPublic;
 
-    /**
-     * 必填
-     */
+    
     private Integer required;
 
-    /**
-     * 正则表达式
-     */
+    
     private Integer regular;
 
-    /**
-     * 是否显示
-     */
+    
     private Integer isView;
 
-    /**
-     * 是否可编辑
-     */
+    
     private Integer isEdit;
 
-    /**
-     * 长度
-     */
+    
     private Integer width;
 
-    /**
-     * 默认值
-     */
+    
     private String defValue;
 
-    /**
-     * 排序
-     */
+    
     private Integer sort;
 
-    /**
-     * 创建人
-     */
+    
     private String createdBy;
 
-    /**
-     * 创建时间
-     */
+    
     private Date createdTime;
 
-    /**
-     * 更新人
-     */
+    
     private String updatedBy;
 
-    /**
-     * 更新时间
-     */
+    
     private Date updatedTime;
 
-    /**
-     * 是否删除
-     */
+
+    @TableLogic
     private Integer delFlag;
 
 

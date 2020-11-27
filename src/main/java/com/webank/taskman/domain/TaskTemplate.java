@@ -2,6 +2,7 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -10,57 +11,36 @@ public class TaskTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 表单模板编号
-     */
+    
     private String formTempId;
 
-    /**
-     * 请求模板编号
-     */
+    
     private String requestTempId;
 
-    /**
-     * 所属角色
-     */
-    private String dealRole;
-
-    /**
-     * 流程节点模板
-     */
+    
     private String procNodeTemp;
 
-    /**
-     * 名称
-     */
+    
     private String name;
 
-    /**
-     * 创建人
-     */
+    
     private String createdBy;
 
-    /**
-     * 创建时间
-     */
+    
     private Date createdTime;
 
-    /**
-     * 更新人
-     */
+    
     private String updatedBy;
 
-    /**
-     * 更新时间
-     */
+    
     private Date updatedTime;
 
-    /**
-     * 是否删除
-     */
+
+    @TableLogic
     private Integer delFlag;
 
 
@@ -86,14 +66,6 @@ public class TaskTemplate implements Serializable {
 
     public void setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
-    }
-
-    public String getDealRole() {
-        return dealRole;
-    }
-
-    public void setDealRole(String dealRole) {
-        this.dealRole = dealRole;
     }
 
     public String getProcNodeTemp() {
@@ -158,7 +130,6 @@ public class TaskTemplate implements Serializable {
         "id=" + id +
         ", formTempId=" + formTempId +
         ", requestTempId=" + requestTempId +
-        ", dealRole=" + dealRole +
         ", procNodeTemp=" + procNodeTemp +
         ", name=" + name +
         ", createdBy=" + createdBy +

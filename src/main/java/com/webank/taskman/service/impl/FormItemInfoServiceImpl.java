@@ -6,14 +6,7 @@ import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.service.FormItemInfoService;
 import org.springframework.stereotype.Service;
 
-/**
- * <p>
- * 表单项记录表  服务实现类
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 @Service
 public class FormItemInfoServiceImpl extends ServiceImpl<FormItemInfoMapper, FormItemInfo> implements FormItemInfoService {
 

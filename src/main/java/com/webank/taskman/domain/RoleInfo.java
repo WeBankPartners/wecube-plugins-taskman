@@ -5,27 +5,15 @@ import com.baomidou.mybatisplus.annotation.TableId;
 
 import java.io.Serializable;
 
-/**
- * <p>
- * 角色信息表
- * </p>
- *
- * @author ${author}
- * @since 2020-11-27
- */
 public class RoleInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 角色名
-     */
+    
     private String name;
 
 

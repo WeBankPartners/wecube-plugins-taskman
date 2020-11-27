@@ -1,9 +1,10 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -11,7 +12,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class AttachFile implements Serializable {
 

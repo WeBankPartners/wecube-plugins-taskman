@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2020-11-26
  */
 @RestController
-@RequestMapping("/request-template")
+@RequestMapping("/v1/request-template")
 @Api(tags = {"RequestTemplate接口使用"})
 public class RequestTemplateController {
     @Autowired
@@ -38,7 +38,7 @@ public class RequestTemplateController {
         return JsonResponse.okay();
     }
 
-    @GetMapping("/deleteRequestTemplate/{id}")
+    @DeleteMapping("/deleteRequestTemplate/{id}")
     @ApiOperation(value = "删除请求模板",notes = "需要传入RequestTemplateVO对象")
     public JsonResponse deleteRequestTemplate(@PathVariable("id") String id)throws Exception{
         requestTemplateService.deleteRequestTemplate(id);

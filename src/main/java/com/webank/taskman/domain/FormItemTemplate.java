@@ -1,17 +1,18 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
- * 表单项模板表 
+ * 表单项模板表
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class FormItemTemplate implements Serializable {
 
@@ -46,7 +47,12 @@ public class FormItemTemplate implements Serializable {
     /**
      * 类型
      */
-    private String type;
+    private Integer type;
+
+    /**
+     * 是否通用
+     */
+    private Integer isPublic;
 
     /**
      * 必填
@@ -56,22 +62,22 @@ public class FormItemTemplate implements Serializable {
     /**
      * 正则表达式
      */
-    private String regular;
+    private Integer regular;
 
     /**
      * 是否显示
      */
-    private Boolean isView;
+    private Integer isView;
 
     /**
      * 是否可编辑
      */
-    private String isEdit;
+    private Integer isEdit;
 
     /**
      * 长度
      */
-    private String width;
+    private Integer width;
 
     /**
      * 默认值
@@ -81,7 +87,7 @@ public class FormItemTemplate implements Serializable {
     /**
      * 排序
      */
-    private String sort;
+    private Integer sort;
 
     /**
      * 创建人
@@ -149,12 +155,20 @@ public class FormItemTemplate implements Serializable {
         this.title = title;
     }
 
-    public String getType() {
+    public Integer getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(Integer type) {
         this.type = type;
+    }
+
+    public Integer getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Integer isPublic) {
+        this.isPublic = isPublic;
     }
 
     public Integer getRequired() {
@@ -165,35 +179,35 @@ public class FormItemTemplate implements Serializable {
         this.required = required;
     }
 
-    public String getRegular() {
+    public Integer getRegular() {
         return regular;
     }
 
-    public void setRegular(String regular) {
+    public void setRegular(Integer regular) {
         this.regular = regular;
     }
 
-    public Boolean getIsView() {
+    public Integer getIsView() {
         return isView;
     }
 
-    public void setIsView(Boolean isView) {
+    public void setIsView(Integer isView) {
         this.isView = isView;
     }
 
-    public String getIsEdit() {
+    public Integer getIsEdit() {
         return isEdit;
     }
 
-    public void setIsEdit(String isEdit) {
+    public void setIsEdit(Integer isEdit) {
         this.isEdit = isEdit;
     }
 
-    public String getWidth() {
+    public Integer getWidth() {
         return width;
     }
 
-    public void setWidth(String width) {
+    public void setWidth(Integer width) {
         this.width = width;
     }
 
@@ -205,11 +219,11 @@ public class FormItemTemplate implements Serializable {
         this.defValue = defValue;
     }
 
-    public String getSort() {
+    public Integer getSort() {
         return sort;
     }
 
-    public void setSort(String sort) {
+    public void setSort(Integer sort) {
         this.sort = sort;
     }
 
@@ -262,6 +276,7 @@ public class FormItemTemplate implements Serializable {
         ", name=" + name +
         ", title=" + title +
         ", type=" + type +
+        ", isPublic=" + isPublic +
         ", required=" + required +
         ", regular=" + regular +
         ", isView=" + isView +

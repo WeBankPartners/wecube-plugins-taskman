@@ -1,24 +1,48 @@
 package com.webank.taskman.domain;
 
-import java.util.Date;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
- * 表单项记录表 
+ * 表单项记录表
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class FormItemInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * 状态
+     * 主键
      */
-    private Integer status;
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
+
+    /**
+     * 表单id
+     */
+    private String formId;
+
+    /**
+     * 表单项模板id
+     */
+    private String itemTempId;
+
+    /**
+     * 表单项名称
+     */
+    private String name;
+
+    /**
+     * 表单项值
+     */
+    private String value;
 
     /**
      * 创建人
@@ -46,12 +70,44 @@ public class FormItemInfo implements Serializable {
     private Integer delFlag;
 
 
-    public Integer getStatus() {
-        return status;
+    public String getId() {
+        return id;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getFormId() {
+        return formId;
+    }
+
+    public void setFormId(String formId) {
+        this.formId = formId;
+    }
+
+    public String getItemTempId() {
+        return itemTempId;
+    }
+
+    public void setItemTempId(String itemTempId) {
+        this.itemTempId = itemTempId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public String getCreatedBy() {
@@ -97,7 +153,11 @@ public class FormItemInfo implements Serializable {
     @Override
     public String toString() {
         return "FormItemInfo{" +
-        "status=" + status +
+        "id=" + id +
+        ", formId=" + formId +
+        ", itemTempId=" + itemTempId +
+        ", name=" + name +
+        ", value=" + value +
         ", createdBy=" + createdBy +
         ", createdTime=" + createdTime +
         ", updatedBy=" + updatedBy +

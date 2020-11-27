@@ -1,17 +1,18 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
- * 表单模板信息表 
+ * 表单模板信息表
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class FormTemplate implements Serializable {
 

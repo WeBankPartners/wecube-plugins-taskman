@@ -2,6 +2,7 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 
 /**
@@ -10,7 +11,7 @@ import java.io.Serializable;
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class RoleInfo implements Serializable {
 

@@ -1,4 +1,4 @@
-package com.webank.taskman.controller;
+package com.webank.taskman.controller.x100;
 
 
 
@@ -11,14 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/template-group")
-@Api(tags = {"TemplateGroup接口使用"})
+@RequestMapping("/v1/template-group")
+@Api(tags = {"V1.0.0 Template Group model"})
 public class TemplateGroupController {
     @Autowired
     TemplateGroupService templateGroupService;
 
     @PostMapping("/save")
-    @ApiOperation(value = "增加模板组",notes = "需要传入templateGroupVO对象")
+    @ApiOperation(value = "add Template Group",notes = "Need to pass in object:templateGroupVO")
     public JsonResponse createTemplateGroup(
             @RequestBody TemplateGroupVO templateGroupVO) throws Exception {
         templateGroupService.createTemplateGroupService(templateGroupVO);

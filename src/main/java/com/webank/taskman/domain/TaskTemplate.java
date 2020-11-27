@@ -1,25 +1,15 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.io.Serializable;
 
-/**
- * <p>
- * 任务模板信息表 
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+import java.io.Serializable;
+import java.util.Date;
+
 public class TaskTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 

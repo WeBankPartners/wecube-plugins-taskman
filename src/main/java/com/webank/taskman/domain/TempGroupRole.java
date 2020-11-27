@@ -2,15 +2,16 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
 
 /**
  * <p>
- * 模板角色关系表 
+ * 模板角色关系表
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class TempGroupRole implements Serializable {
 

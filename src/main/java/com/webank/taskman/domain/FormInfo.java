@@ -1,34 +1,38 @@
 package com.webank.taskman.domain;
 
-import java.util.Date;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
- * 表单记录表 
+ * 表单记录表
  * </p>
  *
  * @author ${author}
- * @since 2020-11-26
+ * @since 2020-11-27
  */
 public class FormInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 状态
-     */
-    private Integer status;
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
+
+    private String formTempId;
+
+    private String name;
+
+    private Integer type;
+
+    private Date createdTime;
 
     /**
      * 创建人
      */
     private String createdBy;
-
-    /**
-     * 创建时间
-     */
-    private Date createdTime;
 
     /**
      * 更新人
@@ -46,20 +50,36 @@ public class FormInfo implements Serializable {
     private Integer delFlag;
 
 
-    public Integer getStatus() {
-        return status;
+    public String getId() {
+        return id;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public String getFormTempId() {
+        return formTempId;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setFormTempId(String formTempId) {
+        this.formTempId = formTempId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     public Date getCreatedTime() {
@@ -68,6 +88,14 @@ public class FormInfo implements Serializable {
 
     public void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     public String getUpdatedBy() {
@@ -97,9 +125,12 @@ public class FormInfo implements Serializable {
     @Override
     public String toString() {
         return "FormInfo{" +
-        "status=" + status +
-        ", createdBy=" + createdBy +
+        "id=" + id +
+        ", formTempId=" + formTempId +
+        ", name=" + name +
+        ", type=" + type +
         ", createdTime=" + createdTime +
+        ", createdBy=" + createdBy +
         ", updatedBy=" + updatedBy +
         ", updatedTime=" + updatedTime +
         ", delFlag=" + delFlag +

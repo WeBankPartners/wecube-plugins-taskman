@@ -51,7 +51,7 @@ public class SwaggerConfiguration {
                 .apiInfo(groupApiInfo())
                 .groupName("V1.0.0")
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.webank.taskman.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.webank.taskman.controller.x100"))
                 .paths(PathSelectors.any())
                 .build()
                 .ignoredParameterTypes(HttpServletRequest.class)
@@ -66,7 +66,7 @@ public class SwaggerConfiguration {
         return new ApiInfoBuilder()
                 .title("Wecube-plugins-Taskman RESTFul API ")
                 .description("<div style='font-size:14px;color:red;'>Wecube-plugins-Taskman RESTFul API</div>")
-                .version("1.0")
+                .version("V1.0")
                 .build();
     }
 

@@ -88,6 +88,7 @@ public class TemplateGroup implements Serializable {
      * 是否删除
      */
     @ApiModelProperty(value = "是否删除")
+    @TableLogic
     private Integer delFlag;
 
 

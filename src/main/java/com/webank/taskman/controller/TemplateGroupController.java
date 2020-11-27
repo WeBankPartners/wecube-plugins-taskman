@@ -22,10 +22,6 @@ public class TemplateGroupController {
         return JsonResponse.okay();
     }
 
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "templateGroupVO",value ="创建模板请求对象",readOnly = true )
-    })
-
     @PostMapping("edit")
     public JsonResponse updateTemplateGroup(
             @RequestBody TemplateGroupVO templateGroupVO) throws Exception {

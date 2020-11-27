@@ -14,6 +14,8 @@ public class TemplateGroupVO {
 
     private String updatedBy;
 
+    private String version;
+
     public String getId() {
         return id;
     }
@@ -62,6 +64,14 @@ public class TemplateGroupVO {
         this.updatedBy = updatedBy;
     }
 
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
         return "TemplateGroupVO{" +
@@ -71,6 +81,7 @@ public class TemplateGroupVO {
                 ", description='" + description + '\'' +
                 ", createdBy='" + createdBy + '\'' +
                 ", updatedBy='" + updatedBy + '\'' +
+                ", version='" + version + '\'' +
                 '}';
     }
 }

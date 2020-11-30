@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.webank.taskman.mapper.RoleRelationMapper">
+
+
+    <select id="selectRoleInfoByParams" parameterType="map" resultType="com.webank.taskman.domain.RoleInfo">
+        SELECT r.* FROM role_info r, role_relation rr
+        <where>
+            AND r.id = rr.role_id
+            <if test="params.roleId !=null ">
+                AND rr.role_id = #{roleId}
+            </if>
+            <if test="params.roleType !=null ">
+                AND rr.role_type = #{roleType}
+            </if>
+            <if test="params.recordId !=null ">
+                AND rr.record_id = #{recordId}
+            </if>
+            <if test="params.recordTable != null and params.recordTable !=''">
+                AND rr.record_table = #{recordTable}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,14 +1,12 @@
 package com.webank.taskman.controller.x100;
 
 
-import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.TemplateGroupDTO;
-import com.webank.taskman.dto.TemplateGroupVO;
+import com.webank.taskman.dto.*;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Map;
 
@@ -20,35 +18,39 @@ public class RequestTemplateGroupController {
     RequestTemplateGroupService requestTemplateGroupService;
 
     @PostMapping("/add")
-    @ApiOperation(value = "add RequestTemplateGroup",notes = "Need to pass in object:templateGroupVO")
-    public JsonResponse createTemplateGroup(@RequestBody TemplateGroupVO templateGroupVO) throws Exception {
-        requestTemplateGroupService.createTemplateGroupService(templateGroupVO);
+    @ApiOperation(value = "add RequestTemplateGroup", notes = "")
+    public JsonResponse createTemplateGroup(
+            @RequestBody TemplateGroupCreateVO templateGroupCreateVO) throws Exception {
+        requestTemplateGroupService.createTemplateGroupService(templateGroupCreateVO);
         return JsonResponse.okay();
     }
 
     @PostMapping("edit")
-    @ApiOperation(value = "edit RequestTemplateGroup",notes = "")
+    @ApiOperation(value = "edit RequestTemplateGroup", notes = "")
     public JsonResponse updateTemplateGroup(
             @RequestBody TemplateGroupVO templateGroupVO) throws Exception {
         requestTemplateGroupService.updateTemplateGroupService(templateGroupVO);
         return JsonResponse.okay();
     }
 
-    @PostMapping("/search")
+    @PostMapping("/search/{current}/{limit}")
     @ApiOperation(value = "search RequestTemplateGroup ")
-    @DynamicParameters(name = "req",properties = {
-            @DynamicParameter(name = "page",value = "页码",example = "",required = true,dataTypeClass = Integer.class),
-            @DynamicParameter(name = "pageSize",value = "每页行数",example = "100",required = true,dataTypeClass = Integer.class),
-            @DynamicParameter(name = "id",value = "主键",example = "",dataTypeClass = String.class),
-            @DynamicParameter(name = "name",value = "模板组名称"),
-            @DynamicParameter(name = "manageRoleId",value = "管理角色Id"),
+    @DynamicParameters(name = "req", properties = {
+            @DynamicParameter(name = "id", value = "主键", example = "", dataTypeClass = String.class),
+            @DynamicParameter(name = "name", value = "模板组名称"),
+            @DynamicParameter(name = "manageRoleId", value = "管理角色Id"),
     })
-    public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(@RequestBody Map<String,Object> req) throws Exception {
-        return JsonResponse.okayWithData(requestTemplateGroupService.selectAllTemplateGroupService());
+    public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(
+            @PathVariable("current") Integer current,
+            @PathVariable("limit") Integer limit,
+            @RequestBody(required = false) TemplateGroupReq req
+    ) throws Exception {
+        QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(current, limit, req);
+        return JsonResponse.okayWithData(queryResponse);
     }
 
     @DeleteMapping("/delete/{id}")
-    @ApiOperation(value = "delete RequestTemplateGroup",notes = "需要传入id")
+    @ApiOperation(value = "delete RequestTemplateGroup", notes = "需要传入id")
     public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return JsonResponse.okay();

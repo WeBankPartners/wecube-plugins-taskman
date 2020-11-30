@@ -24,11 +24,10 @@ public class TemplateGroupTest {
 //        vo.setName("11");
 //        vo.setVersion("11");
 //        templateGroupService.createTemplateGroupService(vo);
-        TemplateGroupVO vo=new TemplateGroupVO();
-        vo.setId("1332131518222503937");
-        vo.setCreatedBy("问我");
-        vo.setName("大答");
-
-        requestTemplateGroupService.updateTemplateGroupService(vo);
+//        TemplateGroupVO vo=new TemplateGroupVO();
+//        vo.setId("1332131518222503937");
+//        vo.setCreatedBy("问我");
+//        vo.setName("大答");
+          requestTemplateGroupService.deleteTemplateGroupByIDService("1332253263087276034");
     }
 }

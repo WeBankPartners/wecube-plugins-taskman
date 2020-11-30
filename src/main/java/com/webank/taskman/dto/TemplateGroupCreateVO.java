@@ -3,19 +3,19 @@ package com.webank.taskman.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "TemplateGroup传入对象",description = "TemplateGroupVO")
+@ApiModel(value = "TemplateGroup传入对象",description = "addReq")
 public class TemplateGroupCreateVO {
 
-    @ApiModelProperty(value = "主键",hidden = true)
+    @ApiModelProperty(value = "主键",hidden = true,required = false)
     private String id;
 
-    @ApiModelProperty(value = "名称")
+    @ApiModelProperty(value = "名称",required = true,dataType = "String")
     private String name;
 
-    @ApiModelProperty(value = "管理角色id")
+    @ApiModelProperty(value = "管理角色id",required = true,dataType = "String")
     private String manageRoleId;
 
-    @ApiModelProperty(value = "描述")
+    @ApiModelProperty(value = "描述",dataType = "String")
     private String description;
 
     @ApiModelProperty(value = "创建人",hidden = true)

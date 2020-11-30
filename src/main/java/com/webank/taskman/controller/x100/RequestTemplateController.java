@@ -26,7 +26,14 @@ public class RequestTemplateController {
 
 
     @PostMapping("/add")
-    @ApiOperation(value = "add RequestTemplate",notes = "Need to pass in object:templateGroupVO")
+    @ApiOperation(value = "add RequestTemplate",notes = "Need to pass in object: ")
+    @DynamicParameters(name = "req",properties = {
+            @DynamicParameter(name = "page",value = "页码",example = "",required = true,dataTypeClass = Integer.class),
+            @DynamicParameter(name = "pageSize",value = "每页行数",example = "100",required = true,dataTypeClass = Integer.class),
+            @DynamicParameter(name = "id",value = "主键",example = "",dataTypeClass = String.class),
+            @DynamicParameter(name = "name",value = "模板组名称"),
+            @DynamicParameter(name = "manageRoleId",value = "管理角色Id"),
+    })
     public JsonResponse createTemplateGroup(@RequestBody TemplateGroupVO templateGroupVO) throws Exception {
         return JsonResponse.okay();
     }
@@ -44,8 +51,6 @@ public class RequestTemplateController {
             @DynamicParameter(name = "page",value = "页码",example = "",required = true,dataTypeClass = Integer.class),
             @DynamicParameter(name = "pageSize",value = "每页行数",example = "100",required = true,dataTypeClass = Integer.class),
             @DynamicParameter(name = "id",value = "主键",example = "",dataTypeClass = String.class),
-            @DynamicParameter(name = "name",value = "模板名称"),
-            @DynamicParameter(name = "manageRole",value = "guanli "),
             @DynamicParameter(name = "name",value = "模板名称"),
     })
     public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(@RequestBody Map<String,Object> req) throws Exception {

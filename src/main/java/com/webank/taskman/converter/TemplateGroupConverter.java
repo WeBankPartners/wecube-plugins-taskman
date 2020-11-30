@@ -2,6 +2,7 @@ package com.webank.taskman.converter;
 
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
+import com.webank.taskman.dto.req.AddTemplateGropReq;
 import com.webank.taskman.dto.TemplateGroupCreateVO;
 import com.webank.taskman.dto.TemplateGroupDTO;
 import com.webank.taskman.dto.TemplateGroupVO;
@@ -16,4 +17,6 @@ public interface TemplateGroupConverter extends BaseConverter<TemplateGroupDTO, 
     RequestTemplateGroup voToDomain(TemplateGroupVO vo);
 
     RequestTemplateGroup cVoTODomain(TemplateGroupCreateVO vo);
+
+    RequestTemplateGroup addReqDomain(AddTemplateGropReq req);
 }

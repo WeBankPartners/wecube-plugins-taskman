@@ -31,6 +31,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     public void createTemplateGroupService(TemplateGroupCreateVO templateGroupCreateVO) throws Exception {
         RequestTemplateGroup templateGroup = templateGroupConverter.cVoTODomain(templateGroupCreateVO);
         templateGroup.setCreatedBy("11");
+        templateGroup.setUpdatedBy("22");
         templateGroupMapper.insert(templateGroup);
     }
 

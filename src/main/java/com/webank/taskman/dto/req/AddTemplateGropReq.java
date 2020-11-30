@@ -3,7 +3,7 @@ package com.webank.taskman.dto.req;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "AddTemplateGropReq",description = "add TemplateGroup req")
+@ApiModel(value = "AddTemplateGropReq",description = "add TemplateGroup req" )
 public class AddTemplateGropReq {
     @ApiModelProperty(value = "名称",required = true,dataType = "String")
     private String name;

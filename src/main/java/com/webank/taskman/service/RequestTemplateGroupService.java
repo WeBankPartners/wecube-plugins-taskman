@@ -7,7 +7,6 @@ import com.webank.taskman.dto.*;
 
 public interface RequestTemplateGroupService extends IService<RequestTemplateGroup> {
 
-    void createTemplateGroupService(TemplateGroupCreateVO templateGroupCreateVO) throws Exception;
 
     void addTemplateGroup(RequestTemplateGroup req) throws Exception;
 

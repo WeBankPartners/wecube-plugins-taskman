@@ -29,7 +29,7 @@ public class SpringWebConfig extends WebSecurityConfigurerAdapter implements Web
     @Autowired
     private AuthenticationRequestContextInterceptor authenticationRequestContextInterceptor;
     @Autowired
-    private AppProperties.ServiceManagementProperties serviceManagementProperties;
+    private AppProperties.ServiceTaskmanProperties serviceTaskmanProperties;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -75,7 +75,7 @@ public class SpringWebConfig extends WebSecurityConfigurerAdapter implements Web
 
     protected Filter jwtSsoBasedAuthenticationFilter() throws Exception {
         JwtClientConfig config = new JwtClientConfig();
-        config.setSigningKey(serviceManagementProperties.getJwtSigningKey());
+        config.setSigningKey(serviceTaskmanProperties.getJwtSigningKey());
         JwtSsoBasedAuthenticationFilter f = new JwtSsoBasedAuthenticationFilter(authenticationManager(), config);
         return (Filter) f;
     }

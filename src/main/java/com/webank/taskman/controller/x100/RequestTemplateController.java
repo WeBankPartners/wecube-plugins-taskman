@@ -18,30 +18,29 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/request-template")
-@Api(tags = {"V1.0.0 RequestTemplate model"})
+@Api(tags = {"3、 RequestTemplate model"})
 public class RequestTemplateController {
 
     @Autowired
     RequestTemplateService requestTemplateService;
 
 
-    @PostMapping("/add")
-    @ApiOperation(value = "add RequestTemplate",notes = "Need to pass in object: ")
-    @DynamicParameters(name = "req",properties = {
-            @DynamicParameter(name = "page",value = "页码",example = "",required = true,dataTypeClass = Integer.class),
-            @DynamicParameter(name = "pageSize",value = "每页行数",example = "100",required = true,dataTypeClass = Integer.class),
-            @DynamicParameter(name = "id",value = "主键",example = "",dataTypeClass = String.class),
-            @DynamicParameter(name = "name",value = "模板组名称"),
-            @DynamicParameter(name = "manageRoleId",value = "管理角色Id"),
-    })
-    public JsonResponse createTemplateGroup(@RequestBody TemplateGroupVO templateGroupVO) throws Exception {
-        return JsonResponse.okay();
-    }
-
     @PostMapping("edit")
     @ApiOperation(value = "edit RequestTemplate",notes = "")
     public JsonResponse updateTemplateGroup(
             @RequestBody TemplateGroupVO templateGroupVO) throws Exception {
+        return JsonResponse.okay();
+    }
+
+    @PostMapping("/add")
+    @ApiOperation(value = "add RequestTemplate",notes = "Need to pass in object: ")
+    @DynamicParameters(name = "req",properties = {
+            @DynamicParameter(name = "name",value = "请求模板名称",required = true),
+            @DynamicParameter(name = "ManageRoId",value = "管理角色Id",required = true),
+            @DynamicParameter(name = "detalRoles",value = "使用角色id(多个以\"，\"分割)",required = true),
+            @DynamicParameter(name = "ManageRoId",value = "管理角色Id",required = true),
+    })
+    public JsonResponse createTemplateGroup(@RequestBody Map<String,Object> req) throws Exception {
         return JsonResponse.okay();
     }
 

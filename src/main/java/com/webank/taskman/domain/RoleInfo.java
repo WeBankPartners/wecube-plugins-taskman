@@ -40,4 +40,12 @@ public class RoleInfo implements Serializable {
         ", name=" + name +
         "}";
     }
+
+    public RoleInfo() {
+    }
+
+    public RoleInfo(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

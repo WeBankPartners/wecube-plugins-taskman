@@ -49,6 +49,7 @@ public class JsonResponse<T> {
 		JsonResponse result = new JsonResponse();
 		result.setStatus(STATUS_OK);
 		result.setMessage("Success");
+		result.setData(200);
 		return result;
 	}
 

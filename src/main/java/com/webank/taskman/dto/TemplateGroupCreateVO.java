@@ -4,9 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "TemplateGroup传入对象",description = "TemplateGroupVO")
-public class TemplateGroupVO {
+public class TemplateGroupCreateVO {
 
-    @ApiModelProperty(value = "主键")
+    @ApiModelProperty(value = "主键",hidden = true)
     private String id;
 
     @ApiModelProperty(value = "名称")

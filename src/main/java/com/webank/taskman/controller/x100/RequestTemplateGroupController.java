@@ -1,14 +1,17 @@
 package com.webank.taskman.controller.x100;
 
 
+import com.webank.taskman.converter.TemplateGroupConverter;
 import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.req.AddTemplateGropReq;
 import com.webank.taskman.service.RequestTemplateGroupService;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.DynamicParameter;
+import io.swagger.annotations.DynamicParameters;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/v1/request-template-group")
@@ -17,11 +20,20 @@ public class RequestTemplateGroupController {
     @Autowired
     RequestTemplateGroupService requestTemplateGroupService;
 
+    @Autowired
+    TemplateGroupConverter templateGroupConverter;
+
     @PostMapping("/add")
     @ApiOperation(value = "add RequestTemplateGroup", notes = "")
     public JsonResponse createTemplateGroup(
-            @RequestBody TemplateGroupCreateVO templateGroupCreateVO) throws Exception {
-        requestTemplateGroupService.createTemplateGroupService(templateGroupCreateVO);
+            @RequestBody AddTemplateGropReq req) throws Exception {
+        if(StringUtils.isEmpty(req.getName())){
+            return  JsonResponse.error(" manageRoleId is null");
+        }
+        if(StringUtils.isEmpty(req.getName())){
+            return  JsonResponse.error(" name is null");
+        }
+        requestTemplateGroupService.addTemplateGroup(templateGroupConverter.addReqDomain(req));
         return JsonResponse.okay();
     }
 

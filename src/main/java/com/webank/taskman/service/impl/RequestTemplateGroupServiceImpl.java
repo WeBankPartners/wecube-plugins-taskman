@@ -1,7 +1,6 @@
 package com.webank.taskman.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -33,6 +32,13 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         templateGroup.setCreatedBy("11");
         templateGroup.setUpdatedBy("22");
         templateGroupMapper.insert(templateGroup);
+    }
+
+    @Override
+    public void addTemplateGroup(RequestTemplateGroup req) throws Exception {
+        req.setCreatedBy("11");
+        req.setUpdatedBy("22");
+        templateGroupMapper.insert(req);
     }
 
     @Override

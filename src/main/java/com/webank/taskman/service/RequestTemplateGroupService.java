@@ -4,13 +4,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
 
-import java.util.List;
-import java.util.Map;
-
 
 public interface RequestTemplateGroupService extends IService<RequestTemplateGroup> {
 
     void createTemplateGroupService(TemplateGroupCreateVO templateGroupCreateVO) throws Exception;
+
+    void addTemplateGroup(RequestTemplateGroup req) throws Exception;
 
     void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
 

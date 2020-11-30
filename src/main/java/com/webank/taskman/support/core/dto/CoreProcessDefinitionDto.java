@@ -1,6 +1,9 @@
 package com.webank.taskman.support.core.dto;
 
-public abstract class CoreProcessDefinitionDto {
+import java.util.List;
+
+public class CoreProcessDefinitionDto {
+
     private String procDefId;
     private String procDefKey;
     private String procDefName;
@@ -9,6 +12,10 @@ public abstract class CoreProcessDefinitionDto {
     private String procDefData;
     private String rootEntity;
     private String createdTime;
+
+
+    private Object permissionToRole;
+    private List[] taskNodeInfos;
 
     public String getProcDefId() {
         return procDefId;
@@ -71,6 +78,36 @@ public abstract class CoreProcessDefinitionDto {
     }
 
     public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public Object getPermissionToRole() {
+        return permissionToRole;
+    }
+
+    public void setPermissionToRole(Object permissionToRole) {
+        this.permissionToRole = permissionToRole;
+    }
+
+    public List[] getTaskNodeInfos() {
+        return taskNodeInfos;
+    }
+
+    public void setTaskNodeInfos(List[] taskNodeInfos) {
+        this.taskNodeInfos = taskNodeInfos;
+    }
+
+    public CoreProcessDefinitionDto() {
+    }
+
+    public CoreProcessDefinitionDto(String procDefId, String procDefKey, String procDefName, String procDefVersion, String status, String procDefData, String rootEntity, String createdTime) {
+        this.procDefId = procDefId;
+        this.procDefKey = procDefKey;
+        this.procDefName = procDefName;
+        this.procDefVersion = procDefVersion;
+        this.status = status;
+        this.procDefData = procDefData;
+        this.rootEntity = rootEntity;
         this.createdTime = createdTime;
     }
 

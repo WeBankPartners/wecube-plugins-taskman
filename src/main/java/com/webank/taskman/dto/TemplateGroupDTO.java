@@ -1,7 +1,6 @@
 package com.webank.taskman.dto;
 
 import com.webank.taskman.domain.RoleInfo;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -68,5 +67,11 @@ public class TemplateGroupDTO {
         this.status = status;
     }
 
+    public RoleInfo getManageRole() {
+        return manageRole;
+    }
 
+    public void setManageRole(RoleInfo manageRole) {
+        this.manageRole = manageRole;
+    }
 }

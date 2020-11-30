@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.converter.TemplateGroupConverter;
+import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
@@ -23,16 +23,8 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     RequestTemplateGroupMapper templateGroupMapper;
 
     @Autowired
-    TemplateGroupConverter templateGroupConverter;
+    RequestTemplateGroupConverter requestTemplateGroupConverter;
 
-
-    @Override
-    public void createTemplateGroupService(TemplateGroupCreateVO templateGroupCreateVO) throws Exception {
-        RequestTemplateGroup templateGroup = templateGroupConverter.cVoTODomain(templateGroupCreateVO);
-        templateGroup.setCreatedBy("11");
-        templateGroup.setUpdatedBy("22");
-        templateGroupMapper.insert(templateGroup);
-    }
 
     @Override
     public void addTemplateGroup(RequestTemplateGroup req) throws Exception {
@@ -46,7 +38,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         if (templateGroupVO == null) {
             throw new Exception("Template group objects cannot be empty");
         }
-        RequestTemplateGroup templateGroup = templateGroupConverter.voToDomain(templateGroupVO);
+        RequestTemplateGroup templateGroup = requestTemplateGroupConverter.voToDomain(templateGroupVO);
         //templateGroup.setUpdatedBy();
         templateGroupMapper.updateById(templateGroup);
     }
@@ -70,7 +62,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(page, wrapper);
         List<RequestTemplateGroup> records = iPage.getRecords();
-        List<TemplateGroupDTO> templateGroupDTOS = templateGroupConverter.toDto(records);
+        List<TemplateGroupDTO> templateGroupDTOS = requestTemplateGroupConverter.toDto(records);
 
         QueryResponse<TemplateGroupDTO> queryResponse = new QueryResponse<>();
         PageInfo pageInfo = new PageInfo();

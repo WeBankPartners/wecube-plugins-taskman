@@ -186,7 +186,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <build>
-
                 <!-- 文件过滤设置
                 <resources>
                     <resource>
@@ -210,8 +209,7 @@
                         </excludes>
                     </resource>
                 </resources>
- -->
-
+-->
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
@@ -266,28 +264,6 @@
                                 <phase>package</phase>
                                 <goals>
                                     <goal>single</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <!-- 将生产的包文件复制到指定目录 -->
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy</id>
-                                <phase>package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <copy todir="d:/outs/taskman/">
-                                            <fileset dir="${project.build.directory}">
-                                                <include name="${project.artifactId}-${project.version}.zip" />
-                                            </fileset>
-                                        </copy>
-                                    </tasks>
-                                </configuration>
-                                <goals>
-                                    <goal>run</goal>
                                 </goals>
                             </execution>
                         </executions>

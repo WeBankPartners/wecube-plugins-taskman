@@ -1,6 +1,5 @@
 package com.webank.taskman;
 
-import com.webank.taskman.dto.TemplateGroupVO;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +27,9 @@ public class TemplateGroupTest {
 //        vo.setId("1332131518222503937");
 //        vo.setCreatedBy("问我");
 //        vo.setName("大答");
-          requestTemplateGroupService.deleteTemplateGroupByIDService("1332253263087276034");
+//        System.out.println(SpringUtils.getActiveProfile());
+
+
+        requestTemplateGroupService.deleteTemplateGroupByIDService("1332253263087276034");
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.dto.CoreProcessDefinitionDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import java.util.List;
 import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 
-@Api(tags = {"V1.0.0 CoreResource model"})
+@Api(tags = {"1、 CoreResource model"})
 @RestController
 @RequestMapping("/v1/core-resources")
 public class CoreResourceController {
@@ -38,8 +39,8 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.getAllRoles());
     }
 
-//    @GetMapping("/workflow/process-definition-keys")
-////    public JsonResponse getAllProcessDefinitionKeys() {
-////        return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
-////    }
+    @GetMapping("/workflow/process-definition-keys")
+    public JsonResponse<List<CoreProcessDefinitionDto>> getAllProcessDefinitionKeys() {
+        return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
+    }
 }

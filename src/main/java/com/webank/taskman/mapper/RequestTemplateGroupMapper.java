@@ -6,5 +6,8 @@ import org.apache.ibatis.annotations.Param;
 
 
 public interface RequestTemplateGroupMapper extends BaseMapper<RequestTemplateGroup> {
+
     public void deleteTemplateGroupByIDMapper(@Param("id") String id);
+
+
 }

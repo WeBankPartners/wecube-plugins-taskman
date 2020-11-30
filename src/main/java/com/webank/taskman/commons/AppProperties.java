@@ -2,10 +2,10 @@ package com.webank.taskman.commons;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "service.management")
+@ConfigurationProperties(prefix = "service.taskman")
 public class AppProperties {
 
-    @ConfigurationProperties(prefix = "service.management.httpclient")
+    @ConfigurationProperties(prefix = "service.taskman.httpclient")
     public class HttpClientProperties {
         private int connectTimeout = 30000;
         private int requestTimeout = 30000;
@@ -72,8 +72,8 @@ public class AppProperties {
         }
     }
 
-    @ConfigurationProperties(prefix = "service.management")
-    public class ServiceManagementProperties {
+    @ConfigurationProperties(prefix = "service.taskman")
+    public class ServiceTaskmanProperties {
         private String wecubeCoreAddress;
         private String wecubePlatformToken = "";
         private String s3AccessKey = "";

@@ -2,45 +2,44 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class FormItemInfo implements Serializable {
+public class FormItemInfo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    
+
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    
+
     private String formId;
 
-    
+
     private String itemTempId;
 
-    
+
     private String name;
 
-    
+
     private String value;
 
-    
+
     private String createdBy;
 
-    
+
     private Date createdTime;
 
-    
+
     private String updatedBy;
 
-    
+
     private Date updatedTime;
 
 
-    @TableLogic
     private Integer delFlag;
 
 
@@ -132,11 +131,11 @@ public class FormItemInfo implements Serializable {
         ", itemTempId=" + itemTempId +
         ", name=" + name +
         ", value=" + value +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

@@ -22,7 +22,9 @@ public class CoreServiceStub {
     private static final String REPORT_OPERATION_EVENTS = "/platform/v1/operation-events";
     private static final String GET_ALL_PEOCESS_KEYS = "/platform/v1/process/definitions?includeDraft=%d";
 
-    private static final String GET_ROOT_ENTITIES = "/platform/v1/process/definitions/process-keys/%s/root-entities";
+    private static final String GET_ROOT_ENTITIES = "/platf@Api(tags = {\"1、 CoreResource model\"})\n" +
+            "@RestController\n" +
+            "@RequestMapping(\"/v1/core-resources\")orm/v1/process/definitions/process-keys/%s/root-entities";
 
     @Autowired
     private CoreRestTemplate template;

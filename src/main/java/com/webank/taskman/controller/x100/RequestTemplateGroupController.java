@@ -63,6 +63,8 @@ public class RequestTemplateGroupController {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(current, limit, req);
         queryResponse.getContents().forEach(c->{
             c.setManageRole(new RoleInfo("2c9280827019695c017019ac974f001c","SUPER_ADMIN"));
+
+
         });
         return JsonResponse.okayWithData(queryResponse);
     }

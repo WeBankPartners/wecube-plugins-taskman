@@ -2,18 +2,21 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
-import java.util.Date;
 
-public class FormTemplate implements Serializable {
+public class FormTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
+
+    private String tempId;
+
+    private String tempType;
 
     
     private String name;
@@ -24,21 +27,6 @@ public class FormTemplate implements Serializable {
     
     private String style;
 
-    
-    private String createdBy;
-
-    
-    private Date createdTime;
-
-    
-    private String updatedBy;
-
-    
-    private Date updatedTime;
-
-
-    @TableLogic
-    private Integer delFlag;
 
 
     public String getId() {
@@ -47,6 +35,22 @@ public class FormTemplate implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTempId() {
+        return tempId;
+    }
+
+    public void setTempId(String tempId) {
+        this.tempId = tempId;
+    }
+
+    public String getTempType() {
+        return tempType;
+    }
+
+    public void setTempType(String tempType) {
+        this.tempType = tempType;
     }
 
     public String getName() {
@@ -73,58 +77,20 @@ public class FormTemplate implements Serializable {
         this.style = style;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-
     @Override
     public String toString() {
         return "FormTemplate{" +
         "id=" + id +
+        ", tempId=" + tempId +
+        ", tempType=" + tempType +
         ", name=" + name +
         ", description=" + description +
         ", style=" + style +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

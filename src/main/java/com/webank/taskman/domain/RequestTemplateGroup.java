@@ -2,12 +2,11 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
-import java.util.Date;
 
-public class RequestTemplateGroup implements Serializable {
+public class RequestTemplateGroup extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -15,8 +14,13 @@ public class RequestTemplateGroup implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
+    
     private String manageRoleId;
 
+    
+    private String manageRoleName;
+
+    
     private String name;
 
     
@@ -28,21 +32,6 @@ public class RequestTemplateGroup implements Serializable {
     
     private Integer status;
 
-    
-    private String createdBy;
-
-    
-    private Date createdTime;
-
-    
-    private String updatedBy;
-
-    
-    private Date updatedTime;
-
-
-    @TableLogic
-    private Integer delFlag;
 
 
     public String getId() {
@@ -59,6 +48,14 @@ public class RequestTemplateGroup implements Serializable {
 
     public void setManageRoleId(String manageRoleId) {
         this.manageRoleId = manageRoleId;
+    }
+
+    public String getManageRoleName() {
+        return manageRoleName;
+    }
+
+    public void setManageRoleName(String manageRoleName) {
+        this.manageRoleName = manageRoleName;
     }
 
     public String getName() {
@@ -93,59 +90,21 @@ public class RequestTemplateGroup implements Serializable {
         this.status = status;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-
     @Override
     public String toString() {
         return "RequestTemplateGroup{" +
         "id=" + id +
+        ", manageRoleId=" + manageRoleId +
+        ", manageRoleName=" + manageRoleName +
         ", name=" + name +
         ", description=" + description +
         ", version=" + version +
         ", status=" + status +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

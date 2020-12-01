@@ -2,10 +2,11 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
 
-public class RequestTemplaeRole implements Serializable {
+public class RequestTemplaeRole extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

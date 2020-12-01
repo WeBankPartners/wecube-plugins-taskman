@@ -13,9 +13,8 @@ public class CoreProcessDefinitionDto {
     private String rootEntity;
     private String createdTime;
 
-
     private Object permissionToRole;
-    private List[] taskNodeInfos;
+    private List<CoreTaskNodeInfo> taskNodeInfos;
 
     public String getProcDefId() {
         return procDefId;
@@ -89,11 +88,11 @@ public class CoreProcessDefinitionDto {
         this.permissionToRole = permissionToRole;
     }
 
-    public List[] getTaskNodeInfos() {
+    public List<CoreTaskNodeInfo> getTaskNodeInfos() {
         return taskNodeInfos;
     }
 
-    public void setTaskNodeInfos(List[] taskNodeInfos) {
+    public void setTaskNodeInfos(List<CoreTaskNodeInfo> taskNodeInfos) {
         this.taskNodeInfos = taskNodeInfos;
     }
 

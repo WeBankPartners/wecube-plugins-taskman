@@ -1,19 +1,13 @@
 package com.webank.taskman.dto;
 
-public class RequestTemplateDTO {
+import io.swagger.annotations.ApiModelProperty;
+
+public class RequestTemplateReq {
+
     private String id;
-
     private String groupId;
-
     private String formTempId;
-
-    private String procDefKey;
-
     private String name;
-
-    private String version;
-
-    private Integer status;
 
     public String getId() {
         return id;
@@ -39,14 +33,6 @@ public class RequestTemplateDTO {
         this.formTempId = formTempId;
     }
 
-    public String getProcDefKey() {
-        return procDefKey;
-    }
-
-    public void setProcDefKey(String procDefKey) {
-        this.procDefKey = procDefKey;
-    }
-
     public String getName() {
         return name;
     }
@@ -55,19 +41,13 @@ public class RequestTemplateDTO {
         this.name = name;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
+    @Override
+    public String toString() {
+        return "RequestTemplateReq{" +
+                "id='" + id + '\'' +
+                ", groupId='" + groupId + '\'' +
+                ", formTempId='" + formTempId + '\'' +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

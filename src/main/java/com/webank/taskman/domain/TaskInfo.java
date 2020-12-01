@@ -2,12 +2,12 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class TaskInfo implements Serializable {
+public class TaskInfo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -16,25 +16,22 @@ public class TaskInfo implements Serializable {
     private String id;
 
     
+    private String requestId;
+
+    
+    private String requestNo;
+
+    
     private String parentId;
 
     
     private String taskTempId;
 
     
-    private String requestId;
+    private String formId;
 
     
     private String procNode;
-
-    
-    private String dealRole;
-
-    
-    private String name;
-
-    
-    private String requestNo;
 
     
     private String callbackUrl;
@@ -43,19 +40,22 @@ public class TaskInfo implements Serializable {
     private String callbackParameter;
 
     
-    private String reporter;
+    private String name;
 
     
-    private String reportRole;
+    private String reporter;
 
     
     private Date reportTime;
 
     
-    private String result;
+    private String emergency;
 
     
-    private String emergency;
+    private String reportRole;
+
+    
+    private String result;
 
     
     private String description;
@@ -69,20 +69,6 @@ public class TaskInfo implements Serializable {
     
     private String version;
 
-    
-    private String createdBy;
-
-    
-    private Date createdTime;
-
-    
-    private String updatedBy;
-
-    
-    private Date updatedTime;
-
-    @TableLogic
-    private Integer delFlag;
 
 
     public String getId() {
@@ -91,6 +77,22 @@ public class TaskInfo implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public String getRequestNo() {
+        return requestNo;
+    }
+
+    public void setRequestNo(String requestNo) {
+        this.requestNo = requestNo;
     }
 
     public String getParentId() {
@@ -109,12 +111,12 @@ public class TaskInfo implements Serializable {
         this.taskTempId = taskTempId;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getFormId() {
+        return formId;
     }
 
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
+    public void setFormId(String formId) {
+        this.formId = formId;
     }
 
     public String getProcNode() {
@@ -123,30 +125,6 @@ public class TaskInfo implements Serializable {
 
     public void setProcNode(String procNode) {
         this.procNode = procNode;
-    }
-
-    public String getDealRole() {
-        return dealRole;
-    }
-
-    public void setDealRole(String dealRole) {
-        this.dealRole = dealRole;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRequestNo() {
-        return requestNo;
-    }
-
-    public void setRequestNo(String requestNo) {
-        this.requestNo = requestNo;
     }
 
     public String getCallbackUrl() {
@@ -165,20 +143,20 @@ public class TaskInfo implements Serializable {
         this.callbackParameter = callbackParameter;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getReporter() {
         return reporter;
     }
 
     public void setReporter(String reporter) {
         this.reporter = reporter;
-    }
-
-    public String getReportRole() {
-        return reportRole;
-    }
-
-    public void setReportRole(String reportRole) {
-        this.reportRole = reportRole;
     }
 
     public Date getReportTime() {
@@ -189,20 +167,28 @@ public class TaskInfo implements Serializable {
         this.reportTime = reportTime;
     }
 
-    public String getResult() {
-        return result;
-    }
-
-    public void setResult(String result) {
-        this.result = result;
-    }
-
     public String getEmergency() {
         return emergency;
     }
 
     public void setEmergency(String emergency) {
         this.emergency = emergency;
+    }
+
+    public String getReportRole() {
+        return reportRole;
+    }
+
+    public void setReportRole(String reportRole) {
+        this.reportRole = reportRole;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 
     public String getDescription() {
@@ -237,73 +223,33 @@ public class TaskInfo implements Serializable {
         this.version = version;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-
     @Override
     public String toString() {
         return "TaskInfo{" +
         "id=" + id +
+        ", requestId=" + requestId +
+        ", requestNo=" + requestNo +
         ", parentId=" + parentId +
         ", taskTempId=" + taskTempId +
-        ", requestId=" + requestId +
+        ", formId=" + formId +
         ", procNode=" + procNode +
-        ", dealRole=" + dealRole +
-        ", name=" + name +
-        ", requestNo=" + requestNo +
         ", callbackUrl=" + callbackUrl +
         ", callbackParameter=" + callbackParameter +
+        ", name=" + name +
         ", reporter=" + reporter +
-        ", reportRole=" + reportRole +
         ", reportTime=" + reportTime +
-        ", result=" + result +
         ", emergency=" + emergency +
+        ", reportRole=" + reportRole +
+        ", result=" + result +
         ", description=" + description +
         ", attachFileId=" + attachFileId +
         ", status=" + status +
         ", version=" + version +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

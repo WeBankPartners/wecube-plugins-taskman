@@ -2,12 +2,11 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
-import java.util.Date;
 
-public class AttachFile implements Serializable {
+public class AttachFile  extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -28,22 +27,6 @@ public class AttachFile implements Serializable {
     private String s3KeyName;
 
     
-    private String createdBy;
-
-    
-    private Date createdTime;
-
-    
-    private String updatedBy;
-
-    
-    private Date updatedTime;
-
-
-    @TableLogic
-    private Integer delFlag;
-
-
     public String getId() {
         return id;
     }
@@ -84,45 +67,6 @@ public class AttachFile implements Serializable {
         this.s3KeyName = s3KeyName;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
 
     @Override
     public String toString() {
@@ -132,11 +76,11 @@ public class AttachFile implements Serializable {
         ", s3Url=" + s3Url +
         ", s3BucketName=" + s3BucketName +
         ", s3KeyName=" + s3KeyName +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

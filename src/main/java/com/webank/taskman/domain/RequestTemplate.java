@@ -2,12 +2,11 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
-import java.util.Date;
 
-public class RequestTemplate implements Serializable {
+public class RequestTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -16,13 +15,16 @@ public class RequestTemplate implements Serializable {
     private String id;
 
     
-    private String groupId;
-
-    
-    private String formTempId;
+    private String requestTempGroup;
 
     
     private String procDefKey;
+
+    
+    private String procDefId;
+
+    
+    private String procDefName;
 
     
     private String name;
@@ -37,20 +39,6 @@ public class RequestTemplate implements Serializable {
     private Integer status;
 
     
-    private String createdBy;
-
-    
-    private Date createdTime;
-
-    
-    private String updatedBy;
-
-    
-    private Date updatedTime;
-
-
-    @TableLogic
-    private Integer delFlag;
 
 
     public String getId() {
@@ -61,20 +49,12 @@ public class RequestTemplate implements Serializable {
         this.id = id;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getRequestTempGroup() {
+        return requestTempGroup;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getFormTempId() {
-        return formTempId;
-    }
-
-    public void setFormTempId(String formTempId) {
-        this.formTempId = formTempId;
+    public void setRequestTempGroup(String requestTempGroup) {
+        this.requestTempGroup = requestTempGroup;
     }
 
     public String getProcDefKey() {
@@ -83,6 +63,22 @@ public class RequestTemplate implements Serializable {
 
     public void setProcDefKey(String procDefKey) {
         this.procDefKey = procDefKey;
+    }
+
+    public String getProcDefId() {
+        return procDefId;
+    }
+
+    public void setProcDefId(String procDefId) {
+        this.procDefId = procDefId;
+    }
+
+    public String getProcDefName() {
+        return procDefName;
+    }
+
+    public void setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
     }
 
     public String getName() {
@@ -117,62 +113,24 @@ public class RequestTemplate implements Serializable {
         this.status = status;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
 
     @Override
     public String toString() {
         return "RequestTemplate{" +
         "id=" + id +
-        ", groupId=" + groupId +
-        ", formTempId=" + formTempId +
+        ", requestTempGroup=" + requestTempGroup +
         ", procDefKey=" + procDefKey +
+        ", procDefId=" + procDefId +
+        ", procDefName=" + procDefName +
         ", name=" + name +
         ", version=" + version +
         ", tags=" + tags +
         ", status=" + status +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

@@ -1,56 +1,21 @@
-package com.webank.taskman.domain;
+package com.webank.taskman.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.webank.taskman.base.BaseEntity;
+import io.swagger.annotations.ApiModel;
 
-import java.io.Serializable;
+@ApiModel
+public class FormItemTemplateDTO {
 
-public class FormItemTemplate extends BaseEntity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
-    
-    private String formTemplateId;
-
-    
     private String name;
-
-    
     private String title;
-
-    
     private String elementType;
-
-    
     private Integer isPublic;
-
-    
     private Integer required;
-
-    
     private Integer regular;
-
-    
     private Integer isView;
-
-    
     private Integer isEdit;
-
-    
     private Integer width;
-
-    
     private String defValue;
-
-    
-    private Integer sort;
-
-
 
     public String getId() {
         return id;
@@ -58,14 +23,6 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getFormTemplateId() {
-        return formTemplateId;
-    }
-
-    public void setFormTemplateId(String formTemplateId) {
-        this.formTemplateId = formTemplateId;
     }
 
     public String getName() {
@@ -148,36 +105,20 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.defValue = defValue;
     }
 
-    public Integer getSort() {
-        return sort;
-    }
-
-    public void setSort(Integer sort) {
-        this.sort = sort;
-    }
-
-
     @Override
     public String toString() {
-        return "FormItemTemplate{" +
-        "id=" + id +
-        ", formTemplateId=" + formTemplateId +
-        ", name=" + name +
-        ", title=" + title +
-        ", elementType=" + elementType +
-        ", isPublic=" + isPublic +
-        ", required=" + required +
-        ", regular=" + regular +
-        ", isView=" + isView +
-        ", isEdit=" + isEdit +
-        ", width=" + width +
-        ", defValue=" + defValue +
-        ", sort=" + sort +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-        "}";
+        return "FormItemTemplateDTO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
+                ", elementType='" + elementType + '\'' +
+                ", isPublic=" + isPublic +
+                ", required=" + required +
+                ", regular=" + regular +
+                ", isView=" + isView +
+                ", isEdit=" + isEdit +
+                ", width=" + width +
+                ", defValue='" + defValue + '\'' +
+                '}';
     }
 }

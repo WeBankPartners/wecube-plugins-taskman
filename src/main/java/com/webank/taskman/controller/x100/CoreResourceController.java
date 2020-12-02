@@ -20,7 +20,7 @@ import java.util.List;
 import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 
-@Api(tags = {"1、 CoreResource model"})
+@Api(tags = {"1、 CoreResource inteface API"})
 @RestController
 @RequestMapping("/v1/core-resources")
 public class CoreResourceController {
@@ -43,4 +43,11 @@ public class CoreResourceController {
     public JsonResponse<List<CoreProcessDefinitionDto>> getAllProcessDefinitionKeys() {
         return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
     }
+
+    @GetMapping("/form-item/ci-data")
+    public JsonResponse getCoreCiData() {
+        return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
+    }
+
+
 }

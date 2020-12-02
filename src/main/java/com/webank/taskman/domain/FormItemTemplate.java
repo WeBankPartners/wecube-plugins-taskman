@@ -27,19 +27,28 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
     private String elementType;
 
     
+    private String dataCiId;
+
+    
+    private String dataFilters;
+
+    
+    private String dataOptions;
+
+    
     private Integer isPublic;
 
     
     private Integer required;
 
     
+    private Integer isEdit;
+
+    
     private Integer regular;
 
     
     private Integer isView;
-
-    
-    private Integer isEdit;
 
     
     private Integer width;
@@ -92,6 +101,30 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.elementType = elementType;
     }
 
+    public String getDataCiId() {
+        return dataCiId;
+    }
+
+    public void setDataCiId(String dataCiId) {
+        this.dataCiId = dataCiId;
+    }
+
+    public String getDataFilters() {
+        return dataFilters;
+    }
+
+    public void setDataFilters(String dataFilters) {
+        this.dataFilters = dataFilters;
+    }
+
+    public String getDataOptions() {
+        return dataOptions;
+    }
+
+    public void setDataOptions(String dataOptions) {
+        this.dataOptions = dataOptions;
+    }
+
     public Integer getIsPublic() {
         return isPublic;
     }
@@ -108,6 +141,14 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.required = required;
     }
 
+    public Integer getIsEdit() {
+        return isEdit;
+    }
+
+    public void setIsEdit(Integer isEdit) {
+        this.isEdit = isEdit;
+    }
+
     public Integer getRegular() {
         return regular;
     }
@@ -122,14 +163,6 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
 
     public void setIsView(Integer isView) {
         this.isView = isView;
-    }
-
-    public Integer getIsEdit() {
-        return isEdit;
-    }
-
-    public void setIsEdit(Integer isEdit) {
-        this.isEdit = isEdit;
     }
 
     public Integer getWidth() {
@@ -156,7 +189,6 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.sort = sort;
     }
 
-
     @Override
     public String toString() {
         return "FormItemTemplate{" +
@@ -165,11 +197,14 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         ", name=" + name +
         ", title=" + title +
         ", elementType=" + elementType +
+        ", dataCiId=" + dataCiId +
+        ", dataFilters=" + dataFilters +
+        ", dataOptions=" + dataOptions +
         ", isPublic=" + isPublic +
         ", required=" + required +
+        ", isEdit=" + isEdit +
         ", regular=" + regular +
         ", isView=" + isView +
-        ", isEdit=" + isEdit +
         ", width=" + width +
         ", defValue=" + defValue +
         ", sort=" + sort +

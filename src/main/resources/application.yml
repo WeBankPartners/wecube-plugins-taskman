@@ -18,6 +18,28 @@ mybatis-plus:
       logic-not-delete-value: 0
       logic-delete-value: 1
 
+knife4j:
+  enable: true
+  setting:
+    enableVersion: true
+    enableSwaggerModels: false
+    enableDocumentManage: false
+    enableReloadCacheParameter: true
+    enableAfterScript: true
+    enableRequestCache: true
+    enableFooter: true
+    enableFooterCustom: true
+    footerCustomContent: Copyright © 2014 - 2019 WeBank Co., Ltd. All Rights Reserved.
+    enableDynamicParameter: true
+    enableDebug: true
+    enableOpenApi: true
+    enableGroup: false
+  production: false # prod close knife4j
+  basic:
+    enable: false
+    username: test
+    password: 12313
+
 service:
   taskman:
     httpclient:

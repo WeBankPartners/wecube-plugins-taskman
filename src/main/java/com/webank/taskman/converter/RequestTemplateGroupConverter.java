@@ -14,5 +14,5 @@ public interface RequestTemplateGroupConverter extends BaseConverter<TemplateGro
     RequestTemplateGroup voToDomain(TemplateGroupVO vo);
 
 
-    RequestTemplateGroup addReqDomain(AddTemplateGropReq req);
+    RequestTemplateGroup addReqToDomain(AddTemplateGropReq req);
 }

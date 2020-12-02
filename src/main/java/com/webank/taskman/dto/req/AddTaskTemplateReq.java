@@ -3,37 +3,24 @@ package com.webank.taskman.dto.req;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
-public class AddRequestTemplateReq {
+@ApiModel
+public class AddTaskTemplateReq  {
 
-    @ApiModelProperty(value = "模板组编号",required = true,dataType = "String")
-    private String groupId;
-
-    @ApiModelProperty(value = "流程编排Id",required = true,dataType = "String")
+    @ApiModelProperty(value = "",required = true)
     private String procDefId;
-    @ApiModelProperty(value = "流程编排key",required = true,dataType = "String")
+    @ApiModelProperty(value = "",required = true)
     private String procDefKey;
-    @ApiModelProperty(value = "流程编排名称",required = true,dataType = "String")
+    @ApiModelProperty(value = "",required = true)
     private String procDefName;
-
-    @ApiModelProperty(value = "请求模板名称",required = true,dataType = "String")
+    @ApiModelProperty(value = "",required = true)
+    private String procNode;
+    @ApiModelProperty(value = "",required = true)
     private String name;
-    @ApiModelProperty(value = "描述",required = true,dataType = "String")
-    private String description;
 
-    @ApiModelProperty(value = "标签",required = true,dataType = "String")
-    private String tags;
+    private String description;
 
     @ApiModelProperty(value = "表单模板",required = true,dataType = "String")
     private AddFormTemplateReq formTemplateReq;
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
 
     public String getProcDefId() {
         return procDefId;
@@ -59,6 +46,14 @@ public class AddRequestTemplateReq {
         this.procDefName = procDefName;
     }
 
+    public String getProcNode() {
+        return procNode;
+    }
+
+    public void setProcNode(String procNode) {
+        this.procNode = procNode;
+    }
+
     public String getName() {
         return name;
     }
@@ -73,14 +68,6 @@ public class AddRequestTemplateReq {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
     }
 
     public AddFormTemplateReq getFormTemplateReq() {

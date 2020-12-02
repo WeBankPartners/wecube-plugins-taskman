@@ -1,12 +1,16 @@
 package com.webank.taskman.controller.x100;
 
 
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
+import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RoleInfo;
 import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.AddTemplateGropReq;
 import com.webank.taskman.service.RequestTemplateGroupService;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/v1/request-template-group")
-@Api(tags = {"2、 TemplateGroup model"})
+@Api(tags = {"3、 TemplateGroup model"})
 public class RequestTemplateGroupController {
     @Autowired
     RequestTemplateGroupService requestTemplateGroupService;
@@ -34,7 +38,7 @@ public class RequestTemplateGroupController {
         if(StringUtils.isEmpty(req.getName())){
             return  JsonResponse.error(" name is null");
         }
-        requestTemplateGroupService.addTemplateGroup(requestTemplateGroupConverter.addReqDomain(req));
+        requestTemplateGroupService.addTemplateGroup(requestTemplateGroupConverter.addReqToDomain(req));
         return JsonResponse.okay();
     }
 

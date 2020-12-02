@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.AddRequestTemplateReq;
+import com.webank.taskman.dto.RequestTemplateVO;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,8 +2,6 @@ package com.webank.taskman.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.Date;
 @ApiModel(value = "RequestTemplate对象",description = "RequestTemplate")
 public class RequestTemplateVO {
 

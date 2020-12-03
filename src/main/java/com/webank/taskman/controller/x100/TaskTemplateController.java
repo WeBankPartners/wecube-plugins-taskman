@@ -4,7 +4,9 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
+import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,7 +27,6 @@ public class TaskTemplateController {
     @PostMapping("/save")
     @ApiOperation(value = "add TaskTemplate", notes = "Need to pass in object: ")
     public JsonResponse createRequestTemplate(@RequestBody SaveTaskTemplateReq taskTemplateReq) throws Exception {
-//        requestTemplateService.createRequestTemplateService(requestTemplateVO);
         return JsonResponse.okay();
     }
     @DeleteMapping("/delete/{id}")
@@ -34,15 +35,6 @@ public class TaskTemplateController {
         requestTemplateService.deleteRequestTemplateService(id);
         return JsonResponse.okay();
     }
-    @PostMapping("edit")
-    @ApiOperation(value = "edit TaskTemplate", notes = "")
-    public JsonResponse updateRequestTemplate(
-            @RequestBody RequestTemplateVO requestTemplateVO) throws Exception {
-        requestTemplateService.updateRequestTemplateService(requestTemplateVO);
-        return JsonResponse.okay();
-    }
-
-
 
     @PostMapping("/search/{current}/{limit}")
     @ApiOperation(value = "search TaskTemplate ")
@@ -52,12 +44,12 @@ public class TaskTemplateController {
             @DynamicParameter(name = "id", value = "主键", example = "", dataTypeClass = String.class),
             @DynamicParameter(name = "name", value = "模板名称"),
     })
-    public JsonResponse<QueryResponse<RequestTemplateDTO>> selectRequestTemplate(
+    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
             @PathVariable("current") Integer current,
             @PathVariable("limit") Integer limit,
-            @RequestBody(required = false) RequestTemplateReq req)
+            @RequestBody(required = false) SaveRequestTemplateReq req)
             throws Exception {
-        QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
+        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

@@ -6,8 +6,12 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class SaveFormTemplateReq {
 
+    private String id;
+
+    private String tempId;
+
     @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType = "int")
-    private Integer tempType;
+    private String tempType;
 
     @ApiModelProperty(value = "",required = true)
     private String name;
@@ -16,12 +20,33 @@ public class SaveFormTemplateReq {
 
     private String style;
 
+    @ApiModelProperty(value = "创建人",required = true,dataType = "String")
+    private String createdBy;
 
-    public Integer getTempType() {
+    @ApiModelProperty(value = "更新人",required = true,dataType = "String")
+    private String updatedBy;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getTempId() {
+        return tempId;
+    }
+
+    public void setTempId(String tempId) {
+        this.tempId = tempId;
+    }
+
+    public String getTempType() {
         return tempType;
     }
 
-    public void setTempType(Integer tempType) {
+    public void setTempType(String tempType) {
         this.tempType = tempType;
     }
 
@@ -49,4 +74,19 @@ public class SaveFormTemplateReq {
         this.style = style;
     }
 
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
 }

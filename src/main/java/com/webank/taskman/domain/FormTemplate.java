@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.webank.taskman.base.BaseEntity;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 public class FormTemplate extends BaseEntity implements Serializable {
@@ -14,11 +15,13 @@ public class FormTemplate extends BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
+    @NotBlank(message = "模板id不能为空")
     private String tempId;
 
+    @NotBlank(message = "模板类型不能为空")
     private String tempType;
 
-    
+    @NotBlank(message = "名称不能为空")
     private String name;
 
     

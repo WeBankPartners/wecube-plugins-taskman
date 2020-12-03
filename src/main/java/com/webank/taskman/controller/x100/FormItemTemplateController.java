@@ -5,8 +5,7 @@ import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.RequestTemplateReq;
-import com.webank.taskman.dto.req.saveRequestTemplateReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,8 +21,7 @@ public class FormItemTemplateController {
     //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "save formTemplate", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@RequestBody saveRequestTemplateReq req) throws Exception {
-
+    public JsonResponse saveRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
 
         return JsonResponse.okay();
     }
@@ -38,7 +36,7 @@ public class FormItemTemplateController {
     public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
             @PathVariable("current") Integer current,
             @PathVariable("limit") Integer limit,
-            @RequestBody(required = false) RequestTemplateReq req)
+            @RequestBody(required = false) SaveRequestTemplateReq req)
             throws Exception {
         return JsonResponse.okayWithData(null);
     }

@@ -30,7 +30,6 @@ public class RequestTemplateResp {
 
     private Integer status;
 
-    private Date createdTime;
 
     public String getRequestTempGroup() {
         return requestTempGroup;
@@ -96,11 +95,4 @@ public class RequestTemplateResp {
         this.status = status;
     }
 
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
 }

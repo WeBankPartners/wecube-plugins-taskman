@@ -4,7 +4,7 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.AddTaskTemplateReq;
+import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/v1/task-template")
+@RequestMapping("/v1/task/template")
 @Api(tags = {"5、  TaskTemplate inteface API"})
 public class TaskTemplateController {
 
@@ -21,9 +21,10 @@ public class TaskTemplateController {
     RequestTemplateService requestTemplateService;
 
 
+    //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "add TaskTemplate", notes = "Need to pass in object: ")
-    public JsonResponse createRequestTemplate(@RequestBody AddTaskTemplateReq taskTemplateReq) throws Exception {
+    public JsonResponse createRequestTemplate(@RequestBody SaveTaskTemplateReq taskTemplateReq) throws Exception {
 //        requestTemplateService.createRequestTemplateService(requestTemplateVO);
         return JsonResponse.okay();
     }
@@ -59,7 +60,8 @@ public class TaskTemplateController {
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
         return JsonResponse.okayWithData(queryResponse);
     }
-    @DeleteMapping("/detail/{id}")
+
+    @GetMapping("/detail/{id}")
     @ApiOperation(value = "detail TaskTemplate", notes = "需要传入id")
     public JsonResponse detail(@PathVariable("id") String id) throws Exception {
         requestTemplateService.deleteRequestTemplateService(id);

@@ -4,7 +4,7 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.TemplateGroupDTO;
 import com.webank.taskman.dto.TemplateGroupVO;
-import com.webank.taskman.dto.req.AddTemplateGropReq;
+import com.webank.taskman.dto.req.SaveTemplateGropReq;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -14,5 +14,5 @@ public interface RequestTemplateGroupConverter extends BaseConverter<TemplateGro
     RequestTemplateGroup voToDomain(TemplateGroupVO vo);
 
 
-    RequestTemplateGroup addReqToDomain(AddTemplateGropReq req);
+    RequestTemplateGroup addReqToDomain(SaveTemplateGropReq req);
 }

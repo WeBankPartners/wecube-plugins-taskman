@@ -1,9 +1,8 @@
 package com.webank.taskman.dto.req;
 
 import java.util.Date;
-import java.util.List;
 
-public class AddTaskInfoReq  {
+public class SaveTaskInfoReq {
 
     private String procNode;
 
@@ -29,7 +28,6 @@ public class AddTaskInfoReq  {
 
     private String version;
 
-    private List<AddFormItemInfoReq> formItems;
 
     public String getProcNode() {
         return procNode;
@@ -127,11 +125,4 @@ public class AddTaskInfoReq  {
         this.version = version;
     }
 
-    public List<AddFormItemInfoReq> getFormItems() {
-        return formItems;
-    }
-
-    public void setFormItems(List<AddFormItemInfoReq> formItems) {
-        this.formItems = formItems;
-    }
 }

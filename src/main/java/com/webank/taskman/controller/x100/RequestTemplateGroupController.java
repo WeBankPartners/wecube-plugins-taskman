@@ -7,7 +7,7 @@ import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RoleInfo;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.AddTemplateGropReq;
+import com.webank.taskman.dto.req.SaveTemplateGropReq;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v1/request-template-group")
+@RequestMapping("/v1/request/template/group")
 @Api(tags = {"3、 TemplateGroup model"})
 public class RequestTemplateGroupController {
     @Autowired
@@ -27,11 +27,12 @@ public class RequestTemplateGroupController {
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
-    @PostMapping("/add")
+    //FIXME implemented   insert or update
+    @PostMapping("/save")
     @ApiOperationSupport(order = 21)
-    @ApiOperation(value = "add RequestTemplateGroup", notes = "")
+    @ApiOperation(value = "save RequestTemplateGroup", notes = "")
     public JsonResponse createTemplateGroup(
-            @RequestBody AddTemplateGropReq req) throws Exception {
+            @RequestBody SaveTemplateGropReq req) throws Exception {
         if(StringUtils.isEmpty(req.getName())){
             return  JsonResponse.error(" manageRoleId is null");
         }
@@ -42,14 +43,6 @@ public class RequestTemplateGroupController {
         return JsonResponse.okay();
     }
 
-    @PostMapping("edit")
-    @ApiOperationSupport(order = 23)
-    @ApiOperation(value = "edit RequestTemplateGroup", notes = "")
-    public JsonResponse updateTemplateGroup(
-            @RequestBody TemplateGroupVO templateGroupVO) throws Exception {
-        requestTemplateGroupService.updateTemplateGroupService(templateGroupVO);
-        return JsonResponse.okay();
-    }
 
     @PostMapping("/search/{current}/{limit}")
     @ApiOperationSupport(order = 24)

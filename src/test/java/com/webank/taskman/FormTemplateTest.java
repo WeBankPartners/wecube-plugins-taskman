@@ -1,6 +1,9 @@
 package com.webank.taskman;
 
+import com.webank.taskman.dto.JsonResponse;
+import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
+import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormTemplateService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,12 +27,13 @@ public class FormTemplateTest {
         saveFormTemplateReq.setName("");
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");
+        saveFormTemplateReq.setTargetEntitys("");
         saveFormTemplateReq.setCreatedBy("");
         saveFormTemplateReq.setUpdatedBy("");
         formTemplateService.saveFormTemplate(saveFormTemplateReq);
     }
 
-    //
+    //Query single data details of form module according to ID
     @Test
     public void detailFormTemplateTest() throws Exception {
         String id="";
@@ -37,12 +41,30 @@ public class FormTemplateTest {
     }
 
 
+    //Delete single data of form module according to ID logic
     @Test
     public void deleteFormTemplateTest() throws Exception {
         String id="";
         formTemplateService.deleteFormTemplate(id);
     }
 
-
+    //Paging query form module data
+    @Test
+    public void selectFormTemplateTest() throws Exception {
+        int current=1;
+        int limit=2;
+        SaveFormTemplateReq saveFormTemplateReq=new SaveFormTemplateReq();
+        saveFormTemplateReq.setId("");
+        saveFormTemplateReq.setTempId("");
+        saveFormTemplateReq.setTempType("");
+        saveFormTemplateReq.setName("");
+        saveFormTemplateReq.setDescription("");
+        saveFormTemplateReq.setStyle("");
+        saveFormTemplateReq.setTargetEntitys("");
+        saveFormTemplateReq.setCreatedBy("");
+        saveFormTemplateReq.setUpdatedBy("");
+        QueryResponse<FormTemplateResp> queryResponse= formTemplateService.selectFormTemplate(current,limit,saveFormTemplateReq);
+        System.out.println(JsonResponse.okayWithData(queryResponse).getData());
+    }
 
 }

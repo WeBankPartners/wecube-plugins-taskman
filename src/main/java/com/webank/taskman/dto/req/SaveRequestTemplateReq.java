@@ -3,22 +3,31 @@ package com.webank.taskman.dto.req;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.NotBlank;
+
 @ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
 public class SaveRequestTemplateReq {
 
     @ApiModelProperty(value = "主键",required = false,dataType = "String")
     private String id;
 
+    @NotBlank(message = "模板组编号不能为空")
     @ApiModelProperty(value = "模板组编号",required = true,dataType = "String")
     private String requestTempGroup;
 
+    @NotBlank(message = "流程编排id不能为空")
     @ApiModelProperty(value = "流程编排Id",required = true,dataType = "String")
     private String procDefId;
+
+    @NotBlank(message = "流程编排key不能为空")
     @ApiModelProperty(value = "流程编排key",required = true,dataType = "String")
     private String procDefKey;
+
+    @NotBlank(message = "流程编排名称不能为空")
     @ApiModelProperty(value = "流程编排名称",required = true,dataType = "String")
     private String procDefName;
 
+    @NotBlank(message = "名称不能为空")
     @ApiModelProperty(value = "请求模板名称",required = true,dataType = "String")
     private String name;
     @ApiModelProperty(value = "描述",required = true,dataType = "String")
@@ -27,9 +36,11 @@ public class SaveRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = true,dataType = "String")
     private String tags;
 
+    @NotBlank(message = "创建人不能为空")
     @ApiModelProperty(value = "创建人",required = true,dataType = "String")
     private String createdBy;
 
+    @NotBlank(message = "更新不能为空")
     @ApiModelProperty(value = "更新人",required = true,dataType = "String")
     private String updatedBy;
 

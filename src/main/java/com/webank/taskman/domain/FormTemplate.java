@@ -15,13 +15,11 @@ public class FormTemplate extends BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    @NotBlank(message = "模板id不能为空")
     private String tempId;
 
-    @NotBlank(message = "模板类型不能为空")
     private String tempType;
 
-    @NotBlank(message = "名称不能为空")
+
     private String name;
 
     

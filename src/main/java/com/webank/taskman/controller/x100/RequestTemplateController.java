@@ -10,7 +10,11 @@ import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 
 @Api(tags = {"4、 RequestTemplate inteface API"})
@@ -24,7 +28,12 @@ public class RequestTemplateController {
     //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "save RequestTemplate", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
+    public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req, BindingResult bindingResult) throws Exception {
+        if (bindingResult.hasErrors()){
+            for (ObjectError error:bindingResult.getAllErrors()){
+                return JsonResponse.okayWithData(error.getDefaultMessage());
+            }
+        }
         requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okay();
     }

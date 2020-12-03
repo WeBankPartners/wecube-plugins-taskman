@@ -8,7 +8,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.RequestTemplateVO;
+import com.webank.taskman.dto.req.SaveRequestTemplateReq;
+import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +30,23 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
    @Autowired
     RequestTemplateConverter requestTemplateConverter;
 
+
     @Override
-    public void createRequestTemplateService(RequestTemplateVO requestTemplateVO) throws Exception {
-        if (requestTemplateVO == null) {
-            throw new Exception("Template group objects cannot be empty");
+    public void saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq)  {
+        RequestTemplate requestTemplate=requestTemplateConverter.reqToDomain(requestTemplateReq);
+        requestTemplate.setCreatedBy(requestTemplateReq.getCreatedBy());
+        requestTemplate.setUpdatedBy(requestTemplateReq.getUpdatedBy());
+        if (StringUtils.isEmpty(requestTemplateReq.getId())){
+            requestTemplateMapper.insert(requestTemplate);
+        }else{
+            requestTemplateMapper.updateById(requestTemplate);
         }
-        RequestTemplate requestTemplate=requestTemplateConverter.voToDomain(requestTemplateVO);
-        requestTemplateMapper.insert(requestTemplate);
     }
 
     @Override
     public void deleteRequestTemplateService(String id) throws Exception {
         if (id == "") {
-            throw new Exception("Template group objects cannot be empty");
+            throw new Exception("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
         wrapper.eq("id",id).set("del_flag",1);
@@ -49,30 +54,20 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public void updateRequestTemplateService(RequestTemplateVO requestTemplateVO) throws Exception {
-        if (requestTemplateVO==null){
-            throw new Exception("Template group objects cannot be empty");
-        }
-        RequestTemplate requestTemplate=requestTemplateConverter.voToDomain(requestTemplateVO);
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        requestTemplate.setUpdatedTime(df.parse(df.format(new Date())));
-        requestTemplateMapper.updateById(requestTemplate);
-    }
-
-    @Override
-    public QueryResponse<RequestTemplateDTO> selectAllequestTemplateService(Integer current, Integer limit, RequestTemplateReq req) throws Exception {
+    public QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, SaveRequestTemplateReq req) throws Exception {
         Page<RequestTemplate> page = new Page<>(current, limit);
         QueryWrapper<RequestTemplate> wrapper = new QueryWrapper<>();
         wrapper.eq(!StringUtils.isEmpty(req.getId()),"id",req.getId());
-        wrapper.eq(!StringUtils.isEmpty(req.getFormTempId()),"formTempId",req.getFormTempId());
-        wrapper.eq(!StringUtils.isEmpty(req.getGroupId()),"groupId",req.getGroupId());
-        wrapper.like(!StringUtils.isEmpty(req.getName()),"name",req.getName());
-
+        wrapper.eq(!StringUtils.isEmpty(req.getRequestTempGroup()),"request_temp_group",req.getRequestTempGroup());
+        wrapper.eq(!StringUtils.isEmpty(req.getProcDefKey()),"proc_def_key",req.getProcDefKey());
+        wrapper.eq(!StringUtils.isEmpty(req.getProcDefId()),"proc_def_id",req.getProcDefId());
+        wrapper.eq(!StringUtils.isEmpty(req.getProcDefName()),"proc_def_name",req.getProcDefName());
+        wrapper.eq(!StringUtils.isEmpty(req.getName()),"name",req.getName());
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPage(page, wrapper);
         List<RequestTemplate> records = iPage.getRecords();
-        List<RequestTemplateDTO> requestTemplateDTOS = requestTemplateConverter.toDto(records);
+        List<RequestTemplateResp> requestTemplateDTOS = requestTemplateConverter.toDto(records);
 
-        QueryResponse<RequestTemplateDTO> queryResponse = new QueryResponse<>();
+        QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
         PageInfo pageInfo = new PageInfo();
         pageInfo.setStartIndex(iPage.getCurrent());
         pageInfo.setPageSize(iPage.getSize());
@@ -82,10 +77,12 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         return queryResponse;
     }
 
-
     @Override
-    public List<RequestTemplateDTO> selectRequestTemplateService(RequestTemplateVO requestTemplateVO) throws Exception {
-        return null;
+    public RequestTemplateResp detailRequestTemplate(String id) throws Exception {
+        RequestTemplate requestTemplate=requestTemplateMapper.selectById(id);
+        RequestTemplateResp formTemplateResp=requestTemplateConverter.toDto(requestTemplate);
+        return formTemplateResp;
     }
+
 
 }

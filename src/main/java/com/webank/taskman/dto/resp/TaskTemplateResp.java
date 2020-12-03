@@ -1,10 +1,10 @@
-package com.webank.taskman.dto.req;
+package com.webank.taskman.dto.resp;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel
-public class AddTaskTemplateReq  {
+public class TaskTemplateResp {
 
     @ApiModelProperty(value = "",required = true)
     private String procDefId;
@@ -19,8 +19,6 @@ public class AddTaskTemplateReq  {
 
     private String description;
 
-    @ApiModelProperty(value = "表单模板",required = true,dataType = "String")
-    private AddFormTemplateReq formTemplateReq;
 
     public String getProcDefId() {
         return procDefId;
@@ -70,11 +68,4 @@ public class AddTaskTemplateReq  {
         this.description = description;
     }
 
-    public AddFormTemplateReq getFormTemplateReq() {
-        return formTemplateReq;
-    }
-
-    public void setFormTemplateReq(AddFormTemplateReq formTemplateReq) {
-        this.formTemplateReq = formTemplateReq;
-    }
 }

@@ -4,7 +4,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
-public class AddRequestTemplateReq {
+public class saveRequestTemplateReq {
+
+    @ApiModelProperty(value = "主键",required = false,dataType = "String")
+    private String id;
 
     @ApiModelProperty(value = "模板组编号",required = true,dataType = "String")
     private String groupId;
@@ -24,8 +27,14 @@ public class AddRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = true,dataType = "String")
     private String tags;
 
-    @ApiModelProperty(value = "表单模板",required = true,dataType = "String")
-    private AddFormTemplateReq formTemplateReq;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getGroupId() {
         return groupId;
@@ -83,11 +92,4 @@ public class AddRequestTemplateReq {
         this.tags = tags;
     }
 
-    public AddFormTemplateReq getFormTemplateReq() {
-        return formTemplateReq;
-    }
-
-    public void setFormTemplateReq(AddFormTemplateReq formTemplateReq) {
-        this.formTemplateReq = formTemplateReq;
-    }
 }

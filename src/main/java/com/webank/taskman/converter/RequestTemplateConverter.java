@@ -4,7 +4,7 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateVO;
-import com.webank.taskman.dto.req.AddRequestTemplateReq;
+import com.webank.taskman.dto.req.saveRequestTemplateReq;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -12,6 +12,6 @@ import org.mapstruct.ReportingPolicy;
 public interface RequestTemplateConverter extends BaseConverter<RequestTemplateDTO, RequestTemplate> {
     RequestTemplate voToDomain(RequestTemplateVO vo);
 
-    RequestTemplate reqToDomain(AddRequestTemplateReq req);
+    RequestTemplate reqToDomain(saveRequestTemplateReq req);
 
 }

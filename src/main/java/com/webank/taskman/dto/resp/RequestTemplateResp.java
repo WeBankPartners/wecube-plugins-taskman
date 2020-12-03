@@ -1,0 +1,106 @@
+package com.webank.taskman.dto.resp;
+
+import io.swagger.annotations.ApiModel;
+
+import java.util.Date;
+
+@ApiModel
+public class RequestTemplateResp {
+
+    private String requestTempGroup;
+
+
+    private String procDefKey;
+
+
+    private String procDefId;
+
+
+    private String procDefName;
+
+
+    private String name;
+
+
+    private String version;
+
+
+    private String tags;
+
+
+    private Integer status;
+
+    private Date createdTime;
+
+    public String getRequestTempGroup() {
+        return requestTempGroup;
+    }
+
+    public void setRequestTempGroup(String requestTempGroup) {
+        this.requestTempGroup = requestTempGroup;
+    }
+
+    public String getProcDefKey() {
+        return procDefKey;
+    }
+
+    public void setProcDefKey(String procDefKey) {
+        this.procDefKey = procDefKey;
+    }
+
+    public String getProcDefId() {
+        return procDefId;
+    }
+
+    public void setProcDefId(String procDefId) {
+        this.procDefId = procDefId;
+    }
+
+    public String getProcDefName() {
+        return procDefName;
+    }
+
+    public void setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
+    }
+}

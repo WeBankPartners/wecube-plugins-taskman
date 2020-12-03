@@ -4,7 +4,7 @@ package com.webank.taskman.controller.x100;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.FormItemTemplateDTO;
 import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.req.AddTaskInfoReq;
+import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -41,7 +41,7 @@ public class TaskManOutController {
     // 创建任务
     @GetMapping("/task/create")
     @ApiOperation(value = "create")
-    public JsonResponse createTask(@RequestBody AddTaskInfoReq req)
+    public JsonResponse createTask(@RequestBody SaveTaskInfoReq req)
     {
         List<FormItemTemplate> list = new LinkedList<>();
         return okay();

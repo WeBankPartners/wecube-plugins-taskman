@@ -1,0 +1,19 @@
+.deleteButton{
+  position: absolute;
+  right: -40px;
+  top: 2px;
+}
+.form-item-taskman {
+  padding-right:50px;
+  position: relative;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  border-radius: 5px;
+  margin-bottom: 0;
+}
+.form-item-taskman-hover {
+  border: 2px dashed rgb(102, 199, 11);
+}
+.form-item-taskman-active {
+  border: 2px dashed red;
+}

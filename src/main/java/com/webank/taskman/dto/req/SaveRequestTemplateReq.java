@@ -4,13 +4,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
-public class saveRequestTemplateReq {
+public class SaveRequestTemplateReq {
 
     @ApiModelProperty(value = "主键",required = false,dataType = "String")
     private String id;
 
     @ApiModelProperty(value = "模板组编号",required = true,dataType = "String")
-    private String groupId;
+    private String requestTempGroup;
 
     @ApiModelProperty(value = "流程编排Id",required = true,dataType = "String")
     private String procDefId;
@@ -27,6 +27,12 @@ public class saveRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = true,dataType = "String")
     private String tags;
 
+    @ApiModelProperty(value = "创建人",required = true,dataType = "String")
+    private String createdBy;
+
+    @ApiModelProperty(value = "更新人",required = true,dataType = "String")
+    private String updatedBy;
+
 
     public String getId() {
         return id;
@@ -36,12 +42,12 @@ public class saveRequestTemplateReq {
         this.id = id;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getRequestTempGroup() {
+        return requestTempGroup;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setRequestTempGroup(String requestTempGroup) {
+        this.requestTempGroup = requestTempGroup;
     }
 
     public String getProcDefId() {
@@ -92,4 +98,19 @@ public class saveRequestTemplateReq {
         this.tags = tags;
     }
 
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
 }

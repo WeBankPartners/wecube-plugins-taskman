@@ -4,29 +4,30 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.webank.taskman.base.BaseEntity;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 public class RequestTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    
+
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    
+    @NotBlank(message = "模板组编号不能为空")
     private String requestTempGroup;
 
-    
+    @NotBlank(message = "流程编排key不能为空")
     private String procDefKey;
 
-    
+    @NotBlank(message = "流程编排id不能为空")
     private String procDefId;
 
-    
+    @NotBlank(message = "流程编排名称不能为空")
     private String procDefName;
 
-    
+    @NotBlank(message = "名称不能为空")
     private String name;
 
     
@@ -38,7 +39,7 @@ public class RequestTemplate extends BaseEntity implements Serializable {
     
     private Integer status;
 
-    
+
 
 
     public String getId() {

@@ -4,7 +4,7 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.saveRequestTemplateReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
@@ -21,12 +21,11 @@ public class RequestTemplateController {
     @Autowired
     RequestTemplateService requestTemplateService;
 
-
     //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "save RequestTemplate", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@RequestBody saveRequestTemplateReq req) throws Exception {
-//        requestTemplateService.createRequestTemplateService(requestTemplateVO);
+    public JsonResponse saveRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
+        requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okay();
     }
 
@@ -42,9 +41,9 @@ public class RequestTemplateController {
     public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
             @PathVariable("current") Integer current,
             @PathVariable("limit") Integer limit,
-            @RequestBody(required = false) RequestTemplateReq req)
+            @RequestBody(required = false) SaveRequestTemplateReq req)
             throws Exception {
-        QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
+        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -58,10 +57,10 @@ public class RequestTemplateController {
 
     //TODO Not implemented
     @GetMapping("/detail/{id}")
-    @ApiOperation(value = " RequestTemplate ", notes = "需要传入id")
+    @ApiOperation(value = "detail RequestTemplate ", notes = "需要传入id")
     public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
-        requestTemplateService.deleteRequestTemplateService(id);
-        return JsonResponse.okay();
+       RequestTemplateResp requestTemplateResp= requestTemplateService.detailRequestTemplate(id);
+        return JsonResponse.okayWithData(requestTemplateResp);
     }
 }
 

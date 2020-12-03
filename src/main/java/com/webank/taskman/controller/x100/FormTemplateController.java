@@ -11,7 +11,11 @@ import com.webank.taskman.service.FormTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/v1/request/form")
@@ -24,7 +28,13 @@ public class FormTemplateController {
     //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "save FormTemplate", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@RequestBody SaveFormTemplateReq req) throws Exception {
+    public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveFormTemplateReq req, BindingResult bindingResult) throws Exception {
+
+        if (bindingResult.hasErrors()){
+            for (ObjectError error:bindingResult.getAllErrors()){
+                return JsonResponse.okayWithData(error.getDefaultMessage());
+            }
+        }
         formTemplateService.saveFormTemplate(req);
         return JsonResponse.okay();
     }

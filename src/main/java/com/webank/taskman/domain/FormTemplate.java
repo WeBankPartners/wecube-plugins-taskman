@@ -25,6 +25,7 @@ public class FormTemplate extends BaseEntity implements Serializable {
     
     private String description;
 
+    private String targetEntitys;
     
     private String style;
 
@@ -78,20 +79,28 @@ public class FormTemplate extends BaseEntity implements Serializable {
         this.style = style;
     }
 
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public String getTargetEntitys() {
+        return targetEntitys;
+    }
+
+    public void setTargetEntitys(String targetEntitys) {
+        this.targetEntitys = targetEntitys;
+    }
+
     @Override
     public String toString() {
         return "FormTemplate{" +
-        "id=" + id +
-        ", tempId=" + tempId +
-        ", tempType=" + tempType +
-        ", name=" + name +
-        ", description=" + description +
-        ", style=" + style +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-        "}";
+                "id='" + id + '\'' +
+                ", tempId='" + tempId + '\'' +
+                ", tempType='" + tempType + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", targetEntitys='" + targetEntitys + '\'' +
+                ", style='" + style + '\'' +
+                '}';
     }
 }

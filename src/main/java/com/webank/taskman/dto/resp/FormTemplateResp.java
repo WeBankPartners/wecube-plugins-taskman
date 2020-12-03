@@ -7,6 +7,8 @@ public class FormTemplateResp {
 
     private String description;
 
+    private String targetEntitys;
+
     private String style;
 
     public String getId() {
@@ -41,12 +43,21 @@ public class FormTemplateResp {
         this.style = style;
     }
 
+    public String getTargetEntitys() {
+        return targetEntitys;
+    }
+
+    public void setTargetEntitys(String targetEntitys) {
+        this.targetEntitys = targetEntitys;
+    }
+
     @Override
     public String toString() {
         return "FormTemplateResp{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
+                ", targetEntitys='" + targetEntitys + '\'' +
                 ", style='" + style + '\'' +
                 '}';
     }

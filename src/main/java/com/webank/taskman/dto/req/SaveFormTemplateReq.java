@@ -25,6 +25,9 @@ public class SaveFormTemplateReq {
 
     private String style;
 
+    @NotBlank(message = "目标对象级不能为空")
+    private String targetEntitys;
+
     @NotBlank(message = "创建人不能为空")
     @ApiModelProperty(value = "创建人",required = true,dataType = "String")
     private String createdBy;
@@ -75,6 +78,14 @@ public class SaveFormTemplateReq {
 
     public String getStyle() {
         return style;
+    }
+
+    public String getTargetEntitys() {
+        return targetEntitys;
+    }
+
+    public void setTargetEntitys(String targetEntitys) {
+        this.targetEntitys = targetEntitys;
     }
 
     public void setStyle(String style) {

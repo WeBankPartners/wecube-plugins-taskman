@@ -1,10 +1,9 @@
-package com.webank.taskman.dto.resp;
+package com.webank.taskman.dto.req;
 
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel
-public class TaskTemplateResp {
+public class SelectTaskTemplateRep {
 
     private String id;
 

@@ -6,4 +6,5 @@ import com.webank.taskman.domain.TaskTemplate;
 
 public interface TaskTemplateMapper extends BaseMapper<TaskTemplate> {
 
+    void deleteTaskTemplateByIDMapper(String id);
 }

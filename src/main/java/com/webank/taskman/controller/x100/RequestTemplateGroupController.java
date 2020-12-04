@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -63,15 +64,15 @@ public class RequestTemplateGroupController {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
-    @PostMapping("/available")
+    @GetMapping("/available")
     @ApiOperationSupport(order = 25)
     @ApiOperation(value = "query available RequestTemplateGroup List")
-    public JsonResponse<List<TemplateGroupDTO>> available( @RequestBody(required = false) TemplateGroupReq req) throws Exception {
-        QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<>();
+    public JsonResponse<List<TemplateGroupDTO>> available( @ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
+        QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
         wrapper.eq(!StringUtils.isEmpty(req.getId()),"id", req.getId());
         wrapper.eq(!StringUtils.isEmpty(req.getManageRole()),"manage_role_id", req.getManageRole());
         wrapper.like(!StringUtils.isEmpty(req.getName()),"name", req.getName());
-        List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
+        List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list());
         return JsonResponse.okayWithData(dtoList);
     }
 

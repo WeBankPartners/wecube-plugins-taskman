@@ -15,7 +15,6 @@ import com.webank.taskman.service.RequestTemplateGroupService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -69,10 +68,8 @@ public class RequestTemplateGroupController {
     @ApiOperation(value = "query available RequestTemplateGroup List")
     public JsonResponse<List<TemplateGroupDTO>> available( @ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
         QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
-        wrapper.eq(!StringUtils.isEmpty(req.getId()),"id", req.getId());
-        wrapper.eq(!StringUtils.isEmpty(req.getManageRole()),"manage_role_id", req.getManageRole());
-        wrapper.like(!StringUtils.isEmpty(req.getName()),"name", req.getName());
-        List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list());
+        wrapper.eq("status",0);
+        List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
         return JsonResponse.okayWithData(dtoList);
     }
 

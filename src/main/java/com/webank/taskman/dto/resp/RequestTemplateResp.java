@@ -2,10 +2,10 @@ package com.webank.taskman.dto.resp;
 
 import io.swagger.annotations.ApiModel;
 
-import java.util.Date;
-
 @ApiModel
 public class RequestTemplateResp {
+
+
 
     private String id;
 
@@ -36,72 +36,81 @@ public class RequestTemplateResp {
         return id;
     }
 
-    public void setId(String id) {
+    public RequestTemplateResp setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getRequestTempGroup() {
         return requestTempGroup;
     }
 
-    public void setRequestTempGroup(String requestTempGroup) {
+    public RequestTemplateResp setRequestTempGroup(String requestTempGroup) {
         this.requestTempGroup = requestTempGroup;
+        return this;
     }
 
     public String getProcDefKey() {
         return procDefKey;
     }
 
-    public void setProcDefKey(String procDefKey) {
+    public RequestTemplateResp setProcDefKey(String procDefKey) {
         this.procDefKey = procDefKey;
+        return this;
     }
 
     public String getProcDefId() {
         return procDefId;
     }
 
-    public void setProcDefId(String procDefId) {
+    public RequestTemplateResp setProcDefId(String procDefId) {
         this.procDefId = procDefId;
+        return this;
     }
 
     public String getProcDefName() {
         return procDefName;
     }
 
-    public void setProcDefName(String procDefName) {
+    public RequestTemplateResp setProcDefName(String procDefName) {
         this.procDefName = procDefName;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public RequestTemplateResp setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public RequestTemplateResp setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     public String getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    public RequestTemplateResp setTags(String tags) {
         this.tags = tags;
+        return this;
     }
 
     public Integer getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public RequestTemplateResp setStatus(Integer status) {
         this.status = status;
+        return this;
     }
 
 }

@@ -5,21 +5,23 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.RequestTemplateConverter;
-import com.webank.taskman.domain.RequestTemplaeRole;
 import com.webank.taskman.domain.RequestTemplate;
-import com.webank.taskman.dto.*;
+import com.webank.taskman.domain.RequestTemplateRole;
+import com.webank.taskman.dto.PageInfo;
+import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
-import com.webank.taskman.mapper.RequestTemplaeRoleMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
+import com.webank.taskman.service.RequestTemplateRoleService;
 import com.webank.taskman.service.RequestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,41 +35,31 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     RequestTemplateConverter requestTemplateConverter;
 
    @Autowired
-    RequestTemplaeRoleMapper requestTemplaeRoleMapper;
+   RequestTemplateRoleService requestTemplateRoleService;
 
 
     @Override
     public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq)  {
-        RequestTemplate requestTemplate=requestTemplateConverter.reqToDomain(requestTemplateReq);
-        requestTemplate.setCreatedBy("zhangsan");
-        requestTemplate.setUpdatedBy("lisi");
-        String[] roleIds=requestTemplateReq.getRoleids().split(",");
-        RequestTemplaeRole requestTemplaeRole=new RequestTemplaeRole();
-
-        RequestTemplateResp requestTemplateResp=new RequestTemplateResp();
-        if (StringUtils.isEmpty(requestTemplateReq.getId())){
-            requestTemplateMapper.insert(requestTemplate);
-            requestTemplateResp.setId(requestTemplate.getId());
-            for (String roleId : roleIds) {
-                requestTemplaeRole.setRoleId(roleId);
-                requestTemplaeRole.setRequestTemplateId(requestTemplate.getId());
-                requestTemplaeRoleMapper.insert(requestTemplaeRole);
-                requestTemplaeRole.setId("");
-            }
-        }else{
-            requestTemplateMapper.updateById(requestTemplate);
-            requestTemplateResp.setId(requestTemplateReq.getId());
-            if (requestTemplateMapper.selectById(requestTemplateReq.getId())==null){
-                for (String roleId : roleIds) {
-                    requestTemplaeRole.setRoleId(roleId);
-                    requestTemplaeRole.setRequestTemplateId(requestTemplateReq.getId());
-                    requestTemplaeRoleMapper.insert(requestTemplaeRole);
-                    requestTemplaeRole.setId("");
-                }
-            }
+        RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(requestTemplateReq);
+        if(null == requestTemplateReq.getRoleIds()){
+            throw  new TaskmanException("roleIds is null");
         }
+        String currentUsername =  AuthenticationContextHolder.getCurrentUsername();
+        requestTemplate.setUpdatedBy(currentUsername);
+        if(StringUtils.isEmpty(requestTemplate.getId())){
+            requestTemplate.setCreatedBy(currentUsername);
+        }
+        saveOrUpdate(requestTemplate);
+        List<RequestTemplateRole> roles = new ArrayList<>();
+        String requestTemplateId = requestTemplate.getId();
 
-       return requestTemplateResp;
+        requestTemplateRoleService.deleteByRequestTemplate(requestTemplateId);
+        for(String roleId:requestTemplateReq.getRoleIds()){
+            roles.add(new RequestTemplateRole(requestTemplateId,roleId,1));
+        }
+        requestTemplateRoleService.saveBatch(roles);
+
+       return new RequestTemplateResp().setId(requestTemplateId);
 
     }
 

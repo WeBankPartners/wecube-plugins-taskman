@@ -1,6 +1,6 @@
 package com.webank.taskman.handler;
 
-import com.webank.taskman.commons.ServiceTaskmanException;
+import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.dto.JsonResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,14 +31,14 @@ public class GlobalExceptionHandler {
     @Autowired
     private MessageSource messageSource;
 
-    @ExceptionHandler(ServiceTaskmanException.class)
+    @ExceptionHandler(TaskmanException.class)
     @ResponseBody
     public JsonResponse handleWecubeException(HttpServletRequest request, final Exception e,
                                               HttpServletResponse response) {
         String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
                 e.getMessage() == null ? "" : e.getMessage());
         log.error(errMsg + "\n", e);
-        ServiceTaskmanException wecubeError = (ServiceTaskmanException) e;
+        TaskmanException wecubeError = (TaskmanException) e;
 
         return JsonResponse.error(determineI18nErrorMessage(request, wecubeError));
     }
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
         return JsonResponse.error(e.getMessage());
     }
 
-    private String determineI18nErrorMessage(HttpServletRequest request, ServiceTaskmanException e) {
+    private String determineI18nErrorMessage(HttpServletRequest request, TaskmanException e) {
         Locale locale = request.getLocale();
         if (locale == null) {
             locale = DEF_LOCALE;

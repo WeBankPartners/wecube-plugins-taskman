@@ -36,15 +36,14 @@ public class SaveRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = true,dataType = "String")
     private String tags;
 
-    @NotBlank(message = "使用角色不能为空")
-    private String roleids;
+    private String[] roleIds;
 
-    public String getRoleids() {
-        return roleids;
+    public String[] getRoleIds() {
+        return roleIds;
     }
 
-    public void setRoleids(String roleids) {
-        this.roleids = roleids;
+    public void setRoleIds(String[] roleIds) {
+        this.roleIds = roleIds;
     }
 
     public String getId() {

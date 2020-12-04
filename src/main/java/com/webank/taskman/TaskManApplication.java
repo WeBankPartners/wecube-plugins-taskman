@@ -10,3 +10,4 @@ public class TaskManApplication {
         SpringApplication.run(TaskManApplication.class, args);
     }
 }
+

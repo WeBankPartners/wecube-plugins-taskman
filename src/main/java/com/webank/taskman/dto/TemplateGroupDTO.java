@@ -25,6 +25,8 @@ public class TemplateGroupDTO {
     @ApiModelProperty(value = "管理角色", position = 6)
     private RoleInfo manageRole;
 
+    @ApiModelProperty(value = "管理角色姓名", position = 6)
+    private String manageRoleName;
 
     public String getId() {
         return id;
@@ -33,7 +35,6 @@ public class TemplateGroupDTO {
     public void setId(String id) {
         this.id = id;
     }
-
 
     public String getName() {
         return name;
@@ -73,5 +74,26 @@ public class TemplateGroupDTO {
 
     public void setManageRole(RoleInfo manageRole) {
         this.manageRole = manageRole;
+    }
+
+    public String getManageRoleName() {
+        return manageRoleName;
+    }
+
+    public void setManageRoleName(String manageRoleName) {
+        this.manageRoleName = manageRoleName;
+    }
+
+    @Override
+    public String toString() {
+        return "TemplateGroupDTO{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", version='" + version + '\'' +
+                ", status=" + status +
+                ", manageRole=" + manageRole +
+                ", manageRoleName='" + manageRoleName + '\'' +
+                '}';
     }
 }

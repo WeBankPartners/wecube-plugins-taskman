@@ -29,6 +29,12 @@ public class TaskTemplate extends BaseEntity implements Serializable {
     
     private String procNode;
 
+    private String description;
+
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -70,7 +76,6 @@ public class TaskTemplate extends BaseEntity implements Serializable {
         this.name = name;
     }
 
-
     public String getProcNode() {
         return procNode;
     }
@@ -79,21 +84,24 @@ public class TaskTemplate extends BaseEntity implements Serializable {
         this.procNode = procNode;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return "TaskTemplate{" +
-        "id=" + id +
-        ", procDefId=" + procDefId +
-        ", procDefKey=" + procDefKey +
-        ", procDefName=" + procDefName +
-        ", name=" + name +
-        ", procNode=" + procNode +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-
-        "}";
+                "id='" + id + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefName='" + procDefName + '\'' +
+                ", name='" + name + '\'' +
+                ", procNode='" + procNode + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

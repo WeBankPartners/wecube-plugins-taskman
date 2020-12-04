@@ -5,16 +5,22 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
+import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.domain.RoleInfo;
 import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
 import com.webank.taskman.dto.req.SaveTemplateGropReq;
+import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -30,17 +36,18 @@ public class RequestTemplateGroupController {
     //FIXME implemented   insert or update
     @PostMapping("/save")
     @ApiOperationSupport(order = 21)
-    @ApiOperation(value = "save RequestTemplateGroup", notes = "")
+    @ApiOperation(value = "save 0r update RequestTemplateGroup", notes = "")
     public JsonResponse createTemplateGroup(
-            @RequestBody SaveTemplateGropReq req) throws Exception {
-        if(StringUtils.isEmpty(req.getName())){
-            return  JsonResponse.error(" manageRoleId is null");
+            @Valid @RequestBody SaveAndUpdateTemplateGropReq req, BindingResult bindingResult) throws Exception {
+        if (bindingResult.hasErrors()) {
+            for (ObjectError error : bindingResult.getAllErrors()) {
+                return JsonResponse.okayWithData(error.getDefaultMessage());
+            }
         }
-        if(StringUtils.isEmpty(req.getName())){
-            return  JsonResponse.error(" name is null");
-        }
-        requestTemplateGroupService.addTemplateGroup(requestTemplateGroupConverter.addReqToDomain(req));
-        return JsonResponse.okay();
+        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.addOrUpdateTemplateGroup(req);
+        RequestTemplateGroupResq groupResq =new RequestTemplateGroupResq();
+        groupResq.setId(requestTemplateGroup.getId());
+        return JsonResponse.okayWithData(groupResq);
     }
 
 
@@ -58,11 +65,6 @@ public class RequestTemplateGroupController {
             @RequestBody(required = false) TemplateGroupReq req
     ) throws Exception {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(current, limit, req);
-        queryResponse.getContents().forEach(c->{
-            c.setManageRole(new RoleInfo("2c9280827019695c017019ac974f001c","SUPER_ADMIN"));
-
-
-        });
         return JsonResponse.okayWithData(queryResponse);
     }
 

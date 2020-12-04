@@ -29,8 +29,6 @@ public class RequestTemplateTest {
         saveRequestTemplateReq.setProcDefName("");
         saveRequestTemplateReq.setName("");
         saveRequestTemplateReq.setTags("");
-        saveRequestTemplateReq.setCreatedBy("");
-        saveRequestTemplateReq.setUpdatedBy("");
         requestTemplateService.saveRequestTemplate(saveRequestTemplateReq);
     }
 
@@ -62,8 +60,6 @@ public class RequestTemplateTest {
         saveRequestTemplateReq.setProcDefName("");
         saveRequestTemplateReq.setName("");
         saveRequestTemplateReq.setTags("");
-        saveRequestTemplateReq.setCreatedBy("");
-        saveRequestTemplateReq.setUpdatedBy("");
         QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, saveRequestTemplateReq);
         System.out.println(JsonResponse.okayWithData(queryResponse).getData());
     }

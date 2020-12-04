@@ -7,9 +7,9 @@ public class FormTemplateResp {
 
     private String description;
 
-    private String targetEntitys;
-
     private String style;
+
+    private String targetEntitys;
 
     public String getId() {
         return id;

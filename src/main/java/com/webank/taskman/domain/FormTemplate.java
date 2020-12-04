@@ -19,17 +19,13 @@ public class FormTemplate extends BaseEntity implements Serializable {
 
     private String tempType;
 
-
     private String name;
-
     
     private String description;
-
-    private String targetEntitys;
     
     private String style;
 
-
+    private String targetEntitys;
 
     public String getId() {
         return id;

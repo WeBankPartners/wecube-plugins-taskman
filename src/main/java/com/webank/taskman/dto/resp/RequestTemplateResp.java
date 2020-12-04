@@ -7,6 +7,8 @@ import java.util.Date;
 @ApiModel
 public class RequestTemplateResp {
 
+    private String id;
+
     private String requestTempGroup;
 
 
@@ -30,6 +32,13 @@ public class RequestTemplateResp {
 
     private Integer status;
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getRequestTempGroup() {
         return requestTempGroup;

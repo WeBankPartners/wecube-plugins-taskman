@@ -65,21 +65,29 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public FormTemplateResp detailFormTemplate(String id) throws Exception {
-        FormTemplate formTemplate=formTemplateMapper.selectById(id);
+    public FormTemplateResp detailFormTemplate(SaveFormTemplateReq req) throws Exception {
+        QueryWrapper<FormTemplate> wrapper=new QueryWrapper<>();
+        wrapper.eq(!StringUtils.isEmpty(req.getId()),"id",req.getId());
+        wrapper.eq(!StringUtils.isEmpty(req.getTempId()),"temp_id",req.getTempId());
+        wrapper.eq(!StringUtils.isEmpty(req.getTempType()),"temp_type",req.getTempType());
+        FormTemplate formTemplate=formTemplateMapper.selectOne(wrapper);
         FormTemplateResp formTemplateResp=formTemplateConverter.toDto(formTemplate);
         return formTemplateResp;
     }
 
     @Override
-    public void saveFormTemplate(SaveFormTemplateReq formTemplateReq) {
+    public FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq) {
         FormTemplate formTemplate=formTemplateConverter.reqToDomain(formTemplateReq);
-        formTemplate.setCreatedBy(formTemplateReq.getCreatedBy());
-        formTemplate.setUpdatedBy(formTemplateReq.getUpdatedBy());
+        FormTemplateResp formTemplateResp=new FormTemplateResp();
+        formTemplate.setCreatedBy("zhangsan");
+        formTemplate.setUpdatedBy("lisi");
         if (org.springframework.util.StringUtils.isEmpty(formTemplateReq.getId())){
             formTemplateMapper.insert(formTemplate);
+            formTemplateResp.setId(formTemplate.getId());
         }else{
             formTemplateMapper.updateById(formTemplate);
+            formTemplateResp.setId(formTemplate.getId());
         }
+        return formTemplateResp;
     }
 }

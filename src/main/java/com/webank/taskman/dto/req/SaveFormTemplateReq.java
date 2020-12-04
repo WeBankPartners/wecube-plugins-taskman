@@ -28,13 +28,6 @@ public class SaveFormTemplateReq {
     @NotBlank(message = "目标对象级不能为空")
     private String targetEntitys;
 
-    @NotBlank(message = "创建人不能为空")
-    @ApiModelProperty(value = "创建人",required = true,dataType = "String")
-    private String createdBy;
-
-    @NotBlank(message = "更新不能为空")
-    @ApiModelProperty(value = "更新人",required = true,dataType = "String")
-    private String updatedBy;
 
     public String getId() {
         return id;
@@ -90,21 +83,5 @@ public class SaveFormTemplateReq {
 
     public void setStyle(String style) {
         this.style = style;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
     }
 }

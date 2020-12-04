@@ -1,6 +1,6 @@
 package com.webank.taskman.controller.x100;
 
-
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.JsonResponse;
@@ -26,6 +26,7 @@ public class FormTemplateController {
     FormTemplateService formTemplateService;
 
     //TODO implemented   insert or update
+    @ApiOperationSupport(order = 1)
     @PostMapping("/save")
     @ApiOperation(value = "save FormTemplate", notes = "Need to pass in object: ")
     public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveFormTemplateReq req, BindingResult bindingResult) throws Exception {
@@ -35,11 +36,12 @@ public class FormTemplateController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        formTemplateService.saveFormTemplate(req);
-        return JsonResponse.okay();
+        FormTemplateResp formTemplateResp= formTemplateService.saveFormTemplate(req);
+        return JsonResponse.okayWithData(formTemplateResp);
     }
 
     //TODO Not implemented
+    @ApiOperationSupport(order = 2)
     @PostMapping("/search/{current}/{limit}")
     @ApiOperation(value = "search FormTemplate ")
     @DynamicParameters(name = "req", properties = {
@@ -56,6 +58,7 @@ public class FormTemplateController {
     }
 
     //TODO Not implemented
+    @ApiOperationSupport(order = 3)
     @DeleteMapping("/delete/{id}")
     @ApiOperation(value = "delete RequestTemplate", notes = "需要传入id")
     public JsonResponse deleteFormTemplateByID(@PathVariable("id") String id) throws Exception {
@@ -64,10 +67,11 @@ public class FormTemplateController {
     }
 
     //TODO Not implemented
-    @GetMapping("/detail/{id}")
-    @ApiOperation(value = "detail FormTemplate ", notes = "需要传入id")
-    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@PathVariable("id") String id) throws Exception {
-        FormTemplateResp formTemplateResp=formTemplateService.detailFormTemplate(id);
+    @ApiOperationSupport(order = 4)
+    @PostMapping("/detail")
+    @ApiOperation(value = "detail FormTemplate ", notes = "Need to pass in object:")
+    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@RequestBody SaveFormTemplateReq req) throws Exception {
+        FormTemplateResp formTemplateResp=formTemplateService.detailFormTemplate(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 }

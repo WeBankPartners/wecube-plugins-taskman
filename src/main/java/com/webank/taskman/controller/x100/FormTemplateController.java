@@ -1,8 +1,6 @@
 package com.webank.taskman.controller.x100;
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
@@ -10,6 +8,7 @@ import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -42,20 +41,17 @@ public class FormTemplateController {
 
     //TODO Not implemented
     @ApiOperationSupport(order = 2)
-    @PostMapping("/search/{current}/{limit}")
+    @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "search FormTemplate ")
-    @DynamicParameters(name = "req", properties = {
-            @DynamicParameter(name = "page", value = "页码", example = "", required = true, dataTypeClass = Integer.class),
-            @DynamicParameter(name = "pageSize", value = "每页行数", example = "100", required = true, dataTypeClass = Integer.class),
-    })
     public JsonResponse<QueryResponse<FormTemplateResp>> selectFormTemplate(
-            @PathVariable("current") Integer current,
-            @PathVariable("limit") Integer limit,
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SaveFormTemplateReq req)
             throws Exception {
-       QueryResponse<FormTemplateResp> queryResponse= formTemplateService.selectFormTemplate(current,limit,req);
+       QueryResponse<FormTemplateResp> queryResponse= formTemplateService.selectFormTemplate(page,pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }
+
 
     //TODO Not implemented
     @ApiOperationSupport(order = 3)
@@ -71,7 +67,7 @@ public class FormTemplateController {
     @PostMapping("/detail")
     @ApiOperation(value = "detail FormTemplate ", notes = "Need to pass in object:")
     public JsonResponse<QueryResponse<FormTemplateResp>> detail(@RequestBody SaveFormTemplateReq req) throws Exception {
-        FormTemplateResp formTemplateResp=formTemplateService.detailFormTemplate(req);
+        FormTemplateResp formTemplateResp = formTemplateService.detailFormTemplate(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 }

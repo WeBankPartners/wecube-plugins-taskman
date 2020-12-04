@@ -20,7 +20,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 @EnableSwagger2WebMvc
 public class Knife4jConfiguration {
 
-    @Bean
+    @Bean(name="apiV1")
     public Docket defaultApi() {
         Docket docket=new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder()
@@ -38,4 +38,24 @@ public class Knife4jConfiguration {
                 .build();
         return docket;
     }
+
+    @Bean(name="apiV2")
+    public Docket v2Api() {
+        Docket docket=new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(new ApiInfoBuilder()
+                        .title("swagger-bootstrap-ui-demo RESTful APIs")
+                        .description("# Wecube-plugins-Taskman RESTful APIs")
+                        .termsOfServiceUrl("http://www.xx.com/")
+                        .version("1.0")
+                        .build())
+                //分组名称
+                .groupName("2.0.0")
+                .select()
+                //这里指定Controller扫描包路径
+                .apis(RequestHandlerSelectors.basePackage("com.webank.taskman.controller.x200"))
+                .paths(PathSelectors.any())
+                .build();
+        return docket;
+    }
+
 }

@@ -16,4 +16,6 @@ public interface FormTemplateService extends IService<FormTemplate> {
 
     FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq);
 
+    FormTemplateResp queryDetailByTemp(Integer tempType,String tempId) throws Exception;
+
 }

@@ -1,5 +1,7 @@
 package com.webank.taskman.dto.resp;
 
+import java.util.List;
+
 public class FormTemplateResp {
     private String id;
 
@@ -10,6 +12,16 @@ public class FormTemplateResp {
     private String style;
 
     private String targetEntitys;
+
+    private List<FormItemTemplateResq> items;
+
+    public List<FormItemTemplateResq> getItems() {
+        return items;
+    }
+
+    public void setItems(List<FormItemTemplateResq> items) {
+        this.items = items;
+    }
 
     public String getId() {
         return id;

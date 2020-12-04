@@ -5,14 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
+import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.mapper.FormTemplateMapper;
+import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
-import com.webank.taskman.domain.FormTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,12 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     FormTemplateMapper formTemplateMapper;
     @Autowired
     FormTemplateConverter formTemplateConverter;
+
+    @Autowired
+    FormItemTemplateService formItemTemplateService;
+
+    @Autowired
+    FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
     public QueryResponse<FormTemplateResp> selectFormTemplate(Integer current, Integer limit, SaveFormTemplateReq req) throws Exception {
@@ -70,8 +79,15 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         wrapper.eq(!StringUtils.isEmpty(req.getId()),"id",req.getId());
         wrapper.eq(!StringUtils.isEmpty(req.getTempId()),"temp_id",req.getTempId());
         wrapper.eq(!StringUtils.isEmpty(req.getTempType()),"temp_type",req.getTempType());
-        FormTemplate formTemplate=formTemplateMapper.selectOne(wrapper);
-        FormTemplateResp formTemplateResp=formTemplateConverter.toDto(formTemplate);
+
+        FormTemplateResp formTemplateResp = formTemplateConverter.toDto(formTemplateMapper.selectOne(wrapper));
+        if(null !=formTemplateResp){
+            formTemplateResp.setItems(formItemTemplateConverter.toDto(
+                    formItemTemplateService.list(new QueryWrapper<FormItemTemplate>().
+                            eq("form_template_id",formTemplateResp.getId()))
+                    )
+            );
+        }
         return formTemplateResp;
     }
 
@@ -89,5 +105,13 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             formTemplateResp.setId(formTemplate.getId());
         }
         return formTemplateResp;
+    }
+
+    @Override
+    public FormTemplateResp queryDetailByTemp(Integer tempType, String tempId) throws Exception {
+        QueryWrapper<FormTemplate> wrapper=new QueryWrapper<>();
+        wrapper.eq("temp_id",tempId);
+        wrapper.eq("temp_type",tempType);
+        return formTemplateConverter.toDto(getOne(wrapper));
     }
 }

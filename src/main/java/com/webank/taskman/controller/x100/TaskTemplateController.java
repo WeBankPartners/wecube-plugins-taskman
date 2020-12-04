@@ -7,27 +7,28 @@ import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
+import com.webank.taskman.dto.req.SelectTaskTemplateRep;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.dto.resp.TaskTemplateSVResp;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @RestController
 @RequestMapping("/v1/task/template")
 @Api(tags = {"5、  TaskTemplate inteface API"})
 public class TaskTemplateController {
-
-    @Autowired
-    private RequestTemplateService requestTemplateService;
 
     @Autowired
     private TaskTemplateService taskTemplateService;
@@ -49,33 +50,36 @@ public class TaskTemplateController {
 
     @DeleteMapping("/delete/{id}")
     @ApiOperation(value = "delete TaskTemplate", notes = "需要传入id")
-    public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
-        requestTemplateService.deleteRequestTemplateService(id);
+    public JsonResponse deleteTaskTemplateByID(@PathVariable("id") String id) throws Exception {
+        taskTemplateService.deleteTaskTemplateByIDService(id);
         return JsonResponse.okay();
     }
 
-    @PostMapping("/search/{current}/{limit}")
-    @ApiOperation(value = "search TaskTemplate ")
-    @DynamicParameters(name = "req", properties = {
-            @DynamicParameter(name = "page", value = "页码", example = "", required = true, dataTypeClass = Integer.class),
-            @DynamicParameter(name = "pageSize", value = "每页行数", example = "100", required = true, dataTypeClass = Integer.class),
-            @DynamicParameter(name = "id", value = "主键", example = "", dataTypeClass = String.class),
-            @DynamicParameter(name = "name", value = "模板名称"),
-    })
-    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
-            @PathVariable("current") Integer current,
-            @PathVariable("limit") Integer limit,
-            @RequestBody(required = false) SaveRequestTemplateReq req)
-            throws Exception {
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
+    @PostMapping("/search/{page}/{pageSize}")
+    @ApiOperation(value = "search TaskTemplatePage ")
+    public JsonResponse<QueryResponse<TaskTemplateResp>> selectTaskTemplatePage(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) SelectTaskTemplateRep rep
+    ) throws Exception {
+        QueryResponse<TaskTemplateResp> queryResponse = taskTemplateService.selectTaskTemplate(page, pageSize, rep);
+
         return JsonResponse.okayWithData(queryResponse);
     }
+
+    @GetMapping("/search")
+    @ApiOperation(value = "search TaskTemplateAll ")
+    public JsonResponse selectTaskTemplateAll() throws Exception {
+        List<TaskTemplateResp> taskTemplateRespList = taskTemplateService.selectTaskTemplateAll();
+        return JsonResponse.okayWithData(taskTemplateRespList);
+    }
+
 
     @GetMapping("/detail/{id}")
     @ApiOperation(value = "detail TaskTemplate", notes = "需要传入id")
     public JsonResponse detail(@PathVariable("id") String id) throws Exception {
-        requestTemplateService.deleteRequestTemplateService(id);
-        return JsonResponse.okay();
+        TaskTemplateResp templateResp= taskTemplateService.selectTaskTemplateOne(id);
+        return JsonResponse.okayWithData(templateResp);
     }
 }
 

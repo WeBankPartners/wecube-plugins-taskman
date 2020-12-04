@@ -4,9 +4,11 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.TemplateGroupDTO;
 import com.webank.taskman.dto.TemplateGroupVO;
+import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
 import com.webank.taskman.dto.req.SaveTemplateGropReq;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
+import sun.misc.Request;
 
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RequestTemplateGroupConverter extends BaseConverter<TemplateGroupDTO, RequestTemplateGroup> {
@@ -15,4 +17,6 @@ public interface RequestTemplateGroupConverter extends BaseConverter<TemplateGro
 
 
     RequestTemplateGroup addReqToDomain(SaveTemplateGropReq req);
+
+    RequestTemplateGroup addOrUpdateDomain(SaveAndUpdateTemplateGropReq req);
 }

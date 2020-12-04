@@ -3,24 +3,44 @@ package com.webank.taskman.dto.req;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.NotBlank;
+
 @ApiModel
 public class SaveTaskTemplateReq {
 
-    @ApiModelProperty(value = "",required = true)
+    @ApiModelProperty(value = "任务模板ID",dataType = "String")
+    private String id;
+
+    @NotBlank(message = "流程编排id不能为空")
+    @ApiModelProperty(value = "流程编排id",dataType = "String")
     private String procDefId;
-    @ApiModelProperty(value = "",required = true)
+
+    @NotBlank(message = "流程编排key不能为空")
+    @ApiModelProperty(value = "流程编排key",dataType = "String")
     private String procDefKey;
-    @ApiModelProperty(value = "",required = true)
+
+    @NotBlank(message = "流程编排名称不能为空")
+    @ApiModelProperty(value = "流程编排名称",dataType = "String")
     private String procDefName;
-    @ApiModelProperty(value = "",required = true)
+
+    @NotBlank(message = "流程节点不能为空")
+    @ApiModelProperty(value = "流程节点",dataType = "String")
     private String procNode;
-    @ApiModelProperty(value = "",required = true)
+
+    @NotBlank(message = "名称不能为空")
+    @ApiModelProperty(value = "名称",dataType = "String")
     private String name;
 
+    @ApiModelProperty(value = "描述",dataType = "String")
     private String description;
 
-    @ApiModelProperty(value = "表单模板",required = true,dataType = "String")
-    private SaveFormTemplateReq formTemplateReq;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getProcDefId() {
         return procDefId;
@@ -70,11 +90,16 @@ public class SaveTaskTemplateReq {
         this.description = description;
     }
 
-    public SaveFormTemplateReq getFormTemplateReq() {
-        return formTemplateReq;
-    }
-
-    public void setFormTemplateReq(SaveFormTemplateReq formTemplateReq) {
-        this.formTemplateReq = formTemplateReq;
+    @Override
+    public String toString() {
+        return "SaveTaskTemplateReq{" +
+                "id='" + id + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefName='" + procDefName + '\'' +
+                ", procNode='" + procNode + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

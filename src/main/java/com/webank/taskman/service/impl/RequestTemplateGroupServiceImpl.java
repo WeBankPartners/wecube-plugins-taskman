@@ -7,12 +7,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -27,10 +29,22 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
 
     @Override
-    public void addTemplateGroup(RequestTemplateGroup req) throws Exception {
-        req.setCreatedBy("11");
-        req.setUpdatedBy("22");
-        templateGroupMapper.insert(req);
+    public RequestTemplateGroup addOrUpdateTemplateGroup(SaveAndUpdateTemplateGropReq gropReq) throws Exception {
+        RequestTemplateGroup req = requestTemplateGroupConverter.addOrUpdateDomain(gropReq);
+        if (StringUtils.isEmpty(req.getId())) {
+            req.setCreatedBy("11");
+            req.setUpdatedBy("22");
+            templateGroupMapper.insert(req);
+            RequestTemplateGroup requestTemplateGroup = templateGroupMapper.selectById(req);
+            return requestTemplateGroup;
+        }
+        if (!StringUtils.isEmpty(req.getId())) {
+            req.setUpdatedTime(new Date());
+            templateGroupMapper.updateById(req);
+            RequestTemplateGroup requestTemplateGroup = templateGroupMapper.selectById(req);
+            return requestTemplateGroup;
+        }
+        return null;
     }
 
     @Override
@@ -54,7 +68,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
             wrapper.like("name", req.getName());
         }
         if (!StringUtils.isEmpty(req.getManageRole())) {
-            wrapper.eq("manageRoleId", req.getManageRole());
+            wrapper.eq("manage_role_id", req.getManageRole());
         }
         if (!StringUtils.isEmpty(req.getDealRole())) {
             wrapper.eq("dealRole", req.getDealRole());

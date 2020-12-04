@@ -33,7 +33,7 @@ public class TaskmanRequestController {
         if(StringUtils.isEmpty(req.getName())){
             return  JsonResponse.error(" name is null");
         }
-        requestTemplateGroupService.addTemplateGroup(requestTemplateGroupConverter.addReqToDomain(req));
+        //requestTemplateGroupService.addTemplateGroup(requestTemplateGroupConverter.addReqToDomain(req));
         return JsonResponse.okay();
     }
 

@@ -1,13 +1,103 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.domain.RequestTemplateGroup;
+import com.webank.taskman.dto.FormItemTemplateDTO;
+import com.webank.taskman.dto.PageInfo;
+import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.TemplateGroupDTO;
+import com.webank.taskman.dto.req.SaveAndUpdateFormItemTemplateReq;
+import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
+import com.webank.taskman.dto.resp.FormItemTemplateResq;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 @Service
 public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMapper, FormItemTemplate> implements FormItemTemplateService {
 
+    @Autowired
+    FormItemTemplateMapper formItemTemplateMapper;
+
+    @Autowired
+    FormItemTemplateConverter formItemTemplateConverter;
+
+    @Override
+    public FormItemTemplate addOrUpdateFormItemTemplate(SaveAndUpdateFormItemTemplateReq templateReq) throws Exception {
+        FormItemTemplate addOrUpdateDomain = new FormItemTemplate();
+        BeanUtils.copyProperties(templateReq, addOrUpdateDomain);
+        if (StringUtils.isEmpty(addOrUpdateDomain.getId())) {
+            addOrUpdateDomain.setCreatedBy("11");
+            addOrUpdateDomain.setUpdatedBy("22");
+            formItemTemplateMapper.insert(addOrUpdateDomain);
+            return formItemTemplateMapper.selectById(addOrUpdateDomain);
+        }
+        if (!StringUtils.isEmpty(addOrUpdateDomain.getId())) {
+            if (addOrUpdateDomain.getName() == null) {
+                throw new Exception("The update name cannot be empty");
+            }
+            addOrUpdateDomain.setUpdatedTime(new Date());
+            formItemTemplateMapper.update(addOrUpdateDomain, new QueryWrapper<FormItemTemplate>()
+                    .eq("name", addOrUpdateDomain.getName()));
+            return formItemTemplateMapper.selectById(addOrUpdateDomain);
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteRequestTemplateByID(String id) {
+        formItemTemplateMapper.deleteRequestTemplateByIDMapper(id);
+    }
+
+    @Override
+    public QueryResponse<FormItemTemplateResq> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req) {
+        Page<FormItemTemplate> page = new Page<>(current, limit);
+        QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<>();
+        if (!StringUtils.isEmpty(req.getId())) {
+            wrapper.eq("id", req.getId());
+        }
+        if (!StringUtils.isEmpty(req.getName())) {
+            wrapper.like("name", req.getName());
+        }
+        if (!StringUtils.isEmpty(req.getFormTemplateId())) {
+            wrapper.eq("form_template_id", req.getFormTemplateId());
+        }
+        if (!StringUtils.isEmpty(req.getTitle())) {
+            wrapper.like("title", req.getTitle());
+        }
+        if (!StringUtils.isEmpty(req.getElementType())) {
+            wrapper.eq("element_type", req.getElementType());
+        }
+        if (!StringUtils.isEmpty(req.getDataCiId())) {
+            wrapper.eq("data_ci_id", req.getDataCiId());
+        }
+        if (req.getIsPublic()!=null){
+            wrapper.eq("is_public",req.getIsPublic());
+        }
+        IPage<FormItemTemplate> iPage = formItemTemplateMapper.selectPage(page, wrapper);
+        List<FormItemTemplate> records = iPage.getRecords();
+
+        List<FormItemTemplateResq> formItemTemplateResqs = formItemTemplateConverter.toDto(records);
+        QueryResponse<FormItemTemplateResq> queryResponse = new QueryResponse<>();
+        PageInfo pageInfo = new PageInfo();
+        pageInfo.setStartIndex(iPage.getCurrent());
+        pageInfo.setPageSize(iPage.getSize());
+        pageInfo.setTotalRows(iPage.getTotal());
+        queryResponse.setPageInfo(pageInfo);
+        queryResponse.setContents(formItemTemplateResqs);
+        return queryResponse;
+    }
 }

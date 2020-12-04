@@ -1,6 +1,7 @@
 package com.webank.taskman.controller.x100;
 
 
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
 import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.dto.*;
@@ -26,6 +27,7 @@ public class RequestTemplateController {
     RequestTemplateService requestTemplateService;
 
     //TODO implemented   insert or update
+    @ApiOperationSupport(order = 1)
     @PostMapping("/save")
     @ApiOperation(value = "save RequestTemplate", notes = "Need to pass in object: ")
     public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req, BindingResult bindingResult) throws Exception {
@@ -34,11 +36,12 @@ public class RequestTemplateController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        requestTemplateService.saveRequestTemplate(req);
-        return JsonResponse.okay();
+      RequestTemplateResp requestTemplateResp= requestTemplateService.saveRequestTemplate(req);
+        return JsonResponse.okayWithData(requestTemplateResp);
     }
 
     //TODO Not implemented
+    @ApiOperationSupport(order = 2)
     @PostMapping("/search/{current}/{limit}")
     @ApiOperation(value = "search RequestTemplate ")
     @DynamicParameters(name = "req", properties = {
@@ -57,6 +60,7 @@ public class RequestTemplateController {
     }
 
     //TODO Not implemented
+    @ApiOperationSupport(order = 3)
     @DeleteMapping("/delete/{id}")
     @ApiOperation(value = "delete RequestTemplate", notes = "需要传入id")
     public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
@@ -65,6 +69,7 @@ public class RequestTemplateController {
     }
 
     //TODO Not implemented
+    @ApiOperationSupport(order = 4)
     @GetMapping("/detail/{id}")
     @ApiOperation(value = "detail RequestTemplate ", notes = "需要传入id")
     public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {

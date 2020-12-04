@@ -6,10 +6,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.RequestTemplateConverter;
+import com.webank.taskman.domain.RequestTemplaeRole;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.mapper.RequestTemplaeRoleMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +32,43 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
    @Autowired
     RequestTemplateConverter requestTemplateConverter;
 
+   @Autowired
+    RequestTemplaeRoleMapper requestTemplaeRoleMapper;
+
 
     @Override
-    public void saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq)  {
+    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq)  {
         RequestTemplate requestTemplate=requestTemplateConverter.reqToDomain(requestTemplateReq);
-        requestTemplate.setCreatedBy(requestTemplateReq.getCreatedBy());
-        requestTemplate.setUpdatedBy(requestTemplateReq.getUpdatedBy());
+        requestTemplate.setCreatedBy("zhangsan");
+        requestTemplate.setUpdatedBy("lisi");
+        String[] roleIds=requestTemplateReq.getRoleids().split(",");
+        RequestTemplaeRole requestTemplaeRole=new RequestTemplaeRole();
+
+        RequestTemplateResp requestTemplateResp=new RequestTemplateResp();
         if (StringUtils.isEmpty(requestTemplateReq.getId())){
             requestTemplateMapper.insert(requestTemplate);
+            requestTemplateResp.setId(requestTemplate.getId());
+            for (String roleId : roleIds) {
+                requestTemplaeRole.setRoleId(roleId);
+                requestTemplaeRole.setRequestTemplateId(requestTemplate.getId());
+                requestTemplaeRoleMapper.insert(requestTemplaeRole);
+                requestTemplaeRole.setId("");
+            }
         }else{
             requestTemplateMapper.updateById(requestTemplate);
+            requestTemplateResp.setId(requestTemplateReq.getId());
+            if (requestTemplateMapper.selectById(requestTemplateReq.getId())==null){
+                for (String roleId : roleIds) {
+                    requestTemplaeRole.setRoleId(roleId);
+                    requestTemplaeRole.setRequestTemplateId(requestTemplateReq.getId());
+                    requestTemplaeRoleMapper.insert(requestTemplaeRole);
+                    requestTemplaeRole.setId("");
+                }
+            }
         }
+
+       return requestTemplateResp;
+
     }
 
     @Override

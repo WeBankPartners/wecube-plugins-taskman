@@ -12,8 +12,8 @@ public interface FormTemplateService extends IService<FormTemplate> {
 
     void deleteFormTemplate(String id) throws Exception;
 
-    FormTemplateResp detailFormTemplate(String id) throws Exception;
+    FormTemplateResp detailFormTemplate(SaveFormTemplateReq saveFormTemplateReq) throws Exception;
 
-    void saveFormTemplate(SaveFormTemplateReq formTemplateReq);
+    FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq);
 
 }

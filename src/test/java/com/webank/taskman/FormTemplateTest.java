@@ -29,16 +29,21 @@ public class FormTemplateTest {
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");
         saveFormTemplateReq.setTargetEntitys("");
-        saveFormTemplateReq.setCreatedBy("");
-        saveFormTemplateReq.setUpdatedBy("");
         formTemplateService.saveFormTemplate(saveFormTemplateReq);
     }
 
     //Query single data details of form module according to ID
     @Test
     public void detailFormTemplateTest() throws Exception {
-        String id="";
-        formTemplateService.detailFormTemplate(id);
+        SaveFormTemplateReq saveFormTemplateReq=new SaveFormTemplateReq();
+        saveFormTemplateReq.setId("");
+        saveFormTemplateReq.setTempId("");
+        saveFormTemplateReq.setTempType("");
+        saveFormTemplateReq.setName("");
+        saveFormTemplateReq.setDescription("");
+        saveFormTemplateReq.setStyle("");
+        saveFormTemplateReq.setTargetEntitys("");
+        formTemplateService.detailFormTemplate(saveFormTemplateReq);
     }
 
 
@@ -62,8 +67,6 @@ public class FormTemplateTest {
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");
         saveFormTemplateReq.setTargetEntitys("");
-        saveFormTemplateReq.setCreatedBy("");
-        saveFormTemplateReq.setUpdatedBy("");
         QueryResponse<FormTemplateResp> queryResponse= formTemplateService.selectFormTemplate(current,limit,saveFormTemplateReq);
         System.out.println(JsonResponse.okayWithData(queryResponse).getData());
     }

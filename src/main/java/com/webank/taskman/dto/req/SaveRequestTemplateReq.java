@@ -36,14 +36,16 @@ public class SaveRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = true,dataType = "String")
     private String tags;
 
-    @NotBlank(message = "创建人不能为空")
-    @ApiModelProperty(value = "创建人",required = true,dataType = "String")
-    private String createdBy;
+    @NotBlank(message = "使用角色不能为空")
+    private String roleids;
 
-    @NotBlank(message = "更新不能为空")
-    @ApiModelProperty(value = "更新人",required = true,dataType = "String")
-    private String updatedBy;
+    public String getRoleids() {
+        return roleids;
+    }
 
+    public void setRoleids(String roleids) {
+        this.roleids = roleids;
+    }
 
     public String getId() {
         return id;
@@ -109,19 +111,4 @@ public class SaveRequestTemplateReq {
         this.tags = tags;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
 }

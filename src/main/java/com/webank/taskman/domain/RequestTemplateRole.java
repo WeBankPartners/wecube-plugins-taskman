@@ -6,7 +6,7 @@ import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
 
-public class RequestTemplaeRole extends BaseEntity implements Serializable {
+public class RequestTemplateRole extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -53,6 +53,16 @@ public class RequestTemplaeRole extends BaseEntity implements Serializable {
     }
 
     public void setRoleType(Integer roleType) {
+        this.roleType = roleType;
+    }
+
+
+    public RequestTemplateRole() {
+    }
+
+    public RequestTemplateRole(String requestTemplateId, String roleId, Integer roleType) {
+        this.requestTemplateId = requestTemplateId;
+        this.roleId = roleId;
         this.roleType = roleType;
     }
 

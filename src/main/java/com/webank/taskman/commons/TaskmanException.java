@@ -1,6 +1,6 @@
 package com.webank.taskman.commons;
 
-public class ServiceTaskmanException extends RuntimeException {
+public class TaskmanException extends RuntimeException {
 
     /**
      * 
@@ -12,22 +12,22 @@ public class ServiceTaskmanException extends RuntimeException {
     private boolean applyMessage = false;
     private Object[] args;
 
-    public ServiceTaskmanException(String message) {
+    public TaskmanException(String message) {
         super(message);
         this.applyMessage = true;
     }
 
-    public ServiceTaskmanException(String message, Throwable cause) {
+    public TaskmanException(String message, Throwable cause) {
         super(message, cause);
         this.applyMessage = true;
     }
 
-    public ServiceTaskmanException(String errorCode, String message, Object... objects) {
+    public TaskmanException(String errorCode, String message, Object... objects) {
         this(errorCode, null, message, null, false, objects);
     }
 
-    private ServiceTaskmanException(String errorCode, String messageKey, String message, Throwable cause,
-                                    boolean applyMessage, Object... objects) {
+    private TaskmanException(String errorCode, String messageKey, String message, Throwable cause,
+                             boolean applyMessage, Object... objects) {
         super(message, cause);
         this.errorCode = errorCode;
         this.messageKey = messageKey;
@@ -42,25 +42,12 @@ public class ServiceTaskmanException extends RuntimeException {
         this.applyMessage = applyMessage;
     }
 
-    public ServiceTaskmanException withErrorCode(String errorCode) {
+    public TaskmanException withErrorCode(String errorCode) {
         this.errorCode = errorCode;
         return this;
     }
 
-    public ServiceTaskmanException withErrorCode(String errorCode, Object... objects) {
-        this.errorCode = errorCode;
-        if (objects != null && (this.args == null)) {
-            this.args = new Object[objects.length];
-            int index = 0;
-            for (Object object : objects) {
-                this.args[index] = object;
-                index++;
-            }
-        }
-        return this;
-    }
-
-    public ServiceTaskmanException withErrorCodeAndArgs(String errorCode, Object[] objects) {
+    public TaskmanException withErrorCode(String errorCode, Object... objects) {
         this.errorCode = errorCode;
         if (objects != null && (this.args == null)) {
             this.args = new Object[objects.length];
@@ -73,12 +60,25 @@ public class ServiceTaskmanException extends RuntimeException {
         return this;
     }
 
-    public ServiceTaskmanException withMessageKey(String msgKey) {
+    public TaskmanException withErrorCodeAndArgs(String errorCode, Object[] objects) {
+        this.errorCode = errorCode;
+        if (objects != null && (this.args == null)) {
+            this.args = new Object[objects.length];
+            int index = 0;
+            for (Object object : objects) {
+                this.args[index] = object;
+                index++;
+            }
+        }
+        return this;
+    }
+
+    public TaskmanException withMessageKey(String msgKey) {
         this.messageKey = msgKey;
         return this;
     }
 
-    public ServiceTaskmanException withMessageKey(String msgKey, Object... objects) {
+    public TaskmanException withMessageKey(String msgKey, Object... objects) {
         this.messageKey = msgKey;
         if (objects != null && (this.args == null)) {
             this.args = new Object[objects.length];

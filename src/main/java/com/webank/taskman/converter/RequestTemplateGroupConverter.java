@@ -8,7 +8,6 @@ import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
 import com.webank.taskman.dto.req.SaveTemplateGropReq;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
-import sun.misc.Request;
 
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RequestTemplateGroupConverter extends BaseConverter<TemplateGroupDTO, RequestTemplateGroup> {

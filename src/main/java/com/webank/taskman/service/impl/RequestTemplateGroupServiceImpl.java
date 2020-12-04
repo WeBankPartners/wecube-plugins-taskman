@@ -70,9 +70,6 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         if (!StringUtils.isEmpty(req.getManageRole())) {
             wrapper.eq("manage_role_id", req.getManageRole());
         }
-        if (!StringUtils.isEmpty(req.getDealRole())) {
-            wrapper.eq("dealRole", req.getDealRole());
-        }
 
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(page, wrapper);
         List<RequestTemplateGroup> records = iPage.getRecords();

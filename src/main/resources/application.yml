@@ -27,7 +27,7 @@ knife4j:
     enableReloadCacheParameter: true
     enableAfterScript: true
     enableRequestCache: true
-    enableFooter: true
+    enableFooter: false
     enableFooterCustom: true
     footerCustomContent: Copyright © 2014 - 2019 WeBank Co., Ltd. All Rights Reserved.
     enableDynamicParameter: true

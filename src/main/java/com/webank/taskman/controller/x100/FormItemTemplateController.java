@@ -1,23 +1,17 @@
 package com.webank.taskman.controller.x100;
 
 
-import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
-import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
-
-import com.webank.taskman.dto.TemplateGroupDTO;
-import com.webank.taskman.dto.req.*;
+import com.webank.taskman.dto.req.SaveAndUpdateFormItemTemplateReq;
+import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
 import com.webank.taskman.dto.resp.FormItemTemplateResq;
 import com.webank.taskman.dto.resp.FormItemTemplateSVResq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.lang3.StringUtils;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -51,18 +45,14 @@ public class FormItemTemplateController {
     }
 
     //TODO Not implemented
-    @PostMapping("/search/{current}/{limit}")
+    @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "search RequestTemplate ")
-    @DynamicParameters(name = "req", properties = {
-            @DynamicParameter(name = "page", value = "页码", example = "", required = true, dataTypeClass = Integer.class),
-            @DynamicParameter(name = "pageSize", value = "每页行数", example = "100", required = true, dataTypeClass = Integer.class),
-    })
     public JsonResponse<QueryResponse<FormItemTemplateResq>> selectFormItemTemplate(
-            @PathVariable("current") Integer current,
-            @PathVariable("limit") Integer limit,
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SelectFormItemTemplateReq req)
             throws Exception {
-        QueryResponse<FormItemTemplateResq> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(current, limit, req);
+        QueryResponse<FormItemTemplateResq> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -75,10 +65,4 @@ public class FormItemTemplateController {
         return JsonResponse.okay();
     }
 
-    //TODO Not implemented
-    @GetMapping("/detail/{tempType}/{tempId}")
-    @ApiOperation(value = " RequestTemplate ", notes = "需要传入id")
-    public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
-        return JsonResponse.okay();
-    }
 }

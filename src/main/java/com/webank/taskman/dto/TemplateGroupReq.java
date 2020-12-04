@@ -4,7 +4,6 @@ public class TemplateGroupReq {
     private String id;
     private String name;
     private String manageRole;
-    private String dealRole;
 
     public String getId() {
         return id;
@@ -30,13 +29,6 @@ public class TemplateGroupReq {
         this.manageRole = manageRole;
     }
 
-    public String getDealRole() {
-        return dealRole;
-    }
-
-    public void setDealRole(String dealRole) {
-        this.dealRole = dealRole;
-    }
 
     @Override
     public String toString() {
@@ -44,7 +36,6 @@ public class TemplateGroupReq {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", manageRole='" + manageRole + '\'' +
-                ", dealRole='" + dealRole + '\'' +
                 '}';
     }
 }

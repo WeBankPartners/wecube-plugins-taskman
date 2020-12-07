@@ -3,6 +3,7 @@ package com.webank.taskman.dto.resp;
 import com.webank.taskman.domain.RoleInfo;
 import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,33 +13,44 @@ public class RequestTemplateResp {
 
 
 
+    @ApiModelProperty(value = "",position = 100)
     private String id;
 
+    @ApiModelProperty(value = "",position = 101)
     private String requestTempGroup;
 
 
+    @ApiModelProperty(value = "",position = 102)
     private String procDefKey;
 
 
+    @ApiModelProperty(value = "",position = 103)
     private String procDefId;
 
 
+    @ApiModelProperty(value = "",position = 104)
     private String procDefName;
 
 
+    @ApiModelProperty(value = "",position = 105)
     private String name;
 
 
+    @ApiModelProperty(value = "",position = 106)
     private String version;
 
 
+    @ApiModelProperty(value = "",position = 107)
     private String tags;
 
 
+    @ApiModelProperty(value = "",position = 108)
     private Integer status;
 
+    @ApiModelProperty(value = "",position = 109)
     private List<RoleDTO> useRoles = new ArrayList<>();
 
+    @ApiModelProperty(value = "",position = 100)
     private List<RoleDTO> manageRoles = new ArrayList<>();
 
 

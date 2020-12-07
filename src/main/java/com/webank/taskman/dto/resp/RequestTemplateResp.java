@@ -1,6 +1,9 @@
 package com.webank.taskman.dto.resp;
 
+import com.webank.taskman.domain.RoleInfo;
 import io.swagger.annotations.ApiModel;
+
+import java.util.List;
 
 @ApiModel
 public class RequestTemplateResp {
@@ -31,6 +34,11 @@ public class RequestTemplateResp {
 
 
     private Integer status;
+
+    private List<RoleInfo> roleIds;
+
+    private List<RoleInfo> ManagementRole;
+
 
     public String getId() {
         return id;
@@ -113,4 +121,19 @@ public class RequestTemplateResp {
         return this;
     }
 
+    public List<RoleInfo> getRoleIds() {
+        return roleIds;
+    }
+
+    public void setRoleIds(List<RoleInfo> roleIds) {
+        this.roleIds = roleIds;
+    }
+
+    public List<RoleInfo> getManagementRole() {
+        return ManagementRole;
+    }
+
+    public void setManagementRole(List<RoleInfo> managementRole) {
+        ManagementRole = managementRole;
+    }
 }

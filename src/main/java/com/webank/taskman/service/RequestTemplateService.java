@@ -10,7 +10,6 @@ import java.util.List;
 
 
 public interface RequestTemplateService extends IService<RequestTemplate> {
-
     RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
 
     void deleteRequestTemplateService(String id) throws Exception;

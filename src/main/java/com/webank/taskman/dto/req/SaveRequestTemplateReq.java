@@ -38,6 +38,8 @@ public class SaveRequestTemplateReq {
 
     private String[] roleIds;
 
+    private String[] ManagementRole;
+
     public String[] getRoleIds() {
         return roleIds;
     }
@@ -108,6 +110,14 @@ public class SaveRequestTemplateReq {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public String[] getManagementRole() {
+        return ManagementRole;
+    }
+
+    public void setManagementRole(String[] managementRole) {
+        ManagementRole = managementRole;
     }
 
 }

@@ -1,9 +1,12 @@
 package com.webank.taskman.dto.req;
 
+import com.webank.taskman.domain.FormItemTemplate;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotBlank;
+import java.util.LinkedList;
+import java.util.List;
 
 @ApiModel
 public class SaveFormTemplateReq {
@@ -28,6 +31,16 @@ public class SaveFormTemplateReq {
     @NotBlank(message = "目标对象级不能为空")
     private String targetEntitys;
 
+    private List<FormItemTemplate> items = new LinkedList<>();
+
+
+    public List<FormItemTemplate> getItems() {
+        return items;
+    }
+
+    public void setItems(List<FormItemTemplate> items) {
+        this.items = items;
+    }
 
     public String getId() {
         return id;

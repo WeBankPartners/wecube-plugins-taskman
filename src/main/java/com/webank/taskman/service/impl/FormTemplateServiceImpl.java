@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
@@ -13,12 +14,14 @@ import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
+import com.webank.taskman.interceptor.AuthenticationRequestContextInterceptor;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -92,19 +95,16 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
+    @Transactional
     public FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq) {
-        FormTemplate formTemplate=formTemplateConverter.reqToDomain(formTemplateReq);
-        FormTemplateResp formTemplateResp=new FormTemplateResp();
-        formTemplate.setCreatedBy("zhangsan");
-        formTemplate.setUpdatedBy("lisi");
-        if (org.springframework.util.StringUtils.isEmpty(formTemplateReq.getId())){
-            formTemplateMapper.insert(formTemplate);
-            formTemplateResp.setId(formTemplate.getId());
-        }else{
-            formTemplateMapper.updateById(formTemplate);
-            formTemplateResp.setId(formTemplate.getId());
+        FormTemplate formTemplate= formTemplateConverter.reqToDomain(formTemplateReq);
+        if(StringUtils.isEmpty(formTemplate.getId())){
+            formTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         }
-        return formTemplateResp;
+        formTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        saveOrUpdate(formTemplate);
+        //FIXME saveOrUpdateformItem  by name   ...
+        return new FormTemplateResp().setId(formTemplate.getId());
     }
 
     @Override

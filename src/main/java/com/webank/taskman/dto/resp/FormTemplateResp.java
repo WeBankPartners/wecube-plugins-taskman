@@ -19,48 +19,54 @@ public class FormTemplateResp {
         return items;
     }
 
-    public void setItems(List<FormItemTemplateResq> items) {
+    public FormTemplateResp setItems(List<FormItemTemplateResq> items) {
         this.items = items;
+        return  this;
     }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public FormTemplateResp setId(String id) {
         this.id = id;
+        return  this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public FormTemplateResp setName(String name) {
         this.name = name;
+        return  this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public FormTemplateResp setDescription(String description) {
         this.description = description;
+        return  this;
     }
 
     public String getStyle() {
         return style;
     }
 
-    public void setStyle(String style) {
+    public FormTemplateResp setStyle(String style) {
         this.style = style;
+        return  this;
     }
 
     public String getTargetEntitys() {
         return targetEntitys;
     }
 
-    public void setTargetEntitys(String targetEntitys) {
+    public FormTemplateResp setTargetEntitys(String targetEntitys) {
         this.targetEntitys = targetEntitys;
+        return  this;
     }
 
     @Override

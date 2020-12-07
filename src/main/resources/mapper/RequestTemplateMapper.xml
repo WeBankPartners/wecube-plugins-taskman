@@ -2,12 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.webank.taskman.mapper.RequestTemplateMapper">
 
-    <select id="selectPageByParam" resultType="com.webank.taskman.domain.RequestTemplate">
+    <resultMap id="BaseResultMap" type="com.webank.taskman.domain.RequestTemplate">
+
+    </resultMap>
+
+    <select id="selectPageByParam" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq"
+            resultMap="BaseResultMap">
         SELECT rt.* FROM request_template rt
+        <if test="roleType !=null ">
+            INNER JOIN role_relation rr ON rr.record_id =rt.recordId
+            AND rr.record_table = #{recordTable} AND rt.role_type= #{roleType}
+            <if test="roleName != null and roleName !=''">
+                AND rr.role_name like CONCAT("%",#{roleName},"%")
+            </if>
+            <if test="displayName != null and displayName !=''">
+                AND rr.role_name like CONCAT("%",#{displayName},"%")
+            </if>
+        </if>
         <where>
-            <if test="id !=null && id != ''">
+            <if test="id !=null and id != ''">
                 rt.id = #{id}
             </if>
+            <!-- other params... -->
         </where>
 
     </select>

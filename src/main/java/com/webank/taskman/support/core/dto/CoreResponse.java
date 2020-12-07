@@ -33,7 +33,7 @@ public class CoreResponse<DATATYPE> {
     public static class GetRootEntitiesResponse extends CoreResponse<Object> {
     }
     
-    public static class GetAllProcessKeysResponse extends CoreResponse<List<CoreProcessDefinitionDto>> {
+    public static class GetAllProcessKeysResponse extends CoreResponse<List<WorkflowDefInfoDto>> {
         @Override
         public String toString() {
             return "GetAllProcessKeysResponse [getStatus()=" + getStatus() + ", getMessage()=" + getMessage()

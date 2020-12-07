@@ -1,9 +1,11 @@
 package com.webank.taskman.dto.req;
 
+import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
 public class SaveRequestTemplateReq {
@@ -36,17 +38,11 @@ public class SaveRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = true,dataType = "String")
     private String tags;
 
-    private String[] roleIds;
 
-    private String[] ManagementRole;
+    private List<RoleDTO> useRoles;
 
-    public String[] getRoleIds() {
-        return roleIds;
-    }
+    private List<RoleDTO> manageRoles;
 
-    public void setRoleIds(String[] roleIds) {
-        this.roleIds = roleIds;
-    }
 
     public String getId() {
         return id;
@@ -88,6 +84,22 @@ public class SaveRequestTemplateReq {
         this.procDefName = procDefName;
     }
 
+    public List<RoleDTO> getUseRoles() {
+        return useRoles;
+    }
+
+    public void setUseRoles(List<RoleDTO> useRoles) {
+        this.useRoles = useRoles;
+    }
+
+    public List<RoleDTO> getManageRoles() {
+        return manageRoles;
+    }
+
+    public void setManageRoles(List<RoleDTO> manageRoles) {
+        this.manageRoles = manageRoles;
+    }
+
     public String getName() {
         return name;
     }
@@ -112,12 +124,8 @@ public class SaveRequestTemplateReq {
         this.tags = tags;
     }
 
-    public String[] getManagementRole() {
-        return ManagementRole;
-    }
 
-    public void setManagementRole(String[] managementRole) {
-        ManagementRole = managementRole;
-    }
+
+
 
 }

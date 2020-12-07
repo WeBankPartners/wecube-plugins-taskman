@@ -1,17 +1,12 @@
 package com.webank.taskman.controller.x100;
 
 
-import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameters;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.req.SelectTaskTemplateRep;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.dto.resp.TaskTemplateSVResp;
-import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,7 +37,7 @@ public class TaskTemplateController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        TaskTemplate taskTemplate = taskTemplateService.addOrUpdateTaskTemplate(taskTemplateReq);
+        TaskTemplate taskTemplate = taskTemplateService.saveTaskTemplate(taskTemplateReq);
         TaskTemplateSVResp taskTemplateSVResp = new TaskTemplateSVResp();
         taskTemplateSVResp.setId(taskTemplate.getId());
         return JsonResponse.okayWithData(taskTemplateSVResp);

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.support.core.CoreServiceStub;
-import com.webank.taskman.support.core.dto.CoreProcessDefinitionDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
 import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
 import com.webank.taskman.support.core.dto.WorkflowNodeDefInfoDto;

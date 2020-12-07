@@ -11,5 +11,6 @@ import java.util.Map;
 
 public interface RoleRelationMapper extends BaseMapper<RoleRelation> {
 
-    List<RoleInfo> selectRoleInfoByParams(@Param("params") Map<String,Object> params);
+
+    int deleteByTemplate(@Param("tempTable") String tempName, @Param("tempId")  String tempId);
 }

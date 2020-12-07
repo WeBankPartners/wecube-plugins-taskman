@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface TaskTemplateService extends IService<TaskTemplate> {
 
-    TaskTemplate addOrUpdateTaskTemplate(SaveTaskTemplateReq taskTemplateReq);
+    TaskTemplate saveTaskTemplate(SaveTaskTemplateReq taskTemplateReq);
 
     void deleteTaskTemplateByIDService(String id);
 

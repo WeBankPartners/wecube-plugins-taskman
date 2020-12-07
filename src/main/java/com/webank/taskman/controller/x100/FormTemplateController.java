@@ -3,6 +3,7 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormTemplateService;
@@ -40,23 +41,9 @@ public class FormTemplateController {
     }
 
     //TODO Not implemented
-    @ApiOperationSupport(order = 2)
-    @PostMapping("/search/{page}/{pageSize}")
-    @ApiOperation(value = "search FormTemplate ")
-    public JsonResponse<QueryResponse<FormTemplateResp>> selectFormTemplate(
-            @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SaveFormTemplateReq req)
-            throws Exception {
-       QueryResponse<FormTemplateResp> queryResponse= formTemplateService.selectFormTemplate(page,pageSize,req);
-        return JsonResponse.okayWithData(queryResponse);
-    }
-
-
-    //TODO Not implemented
     @ApiOperationSupport(order = 3)
     @DeleteMapping("/delete/{id}")
-    @ApiOperation(value = "delete RequestTemplate", notes = "需要传入id")
+    @ApiOperation(value = "delete RequestTemplate")
     public JsonResponse deleteFormTemplateByID(@PathVariable("id") String id) throws Exception {
         formTemplateService.deleteFormTemplate(id);
         return JsonResponse.okay();
@@ -64,9 +51,10 @@ public class FormTemplateController {
 
     //TODO Not implemented
     @ApiOperationSupport(order = 4)
-    @PostMapping("/detail")
-    @ApiOperation(value = "detail FormTemplate ", notes = "Need to pass in object:")
-    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@RequestBody SaveFormTemplateReq req) throws Exception {
+    @GetMapping("/detail/{tempType}/{tempId}")
+    @ApiOperation(value = "detail FormTemplate ")
+    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@PathVariable("tempType") String tempType,@PathVariable("tempId") String tempId) throws Exception {
+        SaveFormTemplateReq req = new SaveFormTemplateReq(tempId,tempType);
         FormTemplateResp formTemplateResp = formTemplateService.detailFormTemplate(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }

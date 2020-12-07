@@ -1,28 +1,34 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleInfoConverTer;
+import com.webank.taskman.converter.RoleRelationConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateRole;
 import com.webank.taskman.domain.RoleInfo;
+import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateRoleMapper;
 import com.webank.taskman.service.RequestTemplateRoleService;
 import com.webank.taskman.service.RequestTemplateService;
+import com.webank.taskman.service.RoleRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -38,45 +44,31 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Autowired
     RequestTemplateConverter requestTemplateConverter;
 
-    @Autowired
-    RequestTemplateRoleService requestTemplateRoleService;
 
     @Autowired
-    RoleInfoConverTer roleInfoConverTer;
+    RoleRelationService roleRelationService;
 
     @Autowired
-    RequestTemplateRoleMapper requestTemplateRoleMapper;
+    RoleRelationConverter roleRelationConverter;
 
+
+    private static final String TABLE_NAME = "request_template";
     @Override
-    @Transactional
     public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq) {
         RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(requestTemplateReq);
-        if (null == requestTemplateReq.getRoleIds()) {
-            throw new TaskmanException("roleIds is null");
-        }
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
         if (StringUtils.isEmpty(requestTemplate.getId())) {
             requestTemplate.setCreatedBy(currentUsername);
         }
-        boolean ss= saveOrUpdate(requestTemplate);
-        if (!ss){
-            throw new TaskmanException("Failed to add or modify the template");
-        }
-        List<RequestTemplateRole> roles = new ArrayList<>();
-        List<RequestTemplateRole> managenmentRoles = new ArrayList<>();
+        saveOrUpdate(requestTemplate);
         String requestTemplateId = requestTemplate.getId();
+        roleRelationService.deleteByTemplate(TABLE_NAME,requestTemplateId);
+        requestTemplateReq.getUseRoles().stream().forEach(useRole-> roleRelationService.save( new RoleRelation(
+                TABLE_NAME,requestTemplateId, RoleTypeEnum.USE_ROLE.getType(),useRole.getRoleName(),useRole.getDisplayName())));
 
-        requestTemplateRoleService.deleteByRequestTemplate(requestTemplateId);
-        for (String roleId : requestTemplateReq.getRoleIds()) {
-            roles.add(new RequestTemplateRole(requestTemplateId, roleId, 1));
-        }
-
-        for (String managenmentRole : requestTemplateReq.getManagementRole()) {
-            managenmentRoles.add(new RequestTemplateRole(requestTemplateId, managenmentRole, 0));
-        }
-        requestTemplateRoleService.saveBatch(roles);
-        requestTemplateRoleService.saveBatch(managenmentRoles);
+        requestTemplateReq.getUseRoles().stream().forEach(manageRole-> roleRelationService.save( new RoleRelation(
+                TABLE_NAME,requestTemplateId, RoleTypeEnum.MANAGE_ROLE.getType(),manageRole.getRoleName(),manageRole.getDisplayName())));
 
         return new RequestTemplateResp().setId(requestTemplateId);
 
@@ -104,29 +96,27 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         wrapper.eq(!StringUtils.isEmpty(req.getName()), "name", req.getName());
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPage(page, wrapper);
         List<RequestTemplate> records = iPage.getRecords();
-        List<RequestTemplateResp> requestTemplateDTOS = requestTemplateConverter.toDto(records);
-        for (RequestTemplateResp requestTemplateDTO : requestTemplateDTOS) {
-            List<RoleInfo> rolesId=new ArrayList<>();
-            List<RoleInfo> managementRole=new ArrayList<>();
-            List<RequestTemplateRole> roles= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateDTO.getId()));
-            for (RequestTemplateRole role : roles) {
-                if (role.getRoleType()==1){
-                    rolesId.add(roleInfoConverTer.toDto(role));
-                }else if (role.getRoleType()==0){
-                    managementRole.add(roleInfoConverTer.toDto(role));
-                }
-            }
-            requestTemplateDTO.setRoleIds(rolesId);
-            requestTemplateDTO.setManagementRole(managementRole);
-        }
+        List<RequestTemplateResp> respList = requestTemplateConverter.toDto(records);
 
+        for (RequestTemplateResp resp : respList) {
+            List<RoleRelation> roles = roleRelationService.list(
+                    new QueryWrapper<RoleRelation>().eq("record_table",TABLE_NAME).eq("record_id",resp.getId()));
+            roles.stream().forEach(role->{
+                RoleDTO roleDTO = roleRelationConverter.toDto(role);
+                if(RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()){
+                    resp.getUseRoles().add(roleDTO);
+                }else{
+                    resp.getManageRoles().add(roleDTO);
+                }
+            });
+        }
         QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
         PageInfo pageInfo = new PageInfo();
         pageInfo.setStartIndex(iPage.getCurrent());
         pageInfo.setPageSize(iPage.getSize());
         pageInfo.setTotalRows(iPage.getTotal());
         queryResponse.setPageInfo(pageInfo);
-        queryResponse.setContents(requestTemplateDTOS);
+        queryResponse.setContents(respList);
         return queryResponse;
     }
 

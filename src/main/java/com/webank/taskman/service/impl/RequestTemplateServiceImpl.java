@@ -8,8 +8,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.RequestTemplateConverter;
+import com.webank.taskman.converter.RoleInfoConverTer;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateRole;
+import com.webank.taskman.domain.RoleInfo;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
@@ -37,6 +39,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Autowired
     RequestTemplateRoleService requestTemplateRoleService;
+
+    @Autowired
+    RoleInfoConverTer roleInfoConverTer;
 
     @Autowired
     RequestTemplateRoleMapper requestTemplateRoleMapper;
@@ -95,39 +100,13 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPage(page, wrapper);
         List<RequestTemplate> records = iPage.getRecords();
         List<RequestTemplateResp> requestTemplateDTOS = requestTemplateConverter.toDto(records);
-//        requestTemplateDTOS.forEach(request->{
-//            List<RequestTemplateRole> list=
-//
-//                    requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",request.getId()));
-//
-//            list.forEach(role->{
-//                switch (role.getRoleType()){
-//                    case 0:
-//                        request.getManagementRole().add(role);
-//                        break;
-//                    case 1:
-//                        break;
-//                }
-//            });
-//        });
         for (RequestTemplateResp requestTemplateDTO : requestTemplateDTOS) {
-            RequestTemplateRole requestTemplateRole=new RequestTemplateRole();
-            List<RequestTemplateRole> list= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateRole.getId()));
-            String[] roleId=new String[list.size()];
-            String[] managementRole=new String[list.size()];
-            for (RequestTemplateRole templateRole : list) {
-                if (templateRole.getRoleType()==0){
-                    int i=0;
-                    roleId[i]=templateRole.getRoleId();
-                    i++;
-                }else if (templateRole.getRoleType()==1){
-                    int i=0;
-                    managementRole[i]=templateRole.getRoleId();
-                    i++;
-                }
-
-            }
-            requestTemplateDTO.setRoleIds(roleId);
+            RequestTemplateRole requestTemplateRole1=new RequestTemplateRole();
+            List<RequestTemplateRole> roles= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateDTO.getId()).eq("role_type",1));
+            List<RequestTemplateRole> management= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateDTO.getId()).eq("role_type",0));
+            List<RoleInfo> rolesId=roleInfoConverTer.toDto(roles);
+            List<RoleInfo> managementRole=roleInfoConverTer.toDto(management);
+            requestTemplateDTO.setRoleIds(rolesId);
             requestTemplateDTO.setManagementRole(managementRole);
         }
 

@@ -13,17 +13,19 @@ public class RoleInfo  implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
+    private String roleId;
     
-    private String name;
-
-    private String displayName;
+    private String roleName;
 
     public RoleInfo() {
     }
 
-    public RoleInfo(String id, String name) {
-        this.id = id;
-        this.name = name;
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public String getId() {
@@ -34,28 +36,11 @@ public class RoleInfo  implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getRoleId() {
+        return roleId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    @Override
-    public String toString() {
-        return "RoleInfo{" +
-        "id=" + id +
-        ", name=" + name +
-        ", displayName=" + displayName +
-        "}";
+    public void setRoleId(String roleId) {
+        this.roleId = roleId;
     }
 }

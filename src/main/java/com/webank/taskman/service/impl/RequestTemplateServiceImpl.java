@@ -94,7 +94,14 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         wrapper.eq(!StringUtils.isEmpty(req.getProcDefId()), "proc_def_id", req.getProcDefId());
         wrapper.eq(!StringUtils.isEmpty(req.getProcDefName()), "proc_def_name", req.getProcDefName());
         wrapper.eq(!StringUtils.isEmpty(req.getName()), "name", req.getName());
-        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPage(page, wrapper);
+
+
+        // 分页实现
+        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(page,null);
+
+//        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPage(page, wrapper);
+
+
         List<RequestTemplate> records = iPage.getRecords();
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(records);
 

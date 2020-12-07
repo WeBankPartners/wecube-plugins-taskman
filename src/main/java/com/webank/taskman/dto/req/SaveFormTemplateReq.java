@@ -1,6 +1,5 @@
 package com.webank.taskman.dto.req;
 
-import com.webank.taskman.domain.FormItemTemplate;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -31,14 +30,14 @@ public class SaveFormTemplateReq {
     @NotBlank(message = "目标对象级不能为空")
     private String targetEntitys;
 
-    private List<FormItemTemplate> items = new LinkedList<>();
+    private List<SaveFormItemTemplateReq> items = new LinkedList<>();
 
 
-    public List<FormItemTemplate> getItems() {
+    public List<SaveFormItemTemplateReq> getItems() {
         return items;
     }
 
-    public void setItems(List<FormItemTemplate> items) {
+    public void setItems(List<SaveFormItemTemplateReq> items) {
         this.items = items;
     }
 

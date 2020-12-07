@@ -15,6 +15,7 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.mapper.RequestTemplateMapper;
+import com.webank.taskman.mapper.RequestTemplateRoleMapper;
 import com.webank.taskman.service.RequestTemplateRoleService;
 import com.webank.taskman.service.RequestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,38 +29,46 @@ import java.util.List;
 @Service
 public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate> implements RequestTemplateService {
 
-   @Autowired
-   RequestTemplateMapper requestTemplateMapper;
+    @Autowired
+    RequestTemplateMapper requestTemplateMapper;
 
-   @Autowired
+    @Autowired
     RequestTemplateConverter requestTemplateConverter;
 
-   @Autowired
-   RequestTemplateRoleService requestTemplateRoleService;
+    @Autowired
+    RequestTemplateRoleService requestTemplateRoleService;
 
+    @Autowired
+    RequestTemplateRoleMapper requestTemplateRoleMapper;
 
     @Override
-    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq)  {
+    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq) {
         RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(requestTemplateReq);
-        if(null == requestTemplateReq.getRoleIds()){
-            throw  new TaskmanException("roleIds is null");
+        if (null == requestTemplateReq.getRoleIds()) {
+            throw new TaskmanException("roleIds is null");
         }
-        String currentUsername =  AuthenticationContextHolder.getCurrentUsername();
+        String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
-        if(StringUtils.isEmpty(requestTemplate.getId())){
+        if (StringUtils.isEmpty(requestTemplate.getId())) {
             requestTemplate.setCreatedBy(currentUsername);
         }
         saveOrUpdate(requestTemplate);
         List<RequestTemplateRole> roles = new ArrayList<>();
+        List<RequestTemplateRole> managenmentRoles = new ArrayList<>();
         String requestTemplateId = requestTemplate.getId();
 
         requestTemplateRoleService.deleteByRequestTemplate(requestTemplateId);
-        for(String roleId:requestTemplateReq.getRoleIds()){
-            roles.add(new RequestTemplateRole(requestTemplateId,roleId,1));
+        for (String roleId : requestTemplateReq.getRoleIds()) {
+            roles.add(new RequestTemplateRole(requestTemplateId, roleId, 1));
+        }
+
+        for (String managenmentRole : requestTemplateReq.getManagementRole()) {
+            managenmentRoles.add(new RequestTemplateRole(requestTemplateId, managenmentRole, 0));
         }
         requestTemplateRoleService.saveBatch(roles);
+        requestTemplateRoleService.saveBatch(managenmentRoles);
 
-       return new RequestTemplateResp().setId(requestTemplateId);
+        return new RequestTemplateResp().setId(requestTemplateId);
 
     }
 
@@ -69,23 +78,58 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             throw new Exception("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.eq("id",id).set("del_flag",1);
-        requestTemplateMapper.update(null,wrapper);
+        wrapper.eq("id", id).set("del_flag", 1);
+        requestTemplateMapper.update(null, wrapper);
     }
 
     @Override
     public QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, SaveRequestTemplateReq req) throws Exception {
         Page<RequestTemplate> page = new Page<>(current, limit);
         QueryWrapper<RequestTemplate> wrapper = new QueryWrapper<>();
-        wrapper.eq(!StringUtils.isEmpty(req.getId()),"id",req.getId());
-        wrapper.eq(!StringUtils.isEmpty(req.getRequestTempGroup()),"request_temp_group",req.getRequestTempGroup());
-        wrapper.eq(!StringUtils.isEmpty(req.getProcDefKey()),"proc_def_key",req.getProcDefKey());
-        wrapper.eq(!StringUtils.isEmpty(req.getProcDefId()),"proc_def_id",req.getProcDefId());
-        wrapper.eq(!StringUtils.isEmpty(req.getProcDefName()),"proc_def_name",req.getProcDefName());
-        wrapper.eq(!StringUtils.isEmpty(req.getName()),"name",req.getName());
+        wrapper.eq(!StringUtils.isEmpty(req.getId()), "id", req.getId());
+        wrapper.eq(!StringUtils.isEmpty(req.getRequestTempGroup()), "request_temp_group", req.getRequestTempGroup());
+        wrapper.eq(!StringUtils.isEmpty(req.getProcDefKey()), "proc_def_key", req.getProcDefKey());
+        wrapper.eq(!StringUtils.isEmpty(req.getProcDefId()), "proc_def_id", req.getProcDefId());
+        wrapper.eq(!StringUtils.isEmpty(req.getProcDefName()), "proc_def_name", req.getProcDefName());
+        wrapper.eq(!StringUtils.isEmpty(req.getName()), "name", req.getName());
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPage(page, wrapper);
         List<RequestTemplate> records = iPage.getRecords();
         List<RequestTemplateResp> requestTemplateDTOS = requestTemplateConverter.toDto(records);
+//        requestTemplateDTOS.forEach(request->{
+//            List<RequestTemplateRole> list=
+//
+//                    requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",request.getId()));
+//
+//            list.forEach(role->{
+//                switch (role.getRoleType()){
+//                    case 0:
+//                        request.getManagementRole().add(role);
+//                        break;
+//                    case 1:
+//                        break;
+//                }
+//            });
+//        });
+        for (RequestTemplateResp requestTemplateDTO : requestTemplateDTOS) {
+            RequestTemplateRole requestTemplateRole=new RequestTemplateRole();
+            List<RequestTemplateRole> list= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateRole.getId()));
+            String[] roleId=new String[list.size()];
+            String[] managementRole=new String[list.size()];
+            for (RequestTemplateRole templateRole : list) {
+                if (templateRole.getRoleType()==0){
+                    int i=0;
+                    roleId[i]=templateRole.getRoleId();
+                    i++;
+                }else if (templateRole.getRoleType()==1){
+                    int i=0;
+                    managementRole[i]=templateRole.getRoleId();
+                    i++;
+                }
+
+            }
+            requestTemplateDTO.setRoleIds(roleId);
+            requestTemplateDTO.setManagementRole(managementRole);
+        }
 
         QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
         PageInfo pageInfo = new PageInfo();
@@ -99,8 +143,8 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     public RequestTemplateResp detailRequestTemplate(String id) throws Exception {
-        RequestTemplate requestTemplate=requestTemplateMapper.selectById(id);
-        RequestTemplateResp formTemplateResp=requestTemplateConverter.toDto(requestTemplate);
+        RequestTemplate requestTemplate = requestTemplateMapper.selectById(id);
+        RequestTemplateResp formTemplateResp = requestTemplateConverter.toDto(requestTemplate);
         return formTemplateResp;
     }
 

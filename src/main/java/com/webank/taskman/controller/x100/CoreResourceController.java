@@ -7,9 +7,12 @@ import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.CoreProcessDefinitionDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
+import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
+import com.webank.taskman.support.core.dto.WorkflowNodeDefInfoDto;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,12 +43,17 @@ public class CoreResourceController {
     }
 
     @GetMapping("/workflow/process-definition-keys")
-    public JsonResponse<List<CoreProcessDefinitionDto>> getAllProcessDefinitionKeys() {
+    public JsonResponse<List<WorkflowDefInfoDto>> getAllProcessDefinitionKeys() {
         return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
     }
-
+//    @GetMapping("/workflow/process/definitions/{proc-def-id}/tasknodes")
+    @GetMapping("/workflow/process-definitions-nodes/{proc-def-id}")
+    public JsonResponse<List<WorkflowNodeDefInfoDto>> getTaskNodes(@PathVariable("proc-def-id") String procDefId) {
+        return okayWithData(coreServiceStub.getProcDefDetail(procDefId));
+    }
     @GetMapping("/form-item/ci-data")
     public JsonResponse getCoreCiData() {
+
         return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
     }
 

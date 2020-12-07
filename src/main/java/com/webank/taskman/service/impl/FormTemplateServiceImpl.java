@@ -12,6 +12,7 @@ import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.interceptor.AuthenticationRequestContextInterceptor;
@@ -96,14 +97,18 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq) {
+    public FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq) throws Exception {
         FormTemplate formTemplate= formTemplateConverter.reqToDomain(formTemplateReq);
         if(StringUtils.isEmpty(formTemplate.getId())){
             formTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         }
         formTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         saveOrUpdate(formTemplate);
-        //FIXME saveOrUpdateformItem  by name   ...
+        List<SaveFormItemTemplateReq> items = formTemplateReq.getItems();
+        for(SaveFormItemTemplateReq item:items){
+            formItemTemplateService.addOrUpdateFormItemTemplate(item);
+        }
+
         return new FormTemplateResp().setId(formTemplate.getId());
     }
 

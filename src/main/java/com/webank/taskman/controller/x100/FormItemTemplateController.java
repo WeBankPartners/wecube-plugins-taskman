@@ -4,7 +4,7 @@ package com.webank.taskman.controller.x100;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.req.SaveAndUpdateFormItemTemplateReq;
+import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
 import com.webank.taskman.dto.resp.FormItemTemplateResq;
 import com.webank.taskman.dto.resp.FormItemTemplateSVResq;
@@ -32,7 +32,7 @@ public class FormItemTemplateController {
     //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "save or update FormItemTemplate", notes = "Need to pass in object: ")
-    public JsonResponse createFormItemTemplate(@Valid @RequestBody SaveAndUpdateFormItemTemplateReq req, BindingResult bindingResult) throws Exception {
+    public JsonResponse createFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {
                 return JsonResponse.okayWithData(error.getDefaultMessage());

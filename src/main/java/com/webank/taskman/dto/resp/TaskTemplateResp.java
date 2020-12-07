@@ -20,6 +20,8 @@ public class TaskTemplateResp {
 
     private String description;
 
+    private FormTemplateResp form;
+
     public String getId() {
         return id;
     }
@@ -74,5 +76,13 @@ public class TaskTemplateResp {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public FormTemplateResp getForm() {
+        return form;
+    }
+
+    public void setForm(FormTemplateResp form) {
+        this.form = form;
     }
 }

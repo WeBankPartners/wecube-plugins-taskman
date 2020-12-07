@@ -101,11 +101,16 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         List<RequestTemplate> records = iPage.getRecords();
         List<RequestTemplateResp> requestTemplateDTOS = requestTemplateConverter.toDto(records);
         for (RequestTemplateResp requestTemplateDTO : requestTemplateDTOS) {
-            RequestTemplateRole requestTemplateRole1=new RequestTemplateRole();
-            List<RequestTemplateRole> roles= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateDTO.getId()).eq("role_type",1));
-            List<RequestTemplateRole> management= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateDTO.getId()).eq("role_type",0));
-            List<RoleInfo> rolesId=roleInfoConverTer.toDto(roles);
-            List<RoleInfo> managementRole=roleInfoConverTer.toDto(management);
+            List<RoleInfo> rolesId=new ArrayList<>();
+            List<RoleInfo> managementRole=new ArrayList<>();
+            List<RequestTemplateRole> roles= requestTemplateRoleMapper.selectList(new QueryWrapper<RequestTemplateRole>().eq("request_template_id",requestTemplateDTO.getId()));
+            for (RequestTemplateRole role : roles) {
+                if (role.getRoleType()==1){
+                    rolesId.add(roleInfoConverTer.toDto(role));
+                }else if (role.getRoleType()==0){
+                    managementRole.add(roleInfoConverTer.toDto(role));
+                }
+            }
             requestTemplateDTO.setRoleIds(rolesId);
             requestTemplateDTO.setManagementRole(managementRole);
         }

@@ -23,6 +23,8 @@ public class RequestTemplateRole implements Serializable {
     
     private Integer roleType;
 
+    private String roleName;
+
 
     public String getId() {
         return id;
@@ -56,6 +58,13 @@ public class RequestTemplateRole implements Serializable {
         this.roleType = roleType;
     }
 
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
 
     public RequestTemplateRole() {
     }

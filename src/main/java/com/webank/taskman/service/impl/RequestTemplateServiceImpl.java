@@ -127,8 +127,8 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
 
             }
-            requestTemplateDTO.setRoleIds(roleId);
-            requestTemplateDTO.setManagementRole(managementRole);
+//            requestTemplateDTO.setRoleIds(roleId);
+//            requestTemplateDTO.setManagementRole(managementRole);
         }
 
         QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();

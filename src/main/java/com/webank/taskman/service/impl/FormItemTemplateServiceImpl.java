@@ -6,12 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.FormItemTemplateDTO;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.TemplateGroupDTO;
-import com.webank.taskman.dto.req.SaveAndUpdateFormItemTemplateReq;
+import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
 import com.webank.taskman.dto.resp.FormItemTemplateResq;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
@@ -21,7 +18,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -30,37 +26,37 @@ import java.util.List;
 public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMapper, FormItemTemplate> implements FormItemTemplateService {
 
     @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
-
-    @Autowired
     FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
-    public FormItemTemplate addOrUpdateFormItemTemplate(SaveAndUpdateFormItemTemplateReq templateReq) throws Exception {
+    public FormItemTemplate addOrUpdateFormItemTemplate(SaveFormItemTemplateReq templateReq) throws Exception {
         FormItemTemplate addOrUpdateDomain = new FormItemTemplate();
         BeanUtils.copyProperties(templateReq, addOrUpdateDomain);
+
         if (StringUtils.isEmpty(addOrUpdateDomain.getId())) {
             addOrUpdateDomain.setCreatedBy("11");
             addOrUpdateDomain.setUpdatedBy("22");
-            formItemTemplateMapper.insert(addOrUpdateDomain);
-            return formItemTemplateMapper.selectById(addOrUpdateDomain);
+            this.getBaseMapper().insert(addOrUpdateDomain);
+            return this.getBaseMapper().selectById(addOrUpdateDomain);
         }
+
         if (!StringUtils.isEmpty(addOrUpdateDomain.getId())) {
             if (addOrUpdateDomain.getName() == null) {
                 throw new Exception("The update name cannot be empty");
             }
             addOrUpdateDomain.setUpdatedTime(new Date());
-            formItemTemplateMapper.update(addOrUpdateDomain, new QueryWrapper<FormItemTemplate>()
+            this.getBaseMapper().update(addOrUpdateDomain, new QueryWrapper<FormItemTemplate>()
                     .eq("name", addOrUpdateDomain.getName()));
-            return formItemTemplateMapper.selectById(addOrUpdateDomain);
+            return this.getBaseMapper().selectById(addOrUpdateDomain);
         }
         return null;
     }
 
     @Override
     public void deleteRequestTemplateByID(String id) {
-        formItemTemplateMapper.deleteRequestTemplateByIDMapper(id);
+        this.getBaseMapper().deleteRequestTemplateByIDMapper(id);
     }
+
 
     @Override
     public QueryResponse<FormItemTemplateResq> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req) {
@@ -87,7 +83,7 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
         if (req.getIsPublic()!=null){
             wrapper.eq("is_public",req.getIsPublic());
         }
-        IPage<FormItemTemplate> iPage = formItemTemplateMapper.selectPage(page, wrapper);
+        IPage<FormItemTemplate> iPage = this.getBaseMapper().selectPage(page, wrapper);
         List<FormItemTemplate> records = iPage.getRecords();
 
         List<FormItemTemplateResq> formItemTemplateResqs = formItemTemplateConverter.toDto(records);

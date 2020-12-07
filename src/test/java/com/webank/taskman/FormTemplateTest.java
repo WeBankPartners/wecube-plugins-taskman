@@ -20,7 +20,7 @@ public class FormTemplateTest {
 
     //Insert form module data
     @Test
-    public void saveFormTemplateTest(){
+    public void saveFormTemplateTest() throws Exception {
         SaveFormTemplateReq saveFormTemplateReq=new SaveFormTemplateReq();
         saveFormTemplateReq.setId("");
         saveFormTemplateReq.setTempId("");

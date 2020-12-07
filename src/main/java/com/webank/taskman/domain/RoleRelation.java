@@ -16,6 +16,8 @@ public class RoleRelation  implements Serializable {
     
     private String roleId;
 
+    private String roleName;
+
     
     private String recordTable;
 
@@ -36,6 +38,14 @@ public class RoleRelation  implements Serializable {
 
     public String getRoleId() {
         return roleId;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public void setRoleId(String roleId) {

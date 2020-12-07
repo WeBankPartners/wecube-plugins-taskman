@@ -13,20 +13,26 @@ public class RoleRelation  implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    
-    private String roleId;
+    private String recordTable;
+
+    private String recordId;
+
+    private Integer roleType;
 
     private String roleName;
 
-    
-    private String recordTable;
+    private String displayName;
 
-    
-    private String recordId;
+    public RoleRelation() {
+    }
 
-    
-    private Integer roleType;
-
+    public RoleRelation(String recordTable, String recordId, Integer roleType, String roleName, String displayName) {
+        this.recordTable = recordTable;
+        this.recordId = recordId;
+        this.roleType = roleType;
+        this.roleName = roleName;
+        this.displayName = displayName;
+    }
 
     public String getId() {
         return id;
@@ -34,22 +40,6 @@ public class RoleRelation  implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getRoleId() {
-        return roleId;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
     }
 
     public String getRecordTable() {
@@ -76,14 +66,19 @@ public class RoleRelation  implements Serializable {
         this.roleType = roleType;
     }
 
-    @Override
-    public String toString() {
-        return "RoleRelation{" +
-        "id=" + id +
-        ", roleId=" + roleId +
-        ", recordTable=" + recordTable +
-        ", recordId=" + recordId +
-        ", roleType=" + roleType +
-        "}";
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

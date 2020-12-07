@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.support.core.CoreServiceStub;
-import com.webank.taskman.support.core.dto.CoreProcessDefinitionDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
+import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,7 +40,7 @@ public class V2CoreResourceController {
     }
 
     @GetMapping("/workflow/process-definition-keys")
-    public JsonResponse<List<CoreProcessDefinitionDto>> getAllProcessDefinitionKeys() {
+    public JsonResponse<List<WorkflowDefInfoDto>> getAllProcessDefinitionKeys() {
         return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
     }
 

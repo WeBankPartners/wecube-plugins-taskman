@@ -1,6 +1,5 @@
 package com.webank.taskman;
 
-import com.webank.taskman.support.core.dto.CoreProcessDefinitionDto;
 import com.webank.taskman.support.core.dto.WorkflowNodeDefInfoDto;
 import com.webank.taskman.utils.JsonUtils;
 import org.springframework.boot.SpringApplication;

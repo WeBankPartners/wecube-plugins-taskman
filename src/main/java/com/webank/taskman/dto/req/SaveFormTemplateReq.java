@@ -33,6 +33,14 @@ public class SaveFormTemplateReq {
     private List<SaveFormItemTemplateReq> items = new LinkedList<>();
 
 
+    public SaveFormTemplateReq() {
+    }
+
+    public SaveFormTemplateReq(String tempId, String tempType) {
+        this.tempId = tempId;
+        this.tempType = tempType;
+    }
+
     public List<SaveFormItemTemplateReq> getItems() {
         return items;
     }

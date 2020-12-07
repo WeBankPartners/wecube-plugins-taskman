@@ -33,9 +33,10 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     TaskTemplateConverter taskTemplateConverter;
 
     @Override
-    public TaskTemplate addOrUpdateTaskTemplate(SaveTaskTemplateReq taskTemplateReq) {
+    public TaskTemplate saveTaskTemplate(SaveTaskTemplateReq taskTemplateReq) {
         TaskTemplate taskTemplate = new TaskTemplate();
         BeanUtils.copyProperties(taskTemplateReq, taskTemplate);
+
         if (StringUtils.isEmpty(taskTemplate.getId())) {
             taskTemplate.setCreatedBy("11");
             taskTemplate.setUpdatedBy("22");

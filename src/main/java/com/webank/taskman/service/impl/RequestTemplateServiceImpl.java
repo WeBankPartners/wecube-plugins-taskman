@@ -22,6 +22,7 @@ import com.webank.taskman.service.RequestTemplateRoleService;
 import com.webank.taskman.service.RequestTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     RequestTemplateRoleMapper requestTemplateRoleMapper;
 
     @Override
+    @Transactional
     public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq) {
         RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(requestTemplateReq);
         if (null == requestTemplateReq.getRoleIds()) {
@@ -57,7 +59,10 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         if (StringUtils.isEmpty(requestTemplate.getId())) {
             requestTemplate.setCreatedBy(currentUsername);
         }
-        saveOrUpdate(requestTemplate);
+        boolean ss= saveOrUpdate(requestTemplate);
+        if (!ss){
+            throw new TaskmanException("Failed to add or modify the template");
+        }
         List<RequestTemplateRole> roles = new ArrayList<>();
         List<RequestTemplateRole> managenmentRoles = new ArrayList<>();
         String requestTemplateId = requestTemplate.getId();

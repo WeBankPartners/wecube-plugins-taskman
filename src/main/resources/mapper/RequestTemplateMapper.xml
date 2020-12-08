@@ -25,20 +25,11 @@
     <select id="selectPageByParam" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq"
             resultMap="BaseResultMap">
         SELECT rt.* FROM request_template rt
-        <if test="param.roleType !=null ">
-            LEFT JOIN role_relation rr ON rr.record_id = rt.id
-            AND rr.record_table = 'request_template' AND rr.role_type= #{param.roleType}
-            <if test="param.roleName != null and param.roleName !=''">
-                AND rr.role_name like CONCAT("%",#{param.roleName},"%")
-            </if>
-            <if test="param.displayName != null and param.displayName !=''">
-                AND rr.role_name like CONCAT("%",#{param.displayName},"%")
-            </if>
-        </if>
-        <if test="param.requestTempGroup !=null and param.requestTempGroup !='' ">
-            INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id AND rtg.id = #{param.requestTempGroup}
-        </if>
         <where>
+            <if test="param.requestTempGroup !=null and param.requestTempGroup !='' ">
+                INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id AND rtg.id = #{param.requestTempGroup}
+            </if>
+
             <if test="param.id !=null and param.id != ''">
                 AND rt.id = #{param.id}
             </if>
@@ -54,11 +45,43 @@
             <if test="param.name !=null and param.name != ''">
                 AND rt.name like CONCAT('%',#{param.name},'%')
             </if>
-            <if test="param.version !=null and param.version != ''">
-                AND rt.version = #{param.version}
+            <if test="param.tags !=null and param.tags != ''">
+                AND rt.tags like CONCAT('%',#{param.tags},'%')
             </if>
             <if test="param.status !=null and param.status != ''">
                 AND rt.status = #{param.status}
+            </if>
+
+            <if test="param.roleType != null">
+                <choose>
+                    <when test="param.roleType == 2">
+                        AND ( SELECT COUNT(1) FROM (
+                            SELECT rr.record_id,
+                                GROUP_CONCAT(CASE rr.role_type WHEN 0 THEN rr.role_name ELSE NULL END) useRole,
+                                GROUP_CONCAT(CASE rr.role_type WHEN 1 THEN rr.role_name ELSE NULL END) manageRole
+                            FROM role_relation rr GROUP BY rr.record_id ) t
+                            WHERE t.record_id = rt.id
+                            AND
+                                <foreach item="useStr" index="index" collection="param.useRoleName.split(',')" open="(" close=")" separator="OR">
+                                    LOCATE(#{useStr},t.useRole) &gt; 0
+                                </foreach>
+                            AND
+                                <foreach item="manageStr" index="index" collection="param.manageRoleName.split(',')" open="(" close=")" separator="OR">
+                                    LOCATE(#{manageStr},t.manageRole) &gt; 0
+                                </foreach>
+                        ) &gt; 0
+                    </when>
+                    <otherwise>
+                        AND (
+                        SELECT COUNT(1) FROM role_relation rr
+                        WHERE rt.id = rr.record_id AND rr.role_type = #{param.roleType}
+                            AND
+                        <foreach item="roleStr" index="index" collection="param.roleName.split(',')" open="(" close=")" separator="OR">
+                            rr.role_name = #{roleStr}
+                        </foreach>
+                        ) &gt; 0
+                    </otherwise>
+                </choose>
             </if>
         </where>
 

@@ -23,6 +23,7 @@ import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -47,7 +48,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
 
     private static final String TABLE_NAME = "request_template";
+
     @Override
+    @Transactional
     public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq) {
         RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(requestTemplateReq);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
@@ -58,19 +61,10 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         saveOrUpdate(requestTemplate);
         String requestTemplateId = requestTemplate.getId();
         roleRelationService.deleteByTemplate(TABLE_NAME,requestTemplateId);
-        saveRoleRelation(requestTemplateId,RoleTypeEnum.USE_ROLE.getType(),requestTemplateReq.getUseRoles());
-        saveRoleRelation(requestTemplateId,RoleTypeEnum.MANAGE_ROLE.getType(),requestTemplateReq.getManageRoles());
+        roleRelationService.saveRoleRelation(requestTemplateId,TABLE_NAME,RoleTypeEnum.USE_ROLE.getType(),requestTemplateReq.getUseRoles());
+        roleRelationService.saveRoleRelation(requestTemplateId,TABLE_NAME,RoleTypeEnum.MANAGE_ROLE.getType(),requestTemplateReq.getManageRoles());
         return new RequestTemplateResp().setId(requestTemplateId);
 
-    }
-
-    public void saveRoleRelation(String requestTemplateId,int roleType,List<RoleDTO> roles) {
-        roles.stream().forEach(role-> {
-            if(!StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())  ){
-                roleRelationService.save( new RoleRelation(
-                        TABLE_NAME,requestTemplateId, roleType,role.getRoleName(),role.getDisplayName()));
-            }
-        });
     }
 
     @Override
@@ -85,16 +79,14 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     public QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
-        Page<RequestTemplate> page = new Page<>(current, limit);
-
-        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(page,req);
-        List<RequestTemplate> records = iPage.getRecords();
-        List<RequestTemplateResp> respList = requestTemplateConverter.toDto(records);
+        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
+        List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
 
         for (RequestTemplateResp resp : respList) {
-            List<RoleRelation> roles = roleRelationService.list(
-                    new QueryWrapper<RoleRelation>().eq("record_table",TABLE_NAME).eq("record_id",resp.getId()));
-            roles.stream().forEach(role->{
+            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>().
+                    eq("record_table",TABLE_NAME).eq("record_id",resp.getId()));
+            roles.stream().forEach(role->
+            {
                 RoleDTO roleDTO = roleRelationConverter.toDto(role);
                 if(RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()){
                     resp.getUseRoles().add(roleDTO);
@@ -104,20 +96,16 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             });
         }
         QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
-        PageInfo pageInfo = new PageInfo();
-        pageInfo.setStartIndex(iPage.getCurrent());
-        pageInfo.setPageSize(iPage.getSize());
-        pageInfo.setTotalRows(iPage.getTotal());
-        queryResponse.setPageInfo(pageInfo);
+        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
         queryResponse.setContents(respList);
         return queryResponse;
     }
 
     @Override
     public RequestTemplateResp detailRequestTemplate(String id) throws Exception {
-        RequestTemplate requestTemplate = requestTemplateMapper.selectById(id);
-        RequestTemplateResp formTemplateResp = requestTemplateConverter.toDto(requestTemplate);
-        return formTemplateResp;
+//        RequestTemplateResp formTemplateResp =
+//        requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
+        return requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
     }
 
 

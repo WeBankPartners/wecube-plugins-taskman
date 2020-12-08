@@ -1,8 +1,10 @@
 package com.webank.taskman.dto.req;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotBlank;
 import java.util.List;
@@ -31,21 +33,19 @@ public class QueryRequestTemplateReq {
     @ApiModelProperty(value = "标签",required = false,dataType = "String",position = 107)
     private String tags;
 
+    @ApiModelProperty(value = "发布状态",required = false,dataType = "Integer",position = 108)
     private Integer status;
 
-    private String version;
+    @ApiModelProperty(value = "使用角色",required = false,position = 109)
+    private String useRoleName;
+    @ApiModelProperty(value = "管理角色",required = false,position = 110)
+    private String manageRoleName;
 
-    @ApiModelProperty(value = "角色类型(0.管理角色 1.使用角色)",
-            required = false,dataType = "Integer",position = 108)
+    @ApiModelProperty(hidden = true)
     private Integer roleType;
 
-    @ApiModelProperty(value = "角色名",required = false,dataType = "String",position = 109)
+    @ApiModelProperty(hidden = true)
     private String roleName;
-    @ApiModelProperty(value = "角色集描述",required = false,dataType = "String",position = 110)
-    private String displayName;
-
-
-
 
     public String getId() {
         return id;
@@ -114,13 +114,28 @@ public class QueryRequestTemplateReq {
         this.tags = tags;
     }
 
-
-    public String getVersion() {
-        return version;
+    public String getUseRoleName() {
+        return useRoleName;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public void setUseRoleName(String useRoleName) {
+        this.useRoleName = useRoleName;
+        if(!StringUtils.isEmpty(useRoleName)){
+            this.roleType = null != this.roleType ? 2:1;
+            this.roleName = this.useRoleName;
+        }
+    }
+
+    public String getManageRoleName() {
+        return manageRoleName;
+    }
+
+    public void setManageRoleName(String manageRoleName) {
+        this.manageRoleName = manageRoleName;
+        if(!StringUtils.isEmpty(manageRoleName)){
+            this.roleType = null != this.roleType ? 2:0;
+            this.roleName = this.manageRoleName;
+        }
     }
 
     public Integer getRoleType() {
@@ -139,11 +154,4 @@ public class QueryRequestTemplateReq {
         this.roleName = roleName;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
 }

@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 @ApiModel
 public class SaveFormItemTemplateReq {
@@ -31,7 +29,7 @@ public class SaveFormItemTemplateReq {
 
     @NotBlank(message = "ci数据id不能为空")
     @ApiModelProperty(value = "data_ci_id",dataType = "String")
-    private String dataCiId;
+    private String entityId;
 
     @ApiModelProperty(value = "ci数据检索条件",dataType = "String")
     private String dataFilters;
@@ -61,7 +59,7 @@ public class SaveFormItemTemplateReq {
     private Integer width;
 
     @ApiModelProperty(value = "默认值",dataType = "Integer")
-    private String defValue;
+    private String defaultValue;
 
     @ApiModelProperty(value = "排序",dataType = "Integer")
     private Integer sort;
@@ -106,12 +104,12 @@ public class SaveFormItemTemplateReq {
         this.elementType = elementType;
     }
 
-    public String getDataCiId() {
-        return dataCiId;
+    public String getEntityId() {
+        return entityId;
     }
 
-    public void setDataCiId(String dataCiId) {
-        this.dataCiId = dataCiId;
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
     }
 
     public String getDataFilters() {
@@ -178,12 +176,12 @@ public class SaveFormItemTemplateReq {
         this.width = width;
     }
 
-    public String getDefValue() {
-        return defValue;
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
-    public void setDefValue(String defValue) {
-        this.defValue = defValue;
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     public Integer getSort() {
@@ -202,7 +200,7 @@ public class SaveFormItemTemplateReq {
                 ", formTemplateId='" + formTemplateId + '\'' +
                 ", title='" + title + '\'' +
                 ", elementType='" + elementType + '\'' +
-                ", dataCiId='" + dataCiId + '\'' +
+                ", dataCiId='" + entityId + '\'' +
                 ", dataFilters='" + dataFilters + '\'' +
                 ", dataOptions='" + dataOptions + '\'' +
                 ", isPublic=" + isPublic +
@@ -211,7 +209,7 @@ public class SaveFormItemTemplateReq {
                 ", regular=" + regular +
                 ", isView=" + isView +
                 ", width=" + width +
-                ", defValue='" + defValue + '\'' +
+                ", defValue='" + defaultValue + '\'' +
                 ", sort=" + sort +
                 '}';
     }

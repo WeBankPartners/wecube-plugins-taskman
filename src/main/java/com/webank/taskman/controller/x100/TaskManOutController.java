@@ -4,6 +4,7 @@ package com.webank.taskman.controller.x100;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.FormItemTemplateDTO;
 import com.webank.taskman.dto.JsonResponse;
+import com.webank.taskman.dto.WorkflowJsonResponse;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -20,40 +21,40 @@ import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 @Api(tags = {"2、 Taskman open inteface API"})
 @RestController
-@RequestMapping("/v1/taskman")
+@RequestMapping("/v1")
 public class TaskManOutController {
 
     // 获取任务表单模板
-    @GetMapping("/task/form/item-templates")
-    @ApiOperation(value = "item-templates")
+    @GetMapping("/task/create/service-meta")
+    @ApiOperation(value = "service-meta")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "procDefId", value = "流程id",required = true, dataTypeClass = String.class),
-            @ApiImplicitParam(name = "procDefNode", value = "流程节点id",required = true,dataTypeClass = String.class),
+            @ApiImplicitParam(name = "procDefId", value = "流程id",required =true, dataTypeClass = String.class),
+            @ApiImplicitParam(name = "nodeDefId", value = "流程节点id",required = true,dataTypeClass = String.class),
 
     })
-    public JsonResponse<List<FormItemTemplateDTO>> queryTaskFormItemTemplateList(Map<String,Object> params)
+    public WorkflowJsonResponse queryTaskFormItemTemplateList(Map<String,Object> params)
     {
         List<FormItemTemplateDTO> list = new LinkedList<>();
         list.add(new FormItemTemplateDTO());
-        return okayWithData(list);
+
+        return WorkflowJsonResponse.okayWithData(null);
     }
 
     // 创建任务
-    @GetMapping("/task/create")
+    @PostMapping("/task/create")
     @ApiOperation(value = "create")
-    public JsonResponse createTask(@RequestBody SaveTaskInfoReq req)
+    public WorkflowJsonResponse createTask(@RequestBody SaveTaskInfoReq req)
     {
         List<FormItemTemplate> list = new LinkedList<>();
-        return okay();
+        return WorkflowJsonResponse.okay();
     }
 
     // 取消任务
-    @GetMapping("/task/cancel/{procDefId}/{procDefNodeId}")
+    @PostMapping("/task/cancel")
     @ApiOperation(value = "cancel")
-    public JsonResponse cancelTask( @PathVariable("procDefId") Integer procDefId,
-            @PathVariable("procDefNodeId") Integer procDefNodeId)
+    public WorkflowJsonResponse cancelTask(String procDefId,String procDefNodeId)
     {
-        return okay();
+        return WorkflowJsonResponse.okay();
     }
 
 }

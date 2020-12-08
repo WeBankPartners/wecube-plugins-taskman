@@ -6,8 +6,8 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.mapper.RoleRelationMapper;
 import com.webank.taskman.service.RoleRelationService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -18,6 +18,16 @@ public class RoleRelationServiceImpl  extends ServiceImpl<RoleRelationMapper, Ro
     @Override
     public int deleteByTemplate(String tempName, String tempId) {
         return this.getBaseMapper().deleteByTemplate(tempName,tempId);
+    }
+
+    @Override
+    public void saveRoleRelation(String requestTemplateId,String tableName,int roleType,List<RoleDTO> roles) {
+        roles.stream().forEach(role-> {
+            if(!org.springframework.util.StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())  ){
+                this.getBaseMapper().insert( new RoleRelation(
+                        tableName,requestTemplateId, roleType,role.getRoleName(),role.getDisplayName()));
+            }
+        });
     }
 
 }

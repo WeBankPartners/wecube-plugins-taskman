@@ -3,6 +3,7 @@ package com.webank.taskman.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.webank.taskman.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 
@@ -35,7 +36,8 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
     
     private String dataOptions;
 
-    
+
+    @ApiModelProperty(hidden = true)
     private Integer isPublic;
 
     

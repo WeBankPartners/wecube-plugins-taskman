@@ -2,10 +2,8 @@ package com.webank.taskman.support.core;
 
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.constant.TaskNodeTypeEnum;
+import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
-import com.webank.taskman.support.core.dto.RolesDataResponse;
-import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
-import com.webank.taskman.support.core.dto.WorkflowNodeDefInfoDto;
 import com.webank.taskman.utils.JsonUtils;
 import com.webank.taskman.utils.SpringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +14,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CoreServiceStub {
@@ -24,12 +21,14 @@ public class CoreServiceStub {
 
     private static final String GET_ALL_ROLES = "/auth/v1/roles";
     private static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
-    private static final String REPORT_OPERATION_EVENTS = "/platform/v1/operation-events";
-    private static final String GET_ALL_PEOCESS_KEYS = "/platform/v1/process/definitions?includeDraft=%d";
 
-    private static final String GET_ROOT_ENTITIES = "/platf@Api(tags = {\"1、 CoreResource model\"})\n" +
-            "@RestController\n" +
-            "@RequestMapping(\"/v1/core-resources\")orm/v1/process/definitions/process-keys/%s/root-entities";
+    private static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1//release/process/definitions";
+    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/release/process/definitions/{proc-def-id}/tasknodes";
+
+    private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/release/process/instances";
+
+    public static final String RETRIEVE_REQUEST_URL = "http://{gatewayUrl}/{packageName}/entities/{entityName}";
+    public static final String RETRIEVE_REQUEST_WITH_FILTER_URL = "http://{gatewayUrl}/{packageName}/entities/{entityName}?{requestParams}";
 
     @Autowired
     private CoreRestTemplate template;
@@ -59,14 +58,15 @@ public class CoreServiceStub {
     }
 
     // 1
-    public List<WorkflowDefInfoDto> getAllProcessDefinitionKeys()  {
+    public List<WorkflowDefInfoDto> fetchLatestReleasedWorkflowDefs()  {
         if("dev".equals(SpringUtils.getActiveProfile())){
             return addPdfTestData();
         }
-        return template.get(asCoreUrl(GET_ALL_PEOCESS_KEYS, NOT_INCLUDE_DRAFT), GetAllProcessKeysResponse.class);
+        return template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);
     }
+
     //2
-    public List<WorkflowNodeDefInfoDto> getProcDefDetail(String procDefId)  {
+    public List<WorkflowNodeDefInfoDto> fetchWorkflowTasknodeInfos(String procDefId)  {
         List<LinkedHashMap> list = new ArrayList<>();
         if("dev".equals(SpringUtils.getActiveProfile())){
             if("rYsEQg2D2Bu".equals(procDefId)) {
@@ -80,8 +80,11 @@ public class CoreServiceStub {
             }
             return filterList;
         }
-        return template.get(asCoreUrl(GET_ALL_PEOCESS_KEYS, NOT_INCLUDE_DRAFT), GetAllProcessKeysResponse.class);
-
+        return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);
+    }
+    //3
+    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+        return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,null);
     }
 
     private List<LinkedHashMap> addTestNodeList() {

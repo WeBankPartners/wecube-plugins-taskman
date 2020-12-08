@@ -104,7 +104,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         }
         formTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         saveOrUpdate(formTemplate);
-        List<SaveFormItemTemplateReq> items = formTemplateReq.getItems();
+        List<SaveFormItemTemplateReq> items = formTemplateReq.getFormItems();
         for(SaveFormItemTemplateReq item:items){
             formItemTemplateService.addOrUpdateFormItemTemplate(item);
         }

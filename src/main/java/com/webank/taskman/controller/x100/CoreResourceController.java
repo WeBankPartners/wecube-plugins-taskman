@@ -5,15 +5,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.support.core.CoreServiceStub;
-import com.webank.taskman.support.core.dto.RolesDataResponse;
-import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
-import com.webank.taskman.support.core.dto.WorkflowNodeDefInfoDto;
+import com.webank.taskman.support.core.dto.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -42,18 +37,25 @@ public class CoreResourceController {
     }
 
     @GetMapping("/workflow/process-definition-keys")
-    public JsonResponse<List<WorkflowDefInfoDto>> getAllProcessDefinitionKeys() {
-        return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
+    public JsonResponse<List<WorkflowDefInfoDto>> fetchLatestReleasedWorkflowDefs() {
+        return okayWithData(coreServiceStub.fetchLatestReleasedWorkflowDefs());
     }
 //    @GetMapping("/workflow/process/definitions/{proc-def-id}/tasknodes")
     @GetMapping("/workflow/process-definitions-nodes/{proc-def-id}")
     public JsonResponse<List<WorkflowNodeDefInfoDto>> getTaskNodes(@PathVariable("proc-def-id") String procDefId) {
-        return okayWithData(coreServiceStub.getProcDefDetail(procDefId));
+        return okayWithData(coreServiceStub.fetchWorkflowTasknodeInfos(procDefId));
     }
+
+    @PostMapping("/workflow/process/crate")
+    public JsonResponse<CoreResponse.DynamicWorkflowInstInfoDto> createNewWorkflowInstance(@RequestBody
+                                                           DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+        return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
+    }
+
     @GetMapping("/form-item/ci-data")
     public JsonResponse getCoreCiData() {
 
-        return okayWithData(coreServiceStub.getAllProcessDefinitionKeys());
+        return okayWithData(null);
     }
 
 

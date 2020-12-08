@@ -32,11 +32,14 @@ public class CoreResponse<DATATYPE> {
     
     public static class GetRootEntitiesResponse extends CoreResponse<Object> {
     }
-    
-    public static class GetAllProcessKeysResponse extends CoreResponse<List<WorkflowDefInfoDto>> {
+
+    public static class DynamicWorkflowInstInfoDto extends CoreResponse<DynamicWorkflowInstInfoDto> {
+    }
+
+    public static class CommonResponseDto extends CoreResponse<List<WorkflowDefInfoDto>> {
         @Override
         public String toString() {
-            return "GetAllProcessKeysResponse [getStatus()=" + getStatus() + ", getMessage()=" + getMessage()
+            return "CommonResponseDto [getStatus()=" + getStatus() + ", getMessage()=" + getMessage()
                     + ", getData()=" + getData() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
                     + ", toString()=" + super.toString() + "]";
         }

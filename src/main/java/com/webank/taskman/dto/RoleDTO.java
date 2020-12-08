@@ -1,7 +1,5 @@
 package com.webank.taskman.dto;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-
 public class RoleDTO {
 
     private String roleName;
@@ -22,5 +20,13 @@ public class RoleDTO {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    @Override
+    public String toString() {
+        return "RoleDTO{" +
+                "roleName='" + roleName + '\'' +
+                ", displayName='" + displayName + '\'' +
+                '}';
     }
 }

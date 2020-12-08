@@ -1,11 +1,14 @@
 package com.webank.taskman.dto.resp;
 
+
+import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ApiModel
 public class TaskTemplateResp {
-
     private String id;
 
     private String procDefId;
@@ -20,7 +23,9 @@ public class TaskTemplateResp {
 
     private String description;
 
-    private FormTemplateResp form;
+    private List<RoleDTO> useRoles = new ArrayList<>();
+
+    private List<RoleDTO> manageRoles = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -78,11 +83,34 @@ public class TaskTemplateResp {
         this.description = description;
     }
 
-    public FormTemplateResp getForm() {
-        return form;
+    public List<RoleDTO> getUseRoles() {
+        return useRoles;
     }
 
-    public void setForm(FormTemplateResp form) {
-        this.form = form;
+    public void setUseRoles(List<RoleDTO> useRoles) {
+        this.useRoles = useRoles;
+    }
+
+    public List<RoleDTO> getManageRoles() {
+        return manageRoles;
+    }
+
+    public void setManageRoles(List<RoleDTO> manageRoles) {
+        this.manageRoles = manageRoles;
+    }
+
+    @Override
+    public String toString() {
+        return "TaskTemplateSVResp{" +
+                "id='" + id + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefName='" + procDefName + '\'' +
+                ", name='" + name + '\'' +
+                ", procNode='" + procNode + '\'' +
+                ", description='" + description + '\'' +
+                ", useRoles=" + useRoles +
+                ", manageRoles=" + manageRoles +
+                '}';
     }
 }

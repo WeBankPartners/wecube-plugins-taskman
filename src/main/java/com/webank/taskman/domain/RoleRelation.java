@@ -81,4 +81,16 @@ public class RoleRelation  implements Serializable {
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
     }
+
+    @Override
+    public String toString() {
+        return "RoleRelation{" +
+                "id='" + id + '\'' +
+                ", recordTable='" + recordTable + '\'' +
+                ", recordId='" + recordId + '\'' +
+                ", roleType=" + roleType +
+                ", roleName='" + roleName + '\'' +
+                ", displayName='" + displayName + '\'' +
+                '}';
+    }
 }

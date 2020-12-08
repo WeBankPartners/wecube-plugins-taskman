@@ -6,4 +6,17 @@
         DELETE FROM role_relation  WHERE record_table = #{tempTable} AND record_id = #{tempId}
     </delete>
 
+    <resultMap id="RoleMap" type="com.webank.taskman.domain.RoleRelation">
+        <id property="id" column="id"/>
+        <result property="recordTable" column="record_table"/>
+        <result property="recordId" column="record_id"/>
+        <result property="roleType" column="role_type"/>
+        <result property="roleName" column="role_name"/>
+        <result property="displayName" column="display_name"/>
+    </resultMap>
+
+    <select id="selectRole" resultMap="RoleMap">
+        SELECT * FROM role_relation WHERE record_table = #{recordTable} AND record_id=#{recordId}
+    </select>
+
 </mapper>

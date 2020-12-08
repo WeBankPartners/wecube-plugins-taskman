@@ -6,44 +6,49 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotBlank;
-import java.util.Arrays;
 import java.util.List;
 
 @ApiModel
 public class SaveTaskTemplateReq {
 
-    @ApiModelProperty(value = "主键",required = false,dataType = "String")
+    @ApiModelProperty(value = "主键",required = false,dataType = "String",position = 1)
     private String id;
 
     @NotBlank(message = "流程编排id不能为空")
-    @ApiModelProperty(value = "流程编排id",required = true,dataType = "String")
+    @ApiModelProperty(value = "流程编排id",required = true,dataType = "String",position = 2)
     private String procDefId;
 
     @NotBlank(message = "流程编排key不能为空")
-    @ApiModelProperty(value = "流程编排key",required = true,dataType = "String")
+    @ApiModelProperty(value = "流程编排key",required = true,dataType = "String",position = 3)
     private String procDefKey;
 
     @NotBlank(message = "流程编排名称不能为空")
-    @ApiModelProperty(value = "流程编排名称",required = true,dataType = "String")
+    @ApiModelProperty(value = "流程编排名称",required = true,dataType = "String",position = 4)
     private String procDefName;
 
     @NotBlank(message = "流程节点不能为空")
-    @ApiModelProperty(value = "流程节点",required = true,dataType = "String")
-    private String procNode;
+    @ApiModelProperty(value = "节点Id",required = true,dataType = "String",position = 5)
+    private String nodeDefId;
+
+    @ApiModelProperty(value = "节点名称",required = true,dataType = "String",position = 6)
+    private String nodeName;
 
     @NotBlank(message = "名称不能为空")
-    @ApiModelProperty(value = "名称",required = true,dataType = "String")
+    @ApiModelProperty(value = "任务名称",required = true,dataType = "String",position = 7)
     private String name;
 
     @NotBlank(message = "描述不能为空")
-    @ApiModelProperty(value = "描述",required = true,dataType = "String")
+    @ApiModelProperty(value = "任务描述",required = true,dataType = "String",position = 8)
     private String description;
 
-    @ApiModelProperty(value = "使用角色集",required = false)
+    @ApiModelProperty(value = "使用角色集",required = false,position = 9)
     private List<RoleDTO> useRoles;
 
-    @ApiModelProperty(value = "管理角色集",required = false)
+    @ApiModelProperty(value = "管理角色集",required = false,position = 10)
     private List<RoleDTO> manageRoles;
+
+    @ApiModelProperty(value = "任务表单模板",required = false,position = 11)
+    private SaveFormTemplateReq form;
 
     public String getId() {
         return id;
@@ -77,12 +82,20 @@ public class SaveTaskTemplateReq {
         this.procDefName = procDefName;
     }
 
-    public String getProcNode() {
-        return procNode;
+    public String getNodeDefId() {
+        return nodeDefId;
     }
 
-    public void setProcNode(String procNode) {
-        this.procNode = procNode;
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
     public String getName() {
@@ -117,18 +130,11 @@ public class SaveTaskTemplateReq {
         this.manageRoles = manageRoles;
     }
 
-    @Override
-    public String toString() {
-        return "SaveTaskTemplateReq{" +
-                "id='" + id + '\'' +
-                ", procDefId='" + procDefId + '\'' +
-                ", procDefKey='" + procDefKey + '\'' +
-                ", procDefName='" + procDefName + '\'' +
-                ", procNode='" + procNode + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", useRoles=" + useRoles +
-                ", manageRoles=" + manageRoles +
-                '}';
+    public SaveFormTemplateReq getForm() {
+        return form;
+    }
+
+    public void setForm(SaveFormTemplateReq form) {
+        this.form = form;
     }
 }

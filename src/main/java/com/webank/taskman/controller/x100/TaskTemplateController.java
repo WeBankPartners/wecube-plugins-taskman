@@ -25,7 +25,7 @@ public class TaskTemplateController {
 
     //TODO implemented   insert or update
     @PostMapping("/save")
-    @ApiOperation(value = "add OR update TaskTemplate", notes = "Need to pass in object: ")
+    @ApiOperation(value = "saveTaskTemplate", notes = "Need to pass in object: ")
     public JsonResponse createTaskTemplate(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {

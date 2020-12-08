@@ -3,6 +3,63 @@
     <!-- <quillEditor></quillEditor> -->
     <!-- 表单设计 -->
     <Row>
+      <PluginTable
+        :tableColumns="requestColumns"
+        :tableData="requestTableData"
+        :tableOuterActions="tableOuterActions"
+        :pagination="requestPagination"
+        @actionFun="actionFun"
+        @handleSubmit="handleSubmit"
+        @pageChange="requestPageChange"
+        @pageSizeChange="requestPageSizeChange"
+      />
+    </Row>
+    <Row>
+      <div style="width:600px;margin:0 auto;">
+        <Form :model="templateForm" :label-width="100">
+          <FormItem label="名称">
+            <Input v-model="templateForm.name"></Input>
+          </FormItem>
+          <FormItem label="模板组">
+            <!-- <Input v-model="templateForm.templateGroup"></Input> -->
+            <Select v-model="templateForm.requestTempGroup">
+              <Option v-for="tem in templateGroupList" :key="tem.id" :value="tem.id" :label="tem.name"></Option>
+            </Select>
+          </FormItem>
+          <FormItem label="流程">
+            <Select label-in-value v-model="templateForm.procDefId">
+              <Option v-for="process in allProcessDefinitionKeys" :key="process.id" :value="process.procDefId" :label="process.procDefName"></Option>
+            </Select>
+          </FormItem>
+          <FormItem label="管理角色">
+            <Select multiple v-model="templateForm.manageRoles">
+              <Option v-for="role in allRolesList" :key="role.id" :value="role.name" :label="role.displayName"></Option>
+            </Select>
+          </FormItem>
+          <FormItem label="使用角色">
+            <Select multiple v-model="templateForm.useRoles">
+              <Option v-for="role in allRolesList" :key="role.id" :value="role.name" :label="role.displayName"></Option>
+            </Select>
+          </FormItem>
+          <FormItem label="标签">
+            <Input v-model="templateForm.tags"></Input>
+          </FormItem>
+          <FormItem label="描述">
+            <Input type="textarea" v-model="templateForm.description"></Input>
+          </FormItem>
+          <FormItem>
+            <Button @click="templateFormHandleReset('formDynamic')">Reset</Button>
+            <Button type="primary" @click="templateFormHandleSubmit" style="margin-left: 8px">Submit</Button>
+        </FormItem>
+        </Form>
+      </div>
+    </Row>
+    <Row>
+      <div style="width:1000px;margin:0 auto;">
+        <Table border :data="attrsData" :columns="attrsColumns"></Table>
+      </div>
+    </Row>
+    <Row>
       <Col span="4" style="border-right: 1px solid rgb(224, 223, 222);height: calc(100vh - 100px);overflow:auto">
         <Divider>拖动设置目标对象顺序</Divider>
         <div ref="entity" style="padding-right:10px;">
@@ -17,13 +74,71 @@
           </Col>
         </Row>
       </Col>
-      <Col span="16" style="height: calc(100vh - 100px);overflow:auto;background: rgb(248, 238, 226);padding:20px">
+      <Col span="14" style="height: calc(100vh - 100px);overflow:auto;background: rgb(248, 238, 226);padding:20px">
         <Form :model="formItem" ref="form" :label-width="100">
           <TaskFormItem @delete="deleteHandler" @click.native="handleMouseClick(item)" @mouseenter.native="handleMouseEnter(item)" @mouseleave.native="handleMouseLeave(item)" v-for="(item, index) in formFields" :index="index" :item="item" :key="index"></TaskFormItem>
         </Form>
       </Col>
-      <Col style="border-left: 1px solid rgb(224, 223, 222);height: calc(100vh - 100px);overflow:auto" span="4">
-        33333
+      <Col style="border-left: 1px solid rgb(224, 223, 222);height: calc(100vh - 100px);overflow:auto" span="6">
+        <Collapse>
+          <Panel name="1">
+              通用属性
+              <div slot="content">
+                <Form :model="currentField" :label-width="100">
+                  <FormItem label="字段名">
+                    <Input v-model="currentField.name"></Input>
+                  </FormItem>
+                  <FormItem label="显示名">
+                    <Input v-model="currentField.label"></Input>
+                  </FormItem>
+                  <FormItem label="默认值">
+                    <Input v-model="currentField.defaultValue"></Input>
+                  </FormItem>
+                  <FormItem label="参数类型">
+                    <Input v-model="currentField.defaultValue"></Input>
+                  </FormItem>
+                </Form>
+              </div>
+          </Panel>
+          <Panel name="2">
+              扩展属性
+              <div slot="content">
+                <Form :model="currentField" :label-width="100">
+                  <FormItem label="字段名">
+                    <Input v-model="currentField.name"></Input>
+                  </FormItem>
+                  <FormItem label="显示名">
+                    <Input v-model="currentField.label"></Input>
+                  </FormItem>
+                  <FormItem label="默认值">
+                    <Input v-model="currentField.defaultValue"></Input>
+                  </FormItem>
+                  <FormItem label="参数类型">
+                    <Input v-model="currentField.defaultValue"></Input>
+                  </FormItem>
+                </Form>
+              </div>
+          </Panel>
+          <Panel name="3">
+              数据项
+              <div slot="content">
+                <Form :model="currentField" :label-width="100">
+                  <FormItem label="字段名">
+                    <Input v-model="currentField.name"></Input>
+                  </FormItem>
+                  <FormItem label="显示名">
+                    <Input v-model="currentField.label"></Input>
+                  </FormItem>
+                  <FormItem label="默认值">
+                    <Input v-model="currentField.defaultValue"></Input>
+                  </FormItem>
+                  <FormItem label="参数类型">
+                    <Input v-model="currentField.defaultValue"></Input>
+                  </FormItem>
+                </Form>
+              </div>
+          </Panel>
+        </Collapse>
       </Col>
     </Row>
   </div>
@@ -31,16 +146,111 @@
 <script>
 // import quillEditor from "../../components/quillEditor"
 import Sortable from 'sortablejs'
+import {
+  getRoleList,
+  getProcessDefinitionKeysList,
+  getAllTemplateGroup,
+  saveRequestTemplate,
+  searchRequestTemplate,
+  deleteRequestTemplate,
+  getTaskNodesEntitys
+} from "../../api/server.js"
+import PluginTable from "../../components/table";
 
 export default {
   components: {
-
+    PluginTable
   },
   data() {
     return {
       formItem: {
         input: ''
       },
+      templateForm: {
+        name: '',
+        manageRoles: [],
+        useRoles: [],
+        procDefId: '',
+        tags:'',
+        description: '',
+        requestTempGroup: ''
+      },
+      requestPayload: {
+        filters: {},
+        pageable: {
+          pageSize: 10,
+          startIndex: 0
+        },
+        paging: true
+      },
+      tableOuterActions: [
+        {
+          label: this.$t("add"),
+          props: {
+            type: "success",
+            icon: "md-add",
+            disabled: false
+          },
+          actionType: "add"
+        }
+      ],
+      requestPagination: {
+        currentPage: 1,
+        pageSize: 10,
+        total: 0
+      },
+      requestTableData: [],
+      requestColumns: [
+        {
+          title: this.$t("name"),
+          key: "name",
+          inputKey: "name",
+          component: "Input",
+          inputType: "text"
+        },
+        {
+          title: '流程',
+          key: "procDefName",
+          inputKey: "procDefName",
+          component: "Input",
+          inputType: "text",
+          isNotFilterable: true
+        },
+        {
+          title: '管理角色',
+          key: "manageRolesName",
+          inputKey: "manageRoles",
+          isMultiple: true,
+          span:5,
+          component: "PluginSelect",
+          options: []
+        },
+        {
+          title: '使用角色',
+          key: "useRolesName",
+          inputKey: "useRoles",
+          isMultiple: true,
+          span:5,
+          component: "PluginSelect",
+          options: []
+        },
+        {
+          title: '标签',
+          key: "tags",
+          inputKey: "tags",
+          component: "Input",
+          inputType: "text",
+        },
+        {
+          title: this.$t("describe"),
+          key: "description",
+          inputKey: "description",
+          component: "Input",
+          inputType: "text",
+          isNotFilterable: true
+        },
+      ],
+      currentField: {},
       componentsList: [
         {
           label: "选择框",
@@ -143,9 +353,170 @@ export default {
       ],
       entityList: ['unit', 'datacenter', 'network'],
       list:['unit', 'datacenter', 'network'],
+      currentEntityList:[],
+      currentFieldList: [],
+      allRolesList: [],
+      allProcessDefinitionKeys: [],
+      templateGroupList: [],
+      currentTemplateId: '',
+      attrsData: [],
+      procTaskNodes:[],
+      attrsColumns: [
+        {
+          type: 'selection',
+          width: 60,
+          align: 'center',
+          fixed: 'left'
+        },
+        {
+          title: '包名',
+          key: "packageName",
+        },
+        {
+          title: '对象',
+          key: "entity",
+        },
+        {
+          title: '属性',
+          key: "name",
+        }
+      ]
     }
   },
   methods: {
+    actionFun(type, data) {
+      switch (type) {
+        case "add":
+          // this.requestModalVisible = true;
+          // this.isAdd = true;
+          break;
+      }
+    },
+    requestPageChange(current) {
+      this.requestPagination.currentPage = current;
+      this.getData();
+    },
+    requestPageSizeChange(size) {
+      this.requestPagination.pageSize = size;
+      this.getData();
+    },
+    async getData () {
+      const f = this.requestPayload.filters
+      const filters = {
+        ...f,
+        manageRoles:f.manageRoles.length>0? f.manageRoles.map(role => {
+          const found = this.allRolesList.find(r => r.name === role)
+          return {
+            roleName: found.name,
+            displayName: found.displayName
+          }
+        }):[],
+        useRoles:f.useRoles.length>0? f.useRoles.map(role => {
+          const found = this.allRolesList.find(r => r.name === role)
+          return {
+            roleName: found.name,
+            displayName: found.displayName
+          }
+        }):[]
+      }
+      const payload = {
+        page: this.requestPagination.currentPage,
+        pageSize: this.requestPagination.pageSize,
+        data: filters
+      }
+      const { data, status} = await searchRequestTemplate(payload)
+      if(status === 'OK') {
+        this.requestTableData = data.contents.map(_ => {
+          return {
+            ..._,
+            manageRolesName: _.manageRoles.map(role => role.displayName).join(', '),
+            useRolesName: _.useRoles.map(role => role.displayName).join(', ')
+          }
+        })
+        this.requestPagination.total = data.pageInfo.totalRows;
+      }
+    },
+
+    handleSubmit(filters) {
+      this.requestPayload.filters = filters;
+      this.getData();
+    },
+    async getAllTemplateGroup () {
+      const {status, message, data} = await getAllTemplateGroup()
+      if (status === 'OK') {
+        this.templateGroupList = data
+      }
+    },
+    async getRoleList () {
+      const {status, message, data} = await getRoleList()
+      if (status === 'OK') {
+        this.allRolesList = data
+        const roles =  data.map(role => {
+          return {
+            value: role.name,
+            label: role.displayName
+          }
+        })
+        this.requestColumns.forEach(column => {
+          if (column.key === 'manageRolesName' || column.key === 'useRolesName') {
+            column.options = roles
+          }
+        })
+      }
+    },
+    async getProcessDefinitionKeysList () {
+      const {status, message, data} = await getProcessDefinitionKeysList()
+      if (status === 'OK') {
+        this.allProcessDefinitionKeys = data
+      }
+    },
+    templateFormHandleReset () {
+
+    },
+    async templateFormHandleSubmit () {
+      const process = this.allProcessDefinitionKeys.find(key => key.procDefId === this.templateForm.procDefId)
+      const payload = {
+        ...this.templateForm,
+        procDefName: process.procDefName,
+        procDefKey: process.procDefKey,
+        manageRoles:this.templateForm.manageRoles.length>0? this.templateForm.manageRoles.map(role => {
+          const found = this.allRolesList.find(r => r.name === role)
+          return {
+            roleName: found.name,
+            displayName: found.displayName
+          }
+        }):[],
+        useRoles:this.templateForm.useRoles.length>0? this.templateForm.useRoles.map(role => {
+          const found = this.allRolesList.find(r => r.name === role)
+          return {
+            roleName: found.name,
+            displayName: found.displayName
+          }
+        }):[]
+      }
+      const {status, message, data} = await saveRequestTemplate(payload)
+      if (status === 'OK') {
+        this.currentTemplateId = ''
+        getTaskNodesEntitys
+        const nodes = await getTaskNodesEntitys(this.templateForm.procDefId)
+        this.procTaskNodes = nodes.data
+        this.attrsData = [].concat(...this.procTaskNodes.map(node => {
+          const entity = node.boundEntity
+          return node.boundEntity.attributes.map(attr => {
+            return {
+              ...attr,
+              packageName:entity.packageName,
+              entity:entity.name
+            }
+          })
+        }))
+        console.log(this.attrsData)
+        this.$Notice.success({
+          title: 'Success',
+          desc: 'Success'
+        })
+      }
+    },
     handleMouseEnter (item) {
       item.isHover = true
     },
@@ -162,6 +533,20 @@ export default {
     },
     deleteHandler (index) {
       console.log(index)
+    },
+    formFieldSortHandler (entityList) {
+      let fields = []
+      this.formFields = []
+      entityList.forEach(entity => {
+        this.currentFieldList.forEach(formField => {
+          if (formField.entity === entity) {
+            fields.push(formField)
+          }
+        })
+      })
+      this.$nextTick(() => {
+        this.formFields = fields
+      })
     },
     createSortable(el, items) {
       return new Sortable(el, {
@@ -188,18 +573,12 @@ export default {
         },
         animation: 150,
         onUpdate: event => {
-          const newIndex = event.newIndex
-          const oldIndex = event.oldIndex
-          const $li = el.children[newIndex]
-          const $oldLi = el.children[oldIndex]
-          // el.removeChild($li)
-          // if (newIndex > oldIndex) {
-          //   el.insertBefore($li, $oldLi)
-          // } else {
-          //   el.insertBefore($li, $oldLi.nextSibling)
-          // }
-          items[event.oldIndex] = items.splice(event.newIndex, 1, items[event.oldIndex])[0]
-          console.log(this.entityList,event,items)
+          let entitys = []
+          for (let i = 0; i < el.children.length; i++) {
+            entitys.push(el.children[i].attributes.id.value)
+          }
+          this.currentEntityList = entitys
+          this.formFieldSortHandler(entitys)
         }
       })
     },
@@ -216,21 +595,18 @@ export default {
         },
         onSort: (e) => {
           // 添加也会触发onSort， 用个变量去来区分
-          console.log(this.formFields,e)
-          // if (!isAdd) {
-          //   // this.$store.commit('sortFields', e)
-          // }
-          // isAdd = false
+          let fields = []
+          for (let i = 0; i < el.children.length; i++) {
+            const id = el.children[i].attributes.id.value.split('_')[1]
+            fields.push(this.formFields[id])
+          }
+          this.currentFieldList = fields
+          // this.formFields = []
+          this.formFieldSortHandler(this.currentEntityList)
         },
         onAdd: (e) => {
-          console.log(1,e)
           const id = e.item.attributes.id.value
           e.item.parentNode.removeChild(e.item)
-          
-          // if (item) {
-          //   isAdd = true
-          //   // this.handleDrop(item, e.newIndex)
-          // }
           this.$nextTick(() => {
             const item = {
               component: this.componentsList[id*1].type,
@@ -247,6 +623,14 @@ export default {
         }
       })
     }
+  },
+  created () {
+    this.currentFieldList = this.formFields
+    this.currentEntityList = this.entityList
+    this.formFieldSortHandler(this.entityList)
+    this.getRoleList()
+    this.getProcessDefinitionKeysList()
+    this.getAllTemplateGroup()
   },
   mounted() {
     this.fieldsSortable = this.createSortable(this.$refs.fields.$el, this.componentsList)

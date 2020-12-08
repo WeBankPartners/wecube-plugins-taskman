@@ -31,10 +31,10 @@ export default {
     this.itemValue = this.item.defaultValue
   },
   render () {
-    const { component, colSpan, label, options, value, defaultValue, placeholder,isHover, isActive } = this.item
+    const { component, colSpan, label, options, value, defaultValue, placeholder,isHover, isActive, entity } = this.item
     return (
       <Col id={'formItem_'+this.index} span={colSpan}>
-        <FormItem class={this.classList} label={label}>
+        <FormItem class={this.classList} label={label + entity}>
           <component value={this.itemValue} placeholder={placeholder}></component>
           {(isHover || isActive) && <Button onClick={() => this.deleteHandler()} class="deleteButton" size="small" ghost type="error" icon="ios-trash-outline"></Button>}
         </FormItem>

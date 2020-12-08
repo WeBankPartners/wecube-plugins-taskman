@@ -20,7 +20,15 @@ export const getAllRoles = () => request.get(`/service-mgmt/v1/core-resources/ro
 export const getEntityDataByTemplateId = id => request.get(`/service-mgmt/v1/service-requests/service-templates/${id}/root-entities`);
 export const getPreprocessDataByTaskId = id => request.get(`/service-mgmt/v1/tasks/${id}/preprocess`);
 
-export const addRequestTemplateGroup = data => request.post(`/taskman/v1/request-template-group/add`, data);
-export const deleteRequestTemplateGroup = id => request.delete(`/taskman/v1/request-template-group/delete/${id}`);
-export const editRequestTemplateGroup = data => request.post(`/taskman/v1/request-template-group/edit`, data);
-export const searchRequestTemplateGroup = data => request.post(`/taskman/v1/request-template-group/search/${data.page}/${data.pageSize}`, data.data);
+export const addRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/add`, data);
+export const deleteRequestTemplateGroup = id => request.delete(`/taskman/v1/request/template/group/delete/${id}`);
+export const editRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/edit`, data);
+export const searchRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/search/${data.page}/${data.pageSize}`, data.data);
+export const getRoleList = () => request.get(`/taskman/v1/core-resources/roles`);
+export const getProcessDefinitionKeysList = () => request.get(`/taskman/v1/core-resources/workflow/process-definition-keys`);
+export const getAllTemplateGroup = () => request.get(`/taskman/v1/request/template/group/available`);
+export const saveRequestTemplate = data => request.post(`/taskman/v1/request/template/save`, data);
+export const searchRequestTemplate = data => request.post(`/taskman/v1/request/template/search/${data.page}/${data.pageSize}`, data.data);
+export const deleteRequestTemplate = id => request.delete(`/taskman/v1/request/template/delete/${id}`);
+export const getTaskNodesEntitys = id => request.get(`/taskman/v1/core-resources/workflow/process-definitions-nodes/${id}`);
+

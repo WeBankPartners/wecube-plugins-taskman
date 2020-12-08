@@ -4,6 +4,7 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.RequestTemplateService;
@@ -47,7 +48,7 @@ public class RequestTemplateController {
     public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SaveRequestTemplateReq req)
+            @RequestBody(required = false) QueryRequestTemplateReq req)
             throws Exception {
         QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);

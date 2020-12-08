@@ -7,5 +7,5 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = {"3、 Taskman Task model"})
 @RestController
 @RequestMapping("/v2/task")
-public class TaskmanTaskController {
+public class V2TaskController {
 }

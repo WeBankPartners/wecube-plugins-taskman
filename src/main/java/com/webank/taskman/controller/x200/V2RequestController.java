@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RequestMapping("/v2/request")
-public class TaskmanRequestController {
+public class V2RequestController {
 
     @Autowired
     RequestTemplateGroupService requestTemplateGroupService;

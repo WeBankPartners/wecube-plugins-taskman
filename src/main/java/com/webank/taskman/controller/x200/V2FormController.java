@@ -17,7 +17,7 @@ import javax.validation.Valid;
 @Api(tags = {"4、 Taskman Form model"})
 @RestController
 @RequestMapping("/v2/form")
-public class TaskmanFormController {
+public class V2FormController {
 
 
     @Autowired

@@ -3,6 +3,7 @@ package com.webank.taskman;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.RequestTemplateService;
@@ -52,15 +53,15 @@ public class RequestTemplateTest {
     public void selectRequestTemplateTest() throws Exception {
         int current=1;
         int limit=2;
-        SaveRequestTemplateReq saveRequestTemplateReq=new SaveRequestTemplateReq();
-        saveRequestTemplateReq.setId("");
-        saveRequestTemplateReq.setRequestTempGroup("");
-        saveRequestTemplateReq.setProcDefKey("");
-        saveRequestTemplateReq.setProcDefId("");
-        saveRequestTemplateReq.setProcDefName("");
-        saveRequestTemplateReq.setName("");
-        saveRequestTemplateReq.setTags("");
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, saveRequestTemplateReq);
+        QueryRequestTemplateReq req=new QueryRequestTemplateReq();
+        req.setId("");
+        req.setRequestTempGroup("");
+        req.setProcDefKey("");
+        req.setProcDefId("");
+        req.setProcDefName("");
+        req.setName("");
+        req.setTags("");
+        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
         System.out.println(JsonResponse.okayWithData(queryResponse).getData());
     }
 }

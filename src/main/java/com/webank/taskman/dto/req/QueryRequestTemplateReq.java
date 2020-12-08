@@ -27,11 +27,13 @@ public class QueryRequestTemplateReq {
 
     @ApiModelProperty(value = "请求模板名称",required = false,dataType = "String",position = 105)
     private String name;
-    @ApiModelProperty(value = "描述",required = false,dataType = "String",position = 106)
-    private String description;
 
     @ApiModelProperty(value = "标签",required = false,dataType = "String",position = 107)
     private String tags;
+
+    private Integer status;
+
+    private String version;
 
     @ApiModelProperty(value = "角色类型(0.管理角色 1.使用角色)",
             required = false,dataType = "Integer",position = 108)
@@ -41,6 +43,8 @@ public class QueryRequestTemplateReq {
     private String roleName;
     @ApiModelProperty(value = "角色集描述",required = false,dataType = "String",position = 110)
     private String displayName;
+
+
 
 
     public String getId() {
@@ -92,12 +96,14 @@ public class QueryRequestTemplateReq {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+
+
+    public Integer getStatus() {
+        return status;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
     public String getTags() {
@@ -106,6 +112,15 @@ public class QueryRequestTemplateReq {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public Integer getRoleType() {

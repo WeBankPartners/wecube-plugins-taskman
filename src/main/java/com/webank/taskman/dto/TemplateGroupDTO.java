@@ -1,6 +1,5 @@
 package com.webank.taskman.dto;
 
-import com.webank.taskman.domain.RoleInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -23,7 +22,7 @@ public class TemplateGroupDTO {
     private Integer status;
 
     @ApiModelProperty(value = "管理角色", position = 6)
-    private RoleInfo manageRole;
+    private RoleDTO manageRole;
 
     @ApiModelProperty(value = "管理角色姓名", position = 6)
     private String manageRoleName;
@@ -68,11 +67,11 @@ public class TemplateGroupDTO {
         this.status = status;
     }
 
-    public RoleInfo getManageRole() {
+    public RoleDTO getManageRole() {
         return manageRole;
     }
 
-    public void setManageRole(RoleInfo manageRole) {
+    public void setManageRole(RoleDTO manageRole) {
         this.manageRole = manageRole;
     }
 

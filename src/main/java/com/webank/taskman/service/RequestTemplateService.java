@@ -3,6 +3,7 @@ package com.webank.taskman.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 
@@ -14,7 +15,7 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     void deleteRequestTemplateService(String id) throws Exception;
 
-    QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, SaveRequestTemplateReq req) throws Exception;
+    QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception;
 
     RequestTemplateResp detailRequestTemplate(String id) throws Exception;
 

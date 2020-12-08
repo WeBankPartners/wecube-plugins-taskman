@@ -5,6 +5,11 @@ server:
 spring:
   profiles:
     active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://db-server:port/database-name?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: db-user
+    password: db-password
   messages:
     basename: message/service_mgmt_err_message
     encoding: UTF-8
@@ -57,3 +62,4 @@ service:
 logging:
   level:
     root: info
+    com.webank.taskman.mapper: debug

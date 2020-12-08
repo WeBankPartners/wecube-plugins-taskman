@@ -1,9 +1,7 @@
 package com.webank.taskman.dto.req;
 
-import com.webank.taskman.domain.RoleInfo;
 import io.swagger.annotations.ApiModel;
 
-import java.util.List;
 
 @ApiModel
 public class SelectTaskTemplateRep {

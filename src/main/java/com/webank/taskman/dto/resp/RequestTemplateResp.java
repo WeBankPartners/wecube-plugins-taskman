@@ -1,6 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.domain.RoleInfo;
 import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

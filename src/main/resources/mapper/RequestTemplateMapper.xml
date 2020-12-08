@@ -3,27 +3,63 @@
 <mapper namespace="com.webank.taskman.mapper.RequestTemplateMapper">
 
     <resultMap id="BaseResultMap" type="com.webank.taskman.domain.RequestTemplate">
-
+        <id column="id" property="id"/>
+        <result column="proc_def_key" property="procDefKey" />
+        <result column="proc_def_id" property="procDefId" />
+        <result column="proc_def_name" property="procDefName" />
+        <result column="name" property="name" />
+        <result column="version" property="version" />
+        <result column="tags" property="tags" />
+        <result column="status" property="status" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_time" property="updatedTime" />
+        <result column="del_flag" property="delFlag" />
     </resultMap>
+
+    <sql id="Base_Column_List">
+        SELECT * FROM request_template
+    </sql>
 
     <select id="selectPageByParam" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq"
             resultMap="BaseResultMap">
         SELECT rt.* FROM request_template rt
-        <if test="roleType !=null ">
-            INNER JOIN role_relation rr ON rr.record_id =rt.recordId
-            AND rr.record_table = #{recordTable} AND rt.role_type= #{roleType}
-            <if test="roleName != null and roleName !=''">
-                AND rr.role_name like CONCAT("%",#{roleName},"%")
+        <if test="param.roleType !=null ">
+            LEFT JOIN role_relation rr ON rr.record_id = rt.id
+            AND rr.record_table = 'request_template' AND rr.role_type= #{param.roleType}
+            <if test="param.roleName != null and param.roleName !=''">
+                AND rr.role_name like CONCAT("%",#{param.roleName},"%")
             </if>
-            <if test="displayName != null and displayName !=''">
-                AND rr.role_name like CONCAT("%",#{displayName},"%")
+            <if test="param.displayName != null and param.displayName !=''">
+                AND rr.role_name like CONCAT("%",#{param.displayName},"%")
             </if>
         </if>
+        <if test="param.requestTempGroup !=null and param.requestTempGroup !='' ">
+            INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id AND rtg.id = #{param.requestTempGroup}
+        </if>
         <where>
-            <if test="id !=null and id != ''">
-                rt.id = #{id}
+            <if test="param.id !=null and param.id != ''">
+                AND rt.id = #{param.id}
             </if>
-            <!-- other params... -->
+            <if test="param.procDefKey !=null and param.procDefKey != ''">
+                AND rt.proc_def_key = #{param.procDefKey}
+            </if>
+            <if test="param.procDefId !=null and param.procDefId != ''">
+                AND rt.proc_def_id = #{param.procDefId}
+            </if>
+            <if test="param.procDefName !=null and param.procDefName != ''">
+                AND rt.proc_def_name = #{param.procDefName}
+            </if>
+            <if test="param.name !=null and param.name != ''">
+                AND rt.name like CONCAT('%',#{param.name},'%')
+            </if>
+            <if test="param.version !=null and param.version != ''">
+                AND rt.version = #{param.version}
+            </if>
+            <if test="param.status !=null and param.status != ''">
+                AND rt.status = #{param.status}
+            </if>
         </where>
 
     </select>

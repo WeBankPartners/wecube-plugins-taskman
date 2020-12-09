@@ -3,6 +3,7 @@ package com.webank.taskman.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.webank.taskman.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
@@ -26,6 +27,10 @@ public class FormTemplate extends BaseEntity implements Serializable {
     private String style;
 
     private String targetEntitys;
+
+    private String inputAttrDef;
+    private String outputAttrDef;
+    private String otherAttrDef;
 
     public String getId() {
         return id;
@@ -85,6 +90,30 @@ public class FormTemplate extends BaseEntity implements Serializable {
 
     public void setTargetEntitys(String targetEntitys) {
         this.targetEntitys = targetEntitys;
+    }
+
+    public String getInputAttrDef() {
+        return inputAttrDef;
+    }
+
+    public void setInputAttrDef(String inputAttrDef) {
+        this.inputAttrDef = inputAttrDef;
+    }
+
+    public String getOutputAttrDef() {
+        return outputAttrDef;
+    }
+
+    public void setOutputAttrDef(String outputAttrDef) {
+        this.outputAttrDef = outputAttrDef;
+    }
+
+    public String getOtherAttrDef() {
+        return otherAttrDef;
+    }
+
+    public void setOtherAttrDef(String otherAttrDef) {
+        this.otherAttrDef = otherAttrDef;
     }
 
     @Override

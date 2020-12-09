@@ -31,25 +31,9 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
 
     @Override
     public FormItemTemplate saveFormItemTemplateByReq(SaveFormItemTemplateReq templateReq) throws TaskmanException {
-        FormItemTemplate addOrUpdateDomain = new FormItemTemplate();
-        BeanUtils.copyProperties(templateReq, addOrUpdateDomain);
-
-        if (StringUtils.isEmpty(addOrUpdateDomain.getId())) {
-            addOrUpdateDomain.setCreatedBy("11");
-            addOrUpdateDomain.setUpdatedBy("22");
-            this.getBaseMapper().insert(addOrUpdateDomain);
-            return this.getBaseMapper().selectById(addOrUpdateDomain);
-        }
-
-        if (!StringUtils.isEmpty(addOrUpdateDomain.getId())) {
-            if (addOrUpdateDomain.getName() == null) {
-                throw new TaskmanException("The update name cannot be empty");
-            }
-            addOrUpdateDomain.setUpdatedTime(new Date());
-            this.getBaseMapper().update(addOrUpdateDomain, new QueryWrapper<FormItemTemplate>()
-                    .eq("name", addOrUpdateDomain.getName()));
-            return this.getBaseMapper().selectById(addOrUpdateDomain);
-        }
+        FormItemTemplate formItemTemplate = formItemTemplateConverter.toEntityBySaveReq(templateReq);
+        formItemTemplate.setCurrenUserName(formItemTemplate,formItemTemplate.getId());
+        saveOrUpdate(formItemTemplate);
         return null;
     }
 

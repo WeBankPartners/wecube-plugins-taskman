@@ -19,7 +19,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/v1/task/template")
 @Api(tags = {"4、  TaskTemplate inteface API"})
-public class TaskTemplateController {
+public class TaskmanTaskController {
 
     @Autowired
     private TaskTemplateService taskTemplateService;

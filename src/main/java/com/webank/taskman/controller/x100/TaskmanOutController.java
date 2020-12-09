@@ -23,7 +23,7 @@ import static com.webank.taskman.dto.JsonResponse.okayWithData;
 @Api(tags = {"2、 Taskman open inteface API"})
 @RestController
 @RequestMapping("/v1")
-public class TaskManOutController {
+public class TaskmanOutController {
 
     @ApiOperationSupport(order = 7)
     @GetMapping("/task/create/service-meta")

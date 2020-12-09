@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.BaseEntity;
-import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
@@ -100,7 +98,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     @Transactional
     public FormTemplateResp saveFormTemplateByReq(SaveFormTemplateReq formTemplateReq) throws TaskmanException {
         FormTemplate formTemplate= formTemplateConverter.reqToDomain(formTemplateReq);
-        formTemplate.setCurrUserName(formTemplate,formTemplate.getId());
+        formTemplate.setCurrenUserName(formTemplate,formTemplate.getId());
         saveOrUpdate(formTemplate);
         List<SaveFormItemTemplateReq> items = formTemplateReq.getFormItems();
         for(SaveFormItemTemplateReq item:items){

@@ -81,8 +81,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
 
         for (RequestTemplateResp resp : respList) {
-            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>().
-                    eq("record_table",TABLE_NAME).eq("record_id",resp.getId()));
+            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>().eq("record_id",resp.getId()));
             roles.stream().forEach(role->
             {
                 RoleDTO roleDTO = roleRelationConverter.toDto(role);

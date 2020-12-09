@@ -1,6 +1,7 @@
 package com.webank.taskman.controller.x100;
 
 
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.FormItemTemplateDTO;
 import com.webank.taskman.dto.JsonResponse;
@@ -24,7 +25,7 @@ import static com.webank.taskman.dto.JsonResponse.okayWithData;
 @RequestMapping("/v1")
 public class TaskManOutController {
 
-    // 获取任务表单模板
+    @ApiOperationSupport(order = 7)
     @GetMapping("/task/create/service-meta")
     @ApiOperation(value = "service-meta")
     @ApiImplicitParams({
@@ -41,6 +42,7 @@ public class TaskManOutController {
     }
 
     // 创建任务
+    @ApiOperationSupport(order = 8)
     @PostMapping("/task/create")
     @ApiOperation(value = "create")
     public WorkflowJsonResponse createTask(@RequestBody SaveTaskInfoReq req)
@@ -50,6 +52,7 @@ public class TaskManOutController {
     }
 
     // 取消任务
+    @ApiOperationSupport(order = 9)
     @PostMapping("/task/cancel")
     @ApiOperation(value = "cancel")
     public WorkflowJsonResponse cancelTask(String procDefId,String procDefNodeId)

@@ -26,7 +26,7 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/v1/form")
-@Api(tags = {"3、 FormModel"})
+@Api(tags = {"5、 FormModel"})
 public class TaskmanFormController {
 
     @Autowired
@@ -38,8 +38,8 @@ public class TaskmanFormController {
 
     @ApiOperationSupport(order = 1)
     @PostMapping("/save")
-    @ApiOperation(value = "save FormTemplate", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveFormTemplateReq req, BindingResult bindingResult) throws Exception {
+    @ApiOperation(value = "saveFormTemplate", notes = "")
+    public JsonResponse saveFormTemplate(@Valid @RequestBody SaveFormTemplateReq req, BindingResult bindingResult) throws Exception {
 
         if (bindingResult.hasErrors()){
             for (ObjectError error:bindingResult.getAllErrors()){
@@ -52,7 +52,7 @@ public class TaskmanFormController {
 
     @ApiOperationSupport(order = 3)
     @DeleteMapping("/delete/{id}")
-    @ApiOperation(value = "delete RequestTemplate")
+    @ApiOperation(value = "deleteFormTemplate")
     public JsonResponse deleteFormTemplateByID(@PathVariable("id") String id) throws Exception {
         formTemplateService.deleteFormTemplate(id);
         return JsonResponse.okay();
@@ -60,16 +60,16 @@ public class TaskmanFormController {
 
     @ApiOperationSupport(order = 4)
     @GetMapping("/detail/{tempType}/{tempId}")
-    @ApiOperation(value = "detail FormTemplate ")
-    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@PathVariable("tempType") Integer tempType,@PathVariable("tempId") String tempId) throws Exception {
+    @ApiOperation(value = "/detail/{tempType}/{tempId}  ")
+    public JsonResponse<QueryResponse<FormTemplateResp>> FormTemplateDetail(@PathVariable("tempType") Integer tempType,@PathVariable("tempId") String tempId) throws Exception {
         SaveFormTemplateReq req = new SaveFormTemplateReq(tempId,tempType);
         FormTemplateResp formTemplateResp = formTemplateService.detailFormTemplate(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 
     @PostMapping("/item/save")
-    @ApiOperation(value = "save or update FormItemTemplate", notes = "Need to pass in object: ")
-    public JsonResponse createFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req, BindingResult bindingResult) throws Exception {
+    @ApiOperation(value = "/item/save", notes = "")
+    public JsonResponse saveFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
@@ -81,23 +81,21 @@ public class TaskmanFormController {
         return JsonResponse.okayWithData(formItemTemplateSVResq);
     }
 
-    //TODO Not implemented
     @PostMapping("/item/search/{page}/{pageSize}")
-    @ApiOperation(value = "search RequestTemplate ")
-    public JsonResponse<QueryResponse<FormItemTemplateResq>> selectFormItemTemplate(
+    @ApiOperation(value = "searchFormItemTemplate ")
+    public JsonResponse<QueryResponse<FormItemTemplateResq>> searchFormItemTemplate(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SelectFormItemTemplateReq req)
-            throws Exception {
+    {
         QueryResponse<FormItemTemplateResq> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
 
-    //TODO Not implemented
     @DeleteMapping("/item/delete/{id}")
-    @ApiOperation(value = "delete RequestTemplate", notes = "需要传入id")
-    public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
+    @ApiOperation(value = "deleteRequestTemplate", notes = "")
+    public JsonResponse deleteRequestTemplate(@PathVariable("id") String id) throws Exception {
         formItemTemplateService.deleteRequestTemplateByID(id);
         return JsonResponse.okay();
     }

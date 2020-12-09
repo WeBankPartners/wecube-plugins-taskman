@@ -85,7 +85,7 @@ public class TaskmanRequestController {
     }
 
 
-    @PostMapping("/group/template/save")
+    @PostMapping("/template/group/save")
     @ApiOperationSupport(order = 14)
     @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupResq> createTemplateGroup(
@@ -102,7 +102,7 @@ public class TaskmanRequestController {
     }
 
 
-    @PostMapping("/group/template/search/{page}/{pageSize}")
+    @PostMapping("/template/group/search/{page}/{pageSize}")
     @ApiOperationSupport(order = 15)
     @ApiOperation(value = "request-group-template-search")
     public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(
@@ -113,7 +113,7 @@ public class TaskmanRequestController {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
-    @GetMapping("/group/template/available")
+    @GetMapping("/template/group/available")
     @ApiOperationSupport(order = 16)
     @ApiOperation(value = "request-group-template-available")
     public JsonResponse<List<TemplateGroupDTO>> available(@ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
@@ -123,7 +123,7 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(dtoList);
     }
 
-    @DeleteMapping("/group/template/delete/{id}")
+    @DeleteMapping("/template/group/delete/{id}")
     @ApiOperationSupport(order = 17)
     @ApiOperation(value = "request-group-template-delete", notes = "需要传入id")
     public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {

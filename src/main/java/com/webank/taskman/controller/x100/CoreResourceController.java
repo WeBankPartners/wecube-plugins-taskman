@@ -61,18 +61,19 @@ public class CoreResourceController {
     @ApiOperationSupport(order = 5)
     @PostMapping("/workflow/process/crate")
     @ApiOperation(value = "workflow-process-crate", notes = "")
-    public JsonResponse<CoreResponse.DynamicWorkflowInstInfoDto> createNewWorkflowInstance(@RequestBody
-                                                                                                   DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+    public JsonResponse<CoreResponse.DynamicWorkflowInstInfoDto> createNewWorkflowInstance(
+            @RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto)
+    {
         return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
     }
 
-    @ApiOperationSupport(order = 6)
+    /*@ApiOperationSupport(order = 6)
     @GetMapping("/form-item/ci-data")
     @ApiOperation(value = "workflow-process-crate", notes = "")
     public JsonResponse getCoreCiData() {
 
         return okayWithData(null);
-    }
+    }*/
 
 
 }

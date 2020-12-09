@@ -3,7 +3,7 @@ package com.webank.taskman.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel(value = "返回对象",description = "JsonResponse")
+@ApiModel(value = "",description = "JsonResponse")
 public class JsonResponse<T> {
 	public final static String STATUS_OK = "OK";
 	public final static String STATUS_ERROR = "ERROR";

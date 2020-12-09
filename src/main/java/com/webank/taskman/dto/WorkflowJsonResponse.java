@@ -18,7 +18,7 @@ public class WorkflowJsonResponse {
         return result;
     }
 
-    public static WorkflowJsonResponse okayWithData(List<WorkflowResultDataJsonResponse.WorkflowResultDataOutputJsonResponse> tasks) {
+    public static WorkflowJsonResponse okayWithData(List<FormItemTemplateDTO> tasks) {
         WorkflowJsonResponse result = new WorkflowJsonResponse();
         result.setResultCode(STATUS_OK);
         result.setResultMessage("Success");

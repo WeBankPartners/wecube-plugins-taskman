@@ -61,7 +61,7 @@ public class BaseEntity {
         this.delFlag = delFlag;
     }
 
-    public BaseEntity setCurrUserName(BaseEntity entity,String Id) {
+    public BaseEntity setCurrenUserName(BaseEntity entity, String Id) {
         if(StringUtils.isEmpty(Id)){
             entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         }

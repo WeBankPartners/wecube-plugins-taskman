@@ -1,6 +1,7 @@
 package com.webank.taskman.controller.x100;
 
 
+import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
@@ -17,14 +18,15 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/v1/task/template")
-@Api(tags = {"5、  TaskTemplate inteface API"})
+@Api(tags = {"4、  TaskTemplate inteface API"})
 public class TaskTemplateController {
 
     @Autowired
     private TaskTemplateService taskTemplateService;
 
+    @ApiOperationSupport(order = 18)
     @PostMapping("/save")
-    @ApiOperation(value = "saveTaskTemplate", notes = "Need to pass in object: ")
+    @ApiOperation(value = "Task-Template-save", notes = "Need to pass in object: ")
     public JsonResponse createTaskTemplate(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {

@@ -66,6 +66,7 @@ public class BaseEntity {
             entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         }
         entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+
         return entity;
     }
 }

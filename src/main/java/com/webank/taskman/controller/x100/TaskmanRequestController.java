@@ -31,8 +31,8 @@ import java.util.List;
 
 @Api(tags = {"3、 Request inteface API"})
 @RestController
-@RequestMapping("/v1/request/template")
-public class TaskManRequestController {
+@RequestMapping("/v1/request")
+public class TaskmanRequestController {
 
     @Autowired
     RequestTemplateService requestTemplateService;
@@ -44,8 +44,8 @@ public class TaskManRequestController {
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
     @ApiOperationSupport(order = 10)
-    @PostMapping("/save")
-    @ApiOperation(value = "Request-Template-save", notes = "Need to pass in object: ")
+    @PostMapping("/template/save")
+    @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()){
             for (ObjectError error:bindingResult.getAllErrors()){
@@ -57,8 +57,8 @@ public class TaskManRequestController {
     }
 
     @ApiOperationSupport(order = 11)
-    @PostMapping("/search/{page}/{pageSize}")
-    @ApiOperation(value = "Request-Template-search")
+    @PostMapping("/template/search/{page}/{pageSize}")
+    @ApiOperation(value = "request-template-search")
     public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
@@ -69,25 +69,25 @@ public class TaskManRequestController {
     }
 
     @ApiOperationSupport(order = 12)
-    @DeleteMapping("/delete/{id}")
-    @ApiOperation(value = "Request-Template-delete", notes = "需要传入id")
+    @DeleteMapping("/template/delete/{id}")
+    @ApiOperation(value = "request-template-delete", notes = "需要传入id")
     public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
         requestTemplateService.deleteRequestTemplateService(id);
         return JsonResponse.okay();
     }
 
     @ApiOperationSupport(order = 13)
-    @GetMapping("/detail/{id}")
-    @ApiOperation(value = "Request-Template-detail", notes = "需要传入id")
+    @GetMapping("/template/detail/{id}")
+    @ApiOperation(value = "request-template-detail", notes = "需要传入id")
     public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
        RequestTemplateResp requestTemplateResp= requestTemplateService.detailRequestTemplate(id);
         return JsonResponse.okayWithData(requestTemplateResp);
     }
 
 
-    @PostMapping("/group/save")
+    @PostMapping("/group/template/save")
     @ApiOperationSupport(order = 14)
-    @ApiOperation(value = "Request-Template-Group-save", notes = "")
+    @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupResq> createTemplateGroup(
             @Valid @RequestBody SaveAndUpdateTemplateGropReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
@@ -102,9 +102,9 @@ public class TaskManRequestController {
     }
 
 
-    @PostMapping("/group/search/{page}/{pageSize}")
+    @PostMapping("/group/template/search/{page}/{pageSize}")
     @ApiOperationSupport(order = 15)
-    @ApiOperation(value = "Request-Template-Group-search")
+    @ApiOperation(value = "request-group-template-search")
     public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
@@ -113,9 +113,9 @@ public class TaskManRequestController {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
-    @GetMapping("/group/available")
+    @GetMapping("/group/template/available")
     @ApiOperationSupport(order = 16)
-    @ApiOperation(value = "Request-Template-Group-available")
+    @ApiOperation(value = "request-group-template-available")
     public JsonResponse<List<TemplateGroupDTO>> available(@ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
         QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
         wrapper.eq("status",0);
@@ -123,9 +123,9 @@ public class TaskManRequestController {
         return JsonResponse.okayWithData(dtoList);
     }
 
-    @DeleteMapping("/group/delete/{id}")
+    @DeleteMapping("/group/template/delete/{id}")
     @ApiOperationSupport(order = 17)
-    @ApiOperation(value = "Request-Template-Group-delete", notes = "需要传入id")
+    @ApiOperation(value = "request-group-template-delete", notes = "需要传入id")
     public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return JsonResponse.okay();

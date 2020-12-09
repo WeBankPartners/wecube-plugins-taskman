@@ -4,10 +4,13 @@ package com.webank.taskman.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.mapper.TaskTemplateMapper;
@@ -18,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,20 +36,22 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     FormTemplateService formTemplateService;
 
+    @Autowired
+    TaskTemplateConverter taskTemplateConverter;
+
 
     @Override
+    @Transactional
     public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) {
-        TaskTemplate taskTemplate = new TaskTemplate();
-        BeanUtils.copyProperties(req, taskTemplate);
-        String currentUsername = AuthenticationContextHolder.getCurrentUsername();
-        taskTemplate.setUpdatedBy(currentUsername);
-        if (StringUtils.isEmpty(taskTemplate.getId())) {
-            taskTemplate.setCreatedBy(currentUsername);
-        }
+        TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
+        taskTemplate.setCurrenUserName(taskTemplate,taskTemplate.getId());
         saveOrUpdate(taskTemplate);
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId,req.getUseRoles(),req.getManageRoles());
 
+        SaveFormTemplateReq formTemplateReq = req.getForm();
+        formTemplateReq.setTempId(taskTemplateId);
+        formTemplateReq.setTempType(TemplateTypeEnum.TASK.getType());
         formTemplateService.saveFormTemplateByReq(req.getForm());
 
         TaskTemplateResp taskTemplateResp = new TaskTemplateResp();

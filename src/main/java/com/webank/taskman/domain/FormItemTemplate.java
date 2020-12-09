@@ -5,63 +5,36 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.webank.taskman.base.BaseEntity;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 public class FormItemTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
-    
     private String formTemplateId;
-
-    
+    private String attrDefId;
+    private String attrDataType;
     private String name;
-
-    
     private String title;
-
-    
     private String elementType;
-
-    
-    private String dataCiId;
-
-    
-    private String dataFilters;
-
-    
+    private String defaultValue;
+    private Integer required;
+    private Integer isEdit;
+    private Integer regular;
+    private Integer width;
+    private Integer sort;
+    private String entityId;
+    private String entityFilters;
     private String dataOptions;
-
-
-    @ApiModelProperty(hidden = true)
+    private Integer isView;
     private Integer isPublic;
 
-    
-    private Integer required;
-
-    
-    private Integer isEdit;
-
-    
-    private Integer regular;
-
-    
-    private Integer isView;
-
-    
-    private Integer width;
-
-    
-    private String defValue;
-
-    
-    private Integer sort;
-
-
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -77,6 +50,22 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
 
     public void setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
+    }
+
+    public String getAttrDefId() {
+        return attrDefId;
+    }
+
+    public void setAttrDefId(String attrDefId) {
+        this.attrDefId = attrDefId;
+    }
+
+    public String getAttrDataType() {
+        return attrDataType;
+    }
+
+    public void setAttrDataType(String attrDataType) {
+        this.attrDataType = attrDataType;
     }
 
     public String getName() {
@@ -103,36 +92,12 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.elementType = elementType;
     }
 
-    public String getDataCiId() {
-        return dataCiId;
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
-    public void setDataCiId(String dataCiId) {
-        this.dataCiId = dataCiId;
-    }
-
-    public String getDataFilters() {
-        return dataFilters;
-    }
-
-    public void setDataFilters(String dataFilters) {
-        this.dataFilters = dataFilters;
-    }
-
-    public String getDataOptions() {
-        return dataOptions;
-    }
-
-    public void setDataOptions(String dataOptions) {
-        this.dataOptions = dataOptions;
-    }
-
-    public Integer getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Integer isPublic) {
-        this.isPublic = isPublic;
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     public Integer getRequired() {
@@ -159,28 +124,12 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.regular = regular;
     }
 
-    public Integer getIsView() {
-        return isView;
-    }
-
-    public void setIsView(Integer isView) {
-        this.isView = isView;
-    }
-
     public Integer getWidth() {
         return width;
     }
 
     public void setWidth(Integer width) {
         this.width = width;
-    }
-
-    public String getDefValue() {
-        return defValue;
-    }
-
-    public void setDefValue(String defValue) {
-        this.defValue = defValue;
     }
 
     public Integer getSort() {
@@ -191,30 +140,72 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.sort = sort;
     }
 
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public void setEntityId(String entityId) {
+        this.entityId = entityId;
+    }
+
+    public String getEntityFilters() {
+        return entityFilters;
+    }
+
+    public void setEntityFilters(String entityFilters) {
+        this.entityFilters = entityFilters;
+    }
+
+    public String getDataOptions() {
+        return dataOptions;
+    }
+
+    public void setDataOptions(String dataOptions) {
+        this.dataOptions = dataOptions;
+    }
+
+    public Integer getIsView() {
+        return isView;
+    }
+
+    public void setIsView(Integer isView) {
+        this.isView = isView;
+    }
+
+    public Integer getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Integer isPublic) {
+        this.isPublic = isPublic;
+    }
+
     @Override
     public String toString() {
         return "FormItemTemplate{" +
-        "id=" + id +
-        ", formTemplateId=" + formTemplateId +
-        ", name=" + name +
-        ", title=" + title +
-        ", elementType=" + elementType +
-        ", dataCiId=" + dataCiId +
-        ", dataFilters=" + dataFilters +
-        ", dataOptions=" + dataOptions +
-        ", isPublic=" + isPublic +
-        ", required=" + required +
-        ", isEdit=" + isEdit +
-        ", regular=" + regular +
-        ", isView=" + isView +
-        ", width=" + width +
-        ", defValue=" + defValue +
-        ", sort=" + sort +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-        "}";
+                "id='" + id + '\'' +
+                ", formTemplateId='" + formTemplateId + '\'' +
+                ", attrDefId='" + attrDefId + '\'' +
+                ", attrDataType='" + attrDataType + '\'' +
+                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
+                ", elementType='" + elementType + '\'' +
+                ", defaultValue='" + defaultValue + '\'' +
+                ", required=" + required +
+                ", isEdit=" + isEdit +
+                ", regular=" + regular +
+                ", width=" + width +
+                ", sort=" + sort +
+                ", entityId='" + entityId + '\'' +
+                ", entityFilters='" + entityFilters + '\'' +
+                ", dataOptions='" + dataOptions + '\'' +
+                ", isView=" + isView +
+                ", isPublic=" + isPublic +
+                ", createdBy=" + getCreatedBy() +
+                ", createdTime=" + getCreatedTime() +
+                ", updatedBy=" + getUpdatedBy() +
+                ", updatedTime=" + getUpdatedTime() +
+                ", delFlag=" + getDelFlag() +
+                '}';
     }
 }

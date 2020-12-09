@@ -102,6 +102,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         saveOrUpdate(formTemplate);
         List<SaveFormItemTemplateReq> items = formTemplateReq.getFormItems();
         for(SaveFormItemTemplateReq item:items){
+            item.setFormTemplateId(formTemplate.getId());
             formItemTemplateService.saveFormItemTemplateByReq(item);
         }
 

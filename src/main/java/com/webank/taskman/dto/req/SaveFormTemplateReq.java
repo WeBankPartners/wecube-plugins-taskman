@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,9 +19,8 @@ public class SaveFormTemplateReq {
     @ApiModelProperty(value = "",position = 2)
     private String tempId;
 
-    @NotBlank(message = "模板类型不能为空")
     @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType = "int",position = 3)
-    private Integer tempType;
+    private Integer tempType=0;
 
     @NotBlank(message = "名称不能为空")
     @ApiModelProperty(value = "",required = true,position = 4)

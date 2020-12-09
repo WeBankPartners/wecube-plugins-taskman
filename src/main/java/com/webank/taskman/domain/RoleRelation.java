@@ -13,7 +13,6 @@ public class RoleRelation  implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    private String recordTable;
 
     private String recordId;
 
@@ -26,8 +25,7 @@ public class RoleRelation  implements Serializable {
     public RoleRelation() {
     }
 
-    public RoleRelation(String recordTable, String recordId, Integer roleType, String roleName, String displayName) {
-        this.recordTable = recordTable;
+    public RoleRelation( String recordId, Integer roleType, String roleName, String displayName) {
         this.recordId = recordId;
         this.roleType = roleType;
         this.roleName = roleName;
@@ -42,13 +40,6 @@ public class RoleRelation  implements Serializable {
         this.id = id;
     }
 
-    public String getRecordTable() {
-        return recordTable;
-    }
-
-    public void setRecordTable(String recordTable) {
-        this.recordTable = recordTable;
-    }
 
     public String getRecordId() {
         return recordId;
@@ -86,7 +77,6 @@ public class RoleRelation  implements Serializable {
     public String toString() {
         return "RoleRelation{" +
                 "id='" + id + '\'' +
-                ", recordTable='" + recordTable + '\'' +
                 ", recordId='" + recordId + '\'' +
                 ", roleType=" + roleType +
                 ", roleName='" + roleName + '\'' +

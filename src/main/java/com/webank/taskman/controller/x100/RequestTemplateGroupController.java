@@ -45,7 +45,7 @@ public class RequestTemplateGroupController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.addOrUpdateTemplateGroup(req);
+        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.saveTemplateGroupByReq(req);
         RequestTemplateGroupResq groupResq =new RequestTemplateGroupResq();
         groupResq.setId(requestTemplateGroup.getId());
         return JsonResponse.okayWithData(groupResq);

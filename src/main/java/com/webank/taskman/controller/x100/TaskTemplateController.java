@@ -32,7 +32,7 @@ public class TaskTemplateController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        TaskTemplateResp taskTemplateResp = taskTemplateService.saveTaskTemplate(taskTemplateReq);
+        TaskTemplateResp taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 

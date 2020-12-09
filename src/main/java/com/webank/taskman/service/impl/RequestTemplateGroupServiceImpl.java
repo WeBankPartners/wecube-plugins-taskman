@@ -29,7 +29,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
 
     @Override
-    public RequestTemplateGroup addOrUpdateTemplateGroup(SaveAndUpdateTemplateGropReq gropReq) throws Exception {
+    public RequestTemplateGroup saveTemplateGroupByReq(SaveAndUpdateTemplateGropReq gropReq) throws Exception {
         RequestTemplateGroup req = requestTemplateGroupConverter.addOrUpdateDomain(gropReq);
         if (StringUtils.isEmpty(req.getId())) {
             req.setCreatedBy("11");

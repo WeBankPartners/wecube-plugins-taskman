@@ -29,7 +29,7 @@ public class FormTemplateTest {
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");
         saveFormTemplateReq.setTargetEntitys("");
-        formTemplateService.saveFormTemplate(saveFormTemplateReq);
+        formTemplateService.saveFormTemplateByReq(saveFormTemplateReq);
     }
 
     //Query single data details of form module according to ID

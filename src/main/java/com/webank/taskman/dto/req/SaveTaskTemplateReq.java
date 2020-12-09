@@ -1,6 +1,7 @@
 package com.webank.taskman.dto.req;
 
 
+import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -131,7 +132,9 @@ public class SaveTaskTemplateReq {
     }
 
     public SaveFormTemplateReq getForm() {
+        this.form.setTempType(TemplateTypeEnum.TASK.getType());
         return form;
+
     }
 
     public void setForm(SaveFormTemplateReq form) {

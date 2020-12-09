@@ -7,6 +7,7 @@ import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.mapper.RoleRelationMapper;
 import com.webank.taskman.service.RoleRelationService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -16,18 +17,25 @@ public class RoleRelationServiceImpl  extends ServiceImpl<RoleRelationMapper, Ro
 
 
     @Override
-    public int deleteByTemplate(String tempName, String tempId) {
-        return this.getBaseMapper().deleteByTemplate(tempName,tempId);
+    public int deleteByTemplate( String tempId) {
+        return this.getBaseMapper().deleteByTemplate(tempId);
     }
 
     @Override
-    public void saveRoleRelation(String requestTemplateId,String tableName,int roleType,List<RoleDTO> roles) {
+    public void saveRoleRelation(String requestTemplateId,int roleType,List<RoleDTO> roles) {
         roles.stream().forEach(role-> {
             if(!org.springframework.util.StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())  ){
-                this.getBaseMapper().insert( new RoleRelation(
-                        tableName,requestTemplateId, roleType,role.getRoleName(),role.getDisplayName()));
+                this.getBaseMapper().insert( new RoleRelation(requestTemplateId, roleType,role.getRoleName(),role.getDisplayName()));
             }
         });
+    }
+
+    @Override
+    @Transactional
+    public void saveRoleRelationByTemplate(String requestTemplateId, List<RoleDTO> useRoles, List<RoleDTO> manageRoles) {
+        deleteByTemplate(requestTemplateId);
+        saveRoleRelation(requestTemplateId, RoleTypeEnum.USE_ROLE.getType(),useRoles);
+        saveRoleRelation(requestTemplateId,RoleTypeEnum.MANAGE_ROLE.getType(),manageRoles);
     }
 
 }

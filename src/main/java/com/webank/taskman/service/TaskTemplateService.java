@@ -8,6 +8,6 @@ import com.webank.taskman.dto.resp.TaskTemplateResp;
 
 public interface TaskTemplateService extends IService<TaskTemplate> {
 
-    TaskTemplateResp saveTaskTemplate(SaveTaskTemplateReq taskTemplateReq);
+    TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq taskTemplateReq);
 
 }

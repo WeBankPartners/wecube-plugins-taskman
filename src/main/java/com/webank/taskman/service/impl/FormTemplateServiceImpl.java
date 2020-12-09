@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
@@ -15,14 +16,13 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
-import com.webank.taskman.interceptor.AuthenticationRequestContextInterceptor;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -68,9 +68,9 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public void deleteFormTemplate(String id) throws Exception {
-        if (id==""){
-            throw new Exception("Form template parameter cannot be ID");
+    public void deleteFormTemplate(String id) throws TaskmanException {
+        if (StringUtils.isEmpty(id)){
+            throw new TaskmanException("Form template parameter cannot be ID");
         }
         UpdateWrapper<FormTemplate> wrapper=new UpdateWrapper<>();
         wrapper.eq("id",id).set("del_flag",1);
@@ -78,7 +78,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public FormTemplateResp detailFormTemplate(SaveFormTemplateReq req) throws Exception {
+    public FormTemplateResp detailFormTemplate(SaveFormTemplateReq req) {
         QueryWrapper<FormTemplate> wrapper=new QueryWrapper<>();
         wrapper.eq(!StringUtils.isEmpty(req.getId()),"id",req.getId());
         wrapper.eq(!StringUtils.isEmpty(req.getTempId()),"temp_id",req.getTempId());
@@ -97,7 +97,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateResp saveFormTemplate(SaveFormTemplateReq formTemplateReq) throws Exception {
+    public FormTemplateResp saveFormTemplateByReq(SaveFormTemplateReq formTemplateReq) throws TaskmanException {
         FormTemplate formTemplate= formTemplateConverter.reqToDomain(formTemplateReq);
         if(StringUtils.isEmpty(formTemplate.getId())){
             formTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
@@ -106,14 +106,14 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         saveOrUpdate(formTemplate);
         List<SaveFormItemTemplateReq> items = formTemplateReq.getFormItems();
         for(SaveFormItemTemplateReq item:items){
-            formItemTemplateService.addOrUpdateFormItemTemplate(item);
+            formItemTemplateService.saveFormItemTemplateByReq(item);
         }
 
         return new FormTemplateResp().setId(formTemplate.getId());
     }
 
     @Override
-    public FormTemplateResp queryDetailByTemp(Integer tempType, String tempId) throws Exception {
+    public FormTemplateResp queryDetailByTemp(Integer tempType, String tempId) throws TaskmanException {
         QueryWrapper<FormTemplate> wrapper=new QueryWrapper<>();
         wrapper.eq("temp_id",tempId);
         wrapper.eq("temp_type",tempType);

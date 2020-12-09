@@ -9,7 +9,7 @@ import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
 public interface RequestTemplateGroupService extends IService<RequestTemplateGroup> {
 
 
-    RequestTemplateGroup addOrUpdateTemplateGroup(SaveAndUpdateTemplateGropReq gropReq) throws Exception;
+    RequestTemplateGroup saveTemplateGroupByReq(SaveAndUpdateTemplateGropReq gropReq) throws Exception;
 
     void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
 

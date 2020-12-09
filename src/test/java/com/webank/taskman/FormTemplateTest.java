@@ -24,7 +24,7 @@ public class FormTemplateTest {
         SaveFormTemplateReq saveFormTemplateReq=new SaveFormTemplateReq();
         saveFormTemplateReq.setId("");
         saveFormTemplateReq.setTempId("");
-        saveFormTemplateReq.setTempType("");
+        saveFormTemplateReq.setTempType(null);
         saveFormTemplateReq.setName("");
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");
@@ -38,7 +38,6 @@ public class FormTemplateTest {
         SaveFormTemplateReq saveFormTemplateReq=new SaveFormTemplateReq();
         saveFormTemplateReq.setId("");
         saveFormTemplateReq.setTempId("");
-        saveFormTemplateReq.setTempType("");
         saveFormTemplateReq.setName("");
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");
@@ -62,7 +61,6 @@ public class FormTemplateTest {
         SaveFormTemplateReq saveFormTemplateReq=new SaveFormTemplateReq();
         saveFormTemplateReq.setId("");
         saveFormTemplateReq.setTempId("");
-        saveFormTemplateReq.setTempType("");
         saveFormTemplateReq.setName("");
         saveFormTemplateReq.setDescription("");
         saveFormTemplateReq.setStyle("");

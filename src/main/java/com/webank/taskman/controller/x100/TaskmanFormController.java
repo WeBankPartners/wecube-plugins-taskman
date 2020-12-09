@@ -9,7 +9,6 @@ import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
 import com.webank.taskman.dto.resp.FormItemTemplateResq;
-import com.webank.taskman.dto.resp.FormItemTemplateSVResq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
@@ -77,9 +76,7 @@ public class TaskmanFormController {
             }
         }
         FormItemTemplate formItemTemplate = formItemTemplateService.saveFormItemTemplateByReq(req);
-        FormItemTemplateSVResq formItemTemplateSVResq=new FormItemTemplateSVResq();
-        formItemTemplateSVResq.setId(formItemTemplate.getId());
-        return JsonResponse.okayWithData(formItemTemplateSVResq);
+        return JsonResponse.okayWithData(new FormItemTemplateResq().setId(formItemTemplate.getId()));
     }
 
     @ApiOperationSupport(order = 6)

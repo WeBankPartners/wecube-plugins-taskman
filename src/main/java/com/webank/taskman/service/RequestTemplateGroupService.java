@@ -3,13 +3,13 @@ package com.webank.taskman.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 
 
 public interface RequestTemplateGroupService extends IService<RequestTemplateGroup> {
 
 
-    RequestTemplateGroup saveTemplateGroupByReq(SaveAndUpdateTemplateGropReq gropReq) throws Exception;
+    RequestTemplateGroup saveTemplateGroupByReq(SaveRequestTemplateGropReq gropReq) throws Exception;
 
     void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
 

@@ -13,17 +13,14 @@ public class FormInfo extends BaseEntity implements Serializable {
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
-    
-    private String formTempId;
-
-    
+    private String recordId;
+    private String formTemplateId;
+    private Integer type;
     private String name;
 
-    
-    private Integer type;
-
-
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -33,20 +30,20 @@ public class FormInfo extends BaseEntity implements Serializable {
         this.id = id;
     }
 
-    public String getFormTempId() {
-        return formTempId;
+    public String getRecordId() {
+        return recordId;
     }
 
-    public void setFormTempId(String formTempId) {
-        this.formTempId = formTempId;
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 
-    public String getName() {
-        return name;
+    public String getFormTemplateId() {
+        return formTemplateId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFormTemplateId(String formTemplateId) {
+        this.formTemplateId = formTemplateId;
     }
 
     public Integer getType() {
@@ -57,19 +54,11 @@ public class FormInfo extends BaseEntity implements Serializable {
         this.type = type;
     }
 
+    public String getName() {
+        return name;
+    }
 
-    @Override
-    public String toString() {
-        return "FormInfo{" +
-        "id=" + id +
-        ", formTempId=" + formTempId +
-        ", name=" + name +
-        ", type=" + type +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-        "}";
+    public void setName(String name) {
+        this.name = name;
     }
 }

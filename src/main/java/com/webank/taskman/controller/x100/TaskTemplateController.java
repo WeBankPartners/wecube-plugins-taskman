@@ -23,7 +23,6 @@ public class TaskTemplateController {
     @Autowired
     private TaskTemplateService taskTemplateService;
 
-    //TODO implemented   insert or update
     @PostMapping("/save")
     @ApiOperation(value = "saveTaskTemplate", notes = "Need to pass in object: ")
     public JsonResponse createTaskTemplate(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq, BindingResult bindingResult) throws Exception {

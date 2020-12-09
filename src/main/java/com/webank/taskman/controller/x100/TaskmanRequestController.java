@@ -10,11 +10,13 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.TemplateGroupDTO;
 import com.webank.taskman.dto.TemplateGroupReq;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
-import com.webank.taskman.dto.resp.CreateRequestServiceMetaResp;
+import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
@@ -28,8 +30,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
-
-import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 
 @Api(tags = {"3、 Request inteface API"})
@@ -46,17 +46,20 @@ public class TaskmanRequestController {
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
+    @Autowired
+    RequestInfoService requestInfoService;
+
     @ApiOperationSupport(order = 10)
     @PostMapping("/template/save")
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()){
             for (ObjectError error:bindingResult.getAllErrors()){
-                return okayWithData(error.getDefaultMessage());
+                return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
       RequestTemplateResp requestTemplateResp= requestTemplateService.saveRequestTemplate(req);
-        return okayWithData(requestTemplateResp);
+        return JsonResponse.okayWithData(requestTemplateResp);
     }
 
     @ApiOperationSupport(order = 11)
@@ -68,7 +71,7 @@ public class TaskmanRequestController {
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws Exception {
         QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(page, pageSize, req);
-        return okayWithData(queryResponse);
+        return JsonResponse.okayWithData(queryResponse);
     }
 
     @ApiOperationSupport(order = 12)
@@ -84,7 +87,7 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-detail", notes = "需要传入id")
     public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
        RequestTemplateResp requestTemplateResp= requestTemplateService.detailRequestTemplate(id);
-        return okayWithData(requestTemplateResp);
+        return JsonResponse.okayWithData(requestTemplateResp);
     }
 
 
@@ -95,13 +98,13 @@ public class TaskmanRequestController {
             @Valid @RequestBody SaveRequestTemplateGropReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {
-                return okayWithData(error.getDefaultMessage());
+                return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.saveTemplateGroupByReq(req);
         RequestTemplateGroupResq groupResq =new RequestTemplateGroupResq();
         groupResq.setId(requestTemplateGroup.getId());
-        return okayWithData(groupResq);
+        return JsonResponse.okayWithData(groupResq);
     }
 
 
@@ -114,9 +117,8 @@ public class TaskmanRequestController {
             @RequestBody(required = false) TemplateGroupReq req
     ) throws Exception {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
-        return okayWithData(queryResponse);
+        return JsonResponse.okayWithData(queryResponse);
     }
-
     @GetMapping("/template/group/available")
     @ApiOperationSupport(order = 16)
     @ApiOperation(value = "request-group-template-available")
@@ -124,7 +126,7 @@ public class TaskmanRequestController {
         QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
         wrapper.eq("status",0);
         List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
-        return okayWithData(dtoList);
+        return JsonResponse.okayWithData(dtoList);
     }
 
     @DeleteMapping("/template/group/delete/{id}")
@@ -135,13 +137,18 @@ public class TaskmanRequestController {
         return JsonResponse.okay();
     }
 
-    @DeleteMapping("/template/group/delete/{id}")
     @ApiOperationSupport(order = 18)
-    @ApiOperation(value = "request-create-service-meta", notes = "")
-    public JsonResponse<CreateRequestServiceMetaResp> createRequestServiceMeta(){
-
-        return okayWithData(new CreateRequestServiceMetaResp());
+    @PostMapping("/info/search/{page}/{pageSize}")
+    @ApiOperation(value = "Request-Info-search")
+    public JsonResponse<QueryResponse<RequestInfoResq>> selectRequestInfo(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) SaveRequestInfoReq req)
+            throws Exception {
+        QueryResponse<RequestInfoResq> queryResponse = requestInfoService.selectRequestInfoService(page, pageSize, req);
+        return JsonResponse.okayWithData(queryResponse);
     }
+
 }
 
 

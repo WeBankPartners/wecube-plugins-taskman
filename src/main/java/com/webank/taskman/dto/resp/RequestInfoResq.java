@@ -1,32 +1,22 @@
-package com.webank.taskman.domain;
+package com.webank.taskman.dto.resp;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.webank.taskman.base.BaseEntity;
+import com.webank.taskman.domain.FormInfo;
+import com.webank.taskman.domain.FormItemInfo;
 
-import java.io.Serializable;
+import java.util.List;
 
-public class RequestInfo extends BaseEntity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
+public class RequestInfoResq {
     private String id;
-
 
     private String requestTempId;
 
-    
     private String procInstKey;
 
-    
     private String name;
 
-    
     private Integer status;
 
-
+    private FormInfoResq formInfoResq;
 
     public String getId() {
         return id;
@@ -68,14 +58,11 @@ public class RequestInfo extends BaseEntity implements Serializable {
         this.status = status;
     }
 
-    @Override
-    public String toString() {
-        return "RequestInfo{" +
-                "id='" + id + '\'' +
-                ", requestTempId='" + requestTempId + '\'' +
-                ", procInstKey='" + procInstKey + '\'' +
-                ", name='" + name + '\'' +
-                ", status=" + status +
-                '}';
+    public FormInfoResq getFormInfoResq() {
+        return formInfoResq;
+    }
+
+    public void setFormInfoResq(FormInfoResq formInfoResq) {
+        this.formInfoResq = formInfoResq;
     }
 }

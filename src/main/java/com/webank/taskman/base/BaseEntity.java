@@ -1,6 +1,8 @@
 package com.webank.taskman.base;
 
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.webank.taskman.commons.AuthenticationContextHolder;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
@@ -57,5 +59,13 @@ public class BaseEntity {
 
     public void setDelFlag(Integer delFlag) {
         this.delFlag = delFlag;
+    }
+
+    public BaseEntity setCurrUserName(BaseEntity entity,String Id) {
+        if(StringUtils.isEmpty(Id)){
+            entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+        }
+        entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        return entity;
     }
 }

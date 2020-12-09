@@ -8,6 +8,8 @@ import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,7 @@ public class CoreResourceController {
 
     @ApiOperationSupport(order = 1)
     @GetMapping("/users/current-user/roles")
+    @ApiOperation(value = "core-resources-role-current-user", notes = "")
     public JsonResponse<List<RolesDataResponse>> getRolesByCurrentUser(HttpServletRequest httpRequest) {
         String currentUserName = AuthenticationContextHolder.getCurrentUsername();
         return okayWithData(coreServiceStub.getRolesByUserName(currentUserName));
@@ -35,12 +38,14 @@ public class CoreResourceController {
 
     @ApiOperationSupport(order = 2)
     @GetMapping("/roles")
+    @ApiOperation(value = "core-resources-role-all", notes = "")
     public JsonResponse<List<RolesDataResponse>> getAllRoles() throws JsonParseException, JsonMappingException, IOException {
         return okayWithData(coreServiceStub.getAllRoles());
     }
 
     @ApiOperationSupport(order = 3)
     @GetMapping("/workflow/process-definition-keys")
+    @ApiOperation(value = "workflow-process-all", notes = "")
     public JsonResponse<List<WorkflowDefInfoDto>> fetchLatestReleasedWorkflowDefs() {
         return okayWithData(coreServiceStub.fetchLatestReleasedWorkflowDefs());
     }
@@ -48,12 +53,14 @@ public class CoreResourceController {
     //    @GetMapping("/workflow/process/definitions/{proc-def-id}/tasknodes")
     @ApiOperationSupport(order = 4)
     @GetMapping("/workflow/process-definitions-nodes/{proc-def-id}")
+    @ApiOperation(value = "workflow-process-nodes", notes = "")
     public JsonResponse<List<WorkflowNodeDefInfoDto>> getTaskNodes(@PathVariable("proc-def-id") String procDefId) {
         return okayWithData(coreServiceStub.fetchWorkflowTasknodeInfos(procDefId));
     }
 
     @ApiOperationSupport(order = 5)
     @PostMapping("/workflow/process/crate")
+    @ApiOperation(value = "workflow-process-crate", notes = "")
     public JsonResponse<CoreResponse.DynamicWorkflowInstInfoDto> createNewWorkflowInstance(@RequestBody
                                                                                                    DynamicWorkflowInstCreationInfoDto creationInfoDto) {
         return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
@@ -61,6 +68,7 @@ public class CoreResourceController {
 
     @ApiOperationSupport(order = 6)
     @GetMapping("/form-item/ci-data")
+    @ApiOperation(value = "workflow-process-crate", notes = "")
     public JsonResponse getCoreCiData() {
 
         return okayWithData(null);

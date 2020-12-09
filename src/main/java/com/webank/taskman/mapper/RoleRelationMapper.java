@@ -10,7 +10,7 @@ import java.util.List;
 public interface RoleRelationMapper extends BaseMapper<RoleRelation> {
 
 
-    int deleteByTemplate(@Param("tempTable") String tempName, @Param("tempId")  String tempId);
+    int deleteByTemplate(@Param("tempId")  String tempId);
 
     List<RoleRelation> selectRole(String recordTable, String recordId);
 }

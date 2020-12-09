@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.PageInfo;
@@ -29,7 +30,7 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
     FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
-    public FormItemTemplate addOrUpdateFormItemTemplate(SaveFormItemTemplateReq templateReq) throws Exception {
+    public FormItemTemplate saveFormItemTemplateByReq(SaveFormItemTemplateReq templateReq) throws TaskmanException {
         FormItemTemplate addOrUpdateDomain = new FormItemTemplate();
         BeanUtils.copyProperties(templateReq, addOrUpdateDomain);
 
@@ -42,7 +43,7 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
 
         if (!StringUtils.isEmpty(addOrUpdateDomain.getId())) {
             if (addOrUpdateDomain.getName() == null) {
-                throw new Exception("The update name cannot be empty");
+                throw new TaskmanException("The update name cannot be empty");
             }
             addOrUpdateDomain.setUpdatedTime(new Date());
             this.getBaseMapper().update(addOrUpdateDomain, new QueryWrapper<FormItemTemplate>()

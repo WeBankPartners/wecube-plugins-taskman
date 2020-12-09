@@ -51,21 +51,19 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     @Transactional
-    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq requestTemplateReq) {
-        RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(requestTemplateReq);
+    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq req) {
+        RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
         if (StringUtils.isEmpty(requestTemplate.getId())) {
             requestTemplate.setCreatedBy(currentUsername);
         }
         saveOrUpdate(requestTemplate);
-        String requestTemplateId = requestTemplate.getId();
-        roleRelationService.deleteByTemplate(TABLE_NAME,requestTemplateId);
-        roleRelationService.saveRoleRelation(requestTemplateId,TABLE_NAME,RoleTypeEnum.USE_ROLE.getType(),requestTemplateReq.getUseRoles());
-        roleRelationService.saveRoleRelation(requestTemplateId,TABLE_NAME,RoleTypeEnum.MANAGE_ROLE.getType(),requestTemplateReq.getManageRoles());
-        return new RequestTemplateResp().setId(requestTemplateId);
+        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(),req.getManageRoles());
+        return new RequestTemplateResp().setId(requestTemplate.getId());
 
     }
+
 
     @Override
     public void deleteRequestTemplateService(String id) throws Exception {

@@ -33,7 +33,7 @@ public class V2FormController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        formTemplateService.saveFormTemplate(req);
+        formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okay();
     }
 

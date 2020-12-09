@@ -3,13 +3,11 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -36,7 +34,7 @@ public class FormTemplateController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        FormTemplateResp formTemplateResp= formTemplateService.saveFormTemplate(req);
+        FormTemplateResp formTemplateResp= formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 
@@ -53,7 +51,7 @@ public class FormTemplateController {
     @ApiOperationSupport(order = 4)
     @GetMapping("/detail/{tempType}/{tempId}")
     @ApiOperation(value = "detail FormTemplate ")
-    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@PathVariable("tempType") String tempType,@PathVariable("tempId") String tempId) throws Exception {
+    public JsonResponse<QueryResponse<FormTemplateResp>> detail(@PathVariable("tempType") Integer tempType,@PathVariable("tempId") String tempId) throws Exception {
         SaveFormTemplateReq req = new SaveFormTemplateReq(tempId,tempType);
         FormTemplateResp formTemplateResp = formTemplateService.detailFormTemplate(req);
         return JsonResponse.okayWithData(formTemplateResp);

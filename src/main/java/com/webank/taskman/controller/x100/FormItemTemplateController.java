@@ -38,7 +38,7 @@ public class FormItemTemplateController {
                 return JsonResponse.okayWithData(error.getDefaultMessage());
             }
         }
-        FormItemTemplate formItemTemplate = formItemTemplateService.addOrUpdateFormItemTemplate(req);
+        FormItemTemplate formItemTemplate = formItemTemplateService.saveFormItemTemplateByReq(req);
         FormItemTemplateSVResq formItemTemplateSVResq=new FormItemTemplateSVResq();
         formItemTemplateSVResq.setId(formItemTemplate.getId());
         return JsonResponse.okayWithData(formItemTemplateSVResq);

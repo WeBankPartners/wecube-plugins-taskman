@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 
-public class FormTemplateResp {
+public class CoreTaskServiceMetaResp {
 
     @ApiModelProperty(value = "",position = 1)
     private String id;
@@ -14,9 +14,6 @@ public class FormTemplateResp {
 
     @ApiModelProperty(value = "",position = 3)
     private String description;
-
-    @ApiModelProperty(value = "",position = 4)
-    private String style;
 
     @ApiModelProperty(value = "",position = 5)
     private String targetEntitys;
@@ -31,60 +28,38 @@ public class FormTemplateResp {
     private String otherAttrDef;
 
     @ApiModelProperty(value = "",position = 9)
-    private List<FormItemTemplateResq> items;
-
-    public List<FormItemTemplateResq> getItems() {
-        return items;
-    }
-
-    public FormTemplateResp setItems(List<FormItemTemplateResq> items) {
-        this.items = items;
-        return  this;
-    }
+    private List<CoreTaskFormItemResp> items;
 
     public String getId() {
         return id;
     }
 
-    public FormTemplateResp setId(String id) {
+    public void setId(String id) {
         this.id = id;
-        return  this;
     }
 
     public String getName() {
         return name;
     }
 
-    public FormTemplateResp setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return  this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public FormTemplateResp setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
-        return  this;
-    }
-
-    public String getStyle() {
-        return style;
-    }
-
-    public FormTemplateResp setStyle(String style) {
-        this.style = style;
-        return  this;
     }
 
     public String getTargetEntitys() {
         return targetEntitys;
     }
 
-    public FormTemplateResp setTargetEntitys(String targetEntitys) {
+    public void setTargetEntitys(String targetEntitys) {
         this.targetEntitys = targetEntitys;
-        return  this;
     }
 
     public String getInputAttrDef() {
@@ -111,14 +86,11 @@ public class FormTemplateResp {
         this.otherAttrDef = otherAttrDef;
     }
 
-    @Override
-    public String toString() {
-        return "FormTemplateResp{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", targetEntitys='" + targetEntitys + '\'' +
-                ", style='" + style + '\'' +
-                '}';
+    public List<CoreTaskFormItemResp> getItems() {
+        return items;
+    }
+
+    public void setItems(List<CoreTaskFormItemResp> items) {
+        this.items = items;
     }
 }

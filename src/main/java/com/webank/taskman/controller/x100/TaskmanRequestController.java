@@ -10,7 +10,7 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.TemplateGroupDTO;
 import com.webank.taskman.dto.TemplateGroupReq;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
@@ -89,7 +89,7 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 14)
     @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupResq> createTemplateGroup(
-            @Valid @RequestBody SaveAndUpdateTemplateGropReq req, BindingResult bindingResult) throws Exception {
+            @Valid @RequestBody SaveRequestTemplateGropReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {
                 return JsonResponse.okayWithData(error.getDefaultMessage());

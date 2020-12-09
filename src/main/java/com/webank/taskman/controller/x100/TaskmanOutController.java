@@ -9,6 +9,7 @@ import com.webank.taskman.dto.WorkflowJsonResponse;
 import com.webank.taskman.dto.req.CoreTaskCreateServiceMetaReq;
 import com.webank.taskman.dto.req.CreateTaskRequestDto;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
+import com.webank.taskman.dto.resp.CoreTaskServiceMetaResp;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class TaskmanOutController {
     @ApiOperationSupport(order = 7)
     @GetMapping("/task/create/service-meta")
     @ApiOperation(value = "service-meta")
-    public JsonResponse<FormTemplateResp> queryTaskFormItemTemplateList(CoreTaskCreateServiceMetaReq req)
+    public JsonResponse<CoreTaskServiceMetaResp> queryTaskFormItemTemplateList(CoreTaskCreateServiceMetaReq req)
     {
         List<FormItemTemplateDTO> list = new LinkedList<>();
         list.add(new FormItemTemplateDTO());

@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.SaveAndUpdateTemplateGropReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
 
     @Override
-    public RequestTemplateGroup saveTemplateGroupByReq(SaveAndUpdateTemplateGropReq gropReq) throws Exception {
+    public RequestTemplateGroup saveTemplateGroupByReq(SaveRequestTemplateGropReq gropReq) throws Exception {
         RequestTemplateGroup req = requestTemplateGroupConverter.addOrUpdateDomain(gropReq);
         if (StringUtils.isEmpty(req.getId())) {
             req.setCreatedBy("11");

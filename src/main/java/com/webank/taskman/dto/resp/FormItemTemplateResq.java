@@ -44,8 +44,9 @@ public class FormItemTemplateResq {
         return id;
     }
 
-    public void setId(String id) {
+    public FormItemTemplateResq setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getFormTemplateId() {

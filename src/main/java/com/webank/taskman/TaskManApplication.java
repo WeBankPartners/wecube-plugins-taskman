@@ -12,8 +12,6 @@ import java.io.IOException;
 @SpringBootApplication
 @EnableTransactionManagement
 public class TaskManApplication {
-
-
     public static void main(String[] args) throws IOException {
         SpringApplication.run(TaskManApplication.class, args);
     }

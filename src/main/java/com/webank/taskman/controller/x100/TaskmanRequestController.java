@@ -12,6 +12,7 @@ import com.webank.taskman.dto.TemplateGroupReq;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
+import com.webank.taskman.dto.resp.CreateRequestServiceMetaResp;
 import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.RequestTemplateGroupService;
@@ -27,6 +28,8 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 
 @Api(tags = {"3、 Request inteface API"})
@@ -49,11 +52,11 @@ public class TaskmanRequestController {
     public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()){
             for (ObjectError error:bindingResult.getAllErrors()){
-                return JsonResponse.okayWithData(error.getDefaultMessage());
+                return okayWithData(error.getDefaultMessage());
             }
         }
       RequestTemplateResp requestTemplateResp= requestTemplateService.saveRequestTemplate(req);
-        return JsonResponse.okayWithData(requestTemplateResp);
+        return okayWithData(requestTemplateResp);
     }
 
     @ApiOperationSupport(order = 11)
@@ -65,7 +68,7 @@ public class TaskmanRequestController {
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws Exception {
         QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(page, pageSize, req);
-        return JsonResponse.okayWithData(queryResponse);
+        return okayWithData(queryResponse);
     }
 
     @ApiOperationSupport(order = 12)
@@ -81,7 +84,7 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-detail", notes = "需要传入id")
     public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
        RequestTemplateResp requestTemplateResp= requestTemplateService.detailRequestTemplate(id);
-        return JsonResponse.okayWithData(requestTemplateResp);
+        return okayWithData(requestTemplateResp);
     }
 
 
@@ -92,13 +95,13 @@ public class TaskmanRequestController {
             @Valid @RequestBody SaveRequestTemplateGropReq req, BindingResult bindingResult) throws Exception {
         if (bindingResult.hasErrors()) {
             for (ObjectError error : bindingResult.getAllErrors()) {
-                return JsonResponse.okayWithData(error.getDefaultMessage());
+                return okayWithData(error.getDefaultMessage());
             }
         }
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.saveTemplateGroupByReq(req);
         RequestTemplateGroupResq groupResq =new RequestTemplateGroupResq();
         groupResq.setId(requestTemplateGroup.getId());
-        return JsonResponse.okayWithData(groupResq);
+        return okayWithData(groupResq);
     }
 
 
@@ -111,8 +114,9 @@ public class TaskmanRequestController {
             @RequestBody(required = false) TemplateGroupReq req
     ) throws Exception {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
-        return JsonResponse.okayWithData(queryResponse);
+        return okayWithData(queryResponse);
     }
+
     @GetMapping("/template/group/available")
     @ApiOperationSupport(order = 16)
     @ApiOperation(value = "request-group-template-available")
@@ -120,7 +124,7 @@ public class TaskmanRequestController {
         QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
         wrapper.eq("status",0);
         List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
-        return JsonResponse.okayWithData(dtoList);
+        return okayWithData(dtoList);
     }
 
     @DeleteMapping("/template/group/delete/{id}")
@@ -131,6 +135,13 @@ public class TaskmanRequestController {
         return JsonResponse.okay();
     }
 
+    @DeleteMapping("/template/group/delete/{id}")
+    @ApiOperationSupport(order = 18)
+    @ApiOperation(value = "request-create-service-meta", notes = "")
+    public JsonResponse<CreateRequestServiceMetaResp> createRequestServiceMeta(){
+
+        return okayWithData(new CreateRequestServiceMetaResp());
+    }
 }
 
 

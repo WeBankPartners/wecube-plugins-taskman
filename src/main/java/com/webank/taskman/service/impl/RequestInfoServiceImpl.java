@@ -48,9 +48,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         List<RequestInfoResq> respList = requestInfoConverter.toDto(iPage.getRecords());
 
         for (RequestInfoResq requestInfoResq : respList) {
-            FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",requestInfoResq.getRequestTempId()));
+            FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",requestInfoResq.getId()));
             FormInfoResq formInfoResq=formInfoConverter.toDto(formInfo);
-            formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(requestInfoResq.getRequestTempId()));
+            formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(requestInfoResq.getId()));
             requestInfoResq.setFormInfoResq(formInfoResq);
         }
 

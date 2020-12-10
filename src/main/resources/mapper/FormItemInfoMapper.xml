@@ -23,7 +23,7 @@
         =
         (SELECT fi.id FROM form_info fi
         WHERE
-        fi.record_id =#{requestTempId}
+        fi.record_id =#{id}
         )
     </select>
 

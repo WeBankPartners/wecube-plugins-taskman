@@ -1,60 +1,47 @@
-package com.webank.taskman.domain;
+package com.webank.taskman.dto.resp;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.webank.taskman.base.BaseEntity;
+import io.swagger.annotations.ApiModel;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class TaskInfo extends BaseEntity implements Serializable {
+@ApiModel
+public class TaskInfoResp{
 
-    private static final long serialVersionUID = 1L;
-
-    
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    
     private String requestId;
-
     
     private String requestNo;
 
-    
     private String parentId;
 
     private String taskTempId;
 
     private String procNode;
 
-    private String callbackUrl;
-    
-    private String callbackParameter;
-
     private String name;
-
+    
     private String reporter;
     
     private Date reportTime;
-
+    
     private String emergency;
 
     private String reportRole;
 
     private String result;
-    
+
     private String description;
-    
+
     private String attachFileId;
 
     private Integer status;
-    
-    private String version;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
+    private FormInfoResq formInfoResq;
 
     public String getId() {
         return id;
@@ -102,22 +89,6 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     public void setProcNode(String procNode) {
         this.procNode = procNode;
-    }
-
-    public String getCallbackUrl() {
-        return callbackUrl;
-    }
-
-    public void setCallbackUrl(String callbackUrl) {
-        this.callbackUrl = callbackUrl;
-    }
-
-    public String getCallbackParameter() {
-        return callbackParameter;
-    }
-
-    public void setCallbackParameter(String callbackParameter) {
-        this.callbackParameter = callbackParameter;
     }
 
     public String getName() {
@@ -192,25 +163,23 @@ public class TaskInfo extends BaseEntity implements Serializable {
         this.status = status;
     }
 
-    public String getVersion() {
-        return version;
+    public FormInfoResq getFormInfoResq() {
+        return formInfoResq;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public void setFormInfoResq(FormInfoResq formInfoResq) {
+        this.formInfoResq = formInfoResq;
     }
 
     @Override
     public String toString() {
-        return "TaskInfo{" +
+        return "TaskInfoResp{" +
                 "id='" + id + '\'' +
                 ", requestId='" + requestId + '\'' +
                 ", requestNo='" + requestNo + '\'' +
                 ", parentId='" + parentId + '\'' +
                 ", taskTempId='" + taskTempId + '\'' +
                 ", procNode='" + procNode + '\'' +
-                ", callbackUrl='" + callbackUrl + '\'' +
-                ", callbackParameter='" + callbackParameter + '\'' +
                 ", name='" + name + '\'' +
                 ", reporter='" + reporter + '\'' +
                 ", reportTime=" + reportTime +
@@ -220,7 +189,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
                 ", description='" + description + '\'' +
                 ", attachFileId='" + attachFileId + '\'' +
                 ", status=" + status +
-                ", version='" + version + '\'' +
+                ", formInfoResq=" + formInfoResq +
                 '}';
     }
 }

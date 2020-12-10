@@ -1,56 +1,42 @@
 package com.webank.taskman.dto.req;
 
-import java.util.Date;
 
+import io.swagger.annotations.ApiModel;
+import org.apache.commons.lang3.StringUtils;
+
+@ApiModel
 public class SaveTaskInfoReq {
 
-    private String procNode;
+    private String id;
 
-    private String callbackUrl;
-
-    private String callbackParameter;
+    private String taskTempId;
 
     private String name;
 
-    private String reporter;
+    private Integer status;
 
-    private Date reportTime;
+    private String useRoleName;
 
-    private String emergency;
+    private String manageRoleName;
 
-    private String reportRole;
+    private Integer roleType;
 
-    private String result;
+    private String roleName;
 
-    private String description;
-
-    private String attachFileId;
-
-    private String version;
-
-
-    public String getProcNode() {
-        return procNode;
+    public String getId() {
+        return id;
     }
 
-    public void setProcNode(String procNode) {
-        this.procNode = procNode;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getCallbackUrl() {
-        return callbackUrl;
+    public String getTaskTempId() {
+        return taskTempId;
     }
 
-    public void setCallbackUrl(String callbackUrl) {
-        this.callbackUrl = callbackUrl;
-    }
-
-    public String getCallbackParameter() {
-        return callbackParameter;
-    }
-
-    public void setCallbackParameter(String callbackParameter) {
-        this.callbackParameter = callbackParameter;
+    public void setTaskTempId(String taskTempId) {
+        this.taskTempId = taskTempId;
     }
 
     public String getName() {
@@ -61,68 +47,64 @@ public class SaveTaskInfoReq {
         this.name = name;
     }
 
-    public String getReporter() {
-        return reporter;
+    public Integer getStatus() {
+        return status;
     }
 
-    public void setReporter(String reporter) {
-        this.reporter = reporter;
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 
-    public Date getReportTime() {
-        return reportTime;
+    public String getUseRoleName() {
+        return useRoleName;
     }
 
-    public void setReportTime(Date reportTime) {
-        this.reportTime = reportTime;
+    public void setUseRoleName(String useRoleName) {
+        this.useRoleName = useRoleName;
+        if(!StringUtils.isEmpty(useRoleName)){
+            this.roleType = null != this.roleType ? 2:1;
+            this.roleName = this.useRoleName;
+        }
     }
 
-    public String getEmergency() {
-        return emergency;
+    public String getManageRoleName() {
+        return manageRoleName;
     }
 
-    public void setEmergency(String emergency) {
-        this.emergency = emergency;
+    public void setManageRoleName(String manageRoleName) {
+        this.manageRoleName = manageRoleName;
+        if(!StringUtils.isEmpty(manageRoleName)){
+            this.roleType = null != this.roleType ? 2:0;
+            this.roleName = this.manageRoleName;
+        }
+    }
+    public Integer getRoleType() {
+        return roleType;
     }
 
-    public String getReportRole() {
-        return reportRole;
+    public void setRoleType(Integer roleType) {
+        this.roleType = roleType;
     }
 
-    public void setReportRole(String reportRole) {
-        this.reportRole = reportRole;
+    public String getRoleName() {
+        return roleName;
     }
 
-    public String getResult() {
-        return result;
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
-    public void setResult(String result) {
-        this.result = result;
+    @Override
+    public String toString() {
+        return "SaveTaskInfoReq{" +
+                "id='" + id + '\'' +
+                ", taskTempId='" + taskTempId + '\'' +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", useRoleName='" + useRoleName + '\'' +
+                ", manageRoleName='" + manageRoleName + '\'' +
+                ", roleType=" + roleType +
+                ", roleName='" + roleName + '\'' +
+                '}';
     }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getAttachFileId() {
-        return attachFileId;
-    }
-
-    public void setAttachFileId(String attachFileId) {
-        this.attachFileId = attachFileId;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
 }

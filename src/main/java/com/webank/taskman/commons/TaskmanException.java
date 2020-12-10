@@ -1,5 +1,7 @@
 package com.webank.taskman.commons;
 
+import com.webank.taskman.constant.StatusCodeEnum;
+
 public class TaskmanException extends RuntimeException {
 
     /**
@@ -19,6 +21,17 @@ public class TaskmanException extends RuntimeException {
 
     public TaskmanException(String message, Throwable cause) {
         super(message, cause);
+        this.applyMessage = true;
+    }
+
+    public TaskmanException(StatusCodeEnum errorCode) {
+        this.errorCode = errorCode.getCode();
+        this.messageKey = errorCode.getMessage();
+        this.applyMessage = true;
+    }
+    public TaskmanException(StatusCodeEnum errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode.getCode();
         this.applyMessage = true;
     }
 

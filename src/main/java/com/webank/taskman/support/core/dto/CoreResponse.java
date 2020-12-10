@@ -2,8 +2,10 @@ package com.webank.taskman.support.core.dto;
 
 
 import com.webank.taskman.dto.OperationEventResultDto;
+import com.webank.taskman.dto.resp.RootEntityResp;
 
 import java.util.List;
+import java.util.Set;
 
 public class CoreResponse<DATATYPE> {
 
@@ -30,7 +32,14 @@ public class CoreResponse<DATATYPE> {
     public static class GetAllRolesResponse extends CoreResponse<List<RolesDataResponse>> {
     }
     
-    public static class GetRootEntitiesResponse extends CoreResponse<Object> {
+    public static class GetRootEntitiesResponse extends CoreResponse<List<RootEntityResp>> {
+
+    }
+    public static class GetModelsAllResponse extends CoreResponse<Set<PluginPackageDataModelDto>> {
+
+    }
+    public static class GetAttributesByPackageEntityResponse extends CoreResponse<List<PluginPackageAttributeDto>> {
+
     }
 
     public static class DynamicWorkflowInstInfoDto extends CoreResponse<DynamicWorkflowInstInfoDto> {

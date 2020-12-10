@@ -3,12 +3,12 @@ package com.webank.taskman.controller.x100;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.webank.taskman.commons.ApplicationConstants;
+import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
+import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.TemplateGroupDTO;
-import com.webank.taskman.dto.TemplateGroupReq;
+import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
@@ -28,8 +28,12 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.webank.taskman.dto.JsonResponse.okay;
+import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 
 @Api(tags = {"3、 Request inteface API"})
@@ -43,8 +47,13 @@ public class TaskmanRequestController {
     @Autowired
     RequestTemplateGroupService requestTemplateGroupService;
 
+
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
+
+    @Autowired
+    RequestTemplateConverter requestTemplateConverter;
+
 
     @Autowired
     RequestInfoService requestInfoService;
@@ -79,7 +88,7 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-delete", notes = "需要传入id")
     public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
         requestTemplateService.deleteRequestTemplateService(id);
-        return JsonResponse.okay();
+        return okay();
     }
 
     @ApiOperationSupport(order = 13)
@@ -90,6 +99,15 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(requestTemplateResp);
     }
 
+    @GetMapping("/template/available")
+    @ApiOperationSupport(order = 14)
+    @ApiOperation(value = "request-template-available")
+    public JsonResponse<List<RequestTemplateResp>> availableRequest(@ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
+        QueryWrapper<RequestTemplate> wrapper = new QueryWrapper<RequestTemplate>();
+        wrapper.eq("status",1);
+        List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.list(wrapper));
+        return okayWithData(dtoList);
+    }
 
     @PostMapping("/template/group/save")
     @ApiOperationSupport(order = 14)
@@ -134,11 +152,11 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-delete", notes = "需要传入id")
     public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
-        return JsonResponse.okay();
+        return okay();
     }
 
     @ApiOperationSupport(order = 18)
-    @PostMapping("/info/search/{page}/{pageSize}")
+    @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "Request-Info-search")
     public JsonResponse<QueryResponse<RequestInfoResq>> selectRequestInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
@@ -149,6 +167,12 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
+    @PostMapping(ApplicationConstants.ApiInfo.API_RESOURCE_SERVICE_REQUEST_DONE)
+    public JsonResponse updateServiceRequest(@RequestBody DoneServiceRequestRequest request,
+                                             HttpServletRequest httpRequest) throws Exception {
+        requestInfoService.doneServiceRequest(request);
+        return okay();
+    }
 }
 
 

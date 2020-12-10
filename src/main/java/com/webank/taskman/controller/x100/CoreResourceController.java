@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
@@ -67,13 +68,45 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
     }
 
-    /*@ApiOperationSupport(order = 6)
-    @GetMapping("/form-item/ci-data")
-    @ApiOperation(value = "workflow-process-crate", notes = "")
-    public JsonResponse getCoreCiData() {
-
-        return okayWithData(null);
-    }*/
 
 
+    @ApiOperationSupport(order = 6)
+    @GetMapping("/workflow/process/models")
+    @ApiOperation(value = "workflow-process-models", notes = "")
+    public JsonResponse allDataModels() {
+        return okayWithData(coreServiceStub.allDataModels());
+    }
+
+    @ApiOperationSupport(order = 7)
+    @GetMapping("/workflow/process/models/{package-name}")
+    @ApiOperation(value = "workflow-process-models-package", notes = "")
+    public JsonResponse allDataModels(@PathVariable("package-name") String packageName) {
+        return okayWithData(coreServiceStub.getModelsByPackage(packageName));
+    }
+
+    @ApiOperationSupport(order = 8)
+    @GetMapping("/workflow/process/models/package/{package-name}/entity/{entity-name}/attributes")
+    @ApiOperation(value = "workflow-process-entity-attributes", notes = "")
+    public JsonResponse getAttributesByPackageEntity(
+            @PathVariable("package-name") String packageName,@PathVariable("entity-name")String entity) {
+        return okayWithData(coreServiceStub.getAttributesByPackageEntity(packageName,entity));
+    }
+    @ApiOperationSupport(order = 9)
+    @GetMapping("/workflow/process/packages/{package-name}/entities/{entity-name}/retrieve")
+    @ApiOperation(value = "workflow-process-entity-retrieve", notes = "")
+    public JsonResponse retrieveEntity( @PathVariable("package-name") String packageName,
+                @PathVariable("entity-name")String entity,
+            @RequestParam(required = false) Map<String, String> allFilters) {
+        return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,allFilters));
+    }
+
+
+    /**/
+    @ApiOperationSupport(order = 9)
+    @GetMapping("/workflow/process/{proc-def-key}/root-entity")
+    @ApiOperation(value = "workflow-process-root-entity", notes = "")
+    public JsonResponse getCoreCiData(@PathVariable("proc-def-key") String procDefKey) {
+
+        return okayWithData(coreServiceStub.rootEntityRespList(procDefKey));
+    }
 }

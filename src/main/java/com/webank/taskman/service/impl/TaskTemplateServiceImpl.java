@@ -1,24 +1,23 @@
 package com.webank.taskman.service.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.converter.TaskTemplateConverter;
-import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
+import com.webank.taskman.mapper.RoleRelationMapper;
 import com.webank.taskman.mapper.TaskTemplateMapper;
 import com.webank.taskman.service.FormTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.service.TaskTemplateService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,15 +38,20 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     TaskTemplateConverter taskTemplateConverter;
 
+    @Autowired
+    TaskTemplateMapper taskTemplateMapper;
+
+    @Autowired
+    RoleRelationMapper roleRelationMapper;
 
     @Override
     @Transactional
     public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) {
         TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
-        taskTemplate.setCurrenUserName(taskTemplate,taskTemplate.getId());
+        taskTemplate.setCurrenUserName(taskTemplate, taskTemplate.getId());
         saveOrUpdate(taskTemplate);
         String taskTemplateId = taskTemplate.getId();
-        roleRelationService.saveRoleRelationByTemplate(taskTemplateId,req.getUseRoles(),req.getManageRoles());
+        roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 
         SaveFormTemplateReq formTemplateReq = req.getForm();
         formTemplateReq.setTempId(taskTemplateId);
@@ -57,6 +61,53 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         TaskTemplateResp taskTemplateResp = new TaskTemplateResp();
         taskTemplateResp.setId(taskTemplateId);
         return new TaskTemplateResp().setId(taskTemplateId);
+    }
+
+    @Override
+    public void deleteTaskTemplateByIDService(String id) {
+        UpdateWrapper<TaskTemplate> wrapper = new UpdateWrapper<>();
+        wrapper.eq("id", id).set("del_flag", 1);
+        taskTemplateMapper.update(null, wrapper);
+    }
+
+    @Override
+    public List<TaskTemplateResp> selectTaskTemplateAll() {
+        List<TaskTemplate> taskTemplates = taskTemplateMapper.selectList(null);
+        List<TaskTemplateResp> svResps = taskTemplateConverter.toDto(taskTemplates);
+        for (TaskTemplateResp svResp : svResps) {
+            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>()
+                    .eq("record_id", svResp.getId()));
+            roles.stream().forEach(roleRelation -> {
+                RoleDTO roleDTO = new RoleDTO();
+                roleDTO.setRoleName(roleRelation.getRoleName());
+                roleDTO.setDisplayName(roleRelation.getRoleName());
+                if (RoleTypeEnum.USE_ROLE.getType() == roleRelation.getRoleType()) {
+                    svResp.getUseRoles().add(roleDTO);
+                } else {
+                    svResp.getManageRoles().add(roleDTO);
+                }
+            });
+        }
+        return svResps;
+    }
+
+    @Override
+    public TaskTemplateResp selectTaskTemplateOne(String id) {
+        TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
+        TaskTemplateResp taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
+        List<RoleRelation> relations = roleRelationService.list(new QueryWrapper<RoleRelation>()
+                .eq("record_id", id));
+        relations.stream().forEach(roleRelation -> {
+            RoleDTO roleDTO = new RoleDTO();
+            roleDTO.setRoleName(roleRelation.getRoleName());
+            roleDTO.setDisplayName(roleRelation.getRoleName());
+            if (RoleTypeEnum.USE_ROLE.getType() == roleRelation.getRoleType()) {
+                taskTemplateResp.getUseRoles().add(roleDTO);
+            } else {
+                taskTemplateResp.getManageRoles().add(roleDTO);
+            }
+        });
+        return taskTemplateResp;
     }
 
 

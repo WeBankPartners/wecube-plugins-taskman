@@ -62,7 +62,7 @@ public class TaskmanTaskController {
     }
 
     @ApiOperationSupport(order = 21)
-    @PostMapping("/info/search/{page}/{pageSize}")
+    @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "Task-Info-search")
     public JsonResponse<QueryResponse<TaskInfoResp>> selectRequestInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,

@@ -10,10 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.webank.taskman.support.core.CoreServiceTestData.*;
 
 @Service
 public class CoreServiceStub {
@@ -22,13 +22,23 @@ public class CoreServiceStub {
     private static final String GET_ALL_ROLES = "/auth/v1/roles";
     private static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
 
-    private static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1//release/process/definitions";
-    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/release/process/definitions/{proc-def-id}/tasknodes";
+    private static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/release/process/definitions";
+    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/release/process/definitions/{proc-def-id}/tasknodes";
 
-    private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/release/process/instances";
+    private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/release/process/instances";
 
-    public static final String RETRIEVE_REQUEST_URL = "http://{gatewayUrl}/{packageName}/entities/{entityName}";
-    public static final String RETRIEVE_REQUEST_WITH_FILTER_URL = "http://{gatewayUrl}/{packageName}/entities/{entityName}?{requestParams}";
+    public  static final String GET_MODELS_ALL_URL= "/platform/v1/models";
+
+    public  static final String GET_MODELS_BY_PACKAGE_URL= "/platform/v1/packages/{package-name}/models";
+    // entity.attributes
+    public  static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL=
+            "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";
+    // entity to retrieve
+    public static final String GET_ENTITY_RETRIEVE_URL =
+            "/platform/v1/packages/{package-name}/entities/{entity-name}/retrieve";
+
+
+
 
     @Autowired
     private CoreRestTemplate template;
@@ -38,14 +48,14 @@ public class CoreServiceStub {
     //1
     public List<RolesDataResponse> getAllRoles() {
         if("dev".equals(SpringUtils.getActiveProfile())){
-            return addRoles();
+            return CoreServiceTestData.addRoles();
         }
         return template.get(asCoreUrl(GET_ALL_ROLES), GetAllRolesResponse.class);
     }
     // 1
     public List<RolesDataResponse> getRolesByUserName(String userName) {
         if("dev".equals(SpringUtils.getActiveProfile())){
-            return addRoleTestData();
+            return CoreServiceTestData.addRoleTestData();
         }
         return template.get(asCoreUrl(GET_ROLES_BY_USER_NAME, userName), GetAllRolesResponse.class);
     }
@@ -60,7 +70,7 @@ public class CoreServiceStub {
     // 1
     public List<WorkflowDefInfoDto> fetchLatestReleasedWorkflowDefs()  {
         if("dev".equals(SpringUtils.getActiveProfile())){
-            return addPdfTestData();
+            return CoreServiceTestData.addPdfTestData();
         }
         return template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);
     }
@@ -82,52 +92,64 @@ public class CoreServiceStub {
         }
         return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);
     }
-    //3
+
+    // 3
+    public Set<PluginPackageDataModelDto> allDataModels() {
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            return  new HashSet(addAllDataModels());
+        }
+        return template.get(GET_MODELS_ALL_URL,GetModelsAllResponse.class);
+    }
+
+    // 4
+    public Set<PluginPackageDataModelDto> getModelsByPackage(String packageName) {
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            Set<LinkedHashMap> list =  addAllDataModels().stream().filter(model->model.get("packageName").equals(packageName)).collect(Collectors.toSet());
+            return new HashSet(list);
+        }
+        return template.get(asCoreUrl(GET_MODELS_BY_PACKAGE_URL, packageName), GetModelsAllResponse.class);
+    }
+
+    // 5
+    public List<PluginPackageAttributeDto> getAttributesByPackageEntity(String packageName,String entity) {
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            List<LinkedHashMap> models =new ArrayList(getModelsByPackage(packageName));
+            if(models.size() > 0){
+                List<LinkedHashMap> entitys = new ArrayList((ArrayList)models.get(0).get("pluginPackageEntities"));
+                if(entitys.size()>0){
+                    List<LinkedHashMap> entityList =  entitys.stream().filter(e-> e.get("name").equals(entity)).collect(Collectors.toList());
+                    List attributes = (ArrayList)entityList.get(0).get("attributes");
+                    return attributes;
+                }
+            }
+
+
+            return new ArrayList<>();
+        }
+        return template.get(asCoreUrl(GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL, packageName,entity), GetModelsAllResponse.class);
+    }
+
+    // 6
+    public List<Object> retrieveEntity(String packageName, String entity, Map<String, String> Filters) {
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            if("resource_set".equals(entity)){
+                return addRetrieveEntityData();
+            }
+            return new ArrayList<>();
+        }
+
+        return template.get(asCoreUrl(GET_ENTITY_RETRIEVE_URL, packageName,entity,Filters), ListDataResponse.class);
+    }
+
+    //5
     public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
         return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,null);
     }
 
-    private List<LinkedHashMap> addTestNodeList() {
-        String nodesJson = "[{\"nodeId\": \"Task_079ytov\",\"nodeName\": \"确认VPC创建\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKof1C2BS\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"ExclusiveGateway_1vkqi0w\",\"nodeName\": \"汇聚2\",\"nodeType\": \"parallelGateway\",\"nodeDefId\": \"rWMKof7C2BU\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": null,\"serviceName\": null,\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_15gqgd2\",\"nodeName\": \"创建对等连接\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofaC2BV\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(network_segment_2)wecmdb:network_link{network_link_type eq '@@0054_0000000001@@华为云对等连接'}\",\"serviceId\": \"huaweicloud/peerings(network_link)/create\",\"serviceName\": \"huaweicloud/peerings(network_link)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__network_link\",\"packageName\": \"wecmdb\",\"name\": \"network_link\",\"displayName\": \"网络连接\",\"description\": \"网络连接\",\"attributes\": [{\"id\": \"wecmdb__48__network_link__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_1tmq1un\",\"nodeName\": \"添加默认安全策略\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofAC2C4\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(owner_network_segment)wecmdb:default_security_policy\",\"serviceId\": \"huaweicloud/security-group-rule(resource_init)/create\",\"serviceName\": \"huaweicloud/security-group-rule(resource_init)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__default_security_policy\",\"packageName\": \"wecmdb\",\"name\": \"default_security_policy\",\"displayName\": \"默认安全策略\",\"description\": \"默认安全策略\",\"attributes\": [{\"id\": \"wecmdb__48__default_security_policy__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_01fjkos\",\"nodeName\": \"确认VPC级路由\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofdC2BW\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_122ch0e\",\"nodeName\": \"创建VPC安全组\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofDC2C5\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}\",\"serviceId\": \"huaweicloud/security-group(vpc)/create\",\"serviceName\": \"huaweicloud/security-group(vpc)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__network_segment\",\"packageName\": \"wecmdb\",\"name\": \"network_segment\",\"displayName\": \"网段\",\"description\": \"网段\",\"attributes\": [{\"id\": \"wecmdb__48__network_segment__vpc_asset_id\",\"name\": \"vpc_asset_id\",\"description\": \"VPC资产ID\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_047cuia\",\"nodeName\": \"添加VPC级路由\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofGC2C6\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(owner_network_segment)wecmdb:route\",\"serviceId\": \"huaweicloud/route(route)/create\",\"serviceName\": \"huaweicloud/route(route)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__route\",\"packageName\": \"wecmdb\",\"name\": \"route\",\"displayName\": \"路由\",\"description\": \"路由\",\"attributes\": [{\"id\": \"wecmdb__48__route__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"ExclusiveGateway_1i52e6l\",\"nodeName\": \"分流2\",\"nodeType\": \"parallelGateway\",\"nodeDefId\": \"rWMKofjC2BY\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": null,\"serviceName\": null,\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_0yg3t76\",\"nodeName\": \"确认默认安全策略\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofJC2C7\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"ExclusiveGateway_1jndyr0\",\"nodeName\": \"汇聚1\",\"nodeType\": \"parallelGateway\",\"nodeDefId\": \"rWMKofmC2BZ\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": null,\"serviceName\": null,\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_0sti3bc\",\"nodeName\": \"确认对等连接\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofpC2C0\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_0r5h4yc\",\"nodeName\": \"确认子网\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofPC2C9\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"ExclusiveGateway_173mar1\",\"nodeName\": \"分流1\",\"nodeType\": \"parallelGateway\",\"nodeDefId\": \"rWMKofuC2C2\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": null,\"serviceName\": null,\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"EndEvent_1o24opi\",\"nodeName\": \"结束\",\"nodeType\": \"endEvent\",\"nodeDefId\": \"rWMKofVC2Cb\",\"taskCategory\": \"SUTN\",\"routineExp\": null,\"serviceId\": null,\"serviceName\": null,\"boundEntity\": null},{\"nodeId\": \"StartEvent_19bemuz\",\"nodeName\": \"开始\",\"nodeType\": \"startEvent\",\"nodeDefId\": \"rWMKofxC2C3\",\"taskCategory\": \"SUTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": null,\"serviceName\": null,\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_06zkopi\",\"nodeName\": \"创建子网\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKofYC2Cc\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(f_network_segment)wecmdb:network_segment{network_segment_usage eq 'SUBNET'}\",\"serviceId\": \"huaweicloud/subnet(subnet)/create\",\"serviceName\": \"huaweicloud/subnet(subnet)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__network_segment\",\"packageName\": \"wecmdb\",\"name\": \"network_segment\",\"displayName\": \"网段\",\"description\": \"网段\",\"attributes\": [{\"id\": \"wecmdb__48__network_segment__vpc_asset_id\",\"name\": \"vpc_asset_id\",\"description\": \"VPC资产ID\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"Task_0s0u94c\",\"nodeName\": \"创建VPC\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKog1C2Cd\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}\",\"serviceId\": \"huaweicloud/vpc(vpc)/create\",\"serviceName\": \"huaweicloud/vpc(vpc)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__network_segment\",\"packageName\": \"wecmdb\",\"name\": \"network_segment\",\"displayName\": \"网段\",\"description\": \"网段\",\"attributes\": [{\"id\": \"wecmdb__48__network_segment__vpc_asset_id\",\"name\": \"vpc_asset_id\",\"description\": \"VPC资产ID\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_1bi1n47\",\"nodeName\": \"创建机房监控视图\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKog4C2Ce\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecube-monitor/dashboard(region_data_center)/add\",\"serviceName\": \"\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_0v8vvs7\",\"nodeName\": \"确认机房\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKog7C2Cf\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_1g1gv2m\",\"nodeName\": \"创建NAT路由\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKogCC2Cp\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(f_network_segment)wecmdb:network_segment{network_segment_usage eq 'SUBNET'}\",\"serviceId\": \"huaweicloud/nat-snat-rule(subnet)/create-add\",\"serviceName\": \"huaweicloud/nat-snat-rule(subnet)/create-add\",\"boundEntity\": {\"id\": \"wecmdb__48__network_segment\",\"packageName\": \"wecmdb\",\"name\": \"network_segment\",\"displayName\": \"网段\",\"description\": \"网段\",\"attributes\": [{\"id\": \"wecmdb__48__network_segment__vpc_asset_id\",\"name\": \"vpc_asset_id\",\"description\": \"VPC资产ID\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_04zy5a6\",\"nodeName\": \"创建NAT IP\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKogeC2Ch\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(f_network_segment)wecmdb:network_segment{network_segment_usage eq 'WNET'}~(network_segment)wecmdb:ip_address{ip_address_usage eq '外网NAT'}\",\"serviceId\": \"huaweicloud/public-ip(nat_ip)/create\",\"serviceName\": \"huaweicloud/public-ip(nat_ip)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__ip_address\",\"packageName\": \"wecmdb\",\"name\": \"ip_address\",\"displayName\": \"IP地址\",\"description\": \"IP地址\",\"attributes\": [{\"id\": \"wecmdb__48__ip_address__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_1qybvmj\",\"nodeName\": \"确认NAT路由\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKoghC2Ci\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_1hcls80\",\"nodeName\": \"确认NAT网关\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKognC2Ck\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_1rnwv1y\",\"nodeName\": \"确认NAT IP\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKogtC2Cm\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}\",\"serviceId\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"serviceName\": \"wecmdb/ci-data-confirm(any_ci)/confirm\",\"boundEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": [{\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}},{\"nodeId\": \"SubProcess_1m4iw17\",\"nodeName\": \"创建NAT网关\",\"nodeType\": \"subProcess\",\"nodeDefId\": \"rWMKogzC2Co\",\"taskCategory\": \"SSTN\",\"routineExp\": \"wecmdb:data_center{data_center_type eq 'REGION'}~(data_center)wecmdb:network_segment{network_segment_usage eq 'VPC'}~(network_segment_2)wecmdb:network_link{network_link_type eq '@@0054_0000000002@@华为云NAT网关'}\",\"serviceId\": \"huaweicloud/nat-gateway(network_link)/create\",\"serviceName\": \"huaweicloud/nat-gateway(network_link)/create\",\"boundEntity\": {\"id\": \"wecmdb__48__network_link\",\"packageName\": \"wecmdb\",\"name\": \"network_link\",\"displayName\": \"网络连接\",\"description\": \"网络连接\",\"attributes\": [{\"id\": \"wecmdb__48__network_link__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}]}}]";
 
-        List<LinkedHashMap> nodes = new ArrayList<LinkedHashMap>();
-        try {
-            nodes = JsonUtils.toObject(nodesJson, nodes.getClass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return nodes;
-    }
+    public Object rootEntityRespList(String procDefKey) {
 
-    private List<RolesDataResponse> addRoleTestData(){
-        List<RolesDataResponse> rolesDataResponses = new LinkedList<>();
-        RolesDataResponse response = new RolesDataResponse();
-        response.setRoleId("2c9280827019695c017019ac974f001c");
-        response.setRoleName("SUPER_ADMIN");
-        response.setDescription("SUPER_ADMIN");
-        rolesDataResponses.add(response);
-        return rolesDataResponses;
-    }
-    private List<RolesDataResponse> addRoles(){
-        String json = "[{\"id\":\"2c9280827019695c017019ac974f001c\",\"name\":\"SUPER_ADMIN\",\"displayName\":\"SUPER_ADMIN\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794c3a270000\",\"name\":\"CMDB_ADMIN\",\"displayName\":\"CMDB管理员\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794cd6dd0001\",\"name\":\"MONITOR_ADMIN\",\"displayName\":\"监控管理员\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794d6bb50002\",\"name\":\"PRD_OPS\",\"displayName\":\"生产运维\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794e0d3b0003\",\"name\":\"STG_OPS\",\"displayName\":\"测试运维\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794e9b170004\",\"name\":\"APP_ARC\",\"displayName\":\"应用架构师\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794f20440005\",\"name\":\"IFA_ARC\",\"displayName\":\"基础架构师\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794ff45e0006\",\"name\":\"APP_DEV\",\"displayName\":\"应用开发人员\",\"email\":null},{\"id\":\"2c9280836f78a84b016f795068870007\",\"name\":\"IFA_OPS\",\"displayName\":\"基础架构运维人员\",\"email\":null},{\"id\":\"8ab86ba0723a78fe01723a790ceb0000\",\"name\":\"SUB_SYSTEM\",\"displayName\":\"后台系统\",\"email\":null}]";
-        List<RolesDataResponse> roles = new LinkedList<>();
-        try {
-            roles = JsonUtils.toObject(json, roles.getClass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return roles;
-    }
-
-    private List<WorkflowDefInfoDto> addPdfTestData()  {
-        String json = "[{\"procDefId\": \"rYsEQg2D2Bu\",\"procDefKey\": \"wecube1587896206082\",\"procDefName\": \"多选结果v2-1\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__invoke\",\"packageName\": \"wecmdb\",\"name\": \"invoke\",\"displayName\": \"调用\",\"description\": \"调用\",\"attributes\": {\"id\": \"wecmdb__48__invoke__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rWYneWeV2Df\",\"procDefKey\": \"wecube1587632630126\",\"procDefName\": \"HW VM remove security_V1\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__host_resource_instance\",\"packageName\": \"wecmdb\",\"name\": \"host_resource_instance\",\"displayName\": \"主机资源实例\",\"description\": \"主机资源实例\",\"attributes\": {\"id\": \"wecmdb__48__host_resource_instance__user_password\",\"name\": \"user_password\",\"description\": \"用户密码\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rZpDTD5O2Bq\",\"procDefKey\": \"wecube1589782245413\",\"procDefName\": \"test1235\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__app_instance\",\"packageName\": \"wecmdb\",\"name\": \"app_instance\",\"displayName\": \"应用实例\",\"description\": \"应用实例\",\"attributes\": {\"id\": \"wecmdb__48__app_instance__variable_values\",\"name\": \"variable_values\",\"description\": \"差异配置值\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rYFlBhRy2Bi\",\"procDefKey\": \"wecube1584956728752\",\"procDefName\": \"HWCLOUD机房网络初始化_V1.2_测试并发v1\",\"status\": \"deployed\",\"rootEntity\": null,\"createdTime\": \"\"},{\"procDefId\": \"rWXIDZQV2BS\",\"procDefKey\": \"wecube1587545132776\",\"procDefName\": \"Add lb target_V2\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__lb_resource_instance\",\"packageName\": \"wecmdb\",\"name\": \"lb_resource_instance\",\"displayName\": \"负载均衡资源实例\",\"description\": \"负载均衡资源实例\",\"attributes\": {\"id\": \"wecmdb__48__lb_resource_instance__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rWMKAbCC2Fg\",\"procDefKey\": \"wecube1584968688912\",\"procDefName\": \"告警解除默认编排_V0.1\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecube-monitor__9__alarm\",\"packageName\": \"wecube-monitor\",\"name\": \"alarm\",\"displayName\": \"告警列表\",\"description\": \"告警列表模型\",\"attributes\": {\"id\": \"wecube-monitor__9__alarm__toRole\",\"name\": \"toRole\",\"description\": \"接收角色\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rWMKx1LC2F5\",\"procDefKey\": \"wecube1584968536974\",\"procDefName\": \"默认告警处理编排_V0.1\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecube-monitor__9__alarm\",\"packageName\": \"wecube-monitor\",\"name\": \"alarm\",\"displayName\": \"告警列表\",\"description\": \"告警列表模型\",\"attributes\": {\"id\": \"wecube-monitor__9__alarm__toRole\",\"name\": \"toRole\",\"description\": \"接收角色\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rWMKpJ8C2CV\",\"procDefKey\": \"wecube1581455678621\",\"procDefName\": \"子系统首次部署[CLB+APP+DB]_V0.3\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__subsys\",\"packageName\": \"wecmdb\",\"name\": \"subsys\",\"displayName\": \"子系统\",\"description\": \"子系统\",\"attributes\": {\"id\": \"wecmdb__48__subsys__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rXD2nNd82Bi\",\"procDefKey\": \"wecube1588234986975\",\"procDefName\": \"app-test\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__app_system\",\"packageName\": \"wecmdb\",\"name\": \"app_system\",\"displayName\": \"应用系统\",\"description\": \"应用系统\",\"attributes\": {\"id\": \"wecmdb__48__app_system__updated_date\",\"name\": \"updated_date\",\"description\": \"��新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rWN1g1lC2Id\",\"procDefKey\": \"wecube1584964208489\",\"procDefName\": \"TEST_业务区域资源初始化_V0.9\",\"status\": \"deployed\",\"rootEntity\": null,\"createdTime\": \"\"},{\"procDefId\": \"rZ1zGeqS2D7\",\"procDefKey\": \"wecube1589440064419\",\"procDefName\": \"approval-test-3\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__data_center\",\"packageName\": \"wecmdb\",\"name\": \"data_center\",\"displayName\": \"数据中心\",\"description\": \"数据中心\",\"attributes\": {\"id\": \"wecmdb__48__data_center__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"rYsEbi6D2Bo\",\"procDefKey\": \"wecube1587517613398\",\"procDefName\": \"HW white list add_policy_V5\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__lb_resource_instance\",\"packageName\": \"wecmdb\",\"name\": \"lb_resource_instance\",\"displayName\": \"负载均衡资源实例\",\"description\": \"负载均衡资源实例\",\"attributes\": {\"id\": \"wecmdb__48__lb_resource_instance__updated_date\",\"name\": \"updated_date\",\"description\": \"更新日期\",\"dataType\": \"timestamp\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"},{\"procDefId\": \"s0nl0SK12Bk\",\"procDefKey\": \"wecube1590751389738\",\"procDefName\": \"TTTTTT\",\"status\": \"deployed\",\"rootEntity\": {\"id\": \"wecmdb__48__app_instance\",\"packageName\": \"wecmdb\",\"name\": \"app_instance\",\"displayName\": \"应用实例\",\"description\": \"应用实例\",\"attributes\": {\"id\": \"wecmdb__48__app_instance__variable_values\",\"name\": \"variable_values\",\"description\": \"差异配置值\",\"dataType\": \"str\",\"mandatory\": false,\"refPackageName\": null,\"refEntityName\": null,\"refAttrName\": null,\"referenceId\": null}},\"createdTime\": \"\"}]";
-        List<WorkflowDefInfoDto> pefList = new LinkedList<>();
-        try {
-            pefList = JsonUtils.toObject(json, pefList.getClass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return pefList;
+        return null;
     }
 
 

@@ -48,10 +48,10 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         IPage<TaskInfo> iPage= taskInfoMapper.selectTaskInfo(new Page<>(page, pageSize),req);
         List<TaskInfoResp> respList=taskInfoConverter.toDto(iPage.getRecords());
         for (TaskInfoResp taskInfoResp : respList) {
-            FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",taskInfoResp.getTaskTempId()));
+            FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",taskInfoResp.getId()));
             FormInfoResq formInfoResq=formInfoConverter.toDto(formInfo);
             if (formInfoResq!=null) {
-                formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(taskInfoResp.getTaskTempId()));
+                formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(taskInfoResp.getId()));
                 taskInfoResp.setFormInfoResq(formInfoResq);
             }
         }

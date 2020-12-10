@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface FormItemInfoMapper extends BaseMapper<FormItemInfo> {
 
-    List<FormItemInfo> selectFormItemInfo(String requestTempId);
+    List<FormItemInfo> selectFormItemInfo(String id);
 
 }

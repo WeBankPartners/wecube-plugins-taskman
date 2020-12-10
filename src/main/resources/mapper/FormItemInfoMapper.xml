@@ -16,7 +16,7 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
-    <select id="selectFormItemInfo" parameterType="String"
+    <select id="selectFormItemInfo" parameterType="java.lang.String"
             resultMap="FormItemInfoMap">
         SELECT * FROM form_item_info fii
         WHERE fii.form_id

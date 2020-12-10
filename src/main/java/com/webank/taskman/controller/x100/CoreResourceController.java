@@ -10,8 +10,10 @@ import com.webank.taskman.support.core.dto.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -96,7 +98,8 @@ public class CoreResourceController {
     @ApiOperation(value = "workflow-process-entity-retrieve", notes = "")
     public JsonResponse retrieveEntity( @PathVariable("package-name") String packageName,
                 @PathVariable("entity-name")String entity,
-            @RequestParam(required = false) Map<String, String> allFilters) {
+           @ApiParam(value = "filters",required = false,type = "query") @RequestParam(required = false)String filters,
+            @ApiIgnore @RequestParam(required = false) Map<String, String> allFilters) {
         return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,allFilters));
     }
 

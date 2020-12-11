@@ -31,4 +31,10 @@ export const saveRequestTemplate = data => request.post(`/taskman/v1/request/tem
 export const searchRequestTemplate = data => request.post(`/taskman/v1/request/template/search/${data.page}/${data.pageSize}`, data.data);
 export const deleteRequestTemplate = id => request.delete(`/taskman/v1/request/template/delete/${id}`);
 export const getTaskNodesEntitys = id => request.get(`/taskman/v1/core-resources/workflow/process-definitions-nodes/${id}`);
+export const saveFormTemplate = data => request.post(`/taskman/v1/form/template/save`, data);
+export const saveTaskTemplate = data => request.post(`/taskman/v1/task/template/save`, data);
+export const getAllDataModels = () => request.get(`/taskman/v1/core-resources/workflow/process/models`);
+export const getTargetOptions = (pkgName, entityName) =>request.get(`/taskman/v1/core-resources/workflow/process/packages/${pkgName}/entities/${entityName}/retrieve`)
+
+
 

@@ -31,12 +31,12 @@ export default {
     this.itemValue = this.item.defaultValue
   },
   render () {
-    const { component, colSpan, label, options, value, defaultValue, placeholder,isHover, isActive, entity } = this.item
+    const { elementType, width, title, options, value, defaultValue, placeholder,isHover, isActive, entity, isCustom } = this.item
     return (
-      <Col id={'formItem_'+this.index} span={colSpan}>
-        <FormItem class={this.classList} label={label + entity}>
-          <component value={this.itemValue} placeholder={placeholder}></component>
-          {(isHover || isActive) && <Button onClick={() => this.deleteHandler()} class="deleteButton" size="small" ghost type="error" icon="ios-trash-outline"></Button>}
+      <Col id={'formItem_'+this.index} span={width}>
+        <FormItem class={this.classList} label={title}>
+          <elementType value={this.itemValue} placeholder={placeholder}></elementType>
+          {(isActive) && <Button disabled={!isCustom} onClick={() => this.deleteHandler()} class="deleteButton" size="small" ghost type="error" icon="ios-trash-outline"></Button>}
         </FormItem>
       </Col>
     )

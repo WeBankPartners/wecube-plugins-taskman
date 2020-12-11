@@ -48,18 +48,41 @@
             <Input type="textarea" v-model="templateForm.description"></Input>
           </FormItem>
           <FormItem>
-            <Button @click="templateFormHandleReset('formDynamic')">Reset</Button>
-            <Button type="primary" @click="templateFormHandleSubmit" style="margin-left: 8px">Submit</Button>
+            <Button @click="templateFormHandleReset('formDynamic')">重置</Button>
+            <Button type="primary" @click="templateFormHandleSubmit" style="margin-left: 8px">下一步</Button>
         </FormItem>
         </Form>
       </div>
     </Row>
     <Row>
-      <div style="width:1000px;margin:0 auto;">
-        <Table border :data="attrsData" :columns="attrsColumns"></Table>
+      <div style="width:1000px;margin:10px auto;text-align: center">
+        <Table style="margin-bottom:10px;" @on-selection-change="attrsChangedHandler" border :data="attrsData" :columns="attrsColumns"></Table>
+        <Button >重置</Button>
+        <Button type="primary" @click="attrsSetHandler" style="margin-left: 8px">下一步</Button>
       </div>
     </Row>
     <Row>
+      <Row>
+        <Form :model="requestForm" :label-width="100">
+          <Col span="6">
+            <FormItem label="名称">
+              <Input v-model="requestForm.name"></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="描述">
+              <Input v-model="requestForm.description"></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="输入项">
+              <Select multiple @on-change="requestFormFieldChanged" v-model="requestForm.inputAttrDef">
+                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.description"></Option>
+              </Select>
+            </FormItem>
+          </Col>
+        </Form>
+      </Row>
       <Col span="4" style="border-right: 1px solid rgb(224, 223, 222);height: calc(100vh - 100px);overflow:auto">
         <Divider>拖动设置目标对象顺序</Divider>
         <div ref="entity" style="padding-right:10px;">
@@ -89,13 +112,18 @@
                     <Input v-model="currentField.name"></Input>
                   </FormItem>
                   <FormItem label="显示名">
-                    <Input v-model="currentField.label"></Input>
+                    <Input v-model="currentField.title"></Input>
+                  </FormItem>
+                  <FormItem label="组件类型">
+                    <Select v-model="currentField.elementType">
+                      <Option v-for="(comp, index) in componentsList" :key="index" :value="comp.type" :label="comp.label"></Option>
+                    </Select>
                   </FormItem>
                   <FormItem label="默认值">
                     <Input v-model="currentField.defaultValue"></Input>
                   </FormItem>
-                  <FormItem label="参数类型">
-                    <Input v-model="currentField.defaultValue"></Input>
+                  <FormItem label="宽度">
+                    <Input v-model="currentField.width"></Input>
                   </FormItem>
                 </Form>
               </div>
@@ -104,17 +132,8 @@
               扩展属性
               <div slot="content">
                 <Form :model="currentField" :label-width="100">
-                  <FormItem label="字段名">
-                    <Input v-model="currentField.name"></Input>
-                  </FormItem>
-                  <FormItem label="显示名">
-                    <Input v-model="currentField.label"></Input>
-                  </FormItem>
-                  <FormItem label="默认值">
-                    <Input v-model="currentField.defaultValue"></Input>
-                  </FormItem>
-                  <FormItem label="参数类型">
-                    <Input v-model="currentField.defaultValue"></Input>
+                  <FormItem label="校验规则">
+                    <Input placeholder="仅支持正则" v-model="currentField.regular"></Input>
                   </FormItem>
                 </Form>
               </div>
@@ -122,24 +141,55 @@
           <Panel name="3">
               数据项
               <div slot="content">
-                <Form :model="currentField" :label-width="100">
-                  <FormItem label="字段名">
-                    <Input v-model="currentField.name"></Input>
+                <p  v-if="currentField.elementType !== 'Select'">当前表单项没有数据项</p>
+                <Form v-if="currentField.elementType === 'Select'" :model="currentField" :label-width="100">
+                  <FormItem label="数据类型">
+                    <Select v-model="currentField.attrDataType">
+                      <Option value="ref" label="引用类型"></Option>
+                      <Option value="custom" label="自定义"></Option>
+                    </Select>
                   </FormItem>
-                  <FormItem label="显示名">
-                    <Input v-model="currentField.label"></Input>
+                  <FormItem v-if="currentField.attrDataType === 'ref'" label="目标对象">
+                    <Select v-model="currentField.entityId">
+                      <Option v-for="(comp, index) in allEntityList" :key="index" :value="comp.name" :label="comp.displayName"></Option>
+                    </Select>
                   </FormItem>
-                  <FormItem label="默认值">
-                    <Input v-model="currentField.defaultValue"></Input>
-                  </FormItem>
-                  <FormItem label="参数类型">
-                    <Input v-model="currentField.defaultValue"></Input>
+                  <FormItem v-if="currentField.attrDataType === 'ref'" label="过滤规则">
+                    <Input v-model="currentField.entityFilters"></Input>
+                    <FilterRule
+                      v-model="currentField.entityFilters"
+                      :disabled="currentField.entityId.length === 0"
+                      :rootEntity="currentField.entityId"
+                      :allDataModelsWithAttrs="allEntityType"
+                    ></FilterRule>
                   </FormItem>
                 </Form>
+                <div>
+                  <Row>
+                    <Col span="11">Label</Col>
+                    <Col span="10">Value</Col>
+                  </Row>
+                  <Row style="margin-bottom:10px">
+                    <Col span="10"><Input size="small" ></Input></Col>
+                    <Col span="10" offset="1"><Input size="small" ></Input></Col>
+                    <Col style="text-align: right" span="2" offset="1">
+                      <Button size="small" ghost type="error" icon="ios-trash-outline"></Button>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Button size="small" icon="md-add" type="primary" style="width:100%"></Button>
+                  </Row>
+                </div>
               </div>
           </Panel>
         </Collapse>
       </Col>
+    </Row>
+    <Row>
+      <div style="width:1000px;margin:10px auto;text-align: center">
+        <Button >重置</Button>
+        <Button type="primary" @click="saveCurrentForm" style="margin-left: 8px">保存当前表单</Button>
+      </div>
     </Row>
   </div>
 </template>
@@ -153,13 +203,17 @@ import {
   saveRequestTemplate,
   searchRequestTemplate,
   deleteRequestTemplate,
-  getTaskNodesEntitys
+  getTaskNodesEntitys,
+  saveFormTemplate,
+  saveTaskTemplate,
+  getAllDataModels
 } from "../../api/server.js"
 import PluginTable from "../../components/table";
-
+import FilterRule from "../../components/filter-rule";
 export default {
   components: {
-    PluginTable
+    PluginTable,
+    FilterRule
   },
   data() {
     return {
@@ -269,90 +323,9 @@ export default {
           type: "QuillEditor"
         },
       ],
-      formFields: [
-        {
-          component: "Input",
-          colSpan: 6,
-          name: "test",
-          label: "测试1",
-          defaultValue: "aaaa",
-          entity: "unit",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Select",
-          colSpan: 6,
-          name: "test",
-          label: "测试2",
-          defaultValue: "aaaa",
-          entity: "unit",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Select",
-          colSpan: 24,
-          name: "test",
-          label: "测试3",
-          defaultValue: "aaaa",
-          entity: "network",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Select",
-          colSpan: 24,
-          name: "test",
-          label: "测试4",
-          defaultValue: "aaaa",
-          entity: "datacenter",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Input",
-          colSpan: 24,
-          name: "test",
-          label: "测试5",
-          defaultValue: "aaaa",
-          entity: "datacenter",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Select",
-          colSpan: 24,
-          name: "test",
-          label: "测试6",
-          defaultValue: "aaaa",
-          entity: "datacenter",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Select",
-          colSpan: 24,
-          name: "test",
-          label: "测试7",
-          defaultValue: "aaaa",
-          entity: "datacenter",
-          isHover: false,
-          isActive: false
-        },
-        {
-          component: "Select",
-          colSpan: 24,
-          name: "test",
-          label: "测试8",
-          defaultValue: "aaaa",
-          entity: "unit",
-          isHover: false,
-          isActive: false
-        },
-      ],
-      entityList: ['unit', 'datacenter', 'network'],
-      list:['unit', 'datacenter', 'network'],
+      formFields: [],
+      entityList: [],
+      list:[],
       currentEntityList:[],
       currentFieldList: [],
       allRolesList: [],
@@ -380,10 +353,104 @@ export default {
           title: '属性',
           key: "name",
         }
-      ]
+      ],
+      attrsSelections: [],
+      requestForm: {
+        name:'',
+        description:'',
+        inputAttrDef: []
+      },
+      taskForm: {
+        name:'',
+        description:'',
+        inputAttrDef: [],
+        outputAttrDef: [],
+        useRoles: [],
+        manageRoles:[]
+      },
+      allEntityType: [],
+      allEntityList: []
     }
   },
   methods: {
+    async getAllDataModels () {
+      const { data, status } = await getAllDataModels()
+      if (status === 'OK') {
+        this.allEntityType = data.map(_ => {
+          // handle result sort by name
+          const pluginPackageEntities = _.pluginPackageEntities.sort(function (a, b) {
+              var s = a.name.toLowerCase()
+              var t = b.name.toLowerCase()
+              if (s < t) return -1
+              if (s > t) return 1
+            })
+          this.allEntityList = this.allEntityList.concat(pluginPackageEntities)
+          return {
+            ..._,
+            pluginPackageEntities: pluginPackageEntities
+          }
+        })
+      }
+    },
+    async saveCurrentForm () {
+      // saveFormTemplate
+      const payload = {
+        ...this.requestForm,
+        inputAttrDef: JSON.stringify(this.requestForm.inputAttrDef),
+        otherAttrDef: JSON.stringify(this.attrsSelections),
+        targetEntitys: JSON.stringify(this.entityList),
+        tempId: this.currentTemplateId,
+        formItems: this.formFields
+      }
+      const {status, message, data} = await saveFormTemplate(payload)
+      if (status === 'OK') {
+        this.$Notice.success({
+          title: 'Success',
+          desc: 'Success'
+        })
+      }
+    },
+    requestFormFieldChanged (val) {
+      //this.attrsSelections val  this.formFields  isCustom
+      const isAttrs = this.formFields.filter(field => !field.isCustom)
+      isAttrs.forEach(attr => {
+        const found = val.find(v => attr.name === v)
+        if (!found) {
+          const index = this.formFields.indexOf(attr)
+          this.formFields.splice(index, 1)
+        }
+      })
+      val.forEach(item => {
+        const field = this.formFields.find(f => f.name === item)
+        if (!field) {
+          const attr = this.attrsSelections.find(a => a.name === item)
+          this.formFields.push({
+            ...attr,
+            elementType: 'Input',
+            width: 24,
+            title: attr.description,
+            defaultValue: "",
+            isHover: false,
+            isActive: false,
+            isCustom: false,
+            dataOptions: '',
+            entityFilters:'',
+            entityId:'',
+            regular:'',
+            attrDataType: '',
+            attrDefId: attr.id,
+            formTemplateId: this.currentTemplateId
+          })
+        }
+      })
+      this.currentFieldList = this.formFields
+    },
+    attrsSetHandler () {
+
+    },
+    attrsChangedHandler (selection) {
+      this.attrsSelections = selection
+    },
     actionFun(type, data) {
       switch (type) {
         case "add":
@@ -496,12 +563,13 @@ export default {
       }
       const {status, message, data} = await saveRequestTemplate(payload)
       if (status === 'OK') {
-        this.currentTemplateId = ''
-        getTaskNodesEntitys
+        this.currentTemplateId = data.id
         const nodes = await getTaskNodesEntitys(this.templateForm.procDefId)
         this.procTaskNodes = nodes.data
-        this.attrsData = [].concat(...this.procTaskNodes.map(node => {
+        let entitys = new Set()
+        this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
           const entity = node.boundEntity
+          entitys.add(entity.name)
           return node.boundEntity.attributes.map(attr => {
             return {
               ...attr,
@@ -510,7 +578,8 @@ export default {
             }
           })
         }))
-        console.log(this.attrsData)
+        this.entityList = Array.from(entitys)
+        this.list = Array.from(entitys)
         this.$Notice.success({
           title: 'Success',
           desc: 'Success'
@@ -530,9 +599,10 @@ export default {
       }
       this.formFields.forEach(formField => {formField.isActive = false})
       item.isActive = true
+      this.currentField = item
     },
     deleteHandler (index) {
-      console.log(index)
+      // console.log(index)
     },
     formFieldSortHandler (entityList) {
       let fields = []
@@ -545,7 +615,7 @@ export default {
         })
       })
       this.$nextTick(() => {
-        this.formFields = fields
+        this.formFields = fields.concat(this.currentFieldList.filter(field => field.isCustom))
       })
     },
     createSortable(el, items) {
@@ -558,7 +628,7 @@ export default {
         sort: false,
         animation: 150,
         setData: (dataTransfer, dragEl) => {
-          console.log(dataTransfer, dragEl)
+          // console.log(dataTransfer, dragEl)
           // const index = parseInt(dragEl.dataset.id)
           // dragEl.__item__ = items[index]
         }
@@ -583,6 +653,7 @@ export default {
       })
     },
     createFormSortable(el) {
+      let isAdd = false
       this.sortable = new Sortable(el, {
         group: 'component',
         animation: 150,
@@ -595,42 +666,82 @@ export default {
         },
         onSort: (e) => {
           // 添加也会触发onSort， 用个变量去来区分
-          let fields = []
-          for (let i = 0; i < el.children.length; i++) {
-            const id = el.children[i].attributes.id.value.split('_')[1]
-            fields.push(this.formFields[id])
+          if(!isAdd) {
+            let fields = []
+            for (let i = 0; i < el.children.length; i++) {
+              const id = el.children[i].attributes.id.value.split('_')[1]
+              fields.push(this.formFields[id])
+            }
+            this.currentFieldList = fields
           }
-          this.currentFieldList = fields
           // this.formFields = []
           this.formFieldSortHandler(this.currentEntityList)
+          isAdd = false
         },
         onAdd: (e) => {
           const id = e.item.attributes.id.value
           e.item.parentNode.removeChild(e.item)
-          this.$nextTick(() => {
+          function randomString(len) {
+        　　len = len || 32;
+            let $chars = 'ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyzoLlgqVvUuI';
+            let maxPos = $chars.length;
+            let pwd = '';
+        　　for (let i = 0; i < len; i++) {
+        　　　　pwd += $chars.charAt(Math.floor(Math.random() * maxPos));
+        　　}
+        　　return pwd;
+          }
+          // this.$nextTick(() => {
             const item = {
-              component: this.componentsList[id*1].type,
-              colSpan: 24,
-              name: "test",
-              label: "测试1aaaa",
-              defaultValue: "aaaa",
-              entity: null,
+              elementType: this.componentsList[id*1].type,
+              width: 24,
+              title: '自定义',
+              name: randomString(16),
+              defaultValue: "",
               isHover: false,
-              isActive: false
+              isActive: false,
+              dataOptions: '',
+              entityFilters:'',
+              entityId:'',
+              regular:'',
+              attrDataType: '',
+              attrDefId: '',
+              formTemplateId: this.currentTemplateId,
+              isCustom: true,
+              entity: ''
             }
             this.formFields.splice(e.newIndex, 0, item)
-          })
+            this.currentFieldList = this.formFields
+            isAdd = true
+            // this.formFieldSortHandler(this.currentEntityList)
+          // })
         }
       })
     }
   },
-  created () {
-    this.currentFieldList = this.formFields
-    this.currentEntityList = this.entityList
-    this.formFieldSortHandler(this.entityList)
+  async created () {
     this.getRoleList()
     this.getProcessDefinitionKeysList()
     this.getAllTemplateGroup()
+    this.getAllDataModels()
+    const nodes = await getTaskNodesEntitys('rYsEQg2D2Bu')
+    this.procTaskNodes = nodes.data
+    let entitys = new Set()
+    this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
+      const entity = node.boundEntity
+      entitys.add(entity.name)
+      return node.boundEntity.attributes.map(attr => {
+        return {
+          ...attr,
+          packageName:entity.packageName,
+          entity:entity.name
+        }
+      })
+    }))
+    this.entityList = Array.from(entitys)
+    this.list = Array.from(entitys)
+    this.currentEntityList = this.entityList
+    this.formFieldSortHandler(this.entityList)
   },
   mounted() {
     this.fieldsSortable = this.createSortable(this.$refs.fields.$el, this.componentsList)

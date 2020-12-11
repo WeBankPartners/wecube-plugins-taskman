@@ -9,8 +9,6 @@ import javax.validation.constraints.NotBlank;
 @ApiModel
 public class SaveFormItemTemplateReq {
 
-    @ApiModelProperty(value = "Id",dataType = "String",position = 1)
-    private String id;
 
     @NotBlank(message = "表单模板ID不能为空")
     @ApiModelProperty(value = "表单模板ID",dataType = "String",position = 2)
@@ -70,14 +68,6 @@ public class SaveFormItemTemplateReq {
 
     @ApiModelProperty(value = "是否通用",dataType = "Integer",hidden = true)
     private Integer isPublic;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getFormTemplateId() {
         return formTemplateId;

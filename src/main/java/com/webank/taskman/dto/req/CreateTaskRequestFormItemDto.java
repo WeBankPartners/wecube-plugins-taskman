@@ -2,10 +2,12 @@ package com.webank.taskman.dto.req;
 
 import java.util.List;
 
-public class CreateTaskRequestDto {
+public class CreateTaskRequestFormItemDto {
     private String requestId;
+    private List<String> allowedOptions;
     private List<CreateTaskRequestInputDto> inputs;
     private String dueDate;
+
 
     public List<CreateTaskRequestInputDto> getInputs() {
         return inputs;
@@ -23,9 +25,15 @@ public class CreateTaskRequestDto {
         this.requestId = requestId;
     }
 
+    public List<String> getAllowedOptions() {
+        return allowedOptions;
+    }
+
+    public void setAllowedOptions(List<String> allowedOptions) {
+        this.allowedOptions = allowedOptions;
+    }
+
     public String getDueDate() { return dueDate; }
 
     public void setDueDate(String dueDate) { this.dueDate = dueDate; }
-
-
 }

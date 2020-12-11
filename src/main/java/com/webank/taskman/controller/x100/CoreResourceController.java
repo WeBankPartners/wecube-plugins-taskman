@@ -53,7 +53,7 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.fetchLatestReleasedWorkflowDefs());
     }
 
-    //    @GetMapping("/workflow/process/definitions/{proc-def-id}/tasknodes")
+    //    @GetMapping("/platform/definitions/{proc-def-id}/tasknodes")
     @ApiOperationSupport(order = 4)
     @GetMapping("/workflow/process-definitions-nodes/{proc-def-id}")
     @ApiOperation(value = "workflow-process-nodes", notes = "")
@@ -62,7 +62,7 @@ public class CoreResourceController {
     }
 
     @ApiOperationSupport(order = 5)
-    @PostMapping("/workflow/process/crate")
+    @PostMapping("/platform/crate")
     @ApiOperation(value = "workflow-process-crate", notes = "")
     public JsonResponse<CoreResponse.DynamicWorkflowInstInfoDto> createNewWorkflowInstance(
             @RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto)
@@ -73,14 +73,14 @@ public class CoreResourceController {
 
 
     @ApiOperationSupport(order = 6)
-    @GetMapping("/workflow/process/models")
+    @GetMapping("/platform/models")
     @ApiOperation(value = "workflow-process-models", notes = "")
     public JsonResponse allDataModels() {
         return okayWithData(coreServiceStub.allDataModels());
     }
 
     @ApiOperationSupport(order = 7)
-    @GetMapping("/workflow/process/models/{package-name}")
+    @GetMapping("/platform/models/{package-name}")
     @ApiOperation(value = "workflow-process-models-package", notes = "")
     public JsonResponse allDataModels(@PathVariable("package-name") String packageName) {
         return okayWithData(coreServiceStub.getModelsByPackage(packageName));
@@ -88,7 +88,7 @@ public class CoreResourceController {
 
     /**/
     @ApiOperationSupport(order = 9)
-    @GetMapping("/workflow/process/{proc-def-key}/root-entity")
+    @GetMapping("/platform/{proc-def-key}/root-entity")
     @ApiOperation(value = "workflow-process-root-entity", notes = "")
     public JsonResponse getProcessDefinitionRootEntitiesByProcDefKey(@PathVariable("proc-def-key") String procDefKey) {
 
@@ -96,14 +96,14 @@ public class CoreResourceController {
     }
 
     @ApiOperationSupport(order = 8)
-    @GetMapping("/workflow/process/models/package/{package-name}/entity/{entity-name}/attributes")
+    @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}/attributes")
     @ApiOperation(value = "workflow-process-entity-attributes", notes = "")
     public JsonResponse getAttributesByPackageEntity(
             @PathVariable("package-name") String packageName,@PathVariable("entity-name")String entity) {
         return okayWithData(coreServiceStub.getAttributesByPackageEntity(packageName,entity));
     }
     @ApiOperationSupport(order = 9)
-    @GetMapping("/workflow/process/packages/{package-name}/entities/{entity-name}/retrieve")
+    @GetMapping("/platform/packages/{package-name}/entities/{entity-name}/retrieve")
     @ApiOperation(value = "workflow-process-entity-retrieve", notes = "")
     public JsonResponse retrieveEntity( @PathVariable("package-name") String packageName,
                 @PathVariable("entity-name")String entity,

@@ -27,7 +27,6 @@ public class TemplateGroupTest {
 //        vo.setId("1332131518222503937");
 //        vo.setCreatedBy("问我");
 //        vo.setName("大答");
-//        System.out.println(SpringUtils.getActiveProfile());
 
 
         requestTemplateGroupService.deleteTemplateGroupByIDService("1332253263087276034");

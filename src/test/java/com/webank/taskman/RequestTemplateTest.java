@@ -62,6 +62,5 @@ public class RequestTemplateTest {
         req.setName("");
         req.setTags("");
         QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
-        System.out.println(JsonResponse.okayWithData(queryResponse).getData());
     }
 }

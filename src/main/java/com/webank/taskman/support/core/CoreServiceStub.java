@@ -79,7 +79,6 @@ public class CoreServiceStub {
                 path = String.format(path, pathVariables);
             }
         }
-        System.out.println(path);
         return smProperties.getWecubeCoreAddress() + path;
     }
 

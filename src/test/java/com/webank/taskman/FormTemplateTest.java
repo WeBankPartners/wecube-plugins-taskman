@@ -66,7 +66,6 @@ public class FormTemplateTest {
         saveFormTemplateReq.setStyle("");
         saveFormTemplateReq.setTargetEntitys("");
         QueryResponse<FormTemplateResp> queryResponse= formTemplateService.selectFormTemplate(current,limit,saveFormTemplateReq);
-        System.out.println(JsonResponse.okayWithData(queryResponse).getData());
     }
 
 }

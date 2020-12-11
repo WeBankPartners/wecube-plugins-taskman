@@ -1,6 +1,7 @@
 package com.webank.taskman.dto.req;
 
 public class CreateTaskRequestInputDto {
+
     private String taskName;
     private String roleName;
     private String taskDescription;

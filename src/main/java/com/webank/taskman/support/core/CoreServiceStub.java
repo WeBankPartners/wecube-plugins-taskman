@@ -20,14 +20,14 @@ import static com.webank.taskman.support.core.CoreServiceTestData.*;
 @Service
 public class CoreServiceStub {
     private static final int NOT_INCLUDE_DRAFT = 0;
-
+    private static final String PLATFORM_CODE_SERVER_URL = "";
     private static final String GET_ALL_ROLES = "/auth/v1/roles";
     public static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
 
     private static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/release/process/definitions";
-    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/release/process/definitions/{%s}/tasknodes";
+    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/release/process/definitions/{%s}/tasknodes";
 
-    private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/release/process/instances";
+    private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/release/process/instances";
 
     public  static final String GET_MODELS_ALL_URL= "/platform/v1/models";
 
@@ -42,6 +42,9 @@ public class CoreServiceStub {
     // entity to retrieve
     public static final String GET_ENTITY_RETRIEVE_URL =
             "/platform/v1/packages/{package-name}/entities/{entity-name}/retrieve";
+    // entity to retrieve
+    public static final String QUERY_ENTITY_RETRIEVE_URL =
+            "/platform/v1/packages/{package-name}/entities/{entity-name}/query";
 
 
 
@@ -69,9 +72,10 @@ public class CoreServiceStub {
 
     private String asCoreUrl(String path, Object... pathVariables) {
         if (pathVariables != null && pathVariables.length > 0) {
-            String pattern = "\\{[^}]*\\}"; // 匹配{} 的表达式
+            String pattern = "[\\{^}]*\\}"; // 匹配{} 的表达式
             Matcher m = Pattern.compile(pattern).matcher(path);
             if(m.find()){
+                System.out.println(m.group(0));
                 for(Object param:pathVariables){
                     path = path.replaceFirst(pattern,param+"");
                 }
@@ -166,6 +170,8 @@ public class CoreServiceStub {
         return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
     }
 
-
-
+    public static void main(String[] args) {
+        CoreServiceStub stub = new CoreServiceStub();
+        System.out.println(stub.asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,"p1","e1"));
+    }
 }

@@ -10,6 +10,7 @@ import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
+import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.PageInfo;
@@ -79,7 +80,6 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     public QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
-
         for (RequestTemplateResp resp : respList) {
             List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>().eq("record_id",resp.getId()));
             roles.stream().forEach(role->

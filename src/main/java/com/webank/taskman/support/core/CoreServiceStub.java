@@ -4,13 +4,15 @@ import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.constant.TaskNodeTypeEnum;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
-import com.webank.taskman.utils.JsonUtils;
 import com.webank.taskman.utils.SpringUtils;
+import org.hibernate.validator.internal.util.classhierarchy.Filters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.webank.taskman.support.core.CoreServiceTestData.*;
@@ -20,16 +22,20 @@ public class CoreServiceStub {
     private static final int NOT_INCLUDE_DRAFT = 0;
 
     private static final String GET_ALL_ROLES = "/auth/v1/roles";
-    private static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
+    public static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
 
     private static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/release/process/definitions";
-    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/release/process/definitions/{proc-def-id}/tasknodes";
+    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/release/process/definitions/{%s}/tasknodes";
 
     private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/release/process/instances";
 
     public  static final String GET_MODELS_ALL_URL= "/platform/v1/models";
 
     public  static final String GET_MODELS_BY_PACKAGE_URL= "/platform/v1/packages/{package-name}/models";
+
+    public  static final String GET_ROOT_ENTITIES_BY_PROC_URL= "/platform/v1/process/definitions/{proc-def-id}/root-entities";
+
+
     // entity.attributes
     public  static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL=
             "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";
@@ -45,6 +51,7 @@ public class CoreServiceStub {
 
     @Autowired
     private ServiceTaskmanProperties smProperties;
+
     //1
     public List<RolesDataResponse> getAllRoles() {
         if("dev".equals(SpringUtils.getActiveProfile())){
@@ -62,8 +69,17 @@ public class CoreServiceStub {
 
     private String asCoreUrl(String path, Object... pathVariables) {
         if (pathVariables != null && pathVariables.length > 0) {
-            path = String.format(path, pathVariables);
+            String pattern = "\\{[^}]*\\}"; // 匹配{} 的表达式
+            Matcher m = Pattern.compile(pattern).matcher(path);
+            if(m.find()){
+                for(Object param:pathVariables){
+                    path = path.replaceFirst(pattern,param+"");
+                }
+            }else{
+                path = String.format(path, pathVariables);
+            }
         }
+        System.out.println(path);
         return smProperties.getWecubeCoreAddress() + path;
     }
 
@@ -98,7 +114,7 @@ public class CoreServiceStub {
         if("dev".equals(SpringUtils.getActiveProfile())){
             return  new HashSet(addAllDataModels());
         }
-        return template.get(GET_MODELS_ALL_URL,GetModelsAllResponse.class);
+        return template.get(asCoreUrl(GET_MODELS_ALL_URL),GetModelsAllResponse.class);
     }
 
     // 4
@@ -108,6 +124,13 @@ public class CoreServiceStub {
             return new HashSet(list);
         }
         return template.get(asCoreUrl(GET_MODELS_BY_PACKAGE_URL, packageName), GetModelsAllResponse.class);
+    }
+
+    public List<Map<String, Object>> getProcessDefinitionRootEntitiesByProcDefKey(String procDefKey){
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            return addRootEntityTestData();
+        }
+        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,procDefKey),ListMapDataResponse.class);
     }
 
     // 5
@@ -122,15 +145,13 @@ public class CoreServiceStub {
                     return attributes;
                 }
             }
-
-
             return new ArrayList<>();
         }
         return template.get(asCoreUrl(GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL, packageName,entity), GetModelsAllResponse.class);
     }
 
     // 6
-    public List<Object> retrieveEntity(String packageName, String entity, Map<String, String> Filters) {
+    public List<Object> retrieveEntity(String packageName, String entity, String filters) {
         if("dev".equals(SpringUtils.getActiveProfile())){
             if("resource_set".equals(entity)){
                 return addRetrieveEntityData();
@@ -138,19 +159,14 @@ public class CoreServiceStub {
             return new ArrayList<>();
         }
 
-        return template.get(asCoreUrl(GET_ENTITY_RETRIEVE_URL, packageName,entity,Filters), ListDataResponse.class);
+        return template.get(asCoreUrl(GET_ENTITY_RETRIEVE_URL, packageName,entity), ListDataResponse.class,filters);
     }
 
-    //5
+    //7
     public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
-        return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,null);
+        return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
     }
 
-
-    public Object rootEntityRespList(String procDefKey) {
-
-        return null;
-    }
 
 
 }

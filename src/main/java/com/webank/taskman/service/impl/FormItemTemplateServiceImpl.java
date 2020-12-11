@@ -33,13 +33,13 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
     @Override
     public FormItemTemplate saveFormItemTemplateByReq(SaveFormItemTemplateReq req) throws TaskmanException {
         FormItemTemplate formItemTemplate = formItemTemplateConverter.toEntityBySaveReq(req);
+        formItemTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         QueryWrapper<FormItemTemplate> queryWrapper = new QueryWrapper<FormItemTemplate>()
                 .eq("form_template_id",req.getFormTemplateId())
                 .eq("name",req.getName());
         FormItemTemplate queryBean = getBaseMapper().selectOne(queryWrapper);
         if(null != queryBean){
             formItemTemplate.setId(queryBean.getId());
-            formItemTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
             updateById(formItemTemplate);
         }else{
             formItemTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());

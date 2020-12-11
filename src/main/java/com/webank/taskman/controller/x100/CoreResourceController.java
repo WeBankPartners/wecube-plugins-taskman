@@ -86,6 +86,15 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.getModelsByPackage(packageName));
     }
 
+    /**/
+    @ApiOperationSupport(order = 9)
+    @GetMapping("/workflow/process/{proc-def-key}/root-entity")
+    @ApiOperation(value = "workflow-process-root-entity", notes = "")
+    public JsonResponse getProcessDefinitionRootEntitiesByProcDefKey(@PathVariable("proc-def-key") String procDefKey) {
+
+        return okayWithData(coreServiceStub.getProcessDefinitionRootEntitiesByProcDefKey(procDefKey));
+    }
+
     @ApiOperationSupport(order = 8)
     @GetMapping("/workflow/process/models/package/{package-name}/entity/{entity-name}/attributes")
     @ApiOperation(value = "workflow-process-entity-attributes", notes = "")
@@ -98,18 +107,11 @@ public class CoreResourceController {
     @ApiOperation(value = "workflow-process-entity-retrieve", notes = "")
     public JsonResponse retrieveEntity( @PathVariable("package-name") String packageName,
                 @PathVariable("entity-name")String entity,
-           @ApiParam(value = "filters",required = false,type = "query") @RequestParam(required = false)String filters,
-            @ApiIgnore @RequestParam(required = false) Map<String, String> allFilters) {
-        return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,allFilters));
+           @ApiParam(value = "filters",required = false,type = "query") @RequestParam(required = false)String filters)
+    {
+        return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,filters));
     }
 
 
-    /**/
-    @ApiOperationSupport(order = 9)
-    @GetMapping("/workflow/process/{proc-def-key}/root-entity")
-    @ApiOperation(value = "workflow-process-root-entity", notes = "")
-    public JsonResponse getCoreCiData(@PathVariable("proc-def-key") String procDefKey) {
 
-        return okayWithData(coreServiceStub.rootEntityRespList(procDefKey));
-    }
 }

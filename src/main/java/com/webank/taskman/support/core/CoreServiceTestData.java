@@ -56,9 +56,9 @@ public class CoreServiceTestData {
         return pefList;
     }
 
-    public static List<RootEntityResp> addRootEntityTestData(){
+    public static List<Map<String,Object>> addRootEntityTestData(){
         String json = "[{\"legal_person\":\"0004_0000000001\",\"code\":\"DEMO\",\"r_guid\":\"0046_0000000003\",\"displayName\":\"PRD_DEMO\",\"description\":\"腾讯云分布式部署\",\"data_center\":[\"0022_0000000001\"],\"created_by\":\"umadmin\",\"key_name\":\"PRD_DEMO\",\"p_guid\":null,\"deploy_environment\":\"0003_0000000001\",\"updated_by\":\"umadmin\",\"guid\":\"0046_0000000003\",\"app_system_design\":\"0037_0000000002\",\"id\":\"0046_0000000003\",\"created_date\":\"2020-05-07 09:28:00\",\"state\":\"created\",\"updated_date\":\"2020-06-30 07:35:55\",\"fixed_date\":null,\"state_code\":\"created\"},{\"legal_person\":\"\",\"code\":\"AaDEMO\",\"r_guid\":\"0046_0000000005\",\"displayName\":\"PRD_AaDEMO\",\"description\":\"阿里云部署\",\"data_center\":[\"0022_0000000009\"],\"created_by\":\"umadmin\",\"key_name\":\"PRD_AaDEMO\",\"p_guid\":null,\"deploy_environment\":\"0003_0000000001\",\"updated_by\":\"umadmin\",\"guid\":\"0046_0000000005\",\"app_system_design\":\"0037_0000000007\",\"id\":\"0046_0000000005\",\"created_date\":\"2020-05-20 08:05:58\",\"state\":\"created\",\"updated_date\":\"2020-06-30 07:35:55\",\"fixed_date\":null,\"state_code\":\"created\"},{\"legal_person\":\"\",\"code\":\"TaDEMO\",\"r_guid\":\"0046_0000000007\",\"displayName\":\"PRD_TaDEMO\",\"description\":\"腾讯云部署\",\"data_center\":[\"0022_0000000016\"],\"created_by\":\"umadmin\",\"key_name\":\"PRD_TaDEMO\",\"p_guid\":null,\"deploy_environment\":\"0003_0000000001\",\"updated_by\":\"umadmin\",\"guid\":\"0046_0000000007\",\"app_system_design\":\"0037_0000000007\",\"id\":\"0046_0000000007\",\"created_date\":\"2020-05-22 16:06:14\",\"state\":\"created\",\"updated_date\":\"2020-06-30 07:35:55\",\"fixed_date\":null,\"state_code\":\"created\"}]";
-        List<RootEntityResp> pefList = new LinkedList<>();
+        List<Map<String,Object>> pefList = new LinkedList<>();
         try {
             pefList = JsonUtils.toObject(json, pefList.getClass());
         } catch (IOException e) {

@@ -5,6 +5,7 @@ import com.webank.taskman.dto.OperationEventResultDto;
 import com.webank.taskman.dto.resp.RootEntityResp;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CoreResponse<DATATYPE> {
@@ -27,6 +28,9 @@ public class CoreResponse<DATATYPE> {
     }
 
     public static class ListDataResponse extends CoreResponse<List<Object>> {
+    }
+
+    public static class ListMapDataResponse extends CoreResponse<List<Map<String,Object>>> {
     }
 
     public static class GetAllRolesResponse extends CoreResponse<List<RolesDataResponse>> {

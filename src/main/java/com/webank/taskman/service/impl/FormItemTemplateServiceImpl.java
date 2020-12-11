@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
@@ -30,10 +31,20 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
     FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
-    public FormItemTemplate saveFormItemTemplateByReq(SaveFormItemTemplateReq templateReq) throws TaskmanException {
-        FormItemTemplate formItemTemplate = formItemTemplateConverter.toEntityBySaveReq(templateReq);
-        formItemTemplate.setCurrenUserName(formItemTemplate,formItemTemplate.getId());
-        saveOrUpdate(formItemTemplate);
+    public FormItemTemplate saveFormItemTemplateByReq(SaveFormItemTemplateReq req) throws TaskmanException {
+        FormItemTemplate formItemTemplate = formItemTemplateConverter.toEntityBySaveReq(req);
+        QueryWrapper<FormItemTemplate> queryWrapper = new QueryWrapper<FormItemTemplate>()
+                .eq("form_template_id",req.getFormTemplateId())
+                .eq("name",req.getName());
+        FormItemTemplate queryBean = getBaseMapper().selectOne(queryWrapper);
+        if(null != queryBean){
+            formItemTemplate.setId(queryBean.getId());
+            formItemTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+            updateById(formItemTemplate);
+        }else{
+            formItemTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+            save(formItemTemplate);
+        }
         return null;
     }
 

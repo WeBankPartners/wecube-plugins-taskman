@@ -4,6 +4,9 @@ package com.webank.taskman.controller.x100;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.commons.ApplicationConstants;
+import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
@@ -22,6 +25,7 @@ import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -71,6 +75,23 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(requestTemplateResp);
     }
 
+
+    @ApiOperationSupport(order = 11,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
+    @PostMapping("/template/release")
+    @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
+    public JsonResponse releaseRequestTemplate( @RequestBody SaveRequestTemplateReq req) throws Exception {
+        if(StringUtils.isEmpty(req.getId())){
+            throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
+        }
+        RequestTemplate requestTemplate = requestTemplateService.getById(req.getId());
+        if(null == requestTemplate){
+            throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
+        }
+        requestTemplate.setStatus(requestTemplate.getStatus() ==0 ? 1:0);
+        requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestTemplateService.updateById(requestTemplate);
+        return okay();
+    }
     @ApiOperationSupport(order = 11)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
@@ -108,6 +129,7 @@ public class TaskmanRequestController {
         List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.list(wrapper));
         return okayWithData(dtoList);
     }
+
 
     @PostMapping("/template/group/save")
     @ApiOperationSupport(order = 14)
@@ -157,7 +179,6 @@ public class TaskmanRequestController {
 
     @ApiOperationSupport(order = 18)
     @PostMapping("/save")
-
     @ApiOperation(value = "Request-Info-save")
     public JsonResponse<SaveRequestInfoReq> saveRequestInfo(@RequestBody SaveRequestInfoReq req) throws Exception {
         return okayWithData(requestInfoService.saveRequestInfo(req));

@@ -4,6 +4,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
@@ -27,7 +28,7 @@ public class RequestSynthesisController {
     @ApiOperation(value = "request-Synthesis-search")
     public JsonResponse<QueryResponse<SynthesisRequestTempleResp>> selectRequestSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
             throws Exception {
         QueryResponse<SynthesisRequestTempleResp> queryResponse = requestSynthesisService.selectSynthesisRequestTempleService(page, pageSize);
         return JsonResponse.okayWithData(queryResponse);
@@ -38,9 +39,10 @@ public class RequestSynthesisController {
     @ApiOperation(value = "Synthesis-Request-Info-search")
     public JsonResponse<QueryResponse<SynthesisRequestInfoResp>> selectSynthesisRequestInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) SynthesisRequestInfoReq req)
             throws Exception {
-        QueryResponse<SynthesisRequestInfoResp> queryResponse = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize);
+        QueryResponse<SynthesisRequestInfoResp> queryResponse = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

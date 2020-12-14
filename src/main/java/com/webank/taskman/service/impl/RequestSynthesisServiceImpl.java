@@ -12,6 +12,7 @@ import com.webank.taskman.converter.SynthesisRequestTemplateConverter;
 import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
@@ -62,10 +63,11 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     }
 
     @Override
-    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit) throws Exception {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-
-        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),currentUserRolesToString);
+    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
+//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+        String currentUserRolesToString = "APP_ARC,PRD_OPS";
+        req.setRoleName(currentUserRolesToString);
+        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
         List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());
 
         QueryResponse<SynthesisRequestInfoResp> queryResponse = new QueryResponse<>();

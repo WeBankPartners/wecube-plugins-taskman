@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.converter.FormInfoConverter;
 import com.webank.taskman.converter.FormItemInfoConverter;
@@ -19,13 +20,12 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
-import com.webank.taskman.mapper.FormInfoMapper;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormTemplateService;
 import com.webank.taskman.service.RequestInfoService;
-import org.checkerframework.checker.units.qual.A;
+import com.webank.taskman.service.RoleRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,12 +60,15 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Autowired
     FormInfoConverter formInfoConverter;
 
+    @Autowired
+    RoleRelationService roleRelationService;
+
     private final static String STATUS_DONE = "Done";
 
     @Override
     public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) throws Exception {
 
-        if (null==req.getUseRoleName()||"".equals(req.getUseRoleName())){
+        if (null==req.getUseRoles()||"".equals(req.getUseRoles())){
             throw new Exception("Saverequestinforeq is null");
         }
 
@@ -104,7 +107,8 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         RequestInfo requestInfo = requestInfoConverter.reqToDomain(req);
         requestInfo.setCurrenUserName(requestInfo,requestInfo.getId());
         saveOrUpdate(requestInfo);
-        String requestTempId = requestInfo.getRequestTempId();
+        roleRelationService.saveRoleRelation(
+                requestInfo.getId(), RoleTypeEnum.USE_ROLE,req.getUseRoles());
         List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(req.getFormItems());
         if(null != formItemInfos && formItemInfos.size() > 0 ){
             FormTemplate formTemplate = formTemplateService.getOne(

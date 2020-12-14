@@ -22,10 +22,10 @@ public class RoleRelationServiceImpl  extends ServiceImpl<RoleRelationMapper, Ro
     }
 
     @Override
-    public void saveRoleRelation(String requestTemplateId,int roleType,List<RoleDTO> roles) {
+    public void saveRoleRelation(String recordId,RoleTypeEnum roleType,List<RoleDTO> roles) {
         roles.stream().forEach(role-> {
             if(!org.springframework.util.StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())  ){
-                this.getBaseMapper().insert( new RoleRelation(requestTemplateId, roleType,role.getRoleName(),role.getDisplayName()));
+                this.getBaseMapper().insert( new RoleRelation(recordId, roleType.getType(),role.getRoleName(),role.getDisplayName()));
             }
         });
     }
@@ -34,8 +34,8 @@ public class RoleRelationServiceImpl  extends ServiceImpl<RoleRelationMapper, Ro
     @Transactional
     public void saveRoleRelationByTemplate(String requestTemplateId, List<RoleDTO> useRoles, List<RoleDTO> manageRoles) {
         deleteByTemplate(requestTemplateId);
-        saveRoleRelation(requestTemplateId, RoleTypeEnum.USE_ROLE.getType(),useRoles);
-        saveRoleRelation(requestTemplateId,RoleTypeEnum.MANAGE_ROLE.getType(),manageRoles);
+        saveRoleRelation(requestTemplateId, RoleTypeEnum.USE_ROLE,useRoles);
+        saveRoleRelation(requestTemplateId,RoleTypeEnum.MANAGE_ROLE,manageRoles);
     }
 
 }

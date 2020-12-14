@@ -41,8 +41,6 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     TaskTemplateMapper taskTemplateMapper;
 
-    @Autowired
-    RoleRelationMapper roleRelationMapper;
 
     @Override
     @Transactional

@@ -13,7 +13,7 @@ public interface RoleRelationService extends IService<RoleRelation> {
 
     int deleteByTemplate(String tempId);
 
-    void saveRoleRelation(String requestTemplateId,int roleType,List<RoleDTO> roles);
+    void saveRoleRelation(String recordId,RoleTypeEnum roleType,List<RoleDTO> roles);
 
-    void saveRoleRelationByTemplate(String requestTemplateId,List<RoleDTO> useRoles,List<RoleDTO> manageRoles);
+    void saveRoleRelationByTemplate(String recordId,List<RoleDTO> useRoles,List<RoleDTO> manageRoles);
 }

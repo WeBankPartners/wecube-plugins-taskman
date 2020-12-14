@@ -8,19 +8,15 @@ import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.WorkflowJsonResponse;
 import com.webank.taskman.dto.req.CoreTaskCreateServiceMetaReq;
 import com.webank.taskman.dto.req.CreateTaskRequestDto;
-import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.resp.CoreTaskServiceMetaResp;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
+
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import static com.webank.taskman.dto.JsonResponse.okay;
-import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
 @Api(tags = {"2、 Taskman open inteface API"})
 @RestController

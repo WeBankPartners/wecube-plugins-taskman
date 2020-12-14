@@ -23,7 +23,7 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
     private String defaultValue;
     private Integer required;
     private Integer isEdit;
-    private Integer regular;
+    private String regular;
     private Integer width;
     private Integer sort;
     private String entityId;
@@ -116,14 +116,13 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.isEdit = isEdit;
     }
 
-    public Integer getRegular() {
+    public String getRegular() {
         return regular;
     }
 
-    public void setRegular(Integer regular) {
+    public void setRegular(String regular) {
         this.regular = regular;
     }
-
     public Integer getWidth() {
         return width;
     }

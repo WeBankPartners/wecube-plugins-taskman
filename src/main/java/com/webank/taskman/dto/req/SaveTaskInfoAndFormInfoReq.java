@@ -1,18 +1,16 @@
-package com.webank.taskman.dto.resp;
-
+package com.webank.taskman.dto.req;
 
 import io.swagger.annotations.ApiModel;
-
 
 import java.util.Date;
 
 @ApiModel
-public class TaskInfoResp{
+public class SaveTaskInfoAndFormInfoReq {
 
     private String id;
 
     private String requestId;
-    
+
     private String requestNo;
 
     private String parentId;
@@ -23,12 +21,16 @@ public class TaskInfoResp{
 
     private String nodeName;
 
+    private String callbackUrl;
+
+    private String callbackParameter;
+
     private String name;
-    
+
     private String reporter;
-    
+
     private Date reportTime;
-    
+
     private String emergency;
 
     private String reportRole;
@@ -41,7 +43,9 @@ public class TaskInfoResp{
 
     private Integer status;
 
-    private FormInfoResq formInfoResq;
+    private String version;
+
+    private SaveFormInfoAndFormItemInfoReq saveFormInfoAndFormItemInfoReq;
 
     public String getId() {
         return id;
@@ -97,6 +101,22 @@ public class TaskInfoResp{
 
     public void setNodeName(String nodeName) {
         this.nodeName = nodeName;
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
+
+    public String getCallbackParameter() {
+        return callbackParameter;
+    }
+
+    public void setCallbackParameter(String callbackParameter) {
+        this.callbackParameter = callbackParameter;
     }
 
     public String getName() {
@@ -171,17 +191,25 @@ public class TaskInfoResp{
         this.status = status;
     }
 
-    public FormInfoResq getFormInfoResq() {
-        return formInfoResq;
+    public String getVersion() {
+        return version;
     }
 
-    public void setFormInfoResq(FormInfoResq formInfoResq) {
-        this.formInfoResq = formInfoResq;
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public SaveFormInfoAndFormItemInfoReq getSaveFormInfoAndFormItemInfoReq() {
+        return saveFormInfoAndFormItemInfoReq;
+    }
+
+    public void setSaveFormInfoAndFormItemInfoReq(SaveFormInfoAndFormItemInfoReq saveFormInfoAndFormItemInfoReq) {
+        this.saveFormInfoAndFormItemInfoReq = saveFormInfoAndFormItemInfoReq;
     }
 
     @Override
     public String toString() {
-        return "TaskInfoResp{" +
+        return "SaveTaskInfoAndFormInfoReq{" +
                 "id='" + id + '\'' +
                 ", requestId='" + requestId + '\'' +
                 ", requestNo='" + requestNo + '\'' +
@@ -189,6 +217,8 @@ public class TaskInfoResp{
                 ", taskTempId='" + taskTempId + '\'' +
                 ", nodeDefId='" + nodeDefId + '\'' +
                 ", nodeName='" + nodeName + '\'' +
+                ", callbackUrl='" + callbackUrl + '\'' +
+                ", callbackParameter='" + callbackParameter + '\'' +
                 ", name='" + name + '\'' +
                 ", reporter='" + reporter + '\'' +
                 ", reportTime=" + reportTime +
@@ -198,7 +228,8 @@ public class TaskInfoResp{
                 ", description='" + description + '\'' +
                 ", attachFileId='" + attachFileId + '\'' +
                 ", status=" + status +
-                ", formInfoResq=" + formInfoResq +
+                ", version='" + version + '\'' +
+                ", saveFormInfoAndFormItemInfoReq=" + saveFormInfoAndFormItemInfoReq +
                 '}';
     }
 }

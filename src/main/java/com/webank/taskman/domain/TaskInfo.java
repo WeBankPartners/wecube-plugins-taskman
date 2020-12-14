@@ -10,23 +10,21 @@ import java.util.Date;
 public class TaskInfo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    
     private String requestId;
 
-    
     private String requestNo;
 
-    
     private String parentId;
 
     private String taskTempId;
 
-    private String procNode;
+    private String nodeDefId;
+
+    private String nodeName;
 
     private String callbackUrl;
     
@@ -96,12 +94,20 @@ public class TaskInfo extends BaseEntity implements Serializable {
         this.taskTempId = taskTempId;
     }
 
-    public String getProcNode() {
-        return procNode;
+    public String getNodeDefId() {
+        return nodeDefId;
     }
 
-    public void setProcNode(String procNode) {
-        this.procNode = procNode;
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
     public String getCallbackUrl() {
@@ -208,7 +214,8 @@ public class TaskInfo extends BaseEntity implements Serializable {
                 ", requestNo='" + requestNo + '\'' +
                 ", parentId='" + parentId + '\'' +
                 ", taskTempId='" + taskTempId + '\'' +
-                ", procNode='" + procNode + '\'' +
+                ", nodeDefId='" + nodeDefId + '\'' +
+                ", nodeName='" + nodeName + '\'' +
                 ", callbackUrl='" + callbackUrl + '\'' +
                 ", callbackParameter='" + callbackParameter + '\'' +
                 ", name='" + name + '\'' +

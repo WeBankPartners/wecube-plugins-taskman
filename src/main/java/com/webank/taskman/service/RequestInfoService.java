@@ -14,4 +14,5 @@ public interface RequestInfoService extends IService<RequestInfo> {
 
     void doneServiceRequest(DoneServiceRequestRequest request);
 
+    SaveRequestInfoReq saveRequestInfo(SaveRequestInfoReq req);
 }

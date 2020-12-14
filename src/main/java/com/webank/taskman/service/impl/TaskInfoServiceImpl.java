@@ -91,7 +91,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         String taskInfoId = taskInfo.getId();
         FormInfoResq formInfoResq = checkTheTask(taskInfoId).getFormInfoResq();
         FormInfo formInfo = formInfoConverter.svToFormInfo(saveTaskInfoAndFormInfoReq.getSaveFormInfoAndFormItemInfoReq());
-        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(saveTaskInfoAndFormInfoReq.getSaveFormInfoAndFormItemInfoReq().getSaveAndFormItemfoReqs());
+        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(saveTaskInfoAndFormInfoReq.getSaveFormInfoAndFormItemInfoReq().getSaveFormItemInfoReqs());
 
         List<FormItemTemplate> formItemTemplateList = new ArrayList<>();
         String msg = "success";
@@ -128,8 +128,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             formInfoMapper.insert(formInfo);
             formItemInfos.stream().forEach(f -> {
                 f.setFormId(formInfo.getId());
-                f.setCreatedBy(currentUsername);
-                f.setUpdatedBy(currentUsername);
                 formItemInfoMapper.insert(f);
             });
         }
@@ -140,7 +138,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                 QueryWrapper<FormItemInfo> queryWrapper = new QueryWrapper<>();
                 queryWrapper.eq("form_id", f.getFormId())
                         .eq("name", f.getName());
-                f.setUpdatedBy(currentUsername);
                 formItemInfoMapper.update(f, queryWrapper);
             });
         }

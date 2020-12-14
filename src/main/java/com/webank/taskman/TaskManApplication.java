@@ -10,7 +10,7 @@ import java.io.IOException;
 
 
 @SpringBootApplication
-@EnableTransactionManagement
+@EnableTransactionManagement(proxyTargetClass = true)
 public class TaskManApplication {
     public static void main(String[] args) throws IOException {
         SpringApplication.run(TaskManApplication.class, args);

@@ -156,6 +156,14 @@ public class TaskmanRequestController {
     }
 
     @ApiOperationSupport(order = 18)
+    @PostMapping("/save")
+
+    @ApiOperation(value = "Request-Info-save")
+    public JsonResponse<SaveRequestInfoReq> saveRequestInfo(@RequestBody SaveRequestInfoReq req) throws Exception {
+        return okayWithData(requestInfoService.saveRequestInfo(req));
+    }
+    
+    @ApiOperationSupport(order = 19)
     @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "Request-Info-search")
     public JsonResponse<QueryResponse<RequestInfoResq>> selectRequestInfo(
@@ -167,12 +175,18 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
+
+
+
+
+    @ApiOperation(value = "Request-Info-done")
     @PostMapping(ApplicationConstants.ApiInfo.API_RESOURCE_SERVICE_REQUEST_DONE)
     public JsonResponse updateServiceRequest(@RequestBody DoneServiceRequestRequest request,
-                                             HttpServletRequest httpRequest) throws Exception {
+                                             @ApiIgnore HttpServletRequest httpRequest) throws Exception {
         requestInfoService.doneServiceRequest(request);
         return okay();
     }
+
 }
 
 

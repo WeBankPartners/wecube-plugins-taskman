@@ -33,11 +33,16 @@
         WHERE ri.request_temp_id = rts.id
     </select>
 
-    <select id="selectSynthesisRequestInfo" parameterType="String" resultMap="RequestInfoMap">
+    <select id="selectSynthesisRequestInfo" parameterType="com.webank.taskman.dto.req.SynthesisRequestInfoReq" resultMap="RequestInfoMap">
         SELECT ri.*
         FROM
         request_info ri
-        WHERE  (
+        WHERE
+        <if test="param.status !=null and param.status !='' ">
+            ri.`status`=#{param.status}
+            and
+        </if>
+        (
         SELECT COUNT(1)
         FROM role_relation rr
         WHERE
@@ -45,7 +50,7 @@
         AND
         rr.role_type =0
         AND
-        <foreach item="roleStr" index="index" collection="roleName.split(',')" open="(" close=")" separator="OR">
+        <foreach item="roleStr" index="index" collection="param.roleName.split(',')" open="(" close=")" separator="OR">
             MATCH(rr.role_name)
             AGAINST(#{roleStr})
         </foreach>

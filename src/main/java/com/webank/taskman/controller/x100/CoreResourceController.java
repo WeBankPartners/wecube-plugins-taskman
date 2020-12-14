@@ -4,18 +4,28 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.dto.DownloadAttachFileResponse;
 import com.webank.taskman.dto.JsonResponse;
+import com.webank.taskman.service.AttachFileService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +37,9 @@ import static com.webank.taskman.dto.JsonResponse.okayWithData;
 @RestController
 @RequestMapping("/v1/core-resources")
 public class CoreResourceController {
+
+
+    private static final Logger log = LoggerFactory.getLogger(CoreResourceController.class);
 
     @Autowired
     CoreServiceStub coreServiceStub;
@@ -112,6 +125,41 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,filters));
     }
 
+    @Autowired
+    AttachFileService attachFileService;
 
+    @PostMapping("/attach-file")
+    public JsonResponse uploadServiceRequestAttachFile(@RequestParam(value = "file") MultipartFile attachFile)
+            throws Exception {
+        String attachFileId  = attachFileService.uploadServiceRequestAttachFile(attachFile);
+
+        return okayWithData(attachFileId);
+    }
+
+
+    @GetMapping("/{attach-id}/attach-file")
+    public void downloadServiceRequestAttachFile(@PathVariable(value = "attach-id") String serviceRequestId,
+                                                 HttpServletResponse response) throws Exception {
+        if (serviceRequestId == null || serviceRequestId.isEmpty())
+            throw new Exception("Invalid service-request-id: " + serviceRequestId);
+        try {
+            ServletOutputStream out = response.getOutputStream();
+            DownloadAttachFileResponse attachFileInfo = attachFileService
+                    .downloadServiceRequestAttachFile(serviceRequestId);
+
+            response.setCharacterEncoding("utf-8");
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                    "attachment;fileName=" + attachFileInfo.getAttachFileName());
+            response.setHeader("Accept", MediaType.APPLICATION_OCTET_STREAM_VALUE);
+            out.write(attachFileInfo.getFileByteArray());
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            String errorMessage = String.format("Failed to download attach file(service request Id:%d) due to %s ",
+                    serviceRequestId, e.getMessage());
+            throw new TaskmanException("3000", errorMessage, serviceRequestId, e.getMessage());
+        }
+    }
 
 }

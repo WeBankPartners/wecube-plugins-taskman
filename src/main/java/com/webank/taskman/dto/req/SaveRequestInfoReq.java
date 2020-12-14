@@ -24,12 +24,6 @@ public class SaveRequestInfoReq {
     @ApiModelProperty(value = "描述",required = false,dataType = "String",position = 104)
     private String description;
 
-    @ApiModelProperty(value = "标签",required = false,dataType = "String",position = 105)
-    private String tags;
-
-    @ApiModelProperty(value = "使用角色(多个,分割)",required = false,position = 106)
-    private List<RoleDTO> useRoles;
-
     @ApiModelProperty(value = "发布状态(0.未发布 1.已发布 2.已完成)",required = false,position = 107)
     private String status;
 
@@ -74,22 +68,6 @@ public class SaveRequestInfoReq {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getTags() {
-        return tags;
-    }
-
-    public void setTags(String tags) {
-        this.tags = tags;
-    }
-
-    public List<RoleDTO> getUseRoles() {
-        return useRoles;
-    }
-
-    public void setUseRoles(List<RoleDTO> useRoles) {
-        this.useRoles = useRoles;
     }
 
     public List<SaveFormItemInfoReq> getFormItems() {

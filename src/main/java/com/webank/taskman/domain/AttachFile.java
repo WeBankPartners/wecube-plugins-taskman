@@ -26,7 +26,15 @@ public class AttachFile  extends BaseEntity implements Serializable {
     
     private String s3KeyName;
 
-    
+    public AttachFile() {
+    }
+
+    public AttachFile(String attachFileName, String s3Url, String s3BucketName, String s3KeyName) {
+        this.attachFileName = attachFileName;
+        this.s3Url = s3Url;
+        this.s3BucketName = s3BucketName;
+        this.s3KeyName = s3KeyName;
+    }
     public String getId() {
         return id;
     }

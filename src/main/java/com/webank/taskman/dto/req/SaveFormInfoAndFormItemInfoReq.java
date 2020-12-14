@@ -17,7 +17,7 @@ public class SaveFormInfoAndFormItemInfoReq {
 
     private Integer type;
 
-    private List<SaveAndFormItemfoReq> saveAndFormItemfoReqs;
+    private List<SaveFormItemInfoReq> saveFormItemInfoReqs;
 
     public String getId() {
         return id;
@@ -59,12 +59,12 @@ public class SaveFormInfoAndFormItemInfoReq {
         this.type = type;
     }
 
-    public List<SaveAndFormItemfoReq> getSaveAndFormItemfoReqs() {
-        return saveAndFormItemfoReqs;
+    public List<SaveFormItemInfoReq> getSaveFormItemInfoReqs() {
+        return saveFormItemInfoReqs;
     }
 
-    public void setSaveAndFormItemfoReqs(List<SaveAndFormItemfoReq> saveAndFormItemfoReqs) {
-        this.saveAndFormItemfoReqs = saveAndFormItemfoReqs;
+    public void setSaveFormItemInfoReqs(List<SaveFormItemInfoReq> saveFormItemInfoReqs) {
+        this.saveFormItemInfoReqs = saveFormItemInfoReqs;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class SaveFormInfoAndFormItemInfoReq {
                 ", formTemplateId='" + formTemplateId + '\'' +
                 ", name='" + name + '\'' +
                 ", type=" + type +
-                ", saveAndFormItemfoReqs=" + saveAndFormItemfoReqs +
+                ", saveAndFormItemfoReqs=" + saveFormItemInfoReqs +
                 '}';
     }
 }

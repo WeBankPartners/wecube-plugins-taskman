@@ -4,41 +4,44 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 @ApiModel(value = "AddRequestInfoReq",description = "add RequestInfo req")
 public class SaveRequestInfoReq {
+
     @ApiModelProperty(value = "主键",required = false,dataType = "String",position = 100)
     private String id;
 
-    @ApiModelProperty(value = "请求模板id",required = false,dataType = "String",position = 101)
+    @ApiModelProperty(value = "请求模板id",required = true,dataType = "String",position = 101)
     private String requestTempId;
 
-    @ApiModelProperty(value = "流程编排key",required = false,dataType = "String",position = 102)
-    private String procInstKey;
+    @ApiModelProperty(value = "目标对象",required = true,dataType = "String",position = 102)
+    private String rootEntity;
 
-    @ApiModelProperty(value = "请求信息名称",required = false,dataType = "String",position = 103)
+    @ApiModelProperty(value = "请求信息名称",required = true,dataType = "String",position = 103)
     private String name;
 
-    @ApiModelProperty(value = "发布状态",required = false,dataType = "Integer",position = 104)
-    private Integer status;
+    @ApiModelProperty(value = "描述",required = false,dataType = "String",position = 104)
+    private String description;
 
-    @ApiModelProperty(value = "使用角色",required = false,position = 109)
+    @ApiModelProperty(value = "标签",required = false,dataType = "String",position = 105)
+    private String tags;
+
+    @ApiModelProperty(value = "使用角色(多个,分割)",required = false,position = 106)
     private String useRoleName;
 
-    @ApiModelProperty(value = "管理角色",required = false,position = 110)
-    private String manageRoleName;
+    @ApiModelProperty(value = "发布状态(0.未发布 1.已发布 2.已完成)",required = false,position = 107)
+    private String status;
 
-    @ApiModelProperty(hidden = true)
-    private Integer roleType;
-
-    @ApiModelProperty(hidden = true)
-    private String roleName;
+    private List<SaveFormItemInfoReq> formItems;
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public SaveRequestInfoReq setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getRequestTempId() {
@@ -49,12 +52,12 @@ public class SaveRequestInfoReq {
         this.requestTempId = requestTempId;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getRootEntity() {
+        return rootEntity;
     }
 
-    public void setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public void setRootEntity(String rootEntity) {
+        this.rootEntity = rootEntity;
     }
 
     public String getName() {
@@ -65,49 +68,35 @@ public class SaveRequestInfoReq {
         this.name = name;
     }
 
-    public Integer getStatus() {
-        return status;
+    public String getDescription() {
+        return description;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setDescription(String description) {
+        this.description = description;
     }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
     public String getUseRoleName() {
         return useRoleName;
     }
 
     public void setUseRoleName(String useRoleName) {
         this.useRoleName = useRoleName;
-        if(!StringUtils.isEmpty(useRoleName)){
-            this.roleType = null != this.roleType ? 2:1;
-            this.roleName = this.useRoleName;
-        }
     }
 
-    public String getManageRoleName() {
-        return manageRoleName;
+    public List<SaveFormItemInfoReq> getFormItems() {
+        return formItems;
     }
 
-    public void setManageRoleName(String manageRoleName) {
-        this.manageRoleName = manageRoleName;
-        if(!StringUtils.isEmpty(manageRoleName)){
-            this.roleType = null != this.roleType ? 2:0;
-            this.roleName = this.manageRoleName;
-        }
-    }
-    public Integer getRoleType() {
-        return roleType;
-    }
-
-    public void setRoleType(Integer roleType) {
-        this.roleType = roleType;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setFormItems(List<SaveFormItemInfoReq> formItems) {
+        this.formItems = formItems;
     }
 }

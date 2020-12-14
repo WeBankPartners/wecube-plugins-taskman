@@ -6,24 +6,18 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel
 public class SaveFormInfoReq {
 
-    @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType = "int")
-    private Integer tempType;
 
-    @ApiModelProperty(value = "",required = true)
+    @ApiModelProperty(value = "表单名称",required = true)
     private String name;
 
     private String description;
 
-    private String style;
-
-
-    public Integer getTempType() {
-        return tempType;
-    }
-
-    public void setTempType(Integer tempType) {
-        this.tempType = tempType;
-    }
+    @ApiModelProperty(value = "输入",position = 8)
+    private String inputAttrDef;
+    @ApiModelProperty(value = "输出参数",position = 9)
+    private String outputAttrDef;
+    @ApiModelProperty(value = "其他参数",position = 10)
+    private String otherAttrDef;
 
     public String getName() {
         return name;
@@ -41,12 +35,27 @@ public class SaveFormInfoReq {
         this.description = description;
     }
 
-    public String getStyle() {
-        return style;
+    public String getInputAttrDef() {
+        return inputAttrDef;
     }
 
-    public void setStyle(String style) {
-        this.style = style;
+    public void setInputAttrDef(String inputAttrDef) {
+        this.inputAttrDef = inputAttrDef;
     }
 
+    public String getOutputAttrDef() {
+        return outputAttrDef;
+    }
+
+    public void setOutputAttrDef(String outputAttrDef) {
+        this.outputAttrDef = outputAttrDef;
+    }
+
+    public String getOtherAttrDef() {
+        return otherAttrDef;
+    }
+
+    public void setOtherAttrDef(String otherAttrDef) {
+        this.otherAttrDef = otherAttrDef;
+    }
 }

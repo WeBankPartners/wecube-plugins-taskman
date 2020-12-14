@@ -12,6 +12,7 @@ import com.webank.taskman.converter.SynthesisRequestTemplateConverter;
 import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
@@ -52,6 +53,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     @Override
     public QueryResponse<SynthesisRequestTempleResp> selectSynthesisRequestTempleService(Integer current, Integer limit) throws Exception {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectSynthesisRequestTemple(new Page<>(current, limit),currentUserRolesToString);
         List<SynthesisRequestTempleResp> srt=synthesisRequestTemplateConverter.toDto(iPage.getRecords());
 
@@ -62,10 +64,11 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     }
 
     @Override
-    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit) throws Exception {
+    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
 
-        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),currentUserRolesToString);
+        req.setRoleName(currentUserRolesToString);
+        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
         List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());
 
         QueryResponse<SynthesisRequestInfoResp> queryResponse = new QueryResponse<>();

@@ -6,9 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
-import com.webank.taskman.converter.FormInfoConverter;
-import com.webank.taskman.converter.FormItemInfoConverter;
-import com.webank.taskman.converter.TaskInfoConverter;
+import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormItemTemplate;
@@ -18,14 +16,14 @@ import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveTaskInfoAndFormInfoReq;
 import com.webank.taskman.dto.req.SelectTaskInfoReq;
-import com.webank.taskman.dto.resp.FormInfoResq;
-import com.webank.taskman.dto.resp.SaveTaskInfoResp;
-import com.webank.taskman.dto.resp.TaskInfoResp;
+import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.mapper.FormInfoMapper;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.TaskInfoMapper;
 import com.webank.taskman.service.TaskInfoService;
+import javafx.concurrent.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,10 +57,16 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
 
+    @Autowired
+    SynthesisTaskInfoRespConverter synthesisTaskInfoRespConverter;
+
+    @Autowired
+    SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
+
     @Override
     public QueryResponse<TaskInfoResp> selectTaskInfoService(Integer page, Integer pageSize, SelectTaskInfoReq req) {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        IPage<TaskInfo> iPage = taskInfoMapper.selectTaskInfo(new Page<>(page, pageSize), req);
+        IPage<TaskInfo> iPage = taskInfoMapper.selectTaskInfo(new Page<>(page, pageSize), currentUserRolesToString);
         List<TaskInfoResp> respList = taskInfoConverter.toDto(iPage.getRecords());
         for (TaskInfoResp taskInfoResp : respList) {
             FormInfo formInfo = formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id", taskInfoResp.getId()));
@@ -144,6 +148,33 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         SaveTaskInfoResp saveTaskInfoResp=new SaveTaskInfoResp();
         saveTaskInfoResp.setId(taskInfoId);
         return saveTaskInfoResp;
+    }
+
+    @Override
+    public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+        req.setRoleName(currentUserRolesToString);
+        IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);
+        List<SynthesisTaskInfoResp> srt=synthesisTaskInfoRespConverter.toDto(iPage.getRecords());
+
+        QueryResponse<SynthesisTaskInfoResp> queryResponse = new QueryResponse<>();
+        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
+        queryResponse.setContents(srt);
+
+        return queryResponse;
+    }
+
+    @Override
+    public SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception{
+        FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",id));
+        if (StringUtils.isEmpty(id)){
+            throw new Exception("The request details do not exist");
+        }
+        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getId()));
+        SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);
+        srt.setFormItemInfo(formItemInfos);
+
+        return srt;
     }
 
     public CheckTaskDTO checkTheTask(String taskId) {

@@ -46,4 +46,28 @@
         ) rts
         WHERE ri.task_temp_id = rts.id
     </select>
+
+    <select id="selectSynthesisRequestInfo" parameterType="com.webank.taskman.dto.req.SynthesisTaskInfoReq" resultMap="TaskInfoMap">
+        SELECT ri.*
+        FROM
+        task_info ri
+        WHERE
+        <if test="param.status !=null and param.status !='' ">
+            ri.`status`=#{param.status}
+            and
+        </if>
+        (
+        SELECT COUNT(1)
+        FROM role_relation rr
+        WHERE
+        ri.task_temp_id = rr.record_id
+        AND
+        rr.role_type =0
+        AND
+        <foreach item="roleStr" index="index" collection="param.roleName.split(',')" open="(" close=")" separator="OR">
+            MATCH(rr.role_name)
+            AGAINST(#{roleStr})
+        </foreach>
+        ) > 0
+    </select>
 </mapper>

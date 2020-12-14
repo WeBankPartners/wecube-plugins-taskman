@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.req.SelectTaskInfoReq;
+import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import org.apache.ibatis.annotations.Param;
 
 
 public interface TaskInfoMapper extends BaseMapper<TaskInfo> {
-    IPage<TaskInfo> selectTaskInfo(Page page, @Param("Info") SelectTaskInfoReq selectTaskInfoReq);
+    IPage<TaskInfo> selectTaskInfo(Page page, @Param("Info") String rolesToString);
+
+    IPage<TaskInfo> selectSynthesisRequestInfo(Page page, @Param("param") SynthesisTaskInfoReq req);
 }

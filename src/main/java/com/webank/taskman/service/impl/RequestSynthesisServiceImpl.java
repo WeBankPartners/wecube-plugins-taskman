@@ -53,6 +53,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     @Override
     public QueryResponse<SynthesisRequestTempleResp> selectSynthesisRequestTempleService(Integer current, Integer limit) throws Exception {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectSynthesisRequestTemple(new Page<>(current, limit),currentUserRolesToString);
         List<SynthesisRequestTempleResp> srt=synthesisRequestTemplateConverter.toDto(iPage.getRecords());
 
@@ -64,8 +65,8 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
 
     @Override
     public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
-//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        String currentUserRolesToString = "APP_ARC,PRD_OPS";
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+
         req.setRoleName(currentUserRolesToString);
         IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
         List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());

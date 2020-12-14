@@ -7,7 +7,7 @@ import com.webank.taskman.base.BaseEntity;
 import java.io.Serializable;
 import java.util.Date;
 
-public class FormItemInfo extends BaseEntity implements Serializable {
+public class FormItemInfo  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -21,8 +21,6 @@ public class FormItemInfo extends BaseEntity implements Serializable {
     private String name;
 
     private String value;
-
-    private String targetEntitys;
 
 
     public String getId() {
@@ -65,14 +63,6 @@ public class FormItemInfo extends BaseEntity implements Serializable {
         this.value = value;
     }
 
-    public String getTargetEntitys() {
-        return targetEntitys;
-    }
-
-    public void setTargetEntitys(String targetEntitys) {
-        this.targetEntitys = targetEntitys;
-    }
-
     @Override
     public String toString() {
         return "FormItemInfo{" +
@@ -81,7 +71,6 @@ public class FormItemInfo extends BaseEntity implements Serializable {
                 ", itemTempId='" + itemTempId + '\'' +
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +
-                ", targetEntitys='" + targetEntitys + '\'' +
                 '}';
     }
 }

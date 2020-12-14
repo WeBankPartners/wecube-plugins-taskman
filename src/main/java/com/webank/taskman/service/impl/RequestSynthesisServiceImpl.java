@@ -52,7 +52,6 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     @Override
     public QueryResponse<SynthesisRequestTempleResp> selectSynthesisRequestTempleService(Integer current, Integer limit) throws Exception {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectSynthesisRequestTemple(new Page<>(current, limit),currentUserRolesToString);
         List<SynthesisRequestTempleResp> srt=synthesisRequestTemplateConverter.toDto(iPage.getRecords());
 
@@ -79,8 +78,11 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     @Override
     public SynthesisRequestInfoFormRequest selectSynthesisRequestInfoFormService(String id) throws Exception {
 
-        FormInfo formInfo=formInfoMapper.selectById(id);
-        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getFormTemplateId()));
+        FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",id));
+        if (null==formInfo||"".equals(formInfo)){
+            throw new Exception("The request details do not exist");
+        }
+        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getId()));
         SynthesisRequestInfoFormRequest srt=synthesisRequestInfoFormRequestConverter.toDto(formInfo);
         srt.setFormItemInfo(formItemInfos);
 

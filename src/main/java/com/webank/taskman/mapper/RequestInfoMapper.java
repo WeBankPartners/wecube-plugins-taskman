@@ -5,11 +5,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
+import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import org.apache.ibatis.annotations.Param;
 
 
 public interface RequestInfoMapper extends BaseMapper<RequestInfo> {
     IPage<RequestInfo> selectRequestInfo(Page page, @Param("Info") SaveRequestInfoReq saveRequestInfoReq);
 
-    IPage<RequestInfo> selectSynthesisRequestInfo(Page page, String roleName);
+    IPage<RequestInfo> selectSynthesisRequestInfo(Page page, @Param("param") SynthesisRequestInfoReq req);
 }

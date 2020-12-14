@@ -1,8 +1,8 @@
 package com.webank.taskman.dto.req;
 
+import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class SaveRequestInfoReq {
     private String tags;
 
     @ApiModelProperty(value = "使用角色(多个,分割)",required = false,position = 106)
-    private String useRoleName;
+    private List<RoleDTO> useRoles;
 
     @ApiModelProperty(value = "发布状态(0.未发布 1.已发布 2.已完成)",required = false,position = 107)
     private String status;
@@ -84,12 +84,12 @@ public class SaveRequestInfoReq {
         this.tags = tags;
     }
 
-    public String getUseRoleName() {
-        return useRoleName;
+    public List<RoleDTO> getUseRoles() {
+        return useRoles;
     }
 
-    public void setUseRoleName(String useRoleName) {
-        this.useRoleName = useRoleName;
+    public void setUseRoles(List<RoleDTO> useRoles) {
+        this.useRoles = useRoles;
     }
 
     public List<SaveFormItemInfoReq> getFormItems() {

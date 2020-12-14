@@ -28,7 +28,7 @@ public class FormItemTemplateResq {
     @ApiModelProperty(value = "",position = 10)
     private Integer isEdit;
     @ApiModelProperty(value = "",position = 11)
-    private Integer regular;
+    private String regular;
     @ApiModelProperty(value = "",position = 12)
     private Integer width;
     @ApiModelProperty(value = "",position = 13)
@@ -121,11 +121,11 @@ public class FormItemTemplateResq {
         this.isEdit = isEdit;
     }
 
-    public Integer getRegular() {
+    public String getRegular() {
         return regular;
     }
 
-    public void setRegular(Integer regular) {
+    public void setRegular(String regular) {
         this.regular = regular;
     }
 

@@ -8,7 +8,8 @@
         <result column="request_no" property="requestNo"/>
         <result column="parent_id" property="parentId"/>
         <result column="task_temp_id" property="taskTempId"/>
-        <result column="proc_node" property="procNode"/>
+        <result column="node_def_id" property="nodeDefId"/>
+        <result column="node_name" property="nodeName"/>
         <result column="callback_url" property="callbackUrl"/>
         <result column="callback_parameter" property="callbackParameter"/>
         <result column="name" property="name"/>
@@ -28,7 +29,7 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
-    <select id="selectTaskInfo" parameterType="com.webank.taskman.dto.req.SaveTaskInfoReq"
+    <select id="selectTaskInfo" parameterType="com.webank.taskman.dto.req.SelectTaskInfoReq"
             resultMap="TaskInfoMap">
         SELECT *
         FROM task_info ri,(

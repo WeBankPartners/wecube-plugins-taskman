@@ -3,7 +3,7 @@ package com.webank.taskman.controller.x100;
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.SaveTaskInfoReq;
+import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.TaskInfoResp;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
@@ -67,7 +67,7 @@ public class TaskmanTaskController {
     public JsonResponse<QueryResponse<TaskInfoResp>> selectRequestInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SaveTaskInfoReq req)
+            @RequestBody(required = false) SelectTaskInfoReq req)
             throws Exception {
         QueryResponse<TaskInfoResp> queryResponse = taskInfoService.selectTaskInfoService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);

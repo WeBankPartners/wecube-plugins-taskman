@@ -10,4 +10,6 @@ import org.apache.ibatis.annotations.Param;
 
 public interface RequestInfoMapper extends BaseMapper<RequestInfo> {
     IPage<RequestInfo> selectRequestInfo(Page page, @Param("Info") SaveRequestInfoReq saveRequestInfoReq);
+
+    IPage<RequestInfo> selectSynthesisRequestInfo(Page page, String roleName);
 }

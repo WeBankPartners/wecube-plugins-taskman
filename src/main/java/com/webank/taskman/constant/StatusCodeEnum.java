@@ -2,7 +2,8 @@ package com.webank.taskman.constant;
 
 public enum  StatusCodeEnum {
 
-    NOT_FOUND_RECORD("3007","Record does not exist ","Record does not exist");
+    PARAM_ISNULL("1001","param is null ","param is null"),
+    NOT_FOUND_RECORD("3007","Record does not exist ","Record does not exist"),
     ;
     private String code;
 

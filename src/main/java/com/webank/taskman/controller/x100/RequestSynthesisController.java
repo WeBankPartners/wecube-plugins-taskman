@@ -5,23 +5,29 @@ import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
-import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
+import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.RequestSynthesisService;
+import com.webank.taskman.service.TaskInfoService;
+import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-@Api(tags = {"6、 Request Synthesis API"})
+@Api(tags = {"6、 RequestORTask Synthesis API"})
 @RestController
 @RequestMapping("/v1/Synthesis")
 public class RequestSynthesisController {
     @Autowired
     RequestSynthesisService requestSynthesisService;
 
+    @Autowired
+    TaskTemplateService taskTemplateService;
+
+    @Autowired
+    TaskInfoService taskInfoService;
 
     @ApiOperationSupport(order = 1)
     @PostMapping("/Request/selectRequestSynthesis/{page}/{pageSize}")
@@ -54,5 +60,37 @@ public class RequestSynthesisController {
             throws Exception {
         SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestSynthesisService.selectSynthesisRequestInfoFormService(id);
         return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
+    }
+
+    @ApiOperationSupport(order = 4)
+    @PostMapping("/task/selectTaskSynthesis/{page}/{pageSize}")
+    @ApiOperation(value = "task-Synthesis-search")
+    public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
+            throws Exception{
+        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
+        return JsonResponse.okayWithData(queryResponse);
+    }
+
+    @ApiOperationSupport(order = 5)
+    @PostMapping("/task/selectSynthesisTaskInfo/{page}/{pageSize}")
+    @ApiOperation(value = "Synthesis-Task-Info-search")
+    public JsonResponse<QueryResponse<SynthesisTaskInfoResp>> selectSynthesisTaskInfo(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) SynthesisTaskInfoReq req)
+            throws Exception {
+        QueryResponse<SynthesisTaskInfoResp> queryResponse = taskInfoService.selectSynthesisTaskInfoService(page, pageSize,req);
+        return JsonResponse.okayWithData(queryResponse);
+    }
+
+    @ApiOperationSupport(order = 6)
+    @PostMapping("/task/selectSynthesisTaskInfoForm")
+    @ApiOperation(value = "Synthesis-Task-Info-Form-search")
+    public JsonResponse<SynthesisTaskInfoFormTask> selectSynthesisTaskInfoForm(String id)
+            throws Exception {
+        SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
+        return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
     }
 }

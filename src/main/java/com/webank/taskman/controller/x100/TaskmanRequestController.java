@@ -7,6 +7,7 @@ import com.webank.taskman.commons.ApplicationConstants;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.constant.StatusCodeEnum;
+import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
@@ -26,6 +27,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -44,6 +47,11 @@ import static com.webank.taskman.dto.JsonResponse.okayWithData;
 @RestController
 @RequestMapping("/v1/request")
 public class TaskmanRequestController {
+
+
+
+    private static final Logger log = LoggerFactory.getLogger(TaskmanRequestController.class);
+
 
     @Autowired
     RequestTemplateService requestTemplateService;
@@ -83,11 +91,12 @@ public class TaskmanRequestController {
         if(StringUtils.isEmpty(req.getId())){
             throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
         }
-        RequestTemplate requestTemplate = requestTemplateService.getById(req.getId());
+        RequestTemplate requestTemplate = requestTemplateService.getOne(new QueryWrapper<RequestTemplate>()
+                    .eq("id",req.getId()).eq("status",StatusEnum._DEFAULT.ordinal()));
         if(null == requestTemplate){
             throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
         }
-        requestTemplate.setStatus(requestTemplate.getStatus() ==0 ? 1:0);
+        requestTemplate.setStatus(StatusEnum.ENABLE.ordinal());
         requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateService.updateById(requestTemplate);
         return okay();

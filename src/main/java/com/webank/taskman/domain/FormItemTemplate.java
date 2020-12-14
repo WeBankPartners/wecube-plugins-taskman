@@ -2,13 +2,10 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.webank.taskman.base.BaseEntity;
-import io.swagger.annotations.ApiModelProperty;
 
-import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
-public class FormItemTemplate extends BaseEntity implements Serializable {
+public class FormItemTemplate implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,22 +16,20 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
     private String attrDataType;
     private String name;
     private String title;
+    private String packageName;
+    private String entityName;
+    private String entityFilters;
     private String elementType;
+    private Integer isCurrency;
     private String defaultValue;
     private Integer required;
     private Integer isEdit;
     private String regular;
     private Integer width;
     private Integer sort;
-    private String entityId;
-    private String entityFilters;
     private String dataOptions;
     private Integer isView;
-    private Integer isPublic;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
 
     public String getId() {
         return id;
@@ -84,12 +79,44 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.title = title;
     }
 
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public void setEntityName(String entityName) {
+        this.entityName = entityName;
+    }
+
+    public String getEntityFilters() {
+        return entityFilters;
+    }
+
+    public void setEntityFilters(String entityFilters) {
+        this.entityFilters = entityFilters;
+    }
+
     public String getElementType() {
         return elementType;
     }
 
     public void setElementType(String elementType) {
         this.elementType = elementType;
+    }
+
+    public Integer getIsCurrency() {
+        return isCurrency;
+    }
+
+    public void setIsCurrency(Integer isCurrency) {
+        this.isCurrency = isCurrency;
     }
 
     public String getDefaultValue() {
@@ -123,6 +150,7 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
     public void setRegular(String regular) {
         this.regular = regular;
     }
+
     public Integer getWidth() {
         return width;
     }
@@ -137,22 +165,6 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
 
     public void setSort(Integer sort) {
         this.sort = sort;
-    }
-
-    public String getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
-    }
-
-    public String getEntityFilters() {
-        return entityFilters;
-    }
-
-    public void setEntityFilters(String entityFilters) {
-        this.entityFilters = entityFilters;
     }
 
     public String getDataOptions() {
@@ -171,40 +183,28 @@ public class FormItemTemplate extends BaseEntity implements Serializable {
         this.isView = isView;
     }
 
-    public Integer getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Integer isPublic) {
-        this.isPublic = isPublic;
-    }
-
     @Override
     public String toString() {
         return "FormItemTemplate{" +
-                "id='" + id + '\'' +
-                ", formTemplateId='" + formTemplateId + '\'' +
-                ", attrDefId='" + attrDefId + '\'' +
-                ", attrDataType='" + attrDataType + '\'' +
-                ", name='" + name + '\'' +
-                ", title='" + title + '\'' +
-                ", elementType='" + elementType + '\'' +
-                ", defaultValue='" + defaultValue + '\'' +
-                ", required=" + required +
-                ", isEdit=" + isEdit +
-                ", regular=" + regular +
-                ", width=" + width +
-                ", sort=" + sort +
-                ", entityId='" + entityId + '\'' +
-                ", entityFilters='" + entityFilters + '\'' +
-                ", dataOptions='" + dataOptions + '\'' +
-                ", isView=" + isView +
-                ", isPublic=" + isPublic +
-                ", createdBy=" + getCreatedBy() +
-                ", createdTime=" + getCreatedTime() +
-                ", updatedBy=" + getUpdatedBy() +
-                ", updatedTime=" + getUpdatedTime() +
-                ", delFlag=" + getDelFlag() +
-                '}';
+        "id=" + id +
+        ", formTemplateId=" + formTemplateId +
+        ", attrDefId=" + attrDefId +
+        ", attrDataType=" + attrDataType +
+        ", name=" + name +
+        ", title=" + title +
+        ", packageName=" + packageName +
+        ", entityName=" + entityName +
+        ", entityFilters=" + entityFilters +
+        ", elementType=" + elementType +
+        ", isCurrency=" + isCurrency +
+        ", defaultValue=" + defaultValue +
+        ", required=" + required +
+        ", isEdit=" + isEdit +
+        ", regular=" + regular +
+        ", width=" + width +
+        ", sort=" + sort +
+        ", dataOptions=" + dataOptions +
+        ", isView=" + isView +
+        "}";
     }
 }

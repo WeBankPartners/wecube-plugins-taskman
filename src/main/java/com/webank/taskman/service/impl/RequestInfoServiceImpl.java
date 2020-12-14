@@ -68,10 +68,6 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Override
     public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) throws Exception {
 
-        if (null==req.getUseRoles()||"".equals(req.getUseRoles())){
-            throw new Exception("Saverequestinforeq is null");
-        }
-
         IPage<RequestInfo> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit),req);
         List<RequestInfoResq> respList = requestInfoConverter.toDto(iPage.getRecords());
 
@@ -107,8 +103,6 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         RequestInfo requestInfo = requestInfoConverter.reqToDomain(req);
         requestInfo.setCurrenUserName(requestInfo,requestInfo.getId());
         saveOrUpdate(requestInfo);
-        roleRelationService.saveRoleRelation(
-                requestInfo.getId(), RoleTypeEnum.USE_ROLE,req.getUseRoles());
         List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(req.getFormItems());
         if(null != formItemInfos && formItemInfos.size() > 0 ){
             FormTemplate formTemplate = formTemplateService.getOne(

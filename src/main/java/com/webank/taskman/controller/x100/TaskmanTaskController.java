@@ -13,6 +13,8 @@ import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -26,6 +28,11 @@ import java.util.List;
 @RequestMapping("/v1/task")
 @Api(tags = {"4、 Task inteface API"})
 public class TaskmanTaskController {
+
+
+
+    private static final Logger log = LoggerFactory.getLogger(TaskmanTaskController.class);
+
 
     @Autowired
     private TaskTemplateService taskTemplateService;

@@ -170,8 +170,11 @@ public class CoreServiceStub {
         return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
     }
 
+    // 8
     public static void main(String[] args) {
         CoreServiceStub stub = new CoreServiceStub();
         System.out.println(stub.asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,"p1","e1"));
     }
+
+
 }

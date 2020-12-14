@@ -32,8 +32,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     public RequestTemplateGroup saveTemplateGroupByReq(SaveRequestTemplateGropReq gropReq) throws Exception {
         RequestTemplateGroup req = requestTemplateGroupConverter.addOrUpdateDomain(gropReq);
         if (StringUtils.isEmpty(req.getId())) {
-            req.setCreatedBy("11");
-            req.setUpdatedBy("22");
+            req.setCurrenUserName(req,req.getId());
             templateGroupMapper.insert(req);
             RequestTemplateGroup requestTemplateGroup = templateGroupMapper.selectById(req);
             return requestTemplateGroup;

@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
@@ -18,6 +17,8 @@ import com.webank.taskman.service.FormTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -31,6 +32,10 @@ import java.util.List;
 @RequestMapping("/v1/form")
 @Api(tags = {"5、 Form inteface API"})
 public class TaskmanFormController {
+
+
+
+    private static final Logger log = LoggerFactory.getLogger(TaskmanFormController.class);
 
     @Autowired
     FormItemTemplateService formItemTemplateService;

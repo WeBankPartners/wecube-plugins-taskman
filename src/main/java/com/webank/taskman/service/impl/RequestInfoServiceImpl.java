@@ -50,6 +50,11 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Override
     public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) throws Exception {
+
+        if (null==req.getUseRoleName()||"".equals(req.getUseRoleName())){
+            throw new Exception("Saverequestinforeq is null");
+        }
+
         IPage<RequestInfo> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit),req);
         List<RequestInfoResq> respList = requestInfoConverter.toDto(iPage.getRecords());
 

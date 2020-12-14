@@ -87,4 +87,22 @@
 
     </select>
 
+    <select id="selectSynthesisRequestTemple" parameterType="String" resultMap="BaseResultMap">
+        SELECT rt.*
+        FROM
+        request_template rt
+        WHERE  (
+        SELECT COUNT(1)
+        FROM role_relation rr
+        WHERE rt.id = rr.record_id
+        AND
+        rr.role_type =0
+        AND
+        <foreach item="roleStr" index="index" collection="roleName.split(',')" open="(" close=")" separator="OR">
+        MATCH(rr.role_name)
+        AGAINST(#{roleStr})
+        </foreach>
+        ) > 0
+    </select>
+
 </mapper>

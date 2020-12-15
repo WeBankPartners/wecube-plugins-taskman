@@ -1,5 +1,9 @@
 package com.webank.taskman.dto.resp;
 
+import com.webank.taskman.domain.FormItemInfo;
+
+import java.util.List;
+
 public class SynthesisRequestInfoResp {
     private String id;
 
@@ -14,6 +18,8 @@ public class SynthesisRequestInfoResp {
 
 
     private String status;
+
+    private List<FormItemInfo> formItemInfo;
 
     public String getId() {
         return id;
@@ -53,5 +59,13 @@ public class SynthesisRequestInfoResp {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public List<FormItemInfo> getFormItemInfo() {
+        return formItemInfo;
+    }
+
+    public void setFormItemInfo(List<FormItemInfo> formItemInfo) {
+        this.formItemInfo = formItemInfo;
     }
 }

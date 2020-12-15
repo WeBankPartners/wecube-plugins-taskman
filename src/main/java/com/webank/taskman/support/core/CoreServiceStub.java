@@ -101,12 +101,8 @@ public class CoreServiceStub {
             if("rYsEQg2D2Bu".equals(procDefId)) {
                 list =  addTestNodeList();
             }
-            List filterList = new LinkedList<>();
-            for(LinkedHashMap node:list){
-                if(TaskNodeTypeEnum.SUTN.getType().equals(node.get("taskCategory"))){
-                    filterList.add(node);
-                }
-            }
+            List filterList = list.stream().filter(node->TaskNodeTypeEnum.SUTN.getType().equals(node.get("taskCategory")))
+                    .collect(Collectors.toList());
             return filterList;
         }
         return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);

@@ -14,6 +14,7 @@ public class AttachFile  extends BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
+    private String recordId;
     
     private String attachFileName;
 
@@ -41,6 +42,14 @@ public class AttachFile  extends BaseEntity implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 
     public String getAttachFileName() {
@@ -75,6 +84,29 @@ public class AttachFile  extends BaseEntity implements Serializable {
         this.s3KeyName = s3KeyName;
     }
 
+    public String getS3Url() {
+        return s3Url;
+    }
+
+    public void setS3Url(String s3Url) {
+        this.s3Url = s3Url;
+    }
+
+    public String getS3BucketName() {
+        return s3BucketName;
+    }
+
+    public void setS3BucketName(String s3BucketName) {
+        this.s3BucketName = s3BucketName;
+    }
+
+    public String getS3KeyName() {
+        return s3KeyName;
+    }
+
+    public void setS3KeyName(String s3KeyName) {
+        this.s3KeyName = s3KeyName;
+    }
 
     @Override
     public String toString() {

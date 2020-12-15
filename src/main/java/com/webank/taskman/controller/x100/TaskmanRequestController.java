@@ -129,13 +129,17 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(requestTemplateResp);
     }
 
-    @GetMapping("/template/available")
+    @GetMapping(value = {"/template/available","/template/available/{all}"})
     @ApiOperationSupport(order = 14)
     @ApiOperation(value = "request-template-available")
-    public JsonResponse<List<RequestTemplateResp>> availableRequest(@ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
-        QueryWrapper<RequestTemplate> wrapper = new QueryWrapper<RequestTemplate>();
-        wrapper.eq("status",1);
-        List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.list(wrapper));
+    public JsonResponse<List<RequestTemplateResp>> availableRequest( @PathVariable(value = "all",required = false) String all,@ApiIgnore QueryRequestTemplateReq req) throws Exception {
+        if(StringUtils.isEmpty(all)){
+            req.setStatus(StatusEnum.ENABLE.ordinal());
+        }
+        AuthenticationContextHolder.getCurrentUsername();
+        req.setSourceTableFix("rt");
+        req.setUseRoleName(AuthenticationContextHolder.getCurrentUserRolesToString());
+        List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.selectListByParam(req));
         return okayWithData(dtoList);
     }
 

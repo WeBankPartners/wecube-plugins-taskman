@@ -105,5 +105,10 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         return requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
     }
 
+    @Override
+    public List<RequestTemplate> selectListByParam(QueryRequestTemplateReq req) {
+        return this.baseMapper.selectListByParam(req);
+    }
+
 
 }

@@ -44,22 +44,20 @@ public class GlobalExceptionHandler {
         log.error(errMsg + "\n", e);
         TaskmanException wecubeError = (TaskmanException) e;
 
-        return JsonResponse.error(determineI18nErrorMessage(request, wecubeError));
+        return JsonResponse.customError(determineI18nErrorMessage(request, wecubeError));
     }
 
     @ExceptionHandler(value = RuntimeException.class)
     public JsonResponse handleException(RuntimeException e) {
-        log.error("错误异常{}", e);
+        log.error("错误异常:{}", e.getMessage());
 
-        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION.getCode(),
-                BizCodeEnum.RUNTIME_EXCEPTION.getMessage(),
-                null);
+        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION,e.getMessage());
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public JsonResponse handleException(MethodArgumentNotValidException e) {
-        log.error("数据校验出现问题{}, 异常类型: {}", e.getMessage(), e.getClass());
+        log.error("数据校验出现问题: {}, 异常类型: {}", e.getMessage(), e.getClass());
         BindingResult bindingResult = e.getBindingResult();
 
         Map<String, String> errorMap = new HashMap<>();
@@ -67,17 +65,16 @@ public class GlobalExceptionHandler {
             errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
         }));
 
-        return JsonResponse.customError(BizCodeEnum.VAILD_EXCEPTION.getCode(),
-                BizCodeEnum.VAILD_EXCEPTION.getMessage(),errorMap);
+        return JsonResponse.customError(BizCodeEnum.VAILD_EXCEPTION,errorMap);
     }
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public JsonResponse defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        log.error("errors occurred:", e);
+        log.error("errors occurred:", e.getMessage());
         log.error("GlobalExceptionHandler: RequestHost {} invokes url {} ERROR: {}", req.getRemoteHost(),
                 req.getRequestURL(), e.getMessage());
-        return JsonResponse.error(e.getMessage());
+        return JsonResponse.customError(e.getMessage());
     }
 
     private String determineI18nErrorMessage(HttpServletRequest request, TaskmanException e) {

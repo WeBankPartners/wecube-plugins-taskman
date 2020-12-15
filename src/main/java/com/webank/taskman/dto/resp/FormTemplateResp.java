@@ -31,13 +31,13 @@ public class FormTemplateResp {
     private String otherAttrDef;
 
     @ApiModelProperty(value = "",position = 9)
-    private List<FormItemTemplateResq> items;
+    private List<FormItemTemplateDTO> items;
 
-    public List<FormItemTemplateResq> getItems() {
+    public List<FormItemTemplateDTO> getItems() {
         return items;
     }
 
-    public FormTemplateResp setItems(List<FormItemTemplateResq> items) {
+    public FormTemplateResp setItems(List<FormItemTemplateDTO> items) {
         this.items = items;
         return  this;
     }

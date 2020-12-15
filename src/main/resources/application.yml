@@ -37,7 +37,7 @@ knife4j:
     footerCustomContent: Copyright © 2014 - 2019 WeBank Co., Ltd. All Rights Reserved.
     enableDynamicParameter: true
     enableDebug: true
-    enableOpenApi: true
+    enableOpenApi: false
     enableGroup: false
   production: false # prod close knife4j
   basic:

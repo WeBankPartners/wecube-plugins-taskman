@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
@@ -12,15 +11,13 @@ import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
-import com.webank.taskman.dto.resp.FormItemTemplateResq;
+import com.webank.taskman.dto.resp.FormItemTemplateDTO;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -53,7 +50,7 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
 
 
     @Override
-    public QueryResponse<FormItemTemplateResq> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req) {
+    public QueryResponse<FormItemTemplateDTO> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req) {
         Page<FormItemTemplate> page = new Page<>(current, limit);
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<>();
         if (!StringUtils.isEmpty(req.getId())) {
@@ -80,14 +77,14 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
         IPage<FormItemTemplate> iPage = this.getBaseMapper().selectPage(page, wrapper);
         List<FormItemTemplate> records = iPage.getRecords();
 
-        List<FormItemTemplateResq> formItemTemplateResqs = formItemTemplateConverter.toDto(records);
-        QueryResponse<FormItemTemplateResq> queryResponse = new QueryResponse<>();
+        List<FormItemTemplateDTO> formItemTemplateDTOS = formItemTemplateConverter.toDto(records);
+        QueryResponse<FormItemTemplateDTO> queryResponse = new QueryResponse<>();
         PageInfo pageInfo = new PageInfo();
         pageInfo.setStartIndex(iPage.getCurrent());
         pageInfo.setPageSize(iPage.getSize());
         pageInfo.setTotalRows(iPage.getTotal());
         queryResponse.setPageInfo(pageInfo);
-        queryResponse.setContents(formItemTemplateResqs);
+        queryResponse.setContents(formItemTemplateDTOS);
         return queryResponse;
     }
 }

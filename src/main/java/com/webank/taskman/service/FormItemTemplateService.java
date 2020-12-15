@@ -6,7 +6,7 @@ import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
-import com.webank.taskman.dto.resp.FormItemTemplateResq;
+import com.webank.taskman.dto.resp.FormItemTemplateDTO;
 
 
 public interface FormItemTemplateService extends IService<FormItemTemplate> {
@@ -17,5 +17,5 @@ public interface FormItemTemplateService extends IService<FormItemTemplate> {
     void deleteRequestTemplateByID(String id);
 
 
-    QueryResponse<FormItemTemplateResq> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req);
+    QueryResponse<FormItemTemplateDTO> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req);
 }

@@ -3,8 +3,7 @@ package com.webank.taskman.controller.x100;
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.WorkflowJsonResponse;
+import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.CoreCreateTaskReq;
 import com.webank.taskman.dto.req.CreateTaskRequestDto;
 import com.webank.taskman.dto.resp.CreateTaskServiceMetaResp;
@@ -32,30 +31,28 @@ public class TaskmanOutController {
     @ApiOperationSupport(order = 7)
     @GetMapping("/task/create/service-meta/{proc-def-id}/{node-def-id}")
     @ApiOperation(value = "service-meta")
-    public JsonResponse<List<CreateTaskServiceMetaResp>> taskCreateServiceMeta(
+    public JsonResponse<CreateTaskServiceMetaResp> taskCreateServiceMeta(
             @ApiParam(value = "proc-def-id",name = "procDefId",required = true) @PathVariable("proc-def-id") String procDefId,
-            @ApiParam(value = "proc-def-id",name = "nodeDefId",required = true) @PathVariable("node-def-id") String nodeDefId)
+            @ApiParam(value = "node-def-id",name = "nodeDefId",required = true) @PathVariable("node-def-id") String nodeDefId)
     {
-        List<CreateTaskServiceMetaResp> list = new LinkedList<>();
-        list.add(new CreateTaskServiceMetaResp());
-        return JsonResponse.okayWithData(new FormTemplateResp());
+        return JsonResponse.okayWithData(new CreateTaskServiceMetaResp());
     }
 
     @ApiOperationSupport(order = 8)
     @PostMapping("/task/create")
     @ApiOperation(value = "create")
-    public WorkflowJsonResponse createTask(@RequestBody CoreCreateTaskReq req)
+    public CoreCreateTaskResp createTask(@RequestBody CoreCreateTaskDTO req)
     {
         List<FormItemTemplate> list = new LinkedList<>();
-        return WorkflowJsonResponse.okay();
+        return new CoreCreateTaskResp();
     }
 
     @ApiOperationSupport(order = 9)
     @PostMapping("/task/cancel")
     @ApiOperation(value = "cancel")
-    public JsonResponse cancelTask(CoreCreateTaskReq req)
+    public CoreCreateTaskResp cancelTask(@RequestBody CoreCancelTaskDTO req)
     {
-        return JsonResponse.okay();
+        return new CoreCreateTaskResp();
     }
 
 }

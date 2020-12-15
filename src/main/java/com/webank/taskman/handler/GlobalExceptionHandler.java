@@ -1,26 +1,30 @@
 package com.webank.taskman.handler;
 
 import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.constant.BizCodeEnum;
 import com.webank.taskman.dto.JsonResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * 
  * @author gavin
  *
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
@@ -41,6 +45,30 @@ public class GlobalExceptionHandler {
         TaskmanException wecubeError = (TaskmanException) e;
 
         return JsonResponse.error(determineI18nErrorMessage(request, wecubeError));
+    }
+
+    @ExceptionHandler(value = RuntimeException.class)
+    public JsonResponse handleException(RuntimeException e) {
+        log.error("错误异常{}", e);
+
+        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION.getCode(),
+                BizCodeEnum.RUNTIME_EXCEPTION.getMessage(),
+                null);
+    }
+
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public JsonResponse handleException(MethodArgumentNotValidException e) {
+        log.error("数据校验出现问题{}, 异常类型: {}", e.getMessage(), e.getClass());
+        BindingResult bindingResult = e.getBindingResult();
+
+        Map<String, String> errorMap = new HashMap<>();
+        bindingResult.getFieldErrors().forEach((fieldError -> {
+            errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
+        }));
+
+        return JsonResponse.customError(BizCodeEnum.VAILD_EXCEPTION.getCode(),
+                BizCodeEnum.VAILD_EXCEPTION.getMessage(),errorMap);
     }
 
     @ExceptionHandler(value = Exception.class)

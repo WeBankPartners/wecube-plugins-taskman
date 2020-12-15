@@ -50,13 +50,8 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 1)
     @PostMapping("/template/save")
     @ApiOperation(value = "form-template-save", notes = "")
-    public JsonResponse saveFormTemplate(@Valid @RequestBody SaveFormTemplateReq req, BindingResult bindingResult) throws Exception {
+    public JsonResponse saveFormTemplate(@Valid @RequestBody SaveFormTemplateReq req) throws Exception {
 
-        if (bindingResult.hasErrors()){
-            for (ObjectError error:bindingResult.getAllErrors()){
-                return JsonResponse.okayWithData(error.getDefaultMessage());
-            }
-        }
         FormTemplateResp formTemplateResp= formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
@@ -81,13 +76,8 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 5)
     @PostMapping("/item/template/save")
     @ApiOperation(value = "form-item-template-save", notes = "")
-    public JsonResponse saveFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req, BindingResult bindingResult) throws Exception {
-        if (bindingResult.hasErrors()) {
-            for (ObjectError error : bindingResult.getAllErrors()) {
-                return JsonResponse.okayWithData(error.getDefaultMessage());
-            }
-        }
-        FormItemTemplate formItemTemplate = formItemTemplateService.saveFormItemTemplateByReq(req);
+    public JsonResponse saveFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req) throws Exception {
+                FormItemTemplate formItemTemplate = formItemTemplateService.saveFormItemTemplateByReq(req);
         return JsonResponse.okayWithData(new FormItemTemplateResq().setId(formItemTemplate.getId()));
     }
 

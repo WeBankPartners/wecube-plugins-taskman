@@ -43,12 +43,8 @@ public class TaskmanTaskController {
     @ApiOperationSupport(order = 18)
     @PostMapping("/template/save")
     @ApiOperation(value = "Task-Template-save", notes = "Need to pass in object: ")
-    public JsonResponse createTaskTemplate(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq, BindingResult bindingResult) throws Exception {
-        if (bindingResult.hasErrors()) {
-            for (ObjectError error : bindingResult.getAllErrors()) {
-                return JsonResponse.okayWithData(error.getDefaultMessage());
-            }
-        }
+    public JsonResponse createTaskTemplate(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq) throws Exception {
+
         TaskTemplateResp taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
@@ -69,17 +65,6 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
-    @ApiOperationSupport(order = 21)
-    @PostMapping("/search/{page}/{pageSize}")
-    @ApiOperation(value = "Task-Info-search")
-    public JsonResponse<QueryResponse<TaskInfoResp>> selectRequestInfo(
-            @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SelectTaskInfoReq req)
-            throws Exception {
-        QueryResponse<TaskInfoResp> queryResponse = taskInfoService.selectTaskInfoService(page, pageSize, req);
-        return JsonResponse.okayWithData(queryResponse);
-    }
 
 }
 

@@ -16,7 +16,7 @@ public interface RequestTemplateMapper extends BaseMapper<RequestTemplate> {
 
     IPage<RequestTemplate> selectPageByParam(Page page, @Param("param") QueryRequestTemplateReq queryReq);
 
-    IPage<RequestTemplate> selectSynthesisRequestTemple(Page page,String roleName);
+    IPage<RequestTemplate> selectSynthesisRequestTemple(Page page,@Param("conditionSql") String conditionSql);
 
     List<RequestTemplate>  selectListByParam(QueryRequestTemplateReq req);
 

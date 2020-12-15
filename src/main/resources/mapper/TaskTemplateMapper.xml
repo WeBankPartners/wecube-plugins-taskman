@@ -17,17 +17,10 @@
         SELECT rt.*
         FROM
         task_template rt
-        WHERE  (
-        SELECT COUNT(1)
-        FROM role_relation rr
-        WHERE rt.id = rr.record_id
-        AND
-        rr.role_type =0
-        AND
-        <foreach item="roleStr" index="index" collection="roleName.split(',')" open="(" close=")" separator="OR">
-            MATCH(rr.role_name)
-            AGAINST(#{roleStr})
-        </foreach>
-        ) > 0
+        <where>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
+            </if>
+        </where>
     </select>
 </mapper>

@@ -10,5 +10,5 @@ import org.apache.ibatis.annotations.Param;
 public interface TaskTemplateMapper extends BaseMapper<TaskTemplate> {
 
 
-    IPage<TaskTemplate> selectSynthesisRequestTemple(Page page, String roleName);
+    IPage<TaskTemplate> selectSynthesisRequestTemple(Page page, @Param("conditionSql") String conditionSql);
 }

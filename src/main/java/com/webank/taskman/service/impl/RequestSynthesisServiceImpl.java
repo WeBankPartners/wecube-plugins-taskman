@@ -13,6 +13,7 @@ import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
@@ -57,9 +58,13 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
 
     @Override
     public QueryResponse<SynthesisRequestTempleResp> selectSynthesisRequestTempleService(Integer current, Integer limit) throws Exception {
-//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        String currentUserRolesToString = "APP_ARC,PRD_OPS";
-        IPage<RequestTemplate> iPage = requestTemplateMapper.selectSynthesisRequestTemple(new Page<>(current, limit),currentUserRolesToString);
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+        QueryRoleRelationBaseReq req = new QueryRoleRelationBaseReq();
+        req.setSourceTableFix("rt");
+        req.setUseRoleName(currentUserRolesToString);
+        String sql = req.getConditionSql();
+
+        IPage<RequestTemplate> iPage = requestTemplateMapper.selectSynthesisRequestTemple(new Page<>(current, limit),sql);
         List<SynthesisRequestTempleResp> srt=synthesisRequestTemplateConverter.toDto(iPage.getRecords());
 
         QueryResponse<SynthesisRequestTempleResp> queryResponse = new QueryResponse<>();

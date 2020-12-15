@@ -12,9 +12,9 @@ public class TaskTemplateByRoleResp {
 
     private String procDefName;
 
-    private String node_def_id;
+    private String nodeDefId;
 
-    private String node_name;
+    private String nodeName;
 
     private String name;
 
@@ -52,20 +52,20 @@ public class TaskTemplateByRoleResp {
         this.procDefName = procDefName;
     }
 
-    public String getNode_def_id() {
-        return node_def_id;
+    public String getNodeDefId() {
+        return nodeDefId;
     }
 
-    public void setNode_def_id(String node_def_id) {
-        this.node_def_id = node_def_id;
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
     }
 
-    public String getNode_name() {
-        return node_name;
+    public String getNodeName() {
+        return nodeName;
     }
 
-    public void setNode_name(String node_name) {
-        this.node_name = node_name;
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
     public String getName() {
@@ -91,8 +91,8 @@ public class TaskTemplateByRoleResp {
                 ", procDefId='" + procDefId + '\'' +
                 ", procDefKey='" + procDefKey + '\'' +
                 ", procDefName='" + procDefName + '\'' +
-                ", node_def_id='" + node_def_id + '\'' +
-                ", node_name='" + node_name + '\'' +
+                ", nodeDefId='" + nodeDefId + '\'' +
+                ", nodeName='" + nodeName + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';

@@ -16,6 +16,7 @@ import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
@@ -123,12 +124,17 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Override
     public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplateByRole(Integer page, Integer pageSize) {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        IPage<TaskTemplate> iPage = taskTemplateMapper.selectSynthesisRequestTemple(new Page<TaskTemplate>(page, pageSize),currentUserRolesToString);
+        QueryRoleRelationBaseReq req = new QueryRoleRelationBaseReq();
+        req.setSourceTableFix("rt");
+        req.setUseRoleName(currentUserRolesToString);
+        String sql = req.getConditionSql();
 
-        List<TaskTemplateByRoleResp> srt=synthesisTaskTemplateConverter.toDto(iPage.getRecords());
+        IPage<TaskTemplate> iPage = taskTemplateMapper.selectSynthesisRequestTemple(new Page<TaskTemplate>(page, pageSize), sql);
+
+        List<TaskTemplateByRoleResp> srt = synthesisTaskTemplateConverter.toDto(iPage.getRecords());
 
         QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
+        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(srt);
         return queryResponse;
     }

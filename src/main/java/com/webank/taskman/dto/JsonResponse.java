@@ -12,6 +12,10 @@ public class JsonResponse<T> {
 	private String status;
 	@ApiModelProperty(value = "消息")
 	private String message;
+	@ApiModelProperty(value = "自定义状态码")
+	private Integer code;
+	@ApiModelProperty(value = "错误消息")
+	private String codeMessage;
 
 	@ApiModelProperty(value = "数据")
 	private T data;
@@ -40,6 +44,22 @@ public class JsonResponse<T> {
 		this.data = data;
 	}
 
+	public Integer getCode() {
+		return code;
+	}
+
+	public void setCode(Integer code) {
+		this.code = code;
+	}
+
+	public String getCodeMessage() {
+		return codeMessage;
+	}
+
+	public void setCodeMessage(String codeMessage) {
+		this.codeMessage = codeMessage;
+	}
+
 	public JsonResponse withData(T data) {
 		this.data = data;
 		return this;
@@ -64,4 +84,14 @@ public class JsonResponse<T> {
 		result.setMessage(errorMessage);
 		return result;
 	}
+
+	public static JsonResponse customError(Integer code, String codeMessage, Object data) {
+		JsonResponse result = new JsonResponse();
+		result.setCode(code);
+		result.setCodeMessage(codeMessage);
+		result.setData(data);
+		return result;
+	}
+
+
 }

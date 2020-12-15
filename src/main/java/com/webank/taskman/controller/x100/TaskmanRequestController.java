@@ -73,21 +73,16 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 10)
     @PostMapping("/template/save")
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req, BindingResult bindingResult) throws Exception {
-        if (bindingResult.hasErrors()){
-            for (ObjectError error:bindingResult.getAllErrors()){
-                return JsonResponse.okayWithData(error.getDefaultMessage());
-            }
-        }
+    public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req
+            )throws Exception{
       RequestTemplateResp requestTemplateResp= requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateResp);
     }
 
-
     @ApiOperationSupport(order = 11,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
-    public JsonResponse releaseRequestTemplate( @RequestBody SaveRequestTemplateReq req) throws Exception {
+    public JsonResponse releaseRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
         if(StringUtils.isEmpty(req.getId())){
             throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
         }
@@ -101,6 +96,7 @@ public class TaskmanRequestController {
         requestTemplateService.updateById(requestTemplate);
         return okay();
     }
+
     @ApiOperationSupport(order = 11)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
@@ -143,23 +139,16 @@ public class TaskmanRequestController {
         return okayWithData(dtoList);
     }
 
-
     @PostMapping("/template/group/save")
     @ApiOperationSupport(order = 14)
     @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupResq> createTemplateGroup(
-            @Valid @RequestBody SaveRequestTemplateGropReq req, BindingResult bindingResult) throws Exception {
-        if (bindingResult.hasErrors()) {
-            for (ObjectError error : bindingResult.getAllErrors()) {
-                return JsonResponse.okayWithData(error.getDefaultMessage());
-            }
-        }
+            @Valid @RequestBody SaveRequestTemplateGropReq req) throws Exception {
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.saveTemplateGroupByReq(req);
         RequestTemplateGroupResq groupResq =new RequestTemplateGroupResq();
         groupResq.setId(requestTemplateGroup.getId());
         return JsonResponse.okayWithData(groupResq);
     }
-
 
     @PostMapping("/template/group/search/{page}/{pageSize}")
     @ApiOperationSupport(order = 15)
@@ -172,6 +161,7 @@ public class TaskmanRequestController {
         QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
+
     @GetMapping("/template/group/available")
     @ApiOperationSupport(order = 16)
     @ApiOperation(value = "request-group-template-available")
@@ -208,9 +198,6 @@ public class TaskmanRequestController {
         QueryResponse<RequestInfoResq> queryResponse = requestInfoService.selectRequestInfoService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
-
-
-
 
 
     @ApiOperation(value = "Request-Info-done")

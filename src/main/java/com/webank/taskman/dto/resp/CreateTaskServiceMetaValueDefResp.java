@@ -3,8 +3,7 @@ package com.webank.taskman.dto.resp;
 public class CreateTaskServiceMetaValueDefResp {
 
     private String type;
-    private String entity;
-    private String packageName;
+    private String expr;
 
     public String getType() {
         return type;
@@ -14,19 +13,11 @@ public class CreateTaskServiceMetaValueDefResp {
         this.type = type;
     }
 
-    public String getEntity() {
-        return entity;
+    public String getExpr() {
+        return expr;
     }
 
-    public void setEntity(String entity) {
-        this.entity = entity;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
+    public void setExpr(String expr) {
+        this.expr = expr;
     }
 }

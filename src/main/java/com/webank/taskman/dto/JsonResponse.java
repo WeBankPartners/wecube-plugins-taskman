@@ -1,5 +1,6 @@
 package com.webank.taskman.dto;
 
+import com.webank.taskman.constant.BizCodeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -65,32 +66,39 @@ public class JsonResponse<T> {
 		return this;
 	}
 
-	public static JsonResponse okay() {
-		JsonResponse result = new JsonResponse();
-		result.setStatus(STATUS_OK);
-		result.setMessage("Success");
-		result.setData(200);
-		return result;
+	public JsonResponse() {
 	}
 
+	public JsonResponse(String status, String message, Integer code, String codeMessage, T data) {
+		this.status = status;
+		this.message = message;
+		this.code = code;
+		this.codeMessage = codeMessage;
+		this.data = data;
+	}
+
+	public static JsonResponse okay() {
+		return new JsonResponse(STATUS_OK,"Success",null,null,200);
+	}
 
 	public static JsonResponse okayWithData(Object data) {
 		return okay().withData(data);
 	}
 
-	public static JsonResponse error(String errorMessage) {
-		JsonResponse result = new JsonResponse();
-		result.setStatus(STATUS_ERROR);
-		result.setMessage(errorMessage);
-		return result;
+	public static JsonResponse customError(String errorMessage) {
+		return new JsonResponse(STATUS_ERROR,null,null,null,null);
 	}
-
+	public static JsonResponse customError(BizCodeEnum bizCodeEnum, Object data) {
+		return new JsonResponse(STATUS_ERROR,null,bizCodeEnum.getCode(),bizCodeEnum.getMessage(),data);
+	}
 	public static JsonResponse customError(Integer code, String codeMessage, Object data) {
-		JsonResponse result = new JsonResponse();
-		result.setCode(code);
-		result.setCodeMessage(codeMessage);
-		result.setData(data);
-		return result;
+		return new JsonResponse(STATUS_ERROR,null,code,codeMessage,data);
+	}
+	public static JsonResponse customError(Integer code, String codeMessage,String errorMessage,Object data) {
+		return new JsonResponse(STATUS_ERROR,errorMessage,code,codeMessage,data);
+	}
+	public static JsonResponse customError(BizCodeEnum bizCodeEnum, String errorMessage) {
+		return new JsonResponse(STATUS_ERROR,errorMessage,bizCodeEnum.getCode(),bizCodeEnum.getMessage(),null);
 	}
 
 

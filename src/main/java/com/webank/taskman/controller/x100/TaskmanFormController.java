@@ -10,7 +10,7 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
-import com.webank.taskman.dto.resp.FormItemTemplateResq;
+import com.webank.taskman.dto.resp.FormItemTemplateDTO;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
@@ -20,8 +20,6 @@ import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -78,7 +76,7 @@ public class TaskmanFormController {
     @ApiOperation(value = "form-item-template-save", notes = "")
     public JsonResponse saveFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req) throws Exception {
                 FormItemTemplate formItemTemplate = formItemTemplateService.saveFormItemTemplateByReq(req);
-        return JsonResponse.okayWithData(new FormItemTemplateResq().setId(formItemTemplate.getId()));
+        return JsonResponse.okayWithData(new FormItemTemplateDTO().setId(formItemTemplate.getId()));
     }
 
     @ApiOperationSupport(order = 6)
@@ -92,23 +90,23 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 7)
     @PostMapping("/item/template/search/{page}/{pageSize}")
     @ApiOperation(value = "form-item-template-serach ")
-    public JsonResponse<QueryResponse<FormItemTemplateResq>> searchFormItemTemplate(
+    public JsonResponse<QueryResponse<FormItemTemplateDTO>> searchFormItemTemplate(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SelectFormItemTemplateReq req)
     {
-        QueryResponse<FormItemTemplateResq> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(page, pageSize, req);
+        QueryResponse<FormItemTemplateDTO> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
     @ApiOperationSupport(order = 8)
     @PostMapping("/item/template/currency")
     @ApiOperation(value = "form-item-template-currency")
-    public JsonResponse<QueryResponse<FormItemTemplateResq>> formItemTemplateAvailable()
+    public JsonResponse<QueryResponse<FormItemTemplateDTO>> formItemTemplateAvailable()
     {
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<FormItemTemplate>();
         wrapper.eq("status",1);
-        List<FormItemTemplateResq> queryResponse= formItemTemplateConverter.toDto(formItemTemplateService.list(wrapper)) ;
+        List<FormItemTemplateDTO> queryResponse= formItemTemplateConverter.toDto(formItemTemplateService.list(wrapper)) ;
         return JsonResponse.okayWithData(queryResponse);
     }
 

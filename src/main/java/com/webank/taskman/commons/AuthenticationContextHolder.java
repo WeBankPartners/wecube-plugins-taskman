@@ -51,8 +51,8 @@ public final class AuthenticationContextHolder {
     public static String getCurrentUserRolesToString() {
         AuthenticatedUser u = currentUser.get();
         Set<String> roleSet = new HashSet<>();
-        String roles = "";
-        if (u != null) {
+        String roles = "SUPER_ADMIN";
+        if (u != null && roleSet.size() > 0) {
             roleSet =  u.getAuthorities();
             roles = roleSet.stream().collect(Collectors.joining(","));
         }

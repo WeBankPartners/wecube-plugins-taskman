@@ -10,7 +10,7 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
-public class QueryRequestTemplateReq {
+public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
 
     @ApiModelProperty(value = "主键",required = false,dataType = "String",position = 100)
     private String id;
@@ -35,17 +35,6 @@ public class QueryRequestTemplateReq {
 
     @ApiModelProperty(value = "发布状态",required = false,dataType = "Integer",position = 108)
     private Integer status;
-
-    @ApiModelProperty(value = "使用角色",required = false,position = 109)
-    private String useRoleName;
-    @ApiModelProperty(value = "管理角色",required = false,position = 110)
-    private String manageRoleName;
-
-    @ApiModelProperty(hidden = true)
-    private Integer roleType;
-
-    @ApiModelProperty(hidden = true)
-    private String roleName;
 
     public String getId() {
         return id;
@@ -114,44 +103,6 @@ public class QueryRequestTemplateReq {
         this.tags = tags;
     }
 
-    public String getUseRoleName() {
-        return useRoleName;
-    }
 
-    public void setUseRoleName(String useRoleName) {
-        this.useRoleName = useRoleName;
-        if(!StringUtils.isEmpty(useRoleName)){
-            this.roleType = null != this.roleType ? 2:1;
-            this.roleName = this.useRoleName;
-        }
-    }
-
-    public String getManageRoleName() {
-        return manageRoleName;
-    }
-
-    public void setManageRoleName(String manageRoleName) {
-        this.manageRoleName = manageRoleName;
-        if(!StringUtils.isEmpty(manageRoleName)){
-            this.roleType = null != this.roleType ? 2:0;
-            this.roleName = this.manageRoleName;
-        }
-    }
-
-    public Integer getRoleType() {
-        return roleType;
-    }
-
-    public void setRoleType(Integer roleType) {
-        this.roleType = roleType;
-    }
-
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
 
 }

@@ -105,4 +105,16 @@
         ) > 0
     </select>
 
+    <select id="selectListByParam" resultMap="BaseResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
+        SELECT rt.* FROM  request_template rt
+        <where>
+            <if test="status != null">
+               AND  rt.status = #{status}
+            </if>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
+            </if>
+        </where>
+    </select>
+
 </mapper>

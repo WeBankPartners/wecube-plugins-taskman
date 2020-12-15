@@ -38,6 +38,10 @@ public class QueryRoleRelationBaseReq {
     }
 
     public void setUseRoleName(String useRoleName) {
+        if(!StringUtils.isEmpty(useRoleName)){
+            this.roleType = !StringUtils.isEmpty(this.manageRoleName) ?2:0;
+            this.roleName = useRoleName;
+        }
         this.useRoleName = useRoleName;
     }
 
@@ -47,6 +51,11 @@ public class QueryRoleRelationBaseReq {
     }
 
     public void setManageRoleName(String manageRoleName) {
+        if(!StringUtils.isEmpty(manageRoleName)){
+            this.roleType = !StringUtils.isEmpty(this.useRoleName) ?2:1;
+            this.roleName = manageRoleName;
+        }
+
         this.manageRoleName = manageRoleName;
     }
 
@@ -59,19 +68,6 @@ public class QueryRoleRelationBaseReq {
     }
 
     public Integer getRoleType() {
-        boolean useRole = false;
-        boolean manageRole = false;
-        if(!StringUtils.isEmpty(this.useRoleName)){
-            useRole = true;
-            this.roleType = 0;
-            this.roleName = getUseRoleName();
-        }
-        if(!StringUtils.isEmpty(this.getManageRoleName())){
-            manageRole = true;
-            this.roleType = 1;
-            this.roleName = getManageRoleName();
-        }
-        roleType = (useRole && manageRole) ? 2 :roleType;
         return roleType;
     }
 
@@ -86,12 +82,12 @@ public class QueryRoleRelationBaseReq {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-    protected static final  String NOT_ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE rt.id = %s.record_id AND rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s') ) > 0";
-    protected static final String ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE rt.id = %s.record_id AND (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))) > 0";
+    protected static final  String NOT_ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE  %s.id =rr.record_id AND rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s') ) > 0";
+    protected static final String ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE %s.id = rr.record_id AND (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))) > 0";
 
     public String getConditionSql() {
         if(StringUtils.isEmpty(conditionSql));
-        switch (getRoleType()){
+        switch (this.roleType){
             case 0:
             case 1:
                 conditionSql = String.format(NOT_ALL,sourceTableFix,getRoleType(),getRoleName());
@@ -103,22 +99,14 @@ public class QueryRoleRelationBaseReq {
         }
         return conditionSql;
     }
-
     public void setConditionSql(String conditionSql) {
         this.conditionSql = conditionSql;
     }
 
-
     public static void main(String[] args) {
-        QueryRoleRelationBaseReq req =  new QueryRoleRelationBaseReq();
-        req.setSourceTableFix("rtf");
-        req.setUseRoleName("APP_ARC,PRD_OPS");
-        req.setManageRoleName("");
-        System.out.println(req.getConditionSql());
-        req.setUseRoleName("");
-        req.setManageRoleName("APP_ARC,PRD_OPS");
-        System.out.println(req.getConditionSql());
-        req.setUseRoleName("APP_ARC");
+        QueryRequestTemplateReq req = new QueryRequestTemplateReq();
+        req.setSourceTableFix("rt");
+        req.setUseRoleName("SUOPER");
         System.out.println(req.getConditionSql());
     }
 }

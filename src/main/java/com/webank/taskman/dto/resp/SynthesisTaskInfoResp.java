@@ -1,8 +1,10 @@
 package com.webank.taskman.dto.resp;
 
+import com.webank.taskman.domain.FormItemInfo;
 import io.swagger.annotations.ApiModel;
 
 import java.util.Date;
+import java.util.List;
 
 @ApiModel
 public class SynthesisTaskInfoResp {
@@ -41,6 +43,8 @@ public class SynthesisTaskInfoResp {
     private String attachFileId;
 
     private Integer status;
+
+    private List<FormItemInfo> formItemInfo;
 
     public String getId() {
         return id;
@@ -184,6 +188,14 @@ public class SynthesisTaskInfoResp {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public List<FormItemInfo> getFormItemInfo() {
+        return formItemInfo;
+    }
+
+    public void setFormItemInfo(List<FormItemInfo> formItemInfo) {
+        this.formItemInfo = formItemInfo;
     }
 
     @Override

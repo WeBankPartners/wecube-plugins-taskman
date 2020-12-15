@@ -11,6 +11,8 @@ import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
 import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
 import com.webank.taskman.dto.resp.TaskInfoResp;
 
+import java.util.Map;
+
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
@@ -18,7 +20,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     SaveTaskInfoResp saveTaskInfo(SaveTaskInfoAndFormInfoReq saveTaskInfoAndFormInfoReq);
 
-    QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);
+    QueryResponse<Map<String,Object>> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);
 
     SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception;
 }

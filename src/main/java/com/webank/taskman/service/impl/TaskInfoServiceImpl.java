@@ -12,6 +12,7 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CheckTaskDTO;
+import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveTaskInfoAndFormInfoReq;
@@ -23,6 +24,7 @@ import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.TaskInfoMapper;
 import com.webank.taskman.service.TaskInfoService;
+import com.webank.taskman.utils.JsonUtils;
 import javafx.concurrent.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 
@@ -151,15 +154,30 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+    public QueryResponse<Map<String,Object>> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
+//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+        String currentUserRolesToString = "APP_ARC,PRD_OPS";
         req.setRoleName(currentUserRolesToString);
+        List<Map<String,Object>> list = new ArrayList<>();
         IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);
         List<SynthesisTaskInfoResp> srt=synthesisTaskInfoRespConverter.toDto(iPage.getRecords());
-
-        QueryResponse<SynthesisTaskInfoResp> queryResponse = new QueryResponse<>();
+        for (SynthesisTaskInfoResp synthesisTaskInfoResp : srt) {
+            List<FormItemInfo> lists= formItemInfoMapper.selectList(
+                    new QueryWrapper<FormItemInfo>()
+                            .eq("record_id",synthesisTaskInfoResp.getId())
+            );
+            synthesisTaskInfoResp.setFormItemInfo(lists);
+        }
+        list = JsonUtils.toObject(JsonResponse.okayWithData(srt).getData(),list.getClass());
+        list.stream().forEach(map->{
+            ((List<Map<String,String>>)map.get("formItemInfo")).stream().forEach(item->{
+                map.put(item.get("name"),item.get("value"));
+                map.remove("formItemInfo");
+            });
+        });
+        QueryResponse<Map<String,Object>> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(srt);
+        queryResponse.setContents(list);
 
         return queryResponse;
     }

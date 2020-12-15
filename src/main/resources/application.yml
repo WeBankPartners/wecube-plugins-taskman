@@ -1,0 +1,65 @@
+server:
+  port: 9999
+  servlet:
+    context-path: /taskman
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://db-server:port/database-name?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: db-user
+    password: db-password
+  messages:
+    basename: message/service_mgmt_err_message
+    encoding: UTF-8
+  banner:
+    location: classpath:/banner.txt
+
+mybatis-plus:
+  mapper-locations: mapper/*.xml
+  global-config:
+    db-config:
+      logic-not-delete-value: 0
+      logic-delete-value: 1
+
+knife4j:
+  enable: true
+  setting:
+    enableVersion: true
+    enableSwaggerModels: false
+    enableDocumentManage: false
+    enableReloadCacheParameter: true
+    enableAfterScript: true
+    enableRequestCache: true
+    enableFooter: false
+    enableFooterCustom: true
+    footerCustomContent: Copyright © 2014 - 2019 WeBank Co., Ltd. All Rights Reserved.
+    enableDynamicParameter: true
+    enableDebug: true
+    enableOpenApi: false
+    enableGroup: false
+  production: false # prod close knife4j
+  basic:
+    enable: false
+    username: test
+    password: 12313
+
+service:
+  taskman:
+    httpclient:
+      max-total-connections: 200
+    wecube-core-address: localhost:8080
+    wecube-platform-token: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJIVFRQLU1PQ0siLCJpYXQiOjE1NzYwNTMxOTcsInR5cGUiOiJhY2Nlc3NUb2tlbiIsImNsaWVudFR5cGUiOiJTVUJfU1lTVEVNIiwiZXhwIjoxNjAxOTczMTk3LCJhdXRob3JpdHkiOiJbU1VCX1NZU1RFTV0ifQ.Wd5rhFX3G-dtqlqYzgnkzd9i8T0xJkkPQSAckzO3V3NWXMCw3B9JWe7JlMjbNtE7va8qce1qcrz6qaa4pB0t5A
+    s3-endpoint: http://127.0.0.1:9000
+    s3-access-key: access_key
+    s3-secret-key: secret_key
+    s3-default-bucket: service-mgmt
+    system-code: SYS_SRV_MGMT
+    jwt-signing-key: ${JWT_SIGNING_KEY:}
+    property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}
+
+logging:
+  level:
+    root: info
+    com.webank.taskman.mapper: debug

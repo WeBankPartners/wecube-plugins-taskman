@@ -1,16 +1,14 @@
 package com.webank.taskman.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.webank.taskman.domain.TaskTemplate;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * <p>
- * 任务模板信息表  Mapper 接口
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 public interface TaskTemplateMapper extends BaseMapper<TaskTemplate> {
 
+
+    IPage<TaskTemplate> selectSynthesisRequestTemple(Page page, @Param("conditionSql") String conditionSql);
 }

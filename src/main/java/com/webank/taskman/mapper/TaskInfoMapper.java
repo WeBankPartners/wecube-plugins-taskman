@@ -1,16 +1,16 @@
 package com.webank.taskman.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.dto.req.SelectTaskInfoReq;
+import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * <p>
- * 任务记录表  Mapper 接口
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 public interface TaskInfoMapper extends BaseMapper<TaskInfo> {
+    IPage<TaskInfo> selectTaskInfo(Page page, @Param("Info") String rolesToString);
 
+    IPage<TaskInfo> selectSynthesisRequestInfo(Page page, @Param("param") SynthesisTaskInfoReq req);
 }

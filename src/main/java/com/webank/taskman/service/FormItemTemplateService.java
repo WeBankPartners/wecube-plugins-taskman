@@ -1,16 +1,21 @@
 package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
+import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
+import com.webank.taskman.dto.resp.FormItemTemplateDTO;
 
-/**
- * <p>
- * 表单项模板表  服务类
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 public interface FormItemTemplateService extends IService<FormItemTemplate> {
 
+
+    FormItemTemplate saveFormItemTemplateByReq(SaveFormItemTemplateReq templateReq) throws TaskmanException;
+
+    void deleteRequestTemplateByID(String id);
+
+
+    QueryResponse<FormItemTemplateDTO> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req);
 }

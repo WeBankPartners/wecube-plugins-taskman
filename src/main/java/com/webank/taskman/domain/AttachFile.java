@@ -1,80 +1,55 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.webank.taskman.base.BaseEntity;
+
 import java.io.Serializable;
 
-/**
- * <p>
- * 附件信息表
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
-public class AttachFile implements Serializable {
+public class AttachFile  extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 附件文件名
-     */
+    private String recordId;
+    
     private String attachFileName;
 
-    /**
-     * s3服务url
-     */
+    
     private String s3Url;
 
-    /**
-     * s3_bucket名称
-     */
+    
     private String s3BucketName;
 
-    /**
-     * s3_key名称
-     */
+    
     private String s3KeyName;
 
-    /**
-     * 创建人
-     */
-    private String createdBy;
+    public AttachFile() {
+    }
 
-    /**
-     * 创建时间
-     */
-    private Date createdTime;
-
-    /**
-     * 更新人
-     */
-    private String updatedBy;
-
-    /**
-     * 更新时间
-     */
-    private Date updatedTime;
-
-    /**
-     * 是否删除
-     */
-    private Integer delFlag;
-
-
+    public AttachFile(String attachFileName, String s3Url, String s3BucketName, String s3KeyName) {
+        this.attachFileName = attachFileName;
+        this.s3Url = s3Url;
+        this.s3BucketName = s3BucketName;
+        this.s3KeyName = s3KeyName;
+    }
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 
     public String getAttachFileName() {
@@ -109,44 +84,28 @@ public class AttachFile implements Serializable {
         this.s3KeyName = s3KeyName;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public String getS3Url() {
+        return s3Url;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setS3Url(String s3Url) {
+        this.s3Url = s3Url;
     }
 
-    public Date getCreatedTime() {
-        return createdTime;
+    public String getS3BucketName() {
+        return s3BucketName;
     }
 
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
+    public void setS3BucketName(String s3BucketName) {
+        this.s3BucketName = s3BucketName;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public String getS3KeyName() {
+        return s3KeyName;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
+    public void setS3KeyName(String s3KeyName) {
+        this.s3KeyName = s3KeyName;
     }
 
     @Override
@@ -157,11 +116,11 @@ public class AttachFile implements Serializable {
         ", s3Url=" + s3Url +
         ", s3BucketName=" + s3BucketName +
         ", s3KeyName=" + s3KeyName +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

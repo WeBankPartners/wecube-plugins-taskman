@@ -2,15 +2,23 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.RequestTemplate;
+import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateReq;
+import com.webank.taskman.dto.resp.RequestTemplateResp;
 
-/**
- * <p>
- * 请求模板信息表  服务类
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+import java.util.List;
+
+
 public interface RequestTemplateService extends IService<RequestTemplate> {
+    RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
 
-}
+    void deleteRequestTemplateService(String id) throws Exception;
+
+    QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception;
+
+    RequestTemplateResp detailRequestTemplate(String id) throws Exception;
+
+    List<RequestTemplate>  selectListByParam(QueryRequestTemplateReq req);
+
+   }

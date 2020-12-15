@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.webank.taskman.demo.mapper.TaskTemplateMapper">
+<mapper namespace="com.webank.taskman.mapper.TaskTemplateMapper">
 
+    <resultMap id="BaseResultMap" type="com.webank.taskman.domain.TaskTemplate">
+        <id property="id" column="id"/>
+        <result property="procDefId" column="proc_def_id"/>
+        <result property="procDefKey" column="proc_def_key"/>
+        <result property="procDefName" column="proc_def_name"/>
+        <result property="nodeDefId" column="node_def_id"/>
+        <result property="nodeName" column="node_name"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
+
+    <select id="selectSynthesisRequestTemple" parameterType="string" resultMap="BaseResultMap">
+        SELECT rt.*
+        FROM
+        task_template rt
+        <where>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
+            </if>
+        </where>
+    </select>
 </mapper>

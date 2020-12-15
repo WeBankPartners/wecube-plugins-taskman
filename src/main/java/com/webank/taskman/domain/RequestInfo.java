@@ -1,108 +1,139 @@
 package com.webank.taskman.domain;
 
-import java.util.Date;
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.webank.taskman.base.BaseEntity;
 
-/**
- * <p>
- * 请求记录表 
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
-public class RequestInfo implements Serializable {
+import java.io.Serializable;
+import java.util.Date;
+
+public class RequestInfo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 状态
-     */
-    private Integer status;
+    
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
 
-    /**
-     * 创建人
-     */
-    private String createdBy;
-
-    /**
-     * 创建时间
-     */
-    private Date createdTime;
-
-    /**
-     * 更新人
-     */
-    private String updatedBy;
-
-    /**
-     * 更新时间
-     */
-    private Date updatedTime;
-
-    /**
-     * 是否删除
-     */
-    private Integer delFlag;
+    private String requestTempId;
+    private String procInstKey;
+    private String name;
+    private String reporter;
+    private Date reportTime;
+    private String emergency;
+    private String reportRole;
+    private String attachFileId;
+    private String status;
+    private String result;
 
 
-    public Integer getStatus() {
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getRequestTempId() {
+        return requestTempId;
+    }
+
+    public void setRequestTempId(String requestTempId) {
+        this.requestTempId = requestTempId;
+    }
+
+    public String getProcInstKey() {
+        return procInstKey;
+    }
+
+    public void setProcInstKey(String procInstKey) {
+        this.procInstKey = procInstKey;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getReporter() {
+        return reporter;
+    }
+
+    public void setReporter(String reporter) {
+        this.reporter = reporter;
+    }
+
+    public Date getReportTime() {
+        return reportTime;
+    }
+
+    public void setReportTime(Date reportTime) {
+        this.reportTime = reportTime;
+    }
+
+    public String getEmergency() {
+        return emergency;
+    }
+
+    public void setEmergency(String emergency) {
+        this.emergency = emergency;
+    }
+
+    public String getReportRole() {
+        return reportRole;
+    }
+
+    public void setReportRole(String reportRole) {
+        this.reportRole = reportRole;
+    }
+
+    public String getAttachFileId() {
+        return attachFileId;
+    }
+
+    public void setAttachFileId(String attachFileId) {
+        this.attachFileId = attachFileId;
+    }
+
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public String getResult() {
+        return result;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
+    public void setResult(String result) {
+        this.result = result;
     }
 
     @Override
     public String toString() {
         return "RequestInfo{" +
-        "status=" + status +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
+        "id=" + id +
+        ", requestTempId=" + requestTempId +
+        ", procInstKey=" + procInstKey +
+        ", name=" + name +
+        ", reporter=" + reporter +
+        ", reportTime=" + reportTime +
+        ", emergency=" + emergency +
+        ", reportRole=" + reportRole +
+        ", attachFileId=" + attachFileId +
+        ", status=" + status +
+        ", result=" + result +
+        ", createdBy=" + getCreatedBy() +
+        ", createdTime=" + getCreatedTime() +
+        ", updatedBy=" + getUpdatedBy() +
+        ", updatedTime=" + getUpdatedTime() +
+        ", delFlag=" + getDelFlag() +
         "}";
     }
 }

@@ -1,16 +1,13 @@
 package com.webank.taskman.mapper;
 
-import com.webank.taskman.domain.AttachFile;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.webank.taskman.domain.AttachFile;
 
-/**
- * <p>
- * 附件信息表 Mapper 接口
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+import java.util.List;
+import java.util.Map;
+
+
 public interface AttachFileMapper extends BaseMapper<AttachFile> {
 
+    List<Map<String,Object>> getList();
 }

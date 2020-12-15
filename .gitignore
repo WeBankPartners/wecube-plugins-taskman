@@ -14,3 +14,6 @@ gen
 /README.md
 .DS_Store
 
+/src/main/resources/application-dev.yaml
+/src/main/resources/application-dev.yml
+/src/main/java/com/webank/taskman/TestAutoGenerate.java

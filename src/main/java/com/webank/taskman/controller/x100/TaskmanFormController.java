@@ -7,16 +7,12 @@ import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
-import com.webank.taskman.dto.req.SelectFormItemTemplateReq;
-import com.webank.taskman.dto.resp.FormItemTemplateDTO;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,14 +67,6 @@ public class TaskmanFormController {
         return JsonResponse.okayWithData(formTemplateResp);
     }
 
-    @ApiOperationSupport(order = 5)
-    @PostMapping("/item/template/save")
-    @ApiOperation(value = "form-item-template-save", notes = "")
-    public JsonResponse saveFormItemTemplate(@Valid @RequestBody SaveFormItemTemplateReq req) throws Exception {
-                FormItemTemplate formItemTemplate = formItemTemplateService.saveFormItemTemplateByReq(req);
-        return JsonResponse.okayWithData(new FormItemTemplateDTO().setId(formItemTemplate.getId()));
-    }
-
     @ApiOperationSupport(order = 6)
     @DeleteMapping("/item/delete/{id}")
     @ApiOperation(value = "form-item-template-delete", notes = "")
@@ -87,17 +75,6 @@ public class TaskmanFormController {
         return JsonResponse.okay();
     }
 
-    @ApiOperationSupport(order = 7)
-    @PostMapping("/item/template/search/{page}/{pageSize}")
-    @ApiOperation(value = "form-item-template-serach ")
-    public JsonResponse<QueryResponse<FormItemTemplate>> searchFormItemTemplate(
-            @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SelectFormItemTemplateReq req)
-    {
-        QueryResponse<FormItemTemplate> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(page, pageSize, req);
-        return JsonResponse.okayWithData(queryResponse);
-    }
 
     @ApiOperationSupport(order = 8)
     @PostMapping("/item/template/currency")

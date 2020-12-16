@@ -47,7 +47,7 @@ public class SaveFormTemplateReq {
     private List<RoleDTO> useRole;
 
     @ApiModelProperty(value = "表单项",position = 13)
-    private List<FormItemTemplate> formItems = new LinkedList<>();
+    private List<SaveFormItemTemplateReq> formItems = new LinkedList<>();
 
 
     public SaveFormTemplateReq() {
@@ -146,11 +146,11 @@ public class SaveFormTemplateReq {
         this.useRole = useRole;
     }
 
-    public List<FormItemTemplate> getFormItems() {
+    public List<SaveFormItemTemplateReq> getFormItems() {
         return formItems;
     }
 
-    public void setFormItems(List<FormItemTemplate> formItems) {
+    public void setFormItems(List<SaveFormItemTemplateReq> formItems) {
         this.formItems = formItems;
     }
 }

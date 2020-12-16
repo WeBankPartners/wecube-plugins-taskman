@@ -13,6 +13,7 @@ public class FormItemTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
+
     @ApiModelProperty(value = "",position = 1)
     private String id;
     @ApiModelProperty(value = "",position = 2)

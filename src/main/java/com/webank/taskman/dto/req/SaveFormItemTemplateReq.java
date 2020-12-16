@@ -10,64 +10,50 @@ import javax.validation.constraints.NotBlank;
 public class SaveFormItemTemplateReq {
 
 
-    @NotBlank(message = "表单模板ID不能为空")
-    @ApiModelProperty(value = "表单模板ID",dataType = "String",position = 2)
+    @ApiModelProperty(value = "",position = 2)
     private String formTemplateId;
-
-    @ApiModelProperty(value = "",dataType = "String",position = 3)
-    private String attrDefId;
-    @ApiModelProperty(value = "",dataType = "String",position = 3)
-    private String attrDataType;
-
-    @NotBlank(message = "名称不能为空")
-    @ApiModelProperty(value = "名称",dataType = "String",position = 4)
+    @ApiModelProperty(value = "",position = 3)
     private String name;
-
-    @NotBlank(message = "标题不能为空")
-    @ApiModelProperty(value = "标题",dataType = "String",position = 4)
-    private String title;
-
-    @NotBlank(message = "元素类型不能为空")
-    @ApiModelProperty(value = "element_type",dataType = "String",position = 5)
-    private String elementType;
-
-
-    @ApiModelProperty(value = "默认值",dataType = "Integer",position = 6)
+    @ApiModelProperty(value = "",position = 4)
     private String defaultValue;
-
-    @ApiModelProperty(value = "必填选项",dataType = "Integer",position = 7)
-    private Integer required;
-
-    @ApiModelProperty(value = "是否可编辑",dataType = "Integer",position = 8)
-    private Integer isEdit;
-
-
-    @ApiModelProperty(value = "正则表达式",dataType = "Integer",position = 9)
-    private Integer regular;
-
-    @ApiModelProperty(value = "长度",dataType = "Integer",position = 10)
-    private Integer width;
-
-    @ApiModelProperty(value = "排序",dataType = "Integer",position = 11)
+    @ApiModelProperty(value = "",position = 5)
+    private Integer isCurrency;
+    @ApiModelProperty(value = "",position = 6)
     private Integer sort;
 
-    @NotBlank(message = "ci数据id不能为空")
-    @ApiModelProperty(value = "entityId",dataType = "String",position = 12)
-    private String entityId;
+    @ApiModelProperty(value = "",position = 7)
+    private String packageName;
+    @ApiModelProperty(value = "",position = 8)
+    private String entity;
+    @ApiModelProperty(value = "",position = 9)
+    private String attrDefId;
+    @ApiModelProperty(value = "",position = 10)
+    private String attrDefDataType;
 
-    @ApiModelProperty(value = "ci数据检索条件",dataType = "String",position = 13)
-    private String entityFilters;
+    @ApiModelProperty(value = "",position = 11)
+    private String elementType;
+    @ApiModelProperty(value = "",position = 12)
+    private String title;
+    @ApiModelProperty(value = "",position = 13)
+    private Integer width;
 
-    @ApiModelProperty(value = "自定义数据源选项",dataType = "String",position = 14)
+    @ApiModelProperty(value = "",position = 14)
+    private String refEntity;
+    @ApiModelProperty(value = "",position = 15)
+    private String refPackageName;
+    @ApiModelProperty(value = "",position = 16)
+    private String refFilters;
+    @ApiModelProperty(value = "",position = 17)
     private String dataOptions;
 
-
-    @ApiModelProperty(value = "是否显示",dataType = "Integer",hidden = true)
+    @ApiModelProperty(value = "",position = 18)
+    private Integer required;
+    @ApiModelProperty(value = "",position = 19)
+    private String regular;
+    @ApiModelProperty(value = "",position = 20)
+    private Integer isEdit;
+    @ApiModelProperty(value = "",position = 21)
     private Integer isView;
-
-
-    @ApiModelProperty(value = "是否通用",dataType = "Integer",hidden = true)
-    private Integer isPublic;
 
     public String getFormTemplateId() {
         return formTemplateId;
@@ -75,22 +61,6 @@ public class SaveFormItemTemplateReq {
 
     public void setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
-    }
-
-    public String getAttrDefId() {
-        return attrDefId;
-    }
-
-    public void setAttrDefId(String attrDefId) {
-        this.attrDefId = attrDefId;
-    }
-
-    public String getAttrDataType() {
-        return attrDataType;
-    }
-
-    public void setAttrDataType(String attrDataType) {
-        this.attrDataType = attrDataType;
     }
 
     public String getName() {
@@ -101,22 +71,6 @@ public class SaveFormItemTemplateReq {
         this.name = name;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getElementType() {
-        return elementType;
-    }
-
-    public void setElementType(String elementType) {
-        this.elementType = elementType;
-    }
-
     public String getDefaultValue() {
         return defaultValue;
     }
@@ -125,36 +79,12 @@ public class SaveFormItemTemplateReq {
         this.defaultValue = defaultValue;
     }
 
-    public Integer getRequired() {
-        return required;
+    public Integer getIsCurrency() {
+        return isCurrency;
     }
 
-    public void setRequired(Integer required) {
-        this.required = required;
-    }
-
-    public Integer getIsEdit() {
-        return isEdit;
-    }
-
-    public void setIsEdit(Integer isEdit) {
-        this.isEdit = isEdit;
-    }
-
-    public Integer getRegular() {
-        return regular;
-    }
-
-    public void setRegular(Integer regular) {
-        this.regular = regular;
-    }
-
-    public Integer getWidth() {
-        return width;
-    }
-
-    public void setWidth(Integer width) {
-        this.width = width;
+    public void setIsCurrency(Integer isCurrency) {
+        this.isCurrency = isCurrency;
     }
 
     public Integer getSort() {
@@ -165,20 +95,84 @@ public class SaveFormItemTemplateReq {
         this.sort = sort;
     }
 
-    public String getEntityId() {
-        return entityId;
+    public String getPackageName() {
+        return packageName;
     }
 
-    public void setEntityId(String entityId) {
-        this.entityId = entityId;
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
-    public String getEntityFilters() {
-        return entityFilters;
+    public String getEntity() {
+        return entity;
     }
 
-    public void setEntityFilters(String entityFilters) {
-        this.entityFilters = entityFilters;
+    public void setEntity(String entity) {
+        this.entity = entity;
+    }
+
+    public String getAttrDefId() {
+        return attrDefId;
+    }
+
+    public void setAttrDefId(String attrDefId) {
+        this.attrDefId = attrDefId;
+    }
+
+    public String getAttrDefDataType() {
+        return attrDefDataType;
+    }
+
+    public void setAttrDefDataType(String attrDefDataType) {
+        this.attrDefDataType = attrDefDataType;
+    }
+
+    public String getElementType() {
+        return elementType;
+    }
+
+    public void setElementType(String elementType) {
+        this.elementType = elementType;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Integer getWidth() {
+        return width;
+    }
+
+    public void setWidth(Integer width) {
+        this.width = width;
+    }
+
+    public String getRefEntity() {
+        return refEntity;
+    }
+
+    public void setRefEntity(String refEntity) {
+        this.refEntity = refEntity;
+    }
+
+    public String getRefPackageName() {
+        return refPackageName;
+    }
+
+    public void setRefPackageName(String refPackageName) {
+        this.refPackageName = refPackageName;
+    }
+
+    public String getRefFilters() {
+        return refFilters;
+    }
+
+    public void setRefFilters(String refFilters) {
+        this.refFilters = refFilters;
     }
 
     public String getDataOptions() {
@@ -189,19 +183,35 @@ public class SaveFormItemTemplateReq {
         this.dataOptions = dataOptions;
     }
 
+    public Integer getRequired() {
+        return required;
+    }
+
+    public void setRequired(Integer required) {
+        this.required = required;
+    }
+
+    public String getRegular() {
+        return regular;
+    }
+
+    public void setRegular(String regular) {
+        this.regular = regular;
+    }
+
+    public Integer getIsEdit() {
+        return isEdit;
+    }
+
+    public void setIsEdit(Integer isEdit) {
+        this.isEdit = isEdit;
+    }
+
     public Integer getIsView() {
         return isView;
     }
 
     public void setIsView(Integer isView) {
         this.isView = isView;
-    }
-
-    public Integer getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Integer isPublic) {
-        this.isPublic = isPublic;
     }
 }

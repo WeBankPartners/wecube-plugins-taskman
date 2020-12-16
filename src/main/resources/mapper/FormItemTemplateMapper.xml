@@ -12,11 +12,7 @@
             <if test="formTemplateId != null and formTemplateId != ''">
                AND  form_template_id=#{formTemplateId}
             </if>
-            <if test="formTemplateId != null and formTemplateId != ''">
-               AND  form_template_id=#{formTemplateId}
-            </if>
         </where>
-        WHERE form_template_id=#{formTemplateId}
     </delete>
 
 </mapper>

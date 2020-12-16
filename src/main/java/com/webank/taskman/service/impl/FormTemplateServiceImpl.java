@@ -98,7 +98,10 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         formTemplate.setCurrenUserName(formTemplate,formTemplate.getId());
         saveOrUpdate(formTemplate);
         formItemTemplateService.deleteByDomain(new FormItemTemplate().setFormTemplateId(formTemplate.getId()));
-        formItemTemplateService.saveBatch(formTemplateReq.getFormItems());
+        formTemplateReq.getFormItems().stream().forEach(item->{
+            item.setFormTemplateId(formTemplate.getId());
+            formItemTemplateService.save(formItemTemplateConverter.toEntityBySaveReq(item));
+        });
         return new FormTemplateResp().setId(formTemplate.getId());
     }
 

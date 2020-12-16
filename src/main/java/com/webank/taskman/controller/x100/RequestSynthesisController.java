@@ -52,12 +52,12 @@ public class RequestSynthesisController {
     @ApiOperationSupport(order = 2)
     @PostMapping("/Request/selectSynthesisRequestInfo/{page}/{pageSize}")
     @ApiOperation(value = "Synthesis-Request-Info-search")
-    public JsonResponse< QueryResponse<Map<String,Object>>> selectSynthesisRequestInfo(
+    public JsonResponse<QueryResponse<SynthesisRequestInfoResp>>selectSynthesisRequestInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SynthesisRequestInfoReq req)
             throws Exception {
-        QueryResponse<Map<String,Object>> list = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize,req);
+        QueryResponse<SynthesisRequestInfoResp> list = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
 
@@ -70,22 +70,6 @@ public class RequestSynthesisController {
         SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestSynthesisService.selectSynthesisRequestInfoFormService(id);
         return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
     }
-
-
-
-    @ApiOperationSupport(order = 7)
-    @PostMapping("/Request/selectSynthesisRequestInfoCurrency/{page}/{pageSize}")
-    @ApiOperation(value = "Synthesis-Request-Info-Currency-search")
-    public JsonResponse<QueryResponse<Map<String,Object>>> selectSynthesisRequestInfoCurrency(
-            @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SynthesisRequestInfoReq req)
-            throws Exception {
-        QueryResponse<Map<String,Object>> list = requestSynthesisService.selectSynthesisRequestInfoCurrencyResp(page, pageSize,req);
-        return JsonResponse.okayWithData(list);
-    }
-
-
 
     @ApiOperationSupport(order = 4)
     @PostMapping("/task/selectTaskSynthesis/{page}/{pageSize}")
@@ -101,12 +85,12 @@ public class RequestSynthesisController {
     @ApiOperationSupport(order = 5)
     @PostMapping("/task/selectSynthesisTaskInfo/{page}/{pageSize}")
     @ApiOperation(value = "Synthesis-Task-Info-search")
-    public JsonResponse<QueryResponse<Map<String,Object>>> selectSynthesisTaskInfo(
+    public JsonResponse<QueryResponse<SynthesisTaskInfoResp>> selectSynthesisTaskInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SynthesisTaskInfoReq req)
             throws Exception {
-        QueryResponse<Map<String,Object>> queryResponse = taskInfoService.selectSynthesisTaskInfoService(page, pageSize,req);
+        QueryResponse<SynthesisTaskInfoResp> queryResponse = taskInfoService.selectSynthesisTaskInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -118,6 +102,8 @@ public class RequestSynthesisController {
         SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
         return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
     }
+
+
 
 
 

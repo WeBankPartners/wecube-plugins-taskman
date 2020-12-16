@@ -20,7 +20,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     SaveTaskInfoResp saveTaskInfo(SaveTaskInfoAndFormInfoReq saveTaskInfoAndFormInfoReq);
 
-    QueryResponse<Map<String,Object>> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);
+    QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);
 
     SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception;
 }

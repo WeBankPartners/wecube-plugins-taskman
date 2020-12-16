@@ -18,10 +18,15 @@ public class FormItemInfo  implements Serializable {
 
     private String itemTempId;
 
+    private String isCurrency;
+
     private String name;
 
     private String value;
 
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -47,6 +52,14 @@ public class FormItemInfo  implements Serializable {
         this.itemTempId = itemTempId;
     }
 
+    public String getIsCurrency() {
+        return isCurrency;
+    }
+
+    public void setIsCurrency(String isCurrency) {
+        this.isCurrency = isCurrency;
+    }
+
     public String getName() {
         return name;
     }
@@ -69,6 +82,7 @@ public class FormItemInfo  implements Serializable {
                 "id='" + id + '\'' +
                 ", formId='" + formId + '\'' +
                 ", itemTempId='" + itemTempId + '\'' +
+                ", isCurrency='" + isCurrency + '\'' +
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +
                 '}';

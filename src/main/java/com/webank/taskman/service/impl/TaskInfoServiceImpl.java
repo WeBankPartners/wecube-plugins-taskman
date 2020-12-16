@@ -155,8 +155,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
-//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        String currentUserRolesToString = "APP_ARC,PRD_OPS";
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
         req.setRoleName(currentUserRolesToString);
         List<Map<String,Object>> list = new ArrayList<>();
         IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);

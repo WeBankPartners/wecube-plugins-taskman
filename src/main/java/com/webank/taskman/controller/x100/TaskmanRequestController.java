@@ -95,11 +95,12 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 12)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
-    public JsonResponse<QueryResponse<SynthesisRequestTempleResp>> selectRequestSynthesis(
+    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) QueryRequestTemplateReq req)
             throws Exception {
-        QueryResponse<SynthesisRequestTempleResp> queryResponse = requestSynthesisService.selectSynthesisRequestTempleService(page, pageSize);
+        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

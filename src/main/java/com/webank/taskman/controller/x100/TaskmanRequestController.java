@@ -3,6 +3,7 @@ package com.webank.taskman.controller.x100;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import com.webank.taskman.commons.ApplicationConstants;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
@@ -26,14 +27,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static com.webank.taskman.dto.JsonResponse.okay;
 import static com.webank.taskman.dto.JsonResponse.okayWithData;
@@ -95,12 +96,12 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 12)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
-    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
+    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplatePage(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws Exception {
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(page, pageSize, req);
+        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -130,7 +131,7 @@ public class TaskmanRequestController {
         AuthenticationContextHolder.getCurrentUsername();
         req.setSourceTableFix("rt");
         req.setUseRoleName(AuthenticationContextHolder.getCurrentUserRolesToString());
-        List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.selectListByParam(req));
+        List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.selectAvailableRequest(req));
         return okayWithData(dtoList);
     }
 

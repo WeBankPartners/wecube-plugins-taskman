@@ -77,7 +77,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
+    public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
         for (RequestTemplateResp resp : respList) {
@@ -106,7 +106,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public List<RequestTemplate> selectListByParam(QueryRequestTemplateReq req) {
+    public List<RequestTemplate> selectAvailableRequest(QueryRequestTemplateReq req) {
         return this.baseMapper.selectListByParam(req);
     }
 

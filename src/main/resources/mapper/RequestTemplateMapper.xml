@@ -8,7 +8,8 @@
         <result column="proc_def_id" property="procDefId" />
         <result column="proc_def_name" property="procDefName" />
         <result column="name" property="name" />
-        <result column="version" property="version" />
+        <result column="description" property="description" />
+        <result column="description" property="version" />
         <result column="tags" property="tags" />
         <result column="status" property="status" />
         <result column="created_by" property="createdBy" />
@@ -51,43 +52,14 @@
             <if test="param.status !=null and param.status != ''">
                 AND rt.status = #{param.status}
             </if>
-
-            <if test="param.roleType != null">
-                <choose>
-                    <when test="param.roleType == 2">
-                        AND ( SELECT COUNT(1) FROM (
-                            SELECT rr.record_id,
-                                GROUP_CONCAT(CASE rr.role_type WHEN 0 THEN rr.role_name ELSE NULL END) useRole,
-                                GROUP_CONCAT(CASE rr.role_type WHEN 1 THEN rr.role_name ELSE NULL END) manageRole
-                            FROM role_relation rr GROUP BY rr.record_id ) t
-                            WHERE t.record_id = rt.id
-                            AND
-                                <foreach item="useStr" index="index" collection="param.useRoleName.split(',')" open="(" close=")" separator="OR">
-                                    LOCATE(#{useStr},t.useRole) &gt; 0
-                                </foreach>
-                            AND
-                                <foreach item="manageStr" index="index" collection="param.manageRoleName.split(',')" open="(" close=")" separator="OR">
-                                    LOCATE(#{manageStr},t.manageRole) &gt; 0
-                                </foreach>
-                        ) &gt; 0
-                    </when>
-                    <otherwise>
-                        AND (
-                        SELECT COUNT(1) FROM role_relation rr
-                        WHERE rt.id = rr.record_id AND rr.role_type = #{param.roleType}
-                            AND
-                        <foreach item="roleStr" index="index" collection="param.roleName.split(',')" open="(" close=")" separator="OR">
-                            rr.role_name = #{roleStr}
-                        </foreach>
-                        ) &gt; 0
-                    </otherwise>
-                </choose>
+            <if test="param.conditionSql!=null and param.conditionSql !=''">
+                AND ${param.conditionSql}
             </if>
         </where>
 
     </select>
 
-    <select id="selectSynthesisRequestTemple" parameterType="String" resultMap="BaseResultMap">
+    <select id="selectSynthesisRequestTemple" parameterType="java.lang.String" resultMap="BaseResultMap">
         SELECT rt.*
         FROM
         request_template rt

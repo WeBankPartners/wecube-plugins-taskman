@@ -86,16 +86,17 @@ public class QueryRoleRelationBaseReq {
     protected static final String ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE %s.id = rr.record_id AND (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))) > 0";
 
     public String getConditionSql() {
-        if(StringUtils.isEmpty(conditionSql));
-        switch (this.roleType){
-            case 0:
-            case 1:
-                conditionSql = String.format(NOT_ALL,sourceTableFix,getRoleType(),getRoleName());
-                break;
-            default:
-                conditionSql = String.format(ALL,sourceTableFix,getUseRoleName(),getManageRoleName());
-                break;
+        if(StringUtils.isEmpty(conditionSql) && null != getRoleType()) {
+            switch (this.roleType) {
+                case 0:
+                case 1:
+                    conditionSql = String.format(NOT_ALL, sourceTableFix, getRoleType(), getRoleName());
+                    break;
+                default:
+                    conditionSql = String.format(ALL, sourceTableFix, getUseRoleName(), getManageRoleName());
+                    break;
 
+            }
         }
         return conditionSql;
     }

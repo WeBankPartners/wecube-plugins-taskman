@@ -24,6 +24,7 @@ import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestSynthesisService;
 import com.webank.taskman.utils.JsonUtils;
+import com.webank.taskman.utils.UnderlineToCameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,7 +78,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     public QueryResponse<Map<String,Object>> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
 //        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
         String currentUserRolesToString = "APP_ARC,PRD_OPS";
-
+        UnderlineToCameUtils underlineToCameUtils=new UnderlineToCameUtils();
         List<Map<String,Object>> list = new ArrayList<>();
         req.setRoleName(currentUserRolesToString);
         IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
@@ -92,7 +93,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
         list = JsonUtils.toObject(JsonResponse.okayWithData(srt).getData(),list.getClass());
         list.stream().forEach(map->{
             ((List<Map<String,String>>)map.get("formItemInfo")).stream().forEach(item->{
-                map.put(item.get("name"),item.get("value"));
+                map.put(underlineToCameUtils.underlineToCamel(item.get("name")),item.get("value"));
                 map.remove("formItemInfo");
             });
         });
@@ -121,6 +122,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     public QueryResponse<Map<String,Object>> selectSynthesisRequestInfoCurrencyResp(Integer current, Integer limit,SynthesisRequestInfoReq req) throws Exception {
 
         String currentUserRolesToString = "APP_ARC,PRD_OPS";
+        UnderlineToCameUtils underlineToCameUtils=new UnderlineToCameUtils();
         List<Map<String,Object>> list = new ArrayList<>();
         req.setRoleName(currentUserRolesToString);
         IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
@@ -138,7 +140,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
         list = JsonUtils.toObject(JsonResponse.okayWithData(srt).getData(),list.getClass());
         list.stream().forEach(map->{
             ((List<Map<String,String>>)map.get("formItemInfo")).stream().forEach(item->{
-                map.put(item.get("name"),item.get("value"));
+                map.put(underlineToCameUtils.underlineToCamel(item.get("name")),item.get("value"));
                 map.remove("formItemInfo");
             });
         });

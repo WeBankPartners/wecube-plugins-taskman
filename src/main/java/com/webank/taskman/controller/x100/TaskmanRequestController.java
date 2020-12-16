@@ -3,7 +3,6 @@ package com.webank.taskman.controller.x100;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader;
 import com.webank.taskman.commons.ApplicationConstants;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
@@ -32,9 +31,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import static com.webank.taskman.dto.JsonResponse.okay;
 import static com.webank.taskman.dto.JsonResponse.okayWithData;

@@ -7,4 +7,6 @@ import com.webank.taskman.domain.FormItemTemplate;
 public interface FormItemTemplateMapper extends BaseMapper<FormItemTemplate> {
 
     void deleteRequestTemplateByIDMapper(String id);
+
+    int deleteByDomain(FormItemTemplate formItemTemplate);
 }

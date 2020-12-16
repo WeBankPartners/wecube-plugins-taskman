@@ -154,30 +154,17 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public QueryResponse<Map<String,Object>> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
+    public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
 //        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
         String currentUserRolesToString = "APP_ARC,PRD_OPS";
         req.setRoleName(currentUserRolesToString);
         List<Map<String,Object>> list = new ArrayList<>();
         IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);
         List<SynthesisTaskInfoResp> srt=synthesisTaskInfoRespConverter.toDto(iPage.getRecords());
-        for (SynthesisTaskInfoResp synthesisTaskInfoResp : srt) {
-            List<FormItemInfo> lists= formItemInfoMapper.selectList(
-                    new QueryWrapper<FormItemInfo>()
-                            .eq("record_id",synthesisTaskInfoResp.getId())
-            );
-            synthesisTaskInfoResp.setFormItemInfo(lists);
-        }
-        list = JsonUtils.toObject(JsonResponse.okayWithData(srt).getData(),list.getClass());
-        list.stream().forEach(map->{
-            ((List<Map<String,String>>)map.get("formItemInfo")).stream().forEach(item->{
-                map.put(item.get("name"),item.get("value"));
-                map.remove("formItemInfo");
-            });
-        });
-        QueryResponse<Map<String,Object>> queryResponse = new QueryResponse<>();
+
+        QueryResponse<SynthesisTaskInfoResp> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(list);
+        queryResponse.setContents(srt);
 
         return queryResponse;
     }

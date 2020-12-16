@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = RuntimeException.class)
     public JsonResponse handleException(RuntimeException e) {
-        log.error("错误异常:{}", e.getMessage());
+        log.error("错误异常:{}", e);
 
         return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION,e.getMessage());
     }

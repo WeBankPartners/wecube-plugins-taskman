@@ -1,5 +1,6 @@
 package com.webank.taskman.dto.req;
 
+import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

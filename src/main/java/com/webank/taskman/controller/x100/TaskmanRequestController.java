@@ -13,14 +13,10 @@ import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.req.SaveRequestInfoReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateReq;
-import com.webank.taskman.dto.resp.RequestInfoResq;
-import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.req.*;
+import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.RequestInfoService;
+import com.webank.taskman.service.RequestSynthesisService;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
@@ -48,17 +44,16 @@ import static com.webank.taskman.dto.JsonResponse.okayWithData;
 @RequestMapping("/v1/request")
 public class TaskmanRequestController {
 
-
-
     private static final Logger log = LoggerFactory.getLogger(TaskmanRequestController.class);
 
+    @Autowired
+    RequestSynthesisService requestSynthesisService;
 
     @Autowired
     RequestTemplateService requestTemplateService;
 
     @Autowired
     RequestTemplateGroupService requestTemplateGroupService;
-
 
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
@@ -97,19 +92,18 @@ public class TaskmanRequestController {
         return okay();
     }
 
-    @ApiOperationSupport(order = 11)
+    @ApiOperationSupport(order = 12)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
-    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplate(
+    public JsonResponse<QueryResponse<SynthesisRequestTempleResp>> selectRequestSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) QueryRequestTemplateReq req)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
             throws Exception {
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(page, pageSize, req);
+        QueryResponse<SynthesisRequestTempleResp> queryResponse = requestSynthesisService.selectSynthesisRequestTempleService(page, pageSize);
         return JsonResponse.okayWithData(queryResponse);
     }
 
-    @ApiOperationSupport(order = 12)
+    @ApiOperationSupport(order = 13)
     @DeleteMapping("/template/delete/{id}")
     @ApiOperation(value = "request-template-delete", notes = "需要传入id")
     public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
@@ -117,7 +111,7 @@ public class TaskmanRequestController {
         return okay();
     }
 
-    @ApiOperationSupport(order = 13)
+    @ApiOperationSupport(order = 14)
     @GetMapping("/template/detail/{id}")
     @ApiOperation(value = "request-template-detail", notes = "需要传入id")
     public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
@@ -126,7 +120,7 @@ public class TaskmanRequestController {
     }
 
     @GetMapping(value = {"/template/available","/template/available/{all}"})
-    @ApiOperationSupport(order = 14)
+    @ApiOperationSupport(order = 15)
     @ApiOperation(value = "request-template-available")
     public JsonResponse<List<RequestTemplateResp>> availableRequest( @PathVariable(value = "all",required = false) String all,@ApiIgnore QueryRequestTemplateReq req) throws Exception {
         if(StringUtils.isEmpty(all)){
@@ -140,7 +134,7 @@ public class TaskmanRequestController {
     }
 
     @PostMapping("/template/group/save")
-    @ApiOperationSupport(order = 14)
+    @ApiOperationSupport(order = 16)
     @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupResq> createTemplateGroup(
             @Valid @RequestBody SaveRequestTemplateGropReq req) throws Exception {
@@ -151,7 +145,7 @@ public class TaskmanRequestController {
     }
 
     @PostMapping("/template/group/search/{page}/{pageSize}")
-    @ApiOperationSupport(order = 15)
+    @ApiOperationSupport(order = 17)
     @ApiOperation(value = "request-group-template-search")
     public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
@@ -163,7 +157,7 @@ public class TaskmanRequestController {
     }
 
     @GetMapping("/template/group/available")
-    @ApiOperationSupport(order = 16)
+    @ApiOperationSupport(order = 18)
     @ApiOperation(value = "request-group-template-available")
     public JsonResponse<List<TemplateGroupDTO>> available(@ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
         QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
@@ -173,33 +167,43 @@ public class TaskmanRequestController {
     }
 
     @DeleteMapping("/template/group/delete/{id}")
-    @ApiOperationSupport(order = 17)
+    @ApiOperationSupport(order = 19)
     @ApiOperation(value = "request-group-template-delete", notes = "需要传入id")
     public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return okay();
     }
 
-    @ApiOperationSupport(order = 18)
+    @ApiOperationSupport(order = 20)
     @PostMapping("/save")
     @ApiOperation(value = "Request-Info-save")
     public JsonResponse<SaveRequestInfoReq> saveRequestInfo(@RequestBody SaveRequestInfoReq req) throws Exception {
         return okayWithData(requestInfoService.saveRequestInfo(req));
     }
-    
-    @ApiOperationSupport(order = 19)
+
+    @ApiOperationSupport(order = 21)
     @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "Request-Info-search")
-    public JsonResponse<QueryResponse<RequestInfoResq>> selectRequestInfo(
+    public JsonResponse<QueryResponse<SynthesisRequestInfoResp>>selectSynthesisRequestInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SaveRequestInfoReq req)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) SynthesisRequestInfoReq req)
             throws Exception {
-        QueryResponse<RequestInfoResq> queryResponse = requestInfoService.selectRequestInfoService(page, pageSize, req);
-        return JsonResponse.okayWithData(queryResponse);
+        QueryResponse<SynthesisRequestInfoResp> list = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize,req);
+        return JsonResponse.okayWithData(list);
     }
 
 
+    @ApiOperationSupport(order = 22)
+    @PostMapping("/details")
+    @ApiOperation(value = "Request-Info-details")
+    public JsonResponse<SynthesisRequestInfoFormRequest> selectSynthesisRequestInfoForm(String id)
+            throws Exception {
+        SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestSynthesisService.selectSynthesisRequestInfoFormService(id);
+        return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
+    }
+
+    @ApiOperationSupport(order = 23)
     @ApiOperation(value = "Request-Info-done")
     @PostMapping(ApplicationConstants.ApiInfo.API_RESOURCE_SERVICE_REQUEST_DONE)
     public JsonResponse updateServiceRequest(@RequestBody DoneServiceRequestRequest request,

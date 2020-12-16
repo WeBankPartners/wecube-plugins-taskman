@@ -1,5 +1,6 @@
 package com.webank.taskman.dto.resp;
 
+import com.webank.taskman.domain.FormItemTemplate;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
@@ -31,13 +32,13 @@ public class FormTemplateResp {
     private String otherAttrDef;
 
     @ApiModelProperty(value = "",position = 9)
-    private List<FormItemTemplateDTO> items;
+    private List<FormItemTemplate> items;
 
-    public List<FormItemTemplateDTO> getItems() {
+    public List<FormItemTemplate> getItems() {
         return items;
     }
 
-    public FormTemplateResp setItems(List<FormItemTemplateDTO> items) {
+    public FormTemplateResp setItems(List<FormItemTemplate> items) {
         this.items = items;
         return  this;
     }

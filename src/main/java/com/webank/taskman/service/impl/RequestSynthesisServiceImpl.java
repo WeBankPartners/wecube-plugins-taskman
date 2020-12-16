@@ -24,6 +24,7 @@ import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestSynthesisService;
 import com.webank.taskman.utils.JsonUtils;
+import com.webank.taskman.utils.UnderlineToCameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,31 +75,17 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
     }
 
     @Override
-    public QueryResponse<Map<String,Object>> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
+    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
 //        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
         String currentUserRolesToString = "APP_ARC,PRD_OPS";
-
         List<Map<String,Object>> list = new ArrayList<>();
         req.setRoleName(currentUserRolesToString);
         IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
         List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());
-        for (SynthesisRequestInfoResp synthesisRequestInfoResp : srt) {
-            List<FormItemInfo> lists= formItemInfoMapper.selectList(
-                    new QueryWrapper<FormItemInfo>()
-                            .eq("record_id",synthesisRequestInfoResp.getId())
-            );
-            synthesisRequestInfoResp.setFormItemInfo(lists);
-        }
-        list = JsonUtils.toObject(JsonResponse.okayWithData(srt).getData(),list.getClass());
-        list.stream().forEach(map->{
-            ((List<Map<String,String>>)map.get("formItemInfo")).stream().forEach(item->{
-                map.put(item.get("name"),item.get("value"));
-                map.remove("formItemInfo");
-            });
-        });
-        QueryResponse<Map<String,Object>> queryResponse = new QueryResponse<>();
+
+        QueryResponse<SynthesisRequestInfoResp> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(list);
+        queryResponse.setContents(srt);
 
         return queryResponse;
     }
@@ -115,38 +102,6 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
         srt.setFormItemInfo(formItemInfos);
 
         return srt;
-    }
-
-    @Override
-    public QueryResponse<Map<String,Object>> selectSynthesisRequestInfoCurrencyResp(Integer current, Integer limit,SynthesisRequestInfoReq req) throws Exception {
-
-        String currentUserRolesToString = "APP_ARC,PRD_OPS";
-        List<Map<String,Object>> list = new ArrayList<>();
-        req.setRoleName(currentUserRolesToString);
-        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
-        List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());
-
-        for (SynthesisRequestInfoResp synthesisRequestInfoResp : srt) {
-            System.out.println(synthesisRequestInfoResp);
-        List<FormItemInfo> lists= formItemInfoMapper.selectList(
-                    new QueryWrapper<FormItemInfo>()
-                            .eq("record_id",synthesisRequestInfoResp.getId())
-                            .eq("is_currency",1)
-            );
-            synthesisRequestInfoResp.setFormItemInfo(lists);
-        }
-        list = JsonUtils.toObject(JsonResponse.okayWithData(srt).getData(),list.getClass());
-        list.stream().forEach(map->{
-            ((List<Map<String,String>>)map.get("formItemInfo")).stream().forEach(item->{
-                map.put(item.get("name"),item.get("value"));
-                map.remove("formItemInfo");
-            });
-        });
-        QueryResponse<Map<String,Object>> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(list);
-
-        return queryResponse;
     }
 
 }

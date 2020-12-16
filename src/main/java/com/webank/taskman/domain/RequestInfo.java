@@ -24,6 +24,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
     private String reportRole;
     private String attachFileId;
     private String status;
+    private String dueDate;
     private String result;
 
 
@@ -107,6 +108,14 @@ public class RequestInfo extends BaseEntity implements Serializable {
         this.status = status;
     }
 
+    public String getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(String dueDate) {
+        this.dueDate = dueDate;
+    }
+
     public String getResult() {
         return result;
     }
@@ -128,6 +137,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
         ", reportRole=" + reportRole +
         ", attachFileId=" + attachFileId +
         ", status=" + status +
+        ", dueDate=" + dueDate +
         ", result=" + result +
         ", createdBy=" + getCreatedBy() +
         ", createdTime=" + getCreatedTime() +

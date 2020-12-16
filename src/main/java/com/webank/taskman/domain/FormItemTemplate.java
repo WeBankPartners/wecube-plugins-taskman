@@ -2,6 +2,9 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 
@@ -10,26 +13,52 @@ public class FormItemTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
+    @ApiModelProperty(value = "",position = 1)
     private String id;
+    @ApiModelProperty(value = "",position = 2)
     private String formTemplateId;
-    private String attrDefId;
-    private String attrDataType;
+    @ApiModelProperty(value = "",position = 3)
     private String name;
-    private String title;
-    private String packageName;
-    private String entityName;
-    private String entityFilters;
-    private String elementType;
-    private Integer isCurrency;
+    @ApiModelProperty(value = "",position = 4)
     private String defaultValue;
-    private Integer required;
-    private Integer isEdit;
-    private String regular;
-    private Integer width;
+    @ApiModelProperty(value = "",position = 5)
+    private Integer isCurrency;
+    @ApiModelProperty(value = "",position = 6)
     private Integer sort;
-    private String dataOptions;
-    private Integer isView;
 
+    @ApiModelProperty(value = "",position = 7)
+    private String packageName;
+    @ApiModelProperty(value = "",position = 8)
+    private String entity;
+    @ApiModelProperty(value = "",position = 9)
+    private String attrDefId;
+    @ApiModelProperty(value = "",position = 10)
+    private String attrDefDataType;
+
+    @ApiModelProperty(value = "",position = 11)
+    private String elementType;
+    @ApiModelProperty(value = "",position = 12)
+    private String title;
+    @ApiModelProperty(value = "",position = 13)
+    private Integer width;
+
+    @ApiModelProperty(value = "",position = 14)
+    private String refEntity;
+    @ApiModelProperty(value = "",position = 15)
+    private String refPackageName;
+    @ApiModelProperty(value = "",position = 16)
+    private String refFilters;
+    @ApiModelProperty(value = "",position = 17)
+    private String dataOptions;
+
+    @ApiModelProperty(value = "",position = 18)
+    private Integer required;
+    @ApiModelProperty(value = "",position = 19)
+    private String regular;
+    @ApiModelProperty(value = "",position = 20)
+    private Integer isEdit;
+    @ApiModelProperty(value = "",position = 21)
+    private Integer isView;
 
     public String getId() {
         return id;
@@ -43,24 +72,9 @@ public class FormItemTemplate implements Serializable {
         return formTemplateId;
     }
 
-    public void setFormTemplateId(String formTemplateId) {
+    public FormItemTemplate setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
-    }
-
-    public String getAttrDefId() {
-        return attrDefId;
-    }
-
-    public void setAttrDefId(String attrDefId) {
-        this.attrDefId = attrDefId;
-    }
-
-    public String getAttrDataType() {
-        return attrDataType;
-    }
-
-    public void setAttrDataType(String attrDataType) {
-        this.attrDataType = attrDataType;
+        return this;
     }
 
     public String getName() {
@@ -71,44 +85,12 @@ public class FormItemTemplate implements Serializable {
         this.name = name;
     }
 
-    public String getTitle() {
-        return title;
+    public String getDefaultValue() {
+        return defaultValue;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public String getEntityName() {
-        return entityName;
-    }
-
-    public void setEntityName(String entityName) {
-        this.entityName = entityName;
-    }
-
-    public String getEntityFilters() {
-        return entityFilters;
-    }
-
-    public void setEntityFilters(String entityFilters) {
-        this.entityFilters = entityFilters;
-    }
-
-    public String getElementType() {
-        return elementType;
-    }
-
-    public void setElementType(String elementType) {
-        this.elementType = elementType;
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     public Integer getIsCurrency() {
@@ -119,36 +101,60 @@ public class FormItemTemplate implements Serializable {
         this.isCurrency = isCurrency;
     }
 
-    public String getDefaultValue() {
-        return defaultValue;
+    public Integer getSort() {
+        return sort;
     }
 
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
+    public void setSort(Integer sort) {
+        this.sort = sort;
     }
 
-    public Integer getRequired() {
-        return required;
+    public String getPackageName() {
+        return packageName;
     }
 
-    public void setRequired(Integer required) {
-        this.required = required;
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
-    public Integer getIsEdit() {
-        return isEdit;
+    public String getEntity() {
+        return entity;
     }
 
-    public void setIsEdit(Integer isEdit) {
-        this.isEdit = isEdit;
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
 
-    public String getRegular() {
-        return regular;
+    public String getAttrDefId() {
+        return attrDefId;
     }
 
-    public void setRegular(String regular) {
-        this.regular = regular;
+    public void setAttrDefId(String attrDefId) {
+        this.attrDefId = attrDefId;
+    }
+
+    public String getAttrDefDataType() {
+        return attrDefDataType;
+    }
+
+    public void setAttrDefDataType(String attrDefDataType) {
+        this.attrDefDataType = attrDefDataType;
+    }
+
+    public String getElementType() {
+        return elementType;
+    }
+
+    public void setElementType(String elementType) {
+        this.elementType = elementType;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Integer getWidth() {
@@ -159,12 +165,29 @@ public class FormItemTemplate implements Serializable {
         this.width = width;
     }
 
-    public Integer getSort() {
-        return sort;
+    public String getRefEntity() {
+        return refEntity;
     }
 
-    public void setSort(Integer sort) {
-        this.sort = sort;
+    public void setRefEntity(String refEntity) {
+        this.refEntity = refEntity;
+    }
+
+    public String getRefPackageName() {
+        return refPackageName;
+    }
+
+    public void setRefPackageName(String refPackageName) {
+        this.refPackageName = refPackageName;
+    }
+
+
+    public String getRefFilters() {
+        return refFilters;
+    }
+
+    public void setRefFilters(String refFilters) {
+        this.refFilters = refFilters;
     }
 
     public String getDataOptions() {
@@ -175,36 +198,35 @@ public class FormItemTemplate implements Serializable {
         this.dataOptions = dataOptions;
     }
 
+    public Integer getRequired() {
+        return required;
+    }
+
+    public void setRequired(Integer required) {
+        this.required = required;
+    }
+
+    public String getRegular() {
+        return regular;
+    }
+
+    public void setRegular(String regular) {
+        this.regular = regular;
+    }
+
+    public Integer getIsEdit() {
+        return isEdit;
+    }
+
+    public void setIsEdit(Integer isEdit) {
+        this.isEdit = isEdit;
+    }
+
     public Integer getIsView() {
         return isView;
     }
 
     public void setIsView(Integer isView) {
         this.isView = isView;
-    }
-
-    @Override
-    public String toString() {
-        return "FormItemTemplate{" +
-        "id=" + id +
-        ", formTemplateId=" + formTemplateId +
-        ", attrDefId=" + attrDefId +
-        ", attrDataType=" + attrDataType +
-        ", name=" + name +
-        ", title=" + title +
-        ", packageName=" + packageName +
-        ", entityName=" + entityName +
-        ", entityFilters=" + entityFilters +
-        ", elementType=" + elementType +
-        ", isCurrency=" + isCurrency +
-        ", defaultValue=" + defaultValue +
-        ", required=" + required +
-        ", isEdit=" + isEdit +
-        ", regular=" + regular +
-        ", width=" + width +
-        ", sort=" + sort +
-        ", dataOptions=" + dataOptions +
-        ", isView=" + isView +
-        "}";
     }
 }

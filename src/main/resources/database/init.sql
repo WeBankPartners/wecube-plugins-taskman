@@ -42,39 +42,39 @@ CREATE TABLE IF NOT EXISTS `form_item_info` (
 
 DROP TABLE IF EXISTS `form_item_template`;
 CREATE TABLE IF NOT EXISTS `form_item_template` (
-  `id` varchar(32)  NOT NULL,
-  `form_template_id` varchar(32)  NOT NULL,
-  `attr_def_id` varchar(50)  DEFAULT NULL,
-  `attr_data_type` varchar(50)  DEFAULT NULL,
-  `name` varchar(50)  NOT NULL,
-  `title` varchar(50)  NOT NULL,
-  `package_name` varchar(50)  DEFAULT '0',
-  `entity_name` varchar(50)  DEFAULT '0',
-  `entity_filters` mediumtext  COMMENT 'ciid',
-  `element_type` varchar(50)  NOT NULL DEFAULT 'text',
+  `id` varchar(32) NOT NULL,
+  `form_template_id` varchar(32) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `default_value` varchar(255) DEFAULT NULL,
   `is_currency` tinyint(2) NOT NULL DEFAULT '0',
-  `default_value` varchar(255)  DEFAULT NULL,
-  `required` tinyint(2) NOT NULL DEFAULT '0',
-  `is_edit` tinyint(2) NOT NULL DEFAULT '0',
-  `regular` varchar(50)  DEFAULT NULL,
-  `width` int(11) DEFAULT NULL,
   `sort` tinyint(2) NOT NULL DEFAULT '0',
-  `data_options` text ,
+  `package_name` varchar(255) DEFAULT '0',
+  `entity` varchar(255) DEFAULT '0',
+  `attr_def_id` varchar(255) DEFAULT NULL,
+  `attr_def_data_type` varchar(255) DEFAULT NULL,
+  `element_type` varchar(50) NOT NULL DEFAULT 'text',
+  `title` varchar(50) NOT NULL,
+  `width` int(11) DEFAULT NULL,
+  `ref_package_name` varchar(255) DEFAULT NULL,
+  `ref_entity` varchar(255) DEFAULT NULL,
+  `ref_filters` text COMMENT 'ciid',
+  `data_options` text,
+  `required` tinyint(2) NOT NULL DEFAULT '0',
+  `regular` varchar(50) DEFAULT NULL,
+  `is_edit` tinyint(2) NOT NULL DEFAULT '0',
   `is_view` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `form_template_id` (`form_template_id`,`name`)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-INSERT IGNORE  INTO `form_item_template` (`id`, `form_template_id`, `attr_def_id`, `attr_data_type`, `name`, `title`, `package_name`, `entity_name`, `entity_filters`, `element_type`, `is_currency`, `default_value`, `required`, `is_edit`, `regular`, `width`, `sort`, `data_options`, `is_view`) VALUES
-('1333228970392473601', '', NULL, NULL, '上报人', '上报人', '0', '0', '', 'text', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0),
-('1333297882663247873', '', NULL, NULL, '任务名称', '任务名称', '0', '0', '', 'text', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0),
-('1333303089673617409', '', NULL, NULL, '紧急程度', '紧急程度', '0', '0', '', 'select', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0),
-('1333303897844670466', '', NULL, NULL, '任务描述', '任务描述', '0', '0', '', 'text', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0),
-('1333304415006547970', '', NULL, NULL, '任务附件', '任务附件', '0', '0', '', 'file', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0),
-('1333319171714420738', '', NULL, NULL, '处理结果', '处理结果', '0', '0', '', 'text', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0),
-('1333324857626169346', '', NULL, NULL, '上报时间', '上报时间', '0', '0', '', 'date', 0, NULL, 0, 0, NULL, NULL, 0, NULL, 0);
-
+INSERT INTO `form_item_template` (`id`, `form_template_id`, `name`, `default_value`, `is_currency`, `sort`, `package_name`, `entity`, `attr_def_id`, `attr_def_data_type`, `element_type`, `title`, `width`, `ref_package_name`, `ref_entity`, `ref_filters`, `data_options`, `required`, `regular`, `is_edit`, `is_view`) VALUES
+	('1333228970392473601', '', 'reporter', NULL, 0, 0, '0', '0', NULL, NULL, 'text', '上报人', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+	('1333303089673617409', '', 'emergency', NULL, 0, 0, '0', '0', NULL, NULL, 'select', '紧急程度', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+	('1333304415006547970', '', 'attach_file_id', NULL, 0, 0, '0', '0', NULL, NULL, 'file', '附件', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+	('1333319171714420738', '', 'result', NULL, 0, 0, '0', '0', NULL, NULL, 'text', '处理结果', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+	('1333324857626169346', '', 'report_time', NULL, 0, 0, '0', '0', NULL, NULL, 'date', '上报时间', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+	('1333324857626169347', '', 'due_data', NULL, 0, 0, '0', '0', NULL, NULL, 'date', '过期时间', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0);
 
 DROP TABLE IF EXISTS `form_template`;
 CREATE TABLE IF NOT EXISTS `form_template` (

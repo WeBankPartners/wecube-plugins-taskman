@@ -12,7 +12,6 @@ import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.req.SaveFormItemTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.mapper.FormTemplateMapper;
@@ -85,11 +84,9 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
         FormTemplateResp formTemplateResp = formTemplateConverter.toDto(formTemplateMapper.selectOne(wrapper));
         if(null !=formTemplateResp){
-            formTemplateResp.setItems(formItemTemplateConverter.toDto(
-                    formItemTemplateService.list(new QueryWrapper<FormItemTemplate>().
-                            eq("form_template_id",formTemplateResp.getId()))
-                    )
-            );
+            formTemplateResp.setItems(formItemTemplateService.list(
+                    new QueryWrapper<FormItemTemplate>().
+                    eq("form_template_id",formTemplateResp.getId())));
         }
         return formTemplateResp;
     }
@@ -100,12 +97,8 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         FormTemplate formTemplate= formTemplateConverter.reqToDomain(formTemplateReq);
         formTemplate.setCurrenUserName(formTemplate,formTemplate.getId());
         saveOrUpdate(formTemplate);
-        List<SaveFormItemTemplateReq> items = formTemplateReq.getFormItems();
-        for(SaveFormItemTemplateReq item:items){
-            item.setFormTemplateId(formTemplate.getId());
-            formItemTemplateService.saveFormItemTemplateByReq(item);
-        }
-
+        formItemTemplateService.deleteByDomain(new FormItemTemplate().setFormTemplateId(formTemplate.getId()));
+        formItemTemplateService.saveBatch(formTemplateReq.getFormItems());
         return new FormTemplateResp().setId(formTemplate.getId());
     }
 

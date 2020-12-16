@@ -1,5 +1,6 @@
 package com.webank.taskman.dto.req;
 
+import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,7 +47,7 @@ public class SaveFormTemplateReq {
     private List<RoleDTO> useRole;
 
     @ApiModelProperty(value = "表单项",position = 13)
-    private List<SaveFormItemTemplateReq> formItems = new LinkedList<>();
+    private List<FormItemTemplate> formItems = new LinkedList<>();
 
 
     public SaveFormTemplateReq() {
@@ -145,11 +146,11 @@ public class SaveFormTemplateReq {
         this.useRole = useRole;
     }
 
-    public List<SaveFormItemTemplateReq> getFormItems() {
+    public List<FormItemTemplate> getFormItems() {
         return formItems;
     }
 
-    public void setFormItems(List<SaveFormItemTemplateReq> formItems) {
+    public void setFormItems(List<FormItemTemplate> formItems) {
         this.formItems = formItems;
     }
 }

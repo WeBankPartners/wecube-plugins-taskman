@@ -48,9 +48,14 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
         this.getBaseMapper().deleteRequestTemplateByIDMapper(id);
     }
 
+    @Override
+    public int deleteByDomain(FormItemTemplate formItemTemplate) {
+        return this.getBaseMapper().deleteByDomain(formItemTemplate);
+    }
+
 
     @Override
-    public QueryResponse<FormItemTemplateDTO> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req) {
+    public QueryResponse<FormItemTemplate> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req) {
         Page<FormItemTemplate> page = new Page<>(current, limit);
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<>();
         if (!StringUtils.isEmpty(req.getId())) {
@@ -75,16 +80,6 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
             wrapper.eq("is_public",req.getIsPublic());
         }
         IPage<FormItemTemplate> iPage = this.getBaseMapper().selectPage(page, wrapper);
-        List<FormItemTemplate> records = iPage.getRecords();
-
-        List<FormItemTemplateDTO> formItemTemplateDTOS = formItemTemplateConverter.toDto(records);
-        QueryResponse<FormItemTemplateDTO> queryResponse = new QueryResponse<>();
-        PageInfo pageInfo = new PageInfo();
-        pageInfo.setStartIndex(iPage.getCurrent());
-        pageInfo.setPageSize(iPage.getSize());
-        pageInfo.setTotalRows(iPage.getTotal());
-        queryResponse.setPageInfo(pageInfo);
-        queryResponse.setContents(formItemTemplateDTOS);
-        return queryResponse;
+        return new QueryResponse(iPage);
     }
 }

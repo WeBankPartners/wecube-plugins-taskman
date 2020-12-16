@@ -16,6 +16,7 @@ public interface FormItemTemplateService extends IService<FormItemTemplate> {
 
     void deleteRequestTemplateByID(String id);
 
+    int deleteByDomain(FormItemTemplate formItemTemplate);
 
-    QueryResponse<FormItemTemplateDTO> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req);
+    QueryResponse<FormItemTemplate> selectAllFormItemTemplateService(Integer current, Integer limit, SelectFormItemTemplateReq req);
 }

@@ -72,13 +72,8 @@ public class AppProperties {
         }
     }
 
-<<<<<<< HEAD
     @ConfigurationProperties(prefix = "service.taskman")
     public class ServiceTaskmanProperties {
-=======
-    @ConfigurationProperties(prefix = "service.management")
-    public class ServiceManagementProperties {
->>>>>>> dev
         private String wecubeCoreAddress;
         private String wecubePlatformToken = "";
         private String s3AccessKey = "";

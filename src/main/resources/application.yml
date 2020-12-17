@@ -4,7 +4,7 @@ server:
     context-path: /taskman
 spring:
   profiles:
-    active: test
+    active: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8&serverTimezone=Asia/Shanghai
@@ -47,7 +47,6 @@ knife4j:
 
 service:
   taskman:
-    active: dev
     httpclient:
       max-total-connections: 200
     wecube-core-address: ${core_addr}

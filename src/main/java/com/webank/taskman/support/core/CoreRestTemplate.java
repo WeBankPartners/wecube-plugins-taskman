@@ -22,9 +22,9 @@ public class CoreRestTemplate {
 
     @SuppressWarnings("unchecked")
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType) throws CoreRemoteCallException {
-        log.info("About to call {} ", targetUrl);
+        log.info("V0.2.10 About to call {} ", targetUrl);
         R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
-        log.info("Core response: {} ", jsonResponse);
+        log.info("Core response: {} ", jsonResponse.getData().getClass().toString());
         validateJsonResponse(jsonResponse);
         return (D) jsonResponse.getData();
     }

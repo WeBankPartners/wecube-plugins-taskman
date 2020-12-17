@@ -17,6 +17,7 @@ import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
@@ -33,6 +34,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Autowired
     RequestTemplateMapper requestTemplateMapper;
+
+    @Autowired
+    RequestTemplateGroupMapper requestTemplateGroupMapper;
 
     @Autowired
     RequestTemplateConverter requestTemplateConverter;
@@ -106,9 +110,14 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         return requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
     }
 
+
     @Override
-    public List<RequestTemplate> selectAvailableRequest(QueryRequestTemplateReq req) {
-        return this.baseMapper.selectListByParam(req);
+    public List<RequestTemplateResp> selectAvailableRequest(QueryRequestTemplateReq req) {
+        List<RequestTemplateResp> list=requestTemplateConverter.toDto(this.baseMapper.selectListByParam(req));
+        for (RequestTemplateResp requestTemplateResp : list) {
+            requestTemplateResp.setRequestTempGroupName(requestTemplateGroupMapper.selectById(requestTemplateResp.getRequestTempGroup()).getName());
+        }
+        return list;
     }
 
 

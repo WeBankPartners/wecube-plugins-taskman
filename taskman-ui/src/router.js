@@ -12,16 +12,16 @@ export default new Router({
       redirect: '/task-management',
       component: () => import("./index.vue"),
       children: [
-        {
-          path: '/task-management',
-          name: 'TaskManagement',
-          component: () => import("./views/Task-management.vue")
-        },
-        {
-          path: '/service-catalog',
-          name: 'ServiceCatalog',
-          component: () => import("./views/Service-catalog.vue")
-        },
+        // {
+        //   path: '/task-management',
+        //   name: 'TaskManagement',
+        //   component: () => import("./views/Task-management.vue")
+        // },
+        // {
+        //   path: '/service-catalog',
+        //   name: 'ServiceCatalog',
+        //   component: () => import("./views/Service-catalog.vue")
+        // },
         {
           path: '/template-group',
           name: 'templateGroup',
@@ -31,6 +31,11 @@ export default new Router({
           path: '/template-mgmt',
           name: 'templateMgmt',
           component: () => import("./views/template/template-mgmt.vue")
+        },
+        {
+          path: '/request-mgmt',
+          name: 'requestMgmt',
+          component: () => import("./views/request/request-mgmt.vue")
         },
       ]
     }

@@ -47,7 +47,7 @@ knife4j:
 
 service:
   taskman:
-    active: test
+    active: dev
     httpclient:
       max-total-connections: 200
     wecube-core-address: ${core_addr}

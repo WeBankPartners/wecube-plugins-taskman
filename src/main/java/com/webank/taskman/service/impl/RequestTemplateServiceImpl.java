@@ -80,7 +80,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Override
     public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
         req.setSourceTableFix("rt");
-        StringBuffer useRole =  new StringBuffer(req.getUseRoleName()).append(StringUtils.isEmpty(req.getUseRoleName()) ? "":",") ;
+        StringBuffer useRole =  new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "":req.getUseRoleName()+",") ;
         req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
 
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);

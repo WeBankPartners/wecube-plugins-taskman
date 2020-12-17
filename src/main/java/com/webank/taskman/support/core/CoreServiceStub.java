@@ -29,7 +29,7 @@ public class CoreServiceStub {
     public static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
 
     private static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/release/process/definitions";
-    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/release/process/definitions/{%s}/tasknodes";
+    private static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/release/process/definitions/{proc-def-id}/tasknodes";
 
     private static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/release/process/instances";
 

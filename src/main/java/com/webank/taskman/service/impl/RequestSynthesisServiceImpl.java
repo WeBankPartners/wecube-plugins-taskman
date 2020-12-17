@@ -76,8 +76,7 @@ public class RequestSynthesisServiceImpl extends ServiceImpl<RequestTemplateMapp
 
     @Override
     public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws Exception {
-//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        String currentUserRolesToString = "APP_ARC,PRD_OPS";
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
         List<Map<String,Object>> list = new ArrayList<>();
         req.setRoleName(currentUserRolesToString);
         IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);

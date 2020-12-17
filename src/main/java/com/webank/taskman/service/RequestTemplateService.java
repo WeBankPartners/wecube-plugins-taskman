@@ -15,10 +15,10 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     void deleteRequestTemplateService(String id) throws Exception;
 
-    QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception;
+    QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception;
 
     RequestTemplateResp detailRequestTemplate(String id) throws Exception;
 
-    List<RequestTemplate>  selectListByParam(QueryRequestTemplateReq req);
+    List<RequestTemplate> selectAvailableRequest(QueryRequestTemplateReq req);
 
    }

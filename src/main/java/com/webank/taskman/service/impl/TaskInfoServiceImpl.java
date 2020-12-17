@@ -12,7 +12,6 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CheckTaskDTO;
-import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.PageInfo;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.SaveTaskInfoAndFormInfoReq;
@@ -24,8 +23,6 @@ import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.TaskInfoMapper;
 import com.webank.taskman.service.TaskInfoService;
-import com.webank.taskman.utils.JsonUtils;
-import javafx.concurrent.Task;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -155,8 +152,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
-//        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        String currentUserRolesToString = "APP_ARC,PRD_OPS";
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
         req.setRoleName(currentUserRolesToString);
         List<Map<String,Object>> list = new ArrayList<>();
         IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);

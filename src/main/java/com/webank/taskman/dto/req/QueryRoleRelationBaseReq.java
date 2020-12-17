@@ -39,7 +39,8 @@ public class QueryRoleRelationBaseReq {
 
     public void setUseRoleName(String useRoleName) {
         if(!StringUtils.isEmpty(useRoleName)){
-            this.roleType = !StringUtils.isEmpty(this.manageRoleName) ?2:0;
+            this.conditionSql = null;
+            this.roleType = !StringUtils.isEmpty(this.manageRoleName) ?2:1;
             this.roleName = useRoleName;
         }
         this.useRoleName = useRoleName;
@@ -52,7 +53,8 @@ public class QueryRoleRelationBaseReq {
 
     public void setManageRoleName(String manageRoleName) {
         if(!StringUtils.isEmpty(manageRoleName)){
-            this.roleType = !StringUtils.isEmpty(this.useRoleName) ?2:1;
+            this.conditionSql = null;
+            this.roleType = !StringUtils.isEmpty(this.useRoleName) ?2:0;
             this.roleName = manageRoleName;
         }
 
@@ -82,20 +84,21 @@ public class QueryRoleRelationBaseReq {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-    protected static final  String NOT_ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE  %s.id =rr.record_id AND rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s') ) > 0";
-    protected static final String ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE %s.id = rr.record_id AND (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))) > 0";
+    protected static final  String NOT_ALL = "(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s') ) > 0";
+    protected static final String ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE %s.id = rr.record_id AND (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s'))) > 0";
 
     public String getConditionSql() {
-        if(StringUtils.isEmpty(conditionSql));
-        switch (this.roleType){
-            case 0:
-            case 1:
-                conditionSql = String.format(NOT_ALL,sourceTableFix,getRoleType(),getRoleName());
-                break;
-            default:
-                conditionSql = String.format(ALL,sourceTableFix,getUseRoleName(),getManageRoleName());
-                break;
+        if(StringUtils.isEmpty(conditionSql) && null != getRoleType()) {
+            switch (this.roleType) {
+                case 0:
+                case 1:
+                    conditionSql = String.format(NOT_ALL, sourceTableFix, getRoleType(), getRoleName());
+                    break;
+                default:
+                    conditionSql = String.format(ALL, sourceTableFix, getUseRoleName(), getManageRoleName());
+                    break;
 
+            }
         }
         return conditionSql;
     }
@@ -107,6 +110,9 @@ public class QueryRoleRelationBaseReq {
         QueryRequestTemplateReq req = new QueryRequestTemplateReq();
         req.setSourceTableFix("rt");
         req.setUseRoleName("SUOPER");
+        System.out.println(req.getConditionSql());
+
+        req.setManageRoleName("SUOPER");
         System.out.println(req.getConditionSql());
     }
 }

@@ -1,7 +1,5 @@
 package com.webank.taskman;
 
-import com.webank.taskman.domain.RequestTemplate;
-import com.webank.taskman.dto.JsonResponse;
 import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
@@ -61,6 +59,6 @@ public class RequestTemplateTest {
         req.setProcDefName("");
         req.setName("");
         req.setTags("");
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectAllequestTemplateService(current, limit, req);
+        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectRequestTemplatePage(current, limit, req);
     }
 }

@@ -184,16 +184,6 @@
     </dependencyManagement>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>static/**</exclude>
-                    <exclude>**/*.vm</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -237,7 +227,7 @@
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>../service-management-ui/dist</directory>
+                                    <directory>../taskman-ui/dist</directory>
                                     <includes>
                                         <include>**/*</include>
                                     </includes>
@@ -256,7 +246,7 @@
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>../service-management-ui/dist</directory>
+                                    <directory>../taskman-ui/dist</directory>
                                     <includes>
                                         <include>index.html</include>
                                     </includes>

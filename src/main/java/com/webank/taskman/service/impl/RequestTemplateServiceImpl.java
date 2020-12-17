@@ -1,6 +1,5 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -10,7 +9,6 @@ import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
-import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.PageInfo;
@@ -27,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -77,7 +74,8 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public QueryResponse<RequestTemplateResp> selectAllequestTemplateService(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
+    public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
+        req.setSourceTableFix("rt");
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
         for (RequestTemplateResp resp : respList) {
@@ -106,7 +104,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public List<RequestTemplate> selectListByParam(QueryRequestTemplateReq req) {
+    public List<RequestTemplate> selectAvailableRequest(QueryRequestTemplateReq req) {
         return this.baseMapper.selectListByParam(req);
     }
 

@@ -118,11 +118,12 @@ public class CoreServiceStub {
             if("rYsEQg2D2Bu".equals(procDefId)) {
                 list =  addTestNodeList();
             }
-            List filterList = list.stream().filter(node->TaskNodeTypeEnum.SUTN.getType().equals(node.get("taskCategory")))
-                    .collect(Collectors.toList());
-            return filterList;
+        }else{
+            list = template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), CommonResponseDto.class);
         }
-        return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), CommonResponseDto.class);
+        List filterList = list.stream().filter(node-> TaskNodeTypeEnum.SUTN.getType().equals(node.get("taskCategory")))
+                .collect(Collectors.toList());
+        return filterList;
     }
 
     // 3

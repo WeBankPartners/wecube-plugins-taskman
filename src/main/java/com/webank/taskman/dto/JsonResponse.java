@@ -62,7 +62,7 @@ public class JsonResponse<T> {
 	}
 
 	public JsonResponse withData(T data) {
-		this.data = data;
+		this.data = null == data ? (T)new Object():data;
 		return this;
 	}
 

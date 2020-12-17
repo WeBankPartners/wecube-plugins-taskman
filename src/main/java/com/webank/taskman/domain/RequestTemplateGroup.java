@@ -23,23 +23,19 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
     
     private String name;
 
-    
     private String description;
 
-    
     private String version;
 
-    
     private Integer status;
-
-
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public RequestTemplateGroup setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getManageRoleId() {

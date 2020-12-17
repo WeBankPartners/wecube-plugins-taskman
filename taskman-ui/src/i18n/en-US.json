@@ -62,5 +62,9 @@
     "over_time": "Expired",
     "target_object": "Target",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "filter_rule": "Filter Rules",
+    "add_filter_rule": "Adding Filtering Rules",
+    "set_filter_rule": "Set Up Filtering Rules",
+    "query_filter_rule": "View Filtering Rules"
 }

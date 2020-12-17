@@ -62,5 +62,9 @@
     "over_time": "过期时间",
     "target_object": "目标对象",
     "edit": "编辑",
-    "delete": "删除"
+    "delete": "删除",
+    "filter_rule": "过滤规则",
+    "add_filter_rule": "添加过滤规则",
+    "set_filter_rule": "设置过滤规则",
+    "query_filter_rule": "查看过滤规则"
 }

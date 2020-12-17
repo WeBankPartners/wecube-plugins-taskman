@@ -12,16 +12,13 @@ const throwError = res => new Error(res.message || 'error')
 req.interceptors.response.use(
   res => {
     if (res.status === 200) {
-      // if (res.data.statusCode.startsWith('ERR')) {
-      //   const errorMes = Array.isArray(res.data.data)
-      //     ? res.data.data.map(_ => _.errorMessage).join('<br/>')
-      //     : res.data.statusMessage
-      //   Vue.prototype.$Notice.error({
-      //     title: 'Error',
-      //     desc: errorMes,
-      //     duration: 0
-      //   })
-      // }
+      if (res.data.status.startsWith('ERR')) {
+        Vue.prototype.$Notice.error({
+          title: 'Error',
+          desc: res.data.message,
+          duration: 0
+        })
+      }
       // if (!res.headers['username']) {
       //   window.location.href = '/wecmdb/logout'
       // }
@@ -58,61 +55,17 @@ req.interceptors.response.use(
 )
 
 let refreshRequest = null
-// req.interceptors.request.use(
-//   config => {
-//     return new Promise((resolve, reject) => {
-//       const currentTime = new Date().getTime()
-//       const accessToken = getCookie('accessToken')
-//       if (accessToken && config.url !== '/auth/v1/api/login') {
-//         const expiration = getCookie('accessTokenExpirationTime') * 1 - currentTime
-//         if (expiration < 1 * 60 * 1000 && !refreshRequest) {
-//           refreshRequest = axios.get('/auth/v1/api/token', {
-//             headers: {
-//               Authorization: 'Bearer ' + getCookie('refreshToken')
-//             }
-//           })
-//           refreshRequest.then(
-//             res => {
-//               setCookie(res.data.data)
-//               config.headers.Authorization = 'Bearer ' + res.data.data.find(t => t.tokenType === 'accessToken').token
-//               refreshRequest = null
-//               resolve(config)
-//             },
-//             // eslint-disable-next-line handle-callback-err
-//             err => {
-//               refreshRequest = null
-//               window.location.href = window.location.origin + window.location.pathname + '#/login'
-//             }
-//           )
-//         }
-//         if (expiration < 1 * 60 * 1000 && refreshRequest) {
-//           refreshRequest.then(
-//             res => {
-//               setCookie(res.data.data)
-//               config.headers.Authorization = 'Bearer ' + res.data.data.find(t => t.tokenType === 'accessToken').token
-//               refreshRequest = null
-//               resolve(config)
-//             },
-//             // eslint-disable-next-line handle-callback-err
-//             err => {
-//               refreshRequest = null
-//               window.location.href = window.location.origin + window.location.pathname + '#/login'
-//             }
-//           )
-//         }
-//         if (expiration > 1 * 60 * 1000) {
-//           config.headers.Authorization = 'Bearer ' + accessToken
-//           resolve(config)
-//         }
-//       } else {
-//         resolve(config)
-//       }
-//     })
-//   },
-//   error => {
-//     return Promise.reject(error)
-//   }
-// )
+req.interceptors.request.use(
+  config => {
+    return new Promise((resolve, reject) => {
+        config.headers.Authorization = 'Bearer ' + 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMTY4IiwiaWF0IjoxNTc4MzA1NzAyLCJ0eXBlIjoicmVmcmVzaFRva2VuIiwiY2xpZW50VHlwZSI6IlVTRVIiLCJleHAiOjE1NzgzMDc1MDJ9.dnCGb91Z9YDiUX6YBlpaZ7yakPsXNPVxSNAuT0LeM_2qpPkcztqdswBEe-01nnCNJlS_jMm1GPrHJrdaYRQSyQ'
+        resolve(config)
+    })
+  },
+  error => {
+    return Promise.reject(error)
+  }
+)
 
 function setHeaders (obj) {
   Object.keys(obj).forEach(key => {

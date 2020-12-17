@@ -1,8 +1,5 @@
 package com.webank.taskman.support.core;
 
-import com.webank.taskman.dto.resp.RootEntityResp;
-import com.webank.taskman.support.core.dto.PluginPackageAttributeDto;
-import com.webank.taskman.support.core.dto.PluginPackageDataModelDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
 import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
 import com.webank.taskman.utils.JsonUtils;
@@ -93,7 +90,7 @@ public class CoreServiceTestData {
         models.append("");
         models.append("],\"dynamic\": true}");
         models.append("]");
-        Set<LinkedHashMap> pefList = new HashSet<>();
+        List<LinkedHashMap> pefList = new ArrayList<>();
         try {
             pefList = JsonUtils.toObject(models.toString(), pefList.getClass());
         } catch (IOException e) {

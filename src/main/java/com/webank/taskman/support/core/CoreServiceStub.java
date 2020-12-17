@@ -23,7 +23,6 @@ public class CoreServiceStub {
 
     private static final Logger log = LoggerFactory.getLogger(CoreServiceStub.class);
 
-    private static final int NOT_INCLUDE_DRAFT = 0;
     private static final String PLATFORM_CODE_SERVER_URL = "";
     private static final String GET_ALL_ROLES = "/auth/v1/roles";
     public static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/%s/roles";
@@ -100,7 +99,8 @@ public class CoreServiceStub {
                 path = String.format(path, pathVariables);
             }
         }
-        return smProperties.getWecubeCoreAddress() + path;
+
+        return null!=smProperties? smProperties.getWecubeCoreAddress() + path :path;
     }
 
     // 1
@@ -108,7 +108,7 @@ public class CoreServiceStub {
         if("dev".equals(SpringUtils.getActiveProfile())){
             return CoreServiceTestData.addPdfTestData();
         }
-        return template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);
+        return template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS), CommonResponseDto.class);
     }
 
     //2
@@ -122,7 +122,7 @@ public class CoreServiceStub {
                     .collect(Collectors.toList());
             return filterList;
         }
-        return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, NOT_INCLUDE_DRAFT), CommonResponseDto.class);
+        return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), CommonResponseDto.class);
     }
 
     // 3
@@ -186,7 +186,7 @@ public class CoreServiceStub {
     // 8
     public static void main(String[] args) {
         CoreServiceStub stub = new CoreServiceStub();
-        System.out.println(stub.asCoreUrl(GET_ENTITY_RETRIEVE_URL, "packageName","entity"));
+//        System.out.println(stub.asCoreUrl(GET_ENTITY_RETRIEVE_URL, "packageName","entity"));
         System.out.println(stub.asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS,"sjpDx8x32C8"));
 
     }

@@ -2,15 +2,17 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.RequestInfo;
+import com.webank.taskman.dto.DoneServiceRequestRequest;
+import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.SaveRequestInfoReq;
+import com.webank.taskman.dto.resp.RequestInfoResq;
 
-/**
- * <p>
- * 请求记录表  服务类
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 public interface RequestInfoService extends IService<RequestInfo> {
 
+    QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) throws Exception;
+
+    void doneServiceRequest(DoneServiceRequestRequest request);
+
+    SaveRequestInfoReq saveRequestInfo(SaveRequestInfoReq req);
 }

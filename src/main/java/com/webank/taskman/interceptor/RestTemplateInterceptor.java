@@ -15,7 +15,7 @@ import java.io.IOException;
 @Component
 public class RestTemplateInterceptor implements ClientHttpRequestInterceptor {
     @Autowired
-    private AppProperties.ServiceManagementProperties smProperties;
+    private AppProperties.ServiceTaskmanProperties smProperties;
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)

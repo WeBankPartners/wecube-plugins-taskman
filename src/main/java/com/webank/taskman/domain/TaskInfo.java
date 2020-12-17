@@ -1,71 +1,58 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableField;
-import java.io.Serializable;
+import com.webank.taskman.base.BaseEntity;
 
-/**
- * <p>
- * 任务记录表 
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
-public class TaskInfo implements Serializable {
+import java.io.Serializable;
+import java.util.Date;
+
+public class TaskInfo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 状态
-     */
-    @TableField("STATUS")
-    private Integer status;
+    private String requestId;
 
-    /**
-     * 版本号
-     */
-    @TableField("VERSION")
+    private String requestNo;
+
+    private String parentId;
+
+    private String taskTempId;
+
+    private String nodeDefId;
+
+    private String nodeName;
+
+    private String callbackUrl;
+    
+    private String callbackParameter;
+
+    private String name;
+
+    private String reporter;
+    
+    private Date reportTime;
+
+    private String emergency;
+
+    private String reportRole;
+
+    private String result;
+    
+    private String description;
+    
+    private String attachFileId;
+
+    private Integer status;
+    
     private String version;
 
-    /**
-     * 创建人
-     */
-    @TableField("CREATED_BY")
-    private String createdBy;
-
-    /**
-     * 创建时间
-     */
-    @TableField("CREATED_TIME")
-    private Date createdTime;
-
-    /**
-     * 更新人
-     */
-    @TableField("UPDATED_BY")
-    private String updatedBy;
-
-    /**
-     * 更新时间
-     */
-    @TableField("UPDATED_TIME")
-    private Date updatedTime;
-
-    /**
-     * 是否删除
-     */
-    @TableField("DEL_FLAG")
-    private Integer delFlag;
-
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -73,6 +60,134 @@ public class TaskInfo implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public String getRequestNo() {
+        return requestNo;
+    }
+
+    public void setRequestNo(String requestNo) {
+        this.requestNo = requestNo;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
+    }
+
+    public String getTaskTempId() {
+        return taskTempId;
+    }
+
+    public void setTaskTempId(String taskTempId) {
+        this.taskTempId = taskTempId;
+    }
+
+    public String getNodeDefId() {
+        return nodeDefId;
+    }
+
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
+
+    public String getCallbackParameter() {
+        return callbackParameter;
+    }
+
+    public void setCallbackParameter(String callbackParameter) {
+        this.callbackParameter = callbackParameter;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getReporter() {
+        return reporter;
+    }
+
+    public void setReporter(String reporter) {
+        this.reporter = reporter;
+    }
+
+    public Date getReportTime() {
+        return reportTime;
+    }
+
+    public void setReportTime(Date reportTime) {
+        this.reportTime = reportTime;
+    }
+
+    public String getEmergency() {
+        return emergency;
+    }
+
+    public void setEmergency(String emergency) {
+        this.emergency = emergency;
+    }
+
+    public String getReportRole() {
+        return reportRole;
+    }
+
+    public void setReportRole(String reportRole) {
+        this.reportRole = reportRole;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getAttachFileId() {
+        return attachFileId;
+    }
+
+    public void setAttachFileId(String attachFileId) {
+        this.attachFileId = attachFileId;
     }
 
     public Integer getStatus() {
@@ -91,57 +206,28 @@ public class TaskInfo implements Serializable {
         this.version = version;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Date getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public String getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
-
     @Override
     public String toString() {
         return "TaskInfo{" +
-        "id=" + id +
-        ", status=" + status +
-        ", version=" + version +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
-        "}";
+                "id='" + id + '\'' +
+                ", requestId='" + requestId + '\'' +
+                ", requestNo='" + requestNo + '\'' +
+                ", parentId='" + parentId + '\'' +
+                ", taskTempId='" + taskTempId + '\'' +
+                ", nodeDefId='" + nodeDefId + '\'' +
+                ", nodeName='" + nodeName + '\'' +
+                ", callbackUrl='" + callbackUrl + '\'' +
+                ", callbackParameter='" + callbackParameter + '\'' +
+                ", name='" + name + '\'' +
+                ", reporter='" + reporter + '\'' +
+                ", reportTime=" + reportTime +
+                ", emergency='" + emergency + '\'' +
+                ", reportRole='" + reportRole + '\'' +
+                ", result='" + result + '\'' +
+                ", description='" + description + '\'' +
+                ", attachFileId='" + attachFileId + '\'' +
+                ", status=" + status +
+                ", version='" + version + '\'' +
+                '}';
     }
 }

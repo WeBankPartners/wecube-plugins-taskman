@@ -1,68 +1,36 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.webank.taskman.base.BaseEntity;
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
-/**
- * <p>
- * 表单模板信息表 
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
-public class FormTemplate implements Serializable {
+public class FormTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 名称
-     */
+    private String tempId;
+
+    private String tempType;
+
     private String name;
-
-    /**
-     * 描述
-     */
+    
     private String description;
-
-    /**
-     * 表单风格
-     */
+    
     private String style;
 
-    /**
-     * 创建人
-     */
-    private String createdBy;
+    private String targetEntitys;
 
-    /**
-     * 创建时间
-     */
-    private Date createdTime;
-
-    /**
-     * 更新人
-     */
-    private String updatedBy;
-
-    /**
-     * 更新时间
-     */
-    private Date updatedTime;
-
-    /**
-     * 是否删除
-     */
-    private Integer delFlag;
-
+    private String inputAttrDef;
+    private String outputAttrDef;
+    private String otherAttrDef;
 
     public String getId() {
         return id;
@@ -70,6 +38,22 @@ public class FormTemplate implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTempId() {
+        return tempId;
+    }
+
+    public void setTempId(String tempId) {
+        this.tempId = tempId;
+    }
+
+    public String getTempType() {
+        return tempType;
+    }
+
+    public void setTempType(String tempType) {
+        this.tempType = tempType;
     }
 
     public String getName() {
@@ -96,58 +80,52 @@ public class FormTemplate implements Serializable {
         this.style = style;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public String getTargetEntitys() {
+        return targetEntitys;
     }
 
-    public Date getCreatedTime() {
-        return createdTime;
+    public void setTargetEntitys(String targetEntitys) {
+        this.targetEntitys = targetEntitys;
     }
 
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
+    public String getInputAttrDef() {
+        return inputAttrDef;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public void setInputAttrDef(String inputAttrDef) {
+        this.inputAttrDef = inputAttrDef;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
+    public String getOutputAttrDef() {
+        return outputAttrDef;
     }
 
-    public Date getUpdatedTime() {
-        return updatedTime;
+    public void setOutputAttrDef(String outputAttrDef) {
+        this.outputAttrDef = outputAttrDef;
     }
 
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
+    public String getOtherAttrDef() {
+        return otherAttrDef;
     }
 
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
+    public void setOtherAttrDef(String otherAttrDef) {
+        this.otherAttrDef = otherAttrDef;
     }
 
     @Override
     public String toString() {
         return "FormTemplate{" +
-        "id=" + id +
-        ", name=" + name +
-        ", description=" + description +
-        ", style=" + style +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
-        "}";
+                "id='" + id + '\'' +
+                ", tempId='" + tempId + '\'' +
+                ", tempType='" + tempType + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", targetEntitys='" + targetEntitys + '\'' +
+                ", style='" + style + '\'' +
+                '}';
     }
 }

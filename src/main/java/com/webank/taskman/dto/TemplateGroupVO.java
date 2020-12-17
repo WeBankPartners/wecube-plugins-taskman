@@ -1,27 +1,43 @@
 package com.webank.taskman.dto;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
+@ApiModel(value = "TemplateGroup传入对象",description = "TemplateGroupVO")
 public class TemplateGroupVO {
-    private String manageRole;
 
+    @ApiModelProperty(value = "主键")
+    private String id;
+
+    @ApiModelProperty(value = "名称")
     private String name;
 
+    @ApiModelProperty(value = "管理角色id")
+    private String manageRoleId;
+
+    @ApiModelProperty(value = "描述")
     private String description;
 
-    private String version;
-
-    private Integer status;
-
+    @ApiModelProperty(value = "创建人",hidden = true)
     private String createdBy;
 
+    @ApiModelProperty(value = "更新人",hidden = true)
     private String updatedBy;
 
-    public String getManageRole() {
-        return manageRole;
+    public String getId() {
+        return id;
     }
 
-    public void setManageRole(String manageRole) {
-        this.manageRole = manageRole;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getManageRoleId() {
+        return manageRoleId;
+    }
+
+    public void setManageRoleId(String manageRoleId) {
+        this.manageRoleId = manageRoleId;
     }
 
     public String getName() {
@@ -38,22 +54,6 @@ public class TemplateGroupVO {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
     }
 
     public String getCreatedBy() {
@@ -75,11 +75,9 @@ public class TemplateGroupVO {
     @Override
     public String toString() {
         return "TemplateGroupVO{" +
-                "manageRole='" + manageRole + '\'' +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", version='" + version + '\'' +
-                ", status=" + status +
                 ", createdBy='" + createdBy + '\'' +
                 ", updatedBy='" + updatedBy + '\'' +
                 '}';

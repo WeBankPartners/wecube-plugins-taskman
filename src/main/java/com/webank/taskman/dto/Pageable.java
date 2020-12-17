@@ -1,27 +1,27 @@
 package com.webank.taskman.dto;
 
 public class Pageable {
-	private int startIndex;
-	private int pageSize = 10000;
+	private Long startIndex;
+	private Long pageSize = 10000L;
 	
 	public Pageable() {
 	}
 	
-	public Pageable(int startIndex, int pageSize) {
+	public Pageable(Long startIndex, Long pageSize) {
 		this.startIndex = startIndex;
 		this.pageSize = pageSize;
 	}
 	
-	public int getPageSize() {
+	public Long getPageSize() {
 		return pageSize;
 	}
-	public void setPageSize(int pageSize) {
+	public void setPageSize(Long pageSize) {
 		this.pageSize = pageSize;
 	}
-	public int getStartIndex() {
+	public Long getStartIndex() {
 		return startIndex;
 	}
-	public void setStartIndex(int startIndex) {
+	public void setStartIndex(Long startIndex) {
 		this.startIndex = startIndex;
 	}
 }

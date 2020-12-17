@@ -1,16 +1,16 @@
 package com.webank.taskman.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.webank.taskman.domain.RequestInfo;
+import com.webank.taskman.dto.req.SaveRequestInfoReq;
+import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
+import org.apache.ibatis.annotations.Param;
 
-/**
- * <p>
- * 请求记录表  Mapper 接口
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 public interface RequestInfoMapper extends BaseMapper<RequestInfo> {
+    IPage<RequestInfo> selectRequestInfo(Page page, @Param("Info") SaveRequestInfoReq saveRequestInfoReq);
 
+    IPage<RequestInfo> selectSynthesisRequestInfo(Page page, @Param("param") SynthesisRequestInfoReq req);
 }

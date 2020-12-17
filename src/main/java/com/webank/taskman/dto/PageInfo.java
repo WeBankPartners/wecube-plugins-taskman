@@ -1,22 +1,22 @@
 package com.webank.taskman.dto;
 
 public class PageInfo extends Pageable {
-	private int totalRows;
+	private Long totalRows;
 
     public PageInfo() {
-        this.totalRows = 0;
+        this.totalRows = 0L;
     }
 
-	public PageInfo(int totalRows, int startIndex, int pageSize) {
+	public PageInfo(Long totalRows, Long startIndex, Long pageSize) {
 		super(startIndex, pageSize);
 		this.totalRows = totalRows;
 	}
 
-	public int getTotalRows() {
+	public Long getTotalRows() {
 		return totalRows;
 	}
 
-	public void setTotalRows(int totalRows) {
+	public void setTotalRows(Long totalRows) {
 		this.totalRows = totalRows;
 	}
 }

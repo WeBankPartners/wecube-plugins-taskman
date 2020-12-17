@@ -24,9 +24,9 @@ package:
 	mkdir -p package
 	cd package && docker save -o image.tar $(project_name):$(version) 
 	
-	#rm -rf taskman-ui/dist/*
-	#cd taskman-ui && npm install && npm run plugin
-	#cd taskman-ui && zip -r ui.zip dist/* && mv ui.zip ../package/ui.zip
+	rm -rf taskman-ui/dist/*
+	cd taskman-ui && cnpm install && npm run plugin
+	cd taskman-ui && zip -r ui.zip dist/* && mv ui.zip ../package/ui.zip
 	
 	cp src/main/resources/database/init.sql package/init.sql
 	

@@ -2,15 +2,11 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.FormInfo;
+import com.webank.taskman.dto.req.SaveFormInfoReq;
+import com.webank.taskman.dto.req.SaveFormTemplateReq;
 
-/**
- * <p>
- * 表单记录表  服务类
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
 public interface FormInfoService extends IService<FormInfo> {
 
+    void saveFormInfoByReq(SaveFormInfoReq req);
 }

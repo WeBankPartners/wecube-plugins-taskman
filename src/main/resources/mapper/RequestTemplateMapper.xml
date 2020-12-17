@@ -1,5 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.webank.taskman.demo.mapper.RequestTemplateMapper">
+<mapper namespace="com.webank.taskman.mapper.RequestTemplateMapper">
+
+    <resultMap id="BaseResultMap" type="com.webank.taskman.domain.RequestTemplate">
+        <id column="id" property="id"/>
+        <result column="proc_def_key" property="procDefKey" />
+        <result column="proc_def_id" property="procDefId" />
+        <result column="proc_def_name" property="procDefName" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="description" property="version" />
+        <result column="tags" property="tags" />
+        <result column="status" property="status" />
+        <result column="created_by" property="createdBy" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_by" property="updatedBy" />
+        <result column="updated_time" property="updatedTime" />
+        <result column="del_flag" property="delFlag" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        SELECT * FROM request_template
+    </sql>
+
+    <select id="selectPageByParam" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq"
+            resultMap="BaseResultMap">
+        SELECT rt.* FROM request_template rt
+        <where>
+            <if test="param.requestTempGroup !=null and param.requestTempGroup !='' ">
+                INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id AND rtg.id = #{param.requestTempGroup}
+            </if>
+
+            <if test="param.id !=null and param.id != ''">
+                AND rt.id = #{param.id}
+            </if>
+            <if test="param.procDefKey !=null and param.procDefKey != ''">
+                AND rt.proc_def_key = #{param.procDefKey}
+            </if>
+            <if test="param.procDefId !=null and param.procDefId != ''">
+                AND rt.proc_def_id = #{param.procDefId}
+            </if>
+            <if test="param.procDefName !=null and param.procDefName != ''">
+                AND rt.proc_def_name = #{param.procDefName}
+            </if>
+            <if test="param.name !=null and param.name != ''">
+                AND rt.name like CONCAT('%',#{param.name},'%')
+            </if>
+            <if test="param.tags !=null and param.tags != ''">
+                AND rt.tags like CONCAT('%',#{param.tags},'%')
+            </if>
+            <if test="param.status !=null and param.status != ''">
+                AND rt.status = #{param.status}
+            </if>
+            <if test="param.conditionSql!=null and param.conditionSql !=''">
+                AND ${param.conditionSql}
+            </if>
+        </where>
+
+    </select>
+
+    <select id="selectSynthesisRequestTemple" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT rt.*
+        FROM
+        request_template rt
+        <where>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectListByParam" resultMap="BaseResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
+        SELECT rt.* FROM  request_template rt
+        <where>
+            <if test="status != null">
+               AND  rt.status = #{status}
+            </if>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
+            </if>
+        </where>
+    </select>
 
 </mapper>

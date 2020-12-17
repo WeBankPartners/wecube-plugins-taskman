@@ -1,78 +1,37 @@
 package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.webank.taskman.base.BaseEntity;
+
 import java.io.Serializable;
 
-/**
- * <p>
- * 任务模板信息表 
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
-public class TaskTemplate implements Serializable {
+public class TaskTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 主键
-     */
+
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    /**
-     * 表单模板编号
-     */
-    private String formTempId;
+    private String procDefId;
 
-    /**
-     * 请求模板编号
-     */
-    private String requestTempId;
+    private String procDefKey;
 
-    /**
-     * 所属角色
-     */
-    private String dealRole;
+    private String procDefName;
 
-    /**
-     * 流程节点模板
-     */
-    private String procNodeTemp;
-
-    /**
-     * 名称
-     */
     private String name;
 
-    /**
-     * 创建人
-     */
-    private String createdBy;
+    private String nodeDefId;
 
-    /**
-     * 创建时间
-     */
-    private Date createdTime;
+    private String nodeName;
 
-    /**
-     * 更新人
-     */
-    private String updatedBy;
+    private String description;
 
-    /**
-     * 更新时间
-     */
-    private Date updatedTime;
 
-    /**
-     * 是否删除
-     */
-    private Integer delFlag;
-
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
 
     public String getId() {
         return id;
@@ -82,36 +41,28 @@ public class TaskTemplate implements Serializable {
         this.id = id;
     }
 
-    public String getFormTempId() {
-        return formTempId;
+    public String getProcDefId() {
+        return procDefId;
     }
 
-    public void setFormTempId(String formTempId) {
-        this.formTempId = formTempId;
+    public void setProcDefId(String procDefId) {
+        this.procDefId = procDefId;
     }
 
-    public String getRequestTempId() {
-        return requestTempId;
+    public String getProcDefKey() {
+        return procDefKey;
     }
 
-    public void setRequestTempId(String requestTempId) {
-        this.requestTempId = requestTempId;
+    public void setProcDefKey(String procDefKey) {
+        this.procDefKey = procDefKey;
     }
 
-    public String getDealRole() {
-        return dealRole;
+    public String getProcDefName() {
+        return procDefName;
     }
 
-    public void setDealRole(String dealRole) {
-        this.dealRole = dealRole;
-    }
-
-    public String getProcNodeTemp() {
-        return procNodeTemp;
-    }
-
-    public void setProcNodeTemp(String procNodeTemp) {
-        this.procNodeTemp = procNodeTemp;
+    public void setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
     }
 
     public String getName() {
@@ -122,60 +73,43 @@ public class TaskTemplate implements Serializable {
         this.name = name;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public String getNodeDefId() {
+        return nodeDefId;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
     }
 
-    public Date getCreatedTime() {
-        return createdTime;
+    public String getNodeName() {
+        return nodeName;
     }
 
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public String getDescription() {
+        return description;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public Date getUpdatedTime() {
-        return updatedTime;
-    }
-
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
-    }
-
-    public Integer getDelFlag() {
-        return delFlag;
-    }
-
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
     public String toString() {
         return "TaskTemplate{" +
-        "id=" + id +
-        ", formTempId=" + formTempId +
-        ", requestTempId=" + requestTempId +
-        ", dealRole=" + dealRole +
-        ", procNodeTemp=" + procNodeTemp +
-        ", name=" + name +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
-        "}";
+                "id='" + id + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefName='" + procDefName + '\'' +
+                ", name='" + name + '\'' +
+                ", nodeDefId='" + nodeDefId + '\'' +
+                ", nodeName='" + nodeName + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
+
+
 }

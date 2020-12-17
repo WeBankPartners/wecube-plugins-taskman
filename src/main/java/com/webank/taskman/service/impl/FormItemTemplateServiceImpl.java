@@ -6,15 +6,20 @@ import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import org.springframework.stereotype.Service;
 
-/**
- * <p>
- * 表单项模板表  服务实现类
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
+
+
 @Service
 public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMapper, FormItemTemplate> implements FormItemTemplateService {
+
+
+    @Override
+    public void deleteRequestTemplateByID(String id) {
+        this.getBaseMapper().deleteRequestTemplateByIDMapper(id);
+    }
+
+    @Override
+    public int deleteByDomain(FormItemTemplate formItemTemplate) {
+        return this.getBaseMapper().deleteByDomain(formItemTemplate);
+    }
 
 }

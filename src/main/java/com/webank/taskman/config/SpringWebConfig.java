@@ -15,13 +15,11 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.servlet.Filter;
 
 @Configuration
 @EnableWebMvc
-@EnableSwagger2
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(jsr250Enabled = true, prePostEnabled = true, securedEnabled = true)
 public class SpringWebConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
@@ -29,7 +27,7 @@ public class SpringWebConfig extends WebSecurityConfigurerAdapter implements Web
     @Autowired
     private AuthenticationRequestContextInterceptor authenticationRequestContextInterceptor;
     @Autowired
-    private AppProperties.ServiceManagementProperties serviceManagementProperties;
+    private AppProperties.ServiceTaskmanProperties serviceTaskmanProperties;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -75,7 +73,7 @@ public class SpringWebConfig extends WebSecurityConfigurerAdapter implements Web
 
     protected Filter jwtSsoBasedAuthenticationFilter() throws Exception {
         JwtClientConfig config = new JwtClientConfig();
-        config.setSigningKey(serviceManagementProperties.getJwtSigningKey());
+        config.setSigningKey(serviceTaskmanProperties.getJwtSigningKey());
         JwtSsoBasedAuthenticationFilter f = new JwtSsoBasedAuthenticationFilter(authenticationManager(), config);
         return (Filter) f;
     }

@@ -1,108 +1,90 @@
 package com.webank.taskman.domain;
 
-import java.util.Date;
-import java.io.Serializable;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.webank.taskman.base.BaseEntity;
 
-/**
- * <p>
- * 表单项记录表 
- * </p>
- *
- * @author ${author}
- * @since 2020-11-26
- */
-public class FormItemInfo implements Serializable {
+import java.io.Serializable;
+import java.util.Date;
+
+public class FormItemInfo  implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 状态
-     */
-    private Integer status;
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
+    private String id;
 
-    /**
-     * 创建人
-     */
-    private String createdBy;
+    private String formId;
 
-    /**
-     * 创建时间
-     */
-    private Date createdTime;
+    private String itemTempId;
 
-    /**
-     * 更新人
-     */
-    private String updatedBy;
+    private String isCurrency;
 
-    /**
-     * 更新时间
-     */
-    private Date updatedTime;
+    private String name;
 
-    /**
-     * 是否删除
-     */
-    private Integer delFlag;
+    private String value;
 
-
-    public Integer getStatus() {
-        return status;
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public String getId() {
+        return id;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
+    public String getFormId() {
+        return formId;
     }
 
-    public Date getCreatedTime() {
-        return createdTime;
+    public void setFormId(String formId) {
+        this.formId = formId;
     }
 
-    public void setCreatedTime(Date createdTime) {
-        this.createdTime = createdTime;
+    public String getItemTempId() {
+        return itemTempId;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public void setItemTempId(String itemTempId) {
+        this.itemTempId = itemTempId;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
+    public String getIsCurrency() {
+        return isCurrency;
     }
 
-    public Date getUpdatedTime() {
-        return updatedTime;
+    public void setIsCurrency(String isCurrency) {
+        this.isCurrency = isCurrency;
     }
 
-    public void setUpdatedTime(Date updatedTime) {
-        this.updatedTime = updatedTime;
+    public String getName() {
+        return name;
     }
 
-    public Integer getDelFlag() {
-        return delFlag;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
         return "FormItemInfo{" +
-        "status=" + status +
-        ", createdBy=" + createdBy +
-        ", createdTime=" + createdTime +
-        ", updatedBy=" + updatedBy +
-        ", updatedTime=" + updatedTime +
-        ", delFlag=" + delFlag +
-        "}";
+                "id='" + id + '\'' +
+                ", formId='" + formId + '\'' +
+                ", itemTempId='" + itemTempId + '\'' +
+                ", isCurrency='" + isCurrency + '\'' +
+                ", name='" + name + '\'' +
+                ", value='" + value + '\'' +
+                '}';
     }
 }

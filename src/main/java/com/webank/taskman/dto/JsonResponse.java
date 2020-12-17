@@ -4,8 +4,11 @@ import com.webank.taskman.constant.BizCodeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 @ApiModel(value = "",description = "JsonResponse")
-public class JsonResponse<T> {
+public class JsonResponse<T>  implements Serializable {
 	public final static String STATUS_OK = "OK";
 	public final static String STATUS_ERROR = "ERROR";
 
@@ -62,7 +65,7 @@ public class JsonResponse<T> {
 	}
 
 	public JsonResponse withData(T data) {
-		this.data = null == data ? (T)new Object():data;
+		this.data = null != data ? data : (T) new ArrayList<T>();
 		return this;
 	}
 
@@ -78,7 +81,7 @@ public class JsonResponse<T> {
 	}
 
 	public static JsonResponse okay() {
-		return new JsonResponse(STATUS_OK,"Success",null,null,200);
+		return new JsonResponse(STATUS_OK,"Success",200,"",new Object());
 	}
 
 	public static JsonResponse okayWithData(Object data) {

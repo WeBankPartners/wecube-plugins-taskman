@@ -2,7 +2,7 @@
   <div>
     <!-- <quillEditor></quillEditor> -->
     <!-- 表单设计 -->
-    <Row>
+    <Row v-show="!isEdit">
       <PluginTable
         :tableColumns="requestColumns"
         :tableData="requestTableData"
@@ -14,7 +14,25 @@
         @pageSizeChange="requestPageSizeChange"
       />
     </Row>
-    <Row>
+    <Row v-show="isEdit" style="margin-bottom: 20px">
+      <div style="margin-bottom: 10px"><Button @click="goBackQuery" icon="ios-arrow-back">返回</Button></div>
+      <Row>
+
+      <Col span= "22"> 
+        <Steps style="margin-bottom: 20px" :current="currentStep" status="process">
+          <Step title="设置模板基础信息" icon="md-add-circle" class="create_template_1"></Step>
+          <Step title="选择表单项" icon="md-apps" class="create_template_2"></Step>
+          <Step title="设置请求表单" icon="md-cog" class="create_template_3"></Step>
+          <Step title="设置任务表单" icon="md-settings" class="create_template_4"></Step>
+        </Steps>
+       </Col>
+       <Col style="text-align: right" span="2">
+        <Button @click="releaseTemplate" type="primary" >模板发布</Button>
+       </Col>
+      </Row>
+      <hr/>
+    </Row>
+    <Row v-show="isEdit && currentStep === 0">
       <div style="width:600px;margin:0 auto;">
         <Form :model="templateForm" :label-width="100">
           <FormItem label="名称">
@@ -54,16 +72,28 @@
         </Form>
       </div>
     </Row>
-    <Row>
+    <Row v-show="isEdit && currentStep === 1">
       <div style="width:1000px;margin:10px auto;text-align: center">
-        <Table style="margin-bottom:10px;" @on-selection-change="attrsChangedHandler" border :data="attrsData" :columns="attrsColumns"></Table>
+        <Table style="margin-bottom:10px;" ref="selection" @on-selection-change="attrsChangedHandler" border :data="attrsData" :columns="attrsColumns"></Table>
         <Button >重置</Button>
         <Button type="primary" @click="attrsSetHandler" style="margin-left: 8px">下一步</Button>
       </div>
     </Row>
-    <Row>
+     <!-- v-show="isEdit && (currentStep === 2 || currentStep === 3)" -->
+    <Row v-show="isEdit && (currentStep === 2 || currentStep === 3)">
       <Row>
-        <Form :model="requestForm" :label-width="100">
+        <Row v-show="isEdit && currentStep === 3">
+          <Col style="margin-bottom:20px;font-size:14px;font-weight:600" span="1">
+            任务节点:
+          </Col>
+          <Col span="20">
+            <RadioGroup @on-change="taskNodeChanged" v-model="currentTaskNode" type="button" size="small">
+              <Radio v-for="node in procTaskNodes" :key="node.nodeName" :label="node.nodeName"></Radio>
+            </RadioGroup>
+          </Col>
+        </Row>
+        <hr style="margin-bottom:20px" />
+        <Form v-show="isEdit && currentStep === 2" :model="requestForm" :label-width="100">
           <Col span="6">
             <FormItem label="名称">
               <Input v-model="requestForm.name"></Input>
@@ -82,7 +112,48 @@
             </FormItem>
           </Col>
         </Form>
+        <Form v-show="isEdit && currentStep === 3" :model="taskForm" :label-width="100">
+          <Col span="6">
+            <FormItem label="名称">
+              <Input v-model="taskForm.name"></Input>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="描述">
+              <Input v-model="taskForm.description"></Input>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="输入项">
+              <Select multiple v-model="taskForm.inputAttrDef">
+                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.description"></Option>
+              </Select>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="管理角色">
+              <Select multiple v-model="taskForm.manageRoles">
+                <Option v-for="role in allRolesList" :key="role.id" :value="role.name" :label="role.displayName"></Option>
+              </Select>
+            </FormItem>
+          </Col>
+          <Col span="6">
+            <FormItem label="使用角色">
+              <Select multiple v-model="taskForm.useRoles">
+                <Option v-for="role in allRolesList" :key="role.id" :value="role.name" :label="role.displayName"></Option>
+              </Select>
+            </FormItem>
+          </Col>
+          <Col span="12">
+            <FormItem label="输出项">
+              <Select multiple @on-change="requestFormFieldChanged" v-model="taskForm.outputAttrDef">
+                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.description"></Option>
+              </Select>
+            </FormItem>
+          </Col>
+        </Form>
       </Row>
+      <hr />
       <Col span="4" style="border-right: 1px solid rgb(224, 223, 222);height: calc(100vh - 100px);overflow:auto">
         <Divider>拖动设置目标对象顺序</Divider>
         <div ref="entity" style="padding-right:10px;">
@@ -144,17 +215,17 @@
                 <p  v-if="currentField.elementType !== 'Select'">当前表单项没有数据项</p>
                 <Form v-if="currentField.elementType === 'Select'" :model="currentField" :label-width="100">
                   <FormItem label="数据类型">
-                    <Select v-model="currentField.attrDataType">
+                    <Select v-model="currentField.attrDefDataType">
                       <Option value="ref" label="引用类型"></Option>
-                      <Option value="custom" label="自定义"></Option>
+                      <Option value="str" label="自定义"></Option>
                     </Select>
                   </FormItem>
-                  <FormItem v-if="currentField.attrDataType === 'ref'" label="目标对象">
-                    <Select v-model="currentField.entityId">
+                  <FormItem v-if="currentField.attrDefDataType === 'ref'" label="目标对象">
+                    <Select v-model="currentField.refEntity">
                       <Option v-for="(comp, index) in allEntityList" :key="index" :value="comp.name" :label="comp.displayName"></Option>
                     </Select>
                   </FormItem>
-                  <FormItem v-if="currentField.attrDataType === 'ref'" label="过滤规则">
+                  <!-- <FormItem v-if="currentField.attrDataType === 'ref'" label="过滤规则">
                     <Input v-model="currentField.entityFilters"></Input>
                     <FilterRule
                       v-model="currentField.entityFilters"
@@ -162,22 +233,22 @@
                       :rootEntity="currentField.entityId"
                       :allDataModelsWithAttrs="allEntityType"
                     ></FilterRule>
-                  </FormItem>
+                  </FormItem> -->
                 </Form>
-                <div>
+                <div v-if="currentField.elementType === 'Select' && currentField.attrDefDataType === 'str'">
                   <Row>
                     <Col span="11">Label</Col>
                     <Col span="10">Value</Col>
                   </Row>
-                  <Row style="margin-bottom:10px">
-                    <Col span="10"><Input size="small" ></Input></Col>
-                    <Col span="10" offset="1"><Input size="small" ></Input></Col>
+                  <Row v-for="(opt, index) in currentField.dataOptions" :key="index" style="margin-bottom:10px">
+                    <Col span="10"><Input v-model="opt.label" size="small" ></Input></Col>
+                    <Col span="10" offset="1"><Input v-model="opt.value" size="small" ></Input></Col>
                     <Col style="text-align: right" span="2" offset="1">
-                      <Button size="small" ghost type="error" icon="ios-trash-outline"></Button>
+                      <Button size="small" ghost type="error" @click="deleteDataOptionsItem(index)" icon="ios-trash-outline"></Button>
                     </Col>
                   </Row>
                   <Row>
-                    <Button size="small" icon="md-add" type="primary" style="width:100%"></Button>
+                    <Button size="small" icon="md-add" type="primary" @click="addDataOptionsItem" style="width:100%"></Button>
                   </Row>
                 </div>
               </div>
@@ -185,7 +256,7 @@
         </Collapse>
       </Col>
     </Row>
-    <Row>
+    <Row v-show="isEdit && (currentStep === 2 || currentStep === 3)">
       <div style="width:1000px;margin:10px auto;text-align: center">
         <Button >重置</Button>
         <Button type="primary" @click="saveCurrentForm" style="margin-left: 8px">保存当前表单</Button>
@@ -206,10 +277,13 @@ import {
   getTaskNodesEntitys,
   saveFormTemplate,
   saveTaskTemplate,
-  getAllDataModels
+  getAllDataModels,
+  getFormTemplateDetail,
+  releaseRequestTemplate
 } from "../../api/server.js"
 import PluginTable from "../../components/table";
 import FilterRule from "../../components/filter-rule";
+import {addEvent, removeEvent} from "../../util/event"
 export default {
   components: {
     PluginTable,
@@ -217,6 +291,9 @@ export default {
   },
   data() {
     return {
+      isEdit: false,
+      currentStep: 0,
+      currentTaskNode: '',
       formItem: {
         input: ''
       },
@@ -303,6 +380,27 @@ export default {
           inputType: "text",
           isNotFilterable: true
         },
+        {
+          title: this.$t("action"),
+          key: "action",
+          width: 150,
+          align: "center",
+          isNotFilterable: true,
+          render: (h, params) => {
+            return (
+              <span>
+                  <Button
+                    type="primary"
+                    size="small"
+                    style="margin-right:10px"
+                    onClick={() => this.edit(params.row)}
+                  >
+                    {this.$t("edit")}
+                  </Button>
+              </span>
+            );
+          }
+        }
       ],
       currentField: {},
       componentsList: [
@@ -369,10 +467,124 @@ export default {
         manageRoles:[]
       },
       allEntityType: [],
-      allEntityList: []
+      allEntityList: [],
+      currentFormTemplate: {},
+      currentFirstTaskFormTemplate: {},
     }
   },
   methods: {
+    async releaseTemplate () {
+      const process = this.allProcessDefinitionKeys.find(key => key.procDefId === this.templateForm.procDefId)
+      const payload = {
+        procDefKey: process.procDefKey,
+        id: this.currentTemplateId
+      }
+      const {status, message, data} = await releaseRequestTemplate(payload)
+      if (status === 'OK') {
+        this.$Notice.success({
+          title: 'Success',
+          desc: 'Success'
+        })
+      }
+    },
+    async getFormTemplateDetail (type, id, isEdit) {
+      const {status, message, data} = await getFormTemplateDetail(type, id)
+      if (status === 'OK') {
+        this.attrsSelections = data.otherAttrDef && data.otherAttrDef.length > 0 ? JSON.parse(data.otherAttrDef) : []
+        this.entityList = JSON.parse(data.targetEntitys)
+        this.list = this.entityList
+        this.currentEntityList = this.entityList
+        if (isEdit) {
+          let objData = this.$refs.selection.objData
+          Object.keys(objData).forEach(i => {
+            this.attrsSelections.forEach(j => {
+              if (j.id === objData[i].id) {
+                objData[i]._isChecked = true
+              }
+            })
+          })
+        }
+        if (type === 0) {
+          this.requestForm.name = data.name
+          this.requestForm.inputAttrDef = JSON.parse(data.inputAttrDef)
+          this.requestForm.description = data.description
+        }
+        if (type === 1) {
+          this.taskForm.name = data.name
+          this.taskForm.inputAttrDef = JSON.parse(data.inputAttrDef)
+          this.taskForm.description = data.description
+          this.taskForm.useRoles = data.useRoles
+          this.taskForm.outputAttrDef = JSON.parse(data.outputAttrDef)
+          this.taskForm.manageRoles = data.manageRoles
+        }
+        this.formFields = data.items.map( _ => {
+          return {
+            ..._,
+            dataOptions: _.dataOptions.length > 0 ? JSON.parse(_.dataOptions) : []
+          }
+        })
+        this.currentFieldList = this.formFields
+        this.formFieldSortHandler(this.currentEntityList)
+      }
+    },
+    async edit (row) {
+      this.templateForm = {
+        ...row,
+        manageRoles: row.manageRoles ? row.manageRoles.map(role => role.roleName) : [],
+        useRoles: row.useRoles ? row.useRoles.map(role => role.roleName) : []
+      }
+      this.currentTemplateId = row.id
+      await this.getTaskNodesEntitys(this.templateForm.procDefId)
+      this.getFormTemplateDetail(0,row.id,true)
+      this.isEdit = true
+      this.currentStep = 0
+      removeEvent('.ivu-steps-title', 'mouseover', this.handleStepMouseover)
+      removeEvent('.ivu-steps-title', 'click', this.handleStepClick)
+      this.addElementEvent()
+    },
+    deleteDataOptionsItem (index) {
+      this.currentField.dataOptions.splice(index, 1)
+    },
+    addDataOptionsItem () {
+      this.currentField.dataOptions.push({label:'',value:''})
+    },
+    taskNodeChanged (v) {
+      console.log(v)
+      this.currentTaskNode = v
+      const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+      this.getFormTemplateDetail(1,id)
+      this.currentField = {}
+    },
+    goBackQuery () {
+      this.isEdit = false
+    },
+    addElementEvent () {
+      addEvent('.ivu-steps-title', 'mouseover', this.handleStepMouseover)
+      addEvent('.ivu-steps-title', 'click', this.handleStepClick)
+    },
+    handleStepMouseover (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      e.currentTarget.style.cursor = 'pointer'
+    },
+    handleStepClick (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      this.currentStep = e.currentTarget.parentNode.parentNode.classList[0].split('_')[2] * 1 - 1 
+      this.currentField = {}
+      if (this.currentStep > 1) {
+        this.$nextTick(() => {
+          this.formFieldSortHandler(this.currentEntityList)
+        })
+      }
+      if (this.currentStep === 3) {
+        this.formFields = []
+        this.currentFieldList = this.formFields
+        this.currentTaskNode = this.procTaskNodes[0].nodeName
+        const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+        this.getFormTemplateDetail(1,id)
+      }
+    },
     async getAllDataModels () {
       const { data, status } = await getAllDataModels()
       if (status === 'OK') {
@@ -394,20 +606,90 @@ export default {
     },
     async saveCurrentForm () {
       // saveFormTemplate
-      const payload = {
-        ...this.requestForm,
-        inputAttrDef: JSON.stringify(this.requestForm.inputAttrDef),
-        otherAttrDef: JSON.stringify(this.attrsSelections),
-        targetEntitys: JSON.stringify(this.entityList),
-        tempId: this.currentTemplateId,
-        formItems: this.formFields
+      let payload = {}
+      if (this.currentStep === 2) {
+        payload = {
+          ...this.requestForm,
+          inputAttrDef: JSON.stringify(this.requestForm.inputAttrDef),
+          otherAttrDef: JSON.stringify(this.attrsSelections),
+          targetEntitys: JSON.stringify(this.entityList),
+          tempId: this.currentTemplateId,
+          formItems: this.formFields.map(i => {
+            return {
+              ...i,
+              dataOptions: JSON.stringify(i.dataOptions)
+            }
+          })
+        }
       }
-      const {status, message, data} = await saveFormTemplate(payload)
+      if (this.currentStep === 3) {
+        const process = this.allProcessDefinitionKeys.find(key => key.procDefId === this.templateForm.procDefId)
+        payload = {
+          ...process,
+          ...this.taskForm,
+          inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
+          otherAttrDef: JSON.stringify(this.attrsSelections),
+          outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef),
+          nodeDefId: this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId,
+          nodeName: this.currentTaskNode,
+          manageRoles:this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
+              const found = this.allRolesList.find(r => r.name === role)
+              return {
+                roleName: found.name,
+                displayName: found.displayName
+              }
+            }):[],
+            useRoles:this.taskForm.useRoles.length>0? this.taskForm.useRoles.map(role => {
+              const found = this.allRolesList.find(r => r.name === role)
+              return {
+                roleName: found.name,
+                displayName: found.displayName
+              }
+            }):[],
+          form: {
+            ...this.taskForm,
+            targetEntitys: JSON.stringify(this.entityList),
+            manageRoles:this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
+              const found = this.allRolesList.find(r => r.name === role)
+              return {
+                roleName: found.name,
+                displayName: found.displayName
+              }
+            }):[],
+            useRoles:this.taskForm.useRoles.length>0? this.taskForm.useRoles.map(role => {
+              const found = this.allRolesList.find(r => r.name === role)
+              return {
+                roleName: found.name,
+                displayName: found.displayName
+              }
+            }):[],
+            tempId: this.currentTemplateId,
+            inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
+            otherAttrDef: JSON.stringify(this.attrsSelections),
+            outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef)
+          },
+          tempId: this.currentTemplateId,
+          formItems: this.formFields.map(i => {
+            return {
+              ...i,
+              dataOptions: JSON.stringify(i.dataOptions)
+            }
+          })
+        }
+      }
+      const {status, message, data} = this.currentStep === 2 ? await saveFormTemplate(payload) : await saveTaskTemplate(payload)
       if (status === 'OK') {
         this.$Notice.success({
           title: 'Success',
           desc: 'Success'
         })
+        if (this.currentStep === 2) {
+          this.currentStep++
+          this.formFields = []
+          this.currentFieldList = []
+          this.currentField = {}
+          this.currentTaskNode = this.procTaskNodes[0].nodeName
+        }
       }
     },
     requestFormFieldChanged (val) {
@@ -433,11 +715,11 @@ export default {
             isHover: false,
             isActive: false,
             isCustom: false,
-            dataOptions: '',
+            dataOptions: [],
             entityFilters:'',
-            entityId:'',
+            refEntity:'',
             regular:'',
-            attrDataType: '',
+            attrDefDataType: attr.dataType,
             attrDefId: attr.id,
             formTemplateId: this.currentTemplateId
           })
@@ -446,7 +728,7 @@ export default {
       this.currentFieldList = this.formFields
     },
     attrsSetHandler () {
-
+      this.currentStep++
     },
     attrsChangedHandler (selection) {
       this.attrsSelections = selection
@@ -454,8 +736,22 @@ export default {
     actionFun(type, data) {
       switch (type) {
         case "add":
-          // this.requestModalVisible = true;
-          // this.isAdd = true;
+          this.templateForm = {
+            name: '',
+            manageRoles: [],
+            useRoles: [],
+            procDefId: '',
+            tags:'',
+            description: '',
+            requestTempGroup: ''
+          }
+          this.currentTemplateId = ''
+          this.attrsSelections = []
+          this.isEdit = true
+          this.currentStep = 0
+          removeEvent('.ivu-steps-title', 'mouseover', this.handleStepMouseover)
+          removeEvent('.ivu-steps-title', 'click', this.handleStepClick)
+          this.addElementEvent()
           break;
       }
     },
@@ -471,14 +767,14 @@ export default {
       const f = this.requestPayload.filters
       const filters = {
         ...f,
-        manageRoles:f.manageRoles.length>0? f.manageRoles.map(role => {
+        manageRoles:f.manageRoles && f.manageRoles.length>0? f.manageRoles.map(role => {
           const found = this.allRolesList.find(r => r.name === role)
           return {
             roleName: found.name,
             displayName: found.displayName
           }
         }):[],
-        useRoles:f.useRoles.length>0? f.useRoles.map(role => {
+        useRoles:f.useRoles && f.useRoles.length>0? f.useRoles.map(role => {
           const found = this.allRolesList.find(r => r.name === role)
           return {
             roleName: found.name,
@@ -496,8 +792,8 @@ export default {
         this.requestTableData = data.contents.map(_ => {
           return {
             ..._,
-            manageRolesName: _.manageRoles.map(role => role.displayName).join(', '),
-            useRolesName: _.useRoles.map(role => role.displayName).join(', ')
+            manageRolesName: _.manageRoles ? _.manageRoles.map(role => role.displayName).join(', ') : '',
+            useRolesName: _.useRoles ? _.useRoles.map(role => role.displayName).join(', ') : ''
           }
         })
         this.requestPagination.total = data.pageInfo.totalRows;
@@ -564,27 +860,43 @@ export default {
       const {status, message, data} = await saveRequestTemplate(payload)
       if (status === 'OK') {
         this.currentTemplateId = data.id
-        const nodes = await getTaskNodesEntitys(this.templateForm.procDefId)
-        this.procTaskNodes = nodes.data
-        let entitys = new Set()
-        this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
-          const entity = node.boundEntity
-          entitys.add(entity.name)
-          return node.boundEntity.attributes.map(attr => {
-            return {
-              ...attr,
-              packageName:entity.packageName,
-              entity:entity.name
-            }
-          })
-        }))
-        this.entityList = Array.from(entitys)
-        this.list = Array.from(entitys)
         this.$Notice.success({
           title: 'Success',
           desc: 'Success'
         })
+        this.currentStep++
+        if (this.attrsSelections.length > 0) {
+          let objData = this.$refs.selection.objData
+          Object.keys(objData).forEach(i => {
+            this.attrsSelections.forEach(j => {
+              if (j.id === objData[i].id) {
+                objData[i]._isChecked = true
+              }
+            })
+          })
+        } else {
+          this.getTaskNodesEntitys(this.templateForm.procDefId)
+        }
       }
+    },
+    async getTaskNodesEntitys (id) {
+      const nodes = await getTaskNodesEntitys(id)
+      this.procTaskNodes = nodes.data
+      let entitys = new Set()
+      this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
+        const entity = node.boundEntity
+        entitys.add(entity.name)
+        return node.boundEntity.attributes.map(attr => {
+          return {
+            ...attr,
+            packageName:entity.packageName,
+            entity:entity.name
+          }
+        })
+      }))
+      this.entityList = Array.from(entitys)
+      this.list = Array.from(entitys)
+      this.currentEntityList = this.entityList
     },
     handleMouseEnter (item) {
       item.isHover = true
@@ -724,24 +1036,8 @@ export default {
     this.getProcessDefinitionKeysList()
     this.getAllTemplateGroup()
     this.getAllDataModels()
-    const nodes = await getTaskNodesEntitys('rYsEQg2D2Bu')
-    this.procTaskNodes = nodes.data
-    let entitys = new Set()
-    this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
-      const entity = node.boundEntity
-      entitys.add(entity.name)
-      return node.boundEntity.attributes.map(attr => {
-        return {
-          ...attr,
-          packageName:entity.packageName,
-          entity:entity.name
-        }
-      })
-    }))
-    this.entityList = Array.from(entitys)
-    this.list = Array.from(entitys)
-    this.currentEntityList = this.entityList
     this.formFieldSortHandler(this.entityList)
+    this.getData()
   },
   mounted() {
     this.fieldsSortable = this.createSortable(this.$refs.fields.$el, this.componentsList)
@@ -752,6 +1048,8 @@ export default {
     this.fieldsSortable && this.fieldsSortable.destroy()
     this.formSortable && this.formSortable.destroy()
     this.entitySortable && this.entitySortable.destroy()
+    removeEvent('.ivu-steps-title', 'mouseover', this.handleStepMouseover)
+    removeEvent('.ivu-steps-title', 'click', this.handleStepClick)
   }
 }
 </script>

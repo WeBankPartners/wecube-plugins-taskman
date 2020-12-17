@@ -24,7 +24,7 @@
             <Input v-model="requestForm.name" :placeholder="$t('service_request_name')"></Input>
           </FormItem>
           <FormItem :label="$t('service_request_role')">
-            <Select v-model="requestForm.roleName">
+            <Select v-model="requestForm.manageRoleId">
               <Option
                 v-for="role in currentUserRoles"
                 :key="role.name"
@@ -49,7 +49,8 @@ import {
   addRequestTemplateGroup,
   deleteRequestTemplateGroup,
   editRequestTemplateGroup,
-  searchRequestTemplateGroup
+  searchRequestTemplateGroup,
+  getRoleList,
 } from "../../api/server";
 import PluginTable from "../../components/table";
 export default {
@@ -69,7 +70,7 @@ export default {
         description: "",
         attachFileId: null,
         templateId:'',
-        roleName:'',
+        manageRoleId:'',
         rootDataId: ''
       },
       modelForm: {
@@ -167,7 +168,23 @@ export default {
         case "add":
           this.requestModalVisible = true;
           this.isAdd = true;
+          this.requestForm = {
+            name: "",
+            emergency: "",
+            description: "",
+            attachFileId: null,
+            templateId:'',
+            manageRoleId:'',
+            rootDataId: ''
+          }
           break;
+      }
+    },
+
+    async getRoleList () {
+      const {status, message, data} = await getRoleList()
+      if (status === 'OK') {
+        this.currentUserRoles = data
       }
     },
 
@@ -179,7 +196,7 @@ export default {
       this.requestModalVisible = false;
       this.requestForm.name = "";
       this.requestForm.description = "";
-      this.requestForm.roleId = "";
+      this.requestForm.manageRoleId = "";
     },
     deleteGroup (row) {
       this.$Modal.warning({
@@ -200,14 +217,18 @@ export default {
     },
     edit (row) {
       this.isAdd = false;
-      this.requestForm = {...row}
+      this.requestForm = {...row, manageRoleId: row.manageRole}
       this.requestModalVisible = true;
     },
     requestSubmit() {
+      const payload = {
+        ...this.requestForm,
+        manageRoleName: this.currentUserRoles.find(_ => _.name == this.requestForm.manageRoleId).displayName
+      }
       this.$refs.requestForm.validate(async valid => {
         if (valid) {
           this.requestLoading = true
-          const { status } = this.isAdd ? await addRequestTemplateGroup(this.requestForm) : await editRequestTemplateGroup(this.requestForm);
+          const { status } = await addRequestTemplateGroup(payload)
           this.requestLoading = false
           if (status === "OK") {
             this.requestCancel();
@@ -260,6 +281,7 @@ export default {
   },
   mounted() {
     this.getData()
+    this.getRoleList()
   }
   }
 </script>

@@ -68,7 +68,7 @@ public class CoreServiceTestData {
     }
 
 
-    public static Set<LinkedHashMap> addAllDataModels(){
+    public static List<LinkedHashMap> addAllDataModels(){
         StringBuffer models = new StringBuffer("[");
         models.append("{\"id\": \"DataModel__alicloud__1\",\"version\": 1,\"packageName\": \"alicloud\",\"updatePath\": null,\"updateMethod\": null,\"updateSource\": \"PLUGIN_PACKAGE\",\"updateTime\": 1607538487496,\"pluginPackageEntities\": [],\"dynamic\": false}");
         models.append(",{\"id\": \"DataModel__artifacts__1\",\"version\": 1,\"packageName\": \"artifacts\",\"updatePath\": null,\"updateMethod\": null,\"updateSource\": \"PLUGIN_PACKAGE\",\"updateTime\": 1607538032286,\"pluginPackageEntities\": [],\"dynamic\": false}");

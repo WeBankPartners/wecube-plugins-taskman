@@ -2,14 +2,14 @@ package com.webank.taskman.support.core;
 
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.constant.TaskNodeTypeEnum;
-import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
+import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.SpringUtils;
-import org.hibernate.validator.internal.util.classhierarchy.Filters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +19,10 @@ import static com.webank.taskman.support.core.CoreServiceTestData.*;
 
 @Service
 public class CoreServiceStub {
+
+
+    private static final Logger log = LoggerFactory.getLogger(CoreServiceStub.class);
+
     private static final int NOT_INCLUDE_DRAFT = 0;
     private static final String PLATFORM_CODE_SERVER_URL = "";
     private static final String GET_ALL_ROLES = "/auth/v1/roles";
@@ -109,9 +113,9 @@ public class CoreServiceStub {
     }
 
     // 3
-    public Set<PluginPackageDataModelDto> allDataModels() {
+    public List<PluginPackageDataModelDto> allDataModels() {
         if("dev".equals(SpringUtils.getActiveProfile())){
-            return  new HashSet(addAllDataModels());
+            return  new ArrayList(addAllDataModels());
         }
         return template.get(asCoreUrl(GET_MODELS_ALL_URL),GetModelsAllResponse.class);
     }

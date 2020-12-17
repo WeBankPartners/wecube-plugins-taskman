@@ -6,17 +6,17 @@ import RequestMgmt from "./views/request/request-mgmt.vue"
 
 export default [
     {
-      path: '/template-group',
+      path: '/taskman/template-group',
       name: 'templateGroup',
       component: TemplateGroup
     },
     {
-      path: '/template-mgmt',
+      path: '/taskman/template-mgmt',
       name: 'templateMgmt',
       component: TemplateMgmt
     },
     {
-      path: '/request-mgmt',
+      path: '/taskman/request-mgmt',
       name: 'requestMgmt',
       component: RequestMgmt
     },

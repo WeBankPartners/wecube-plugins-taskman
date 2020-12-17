@@ -128,7 +128,7 @@ public class TaskmanRequestController {
         AuthenticationContextHolder.getCurrentUsername();
         req.setSourceTableFix("rt");
         req.setUseRoleName(AuthenticationContextHolder.getCurrentUserRolesToString());
-        List<RequestTemplateResp> dtoList = requestTemplateConverter.toDto(requestTemplateService.selectAvailableRequest(req));
+        List<RequestTemplateResp> dtoList = requestTemplateService.selectAvailableRequest(req);
         return okayWithData(dtoList);
     }
 

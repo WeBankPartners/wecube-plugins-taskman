@@ -1,6 +1,6 @@
 package com.webank.taskman.support.core;
 
-import com.webank.taskman.support.core.dto.ReviewEntitiesDTO;
+import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
 import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
 import com.webank.taskman.utils.JsonUtils;
@@ -129,9 +129,9 @@ public class CoreServiceTestData {
         return pefList;
     }
 
-    public static ReviewEntitiesDTO reviewEntities(){
+    public static ProcessDataPreviewDto reviewEntities(){
         String json  ="{\"entityTreeNodes\":[{\"packageName\":\"wecmdb\",\"entityName\":\"deploy_package\",\"dataId\":\"0045_0000000100\",\"displayName\":\"aDEMO_CORE_APP_mix01.zip\",\"id\":\"wecmdb:deploy_package:0045_0000000100\",\"previousIds\":[],\"succeedingIds\":[\"wecmdb:deploy_package:0045_0000000117\"]},{\"packageName\":\"wecmdb\",\"entityName\":\"deploy_package\",\"dataId\":\"0045_0000000117\",\"displayName\":\"aDEMO_CORE_APP_mix02.zip\",\"id\":\"wecmdb:deploy_package:0045_0000000117\",\"previousIds\":[\"wecmdb:deploy_package:0045_0000000100\"],\"succeedingIds\":[\"wecmdb:unit_design:0039_0000000017\"]},{\"packageName\":\"wecmdb\",\"entityName\":\"unit_design\",\"dataId\":\"0039_0000000017\",\"displayName\":\"aDEMO_CORE_APP\",\"id\":\"wecmdb:unit_design:0039_0000000017\",\"previousIds\":[\"wecmdb:deploy_package:0045_0000000117\"],\"succeedingIds\":[\"wecmdb:unit:0048_0000000021\",\"wecmdb:unit:0048_0000000016\"]},{\"packageName\":\"wecmdb\",\"entityName\":\"unit\",\"dataId\":\"0048_0000000021\",\"displayName\":\"PRD_TaDEMO_CORE_APP\",\"id\":\"wecmdb:unit:0048_0000000021\",\"previousIds\":[\"wecmdb:unit_design:0039_0000000017\"],\"succeedingIds\":[\"wecmdb:app_instance:0050_0000000012\",\"wecmdb:app_instance:0050_0000000013\"]},{\"packageName\":\"wecmdb\",\"entityName\":\"unit\",\"dataId\":\"0048_0000000016\",\"displayName\":\"PRD_AaDEMO_CORE_APP\",\"id\":\"wecmdb:unit:0048_0000000016\",\"previousIds\":[\"wecmdb:unit_design:0039_0000000017\"],\"succeedingIds\":[\"wecmdb:app_instance:0050_0000000010\",\"wecmdb:app_instance:0050_0000000011\"]},{\"packageName\":\"wecmdb\",\"entityName\":\"app_instance\",\"dataId\":\"0050_0000000012\",\"displayName\":\"demoapp02_IP6496:10001\",\"id\":\"wecmdb:app_instance:0050_0000000012\",\"previousIds\":[\"wecmdb:unit:0048_0000000021\"],\"succeedingIds\":[]},{\"packageName\":\"wecmdb\",\"entityName\":\"app_instance\",\"dataId\":\"0050_0000000013\",\"displayName\":\"demoapp01_IP6436:10001\",\"id\":\"wecmdb:app_instance:0050_0000000013\",\"previousIds\":[\"wecmdb:unit:0048_0000000021\"],\"succeedingIds\":[]},{\"packageName\":\"wecmdb\",\"entityName\":\"app_instance\",\"dataId\":\"0050_0000000010\",\"displayName\":\"demoapp01_IP6437:10001\",\"id\":\"wecmdb:app_instance:0050_0000000010\",\"previousIds\":[\"wecmdb:unit:0048_0000000016\"],\"succeedingIds\":[]},{\"packageName\":\"wecmdb\",\"entityName\":\"app_instance\",\"dataId\":\"0050_0000000011\",\"displayName\":\"demoapp02_IP6442:10001\",\"id\":\"wecmdb:app_instance:0050_0000000011\",\"previousIds\":[\"wecmdb:unit:0048_0000000016\"],\"succeedingIds\":[]}],\"processSessionId\":\"cc3ec392-bf2f-4da4-b1d8-3648d8829228\"}}";
-        ReviewEntitiesDTO dto = new ReviewEntitiesDTO();
+        ProcessDataPreviewDto dto = new ProcessDataPreviewDto();
         try {
             dto = JsonUtils.toObject(json.toString(), dto.getClass());
         } catch (IOException e) {

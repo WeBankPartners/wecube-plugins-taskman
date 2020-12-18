@@ -1,7 +1,6 @@
 package com.webank.taskman.support.core;
 
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
-import com.webank.taskman.constant.TaskNodeTypeEnum;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.SpringUtils;
@@ -10,7 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class CoreServiceStub {
     public static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL= "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";
     public static final String GET_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/retrieve";
     public static final String QUERY_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/query";
-    public static final String GET_ENTITIES_BY_PROC_DEF_ID_AND_GUID_URL = "/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
+    public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
 
     @Autowired
     private CoreRestTemplate template;
@@ -87,17 +89,14 @@ public class CoreServiceStub {
 
     //2
     public List<WorkflowNodeDefInfoDto> fetchWorkflowTasknodeInfos(String procDefId)  {
-        List<LinkedHashMap> list = new ArrayList<>();
+        List list = new ArrayList<>();
         if("dev".equals(SpringUtils.getActiveProfile())){
             if("rYsEQg2D2Bu".equals(procDefId)) {
                 list =  addTestNodeList();
+                return list;
             }
-        }else{
-            list = template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), CommonResponseDto.class);
         }
-        List filterList = list.stream().filter(node-> TaskNodeTypeEnum.SUTN.getType().equals(node.get("taskCategory")))
-                .collect(Collectors.toList());
-        return filterList;
+        return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), CommonResponseDto.class);
     }
 
     // 3
@@ -169,14 +168,14 @@ public class CoreServiceStub {
                 ListDataResponse.class);
     }
 
-    public ReviewEntitiesDTO entitiesByProcDefIdAndGuid(String procDefId,String guid){
+    public ProcessDataPreviewDto entitiesByProcDefIdAndGuid(String procDefId, String guid){
         if("dev".equals(SpringUtils.getActiveProfile())){
             if("sjqH9YVJ2DP".equals(procDefId) && "0045_0000000100".equals(guid)){
                 return reviewEntities();
             }
             return  null;
         }
-        return template.get(asCoreUrl(GET_ENTITIES_BY_PROC_DEF_ID_AND_GUID_URL, procDefId,guid),
+        return template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),
                 ReviewEntitiesDTOResponse.class);
     }
 

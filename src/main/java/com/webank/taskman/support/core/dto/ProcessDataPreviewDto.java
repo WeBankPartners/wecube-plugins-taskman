@@ -1,23 +1,27 @@
 package com.webank.taskman.support.core.dto;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.List;
 
-public class ReviewEntitiesDTO {
+@ApiModel
+public class ProcessDataPreviewDto {
 
     private String processSessionId;
 
 
-    private List<EntityTreeNodesBean> entityTreeNodes;
+    private List<GraphNodeDto> entityTreeNodes;
 
-    public List<EntityTreeNodesBean> getEntityTreeNodes() {
+    public List<GraphNodeDto> getEntityTreeNodes() {
         return entityTreeNodes;
     }
 
-    public void setEntityTreeNodes(List<EntityTreeNodesBean> entityTreeNodes) {
+    public void setEntityTreeNodes(List<GraphNodeDto> entityTreeNodes) {
         this.entityTreeNodes = entityTreeNodes;
     }
 
-    public static class EntityTreeNodesBean {
+    @ApiModel
+    public static class GraphNodeDto {
         /**
          * packageName : wecmdb
          * entityName : deploy_package
@@ -33,7 +37,7 @@ public class ReviewEntitiesDTO {
         private String dataId;
         private String displayName;
         private String id;
-        private List<?> previousIds;
+        private List<String> previousIds;
         private List<String> succeedingIds;
 
         public String getPackageName() {
@@ -76,11 +80,11 @@ public class ReviewEntitiesDTO {
             this.id = id;
         }
 
-        public List<?> getPreviousIds() {
+        public List<String> getPreviousIds() {
             return previousIds;
         }
 
-        public void setPreviousIds(List<?> previousIds) {
+        public void setPreviousIds(List<String> previousIds) {
             this.previousIds = previousIds;
         }
 

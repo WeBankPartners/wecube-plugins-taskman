@@ -11,27 +11,33 @@ public class FormTemplateResp {
     private String id;
 
     @ApiModelProperty(value = "",position = 2)
-    private String name;
+    private String tempId;
 
     @ApiModelProperty(value = "",position = 3)
-    private String description;
+    private String tempType;
 
     @ApiModelProperty(value = "",position = 4)
-    private String style;
+    private String name;
 
     @ApiModelProperty(value = "",position = 5)
-    private String targetEntitys;
+    private String description;
 
     @ApiModelProperty(value = "",position = 6)
-    private String inputAttrDef;
+    private String style;
 
     @ApiModelProperty(value = "",position = 7)
-    private String outputAttrDef;
+    private String targetEntitys;
 
     @ApiModelProperty(value = "",position = 8)
-    private String otherAttrDef;
+    private String inputAttrDef;
 
     @ApiModelProperty(value = "",position = 9)
+    private String outputAttrDef;
+
+    @ApiModelProperty(value = "",position = 10)
+    private String otherAttrDef;
+
+    @ApiModelProperty(value = "",position = 11)
     private List<FormItemTemplate> items;
 
     public List<FormItemTemplate> getItems() {

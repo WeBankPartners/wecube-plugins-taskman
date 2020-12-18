@@ -28,6 +28,8 @@ public class CoreResponse<DATATYPE> {
 
     public static class ListDataResponse extends CoreResponse<List<Object>> {
     }
+    public static class ReviewEntitiesDTOResponse extends CoreResponse<ReviewEntitiesDTO> {
+    }
 
     public static class ListMapDataResponse extends CoreResponse<List<Map<String,Object>>> {
     }

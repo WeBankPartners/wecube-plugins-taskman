@@ -97,11 +97,11 @@ public class CoreResourceController {
 
     /**/
     @ApiOperationSupport(order = 8)
-    @GetMapping("/platform/{proc-def-key}/root-entity")
+    @GetMapping("/platform/{proc-def-id}/root-entity")
     @ApiOperation(value = "platform-process-root-entity", notes = "")
-    public JsonResponse getProcessDefinitionRootEntitiesByProcDefKey(@PathVariable("proc-def-key") String procDefKey) {
+    public JsonResponse getProcessDefinitionRootEntitiesByProcDefKey(@PathVariable("proc-def-id") String procDefId) {
 
-        return okayWithData(coreServiceStub.getProcessDefinitionRootEntitiesByProcDefKey(procDefKey));
+        return okayWithData(coreServiceStub.getProcessDefinitionRootEntitiesByProcDefKey(procDefId));
     }
 
     @ApiOperationSupport(order = 9)

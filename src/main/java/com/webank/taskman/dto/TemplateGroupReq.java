@@ -3,7 +3,7 @@ package com.webank.taskman.dto;
 public class TemplateGroupReq {
     private String id;
     private String name;
-    private String manageRole;
+    private String manageRoleName;
 
     public String getId() {
         return id;
@@ -21,12 +21,12 @@ public class TemplateGroupReq {
         this.name = name;
     }
 
-    public String getManageRole() {
-        return manageRole;
+    public String getManageRoleName() {
+        return manageRoleName;
     }
 
-    public void setManageRole(String manageRole) {
-        this.manageRole = manageRole;
+    public void setManageRoleName(String manageRoleName) {
+        this.manageRoleName = manageRoleName;
     }
 
 
@@ -35,7 +35,7 @@ public class TemplateGroupReq {
         return "TemplateGroupReq{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", manageRole='" + manageRole + '\'' +
+                ", manageRole='" + manageRoleName + '\'' +
                 '}';
     }
 }

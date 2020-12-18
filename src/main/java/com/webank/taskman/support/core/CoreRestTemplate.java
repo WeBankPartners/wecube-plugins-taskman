@@ -24,7 +24,7 @@ public class CoreRestTemplate {
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType) throws CoreRemoteCallException {
         log.info("V0.2.11 About to call {} ", targetUrl);
         R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
-        log.info("Core response: {} ", jsonResponse.getData().getClass().toString());
+        log.info("Core response: {} ", jsonResponse);
         validateJsonResponse(jsonResponse);
         return (D) jsonResponse.getData();
     }

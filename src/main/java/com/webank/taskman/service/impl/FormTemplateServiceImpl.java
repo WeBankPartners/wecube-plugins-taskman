@@ -95,6 +95,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     @Transactional
     public FormTemplateResp saveFormTemplateByReq(SaveFormTemplateReq formTemplateReq) throws TaskmanException {
         FormTemplate formTemplate= formTemplateConverter.reqToDomain(formTemplateReq);
+        formTemplate.setName(StringUtils.isEmpty(formTemplate.getName())?"":formTemplate.getName());
         formTemplate.setCurrenUserName(formTemplate,formTemplate.getId());
         saveOrUpdate(formTemplate);
         formItemTemplateService.deleteByDomain(new FormItemTemplate().setFormTemplateId(formTemplate.getId()));

@@ -157,16 +157,6 @@ public class CoreServiceStub {
         return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
     }
 
-    public List<Object> rootEntities(String procDefId){
-        if("dev".equals(SpringUtils.getActiveProfile())){
-            if("sjqH9YVJ2DP".equals(procDefId)){
-                return addRetrieveEntityData();
-            }
-            return new ArrayList<>();
-        }
-        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL, procDefId),
-                ListDataResponse.class);
-    }
 
     public ProcessDataPreviewDto getProcessDataPreview(String procDefId, String guid){
         if("dev".equals(SpringUtils.getActiveProfile())){

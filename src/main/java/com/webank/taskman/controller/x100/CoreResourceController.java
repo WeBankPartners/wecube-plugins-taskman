@@ -63,7 +63,6 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.fetchLatestReleasedWorkflowDefs());
     }
 
-    //    @GetMapping("/platform/definitions/{proc-def-id}/tasknodes")
     @ApiOperationSupport(order = 4)
     @GetMapping("/platform/process-definitions-nodes/{proc-def-id}")
     @ApiOperation(value = "platform-process-nodes", notes = "")

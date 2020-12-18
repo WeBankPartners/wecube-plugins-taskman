@@ -22,14 +22,14 @@
           <Row>
             <Col span="12">
           <FormItem :label="$t('template')">
-            <Select filterable @on-open-change="getTemplates" @on-change="templateChanged" v-model="requestForm.templateId">
+            <Select filterable @on-open-change="getTemplates" @on-change="templateChanged" v-model="requestForm.requestTempId">
               <Option v-for="tem in allTemplates" :key="tem.id" :value="tem.id">{{tem.name}}</Option>
             </Select>
           </FormItem>
           </Col>
           <Col span="12">
           <FormItem :label="$t('target_object')">
-            <Select filterable @on-open-change="getEntityDataByTemplateId" v-model="requestForm.rootDataId">
+            <Select filterable @on-open-change="getEntityDataByTemplateId" @on-change="workflowProcessPrevieEntities" v-model="requestForm.rootEntity">
               <Option v-for="tem in entityData" :key="tem.guid" :value="tem.guid">{{tem.displayName}}</Option>
             </Select>
           </FormItem>
@@ -73,10 +73,11 @@
           </FormItem>
           </Col>
           </Row>
+          <hr style="margin-bottom:10px"/>
           <Row>
             <Form ref="form" :label-width="110">
               <Row v-for="(fields, i) in Object.values(currentFields)" :key="i">
-                <TaskFormItem v-for="(item, index) in fields" :index="index" :item="item" :key="index"></TaskFormItem>
+                <TaskFormItem v-for="(item, index) in fields" :index="index" v-model="currentForm[item.name]" :item="item" :key="index"></TaskFormItem>
               </Row>
             </Form>
           </Row>
@@ -97,7 +98,8 @@ import {
   getFormTemplateDetail,
   getTargetOptions,
   requestTemplateAvailable,
-  getEntityDataByTemplateId
+  getEntityDataByTemplateId,
+  workflowProcessPrevieEntities
 } from "../../api/server.js"
 export default {
   components: {
@@ -131,9 +133,9 @@ export default {
         emergency: "",
         description: "",
         attachFileId: null,
-        templateId:'',
+        requestTempId:'',
         roleName:'',
-        rootDataId: ''
+        rootEntity: ''
       },
       requestPayload: {
         filters: {},
@@ -143,6 +145,7 @@ export default {
         },
         paging: true
       },
+      currentForm: {},
       tableOuterActions: [
         {
           label: this.$t("add"),
@@ -257,10 +260,49 @@ export default {
       ],
     }
   },
+  watch: {
+    currentFields: {
+      handler(v) {
+
+      },
+      deep: true
+    }
+  },
   methods: {
 
     details (row) {
 
+    },
+    async workflowProcessPrevieEntities (v) {
+      // workflowProcessPrevieEntities
+      const processKey = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId).procDefId
+      if (v) {
+        // const processKey = 'sjqH9YVJ2DP'
+        const {status, message, data} = await workflowProcessPrevieEntities(processKey, v)
+        if (status === 'OK') {
+          data.entityTreeNodes.forEach(node => {
+            // this.currentFields.entitys.forEach(entity => {
+            //   if (entity.options) {
+            //     entity.options.push({...node,label:node.displayName,value:node.dataId})
+            //   }else{
+            //     entity.options = [{...node,label:node.displayName,value:node.dataId}]
+            //   }
+            // })
+            const found = this.currentFields.entitys.find(entity => entity.name === node.entityName)
+            if (found && !found.options) {
+              found.options = [{...node,label:node.displayName,value:node.dataId}]
+            } 
+            if (found && found.options) {
+              found.options.push({...node,label:node.displayName,value:node.dataId})
+            }
+            this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
+            this.$nextTick(() => {
+              this.currentFields = {}
+              this.currentFields = JSON.parse(JSON.stringify(this.currentFieldsBackUp))
+            })
+          })
+        }
+      }
     },
     actionFun(type, data) {
       switch (type) {
@@ -289,7 +331,7 @@ export default {
     async templateChanged (v) {
       if (v) {
         this.entityData = []
-        this.requestForm.rootDataId = ""
+        this.requestForm.rootEntity = ""
         this.currentFields = {}
         const {status, message, data} = await getFormTemplateDetail(0, v)
         if (status === 'OK') {
@@ -308,7 +350,15 @@ export default {
           //     }]
           //   }
           // })
-          this.currentFields['entitys'] = data.items.sort(this.compare)
+          data.items.forEach(_ => {
+            this.currentForm[_.name] = []
+          })
+          this.currentFields['entitys'] = data.items.sort(this.compare).map(i => {
+            return {
+              ...i,
+              isMultiple: true
+            }
+          })
           this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
           this.$nextTick(() => {
             this.currentFields = {}
@@ -318,8 +368,8 @@ export default {
       }
     },
     async getEntityDataByTemplateId (v) {
-      if (v && this.requestForm.templateId && this.requestForm.templateId.length > 0) {
-        const found  = this.allTemplates.find(_ => _.id === this.requestForm.templateId)
+      if (v && this.requestForm.requestTempId && this.requestForm.requestTempId.length > 0) {
+        const found  = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId)
         const { data, status } = await getEntityDataByTemplateId(found.procDefKey) //getEntityDataByTemplateId
         this.entityData = []
         if (status === "OK") {
@@ -336,21 +386,34 @@ export default {
       this.requestForm.name = "";
       this.requestForm.emergency = "";
       this.requestForm.description = "";
-      this.requestForm.templateId = "";
+      this.requestForm.requestTempId = "";
       this.requestForm.roleId = "";
-      this.requestForm.rootDataId = "";
+      this.requestForm.rootEntity = "";
     },
     requestSubmit() {
+      let formItems = []
+      Object.keys(this.currentForm).forEach(_ => {
+        const found = this.currentFields.entitys.find(field => field.name === _)
+        formItems.push({
+          itemTempId: found.id,
+          name: _,
+          value: JSON.stringify(this.currentForm[_])
+        })
+      })
+      const payload = {
+        ...this.requestForm,
+        formItems: formItems
+      }
       this.$refs.requestForm.validate(async valid => {
         if (valid) {
           this.requestLoading = true
-          const { status } = await createServiceRequest(this.requestForm);
+          const { status } = await saveRequestInfo(payload);
           this.requestLoading = false
           if (status === "OK") {
             this.requestCancel();
             this.getData();
             this.requestForm.attachFileId = null;
-            this.$refs.upload.clearFiles();
+            // this.$refs.upload.clearFiles();
             this.$Notice.success({
               title: 'Success',
               desc: 'Success'

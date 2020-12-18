@@ -18,6 +18,7 @@ public class RequestTemplateResp {
     @ApiModelProperty(value = "",position = 101)
     private String requestTempGroup;
 
+    private String requestTempGroupName;
 
     @ApiModelProperty(value = "",position = 102)
     private String procDefKey;
@@ -71,6 +72,14 @@ public class RequestTemplateResp {
     public RequestTemplateResp setRequestTempGroup(String requestTempGroup) {
         this.requestTempGroup = requestTempGroup;
         return this;
+    }
+
+    public String getRequestTempGroupName() {
+        return requestTempGroupName;
+    }
+
+    public void setRequestTempGroupName(String requestTempGroupName) {
+        this.requestTempGroupName = requestTempGroupName;
     }
 
     public String getProcDefKey() {

@@ -1,11 +1,15 @@
 package com.webank.taskman.dto;
 
 import com.webank.taskman.constant.BizCodeEnum;
+import com.webank.taskman.constant.StatusCodeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 @ApiModel(value = "",description = "JsonResponse")
-public class JsonResponse<T> {
+public class JsonResponse<T>  implements Serializable {
 	public final static String STATUS_OK = "OK";
 	public final static String STATUS_ERROR = "ERROR";
 
@@ -20,6 +24,7 @@ public class JsonResponse<T> {
 
 	@ApiModelProperty(value = "数据")
 	private T data;
+
 
 	public String getStatus() {
 		return status;
@@ -62,7 +67,7 @@ public class JsonResponse<T> {
 	}
 
 	public JsonResponse withData(T data) {
-		this.data = null == data ? (T)new Object():data;
+		this.data = null != data ? data : (T) new ArrayList<T>();
 		return this;
 	}
 
@@ -78,7 +83,7 @@ public class JsonResponse<T> {
 	}
 
 	public static JsonResponse okay() {
-		return new JsonResponse(STATUS_OK,"Success",null,null,200);
+		return new JsonResponse(STATUS_OK,"Success",200,"",null);
 	}
 
 	public static JsonResponse okayWithData(Object data) {
@@ -101,5 +106,7 @@ public class JsonResponse<T> {
 		return new JsonResponse(STATUS_ERROR,errorMessage,bizCodeEnum.getCode(),bizCodeEnum.getMessage(),null);
 	}
 
-
+	public static JsonResponse customError(StatusCodeEnum statusCodeEnum) {
+		return new JsonResponse(STATUS_ERROR,null,Integer.valueOf(statusCodeEnum.getCode()),statusCodeEnum.getMessage(),null);
+	}
 }

@@ -6,15 +6,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.PageInfo;
+import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.TemplateGroupDTO;
+import com.webank.taskman.dto.TemplateGroupReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
+import com.webank.taskman.service.RoleRelationService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -27,34 +31,20 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
+    @Autowired
+    RoleRelationService roleRelationService;
+
 
     @Override
-    public RequestTemplateGroup saveTemplateGroupByReq(SaveRequestTemplateGropReq gropReq) throws Exception {
-        RequestTemplateGroup req = requestTemplateGroupConverter.addOrUpdateDomain(gropReq);
-        if (StringUtils.isEmpty(req.getId())) {
-            req.setCurrenUserName(req,req.getId());
-            templateGroupMapper.insert(req);
-            RequestTemplateGroup requestTemplateGroup = templateGroupMapper.selectById(req);
-            return requestTemplateGroup;
-        }
-        if (!StringUtils.isEmpty(req.getId())) {
-            req.setUpdatedTime(new Date());
-            templateGroupMapper.updateById(req);
-            RequestTemplateGroup requestTemplateGroup = templateGroupMapper.selectById(req);
-            return requestTemplateGroup;
-        }
-        return null;
+    @Transactional
+    public RequestTemplateGroup saveTemplateGroupByReq(SaveRequestTemplateGropReq req) throws Exception {
+        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
+        requestTemplateGroup.setCurrenUserName(requestTemplateGroup,requestTemplateGroup.getId());
+        saveOrUpdate(requestTemplateGroup);
+//        roleRelationService.deleteByTemplate(requestTemplateGroup.getId());
+        return new RequestTemplateGroup().setId(requestTemplateGroup.getId());
     }
 
-    @Override
-    public void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception {
-        if (templateGroupVO == null) {
-            throw new Exception("Template group objects cannot be empty");
-        }
-        RequestTemplateGroup templateGroup = requestTemplateGroupConverter.voToDomain(templateGroupVO);
-        //templateGroup.setUpdatedBy();
-        templateGroupMapper.updateById(templateGroup);
-    }
 
     @Override
     public QueryResponse<TemplateGroupDTO> selectAllTemplateGroupService(Integer current, Integer limit, TemplateGroupReq req) throws Exception {

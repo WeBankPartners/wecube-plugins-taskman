@@ -3,17 +3,16 @@ package com.webank.taskman.controller.x100;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
-import com.github.xiaoymin.knife4j.annotations.DynamicResponseParameters;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.dto.DownloadAttachFileResponse;
 import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.resp.FormItemTemplateResp;
 import com.webank.taskman.service.AttachFileService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +20,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
@@ -43,18 +40,6 @@ public class CoreResourceController {
 
     @Autowired
     CoreServiceStub coreServiceStub;
-
-    @GetMapping("/users/current-user/test")
-    @ApiOperation(value = "core-resources-role-test", notes = "")
-    @DynamicResponseParameters(name = "document",  properties = {
-            @DynamicParameter(name = "document.type",value = "document this type",example = "select",required = true,dataTypeClass = Integer.class),
-            @DynamicParameter(name = "name3",value = "订单编号-gson"),
-            @DynamicParameter(name = "name1",value = "订单编号1-gson"),
-    })
-    public JsonResponse<List<FormItemTemplateResp>> test(FormItemTemplateResp httpRequest) {
-        String currentUserName = AuthenticationContextHolder.getCurrentUsername();
-        return okayWithData(coreServiceStub.getRolesByUserName(currentUserName));
-    }
 
     @ApiOperationSupport(order = 1)
     @GetMapping("/users/current-user/roles")

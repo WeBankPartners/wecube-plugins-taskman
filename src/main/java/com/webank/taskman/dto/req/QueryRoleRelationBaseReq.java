@@ -84,18 +84,18 @@ public class QueryRoleRelationBaseReq {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-    protected static final  String NOT_ALL = "(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s') ) > 0";
-    protected static final String ALL = "(SELECT COUNT(1) FROM role_relation rr WHERE %s.id = rr.record_id AND (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s'))) > 0";
+    protected static final  String NOT_ALL = "%s.id in(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s'))";
+    protected static final String ALL = "%s.id in (SELECT COUNT(1) FROM role_relation rr WHERE (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))";
 
     public String getConditionSql() {
         if(StringUtils.isEmpty(conditionSql) && null != getRoleType()) {
             switch (this.roleType) {
                 case 0:
                 case 1:
-                    conditionSql = String.format(NOT_ALL, sourceTableFix, getRoleType(), getRoleName());
+                    conditionSql = String.format(NOT_ALL, sourceTableFix,getRoleType(), getRoleName());
                     break;
                 default:
-                    conditionSql = String.format(ALL, sourceTableFix, getUseRoleName(), getManageRoleName());
+                    conditionSql = String.format(ALL, sourceTableFix,getUseRoleName(), getManageRoleName());
                     break;
 
             }

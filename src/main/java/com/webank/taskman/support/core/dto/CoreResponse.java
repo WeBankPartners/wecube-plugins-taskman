@@ -6,7 +6,6 @@ import com.webank.taskman.dto.resp.RootEntityResp;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CoreResponse<DATATYPE> {
 
@@ -39,7 +38,7 @@ public class CoreResponse<DATATYPE> {
     public static class GetRootEntitiesResponse extends CoreResponse<List<RootEntityResp>> {
 
     }
-    public static class GetModelsAllResponse extends CoreResponse<Set<PluginPackageDataModelDto>> {
+    public static class GetModelsAllResponse extends CoreResponse<List<PluginPackageDataModelDto>> {
 
     }
     public static class GetAttributesByPackageEntityResponse extends CoreResponse<List<PluginPackageAttributeDto>> {

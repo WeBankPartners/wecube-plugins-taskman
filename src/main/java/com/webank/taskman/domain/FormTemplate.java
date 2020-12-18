@@ -12,7 +12,7 @@ public class FormTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    
+
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
@@ -21,9 +21,9 @@ public class FormTemplate extends BaseEntity implements Serializable {
     private String tempType;
 
     private String name;
-    
+
     private String description;
-    
+
     private String style;
 
     private String targetEntitys;

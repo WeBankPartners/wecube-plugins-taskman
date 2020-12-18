@@ -121,11 +121,21 @@ public class CoreResourceController {
     {
         return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,filters));
     }
+    @ApiOperationSupport(order = 10)
+    @GetMapping("/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}")
+    @ApiOperation(value = "workflow-process-preview-entities", notes = "")
+    public JsonResponse entitiesByProcDefIdAndGuid( @PathVariable("proc-def-id") String procDefId,
+                                        @PathVariable("entity-data-id")String entityDataId)
+    {
+        return okayWithData(coreServiceStub.entitiesByProcDefIdAndGuid(procDefId,entityDataId));
+    }
+
 
     @Autowired
     AttachFileService attachFileService;
 
     @PostMapping("/attach-file")
+    @ApiOperation(value = "platform-s3-upload-file", notes = "")
     public JsonResponse uploadServiceRequestAttachFile(@RequestParam(value = "file") MultipartFile attachFile)
             throws Exception {
         String attachFileId  = attachFileService.uploadServiceRequestAttachFile(attachFile);
@@ -135,6 +145,7 @@ public class CoreResourceController {
 
 
     @GetMapping("/{attach-id}/attach-file")
+    @ApiOperation(value = "platform-s3-download-file", notes = "")
     public void downloadServiceRequestAttachFile(@PathVariable(value = "attach-id") String serviceRequestId,
                                                  HttpServletResponse response) throws Exception {
         if (serviceRequestId == null || serviceRequestId.isEmpty())

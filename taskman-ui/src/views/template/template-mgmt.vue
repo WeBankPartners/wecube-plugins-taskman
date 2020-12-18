@@ -724,6 +724,8 @@ export default {
           const attr = this.attrsSelections.find(a => a.name === item)
           this.formFields.push({
             ...attr,
+            entity: attr.name,
+            packageName: attr.packageName,
             elementType: 'PluginSelect',
             width: 24,
             title: attr.displayName,
@@ -961,7 +963,7 @@ export default {
         })
       })
       this.$nextTick(() => {
-        this.formFields = fields.concat(this.currentFieldList.filter(field => field.name.length === 0))
+        this.formFields = fields.concat(this.currentFieldList.filter(field => field.packageName.length === 0))
         this.currentFieldList = this.formFields
       })
     },
@@ -1056,10 +1058,12 @@ export default {
               formTemplateId: this.currentTemplateId,
               packageName: '',
               isCustom: true,
-              entity: ''
+              entity: '',
+              sort: e.newIndex
             }
             this.formFields.splice(e.newIndex, 0, item)
             this.currentFieldList = this.formFields
+            console.log(this.currentFieldList)
             isAdd = true
             // this.formFieldSortHandler(this.currentEntityList)
           // })

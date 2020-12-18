@@ -19,14 +19,14 @@ public class SaveRequestTemplateGropReq {
     @NotBlank(message = "管理角色不能为空")
     @ApiModelProperty(value = "管理角色id",dataType = "String")
     private String manageRoleId;
+    @NotBlank(message = "角色姓名不能为空")
+    @ApiModelProperty(value = "管理角色姓名",dataType = "String")
+    private String manageRoleName;
 
     @NotBlank(message = "描述不能为空")
     @ApiModelProperty(value = "描述",dataType = "String")
     private String description;
 
-    @NotBlank(message = "角色姓名不能为空")
-    @ApiModelProperty(value = "管理角色姓名",dataType = "String")
-    private String manageRoleName;
 
     public String getId() {
         return id;

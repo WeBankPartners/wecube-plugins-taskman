@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 
 @RestController
@@ -62,9 +61,9 @@ public class TaskmanFormController {
     @GetMapping("/template/detail/{tempType}/{tempId}")
     @ApiOperation(value = "form-template-detail")
     public JsonResponse<FormTemplateResp> FormTemplateDetail(@PathVariable("tempType") Integer tempType,@PathVariable("tempId") String tempId) throws Exception {
-        SaveFormTemplateReq req = new SaveFormTemplateReq(tempId,tempType);
-        FormTemplateResp formTemplateResp = formTemplateService.detailFormTemplate(req);
-        return JsonResponse.okayWithData(formTemplateResp);
+        return JsonResponse.okayWithData(
+                formTemplateService.detailFormTemplate(
+                        new SaveFormTemplateReq(tempId,tempType)));
     }
 
     @ApiOperationSupport(order = 6)

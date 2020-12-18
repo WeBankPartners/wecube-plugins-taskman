@@ -11,8 +11,6 @@ public interface RequestTemplateGroupService extends IService<RequestTemplateGro
 
     RequestTemplateGroup saveTemplateGroupByReq(SaveRequestTemplateGropReq gropReq) throws Exception;
 
-    void updateTemplateGroupService(TemplateGroupVO templateGroupVO) throws Exception;
-
     QueryResponse<TemplateGroupDTO> selectAllTemplateGroupService(Integer current, Integer limit, TemplateGroupReq req) throws Exception;
 
     void deleteTemplateGroupByIDService(String id) throws Exception;

@@ -19,7 +19,7 @@ java -Djava.security.egd=file:/dev/urandom -Duser.timezone=Asia/Shanghai \
 -Dcom.sun.management.jmxremote.authenticate=false \
 -Dcom.sun.management.jmxremote.ssl=false \
 -jar /taskman/taskman.jar  --server.address=0.0.0.0 --server.port=9999 \
---spring.profiles.active=test\
+--spring.profiles.active=test \
 --spring.datasource.url=jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8\&serverTimezone=Asia\/Shanghai \
 --spring.datasource.username=${db_username} \
 --spring.datasource.password=${db_password} \

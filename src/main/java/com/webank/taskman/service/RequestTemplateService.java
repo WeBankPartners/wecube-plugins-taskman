@@ -19,6 +19,6 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     RequestTemplateResp detailRequestTemplate(String id) throws Exception;
 
-    List<RequestTemplate> selectAvailableRequest(QueryRequestTemplateReq req);
+    List<RequestTemplateResp> selectAvailableRequest(QueryRequestTemplateReq req);
 
    }

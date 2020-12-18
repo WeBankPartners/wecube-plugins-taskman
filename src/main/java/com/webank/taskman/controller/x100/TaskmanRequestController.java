@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.commons.ApplicationConstants;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
@@ -14,7 +13,10 @@ import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.*;
-import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
+import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
+import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestSynthesisService;
 import com.webank.taskman.service.RequestTemplateGroupService;
@@ -75,19 +77,22 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 11,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
-    public JsonResponse releaseRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
+    public JsonResponse<RequestTemplateResp> releaseRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
         if(StringUtils.isEmpty(req.getId())){
-            throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
+            return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
-        RequestTemplate requestTemplate = requestTemplateService.getOne(new QueryWrapper<RequestTemplate>()
-                    .eq("id",req.getId()).eq("status",StatusEnum._DEFAULT.ordinal()));
+        RequestTemplate requestTemplate = requestTemplateService.getOne(new QueryWrapper<RequestTemplate>().eq("id",req.getId())
+                // .eq("status",StatusEnum._DEFAULT.ordinal()))
+        );
         if(null == requestTemplate){
-            throw new TaskmanException(StatusCodeEnum.PARAM_ISNULL);
+            return JsonResponse.customError(StatusCodeEnum.NOT_FOUND_RECORD);
         }
-        requestTemplate.setStatus(StatusEnum.ENABLE.ordinal());
+        requestTemplate.setStatus( requestTemplate.getStatus() == StatusEnum._DEFAULT.ordinal()?
+            StatusEnum.ENABLE.ordinal() :
+            StatusEnum._DEFAULT.ordinal());
         requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateService.updateById(requestTemplate);
-        return okay();
+        return okayWithData(new RequestTemplateResp().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
     }
 
     @ApiOperationSupport(order = 12)

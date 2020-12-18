@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -116,11 +115,11 @@ public class CoreServiceStub {
         return template.get(asCoreUrl(GET_MODELS_BY_PACKAGE_URL, packageName), GetModelsAllResponse.class);
     }
 
-    public List<Map<String, Object>> getProcessDefinitionRootEntitiesByProcDefKey(String procDefKey){
+    public List<Object> getProcessDefinitionRootEntitiesByProcDefKey(String procDefKey){
         if("dev".equals(SpringUtils.getActiveProfile())){
             return addRootEntityTestData();
         }
-        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,procDefKey),ListMapDataResponse.class);
+        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,procDefKey),ListDataResponse.class);
     }
 
     // 5

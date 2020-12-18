@@ -1,6 +1,7 @@
 package com.webank.taskman.dto;
 
 import com.webank.taskman.constant.BizCodeEnum;
+import com.webank.taskman.constant.StatusCodeEnum;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -23,6 +24,7 @@ public class JsonResponse<T>  implements Serializable {
 
 	@ApiModelProperty(value = "数据")
 	private T data;
+
 
 	public String getStatus() {
 		return status;
@@ -81,7 +83,7 @@ public class JsonResponse<T>  implements Serializable {
 	}
 
 	public static JsonResponse okay() {
-		return new JsonResponse(STATUS_OK,"Success",200,"",new Object());
+		return new JsonResponse(STATUS_OK,"Success",200,"",null);
 	}
 
 	public static JsonResponse okayWithData(Object data) {
@@ -104,5 +106,7 @@ public class JsonResponse<T>  implements Serializable {
 		return new JsonResponse(STATUS_ERROR,errorMessage,bizCodeEnum.getCode(),bizCodeEnum.getMessage(),null);
 	}
 
-
+	public static JsonResponse customError(StatusCodeEnum statusCodeEnum) {
+		return new JsonResponse(STATUS_ERROR,null,Integer.valueOf(statusCodeEnum.getCode()),statusCodeEnum.getMessage(),null);
+	}
 }

@@ -100,6 +100,13 @@ export default {
         //   sortable: 'custom',
         // },
         {
+          title: '角色',
+          key: "manageRoleName",
+          inputKey: "manageRoleName",
+          component: "Input",
+          inputType: "text"
+        },
+        {
           title: this.$t("describe"),
           key: "description",
           inputKey: "description",

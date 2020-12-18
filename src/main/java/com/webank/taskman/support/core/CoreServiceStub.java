@@ -36,7 +36,7 @@ public class CoreServiceStub {
     public static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL= "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";
     public static final String GET_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/retrieve";
     public static final String QUERY_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/query";
-    public static final String QUERY_ENTITIES_URL = "/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
+    public static final String GET_ENTITIES_BY_PROC_DEF_ID_AND_GUID_URL = "/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
 
     @Autowired
     private CoreRestTemplate template;
@@ -158,6 +158,26 @@ public class CoreServiceStub {
         return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
     }
 
+    public List<Object> rootEntities(String procDefId){
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            if("sjqH9YVJ2DP".equals(procDefId)){
+                return addRetrieveEntityData();
+            }
+            return new ArrayList<>();
+        }
+        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL, procDefId),
+                ListDataResponse.class);
+    }
 
+    public ReviewEntitiesDTO entitiesByProcDefIdAndGuid(String procDefId,String guid){
+        if("dev".equals(SpringUtils.getActiveProfile())){
+            if("sjqH9YVJ2DP".equals(procDefId) && "0045_0000000100".equals(guid)){
+                return reviewEntities();
+            }
+            return  null;
+        }
+        return template.get(asCoreUrl(GET_ENTITIES_BY_PROC_DEF_ID_AND_GUID_URL, procDefId,guid),
+                ReviewEntitiesDTOResponse.class);
+    }
 
 }

@@ -25,12 +25,12 @@ export const deleteRequestTemplateGroup = id => request.delete(`/taskman/v1/requ
 export const editRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/edit`, data);
 export const searchRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/search/${data.page}/${data.pageSize}`, data.data);
 export const getRoleList = () => request.get(`/taskman/v1/core-resources/roles`);
-export const getProcessDefinitionKeysList = () => request.get(`/taskman/v1/core-resources/workflow/process-definition-keys`);
+export const getProcessDefinitionKeysList = () => request.get(`/taskman/v1/core-resources/platform/process-definition-keys`);
 export const getAllTemplateGroup = () => request.get(`/taskman/v1/request/template/group/available`);
 export const saveRequestTemplate = data => request.post(`/taskman/v1/request/template/save`, data);
 export const searchRequestTemplate = data => request.post(`/taskman/v1/request/template/search/${data.page}/${data.pageSize}`, data.data);
 export const deleteRequestTemplate = id => request.delete(`/taskman/v1/request/template/delete/${id}`);
-export const getTaskNodesEntitys = id => request.get(`/taskman/v1/core-resources/workflow/process-definitions-nodes/${id}`);
+export const getTaskNodesEntitys = id => request.get(`/taskman/v1/core-resources/platform/process-definitions-nodes/${id}`);
 export const saveFormTemplate = data => request.post(`/taskman/v1/form/template/save`, data);
 export const saveTaskTemplate = data => request.post(`/taskman/v1/task/template/save`, data);
 export const getAllDataModels = () => request.get(`/taskman/v1/core-resources/platform/models`);
@@ -40,8 +40,8 @@ export const releaseRequestTemplate = data => request.post(`/taskman/v1/request/
 export const searchRequest = data => request.post(`/taskman/v1/request/search/${data.page}/${data.pageSize}`, data.data);
 export const saveRequestInfo = data => request.post(`/taskman/v1/request/save`, data);
 export const requestTemplateAvailable = () => request.get(`/taskman/v1/request/template/available`);
-
 export const getEntityDataByTemplateId = key => request.get(`/taskman/v1/core-resources/platform/${key}/root-entity`);
+export const workflowProcessPrevieEntities = (procId,entityDataId) => request.get(`/taskman/v1/core-resources/platform/process/definitions/${procId}/preview/entities/${entityDataId}`);
 
 
 

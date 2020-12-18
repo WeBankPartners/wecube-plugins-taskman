@@ -116,10 +116,16 @@ public class CoreServiceStub {
     }
 
     public List<Object> getProcessDefinitionRootEntitiesByProcDefKey(String procDefKey){
-        if("dev".equals(SpringUtils.getActiveProfile())){
-            return addRootEntityTestData();
+        List<Object> list = new ArrayList<>();
+        try {
+            if("dev".equals(SpringUtils.getActiveProfile())){
+                list = addRootEntityTestData();
+            }
+            list = template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,procDefKey),ListDataResponse.class);
+        }catch (Exception e){
+            log.error("error :{}",e.getMessage());
         }
-        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,procDefKey),ListDataResponse.class);
+        return list;
     }
 
     // 5

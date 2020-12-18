@@ -78,13 +78,13 @@ public class CoreRestTemplate {
     }
 
     private void validateJsonResponse(CoreResponse jsonResponse, boolean dataRequired) throws CoreRemoteCallException {
-        if (jsonResponse == null) {
+        if ( null == jsonResponse) {
             throw new CoreRemoteCallException("Call WeCube-Core failed due to no response.");
         }
         if (!JsonResponse.STATUS_OK.equalsIgnoreCase(jsonResponse.getStatus())) {
             throw new CoreRemoteCallException("Core Error: " + jsonResponse.getMessage(), jsonResponse);
         }
-        if (dataRequired && jsonResponse.getData() == null) {
+        if (dataRequired && null == jsonResponse.getData() ) {
             throw new CoreRemoteCallException("Call WeCube-Core failed due to unexpected empty response.",
                     jsonResponse);
         }

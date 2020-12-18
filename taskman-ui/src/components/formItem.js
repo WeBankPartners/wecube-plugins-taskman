@@ -8,16 +8,17 @@ export default {
   },
   props: {
     item: {},
-    index: {}
+    index: {},
+    isDesign: {}
   },
   computed: {
     classList () {
-      let classes = 'form-item-taskman '
+      let classes = this.isDesign ? 'form-item-taskman form-item-taskman-isDesign ' : 'form-item-taskman '
       if (this.item.isHover) {
-        classes = 'form-item-taskman form-item-taskman-hover'
+        classes = classes+'form-item-taskman-hover'
       }
       if (this.item.isActive) {
-        classes = 'form-item-taskman form-item-taskman-active'
+        classes = classes+'form-item-taskman-active'
       }
       return classes
     }
@@ -25,6 +26,10 @@ export default {
   methods: {
    deleteHandler () {
      this.$emit('delete', this.index)
+   },
+   inputHandler (v) {
+    this.itemValue = v
+    this.$emit('input',v)
    }
   },
   mounted () {
@@ -35,8 +40,8 @@ export default {
     return (
       <Col id={'formItem_'+this.index} span={width}>
         <FormItem class={this.classList} label={title}>
-          <elementType value={this.itemValue} placeholder={placeholder}></elementType>
-          {(isActive) && <Button disabled={!isCustom} onClick={() => this.deleteHandler()} class="deleteButton" size="small" ghost type="error" icon="ios-trash-outline"></Button>}
+          <elementType options={options} value={this.itemValue} onInput={v => this.inputHandler(v)} placeholder={placeholder}></elementType>
+          {(this.isDesign && isActive) && <Button disabled={!isCustom} onClick={() => this.deleteHandler()} class="deleteButton" size="small" ghost type="error" icon="ios-trash-outline"></Button>}
         </FormItem>
       </Col>
     )

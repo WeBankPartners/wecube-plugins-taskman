@@ -13,7 +13,7 @@
     />
     <Modal
       v-model="requestModalVisible"
-      :title="$t('add')"
+      :title="currentTitle"
       footer-hide
       width="50"
       @on-cancel="requestModalHide"
@@ -59,6 +59,7 @@ export default {
   },
   data() {
     return {
+      currentTitle: '',
       allTemplates: [],
       currentUserRoles: [],
       entityData: [],
@@ -168,6 +169,7 @@ export default {
         case "add":
           this.requestModalVisible = true;
           this.isAdd = true;
+          this.currentTitle = '新增'
           this.requestForm = {
             name: "",
             emergency: "",
@@ -217,6 +219,7 @@ export default {
     },
     edit (row) {
       this.isAdd = false;
+      this.currentTitle = '编辑'
       this.requestForm = {...row, manageRoleId: row.manageRole}
       this.requestModalVisible = true;
     },

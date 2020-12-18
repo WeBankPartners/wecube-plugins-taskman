@@ -1,9 +1,6 @@
 package com.webank.taskman.support.core.dto;
 
-
 import com.webank.taskman.dto.OperationEventResultDto;
-import com.webank.taskman.dto.resp.RootEntityResp;
-
 import java.util.List;
 import java.util.Map;
 
@@ -28,16 +25,15 @@ public class CoreResponse<DATATYPE> {
 
     public static class ListDataResponse extends CoreResponse<List<Object>> {
     }
+    public static class ReviewEntitiesDTOResponse extends CoreResponse<ProcessDataPreviewDto> {
+    }
 
     public static class ListMapDataResponse extends CoreResponse<List<Map<String,Object>>> {
     }
 
     public static class GetAllRolesResponse extends CoreResponse<List<RolesDataResponse>> {
     }
-    
-    public static class GetRootEntitiesResponse extends CoreResponse<List<RootEntityResp>> {
 
-    }
     public static class GetModelsAllResponse extends CoreResponse<List<PluginPackageDataModelDto>> {
 
     }

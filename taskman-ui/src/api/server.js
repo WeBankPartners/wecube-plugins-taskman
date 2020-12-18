@@ -37,4 +37,11 @@ export const getAllDataModels = () => request.get(`/taskman/v1/core-resources/pl
 export const getTargetOptions = (pkgName, entityName) =>request.get(`/taskman/v1/core-resources/platform/packages/${pkgName}/entities/${entityName}/retrieve`)
 export const getFormTemplateDetail = (tempType, tempId) => request.get(`/taskman/v1/form/template/detail/${tempType}/${tempId}`);
 export const releaseRequestTemplate = data => request.post(`/taskman/v1/request/template/release`, data);
+export const searchRequest = data => request.post(`/taskman/v1/request/search/${data.page}/${data.pageSize}`, data.data);
+export const saveRequestInfo = data => request.post(`/taskman/v1/request/save`, data);
+export const requestTemplateAvailable = () => request.get(`/taskman/v1/request/template/available`);
+
+export const getEntityDataByTemplateId = key => request.get(`/taskman/v1/core-resources/platform/${key}/root-entity`);
+
+
 

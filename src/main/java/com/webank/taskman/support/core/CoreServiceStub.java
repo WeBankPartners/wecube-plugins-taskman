@@ -168,7 +168,7 @@ public class CoreServiceStub {
                 ListDataResponse.class);
     }
 
-    public ProcessDataPreviewDto entitiesByProcDefIdAndGuid(String procDefId, String guid){
+    public ProcessDataPreviewDto getProcessDataPreview(String procDefId, String guid){
         if("dev".equals(SpringUtils.getActiveProfile())){
             if("sjqH9YVJ2DP".equals(procDefId) && "0045_0000000100".equals(guid)){
                 return reviewEntities();

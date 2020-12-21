@@ -1,12 +1,13 @@
 package com.webank.taskman.base;
 
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
-public class BaseEntity {
+public class BaseEntity<T> {
 
     private String createdBy;
 
@@ -68,5 +69,11 @@ public class BaseEntity {
         entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
 
         return entity;
+    }
+
+    public QueryWrapper<T> getQueryWrapper(){
+        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+        queryWrapper.setEntity((T)this);
+        return queryWrapper;
     }
 }

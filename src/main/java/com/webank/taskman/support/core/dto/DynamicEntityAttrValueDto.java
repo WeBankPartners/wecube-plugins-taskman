@@ -29,7 +29,15 @@ public class DynamicEntityAttrValueDto {
     public void setDataValue(Object dataValue) {
         this.dataValue = dataValue;
     }
-    
-    
 
+
+    @Override
+    public String toString() {
+        return "DynamicEntityAttrValueDto{" +
+                "attrDefId='" + attrDefId + '\'' +
+                ", attrName='" + attrName + '\'' +
+                ", dataType='" + dataType + '\'' +
+                ", dataValue=" + dataValue +
+                '}';
+    }
 }

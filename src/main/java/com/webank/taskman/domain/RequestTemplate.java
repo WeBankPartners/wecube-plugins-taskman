@@ -14,30 +14,16 @@ public class RequestTemplate extends BaseEntity implements Serializable {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
     private String requestTempGroup;
-
-
     private String procDefKey;
-
-
     private String procDefId;
-
-
     private String procDefName;
-
-
+    private String packageName;
+    private String entityName;
     private String name;
-
     private String description;
-
-    
     private String version;
-
-    
     private String tags;
-
-    
     private String status;
 
     public RequestTemplate() {
@@ -70,32 +56,54 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         return requestTempGroup;
     }
 
-    public void setRequestTempGroup(String requestTempGroup) {
+    public RequestTemplate setRequestTempGroup(String requestTempGroup) {
         this.requestTempGroup = requestTempGroup;
+        return this;
     }
 
     public String getProcDefKey() {
         return procDefKey;
     }
 
-    public void setProcDefKey(String procDefKey) {
+    public RequestTemplate setProcDefKey(String procDefKey) {
         this.procDefKey = procDefKey;
+        return this;
     }
 
     public String getProcDefId() {
         return procDefId;
     }
 
-    public void setProcDefId(String procDefId) {
+    public RequestTemplate setProcDefId(String procDefId) {
         this.procDefId = procDefId;
+        return this;
     }
 
     public String getProcDefName() {
         return procDefName;
     }
 
-    public void setProcDefName(String procDefName) {
+    public RequestTemplate setProcDefName(String procDefName) {
         this.procDefName = procDefName;
+        return this;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public RequestTemplate setPackageName(String packageName) {
+        this.packageName = packageName;
+        return this;
+    }
+
+    public String getEntityName() {
+        return entityName;
+    }
+
+    public RequestTemplate setEntityName(String entityName) {
+        this.entityName = entityName;
+        return this;
     }
 
     public String getName() {
@@ -111,32 +119,36 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         return description;
     }
 
-    public void setDescription(String description) {
+    public RequestTemplate setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public RequestTemplate setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     public String getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    public RequestTemplate setTags(String tags) {
         this.tags = tags;
+        return this;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public RequestTemplate setStatus(String status) {
         this.status = status;
+        return this;
     }
 
 
@@ -154,6 +166,11 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         return getQueryWrapper(null,null,null,null,name,null,null,null,null);
     }
 
+    public QueryWrapper<RequestTemplate> getQueryWrapper(){
+        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
+        queryWrapper.setEntity(this);
+        return queryWrapper;
+    }
     @Override
     public String toString() {
         return "RequestTemplate{" +

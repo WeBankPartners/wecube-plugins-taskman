@@ -67,7 +67,7 @@ public class JsonResponse<T>  implements Serializable {
 	}
 
 	public JsonResponse withData(T data) {
-		this.data = null != data ? data : (T) new ArrayList<T>();
+		setData(data);
 		return this;
 	}
 
@@ -79,7 +79,7 @@ public class JsonResponse<T>  implements Serializable {
 		this.message = message;
 		this.code = code;
 		this.codeMessage = codeMessage;
-		this.data = data;
+		setData(data);
 	}
 
 	public static JsonResponse okay() {

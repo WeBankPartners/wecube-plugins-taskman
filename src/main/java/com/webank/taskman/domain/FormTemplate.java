@@ -2,10 +2,9 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.taskman.base.BaseEntity;
-import io.swagger.annotations.ApiModelProperty;
 
-import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 public class FormTemplate extends BaseEntity implements Serializable {
@@ -32,6 +31,64 @@ public class FormTemplate extends BaseEntity implements Serializable {
     private String outputAttrDef;
     private String otherAttrDef;
 
+
+    public FormTemplate() {
+    }
+
+    public FormTemplate(String id, String tempId, String tempType) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+    }
+
+    public FormTemplate(String id, String tempId) {
+        this.id = id;
+        this.tempId = tempId;
+    }
+
+    public FormTemplate(String id, String tempId, String tempType, String name, String description) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+        this.name = name;
+        this.description = description;
+    }
+    public FormTemplate(String id, String tempId, String tempType, String name, String description, String style) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+        this.name = name;
+        this.description = description;
+        this.style = style;
+    }
+
+    public FormTemplate(String id, String tempId, String tempType, String name, String description, String style, String targetEntitys, String inputAttrDef, String outputAttrDef, String otherAttrDef) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+        this.name = name;
+        this.description = description;
+        this.style = style;
+        this.targetEntitys = targetEntitys;
+        this.inputAttrDef = inputAttrDef;
+        this.outputAttrDef = outputAttrDef;
+        this.otherAttrDef = otherAttrDef;
+    }
+
+    public  static QueryWrapper<FormTemplate> getQueryWrapper(String tempId,String tempType){
+        QueryWrapper<FormTemplate> queryWrapper = new QueryWrapper<>();
+        FormTemplate formTemplate = new FormTemplate(null,tempId,tempType);
+        queryWrapper.setEntity(formTemplate);
+        return queryWrapper;
+    }
+    public  static QueryWrapper<FormTemplate> getQueryWrapper(String id, String tempId, String tempType, String name, String description){
+        QueryWrapper<FormTemplate> queryWrapper = new QueryWrapper<>();
+        FormTemplate formTemplate = new FormTemplate(id,tempId,tempType);
+        queryWrapper.setEntity(formTemplate);
+        queryWrapper.like("name",name);
+        queryWrapper.like("description",description);
+        return queryWrapper;
+    }
     public String getId() {
         return id;
     }

@@ -6,7 +6,9 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
+import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.service.AttachFileService;
+import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.support.s3.dto.DownloadAttachFileResponse;
@@ -25,7 +27,11 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.webank.taskman.base.JsonResponse.okayWithData;
 
@@ -70,25 +76,17 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.fetchWorkflowTasknodeInfos(procDefId));
     }
 
+
+
+
     @ApiOperationSupport(order = 5)
-    @PostMapping("/platform/crate")
-    @ApiOperation(value = "platform-process-crate", notes = "")
-    public JsonResponse<CoreResponse.DynamicWorkflowInstInfoDto> createNewWorkflowInstance(
-            @RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto)
-    {
-        return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
-    }
-
-
-
-    @ApiOperationSupport(order = 6)
     @GetMapping("/platform/models")
     @ApiOperation(value = "platform-process-models", notes = "")
     public JsonResponse allDataModels() {
         return okayWithData(coreServiceStub.allDataModels());
     }
 
-    @ApiOperationSupport(order = 7)
+    @ApiOperationSupport(order = 6)
     @GetMapping("/platform/models/{package-name}")
     @ApiOperation(value = "platform-process-models-package", notes = "")
     public JsonResponse allDataModels(@PathVariable("package-name") String packageName) {
@@ -96,7 +94,7 @@ public class CoreResourceController {
     }
 
     /**/
-    @ApiOperationSupport(order = 8)
+    @ApiOperationSupport(order = 7)
     @GetMapping("/platform/{proc-def-id}/root-entity")
     @ApiOperation(value = "platform-process-root-entity", notes = "")
     public JsonResponse getProcessDefinitionRootEntitiesByProcDefKey(@PathVariable("proc-def-id") String procDefId) {
@@ -104,14 +102,14 @@ public class CoreResourceController {
         return okayWithData(coreServiceStub.getProcessDefinitionRootEntitiesByProcDefKey(procDefId));
     }
 
-    @ApiOperationSupport(order = 9)
+    @ApiOperationSupport(order = 8)
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}/attributes")
     @ApiOperation(value = "platform-process-entity-attributes", notes = "")
     public JsonResponse getAttributesByPackageEntity(
             @PathVariable("package-name") String packageName,@PathVariable("entity-name")String entity) {
         return okayWithData(coreServiceStub.getAttributesByPackageEntity(packageName,entity));
     }
-    @ApiOperationSupport(order = 10)
+    @ApiOperationSupport(order = 9)
     @GetMapping("/platform/packages/{package-name}/entities/{entity-name}/retrieve")
     @ApiOperation(value = "platform-process-entity-retrieve", notes = "")
     public JsonResponse retrieveEntity( @PathVariable("package-name") String packageName,
@@ -120,14 +118,77 @@ public class CoreResourceController {
     {
         return okayWithData(coreServiceStub.retrieveEntity(packageName,entity,filters));
     }
-    @ApiOperationSupport(order = 11)
+
+    @Autowired
+    RequestTemplateService requestTemplateService;
+
+    @ApiOperationSupport(order = 10)
     @GetMapping("/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}")
     @ApiOperation(value = "platform-process-data-preview", notes = "")
     public JsonResponse<ProcessDataPreviewDto> getProcessDataPreview( @PathVariable("proc-def-id") String procDefId,
                                         @PathVariable("entity-data-id")String entityDataId)
     {
-        return okayWithData(coreServiceStub.getProcessDataPreview(procDefId,entityDataId));
+        ProcessDataPreviewDto processDataPreviewDto = coreServiceStub.getProcessDataPreview(procDefId,entityDataId);
+        log.info("platform-process-data-preview is result:{}",processDataPreviewDto);
+        return okayWithData(processDataPreviewDto);
     }
+
+
+    @ApiOperationSupport(order = 5)
+    @PostMapping("/platform/crate")
+    @ApiOperation(value = "platform-process-crate", notes = "")
+    public JsonResponse<DynamicWorkflowInstInfoDto> createNewWorkflowInstance(
+            @RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto)
+    {
+
+        return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
+    }
+
+
+    @ApiOperationSupport(order = 11)
+    @GetMapping("/platform/crate/{proc-def-id}/{entity-data-id}")
+    @ApiOperation(value = "platform-process-crate-example", notes = "Just an example, no actual business processing")
+    public JsonResponse<DynamicWorkflowInstCreationInfoDto> createNewWorkflowInstance( @PathVariable("proc-def-id") String procDefId,
+                                                                                         @PathVariable("entity-data-id")String entityDataId)
+    {
+        ProcessDataPreviewDto processDataPreviewDto = coreServiceStub.getProcessDataPreview(procDefId,entityDataId);
+
+        return okayWithData(getDynamicWorkflowInstCreationInfoDto(processDataPreviewDto,procDefId,entityDataId));
+    }
+
+    private DynamicWorkflowInstCreationInfoDto getDynamicWorkflowInstCreationInfoDto(ProcessDataPreviewDto processDataPreviewDto,String procDefId,String guid) {
+        RequestTemplate requestTemplate = requestTemplateService.getOne(new RequestTemplate().setProcDefId(procDefId).getQueryWrapper());
+        List<ProcessDataPreviewDto.GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
+        if(null == entityTreeNodes){
+            throw new TaskmanRuntimeException(String.format("getProcessDataPreview is error:%s",entityTreeNodes));
+        }
+        DynamicEntityValueDto rootEntityValue = new DynamicEntityValueDto();
+        rootEntityValue.setDataId(guid);
+        rootEntityValue.setOid(guid);
+        rootEntityValue.setEntityDefId(guid);
+        entityTreeNodes.stream().forEach(entityTreeNode->{
+            List previousOids =  Stream.of(rootEntityValue.getPreviousOids(), entityTreeNode.getPreviousIds())
+                    .flatMap(Collection::stream).distinct().collect(Collectors.toList());
+            List succeedingOids = Stream.of(rootEntityValue.getSucceedingOids(), entityTreeNode.getSucceedingIds())
+                    .flatMap(Collection::stream).distinct().collect(Collectors.toList());
+            rootEntityValue.setEntityName(entityTreeNode.getEntityName());
+            rootEntityValue.setPackageName(entityTreeNode.getPackageName());
+            rootEntityValue.setPreviousOids(previousOids);
+            rootEntityValue.setSucceedingOids(succeedingOids);
+        });
+        List<DynamicEntityAttrValueDto> attrValues = new ArrayList<>();
+        rootEntityValue.setAttrValues(attrValues);
+        DynamicWorkflowInstCreationInfoDto creationInfoDto = new DynamicWorkflowInstCreationInfoDto();
+        creationInfoDto.setProcDefId(requestTemplate.getProcDefId());
+        creationInfoDto.setProcDefKey(requestTemplate.getProcDefKey());
+
+        creationInfoDto.setRootEntityValue(rootEntityValue);
+
+        log.info("create DynamicWorkflowInstCreationInfoDto:{}",creationInfoDto);
+
+        return creationInfoDto;
+    }
+
 
 
     @Autowired

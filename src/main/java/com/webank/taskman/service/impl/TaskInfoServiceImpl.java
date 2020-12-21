@@ -171,6 +171,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         if (StringUtils.isEmpty(id)){
             throw new Exception("The request details do not exist");
         }
+        if(StringUtils.isEmpty((CharSequence) formInfo)){
+            throw new Exception("Task information cannot be empty");
+        }
         List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getId()));
         SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);
         srt.setFormItemInfo(formItemInfos);

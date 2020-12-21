@@ -1,8 +1,10 @@
 package com.webank.taskman.support.core.dto;
 
 import com.webank.taskman.dto.OperationEventResultDto;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CoreResponse<DATATYPE> {
 
@@ -24,6 +26,9 @@ public class CoreResponse<DATATYPE> {
     }
 
     public static class ListDataResponse extends CoreResponse<List<Object>> {
+    }
+
+    public static class SetDataResponse extends CoreResponse<Set<Object>> {
     }
     public static class ReviewEntitiesDTOResponse extends CoreResponse<ProcessDataPreviewDto> {
     }

@@ -7,6 +7,7 @@ import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.dto.DownloadAttachFileResponse;
 import com.webank.taskman.dto.JsonResponse;
+import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
 import com.webank.taskman.service.AttachFileService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import static com.webank.taskman.dto.JsonResponse.okayWithData;
 
@@ -169,4 +171,12 @@ public class CoreResourceController {
         }
     }
 
+    @ApiOperationSupport(order = 1)
+    @GetMapping("/taskman/set")
+    @ApiOperation(value = "request-Synthesis-search")
+    public JsonResponse<Set<SynthesisRequestTempleResp>> selectRequestSynthesis()
+    {
+        Set<SynthesisRequestTempleResp> set = coreServiceStub.getSetData();
+        return okayWithData(set);
+    }
 }

@@ -23,10 +23,15 @@ public class CoreRestTemplate {
     @SuppressWarnings("unchecked")
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType) throws CoreRemoteCallException {
         log.info("V0.2.21 About to call {} ", targetUrl);
-        R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
-        log.info("Core response: {} ", jsonResponse.getData());
-        validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
+        try {
+            R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
+            log.info("Core response: {} ", jsonResponse.getData());
+            validateJsonResponse(jsonResponse);
+            return (D) jsonResponse.getData();
+        }catch (Exception e){
+            throw e;
+        }
+
     }
 
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType,Object...uriVariables) throws CoreRemoteCallException {
@@ -58,6 +63,7 @@ public class CoreRestTemplate {
         validateJsonResponse(jsonResponse);
         return (D) jsonResponse.getData();
     }
+
     public <D, R extends CoreResponse> D postForResponse(String targetUrl, Class<R> responseType)
             throws CoreRemoteCallException {
         return postForResponse(targetUrl, null, responseType);

@@ -2,7 +2,7 @@ package com.webank.taskman.commons;
 
 import com.webank.taskman.constant.StatusCodeEnum;
 
-public class TaskmanException extends RuntimeException {
+public class TaskmanException extends Exception {
 
     /**
      * 
@@ -13,6 +13,7 @@ public class TaskmanException extends RuntimeException {
     private String messageKey;
     private boolean applyMessage = false;
     private Object[] args;
+    private StatusCodeEnum statusCodeEnum;
 
     public TaskmanException(String message) {
         super(message);
@@ -23,16 +24,18 @@ public class TaskmanException extends RuntimeException {
         super(message, cause);
         this.applyMessage = true;
     }
-
-    public TaskmanException(StatusCodeEnum errorCode) {
-        this.errorCode = errorCode.getCode();
-        this.messageKey = errorCode.getMessage();
+    public TaskmanException(StatusCodeEnum statusCodeEnum) {
+        this.errorCode = statusCodeEnum.getCode();
+        this.messageKey = statusCodeEnum.getMessage();
         this.applyMessage = true;
+        this.statusCodeEnum = statusCodeEnum;
+
     }
     public TaskmanException(StatusCodeEnum errorCode, String message) {
         super(message);
         this.errorCode = errorCode.getCode();
         this.applyMessage = true;
+        this.statusCodeEnum = statusCodeEnum;
     }
 
     public TaskmanException(String errorCode, String message, Object... objects) {
@@ -119,5 +122,9 @@ public class TaskmanException extends RuntimeException {
 
     public Object[] getArgs() {
         return args;
+    }
+
+    public StatusCodeEnum getStatusCodeEnum() {
+        return statusCodeEnum;
     }
 }

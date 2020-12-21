@@ -1,7 +1,5 @@
 package com.webank.taskman.support.core.dto;
 
-import com.webank.taskman.dto.OperationEventResultDto;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

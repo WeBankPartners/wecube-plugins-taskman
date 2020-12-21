@@ -2,9 +2,9 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.taskman.base.BaseEntity;
 
-import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 public class RequestTemplate extends BaseEntity implements Serializable {
@@ -14,7 +14,6 @@ public class RequestTemplate extends BaseEntity implements Serializable {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
 
     private String requestTempGroup;
 
@@ -39,17 +38,32 @@ public class RequestTemplate extends BaseEntity implements Serializable {
     private String tags;
 
     
-    private Integer status;
+    private String status;
 
+    public RequestTemplate() {
+    }
 
-
+    public RequestTemplate(String id, String requestTempGroup,
+                           String procDefKey, String procDefId, String name,
+                           String description, String version, String tags, String status) {
+        this.id = id;
+        this.requestTempGroup = requestTempGroup;
+        this.procDefKey = procDefKey;
+        this.procDefId = procDefId;
+        this.name = name;
+        this.description = description;
+        this.version = version;
+        this.tags = tags;
+        this.status = status;
+    }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public RequestTemplate setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getRequestTempGroup() {
@@ -88,8 +102,9 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         return name;
     }
 
-    public void setName(String name) {
+    public RequestTemplate setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
@@ -116,14 +131,28 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         this.tags = tags;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
+
+    public static QueryWrapper<RequestTemplate> getQueryWrapper(String id,String requestTempGroup,String procDefKey,String procDefId,String name,
+                        String description,String version,String tags,String status){
+        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
+        queryWrapper.setEntity(new RequestTemplate(id,requestTempGroup,procDefKey,procDefId,name,description,version,tags,status));
+        return queryWrapper;
+    }
+
+    public static QueryWrapper<RequestTemplate> getQueryWrapper(String name){
+        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
+        RequestTemplate template = new RequestTemplate();
+        template.setName(name);
+        return getQueryWrapper(null,null,null,null,name,null,null,null,null);
+    }
 
     @Override
     public String toString() {

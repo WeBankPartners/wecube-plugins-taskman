@@ -3,14 +3,13 @@ package com.webank.taskman.controller.x100;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.commons.TaskmanException;
-import com.webank.taskman.dto.DownloadAttachFileResponse;
-import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.service.AttachFileService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
+import com.webank.taskman.support.s3.dto.DownloadAttachFileResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,9 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
-import static com.webank.taskman.dto.JsonResponse.okayWithData;
+import static com.webank.taskman.base.JsonResponse.okayWithData;
 
 
 @Api(tags = {"1、 CoreResource inteface API"})
@@ -167,16 +165,8 @@ public class CoreResourceController {
         } catch (Exception e) {
             String errorMessage = String.format("Failed to download attach file(service request Id:%d) due to %s ",
                     serviceRequestId, e.getMessage());
-            throw new TaskmanException("3000", errorMessage, serviceRequestId, e.getMessage());
+            throw new TaskmanRuntimeException("3000", errorMessage, serviceRequestId, e.getMessage());
         }
     }
 
-    @ApiOperationSupport(order = 1)
-    @GetMapping("/taskman/set")
-    @ApiOperation(value = "request-Synthesis-search")
-    public JsonResponse<Set<SynthesisRequestTempleResp>> selectRequestSynthesis()
-    {
-        Set<SynthesisRequestTempleResp> set = coreServiceStub.getSetData();
-        return okayWithData(set);
-    }
 }

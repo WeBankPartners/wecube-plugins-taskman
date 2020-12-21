@@ -5,15 +5,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CheckTaskDTO;
-import com.webank.taskman.dto.PageInfo;
-import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.base.PageInfo;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.req.SaveTaskInfoAndFormInfoReq;
 import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
@@ -112,14 +112,14 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                     if (0 == formItemTemplate.getRequired()) {
                         if (StringUtils.isEmpty(itemInfo.getValue())) {
                             msg = itemInfo.getName() + "必须填写";
-                            throw new TaskmanException(msg);
+                            throw new TaskmanRuntimeException(msg);
                         }
                     }
                     Regular = formItemTemplate.getRegular();
                     boolean isMatch = Pattern.matches(Regular, itemInfo.getValue());
                     if (false == isMatch) {
                         msg = itemInfo.getName() + "不符合规则";
-                        throw new TaskmanException(msg);
+                        throw new TaskmanRuntimeException(msg);
                     }
                 }
             }
@@ -171,7 +171,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         if (StringUtils.isEmpty(id)){
             throw new Exception("The request details do not exist");
         }
-
+        if(StringUtils.isEmpty((CharSequence) formInfo)){
+            throw new Exception("Task information cannot be empty");
+        }
         List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getId()));
         SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);
         srt.setFormItemInfo(formItemInfos);

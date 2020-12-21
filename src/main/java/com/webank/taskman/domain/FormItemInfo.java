@@ -2,10 +2,8 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.webank.taskman.base.BaseEntity;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class FormItemInfo  implements Serializable {
 
@@ -13,6 +11,8 @@ public class FormItemInfo  implements Serializable {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
+
+    private String recordId;
 
     private String formId;
 
@@ -34,6 +34,14 @@ public class FormItemInfo  implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 
     public String getFormId() {

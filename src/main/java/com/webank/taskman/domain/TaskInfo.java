@@ -46,7 +46,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     
     private String attachFileId;
 
-    private Integer status;
+    private String status;
     
     private String version;
 
@@ -190,11 +190,11 @@ public class TaskInfo extends BaseEntity implements Serializable {
         this.attachFileId = attachFileId;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

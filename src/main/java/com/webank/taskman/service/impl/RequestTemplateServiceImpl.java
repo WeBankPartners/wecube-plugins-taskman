@@ -5,14 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.base.PageInfo;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
-import com.webank.taskman.dto.PageInfo;
-import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
@@ -54,7 +55,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Override
     @Transactional
     public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq req) {
-        RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(req);
+        RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
         if (StringUtils.isEmpty(requestTemplate.getId())) {
@@ -68,9 +69,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
 
     @Override
-    public void deleteRequestTemplateService(String id) throws Exception {
+    public void deleteRequestTemplateService(String id) throws TaskmanRuntimeException {
         if (StringUtils.isEmpty(id)) {
-            throw new Exception("Request template parameter cannot be ID");
+            throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
         wrapper.eq("id", id).set("del_flag", 1);
@@ -78,7 +79,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
+    public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) {
         req.setSourceTableFix("rt");
         StringBuffer useRole =  new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "":req.getUseRoleName()+",") ;
         req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
@@ -104,9 +105,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public RequestTemplateResp detailRequestTemplate(String id) throws Exception {
-//        RequestTemplateResp formTemplateResp =
-//        requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
+    public RequestTemplateResp detailRequestTemplate(String id)  {
         return requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
     }
 

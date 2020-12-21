@@ -4,8 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.commons.TaskmanException;
-import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.base.PageInfo;
+import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.converter.FormInfoConverter;
 import com.webank.taskman.converter.FormItemInfoConverter;
@@ -14,9 +15,7 @@ import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestInfo;
-import com.webank.taskman.dto.DoneServiceRequestRequest;
-import com.webank.taskman.dto.PageInfo;
-import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.req.DoneRequestReq;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
@@ -66,7 +65,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     private final static String STATUS_DONE = "Done";
 
     @Override
-    public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) throws Exception {
+    public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) {
 
         IPage<RequestInfo> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit),req);
         List<RequestInfoResq> respList = requestInfoConverter.toDto(iPage.getRecords());
@@ -85,11 +84,11 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     }
 
     @Override
-    public void doneServiceRequest(DoneServiceRequestRequest completedRequest) {
+    public void doneServiceRequest(DoneRequestReq completedRequest) {
         RequestInfo serviceRequestResult = this.baseMapper.selectById(completedRequest.getServiceRequestId());
         if (null == serviceRequestResult) {
             String msg = String.format("Service Request [%s] not found", completedRequest.getServiceRequestId());
-            throw new TaskmanException(StatusCodeEnum.NOT_FOUND_RECORD.getCode(), msg, completedRequest.getServiceRequestId());
+            throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD.getCode(), msg, completedRequest.getServiceRequestId());
         }
 //        serviceRequestResult.setResult(completedRequest.getResult());
         serviceRequestResult.setStatus(STATUS_DONE);
@@ -104,17 +103,20 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         requestInfo.setCurrenUserName(requestInfo,requestInfo.getId());
         saveOrUpdate(requestInfo);
         List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(req.getFormItems());
+        String requestTempId = requestInfo.getRequestTempId();
         if(null != formItemInfos && formItemInfos.size() > 0 ){
             FormTemplate formTemplate = formTemplateService.getOne(
-                    new QueryWrapper<FormTemplate>().eq("temp_id",requestInfo.getRequestTempId()).eq("temp_type",0) );
+                    new QueryWrapper<FormTemplate>()
+                            .eq("temp_id",requestTempId).eq("temp_type",0) );
+            formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
             FormInfo form = new FormInfo();
             form.setRecordId(requestInfo.getId());
             form.setFormTemplateId(formTemplate.getId());
-            form.setName(requestInfo.getName()+"_form");
             form.setCurrenUserName(form,form.getId());
             formInfoService.save(form);
             formItemInfos.stream().forEach(item -> {
                 item.setFormId(form.getId());
+
                 formItemInfoService.save(item);
             });
         }

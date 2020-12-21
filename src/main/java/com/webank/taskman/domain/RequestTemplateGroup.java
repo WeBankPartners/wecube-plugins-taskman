@@ -27,7 +27,7 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
 
     private String version;
 
-    private Integer status;
+    private String status;
 
     public String getId() {
         return id;
@@ -78,11 +78,11 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
         this.version = version;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -102,5 +102,9 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
         ", updatedTime=" + getUpdatedTime() +
         ", delFlag=" + getDelFlag() +
         "}";
+    }
+
+    public  enum  RequestTemplateGroupStatus{
+
     }
 }

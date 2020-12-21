@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(value = "TemplateGroup respone object", description = "TemplateGroupDTO")
-public class TemplateGroupDTO {
+public class RequestTemplateGroupDTO {
 
     @ApiModelProperty(value = "主键", position = 1)
     private String id;
@@ -31,8 +31,9 @@ public class TemplateGroupDTO {
         return id;
     }
 
-    public void setId(String id) {
+    public RequestTemplateGroupDTO setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getName() {

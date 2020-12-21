@@ -1,4 +1,4 @@
-package com.webank.taskman.dto;
+package com.webank.taskman.support.s3.dto;
 
 public class DownloadAttachFileResponse {
 	private byte[] fileByteArray;

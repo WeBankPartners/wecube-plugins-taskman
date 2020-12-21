@@ -26,40 +26,45 @@ public class FormInfo extends BaseEntity implements Serializable {
         return id;
     }
 
-    public void setId(String id) {
+    public FormInfo setId(String id) {
         this.id = id;
+        return  this;
     }
 
     public String getRecordId() {
         return recordId;
     }
 
-    public void setRecordId(String recordId) {
+    public FormInfo setRecordId(String recordId) {
         this.recordId = recordId;
+        return  this;
     }
 
     public String getFormTemplateId() {
         return formTemplateId;
     }
 
-    public void setFormTemplateId(String formTemplateId) {
+    public FormInfo setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
+        return  this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public FormInfo setName(String name) {
         this.name = name;
+        return  this;
     }
 
     public Integer getType() {
         return type;
     }
 
-    public void setType(Integer type) {
+    public FormInfo setType(Integer type) {
         this.type = type;
+        return  this;
     }
 
 

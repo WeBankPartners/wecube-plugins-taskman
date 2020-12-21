@@ -1,11 +1,6 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @ApiModel
 public class TaskTemplateByRoleResp {
@@ -24,12 +19,6 @@ public class TaskTemplateByRoleResp {
     private String name;
 
     private String description;
-
-    @ApiModelProperty(value = "",position = 109)
-    private List<RoleDTO> useRoles = new ArrayList<>();
-
-    @ApiModelProperty(value = "",position = 100)
-    private List<RoleDTO> manageRoles = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -95,22 +84,6 @@ public class TaskTemplateByRoleResp {
         this.description = description;
     }
 
-    public List<RoleDTO> getUseRoles() {
-        return useRoles;
-    }
-
-    public void setUseRoles(List<RoleDTO> useRoles) {
-        this.useRoles = useRoles;
-    }
-
-    public List<RoleDTO> getManageRoles() {
-        return manageRoles;
-    }
-
-    public void setManageRoles(List<RoleDTO> manageRoles) {
-        this.manageRoles = manageRoles;
-    }
-
     @Override
     public String toString() {
         return "TaskTemplateByRoleResp{" +
@@ -122,8 +95,6 @@ public class TaskTemplateByRoleResp {
                 ", nodeName='" + nodeName + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", useRoles=" + useRoles +
-                ", manageRoles=" + manageRoles +
                 '}';
     }
 }

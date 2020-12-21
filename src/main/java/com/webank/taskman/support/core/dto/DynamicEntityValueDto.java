@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DynamicEntityValueDto {
+
     @Nullable
     private String entityDefId;//Entity definition id from platform.
     @Nonnull
@@ -85,6 +86,18 @@ public class DynamicEntityValueDto {
     public void setAttrValues(List<DynamicEntityAttrValueDto> attrValues) {
         this.attrValues = attrValues;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return "DynamicEntityValueDto{" +
+                "entityDefId='" + entityDefId + '\'' +
+                ", packageName='" + packageName + '\'' +
+                ", entityName='" + entityName + '\'' +
+                ", dataId='" + dataId + '\'' +
+                ", oid='" + oid + '\'' +
+                ", previousOids=" + previousOids +
+                ", succeedingOids=" + succeedingOids +
+                ", attrValues=" + attrValues +
+                '}';
+    }
 }

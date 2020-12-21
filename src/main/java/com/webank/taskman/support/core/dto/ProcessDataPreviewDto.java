@@ -2,6 +2,7 @@ package com.webank.taskman.support.core.dto;
 
 import io.swagger.annotations.ApiModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel
@@ -10,7 +11,7 @@ public class ProcessDataPreviewDto {
     private String processSessionId;
 
 
-    private List<GraphNodeDto> entityTreeNodes;
+    private List<GraphNodeDto> entityTreeNodes = new ArrayList<>();
 
     public List<GraphNodeDto> getEntityTreeNodes() {
         return entityTreeNodes;
@@ -103,5 +104,13 @@ public class ProcessDataPreviewDto {
 
     public void setProcessSessionId(String processSessionId) {
         this.processSessionId = processSessionId;
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessDataPreviewDto{" +
+                "processSessionId='" + processSessionId + '\'' +
+                ", entityTreeNodes=" + entityTreeNodes +
+                '}';
     }
 }

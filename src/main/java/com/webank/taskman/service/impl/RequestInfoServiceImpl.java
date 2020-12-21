@@ -7,29 +7,31 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.PageInfo;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusCodeEnum;
+import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.FormInfoConverter;
 import com.webank.taskman.converter.FormItemInfoConverter;
 import com.webank.taskman.converter.RequestInfoConverter;
-import com.webank.taskman.domain.FormInfo;
-import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.domain.FormTemplate;
-import com.webank.taskman.domain.RequestInfo;
-import com.webank.taskman.dto.req.DoneRequestReq;
+import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.RequestInfoMapper;
-import com.webank.taskman.service.FormInfoService;
-import com.webank.taskman.service.FormTemplateService;
-import com.webank.taskman.service.RequestInfoService;
-import com.webank.taskman.service.RoleRelationService;
+import com.webank.taskman.service.*;
+import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.dto.DynamicEntityValueDto;
+import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
+import com.webank.taskman.support.core.dto.ProcessDataPreviewDto.GraphNodeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -83,18 +85,6 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         return queryResponse;
     }
 
-    @Override
-    public void doneServiceRequest(DoneRequestReq completedRequest) {
-        RequestInfo serviceRequestResult = this.baseMapper.selectById(completedRequest.getServiceRequestId());
-        if (null == serviceRequestResult) {
-            String msg = String.format("Service Request [%s] not found", completedRequest.getServiceRequestId());
-            throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD.getCode(), msg, completedRequest.getServiceRequestId());
-        }
-//        serviceRequestResult.setResult(completedRequest.getResult());
-        serviceRequestResult.setStatus(STATUS_DONE);
-        saveOrUpdate(serviceRequestResult);
-    }
-
 
     @Override
     @Transactional
@@ -105,9 +95,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(req.getFormItems());
         String requestTempId = requestInfo.getRequestTempId();
         if(null != formItemInfos && formItemInfos.size() > 0 ){
+
             FormTemplate formTemplate = formTemplateService.getOne(
-                    new QueryWrapper<FormTemplate>()
-                            .eq("temp_id",requestTempId).eq("temp_type",0) );
+                    FormTemplate.getQueryWrapper(requestTempId,StatusEnum.DEFAULT.ordinal()+""));
             formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
             FormInfo form = new FormInfo();
             form.setRecordId(requestInfo.getId());
@@ -116,11 +106,58 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             formInfoService.save(form);
             formItemInfos.stream().forEach(item -> {
                 item.setFormId(form.getId());
-
                 formItemInfoService.save(item);
             });
         }
-
+        DynamicWorkflowInstInfoDto response = createNewWorkflowInstance(requestInfo);
+        if(null == response){
+            throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
+        }
         return new SaveRequestInfoReq().setId(requestInfo.getId());
+    }
+
+    @Autowired
+    CoreServiceStub coreServiceStub;
+
+    @Autowired
+    RequestTemplateService requestTemplateService;
+
+    private DynamicWorkflowInstInfoDto createNewWorkflowInstance(RequestInfo requestInfo){
+        RequestTemplate requestTemplate = requestTemplateService.getById(requestInfo.getRequestTempId());
+        String guid = requestInfo.getRootEntity();
+
+        DynamicWorkflowInstCreationInfoDto creationInfoDto = new DynamicWorkflowInstCreationInfoDto();
+        creationInfoDto.setProcDefId(requestTemplate.getProcDefId());
+        creationInfoDto.setProcDefKey(requestTemplate.getProcDefKey());
+
+        DynamicEntityValueDto rootEntityValue = getDynamicEntityValueDto(requestTemplate, guid);
+        creationInfoDto.setRootEntityValue(rootEntityValue);
+
+        return coreServiceStub.createNewWorkflowInstance(creationInfoDto);
+    }
+
+    private DynamicEntityValueDto getDynamicEntityValueDto(RequestTemplate requestTemplate, String guid) {
+        ProcessDataPreviewDto processDataPreviewDto = coreServiceStub.getProcessDataPreview(requestTemplate.getProcDefId(),guid);
+
+        List<GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
+        if(null == entityTreeNodes){
+            throw new TaskmanRuntimeException(String.format("getProcessDataPreview is error:%s",entityTreeNodes));
+        }
+        DynamicEntityValueDto rootEntityValue = new DynamicEntityValueDto();
+        rootEntityValue.setDataId(guid);
+        rootEntityValue.setOid(guid);
+        rootEntityValue.setEntityDefId(guid);
+        entityTreeNodes.stream().forEach(entityTreeNode->{
+            List previousOids =  Stream.of(rootEntityValue.getPreviousOids(), entityTreeNode.getPreviousIds())
+                    .flatMap(Collection::stream).distinct().collect(Collectors.toList());
+            List succeedingOids = Stream.of(rootEntityValue.getSucceedingOids(), entityTreeNode.getSucceedingIds())
+                    .flatMap(Collection::stream).distinct().collect(Collectors.toList());
+
+            rootEntityValue.setEntityName(entityTreeNode.getEntityName());
+            rootEntityValue.setPackageName(entityTreeNode.getPackageName());
+            rootEntityValue.setPreviousOids(previousOids);
+            rootEntityValue.setSucceedingOids(succeedingOids);
+        });
+        return rootEntityValue;
     }
 }

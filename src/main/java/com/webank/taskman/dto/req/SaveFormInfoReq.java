@@ -3,6 +3,8 @@ package com.webank.taskman.dto.req;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.List;
+
 @ApiModel
 public class SaveFormInfoReq {
 
@@ -18,6 +20,8 @@ public class SaveFormInfoReq {
     private String outputAttrDef;
     @ApiModelProperty(value = "其他参数",position = 10)
     private String otherAttrDef;
+
+    private List<SaveFormItemInfoReq> formItems;
 
     public String getName() {
         return name;
@@ -57,5 +61,13 @@ public class SaveFormInfoReq {
 
     public void setOtherAttrDef(String otherAttrDef) {
         this.otherAttrDef = otherAttrDef;
+    }
+
+    public List<SaveFormItemInfoReq> getFormItems() {
+        return formItems;
+    }
+
+    public void setFormItems(List<SaveFormItemInfoReq> formItems) {
+        this.formItems = formItems;
     }
 }

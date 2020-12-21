@@ -158,7 +158,10 @@ public class CoreServiceStub {
 
     //7
     public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
-        return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
+        log.info("try to create new workflow instance with data: {}", creationInfoDto);
+        DynamicWorkflowInstInfoDto dto = template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DynamicWorkflowInstInfoResponse.class);
+
+        return dto;
     }
 
 

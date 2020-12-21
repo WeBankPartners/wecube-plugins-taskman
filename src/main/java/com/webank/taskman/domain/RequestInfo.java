@@ -17,6 +17,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
 
     private String requestTempId;
     private String procInstKey;
+    private String rootEntity;
     private String name;
     private String reporter;
     private Date reportTime;
@@ -50,6 +51,14 @@ public class RequestInfo extends BaseEntity implements Serializable {
 
     public void setProcInstKey(String procInstKey) {
         this.procInstKey = procInstKey;
+    }
+
+    public String getRootEntity() {
+        return rootEntity;
+    }
+
+    public void setRootEntity(String rootEntity) {
+        this.rootEntity = rootEntity;
     }
 
     public String getName() {

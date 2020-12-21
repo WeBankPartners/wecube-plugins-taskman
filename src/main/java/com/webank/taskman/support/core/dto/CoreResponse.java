@@ -44,7 +44,7 @@ public class CoreResponse<DATATYPE> {
 
     }
 
-    public static class DynamicWorkflowInstInfoDto extends CoreResponse<DynamicWorkflowInstInfoDto> {
+    public static class DynamicWorkflowInstInfoResponse extends CoreResponse<DynamicWorkflowInstInfoDto> {
     }
 
     public static class CommonResponseDto extends CoreResponse<List<WorkflowDefInfoDto>> {

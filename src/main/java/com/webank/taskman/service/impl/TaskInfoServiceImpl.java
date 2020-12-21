@@ -14,7 +14,7 @@ import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CheckTaskDTO;
 import com.webank.taskman.base.PageInfo;
 import com.webank.taskman.base.QueryResponse;
-import com.webank.taskman.dto.req.SaveTaskInfoAndFormInfoReq;
+import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import com.webank.taskman.dto.resp.*;
@@ -84,9 +84,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public SaveTaskInfoResp saveTaskInfo(SaveTaskInfoAndFormInfoReq saveTaskInfoAndFormInfoReq) {
+    public SaveTaskInfoResp saveTaskInfo(SaveTaskInfoReq saveTaskInfoReq) {
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
-        TaskInfo taskInfo = taskInfoConverter.svTOInfo(saveTaskInfoAndFormInfoReq);
+        TaskInfo taskInfo = taskInfoConverter.svTOInfo(saveTaskInfoReq);
         taskInfo.setUpdatedBy(currentUsername);
         if (StringUtils.isEmpty(taskInfo.getId())) {
             taskInfo.setCreatedBy(currentUsername);
@@ -94,8 +94,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
         String taskInfoId = taskInfo.getId();
         FormInfoResq formInfoResq = checkTheTask(taskInfoId).getFormInfoResq();
-        FormInfo formInfo = formInfoConverter.svToFormInfo(saveTaskInfoAndFormInfoReq.getSaveFormInfoAndFormItemInfoReq());
-        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(saveTaskInfoAndFormInfoReq.getSaveFormInfoAndFormItemInfoReq().getSaveFormItemInfoReqs());
+        FormInfo formInfo = formInfoConverter.saveReqToEntity(saveTaskInfoReq.getFormInfo());
+        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(saveTaskInfoReq.getFormInfo().getFormItems());
 
         List<FormItemTemplate> formItemTemplateList = new ArrayList<>();
         String msg = "success";

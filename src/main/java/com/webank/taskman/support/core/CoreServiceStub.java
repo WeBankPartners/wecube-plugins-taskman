@@ -1,6 +1,7 @@
 package com.webank.taskman.support.core;
 
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
+import com.webank.taskman.dto.resp.SynthesisRequestTempleResp;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.SpringUtils;
@@ -9,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -172,6 +171,13 @@ public class CoreServiceStub {
         }
         return template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),
                 ReviewEntitiesDTOResponse.class);
+    }
+
+    public Set<SynthesisRequestTempleResp> getSetData(){
+        Set<SynthesisRequestTempleResp> set = new HashSet<>();
+        set = template.get("http://localhost:9999/taskman/v1/demo/set",SetDataResponse.class);
+
+        return set;
     }
 
 }

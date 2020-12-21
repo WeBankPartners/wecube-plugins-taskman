@@ -2,11 +2,10 @@ package com.webank.taskman.controller.x100;
 
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.webank.taskman.dto.*;
-import com.webank.taskman.dto.req.SelectTaskInfoReq;
+import com.webank.taskman.base.JsonResponse;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
-import com.webank.taskman.dto.req.TaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
@@ -16,12 +15,9 @@ import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 
 @RestController
@@ -51,13 +47,12 @@ public class TaskmanTaskController {
 
     @ApiOperationSupport(order = 19)
     @PostMapping("/template/search/{page}/{pageSize}")
-    @ApiOperation(value = "Task-Template-search")
+    @ApiOperation(value = "Task-Template-selectAll")
     public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) TaskTemplateReq req)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
             throws Exception{
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize,req);
+        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
         return JsonResponse.okayWithData(queryResponse);
     }
 

@@ -2,9 +2,9 @@ package com.webank.taskman.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
-import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.AttachFile;
-import com.webank.taskman.dto.DownloadAttachFileResponse;
+import com.webank.taskman.support.s3.dto.DownloadAttachFileResponse;
 import com.webank.taskman.mapper.AttachFileMapper;
 import com.webank.taskman.service.AttachFileService;
 import com.webank.taskman.support.s3.S3Client;
@@ -25,48 +25,55 @@ public class AttachFileServiceImpl extends ServiceImpl<AttachFileMapper, AttachF
     @Autowired
     ServiceTaskmanProperties ServiceTaskmanProperties;
 
-    public DownloadAttachFileResponse downloadServiceRequestAttachFile(String attachFileId) throws Exception {
+    public DownloadAttachFileResponse downloadServiceRequestAttachFile(String attachFileId) throws TaskmanRuntimeException {
 
         AttachFile attachFile = getById(attachFileId);
         if (null == attachFile){
-            throw new TaskmanException("3011", "This service request has no attach file");
+            throw new TaskmanRuntimeException("3011", "This service request has no attach file");
         }
-        String fileName = attachFile.getAttachFileName();
-        String tempDownloadFilePath = SystemUtils.getTempFolderPath() + fileName;
-        File downloadFile = new File(tempDownloadFilePath);
+        try {
+            String fileName = attachFile.getAttachFileName();
+            String tempDownloadFilePath = SystemUtils.getTempFolderPath() + fileName;
+            File downloadFile = new File(tempDownloadFilePath);
 
-        new S3Client(ServiceTaskmanProperties).downFile(fileName, tempDownloadFilePath);
-        DownloadAttachFileResponse response = new DownloadAttachFileResponse(
-                FileUtils.readFileToByteArray(downloadFile), fileName);
+            new S3Client(ServiceTaskmanProperties).downFile(fileName, tempDownloadFilePath);
+            DownloadAttachFileResponse response = new DownloadAttachFileResponse(
+                    FileUtils.readFileToByteArray(downloadFile), fileName);
 
-        FileUtils.forceDelete(downloadFile);
-        return response;
+            FileUtils.forceDelete(downloadFile);
+            return response;
+        }catch (Exception e){
+            throw new TaskmanRuntimeException(e.getMessage());
+        }
     }
 
     @Override
-    public String uploadServiceRequestAttachFile(MultipartFile attachFile) throws Exception{
+    public String uploadServiceRequestAttachFile(MultipartFile attachFile) throws TaskmanRuntimeException {
         if (attachFile.isEmpty()) {
-            throw new TaskmanException("3008", "Empty file!");
+            throw new TaskmanRuntimeException("3008", "Empty file!");
         }
-
-        String fileExtension = FilenameUtils.getExtension(attachFile.getOriginalFilename());
+        try {
+            String fileExtension = FilenameUtils.getExtension(attachFile.getOriginalFilename());
 //        if (!fileExtension.equals("xlsx") && !fileExtension.equals("xls")) {
 //            throw new ServiceMgmtException("3009", "Only support Excel file");
 //        }
 
-        String tmpFileName = String.valueOf(System.currentTimeMillis());
-        File tempUploadFile = new File(SystemUtils.getTempFolderPath() + tmpFileName);
-        attachFile.transferTo(tempUploadFile);
+            String tmpFileName = String.valueOf(System.currentTimeMillis());
+            File tempUploadFile = new File(SystemUtils.getTempFolderPath() + tmpFileName);
+            attachFile.transferTo(tempUploadFile);
 
-        String uploadFileName = FilenameUtils.getBaseName(attachFile.getOriginalFilename()) + "-" + tmpFileName + "."
-                + fileExtension;
+            String uploadFileName = FilenameUtils.getBaseName(attachFile.getOriginalFilename()) + "-" + tmpFileName + "."
+                    + fileExtension;
 
-        String s3Url = new S3Client(ServiceTaskmanProperties).uploadFile(uploadFileName, tempUploadFile);
-        AttachFile attachFileObject = new AttachFile(uploadFileName, s3Url,
-                ServiceTaskmanProperties.getS3DefaultBucket(), uploadFileName);
-        save(attachFileObject);
-        FileUtils.forceDelete(tempUploadFile);
-        return attachFileObject.getId();
+            String s3Url = new S3Client(ServiceTaskmanProperties).uploadFile(uploadFileName, tempUploadFile);
+            AttachFile attachFileObject = new AttachFile(uploadFileName, s3Url,
+                    ServiceTaskmanProperties.getS3DefaultBucket(), uploadFileName);
+            save(attachFileObject);
+            FileUtils.forceDelete(tempUploadFile);
+            return attachFileObject.getId();
+        }catch (Exception e){
+            throw new TaskmanRuntimeException(e.getMessage());
+        }
     }
 
 }

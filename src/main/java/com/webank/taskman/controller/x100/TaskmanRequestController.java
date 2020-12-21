@@ -3,17 +3,18 @@ package com.webank.taskman.controller.x100;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.webank.taskman.commons.ApplicationConstants;
+import com.webank.taskman.base.JsonResponse;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
-import com.webank.taskman.dto.resp.RequestTemplateGroupResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
@@ -31,12 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
-import static com.webank.taskman.dto.JsonResponse.okay;
-import static com.webank.taskman.dto.JsonResponse.okayWithData;
+import static com.webank.taskman.base.JsonResponse.okay;
+import static com.webank.taskman.base.JsonResponse.okayWithData;
 
 
 @Api(tags = {"3、 Request inteface API"})
@@ -58,18 +58,60 @@ public class TaskmanRequestController {
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
-    @Autowired
-    RequestTemplateConverter requestTemplateConverter;
 
 
     @Autowired
     RequestInfoService requestInfoService;
 
-    @ApiOperationSupport(order = 10)
+    @ApiOperationSupport(order = 1)
+    @PostMapping("/template/group/save")
+    @ApiOperation(value = "request-group-template-save", notes = "")
+    public JsonResponse<RequestTemplateGroupDTO> requestGroupTemplateSave(
+            @Valid @RequestBody SaveRequestTemplateGropReq req) throws TaskmanException {
+        log.info("Received request parameters:{}",req);
+        return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
+    }
+
+    @ApiOperationSupport(order = 2,ignoreParameters = {"manageRoleName"})
+    @PostMapping("/template/group/search/{page}/{pageSize}")
+    @ApiOperation(value = "request-group-template-search")
+    public JsonResponse<QueryResponse<RequestTemplateGroupDTO>> requestGroupTemplateSearch(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) RequestTemplateGroupDTO req
+    ) throws TaskmanRuntimeException
+    {
+        log.info("Received request parameters:{}",req);
+        return JsonResponse.okayWithData(requestTemplateGroupService.selectByParam(page, pageSize, req));
+    }
+
+    @ApiOperationSupport(order = 3)
+    @GetMapping("/template/group/available")
+    @ApiOperation(value = "request-group-template-available")
+    public JsonResponse<List<RequestTemplateGroupDTO>> requestGroupTemplateAvailable() throws TaskmanRuntimeException
+    {
+        QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
+        wrapper.eq("status",0);
+//        requestTemplateGroupService.selectByParams();
+        List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
+        return JsonResponse.okayWithData(dtoList);
+    }
+
+    @ApiOperationSupport(order = 3)
+    @DeleteMapping("/template/group/delete/{id}")
+    @ApiOperation(value = "request-group-template-delete", notes = "")
+    public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException
+    {
+        requestTemplateGroupService.deleteTemplateGroupByIDService(id);
+        return okay();
+    }
+    
+
+    @ApiOperationSupport(order = 4)
     @PostMapping("/template/save")
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
-    public JsonResponse saveRequestTemplate(@Valid @RequestBody SaveRequestTemplateReq req
-            )throws Exception{
+    public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req
+            )throws TaskmanRuntimeException {
       RequestTemplateResp requestTemplateResp= requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateResp);
     }
@@ -77,7 +119,7 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 11,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
-    public JsonResponse<RequestTemplateResp> releaseRequestTemplate(@RequestBody SaveRequestTemplateReq req) throws Exception {
+    public JsonResponse<RequestTemplateResp> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
         if(StringUtils.isEmpty(req.getId())){
             return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
@@ -87,9 +129,8 @@ public class TaskmanRequestController {
         if(null == requestTemplate){
             return JsonResponse.customError(StatusCodeEnum.NOT_FOUND_RECORD);
         }
-        requestTemplate.setStatus( requestTemplate.getStatus() == StatusEnum._DEFAULT.ordinal()?
-            StatusEnum.ENABLE.ordinal() :
-            StatusEnum._DEFAULT.ordinal());
+        requestTemplate.setStatus(StatusEnum.UNRELEASED.toString().equals(requestTemplate.getStatus())?
+                StatusEnum.RELEASED.toString() :StatusEnum.UNRELEASED.toString());
         requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateService.updateById(requestTemplate);
         return okayWithData(new RequestTemplateResp().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
@@ -98,11 +139,11 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 12)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
-    public JsonResponse<QueryResponse<RequestTemplateResp>> selectRequestTemplatePage(
+    public JsonResponse<QueryResponse<RequestTemplateResp>> requestTemplateSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestTemplateReq req)
-            throws Exception {
+            throws TaskmanRuntimeException {
         QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -110,7 +151,7 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 13)
     @DeleteMapping("/template/delete/{id}")
     @ApiOperation(value = "request-template-delete", notes = "需要传入id")
-    public JsonResponse deleteRequestTemplateByID(@PathVariable("id") String id) throws Exception {
+    public JsonResponse requestTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException {
         requestTemplateService.deleteRequestTemplateService(id);
         return okay();
     }
@@ -118,7 +159,7 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 14)
     @GetMapping("/template/detail/{id}")
     @ApiOperation(value = "request-template-detail", notes = "需要传入id")
-    public JsonResponse<RequestTemplateResp> detail(@PathVariable("id") String id) throws Exception {
+    public JsonResponse<RequestTemplateResp> requestTemplateDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
        RequestTemplateResp requestTemplateResp= requestTemplateService.detailRequestTemplate(id);
         return JsonResponse.okayWithData(requestTemplateResp);
     }
@@ -126,7 +167,7 @@ public class TaskmanRequestController {
     @GetMapping(value = {"/template/available","/template/available/{all}"})
     @ApiOperationSupport(order = 15)
     @ApiOperation(value = "request-template-available")
-    public JsonResponse<List<RequestTemplateResp>> availableRequest( @PathVariable(value = "all",required = false) String all,@ApiIgnore QueryRequestTemplateReq req) throws Exception {
+    public JsonResponse<List<RequestTemplateResp>> requestTemplateAvailable( @PathVariable(value = "all",required = false) String all,@ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
         if(StringUtils.isEmpty(all)){
             req.setStatus(StatusEnum.ENABLE.ordinal());
         }
@@ -137,62 +178,23 @@ public class TaskmanRequestController {
         return okayWithData(dtoList);
     }
 
-    @PostMapping("/template/group/save")
-    @ApiOperationSupport(order = 16)
-    @ApiOperation(value = "request-group-template-save", notes = "")
-    public JsonResponse<RequestTemplateGroupResq> createTemplateGroup(
-            @Valid @RequestBody SaveRequestTemplateGropReq req) throws Exception {
-        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupService.saveTemplateGroupByReq(req);
-        RequestTemplateGroupResq groupResq =new RequestTemplateGroupResq();
-        groupResq.setId(requestTemplateGroup.getId());
-        return JsonResponse.okayWithData(groupResq);
-    }
-
-    @PostMapping("/template/group/search/{page}/{pageSize}")
-    @ApiOperationSupport(order = 17)
-    @ApiOperation(value = "request-group-template-search")
-    public JsonResponse<QueryResponse<TemplateGroupDTO>> selectTemplateGroup(
-            @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) TemplateGroupReq req
-    ) throws Exception {
-        QueryResponse<TemplateGroupDTO> queryResponse = requestTemplateGroupService.selectAllTemplateGroupService(page, pageSize, req);
-        return JsonResponse.okayWithData(queryResponse);
-    }
-
-    @GetMapping("/template/group/available")
-    @ApiOperationSupport(order = 18)
-    @ApiOperation(value = "request-group-template-available")
-    public JsonResponse<List<TemplateGroupDTO>> available(@ApiIgnore @RequestBody(required = false) TemplateGroupReq req) throws Exception {
-        QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
-        wrapper.eq("status",0);
-        List<TemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
-        return JsonResponse.okayWithData(dtoList);
-    }
-
-    @DeleteMapping("/template/group/delete/{id}")
-    @ApiOperationSupport(order = 19)
-    @ApiOperation(value = "request-group-template-delete", notes = "需要传入id")
-    public JsonResponse deleteTemplateGroupByID(@PathVariable("id") String id) throws Exception {
-        requestTemplateGroupService.deleteTemplateGroupByIDService(id);
-        return okay();
-    }
+    
 
     @ApiOperationSupport(order = 20)
     @PostMapping("/save")
-    @ApiOperation(value = "Request-Info-save")
-    public JsonResponse<SaveRequestInfoReq> saveRequestInfo(@RequestBody SaveRequestInfoReq req) throws Exception {
+    @ApiOperation(value = "request-info-save")
+    public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
         return okayWithData(requestInfoService.saveRequestInfo(req));
     }
 
     @ApiOperationSupport(order = 21)
     @PostMapping("/search/{page}/{pageSize}")
-    @ApiOperation(value = "Request-Info-search")
-    public JsonResponse<QueryResponse<SynthesisRequestInfoResp>>selectSynthesisRequestInfo(
+    @ApiOperation(value = "request-info-search")
+    public JsonResponse<QueryResponse<SynthesisRequestInfoResp>> requestInfoSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SynthesisRequestInfoReq req)
-            throws Exception {
+            throws TaskmanRuntimeException {
         QueryResponse<SynthesisRequestInfoResp> list = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
@@ -200,21 +202,13 @@ public class TaskmanRequestController {
 
     @ApiOperationSupport(order = 22)
     @PostMapping("/details")
-    @ApiOperation(value = "Request-Info-details")
-    public JsonResponse<SynthesisRequestInfoFormRequest> selectSynthesisRequestInfoForm(String id)
-            throws Exception {
+    @ApiOperation(value = "request-info-detail")
+    public JsonResponse<SynthesisRequestInfoFormRequest> requestInfoDetail(String id)
+            throws TaskmanRuntimeException {
         SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestSynthesisService.selectSynthesisRequestInfoFormService(id);
         return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
     }
 
-    @ApiOperationSupport(order = 23)
-    @ApiOperation(value = "Request-Info-done")
-    @PostMapping(ApplicationConstants.ApiInfo.API_RESOURCE_SERVICE_REQUEST_DONE)
-    public JsonResponse updateServiceRequest(@RequestBody DoneServiceRequestRequest request,
-                                             @ApiIgnore HttpServletRequest httpRequest) throws Exception {
-        requestInfoService.doneServiceRequest(request);
-        return okay();
-    }
 
 }
 

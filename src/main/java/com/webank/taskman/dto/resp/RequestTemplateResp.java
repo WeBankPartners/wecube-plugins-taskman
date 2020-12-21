@@ -47,7 +47,7 @@ public class RequestTemplateResp {
 
 
     @ApiModelProperty(value = "",position = 108)
-    private Integer status;
+    private String status;
 
     @ApiModelProperty(value = "",position = 109)
     private List<RoleDTO> useRoles = new ArrayList<>();
@@ -144,11 +144,11 @@ public class RequestTemplateResp {
         return this;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public RequestTemplateResp setStatus(Integer status) {
+    public RequestTemplateResp setStatus(String status) {
         this.status = status;
         return this;
     }

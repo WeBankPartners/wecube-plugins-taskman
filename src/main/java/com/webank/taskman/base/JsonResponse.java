@@ -1,4 +1,4 @@
-package com.webank.taskman.dto;
+package com.webank.taskman.base;
 
 import com.webank.taskman.constant.BizCodeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
@@ -47,7 +47,7 @@ public class JsonResponse<T>  implements Serializable {
 	}
 
 	public void setData(T data) {
-		this.data = data;
+		this.data = null != data ? data : (T) new ArrayList<T>();
 	}
 
 	public Integer getCode() {

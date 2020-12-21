@@ -1,6 +1,6 @@
 package com.webank.taskman.support.core;
 
-import com.webank.taskman.dto.JsonResponse;
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.support.core.dto.CoreResponse;
 import com.webank.taskman.utils.JsonUtils;
 import org.slf4j.Logger;

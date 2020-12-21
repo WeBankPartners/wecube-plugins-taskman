@@ -6,6 +6,7 @@ import com.webank.taskman.dto.*;
 import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import com.webank.taskman.dto.req.TaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
@@ -50,12 +51,13 @@ public class TaskmanTaskController {
 
     @ApiOperationSupport(order = 19)
     @PostMapping("/template/search/{page}/{pageSize}")
-    @ApiOperation(value = "Task-Template-selectAll")
+    @ApiOperation(value = "Task-Template-search")
     public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) TaskTemplateReq req)
             throws Exception{
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
+        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

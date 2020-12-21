@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.converter.RoleRelationConverter;
 import com.webank.taskman.converter.SynthesisTaskTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RoleRelation;
@@ -19,6 +20,7 @@ import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
+import com.webank.taskman.dto.req.TaskTemplateReq;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.mapper.TaskTemplateMapper;
@@ -28,6 +30,7 @@ import com.webank.taskman.service.TaskTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -48,6 +51,8 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     TaskTemplateMapper taskTemplateMapper;
 
+    @Autowired
+    RoleRelationConverter roleRelationConverter;
 
     @Autowired
     SynthesisTaskTemplateConverter synthesisTaskTemplateConverter;
@@ -119,16 +124,27 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplateByRole(Integer page, Integer pageSize) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        QueryRoleRelationBaseReq req = new QueryRoleRelationBaseReq();
+    public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplateByRole(Integer page, Integer pageSize, TaskTemplateReq req) {
         req.setSourceTableFix("rt");
-        req.setUseRoleName(currentUserRolesToString);
-        String sql = req.getConditionSql();
+        StringBuffer useRole =  new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "":req.getUseRoleName()+",") ;
+        req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
 
-        IPage<TaskTemplate> iPage = taskTemplateMapper.selectSynthesisRequestTemple(new Page<TaskTemplate>(page, pageSize), sql);
+        IPage<TaskTemplate> iPage = taskTemplateMapper.selectSynthesisRequestTemple(new Page<TaskTemplate>(page, pageSize), req);
 
         List<TaskTemplateByRoleResp> srt = synthesisTaskTemplateConverter.toDto(iPage.getRecords());
+
+        for (TaskTemplateByRoleResp resp : srt) {
+            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>().eq("record_id",resp.getId()));
+            roles.stream().forEach(role->
+            {
+                RoleDTO roleDTO = roleRelationConverter.toDto(role);
+                if(RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()){
+                    resp.getUseRoles().add(roleDTO);
+                }else{
+                    resp.getManageRoles().add(roleDTO);
+                }
+            });
+        }
 
         QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));

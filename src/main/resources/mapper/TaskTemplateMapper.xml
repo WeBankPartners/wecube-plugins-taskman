@@ -13,14 +13,15 @@
     </resultMap>
 
 
-    <select id="selectSynthesisRequestTemple" parameterType="string" resultMap="BaseResultMap">
-        SELECT rt.*
-        FROM
-        task_template rt
+    <select id="selectSynthesisRequestTemple" parameterType="com.webank.taskman.dto.req.TaskTemplateReq" resultMap="BaseResultMap">
+        SELECT rt.* FROM task_template rt
         <where>
-            <if test="conditionSql!=null and conditionSql !=''">
-                AND ${conditionSql}
-            </if>
+                <if test="param.name !=null and param.name != ''">
+                    AND rt.name like CONCAT('%',#{param.name},'%')
+                </if>
+                <if test="param.conditionSql!=null and param.conditionSql !=''">
+                    AND ${param.conditionSql}
+                </if>
         </where>
     </select>
 </mapper>

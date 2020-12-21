@@ -6,6 +6,7 @@ import com.webank.taskman.dto.QueryResponse;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import com.webank.taskman.dto.req.TaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.RequestSynthesisService;
 import com.webank.taskman.service.TaskInfoService;
@@ -76,9 +77,10 @@ public class RequestSynthesisController {
     @ApiOperation(value = "task-Synthesis-search")
     public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) TaskTemplateReq req)
             throws Exception{
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
+        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

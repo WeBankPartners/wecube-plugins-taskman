@@ -49,7 +49,7 @@ public class TaskmanFormController {
         return JsonResponse.okayWithData(formTemplateResp);
     }
 
-    @ApiOperationSupport(order = 3)
+    @ApiOperationSupport(order = 2)
     @DeleteMapping("/template/delete/{id}")
     @ApiOperation(value = "form-template-delete")
     public JsonResponse deleteFormTemplateByID(@PathVariable("id") String id) throws Exception {
@@ -57,7 +57,7 @@ public class TaskmanFormController {
         return JsonResponse.okay();
     }
 
-    @ApiOperationSupport(order = 4)
+    @ApiOperationSupport(order = 3)
     @GetMapping("/template/detail/{tempType}/{tempId}")
     @ApiOperation(value = "form-template-detail")
     public JsonResponse<FormTemplateResp> FormTemplateDetail(@PathVariable("tempType") Integer tempType,@PathVariable("tempId") String tempId) throws Exception {
@@ -66,7 +66,7 @@ public class TaskmanFormController {
                         new SaveFormTemplateReq(tempId,tempType)));
     }
 
-    @ApiOperationSupport(order = 6)
+    @ApiOperationSupport(order = 4)
     @DeleteMapping("/item/delete/{id}")
     @ApiOperation(value = "form-item-template-delete", notes = "")
     public JsonResponse deleteRequestTemplate(@PathVariable("id") String id) throws Exception {
@@ -75,7 +75,7 @@ public class TaskmanFormController {
     }
 
 
-    @ApiOperationSupport(order = 8)
+    @ApiOperationSupport(order = 5)
     @PostMapping("/item/template/currency")
     @ApiOperation(value = "form-item-template-currency")
     public JsonResponse<QueryResponse<FormItemTemplate>> formItemTemplateAvailable()

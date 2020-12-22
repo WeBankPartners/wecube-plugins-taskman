@@ -37,7 +37,7 @@ public class TaskmanTaskController {
     @Autowired
     private TaskInfoService taskInfoService;
 
-    @ApiOperationSupport(order = 18)
+    @ApiOperationSupport(order = 1)
     @PostMapping("/template/save")
     @ApiOperation(value = "Task-Template-save", notes = "Need to pass in object: ")
     public JsonResponse createTaskTemplate(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq) throws Exception {
@@ -46,7 +46,7 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
-    @ApiOperationSupport(order = 19)
+    @ApiOperationSupport(order = 2)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "Task-Template-selectAll")
     public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
@@ -57,7 +57,7 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
-    @ApiOperationSupport(order = 20)
+    @ApiOperationSupport(order = 3)
     @GetMapping("/template/detail/{id}")
     @ApiOperation(value = "Task-Template-detail", notes = "需要传入id")
     public JsonResponse detail(@PathVariable("id") String id) throws Exception {
@@ -65,7 +65,7 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
-    @ApiOperationSupport(order = 21)
+    @ApiOperationSupport(order = 4)
     @PostMapping("/task/search/{page}/{pageSize}")
     @ApiOperation(value = "Task-Info-search")
     public JsonResponse<QueryResponse<SynthesisTaskInfoResp>> selectSynthesisTaskInfo(
@@ -77,7 +77,7 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
-    @ApiOperationSupport(order =22)
+    @ApiOperationSupport(order =5)
     @PostMapping("/task/details")
     @ApiOperation(value = "Task-Info-details")
     public JsonResponse<SynthesisTaskInfoFormTask> selectSynthesisTaskInfoForm(String id)

@@ -30,7 +30,7 @@ public class TaskmanOutController {
     @Autowired
     FormItemTemplateService formItemTemplateService;
 
-    @ApiOperationSupport(order = 7)
+    @ApiOperationSupport(order = 1)
     @GetMapping("/task/create/service-meta/{proc-def-id}/{node-def-id}")
     @ApiOperation(value = "service-meta")
     public JsonResponse<TaskServiceMetaResp> taskCreateServiceMeta(
@@ -39,7 +39,7 @@ public class TaskmanOutController {
         return JsonResponse.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procDefId,nodeDefId));
     }
 
-    @ApiOperationSupport(order = 8)
+    @ApiOperationSupport(order = 2)
     @PostMapping("/task/create")
     @ApiOperation(value = "create")
     public CoreCreateTaskResp createTask(@RequestBody CoreCreateTaskDTO req)
@@ -48,7 +48,7 @@ public class TaskmanOutController {
         return new CoreCreateTaskResp();
     }
 
-    @ApiOperationSupport(order = 9)
+    @ApiOperationSupport(order = 3)
     @PostMapping("/task/cancel")
     @ApiOperation(value = "cancel")
     public CoreCreateTaskResp cancelTask(@RequestBody CoreCancelTaskDTO req)

@@ -103,8 +103,9 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     public TaskTemplateResp selectTaskTemplateOne(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
         TaskTemplateResp taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
-        List<RoleRelation> relations = roleRelationService.list(new QueryWrapper<RoleRelation>()
-                .eq("record_id", id));
+        List<RoleRelation> relations = roleRelationService.list(
+                new RoleRelation().setRecordId(id).getLambdaQueryWrapper()
+        );
         relations.stream().forEach(roleRelation -> {
             RoleDTO roleDTO = new RoleDTO();
             roleDTO.setRoleName(roleRelation.getRoleName());

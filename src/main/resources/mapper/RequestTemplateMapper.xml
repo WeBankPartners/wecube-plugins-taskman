@@ -9,7 +9,7 @@
         <result column="proc_def_name" property="procDefName" />
         <result column="name" property="name" />
         <result column="description" property="description" />
-        <result column="description" property="version" />
+        <result column="version" property="version" />
         <result column="tags" property="tags" />
         <result column="status" property="status" />
         <result column="created_by" property="createdBy" />

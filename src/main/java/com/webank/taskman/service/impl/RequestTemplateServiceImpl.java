@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -9,18 +10,25 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
+import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
+import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.mapper.FormItemTemplateMapper;
+import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +56,14 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Autowired
     RoleRelationConverter roleRelationConverter;
 
+    @Autowired
+    FormTemplateConverter formTemplateConverter;
+
+    @Autowired
+    FormTemplateMapper formTemplateMapper;
+
+    @Autowired
+    FormItemTemplateMapper formItemTemplateMapper;
 
     private static final String TABLE_NAME = "request_template";
 
@@ -103,8 +119,21 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public RequestTemplateResp detailRequestTemplate(String id)  {
-        return requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
+    public DetailRequestTemplateResq detailRequestTemplate(String id)  {
+        DetailRequestTemplateResq detailRequestTemplateResq=requestTemplateConverter.detailRequest(requestTemplateMapper.selectById(id));
+        detailRequestTemplateResq.setDetilReuestTemplateFormResq(
+                formTemplateConverter.detailForm(
+                        formTemplateMapper.selectOne(
+                                new QueryWrapper<FormTemplate>()
+                                        .eq("temp_id",detailRequestTemplateResq.getId())
+                                        .eq("temp_type",0)
+                                )));
+        detailRequestTemplateResq.getDetilReuestTemplateFormResq().setFormItemTemplateList(
+                formItemTemplateMapper.selectList(
+                        new QueryWrapper<FormItemTemplate>()
+                                .eq("form_template_id",detailRequestTemplateResq.getDetilReuestTemplateFormResq().getId())
+                        ));
+        return detailRequestTemplateResq;
     }
 
 

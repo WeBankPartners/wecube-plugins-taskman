@@ -15,11 +15,11 @@ import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
+import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.service.RequestInfoService;
-import com.webank.taskman.service.RequestSynthesisService;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
 import io.swagger.annotations.Api;
@@ -45,9 +45,6 @@ import static com.webank.taskman.base.JsonResponse.okayWithData;
 public class TaskmanRequestController {
 
     private static final Logger log = LoggerFactory.getLogger(TaskmanRequestController.class);
-
-    @Autowired
-    RequestSynthesisService requestSynthesisService;
 
     @Autowired
     RequestTemplateService requestTemplateService;
@@ -97,7 +94,7 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(dtoList);
     }
 
-    @ApiOperationSupport(order = 3)
+    @ApiOperationSupport(order = 4)
     @DeleteMapping("/template/group/delete/{id}")
     @ApiOperation(value = "request-group-template-delete", notes = "")
     public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException
@@ -107,7 +104,7 @@ public class TaskmanRequestController {
     }
     
 
-    @ApiOperationSupport(order = 4)
+    @ApiOperationSupport(order = 5)
     @PostMapping("/template/save")
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req
@@ -116,7 +113,7 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(requestTemplateResp);
     }
 
-    @ApiOperationSupport(order = 11,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
+    @ApiOperationSupport(order = 6,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
     public JsonResponse<RequestTemplateResp> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
@@ -136,7 +133,7 @@ public class TaskmanRequestController {
         return okayWithData(new RequestTemplateResp().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
     }
 
-    @ApiOperationSupport(order = 12)
+    @ApiOperationSupport(order = 7)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
     public JsonResponse<QueryResponse<RequestTemplateResp>> requestTemplateSearch(
@@ -148,7 +145,7 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
-    @ApiOperationSupport(order = 13)
+    @ApiOperationSupport(order = 8)
     @DeleteMapping("/template/delete/{id}")
     @ApiOperation(value = "request-template-delete", notes = "需要传入id")
     public JsonResponse requestTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException {
@@ -156,16 +153,16 @@ public class TaskmanRequestController {
         return okay();
     }
 
-    @ApiOperationSupport(order = 14)
+    @ApiOperationSupport(order = 9)
     @GetMapping("/template/detail/{id}")
     @ApiOperation(value = "request-template-detail", notes = "需要传入id")
-    public JsonResponse<RequestTemplateResp> requestTemplateDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
-       RequestTemplateResp requestTemplateResp= requestTemplateService.detailRequestTemplate(id);
-        return JsonResponse.okayWithData(requestTemplateResp);
+    public JsonResponse<DetailRequestTemplateResq> requestTemplateDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
+        DetailRequestTemplateResq detailRequestTemplateResq= requestTemplateService.detailRequestTemplate(id);
+        return JsonResponse.okayWithData(detailRequestTemplateResq);
     }
 
     @GetMapping(value = {"/template/available","/template/available/{all}"})
-    @ApiOperationSupport(order = 15)
+    @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
     public JsonResponse<List<RequestTemplateResp>> requestTemplateAvailable( @PathVariable(value = "all",required = false) String all,@ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
         if(StringUtils.isEmpty(all)){
@@ -180,14 +177,14 @@ public class TaskmanRequestController {
 
     
 
-    @ApiOperationSupport(order = 20)
+    @ApiOperationSupport(order = 22)
     @PostMapping("/save")
     @ApiOperation(value = "request-info-save")
     public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
         return okayWithData(requestInfoService.saveRequestInfo(req));
     }
 
-    @ApiOperationSupport(order = 21)
+    @ApiOperationSupport(order = 12)
     @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "request-info-search")
     public JsonResponse<QueryResponse<SynthesisRequestInfoResp>> requestInfoSearch(
@@ -195,17 +192,17 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SynthesisRequestInfoReq req)
             throws TaskmanRuntimeException {
-        QueryResponse<SynthesisRequestInfoResp> list = requestSynthesisService.selectSynthesisRequestInfoService(page, pageSize,req);
+        QueryResponse<SynthesisRequestInfoResp> list = requestInfoService.selectSynthesisRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
 
 
-    @ApiOperationSupport(order = 22)
+    @ApiOperationSupport(order = 13)
     @PostMapping("/details")
     @ApiOperation(value = "request-info-detail")
     public JsonResponse<SynthesisRequestInfoFormRequest> requestInfoDetail(String id)
             throws TaskmanRuntimeException {
-        SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestSynthesisService.selectSynthesisRequestInfoFormService(id);
+        SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestInfoService.selectSynthesisRequestInfoFormService(id);
         return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
     }
 

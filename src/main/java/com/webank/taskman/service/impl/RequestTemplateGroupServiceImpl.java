@@ -40,6 +40,8 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
                 throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
             }
             updateById(requestTemplateGroup);
+        }else {
+            save(requestTemplateGroup);
         }
         return new RequestTemplateGroupDTO().setId(requestTemplateGroup.getId());
     }

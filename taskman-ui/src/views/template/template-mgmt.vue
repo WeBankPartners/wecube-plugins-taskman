@@ -106,7 +106,7 @@
           </Col>
           <Col span="12">
             <FormItem label="输入项">
-              <Select multiple @on-change="requestFormFieldChanged" v-model="requestForm.inputAttrDef">
+              <Select multiple @on-change="requestFormFieldChanged($event,0)" v-model="requestForm.inputAttrDef">
                 <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
               </Select>
             </FormItem>
@@ -126,7 +126,7 @@
           <Col span="12">
             <FormItem label="输入项">
               <Select multiple v-model="taskForm.inputAttrDef">
-                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
+                <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
               </Select>
             </FormItem>
           </Col>
@@ -146,8 +146,8 @@
           </Col>
           <Col span="12">
             <FormItem label="输出项">
-              <Select multiple @on-change="requestFormFieldChanged" v-model="taskForm.outputAttrDef">
-                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
+              <Select multiple @on-change="requestFormFieldChanged($event,1)" v-model="taskForm.outputAttrDef">
+                <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
               </Select>
             </FormItem>
           </Col>
@@ -258,7 +258,7 @@
     </Row>
     <Row v-show="isEdit && (currentStep === 2 || currentStep === 3)">
       <div style="width:1000px;margin:10px auto;text-align: center">
-        <Button >重置</Button>
+        <!-- <Button >重置</Button> -->
         <Button type="primary" @click="saveCurrentForm" style="margin-left: 8px">保存当前表单</Button>
       </div>
     </Row>
@@ -420,7 +420,7 @@ export default {
         },
         {
           label: "富文本",
-          type: "QuillEditor"
+          type: "TaskManQuillEditor"
         },
       ],
       formFields: [],
@@ -455,6 +455,7 @@ export default {
         // }
       ],
       attrsSelections: [],
+      taskAttrsSelections: [],
       requestForm: {
         name:'',
         description:'',
@@ -522,6 +523,7 @@ export default {
           this.taskForm.useRoles = data.useRoles
           this.taskForm.outputAttrDef = data.outputAttrDef ? JSON.parse(data.outputAttrDef) : []
           this.taskForm.manageRoles = data.manageRoles
+          this.taskAttrsSelections = data.otherAttrDef && data.otherAttrDef.length > 0 ? JSON.parse(data.otherAttrDef) : []
         }
           this.formFields = data.items ? data.items.map( _ => {
             return {
@@ -534,8 +536,6 @@ export default {
           }) : []
           this.currentFieldList = this.formFields
           this.formFieldSortHandler(this.currentEntityList)
-        // this.$nextTick(() => {
-        // })
       }
     },
     async edit (row) {
@@ -560,7 +560,6 @@ export default {
       this.currentField.dataOptions.push({label:'',value:''})
     },
     taskNodeChanged (v) {
-      console.log(v)
       this.currentTaskNode = v
       const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
       this.getFormTemplateDetail(1,id)
@@ -584,7 +583,6 @@ export default {
       this.currentStep = e.currentTarget.parentNode.parentNode.classList[0].split('_')[2] * 1 - 1 
       this.currentField = {}
       if (this.currentStep > 1) {
-
         this.$nextTick(() => {
           this.formFieldSortHandler(this.currentEntityList)
         })
@@ -595,6 +593,11 @@ export default {
         this.currentTaskNode = this.procTaskNodes[0].nodeName
         const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
         this.getFormTemplateDetail(1,id)
+      }
+      if (this.currentStep === 2) {
+        this.formFields = []
+        this.currentFieldList = this.formFields
+        this.getFormTemplateDetail(0,this.currentTemplateId)
       }
     },
     async getAllDataModels () {
@@ -643,7 +646,7 @@ export default {
           ...this.taskForm,
           id: this.formTemplateId,
           inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
-          otherAttrDef: JSON.stringify(this.attrsSelections),
+          otherAttrDef: JSON.stringify(this.taskAttrsSelections),
           outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef),
           nodeDefId: this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId,
           nodeName: this.currentTaskNode,
@@ -680,7 +683,7 @@ export default {
             }):[],
             tempId: this.currentTemplateId,
             inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
-            otherAttrDef: JSON.stringify(this.attrsSelections),
+            otherAttrDef: JSON.stringify(this.taskAttrsSelections),
             outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef)
           },
           tempId: this.currentTemplateId,
@@ -700,6 +703,7 @@ export default {
           desc: 'Success'
         })
         if (this.currentStep === 2) {
+          this.taskAttrsSelections = this.attrsSelections.concat(this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}}))
           this.currentStep++
           this.formFields = []
           this.currentFieldList = []
@@ -708,8 +712,9 @@ export default {
         }
       }
     },
-    requestFormFieldChanged (val) {
-      //this.attrsSelections val  this.formFields  isCustom
+    requestFormFieldChanged (val,type) {
+      console.log('editor' ,val,type)
+      //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
       const isAttrs = this.formFields.filter(field => !field.isCustom)
       isAttrs.forEach(attr => {
         const found = val.find(v => attr.name === v)
@@ -718,21 +723,22 @@ export default {
           this.formFields.splice(index, 1)
         }
       })
+      const selections = type === 0 ? this.attrsSelections : this.taskAttrsSelections
       val.forEach(item => {
         const field = this.formFields.find(f => f.name === item)
         if (!field) {
-          const attr = this.attrsSelections.find(a => a.name === item)
+          const attr = selections.find(a => a.name === item)
           this.formFields.push({
             ...attr,
             entity: attr.name,
             packageName: attr.packageName,
-            elementType: 'PluginSelect',
+            elementType: attr.elementType ? attr.elementType : 'PluginSelect',
             width: 24,
             title: attr.displayName,
             defaultValue: "",
             isHover: false,
             isActive: false,
-            isCustom: false,
+            isCustom: attr.isCustom ? true : false,
             dataOptions: [],
             entityFilters:'',
             refEntity:'',
@@ -743,7 +749,14 @@ export default {
           })
         }
       })
-      this.formFields = this.formFields.concat(this.currentFieldList.filter(field => field.packageName.length === 0))
+      const tem = []
+      this.formFields.concat(this.currentFieldList.filter(field => field.isCustom)).forEach(_ => {
+        const field = tem.find(i => i.name === _.name)
+        if (!field) {
+          tem.push(_)
+        }
+      })
+      this.formFields = tem
       this.currentFieldList = this.formFields
       this.$nextTick(() => {
           this.formFieldSortHandler(this.currentEntityList)
@@ -754,6 +767,7 @@ export default {
     },
     attrsChangedHandler (selection) {
       this.attrsSelections = selection
+      this.taskAttrsSelections = selection
     },
     actionFun(type, data) {
       switch (type) {
@@ -767,9 +781,24 @@ export default {
             description: '',
             requestTempGroup: ''
           }
+          this.requestForm = {
+            name:'',
+            description:'',
+            inputAttrDef: []
+          },
+          this.taskForm = {
+            name:'',
+            description:'',
+            inputAttrDef: [],
+            outputAttrDef: [],
+            useRoles: [],
+            manageRoles:[]
+          }
+          this.attrsData = []
           this.formTemplateId = ''
           this.currentTemplateId = ''
           this.attrsSelections = []
+          this.taskAttrsSelections = []
           this.isEdit = true
           this.isAdd = true
           this.currentStep = 0
@@ -791,14 +820,14 @@ export default {
       const f = this.requestPayload.filters
       const filters = {
         ...f,
-        manageRoles:f.manageRoles && f.manageRoles.length>0? f.manageRoles.map(role => {
+        manageRoles:f.manageRoles && f.manageRoles.length > 0 ? f.manageRoles.map(role => {
           const found = this.allRolesList.find(r => r.name === role)
           return {
             roleName: found.name,
             displayName: found.displayName
           }
         }):[],
-        useRoles:f.useRoles && f.useRoles.length>0? f.useRoles.map(role => {
+        useRoles:f.useRoles && f.useRoles.length > 0 ? f.useRoles.map(role => {
           const found = this.allRolesList.find(r => r.name === role)
           return {
             roleName: found.name,
@@ -905,7 +934,7 @@ export default {
     },
     async getTaskNodesEntitys (id) {
       const nodes = await getTaskNodesEntitys(id)
-      this.procTaskNodes = nodes.data
+      this.procTaskNodes = nodes.data || []
       let entitys = new Set()
       this.procTaskNodes.filter(f=>f.boundEntity).forEach(node => {
         const entity = node.boundEntity
@@ -963,7 +992,7 @@ export default {
         })
       })
       this.$nextTick(() => {
-        this.formFields = fields.concat(this.currentFieldList.filter(field => field.packageName.length === 0))
+        this.formFields = fields.concat(this.currentFieldList.filter(field => field.isCustom))
         this.currentFieldList = this.formFields
       })
     },
@@ -1024,6 +1053,7 @@ export default {
             this.currentFieldList = fields
           }
           // this.formFields = []
+          console.log(1)
           this.formFieldSortHandler(this.currentEntityList)
           isAdd = false
         },
@@ -1049,7 +1079,7 @@ export default {
               defaultValue: "",
               isHover: false,
               isActive: false,
-              dataOptions: '',
+              dataOptions: [],
               entityFilters:'',
               entityId:'',
               regular:'',
@@ -1063,7 +1093,6 @@ export default {
             }
             this.formFields.splice(e.newIndex, 0, item)
             this.currentFieldList = this.formFields
-            console.log(this.currentFieldList)
             isAdd = true
             // this.formFieldSortHandler(this.currentEntityList)
           // })

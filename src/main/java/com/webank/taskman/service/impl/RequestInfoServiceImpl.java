@@ -6,15 +6,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.PageInfo;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.FormInfoConverter;
-import com.webank.taskman.converter.FormItemInfoConverter;
-import com.webank.taskman.converter.RequestInfoConverter;
+import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
+import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
+import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
+import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
+import com.webank.taskman.mapper.FormInfoMapper;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.*;
@@ -28,8 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,7 +67,13 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     FormInfoConverter formInfoConverter;
 
     @Autowired
-    RoleRelationService roleRelationService;
+    FormInfoMapper formInfoMapper;
+
+    @Autowired
+    SynthesisRequestInfoRespConverter synthesisRequestInfoRespConverter;
+
+    @Autowired
+    SynthesisRequestInfoFormRequestConverter synthesisRequestInfoFormRequestConverter;
 
     private final static String STATUS_DONE = "Done";
 
@@ -115,6 +126,35 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         }
         return new SaveRequestInfoReq().setId(requestInfo.getId());
     }
+
+    @Override
+    public SynthesisRequestInfoFormRequest selectSynthesisRequestInfoFormService(String id) throws TaskmanRuntimeException {
+        FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",id));
+        if (null==formInfo||"".equals(formInfo)){
+            throw new TaskmanRuntimeException("The request details do not exist");
+        }
+        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getId()));
+        SynthesisRequestInfoFormRequest srt=synthesisRequestInfoFormRequestConverter.toDto(formInfo);
+        srt.setFormItemInfo(formItemInfos);
+
+        return srt;
+    }
+
+    @Override
+    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws TaskmanRuntimeException {
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+        List<Map<String,Object>> list = new ArrayList<>();
+        req.setRoleName(currentUserRolesToString);
+        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
+        List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());
+
+        QueryResponse<SynthesisRequestInfoResp> queryResponse = new QueryResponse<>();
+        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
+        queryResponse.setContents(srt);
+
+        return queryResponse;
+    }
+
 
     @Autowired
     CoreServiceStub coreServiceStub;

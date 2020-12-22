@@ -69,7 +69,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         IPage<TaskInfo> iPage = taskInfoMapper.selectTaskInfo(new Page<>(page, pageSize), currentUserRolesToString);
         List<TaskInfoResp> respList = taskInfoConverter.toDto(iPage.getRecords());
         for (TaskInfoResp taskInfoResp : respList) {
-            FormInfo formInfo = formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id", taskInfoResp.getId()));
+            FormInfo formInfo = formInfoMapper.selectOne(
+                    new FormInfo().setRecordId(taskInfoResp.getId()).getLambdaQueryWrapper());
             FormInfoResq formInfoResq = formInfoConverter.toDto(formInfo);
             if (formInfoResq != null) {
                 formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(taskInfoResp.getId()));
@@ -102,7 +103,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         formItemInfos.stream().forEach(f -> {
             QueryWrapper<FormItemTemplate> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("id", f.getItemTempId());
-            formItemTemplateList.add(formItemTemplateMapper.selectOne(queryWrapper));
+            formItemTemplateList.add(formItemTemplateMapper.selectOne(new FormItemTemplate(f.getItemTempId()).getLambdaQueryWrapper() ));
         });
 
         String Regular = null;

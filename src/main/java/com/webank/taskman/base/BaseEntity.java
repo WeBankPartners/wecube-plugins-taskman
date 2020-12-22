@@ -1,7 +1,6 @@
 package com.webank.taskman.base;
 
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import org.springframework.util.StringUtils;
 
@@ -71,9 +70,4 @@ public class BaseEntity<T> {
         return entity;
     }
 
-    public QueryWrapper<T> getQueryWrapper(){
-        QueryWrapper<T> queryWrapper = new QueryWrapper<>();
-        queryWrapper.setEntity((T)this);
-        return queryWrapper;
-    }
 }

@@ -6,7 +6,10 @@ import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
-import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
+import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
+import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
+import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
@@ -24,8 +27,6 @@ import javax.validation.Valid;
 @RequestMapping("/v1/task")
 @Api(tags = {"4、 Task inteface API"})
 public class TaskmanTaskController {
-
-
 
     private static final Logger log = LoggerFactory.getLogger(TaskmanTaskController.class);
 
@@ -84,7 +85,6 @@ public class TaskmanTaskController {
         SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
         return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
     }
-
 
 }
 

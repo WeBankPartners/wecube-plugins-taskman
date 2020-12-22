@@ -2,8 +2,10 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 
@@ -41,6 +43,24 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         this.version = version;
         this.tags = tags;
         this.status = status;
+    }
+
+    @JsonIgnore
+    public LambdaQueryWrapper getLambdaQueryWrapper() {
+        return new LambdaQueryWrapper<RequestTemplate>()
+                .eq(!StringUtils.isEmpty(id), RequestTemplate::getId, id)
+                .eq(!StringUtils.isEmpty(requestTempGroup), RequestTemplate::getRequestTempGroup, requestTempGroup)
+                .eq(!StringUtils.isEmpty(procDefKey), RequestTemplate::getProcDefKey, procDefKey)
+                .eq(!StringUtils.isEmpty(procDefId), RequestTemplate::getProcDefId, procDefId)
+                .eq(!StringUtils.isEmpty(procDefName), RequestTemplate::getProcDefName, procDefName)
+                .eq(!StringUtils.isEmpty(packageName), RequestTemplate::getPackageName, packageName)
+                .eq(!StringUtils.isEmpty(entityName), RequestTemplate::getEntityName, entityName)
+                .like(!StringUtils.isEmpty(name), RequestTemplate::getName, name)
+                .eq(!StringUtils.isEmpty(description), RequestTemplate::getDescription, description)
+                .eq(!StringUtils.isEmpty(version), RequestTemplate::getVersion, version)
+                .eq(!StringUtils.isEmpty(tags), RequestTemplate::getTags, tags)
+                .eq(!StringUtils.isEmpty(status), RequestTemplate::getStatus, status)
+                ;
     }
 
     public String getId() {
@@ -151,26 +171,6 @@ public class RequestTemplate extends BaseEntity implements Serializable {
         return this;
     }
 
-
-    public static QueryWrapper<RequestTemplate> getQueryWrapper(String id,String requestTempGroup,String procDefKey,String procDefId,String name,
-                        String description,String version,String tags,String status){
-        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
-        queryWrapper.setEntity(new RequestTemplate(id,requestTempGroup,procDefKey,procDefId,name,description,version,tags,status));
-        return queryWrapper;
-    }
-
-    public static QueryWrapper<RequestTemplate> getQueryWrapper(String name){
-        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
-        RequestTemplate template = new RequestTemplate();
-        template.setName(name);
-        return getQueryWrapper(null,null,null,null,name,null,null,null,null);
-    }
-
-    public QueryWrapper<RequestTemplate> getQueryWrapper(){
-        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
-        queryWrapper.setEntity(this);
-        return queryWrapper;
-    }
     @Override
     public String toString() {
         return "RequestTemplate{" +

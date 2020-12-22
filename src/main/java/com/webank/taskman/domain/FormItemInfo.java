@@ -2,6 +2,9 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 
@@ -24,64 +27,79 @@ public class FormItemInfo  implements Serializable {
 
     private String value;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public FormItemInfo setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getRecordId() {
         return recordId;
     }
 
-    public void setRecordId(String recordId) {
+    public FormItemInfo setRecordId(String recordId) {
         this.recordId = recordId;
+        return this;
     }
 
     public String getFormId() {
         return formId;
     }
 
-    public void setFormId(String formId) {
+    public FormItemInfo setFormId(String formId) {
         this.formId = formId;
+        return this;
     }
 
     public String getItemTempId() {
         return itemTempId;
     }
 
-    public void setItemTempId(String itemTempId) {
+    public FormItemInfo setItemTempId(String itemTempId) {
         this.itemTempId = itemTempId;
+        return this;
     }
 
     public String getIsCurrency() {
         return isCurrency;
     }
 
-    public void setIsCurrency(String isCurrency) {
+    public FormItemInfo setIsCurrency(String isCurrency) {
         this.isCurrency = isCurrency;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public FormItemInfo setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public FormItemInfo setValue(String value) {
         this.value = value;
+        return this;
+    }
+
+    @JsonIgnore
+    public LambdaQueryWrapper getLambdaQueryWrapper() {
+        return new LambdaQueryWrapper<FormItemInfo>()
+                .eq(!StringUtils.isEmpty(id), FormItemInfo::getId, id)
+                .eq(!StringUtils.isEmpty(recordId), FormItemInfo::getRecordId, recordId)
+                .eq(!StringUtils.isEmpty(formId), FormItemInfo::getFormId, formId)
+                .eq(!StringUtils.isEmpty(itemTempId), FormItemInfo::getItemTempId, itemTempId)
+                .eq(!StringUtils.isEmpty(isCurrency), FormItemInfo::getIsCurrency, isCurrency)
+                .eq(!StringUtils.isEmpty(name), FormItemInfo::getName, name)
+                .eq(!StringUtils.isEmpty(value), FormItemInfo::getValue, value);
     }
 
     @Override

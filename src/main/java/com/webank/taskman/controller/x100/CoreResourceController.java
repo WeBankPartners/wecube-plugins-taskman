@@ -157,7 +157,7 @@ public class CoreResourceController {
     }
 
     private DynamicWorkflowInstCreationInfoDto getDynamicWorkflowInstCreationInfoDto(ProcessDataPreviewDto processDataPreviewDto,String procDefId,String guid) {
-        RequestTemplate requestTemplate = requestTemplateService.getOne(new RequestTemplate().setProcDefId(procDefId).getQueryWrapper());
+        RequestTemplate requestTemplate = requestTemplateService.getOne(new RequestTemplate().setProcDefId(procDefId).getLambdaQueryWrapper());
         List<ProcessDataPreviewDto.GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
         if(null == entityTreeNodes){
             throw new TaskmanRuntimeException(String.format("getProcessDataPreview is error:%s",entityTreeNodes));

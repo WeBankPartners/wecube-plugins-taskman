@@ -73,7 +73,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         List<RequestInfoResq> respList = requestInfoConverter.toDto(iPage.getRecords());
 
         for (RequestInfoResq requestInfoResq : respList) {
-            FormInfo formInfo=formInfoService.getOne(new QueryWrapper<FormInfo>().eq("record_id",requestInfoResq.getId()));
+            FormInfo formInfo=formInfoService.getOne(new FormInfo().setRecordId(requestInfoResq.getId()).getLambdaQueryWrapper());
             FormInfoResq formInfoResq=formInfoConverter.toDto(formInfo);
             formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(requestInfoResq.getId()));
             requestInfoResq.setFormInfoResq(formInfoResq);
@@ -97,7 +97,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         if(null != formItemInfos && formItemInfos.size() > 0 ){
 
             FormTemplate formTemplate = formTemplateService.getOne(
-                    FormTemplate.getQueryWrapper(requestTempId,StatusEnum.DEFAULT.ordinal()+""));
+                    new FormTemplate(requestTempId,StatusEnum.DEFAULT.ordinal()+"").getLambdaQueryWrapper());
             formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
             FormInfo form = new FormInfo();
             form.setRecordId(requestInfo.getId());

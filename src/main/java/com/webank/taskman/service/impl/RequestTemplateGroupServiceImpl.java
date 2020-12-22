@@ -1,6 +1,5 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -47,19 +46,8 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
     @Override
     public QueryResponse<RequestTemplateGroupDTO> selectByParam(Integer current, Integer limit, RequestTemplateGroupDTO req) {
-        Page<RequestTemplateGroup> page = new Page<>(current, limit);
-        QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<>();
-        wrapper.select(i->i.getColumn().startsWith(""));
-        if (!StringUtils.isEmpty(req.getId())) {
-            wrapper.eq("id", req.getId());
-        }
-        if (!StringUtils.isEmpty(req.getName())) {
-            wrapper.like("name", req.getName());
-        }
-        if (!StringUtils.isEmpty(req.getManageRoleName())) {
-            wrapper.eq("manage_role_id", req.getManageRoleName());
-        }
-        IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(page, wrapper);
+        IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
+                requestTemplateGroupConverter.toEntity(req).getLambdaQueryWrapper());
         return new QueryResponse(iPage,requestTemplateGroupConverter.toDto(iPage.getRecords()));
     }
 

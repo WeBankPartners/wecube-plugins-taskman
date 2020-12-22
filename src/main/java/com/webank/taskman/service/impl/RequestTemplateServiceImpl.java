@@ -86,7 +86,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
         for (RequestTemplateResp resp : respList) {
-            List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getQueryWrapper());
+            List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
             roles.stream().forEach(role->{
                 RoleDTO roleDTO = roleRelationConverter.toDto(role);
                 if(RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()){

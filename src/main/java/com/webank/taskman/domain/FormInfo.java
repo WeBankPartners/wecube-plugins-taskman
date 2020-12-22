@@ -2,7 +2,10 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 
@@ -28,7 +31,7 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     public FormInfo setId(String id) {
         this.id = id;
-        return  this;
+        return this;
     }
 
     public String getRecordId() {
@@ -37,7 +40,7 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     public FormInfo setRecordId(String recordId) {
         this.recordId = recordId;
-        return  this;
+        return this;
     }
 
     public String getFormTemplateId() {
@@ -46,7 +49,7 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     public FormInfo setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
-        return  this;
+        return this;
     }
 
     public String getName() {
@@ -55,7 +58,7 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     public FormInfo setName(String name) {
         this.name = name;
-        return  this;
+        return this;
     }
 
     public Integer getType() {
@@ -64,8 +67,30 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     public FormInfo setType(Integer type) {
         this.type = type;
-        return  this;
+        return this;
     }
+
+    public FormInfo() {
+    }
+
+    public FormInfo(String id, String recordId, String formTemplateId, String name, Integer type) {
+        this.id = id;
+        this.recordId = recordId;
+        this.formTemplateId = formTemplateId;
+        this.name = name;
+        this.type = type;
+    }
+
+    @JsonIgnore
+    public LambdaQueryWrapper getLambdaQueryWrapper() {
+        return new LambdaQueryWrapper<FormInfo>()
+            .eq(!StringUtils.isEmpty(id), FormInfo::getId, id)
+            .eq(!StringUtils.isEmpty(recordId), FormInfo::getRecordId, recordId)
+            .eq(!StringUtils.isEmpty(formTemplateId), FormInfo::getFormTemplateId, formTemplateId)
+            .eq(!StringUtils.isEmpty(name), FormInfo::getName, name)
+            .eq(!StringUtils.isEmpty(type), FormInfo::getType, type);
+    }
+
 
 
     @Override

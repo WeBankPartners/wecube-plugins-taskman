@@ -55,7 +55,7 @@ public class RequestTemplateTest {
     //Paging query form module data
     @Test
     public void selectRequestTemplateTest() throws Exception {
-        requestTemplateMapper.selectList(RequestTemplate.getQueryWrapper("abc"));
+        requestTemplateMapper.selectList(new RequestTemplate().getLambdaQueryWrapper());
         int current=1;
         int limit=2;
         QueryRequestTemplateReq req=new QueryRequestTemplateReq();

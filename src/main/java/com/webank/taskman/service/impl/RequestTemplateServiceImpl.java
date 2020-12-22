@@ -77,7 +77,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             requestTemplate.setCreatedBy(currentUsername);
         }
         saveOrUpdate(requestTemplate);
-        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(),req.getManageRoles());
+        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(), req.getManageRoles());
         return new RequestTemplateResp().setId(requestTemplate.getId());
 
     }
@@ -89,57 +89,56 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.eq("id", id).set("del_flag", 1);
+        wrapper.lambda().eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, 1);
         requestTemplateMapper.update(null, wrapper);
     }
 
     @Override
     public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) {
         req.setSourceTableFix("rt");
-        StringBuffer useRole =  new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "":req.getUseRoleName()+",") ;
+        StringBuffer useRole = new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "" : req.getUseRoleName() + ",");
         req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
 
-        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
+        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit), req);
         List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
         for (RequestTemplateResp resp : respList) {
             List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
-            roles.stream().forEach(role->{
+            roles.stream().forEach(role -> {
                 RoleDTO roleDTO = roleRelationConverter.toDto(role);
-                if(RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()){
+                if (RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()) {
                     resp.getUseRoles().add(roleDTO);
-                }else{
+                } else {
                     resp.getManageRoles().add(roleDTO);
                 }
             });
         }
         QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
+        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(respList);
         return queryResponse;
     }
 
     @Override
-    public DetailRequestTemplateResq detailRequestTemplate(String id)  {
-        DetailRequestTemplateResq detailRequestTemplateResq=requestTemplateConverter.detailRequest(requestTemplateMapper.selectById(id));
+    public DetailRequestTemplateResq detailRequestTemplate(String id) {
+        DetailRequestTemplateResq detailRequestTemplateResq = requestTemplateConverter.detailRequest(requestTemplateMapper.selectById(id));
         detailRequestTemplateResq.setDetilReuestTemplateFormResq(
                 formTemplateConverter.detailForm(
                         formTemplateMapper.selectOne(
-                                new QueryWrapper<FormTemplate>()
-                                        .eq("temp_id",detailRequestTemplateResq.getId())
-                                        .eq("temp_type",0)
-                                )));
+                                new FormTemplate()
+                                        .setTempId(detailRequestTemplateResq.getId())
+                                        .setTempType("0").getLambdaQueryWrapper()
+                        )));
         detailRequestTemplateResq.getDetilReuestTemplateFormResq().setFormItemTemplateList(
                 formItemTemplateMapper.selectList(
-                        new QueryWrapper<FormItemTemplate>()
-                                .eq("form_template_id",detailRequestTemplateResq.getDetilReuestTemplateFormResq().getId())
-                        ));
+                        new FormItemTemplate().setFormTemplateId(detailRequestTemplateResq.getDetilReuestTemplateFormResq().getId()).getLambdaQueryWrapper()
+                ));
         return detailRequestTemplateResq;
     }
 
 
     @Override
     public List<RequestTemplateResp> selectAvailableRequest(QueryRequestTemplateReq req) {
-        List<RequestTemplateResp> list=requestTemplateConverter.toDto(this.baseMapper.selectListByParam(req));
+        List<RequestTemplateResp> list = requestTemplateConverter.toDto(this.baseMapper.selectListByParam(req));
         for (RequestTemplateResp requestTemplateResp : list) {
             requestTemplateResp.setRequestTempGroupName(requestTemplateGroupMapper.selectById(requestTemplateResp.getRequestTempGroup()).getName());
         }

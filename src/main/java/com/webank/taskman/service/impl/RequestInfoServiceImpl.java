@@ -31,10 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -129,11 +127,11 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Override
     public SynthesisRequestInfoFormRequest selectSynthesisRequestInfoFormService(String id) throws TaskmanRuntimeException {
-        FormInfo formInfo=formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id",id));
+        FormInfo formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(id).getLambdaQueryWrapper());
         if (null==formInfo||"".equals(formInfo)){
             throw new TaskmanRuntimeException("The request details do not exist");
         }
-        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new QueryWrapper<FormItemInfo>().eq("form_id",formInfo.getId()));
+        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
         SynthesisRequestInfoFormRequest srt=synthesisRequestInfoFormRequestConverter.toDto(formInfo);
         srt.setFormItemInfo(formItemInfos);
 
@@ -143,7 +141,6 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Override
     public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws TaskmanRuntimeException {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        List<Map<String,Object>> list = new ArrayList<>();
         req.setRoleName(currentUserRolesToString);
         IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit),req);
         List<SynthesisRequestInfoResp> srt=synthesisRequestInfoRespConverter.toDto(iPage.getRecords());

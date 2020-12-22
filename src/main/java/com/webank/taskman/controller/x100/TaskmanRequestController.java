@@ -1,6 +1,7 @@
 package com.webank.taskman.controller.x100;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
@@ -87,10 +88,8 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-available")
     public JsonResponse<List<RequestTemplateGroupDTO>> requestGroupTemplateAvailable() throws TaskmanRuntimeException
     {
-        QueryWrapper<RequestTemplateGroup> wrapper = new QueryWrapper<RequestTemplateGroup>();
-        wrapper.eq("status",0);
-//        requestTemplateGroupService.selectByParams();
-        List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(wrapper));
+        LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus("0").getLambdaQueryWrapper();
+        List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(lambdaQueryWrapper));
         return JsonResponse.okayWithData(dtoList);
     }
 
@@ -120,9 +119,7 @@ public class TaskmanRequestController {
         if(StringUtils.isEmpty(req.getId())){
             return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
-        RequestTemplate requestTemplate = requestTemplateService.getOne(new QueryWrapper<RequestTemplate>().eq("id",req.getId())
-                // .eq("status",StatusEnum._DEFAULT.ordinal()))
-        );
+        RequestTemplate requestTemplate = requestTemplateService.getOne(new RequestTemplate().setId(req.getId()).getLambdaQueryWrapper());
         if(null == requestTemplate){
             return JsonResponse.customError(StatusCodeEnum.NOT_FOUND_RECORD);
         }

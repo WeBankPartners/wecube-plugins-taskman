@@ -2,6 +2,7 @@ package com.webank.taskman.support.core.dto;
 
 
 import java.util.Set;
+import java.util.StringJoiner;
 
 public class PluginPackageDataModelDto {
 
@@ -113,5 +114,18 @@ public class PluginPackageDataModelDto {
         this.pluginPackageEntities = pluginPackageEntities;
     }
 
-
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", PluginPackageDataModelDto.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("version=" + version)
+                .add("packageName='" + packageName + "'")
+                .add("isDynamic=" + isDynamic)
+                .add("updatePath='" + updatePath + "'")
+                .add("updateMethod='" + updateMethod + "'")
+                .add("updateSource='" + updateSource + "'")
+                .add("updateTime=" + updateTime)
+                .add("pluginPackageEntities=" + pluginPackageEntities)
+                .toString();
+    }
 }

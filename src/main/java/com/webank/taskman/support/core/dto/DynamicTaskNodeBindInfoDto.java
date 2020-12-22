@@ -2,12 +2,22 @@ package com.webank.taskman.support.core.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 public class DynamicTaskNodeBindInfoDto {
     private String nodeId;//Physical node id from BPMN.
     private String nodeDefId;//Node record id from platform database.
     
     private List<DynamicEntityValueDto> boundEntityValues = new ArrayList<>();
+
+
+    public DynamicTaskNodeBindInfoDto() {
+    }
+
+    public DynamicTaskNodeBindInfoDto(String nodeId, String nodeDefId) {
+        this.nodeId = nodeId;
+        this.nodeDefId = nodeDefId;
+    }
 
     public String getNodeId() {
         return nodeId;
@@ -32,6 +42,13 @@ public class DynamicTaskNodeBindInfoDto {
     public void setBoundEntityValues(List<DynamicEntityValueDto> boundEntityValues) {
         this.boundEntityValues = boundEntityValues;
     }
-    
-    
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", DynamicTaskNodeBindInfoDto.class.getSimpleName() + "[", "]")
+                .add("nodeId='" + nodeId + "'")
+                .add("nodeDefId='" + nodeDefId + "'")
+                .add("boundEntityValues=" + boundEntityValues)
+                .toString();
+    }
 }

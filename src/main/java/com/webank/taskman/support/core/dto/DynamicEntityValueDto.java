@@ -23,6 +23,17 @@ public class DynamicEntityValueDto {
     
     private List<DynamicEntityAttrValueDto> attrValues = new ArrayList<>();
 
+    public DynamicEntityValueDto() {
+    }
+
+    public DynamicEntityValueDto(@Nullable String entityDefId, @Nonnull String packageName, @Nonnull String entityName, @Nullable String dataId, @Nonnull String oid) {
+        this.entityDefId = entityDefId;
+        this.packageName = packageName;
+        this.entityName = entityName;
+        this.dataId = dataId;
+        this.oid = oid;
+    }
+
     public String getEntityDefId() {
         return entityDefId;
     }

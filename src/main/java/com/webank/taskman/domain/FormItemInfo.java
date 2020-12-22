@@ -99,7 +99,7 @@ public class FormItemInfo  implements Serializable {
                 .eq(!StringUtils.isEmpty(itemTempId), FormItemInfo::getItemTempId, itemTempId)
                 .eq(!StringUtils.isEmpty(isCurrency), FormItemInfo::getIsCurrency, isCurrency)
                 .eq(!StringUtils.isEmpty(name), FormItemInfo::getName, name)
-                .eq(!StringUtils.isEmpty(value), FormItemInfo::getValue, value);
+                .like(!StringUtils.isEmpty(value), FormItemInfo::getValue, value);
     }
 
     @Override

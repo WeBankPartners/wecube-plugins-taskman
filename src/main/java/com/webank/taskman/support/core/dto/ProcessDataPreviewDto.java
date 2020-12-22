@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 @ApiModel
 public class ProcessDataPreviewDto {
@@ -96,6 +97,19 @@ public class ProcessDataPreviewDto {
         public void setSucceedingIds(List<String> succeedingIds) {
             this.succeedingIds = succeedingIds;
         }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", GraphNodeDto.class.getSimpleName() + "[", "]")
+                    .add("packageName='" + packageName + "'")
+                    .add("entityName='" + entityName + "'")
+                    .add("dataId='" + dataId + "'")
+                    .add("displayName='" + displayName + "'")
+                    .add("id='" + id + "'")
+                    .add("previousIds=" + previousIds)
+                    .add("succeedingIds=" + succeedingIds)
+                    .toString();
+        }
     }
 
     public String getProcessSessionId() {
@@ -113,4 +127,6 @@ public class ProcessDataPreviewDto {
                 ", entityTreeNodes=" + entityTreeNodes +
                 '}';
     }
+
+
 }

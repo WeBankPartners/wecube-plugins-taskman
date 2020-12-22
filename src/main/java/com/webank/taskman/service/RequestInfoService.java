@@ -9,6 +9,8 @@ import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
+import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
 
 
 public interface RequestInfoService extends IService<RequestInfo> {
@@ -22,4 +24,9 @@ public interface RequestInfoService extends IService<RequestInfo> {
 
     QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService
             (Integer current, Integer limit, SynthesisRequestInfoReq req) throws TaskmanRuntimeException;
+
+    DynamicWorkflowInstInfoDto createNewWorkflowInstance(RequestInfo requestInfo);
+
+    DynamicWorkflowInstCreationInfoDto createDynamicWorkflowInstCreationInfoDto(String procDefId, String guid);
+
 }

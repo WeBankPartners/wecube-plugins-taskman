@@ -370,7 +370,7 @@ export default {
     async getEntityDataByTemplateId (v) {
       if (v && this.requestForm.requestTempId && this.requestForm.requestTempId.length > 0) {
         const found  = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId)
-        const { data, status } = await getEntityDataByTemplateId(found.procDefKey) //getEntityDataByTemplateId
+        const { data, status } = await getEntityDataByTemplateId(found.procDefId) //getEntityDataByTemplateId
         this.entityData = []
         if (status === "OK") {
           this.entityData = data

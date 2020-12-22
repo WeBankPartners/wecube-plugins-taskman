@@ -9,7 +9,7 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      redirect: '/task-management',
+      redirect: '/template-mgmt',
       component: () => import("./index.vue"),
       children: [
         // {

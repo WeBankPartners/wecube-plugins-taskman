@@ -1,13 +1,7 @@
 package com.webank.taskman.dto.req;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotBlank;
-import java.util.List;
 
 @ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
 public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
@@ -34,7 +28,7 @@ public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
     private String tags;
 
     @ApiModelProperty(value = "发布状态",required = false,dataType = "Integer",position = 108)
-    private Integer status;
+    private String status;
 
     public String getId() {
         return id;
@@ -87,11 +81,11 @@ public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
 
 
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

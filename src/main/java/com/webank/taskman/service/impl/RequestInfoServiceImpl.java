@@ -106,7 +106,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
             FormTemplate formTemplate = formTemplateService.getOne(
                     new FormTemplate(null,requestTempId,StatusEnum.DEFAULT.ordinal()+"").getLambdaQueryWrapper());
-
+            if(null == formTemplate){
+                throw new TaskmanRuntimeException("The FormTemplate do not exist");
+            }
             formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
             FormInfo form = new FormInfo();
             form.setRecordId(requestInfo.getId());

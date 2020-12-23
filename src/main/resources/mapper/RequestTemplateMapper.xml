@@ -24,7 +24,7 @@
     <select id="selectPageByParam" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq"
             resultMap="BaseResultMap">
         SELECT rt.*,rtg.name FROM request_template rt,
-        INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id
+        INNER JOIN request_template_group rtg ON rt.request_temp_group = rtg.id
         <where>
             <if test="param.requestTempGroup !=null and param.requestTempGroup !='' ">
                 AND rtg.id = #{param.requestTempGroup}
@@ -86,7 +86,7 @@
 
     <select id="selectDTOListByParam" resultMap="DTOResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
         SELECT rt.*,rtg.name FROM  request_template rt
-        INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id
+        INNER JOIN request_template_group rtg ON rt.request_temp_group = rtg.id
         <where>
             <if test="requestTempGroup !=null and requestTempGroup !='' ">
                 AND rtg.id = #{requestTempGroup}

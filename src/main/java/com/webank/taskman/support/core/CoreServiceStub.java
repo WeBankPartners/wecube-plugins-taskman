@@ -148,7 +148,10 @@ public class CoreServiceStub {
             }
             return  null;
         }
-        return template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),ProcessDataPreviewResponse.class);
+        Object o = template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),ProcessDataPreviewResponse.class);
+        log.info("result class:{}",o.getClass());
+        log.info("v 0.2.23 result :{}",o);
+        return (ProcessDataPreviewDto)o ;
     }
 
     public List<TaskNodeDefObjectBindInfoDto> platformProcessTasknodeBindings(String processSessionId) {

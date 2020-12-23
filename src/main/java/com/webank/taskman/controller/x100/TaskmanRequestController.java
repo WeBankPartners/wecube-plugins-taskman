@@ -25,6 +25,7 @@ import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
+import com.webank.taskman.utils.GsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -81,7 +82,7 @@ public class TaskmanRequestController {
             @RequestBody(required = false) RequestTemplateGroupDTO req
     ) throws TaskmanRuntimeException
     {
-        log.info("Received request parameters:{}",req);
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return JsonResponse.okayWithData(requestTemplateGroupService.selectByParam(page, pageSize, req));
     }
 
@@ -100,17 +101,19 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-delete", notes = "")
     public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException
     {
+        log.info("Received request parameters:{}",id);
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return okay();
     }
-    
+
 
     @ApiOperationSupport(order = 5)
     @PostMapping("/template/save")
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req
-            )throws TaskmanRuntimeException {
-      RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
+    )throws TaskmanRuntimeException {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
+        RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
 
@@ -118,6 +121,7 @@ public class TaskmanRequestController {
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
     public JsonResponse<RequestTemplateDTO> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         if(StringUtils.isEmpty(req.getId())){
             return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
@@ -140,6 +144,7 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws TaskmanRuntimeException {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -176,12 +181,13 @@ public class TaskmanRequestController {
         return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
     }
 
-    
+
 
     @ApiOperationSupport(order = 22)
     @PostMapping("/save")
     @ApiOperation(value = "request-info-save")
     public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return okayWithData(requestInfoService.saveRequestInfo(req));
     }
 
@@ -193,15 +199,16 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SynthesisRequestInfoReq req)
             throws TaskmanRuntimeException {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<SynthesisRequestInfoResp> list = requestInfoService.selectSynthesisRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
 
 
     @ApiOperationSupport(order = 13)
-    @PostMapping("/details")
+    @GetMapping("/details/{id}")
     @ApiOperation(value = "request-info-detail")
-    public JsonResponse<SynthesisRequestInfoFormRequest> requestInfoDetail(String id)
+    public JsonResponse<SynthesisRequestInfoFormRequest> requestInfoDetail(@PathVariable("id") String id)
             throws TaskmanRuntimeException {
         SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestInfoService.selectSynthesisRequestInfoFormService(id);
         return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);

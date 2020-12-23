@@ -25,7 +25,7 @@
         WHERE
         fit.form_template_id in (SELECT id FROM form_template ft
         WHERE ft.temp_id in (SELECT id FROM task_template tt
-        WHERE tt.proc_def_id in #{procDefId} AND tt.node_def_id = #{nodeDefId}
+        WHERE tt.proc_def_id = #{procDefId} AND tt.node_def_id = #{nodeDefId}
         ))
     </select>
 

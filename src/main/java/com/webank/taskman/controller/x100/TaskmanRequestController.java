@@ -2,6 +2,7 @@ package com.webank.taskman.controller.x100;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
@@ -11,6 +12,7 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
@@ -158,17 +160,20 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(detailRequestTemplateResq);
     }
 
+    @Autowired
+    RequestTemplateConverter requestTemplateConverter;
+
     @GetMapping(value = "/template/available")
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
     public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable(@ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
         RequestTemplate query = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
-        LambdaQueryWrapper queryWrapper = query.getLambdaQueryWrapper();
-        queryWrapper.inSql("id",String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL,
-                RoleTypeEnum.USE_ROLE.getType(),
-                AuthenticationContextHolder.getCurrentUserRolesToString()));
-        List<RequestTemplate> list = requestTemplateService.list(queryWrapper);
-        return okayWithData(list);
+        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status",StatusEnum.RELEASED.toString())
+                .inSql("id",String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL,
+                        RoleTypeEnum.USE_ROLE.getType(),
+                        AuthenticationContextHolder.getCurrentUserRolesToString()));
+        return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
     }
 
     

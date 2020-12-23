@@ -4,15 +4,18 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.dto.*;
+import com.webank.taskman.dto.CoreCancelTaskDTO;
+import com.webank.taskman.dto.CoreCreateTaskDTO;
+import com.webank.taskman.dto.CoreCreateTaskResp;
 import com.webank.taskman.dto.resp.TaskServiceMetaResp;
 import com.webank.taskman.service.FormItemTemplateService;
-import io.swagger.annotations.*;
+import com.webank.taskman.utils.GsonUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +47,7 @@ public class TaskmanOutController {
     @ApiOperation(value = "create")
     public CoreCreateTaskResp createTask(@RequestBody CoreCreateTaskDTO req)
     {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         List<FormItemTemplate> list = new LinkedList<>();
         return new CoreCreateTaskResp();
     }
@@ -53,6 +57,7 @@ public class TaskmanOutController {
     @ApiOperation(value = "cancel")
     public CoreCreateTaskResp cancelTask(@RequestBody CoreCancelTaskDTO req)
     {
+        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return new CoreCreateTaskResp();
     }
 

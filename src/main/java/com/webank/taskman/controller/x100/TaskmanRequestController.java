@@ -2,7 +2,6 @@ package com.webank.taskman.controller.x100;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
@@ -17,7 +16,7 @@ import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.service.RequestInfoService;
@@ -108,14 +107,14 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req
             )throws TaskmanRuntimeException {
-      RequestTemplateResp requestTemplateResp= requestTemplateService.saveRequestTemplate(req);
-        return JsonResponse.okayWithData(requestTemplateResp);
+      RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
+        return JsonResponse.okayWithData(requestTemplateDTO);
     }
 
     @ApiOperationSupport(order = 6,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
-    public JsonResponse<RequestTemplateResp> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
+    public JsonResponse<RequestTemplateDTO> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
         if(StringUtils.isEmpty(req.getId())){
             return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
@@ -127,18 +126,18 @@ public class TaskmanRequestController {
                 StatusEnum.RELEASED.toString() :StatusEnum.UNRELEASED.toString());
         requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateService.updateById(requestTemplate);
-        return okayWithData(new RequestTemplateResp().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
+        return okayWithData(new RequestTemplateDTO().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
     }
 
     @ApiOperationSupport(order = 7)
     @PostMapping("/template/search/{page}/{pageSize}")
     @ApiOperation(value = "request-template-search")
-    public JsonResponse<QueryResponse<RequestTemplateResp>> requestTemplateSearch(
+    public JsonResponse<QueryResponse<RequestTemplateDTO>> requestTemplateSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws TaskmanRuntimeException {
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
+        QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -161,14 +160,14 @@ public class TaskmanRequestController {
     @GetMapping(value = {"/template/available","/template/available/{all}"})
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
-    public JsonResponse<List<RequestTemplateResp>> requestTemplateAvailable( @PathVariable(value = "all",required = false) String all,@ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
+    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable(@PathVariable(value = "all",required = false) String all, @ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
         if(StringUtils.isEmpty(all)){
             req.setStatus(StatusEnum.ENABLE.ordinal());
         }
         AuthenticationContextHolder.getCurrentUsername();
         req.setSourceTableFix("rt");
         req.setUseRoleName(AuthenticationContextHolder.getCurrentUserRolesToString());
-        List<RequestTemplateResp> dtoList = requestTemplateService.selectAvailableRequest(req);
+        List<RequestTemplateDTO> dtoList = requestTemplateService.selectAvailableRequest(req);
         return okayWithData(dtoList);
     }
 

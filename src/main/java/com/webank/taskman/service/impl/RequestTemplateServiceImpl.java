@@ -1,6 +1,5 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,14 +20,13 @@ import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +67,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     @Transactional
-    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq req) {
+    public RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq req) {
         RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
@@ -78,7 +76,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         }
         saveOrUpdate(requestTemplate);
         roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(), req.getManageRoles());
-        return new RequestTemplateResp().setId(requestTemplate.getId());
+        return new RequestTemplateDTO().setId(requestTemplate.getId());
 
     }
 
@@ -94,14 +92,14 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) {
+    public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) {
         req.setSourceTableFix("rt");
         StringBuffer useRole = new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "" : req.getUseRoleName() + ",");
         req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
 
         IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit), req);
-        List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
-        for (RequestTemplateResp resp : respList) {
+        List<RequestTemplateDTO> respList = requestTemplateConverter.toDto(iPage.getRecords());
+        for (RequestTemplateDTO resp : respList) {
             List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
             roles.stream().forEach(role -> {
                 RoleDTO roleDTO = roleRelationConverter.toDto(role);
@@ -112,7 +110,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
             });
         }
-        QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
+        QueryResponse<RequestTemplateDTO> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(respList);
         return queryResponse;
@@ -137,11 +135,12 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
 
     @Override
-    public List<RequestTemplateResp> selectAvailableRequest(QueryRequestTemplateReq req) {
-        List<RequestTemplateResp> list = requestTemplateConverter.toDto(this.baseMapper.selectListByParam(req));
-        for (RequestTemplateResp requestTemplateResp : list) {
-            requestTemplateResp.setRequestTempGroupName(requestTemplateGroupMapper.selectById(requestTemplateResp.getRequestTempGroup()).getName());
-        }
+    public List<RequestTemplateDTO> selectAvailableRequest(QueryRequestTemplateReq req) {
+        List<RequestTemplateDTO> list = this.getBaseMapper().selectDTOListByParam(req);
+//        for (RequestTemplateResp requestTemplateResp : list) {
+//
+//            requestTemplateResp.setRequestTempGroupName(requestTemplateGroupMapper.selectById(requestTemplateResp.getRequestTempGroup()).getName());
+//        }
         return list;
     }
 

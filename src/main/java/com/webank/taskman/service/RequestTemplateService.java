@@ -7,21 +7,21 @@ import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.RequestTemplateDTO;
 
 import java.util.List;
 
 
 public interface RequestTemplateService extends IService<RequestTemplate> {
-    RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
+    RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
 
     void deleteRequestTemplateService(String id) throws TaskmanRuntimeException;
 
-    QueryResponse<RequestTemplateResp> selectRequestTemplatePage
+    QueryResponse<RequestTemplateDTO> selectRequestTemplatePage
             (Integer current, Integer limit, QueryRequestTemplateReq req) throws TaskmanRuntimeException;
 
     DetailRequestTemplateResq detailRequestTemplate(String id) throws TaskmanRuntimeException;
 
-    List<RequestTemplateResp> selectAvailableRequest(QueryRequestTemplateReq req);
+    List<RequestTemplateDTO> selectAvailableRequest(QueryRequestTemplateReq req);
 
    }

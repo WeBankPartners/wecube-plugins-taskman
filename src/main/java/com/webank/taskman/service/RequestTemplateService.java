@@ -23,6 +23,6 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     DetailRequestTemplateResq detailRequestTemplate(String id) throws TaskmanRuntimeException;
 
-    List<RequestTemplateDTO> selectDTOListByParam(QueryRequestTemplateReq req);
+    List<RequestTemplateDTO> requestTemplateAvailable(QueryRequestTemplateReq req);
 
    }

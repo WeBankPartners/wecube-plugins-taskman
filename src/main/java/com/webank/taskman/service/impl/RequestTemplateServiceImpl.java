@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -7,6 +8,7 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
@@ -17,6 +19,7 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
@@ -128,8 +131,12 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
 
     @Override
-    public List<RequestTemplateDTO> selectDTOListByParam(QueryRequestTemplateReq req) {
-        List<RequestTemplateDTO> list = this.getBaseMapper().selectDTOListByParam(req);
+    public List<RequestTemplateDTO> requestTemplateAvailable(QueryRequestTemplateReq req) {
+        RequestTemplate query = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
+        LambdaQueryWrapper queryWrapper = query.getLambdaQueryWrapper();
+        queryWrapper.inSql("id",String.format(
+                QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL,RoleTypeEnum.USE_ROLE.getType(),req.getUseRoleName()));
+        List<RequestTemplateDTO> list = this.getBaseMapper().selectList(queryWrapper);
         return list;
     }
 

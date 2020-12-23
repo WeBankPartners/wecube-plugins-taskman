@@ -105,7 +105,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         if(null != formItemInfos && formItemInfos.size() > 0 ){
 
             FormTemplate formTemplate = formTemplateService.getOne(
-                    new FormTemplate(requestTempId,StatusEnum.DEFAULT.ordinal()+"").getLambdaQueryWrapper());
+                    new FormTemplate(null,requestTempId,StatusEnum.DEFAULT.ordinal()+"").getLambdaQueryWrapper());
             formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
             FormInfo form = new FormInfo();
             form.setRecordId(requestInfo.getId());

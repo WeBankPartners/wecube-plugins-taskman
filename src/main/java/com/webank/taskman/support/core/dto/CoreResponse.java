@@ -1,5 +1,6 @@
 package com.webank.taskman.support.core.dto;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +36,12 @@ public class CoreResponse<DATATYPE> {
     }
 
 
-    public static class ProcessDataPreviewResponse extends CoreResponse<ProcessDataPreviewDto> {
+    public static class ProcessDataPreviewResponse extends CoreResponse<LinkedHashMap> {
+
     }
 
 
-    public static class ListTaskNodeDefObjectBindInfoResponse extends CoreResponse<TaskNodeDefObjectBindInfoDto> {
+    public static class ListTaskNodeDefObjectBindInfoResponse extends CoreResponse<List<TaskNodeDefObjectBindInfoDto>> {
     }
 
     public static class DynamicWorkflowInstInfoResponse extends CoreResponse<DynamicWorkflowInstInfoDto> {

@@ -24,17 +24,18 @@ public class CoreRestTemplate {
 
     @SuppressWarnings("unchecked")
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType) throws CoreRemoteCallException {
-        log.info("V0.2.24 About to call {} ", targetUrl);
+        log.info("V0.2.27 About to call {} ", targetUrl);
         try {
             R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
-            log.info("Core response: {} ", jsonResponse.getData());
+            log.info("Core response: {},{} ", jsonResponse.getData().getClass(),jsonResponse.getData());
             validateJsonResponse(jsonResponse);
-            return GsonUtil.toObject(jsonResponse.getData().toString(),new TypeToken<D>(){});
+            return (D)jsonResponse.getData();
         }catch (Exception e){
             throw e;
         }
 
     }
+
 
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType,Object...uriVariables) throws CoreRemoteCallException {
         log.info("About to call {} ", targetUrl);

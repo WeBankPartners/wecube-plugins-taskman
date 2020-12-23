@@ -39,6 +39,9 @@ public class CoreServiceStub {
     public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/v1/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
     public static final String GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL = "/platform/v1/process/instances/tasknodes/session/{process-session-id}/tasknode-bindings";
 
+
+
+
     @Autowired
     private CoreRestTemplate template;
 

@@ -1,8 +1,10 @@
 package com.webank.taskman.support.core;
 
+import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
+import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,8 +154,10 @@ public class CoreServiceStub {
             return  null;
         }
         Object o = template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),ProcessDataPreviewResponse.class);
-        log.info("result class:{}",o.getClass());
-        log.info("v 0.2.23 result :{}",o);
+        log.info("v 0.2.28 result :{}",o.getClass());
+        if(o instanceof  LinkedHashMap){
+            return GsonUtil.toObject(GsonUtil.GsonString(o),new TypeToken<ProcessDataPreviewDto>(){});
+        }
         return (ProcessDataPreviewDto)o ;
     }
 
@@ -216,8 +220,16 @@ public class CoreServiceStub {
     }
 
     public static void main(String[] args) {
-        CoreServiceStub stub = new CoreServiceStub();
-        System.out.println(stub.createTaskNodeBindInfos(addProcessTasknodes()));
+//        CoreServiceStub stub = new CoreServiceStub();
+//        System.out.println(stub.createTaskNodeBindInfos(addProcessTasknodes()));
+//
+//        LinkedHashMap linkedHashMap = new LinkedHashMap();
+//        linkedHashMap.put("processSessionId","1bc752e1-72bb-489c-a29b-7d47ce359da4");
+//        String json = GsonUtil.GsonString(linkedHashMap);
+//        System.out.println(json);
+//        ProcessDataPreviewDto p = GsonUtil.toObject(json,new TypeToken<ProcessDataPreviewDto>(){});
+//        System.out.println(p);
+
     }
 
 }

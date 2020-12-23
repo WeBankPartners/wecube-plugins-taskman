@@ -3,7 +3,7 @@ package com.webank.taskman;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import org.junit.Test;
@@ -59,6 +59,6 @@ public class RequestTemplateTest {
         int current=1;
         int limit=2;
         QueryRequestTemplateReq req=new QueryRequestTemplateReq();
-        QueryResponse<RequestTemplateResp> queryResponse = requestTemplateService.selectRequestTemplatePage(current, limit, req);
+        QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(current, limit, req);
     }
 }

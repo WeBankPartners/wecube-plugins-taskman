@@ -1,7 +1,9 @@
 package com.webank.taskman.support.core;
 
+import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.support.core.dto.CoreResponse;
+import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,7 @@ public class CoreRestTemplate {
             R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
             log.info("Core response: {} ", jsonResponse.getData());
             validateJsonResponse(jsonResponse);
-            return (D) jsonResponse.getData();
+            return GsonUtil.toObject(jsonResponse.getData().toString(),new TypeToken<D>(){});
         }catch (Exception e){
             throw e;
         }
@@ -39,7 +41,7 @@ public class CoreRestTemplate {
         R jsonResponse = restTemplate.getForObject(targetUrl, responseType,uriVariables);
         log.info("Core response: {} ", jsonResponse);
         validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
+        return GsonUtil.toObject(jsonResponse.getData().toString(),new TypeToken<D>(){});
     }
 
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType, Map<String,?> uriVariable) throws CoreRemoteCallException {
@@ -47,7 +49,7 @@ public class CoreRestTemplate {
         R jsonResponse = restTemplate.getForObject(targetUrl, responseType,uriVariable);
         log.info("Core response: {} ", jsonResponse);
         validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
+        return GsonUtil.toObject(jsonResponse.getData().toString(),new TypeToken<D>(){});
     }
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType, String paramJsonStr) throws CoreRemoteCallException {
         log.info("About to call {} ", targetUrl);
@@ -61,7 +63,7 @@ public class CoreRestTemplate {
         R jsonResponse = restTemplate.getForObject(targetUrl, responseType,uriVariable);
         log.info("Core response: {} ", jsonResponse);
         validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
+        return GsonUtil.toObject(jsonResponse.getData().toString(),new TypeToken<D>(){});
     }
 
     public <D, R extends CoreResponse> D postForResponse(String targetUrl, Class<R> responseType)
@@ -76,7 +78,7 @@ public class CoreRestTemplate {
         R jsonResponse = restTemplate.postForObject(targetUrl, postObject, responseType);
         log.info("Core response: {} ", jsonResponse.toString());
         validateJsonResponse(jsonResponse, false);
-        return (D) jsonResponse.getData();
+        return GsonUtil.toObject(jsonResponse.getData().toString(),new TypeToken<D>(){});
     }
 
     private void validateJsonResponse(CoreResponse jsonResponse) throws CoreRemoteCallException {

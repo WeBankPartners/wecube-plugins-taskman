@@ -3,7 +3,6 @@ package com.webank.taskman.base;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.webank.taskman.domain.FormItemTemplate;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,16 +15,18 @@ public class QueryResponse<T> {
     public QueryResponse() {
     }
 
+    public QueryResponse(Long totalRows, Long startIndex, Long pageSize, List<T> contents) {
+        this.pageInfo = new PageInfo(totalRows,startIndex,pageSize);
+        this.contents = contents;
+    }
     public QueryResponse(PageInfo pageInfo, List<T> contents) {
         this.pageInfo = pageInfo;
         this.contents = contents;
     }
 
-    public QueryResponse(IPage<FormItemTemplate> iPage,List<T> contents) {
-        this.pageInfo.setStartIndex(iPage.getCurrent());
-        this.pageInfo.setPageSize(iPage.getSize());
-        this.pageInfo.setTotalRows(iPage.getTotal());
-        this.contents = (List<T>)iPage.getRecords();
+    public QueryResponse(IPage<T> iPage, List<T> contents) {
+        this.pageInfo = new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize());
+        this.contents = contents;
     }
 
 

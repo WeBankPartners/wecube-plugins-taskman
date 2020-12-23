@@ -13,6 +13,7 @@ import java.util.List;
 
 
 public interface RequestTemplateService extends IService<RequestTemplate> {
+
     RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
 
     void deleteRequestTemplateService(String id) throws TaskmanRuntimeException;
@@ -22,6 +23,6 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     DetailRequestTemplateResq detailRequestTemplate(String id) throws TaskmanRuntimeException;
 
-    List<RequestTemplateDTO> selectAvailableRequest(QueryRequestTemplateReq req);
+    List<RequestTemplateDTO> selectDTOListByParam(QueryRequestTemplateReq req);
 
    }

@@ -23,6 +23,13 @@ mybatis-plus:
       logic-not-delete-value: 0
       logic-delete-value: 1
 
+#分页插件
+pagehelper:
+  helperDialect: mysql
+  paramsCount: countSql
+  reasonable: true
+  supportMethodsArguments: true
+
 knife4j:
   enable: true
   setting:

@@ -7,7 +7,6 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
-import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
@@ -75,17 +74,6 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
-    @ApiOperationSupport(order = 4)
-    @PostMapping("/task/search1/{page}/{pageSize}")
-    @ApiOperation(value = "Task-Info-search")
-    public JsonResponse<QueryResponse<SynthesisTaskInfoResp>> selectSynthesisTaskInfo1(
-            @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SynthesisTaskInfoReq req)
-            throws Exception {
-        QueryResponse<SynthesisTaskInfoResp> queryResponse = taskInfoService.selectSynthesisTaskInfoService(page, pageSize,req);
-        return JsonResponse.okayWithData(queryResponse);
-    }
 
     @ApiOperationSupport(order =5)
     @PostMapping("/task/details")

@@ -8,6 +8,7 @@ import com.webank.taskman.base.BaseEntity;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.util.StringJoiner;
 
 public class RequestTemplate extends BaseEntity implements Serializable {
 
@@ -173,21 +174,19 @@ public class RequestTemplate extends BaseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "RequestTemplate{" +
-        "id=" + id +
-        ", requestTempGroup=" + requestTempGroup +
-        ", procDefKey=" + procDefKey +
-        ", procDefId=" + procDefId +
-        ", procDefName=" + procDefName +
-        ", name=" + name +
-        ", version=" + version +
-        ", tags=" + tags +
-        ", status=" + status +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-        "}";
+        return new StringJoiner(", ", RequestTemplate.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("requestTempGroup='" + requestTempGroup + "'")
+                .add("procDefKey='" + procDefKey + "'")
+                .add("procDefId='" + procDefId + "'")
+                .add("procDefName='" + procDefName + "'")
+                .add("packageName='" + packageName + "'")
+                .add("entityName='" + entityName + "'")
+                .add("name='" + name + "'")
+                .add("description='" + description + "'")
+                .add("version='" + version + "'")
+                .add("tags='" + tags + "'")
+                .add("status='" + status + "'")
+                .toString();
     }
 }

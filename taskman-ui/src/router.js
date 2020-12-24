@@ -9,7 +9,7 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      redirect: '/task-management',
+      redirect: '/template-mgmt',
       component: () => import("./index.vue"),
       children: [
         // {
@@ -36,6 +36,11 @@ export default new Router({
           path: '/request-mgmt',
           name: 'requestMgmt',
           component: () => import("./views/request/request-mgmt.vue")
+        },
+        {
+          path: '/task-mgmt',
+          name: 'tasktMgmt',
+          component: () => import("./views/task/task-mgmt.vue")
         },
       ]
     }

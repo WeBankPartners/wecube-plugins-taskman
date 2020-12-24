@@ -8,6 +8,7 @@ import com.webank.taskman.base.BaseEntity;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.util.StringJoiner;
 
 public class AttachFile  extends BaseEntity implements Serializable {
 
@@ -49,7 +50,6 @@ public class AttachFile  extends BaseEntity implements Serializable {
             .eq(!StringUtils.isEmpty(s3BucketName), AttachFile::getS3BucketName, s3BucketName)
             .eq(!StringUtils.isEmpty(s3KeyName), AttachFile::getS3KeyName, s3KeyName);
     }
-
 
 
     public String getId() {
@@ -106,4 +106,15 @@ public class AttachFile  extends BaseEntity implements Serializable {
         return this;
     }
 
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", AttachFile.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("recordId='" + recordId + "'")
+                .add("attachFileName='" + attachFileName + "'")
+                .add("s3Url='" + s3Url + "'")
+                .add("s3BucketName='" + s3BucketName + "'")
+                .add("s3KeyName='" + s3KeyName + "'")
+                .toString();
+    }
 }

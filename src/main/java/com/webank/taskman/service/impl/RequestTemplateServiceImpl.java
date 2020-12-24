@@ -128,11 +128,4 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
 
-    @Override
-    public List<RequestTemplateDTO> selectDTOListByParam(QueryRequestTemplateReq req) {
-        List<RequestTemplateDTO> list = this.getBaseMapper().selectDTOListByParam(req);
-        return list;
-    }
-
-
 }

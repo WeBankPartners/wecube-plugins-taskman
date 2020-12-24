@@ -1,34 +1,55 @@
 package com.webank.taskman;
 
 import com.webank.taskman.service.RequestTemplateGroupService;
+import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.dto.RolesDataResponse;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Collections;
+import java.util.List;
+
 
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class TemplateGroupTest {
+
     @Autowired
     private RequestTemplateGroupService requestTemplateGroupService;
 
+    @Autowired
+    CoreServiceStub coreServiceStub;
+
     @Test
-    public void testV1Group() throws Exception {
-//        TemplateGroupVO vo=new TemplateGroupVO();
-//        vo.setCreatedBy("11");
-//        vo.setUpdatedBy("22");
-//        vo.setManageRole("11");
-//        vo.setName("11");
-//        vo.setVersion("11");
-//        templateGroupService.createTemplateGroupService(vo);
-//        TemplateGroupVO vo=new TemplateGroupVO();
-//        vo.setId("1332131518222503937");
-//        vo.setCreatedBy("问我");
-//        vo.setName("大答");
+    public void createRequestTemplateGroup() throws Exception {
+        System.out.println(getRoles(1));
+        for (int i=0;i<10;i++) {
+            System.out.println(getRoles());
+        }
+        String request =
+                "{" +
+                "\"id\": \"\"," +
+                "\"name\": \"\"," +
+                "\"manageRoleId\": \"\"," +
+                "\"manageRoleName\": \"\"," +
+                "\"description\": \"\"," +
+                "\"version\": \"\"" +
+                "}";
 
 
-        requestTemplateGroupService.deleteTemplateGroupByIDService("1332253263087276034");
+    }
+
+    private List<RolesDataResponse> getRoles(int limit){
+        // get all roles
+        List<RolesDataResponse> roles = coreServiceStub.authRoleAll();
+        limit = limit > roles.size() ? roles.size():limit;
+        Collections.shuffle(roles);
+        return roles.subList(0,limit);
+    }
+    private List<RolesDataResponse> getRoles(){
+        return  getRoles(Math.round(100));
     }
 }

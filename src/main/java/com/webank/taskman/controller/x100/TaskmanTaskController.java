@@ -65,7 +65,7 @@ public class TaskmanTaskController {
     }
 
     @ApiOperationSupport(order = 4)
-    @PostMapping("/task/search/{page}/{pageSize}")
+    @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "task-Info-search")
     public JsonResponse<QueryResponse<TaskInfoDTO>> selectTaskInfo(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
@@ -77,7 +77,7 @@ public class TaskmanTaskController {
 
 
     @ApiOperationSupport(order =5)
-    @PostMapping("/task/details")
+    @PostMapping("/details")
     @ApiOperation(value = "Task-Info-details")
     public JsonResponse<SynthesisTaskInfoFormTask> selectSynthesisTaskInfoForm(String id)
             throws Exception {
@@ -87,7 +87,7 @@ public class TaskmanTaskController {
 
 
     @ApiOperationSupport(order =6)
-    @PostMapping("/task/receive")
+    @PostMapping("/receive")
     @ApiOperation(value = "Task-Info-receive")
     public JsonResponse<TaskInfoGetResp> getTheTaskInfo(String id)
             throws Exception {
@@ -100,7 +100,7 @@ public class TaskmanTaskController {
 
 
     @ApiOperationSupport(order =7)
-    @PostMapping("/task/instance")
+    @PostMapping("/instance")
     @ApiOperation(value = "Task-Info-instance")
     public JsonResponse<RequestInfoInstanceResq> selectTaskInfoinstance(@RequestParam("taskId") String taskId,
                                                                         @RequestParam("requestId") String requestId)
@@ -110,7 +110,7 @@ public class TaskmanTaskController {
     }
 
     @ApiOperationSupport(order =8)
-    @PostMapping("/task/processing")
+    @PostMapping("/processing")
     @ApiOperation(value = "Task-Info-processing")
     public JsonResponse<String> ProcessingTasksController(@Valid @RequestBody ProcessingTasksReq ptr)
             throws Exception {

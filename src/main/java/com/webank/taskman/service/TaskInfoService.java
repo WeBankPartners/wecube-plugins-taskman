@@ -3,6 +3,8 @@ package com.webank.taskman.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.dto.req.ProcessingTasksReq;
+import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
@@ -24,4 +26,6 @@ public interface TaskInfoService extends IService<TaskInfo> {
     TaskInfoGetResp getTheTaskInfoService(String id);
 
     void createTask(CoreCreateTaskDTO req);
+
+    String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception;
 }

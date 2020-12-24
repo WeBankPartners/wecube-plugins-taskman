@@ -4,7 +4,7 @@ import router from './router-plugin'
 // import 'view-design/dist/styles/iview.css';
 import PluginSelect from "./components/select.vue";
 import { quillEditor } from 'vue-quill-editor'
-import QuillEditor from "./components/quillEditor"
+import TaskManQuillEditor from "./components/quillEditor"
 import TaskFormItem from "./components/formItem"
 import HomePage from "./components/homepage"
 import ZH from "./i18n/zh-CN.json";
@@ -16,7 +16,7 @@ import EN from "./i18n/en-US.json";
 // Vue.component("PluginSelect", PluginSelect);
 window.component && window.component("PluginSelect", PluginSelect)
 window.component && window.component("quillEditor", quillEditor)
-window.component && window.component("QuillEditor", QuillEditor)
+window.component && window.component("TaskManQuillEditor", TaskManQuillEditor)
 window.component && window.component("TaskFormItem", TaskFormItem)
 // window.addHomepageComponent && window.addHomepageComponent({name:()=>{return window.vm.$t('same_group_processing')},component:HomePage})
 window.addRoutes && window.addRoutes(router, "itsm");

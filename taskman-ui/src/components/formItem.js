@@ -9,7 +9,8 @@ export default {
   props: {
     item: {},
     index: {},
-    isDesign: {}
+    isDesign: {},
+    value: {}
   },
   computed: {
     classList () {
@@ -21,6 +22,11 @@ export default {
         classes = classes+'form-item-taskman-active'
       }
       return classes
+    }
+  },
+  watch: {
+    value(val) {
+      this.itemValue = val
     }
   },
   methods: {

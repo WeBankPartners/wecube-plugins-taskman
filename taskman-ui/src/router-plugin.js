@@ -3,6 +3,7 @@ import ServiceCatalog from "./views/Service-catalog.vue"
 import TemplateGroup from "./views/template/template-group-mgmt.vue"
 import TemplateMgmt from "./views/template/template-mgmt.vue"
 import RequestMgmt from "./views/request/request-mgmt.vue"
+import TaskMgmt from "./views/task/task-mgmt.vue"
 
 export default [
     {
@@ -19,5 +20,10 @@ export default [
       path: '/taskman/request-mgmt',
       name: 'requestMgmt',
       component: RequestMgmt
+    },
+    {
+      path: '/taskman/task-mgmt',
+      name: 'taskMgmt',
+      component: TaskMgmt
     },
   ]

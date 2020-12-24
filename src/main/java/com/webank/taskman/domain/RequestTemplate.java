@@ -175,6 +175,21 @@ public class RequestTemplate extends BaseEntity implements Serializable {
     public String toString() {
         return "RequestTemplate{" +
         "id=" + id +
+<<<<<<<<< Temporary merge branch 1
+        ", dealRole=" + dealRole +
+        ", manageRole=" + manageRole +
+        ", groupId=" + groupId +
+        ", formTempId=" + formTempId +
+        ", procDefKey=" + procDefKey +
+        ", name=" + name +
+        ", version=" + version +
+        ", status=" + status +
+        ", createdBy=" + createdBy +
+        ", createdTime=" + createdTime +
+        ", updatedBy=" + updatedBy +
+        ", updatedTime=" + updatedTime +
+        ", delFlag=" + delFlag +
+=========
         ", requestTempGroup=" + requestTempGroup +
         ", procDefKey=" + procDefKey +
         ", procDefId=" + procDefId +

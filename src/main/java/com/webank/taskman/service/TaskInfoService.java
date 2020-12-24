@@ -15,7 +15,7 @@ import com.webank.taskman.dto.resp.TaskInfoResp;
 public interface TaskInfoService extends IService<TaskInfo> {
 
     QueryResponse<TaskInfoResp> selectTaskInfoService(Integer page, Integer pageSize, SelectTaskInfoReq req);
-//
+
     SaveTaskInfoResp saveTaskInfo(SaveTaskInfoReq saveTaskInfoReq);
 
     QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);

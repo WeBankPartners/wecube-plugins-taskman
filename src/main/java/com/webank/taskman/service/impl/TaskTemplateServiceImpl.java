@@ -13,8 +13,6 @@ import com.webank.taskman.converter.SynthesisTaskTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
-import com.webank.taskman.base.PageInfo;
-import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;

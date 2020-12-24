@@ -63,6 +63,22 @@ public class SaveFormItemTemplateReq {
         this.formTemplateId = formTemplateId;
     }
 
+    public String getAttrDefId() {
+        return attrDefId;
+    }
+
+    public void setAttrDefId(String attrDefId) {
+        this.attrDefId = attrDefId;
+    }
+
+    public String getAttrDataType() {
+        return attrDataType;
+    }
+
+    public void setAttrDataType(String attrDataType) {
+        this.attrDataType = attrDataType;
+    }
+
     public String getName() {
         return name;
     }

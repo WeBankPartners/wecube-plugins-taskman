@@ -25,4 +25,6 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     List<RequestTemplateDTO> requestTemplateAvailable(QueryRequestTemplateReq req);
 
+    List<RequestTemplate>  selectListByParam(QueryRequestTemplateReq req);
+
    }

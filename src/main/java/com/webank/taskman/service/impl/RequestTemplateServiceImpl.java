@@ -1,23 +1,26 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageHelper;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
+import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
-import com.webank.taskman.dto.PageInfo;
-import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
-import com.webank.taskman.mapper.RequestTemplateGroupMapper;
+import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
+import com.webank.taskman.mapper.FormItemTemplateMapper;
+import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
@@ -35,8 +38,6 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Autowired
     RequestTemplateMapper requestTemplateMapper;
 
-    @Autowired
-    RequestTemplateGroupMapper requestTemplateGroupMapper;
 
     @Autowired
     RequestTemplateConverter requestTemplateConverter;
@@ -48,75 +49,87 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Autowired
     RoleRelationConverter roleRelationConverter;
 
+    @Autowired
+    FormTemplateConverter formTemplateConverter;
 
-    private static final String TABLE_NAME = "request_template";
+    @Autowired
+    FormTemplateMapper formTemplateMapper;
+
+    @Autowired
+    FormItemTemplateMapper formItemTemplateMapper;
+
 
     @Override
     @Transactional
-    public RequestTemplateResp saveRequestTemplate(SaveRequestTemplateReq req) {
-        RequestTemplate requestTemplate = requestTemplateConverter.reqToDomain(req);
+    public RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq req) {
+        RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
         if (StringUtils.isEmpty(requestTemplate.getId())) {
             requestTemplate.setCreatedBy(currentUsername);
         }
         saveOrUpdate(requestTemplate);
-        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(),req.getManageRoles());
-        return new RequestTemplateResp().setId(requestTemplate.getId());
+        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(), req.getManageRoles());
+        return new RequestTemplateDTO().setId(requestTemplate.getId());
 
     }
 
 
     @Override
-    public void deleteRequestTemplateService(String id) throws Exception {
+    public void deleteRequestTemplateService(String id) throws TaskmanRuntimeException {
         if (StringUtils.isEmpty(id)) {
-            throw new Exception("Request template parameter cannot be ID");
+            throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.eq("id", id).set("del_flag", 1);
+        wrapper.lambda().eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, 1);
         requestTemplateMapper.update(null, wrapper);
     }
 
     @Override
-    public QueryResponse<RequestTemplateResp> selectRequestTemplatePage(Integer current, Integer limit, QueryRequestTemplateReq req) throws Exception {
+    public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer pageNum, Integer pageSize, QueryRequestTemplateReq req) {
         req.setSourceTableFix("rt");
-        StringBuffer useRole =  new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "":req.getUseRoleName()+",") ;
+        StringBuffer useRole = new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "" : req.getUseRoleName() + ",");
         req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
 
-        IPage<RequestTemplate> iPage = requestTemplateMapper.selectPageByParam(new Page<>(current, limit),req);
-        List<RequestTemplateResp> respList = requestTemplateConverter.toDto(iPage.getRecords());
-        for (RequestTemplateResp resp : respList) {
-            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>().eq("record_id",resp.getId()));
-            roles.stream().forEach(role->
-            {
+        PageHelper.startPage(pageNum,pageSize);
+        com.github.pagehelper.PageInfo<RequestTemplateDTO> pages = new com.github.pagehelper.PageInfo(requestTemplateMapper.selectDTOListByParam(req));
+
+        for (RequestTemplateDTO resp : pages.getList()) {
+            List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
+            roles.stream().forEach(role -> {
                 RoleDTO roleDTO = roleRelationConverter.toDto(role);
-                if(RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()){
+                if (RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()) {
                     resp.getUseRoles().add(roleDTO);
-                }else{
+                } else {
                     resp.getManageRoles().add(roleDTO);
                 }
             });
         }
-        QueryResponse<RequestTemplateResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(respList);
+        QueryResponse<RequestTemplateDTO> queryResponse = new QueryResponse(pages.getTotal(),pageNum.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
     }
 
     @Override
-    public RequestTemplateResp detailRequestTemplate(String id) throws Exception {
-//        RequestTemplateResp formTemplateResp =
-//        requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
-        return requestTemplateConverter.toDto(requestTemplateMapper.selectById(id));
+    public DetailRequestTemplateResq detailRequestTemplate(String id) {
+        DetailRequestTemplateResq detailRequestTemplateResq = requestTemplateConverter.detailRequest(requestTemplateMapper.selectById(id));
+        detailRequestTemplateResq.setDetilReuestTemplateFormResq(
+                formTemplateConverter.detailForm(
+                        formTemplateMapper.selectOne(
+                                new FormTemplate()
+                                        .setTempId(detailRequestTemplateResq.getId())
+                                        .setTempType("0").getLambdaQueryWrapper()
+                        )));
+        detailRequestTemplateResq.getDetilReuestTemplateFormResq().setFormItemTemplateList(
+                formItemTemplateMapper.selectList(
+                        new FormItemTemplate().setFormTemplateId(detailRequestTemplateResq.getDetilReuestTemplateFormResq().getId()).getLambdaQueryWrapper()
+                ));
+        return detailRequestTemplateResq;
     }
 
 
     @Override
-    public List<RequestTemplateResp> selectAvailableRequest(QueryRequestTemplateReq req) {
-        List<RequestTemplateResp> list=requestTemplateConverter.toDto(this.baseMapper.selectListByParam(req));
-        for (RequestTemplateResp requestTemplateResp : list) {
-            requestTemplateResp.setRequestTempGroupName(requestTemplateGroupMapper.selectById(requestTemplateResp.getRequestTempGroup()).getName());
-        }
+    public List<RequestTemplateDTO> requestTemplateAvailable(QueryRequestTemplateReq req) {
+        List<RequestTemplateDTO> list = this.getBaseMapper().selectDTOListByParam(req);
         return list;
     }
 

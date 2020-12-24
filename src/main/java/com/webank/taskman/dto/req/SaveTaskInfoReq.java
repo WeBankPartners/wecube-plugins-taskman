@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModel;
 import java.util.Date;
 
 @ApiModel
-public class SaveTaskInfoAndFormInfoReq {
+public class SaveTaskInfoReq {
 
     private String id;
 
@@ -45,7 +45,7 @@ public class SaveTaskInfoAndFormInfoReq {
 
     private String version;
 
-    private SaveFormInfoAndFormItemInfoReq saveFormInfoAndFormItemInfoReq;
+    private SaveFormInfoReq formInfo;
 
     public String getId() {
         return id;
@@ -199,37 +199,12 @@ public class SaveTaskInfoAndFormInfoReq {
         this.version = version;
     }
 
-    public SaveFormInfoAndFormItemInfoReq getSaveFormInfoAndFormItemInfoReq() {
-        return saveFormInfoAndFormItemInfoReq;
+
+    public SaveFormInfoReq getFormInfo() {
+        return formInfo;
     }
 
-    public void setSaveFormInfoAndFormItemInfoReq(SaveFormInfoAndFormItemInfoReq saveFormInfoAndFormItemInfoReq) {
-        this.saveFormInfoAndFormItemInfoReq = saveFormInfoAndFormItemInfoReq;
-    }
-
-    @Override
-    public String toString() {
-        return "SaveTaskInfoAndFormInfoReq{" +
-                "id='" + id + '\'' +
-                ", requestId='" + requestId + '\'' +
-                ", requestNo='" + requestNo + '\'' +
-                ", parentId='" + parentId + '\'' +
-                ", taskTempId='" + taskTempId + '\'' +
-                ", nodeDefId='" + nodeDefId + '\'' +
-                ", nodeName='" + nodeName + '\'' +
-                ", callbackUrl='" + callbackUrl + '\'' +
-                ", callbackParameter='" + callbackParameter + '\'' +
-                ", name='" + name + '\'' +
-                ", reporter='" + reporter + '\'' +
-                ", reportTime=" + reportTime +
-                ", emergency='" + emergency + '\'' +
-                ", reportRole='" + reportRole + '\'' +
-                ", result='" + result + '\'' +
-                ", description='" + description + '\'' +
-                ", attachFileId='" + attachFileId + '\'' +
-                ", status=" + status +
-                ", version='" + version + '\'' +
-                ", saveFormInfoAndFormItemInfoReq=" + saveFormInfoAndFormItemInfoReq +
-                '}';
+    public void setFormInfo(SaveFormInfoReq formInfo) {
+        this.formInfo = formInfo;
     }
 }

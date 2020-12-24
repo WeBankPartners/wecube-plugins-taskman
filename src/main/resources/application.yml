@@ -4,7 +4,7 @@ server:
     context-path: /taskman
 spring:
   profiles:
-    active: test
+    active: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8&serverTimezone=Asia/Shanghai
@@ -22,6 +22,13 @@ mybatis-plus:
     db-config:
       logic-not-delete-value: 0
       logic-delete-value: 1
+
+#分页插件
+pagehelper:
+  helperDialect: mysql
+  paramsCount: countSql
+  reasonable: true
+  supportMethodsArguments: true
 
 knife4j:
   enable: true

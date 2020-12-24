@@ -1,9 +1,6 @@
 package com.webank.taskman.support.core.dto;
 
-
-import com.webank.taskman.dto.OperationEventResultDto;
-import com.webank.taskman.dto.resp.RootEntityResp;
-
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,49 +12,42 @@ public class CoreResponse<DATATYPE> {
 
     public static class DefaultCoreResponse extends CoreResponse<Object> {
     }
-    
-    public static class OperationEventResultResponse extends CoreResponse<OperationEventResultDto>{
-        
-    }
-
-    public static class IntegerCoreResponse extends CoreResponse<Integer> {
-    }
-
-    public static class StringCoreResponse extends CoreResponse<String> {
-    }
 
     public static class ListDataResponse extends CoreResponse<List<Object>> {
     }
-    public static class ReviewEntitiesDTOResponse extends CoreResponse<ReviewEntitiesDTO> {
-    }
-
     public static class ListMapDataResponse extends CoreResponse<List<Map<String,Object>>> {
     }
 
-    public static class GetAllRolesResponse extends CoreResponse<List<RolesDataResponse>> {
-    }
-    
-    public static class GetRootEntitiesResponse extends CoreResponse<List<RootEntityResp>> {
-
-    }
-    public static class GetModelsAllResponse extends CoreResponse<List<PluginPackageDataModelDto>> {
-
-    }
-    public static class GetAttributesByPackageEntityResponse extends CoreResponse<List<PluginPackageAttributeDto>> {
-
+    public static class ListRolesDataResponse extends CoreResponse<List<RolesDataResponse>> {
     }
 
-    public static class DynamicWorkflowInstInfoDto extends CoreResponse<DynamicWorkflowInstInfoDto> {
+
+    public static class ListWorkflowDefInfoResponse extends CoreResponse<List<WorkflowDefInfoDto>> {
     }
 
-    public static class CommonResponseDto extends CoreResponse<List<WorkflowDefInfoDto>> {
-        @Override
-        public String toString() {
-            return "CommonResponseDto [getStatus()=" + getStatus() + ", getMessage()=" + getMessage()
-                    + ", getData()=" + getData() + ", getClass()=" + getClass() + ", hashCode()=" + hashCode()
-                    + ", toString()=" + super.toString() + "]";
-        }
+    public static class ListWorkflowNodeDefInfoResponse extends CoreResponse<List<WorkflowNodeDefInfoDto>> {
     }
+
+    public static class ListPluginPackageDataModelResponse extends CoreResponse<List<PluginPackageDataModelDto>> {
+
+    }
+    public static class ListPluginPackageAttributeResponse extends CoreResponse<List<PluginPackageAttributeDto>> {
+
+    }
+
+
+    public static class ProcessDataPreviewResponse extends CoreResponse<LinkedHashMap> {
+
+    }
+
+
+    public static class ListTaskNodeDefObjectBindInfoResponse extends CoreResponse<List<TaskNodeDefObjectBindInfoDto>> {
+    }
+
+    public static class DynamicWorkflowInstInfoResponse extends CoreResponse<DynamicWorkflowInstInfoDto> {
+    }
+
+
 
     public String getStatus() {
         return status;

@@ -1,6 +1,5 @@
-package com.webank.taskman.dto.resp;
+package com.webank.taskman.dto;
 
-import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -8,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ApiModel
-public class RequestTemplateResp {
+public class RequestTemplateDTO {
 
 
 
@@ -47,7 +46,7 @@ public class RequestTemplateResp {
 
 
     @ApiModelProperty(value = "",position = 108)
-    private Integer status;
+    private String status;
 
     @ApiModelProperty(value = "",position = 109)
     private List<RoleDTO> useRoles = new ArrayList<>();
@@ -60,7 +59,7 @@ public class RequestTemplateResp {
         return id;
     }
 
-    public RequestTemplateResp setId(String id) {
+    public RequestTemplateDTO setId(String id) {
         this.id = id;
         return this;
     }
@@ -69,7 +68,7 @@ public class RequestTemplateResp {
         return requestTempGroup;
     }
 
-    public RequestTemplateResp setRequestTempGroup(String requestTempGroup) {
+    public RequestTemplateDTO setRequestTempGroup(String requestTempGroup) {
         this.requestTempGroup = requestTempGroup;
         return this;
     }
@@ -86,7 +85,7 @@ public class RequestTemplateResp {
         return procDefKey;
     }
 
-    public RequestTemplateResp setProcDefKey(String procDefKey) {
+    public RequestTemplateDTO setProcDefKey(String procDefKey) {
         this.procDefKey = procDefKey;
         return this;
     }
@@ -95,7 +94,7 @@ public class RequestTemplateResp {
         return procDefId;
     }
 
-    public RequestTemplateResp setProcDefId(String procDefId) {
+    public RequestTemplateDTO setProcDefId(String procDefId) {
         this.procDefId = procDefId;
         return this;
     }
@@ -104,7 +103,7 @@ public class RequestTemplateResp {
         return procDefName;
     }
 
-    public RequestTemplateResp setProcDefName(String procDefName) {
+    public RequestTemplateDTO setProcDefName(String procDefName) {
         this.procDefName = procDefName;
         return this;
     }
@@ -113,7 +112,7 @@ public class RequestTemplateResp {
         return name;
     }
 
-    public RequestTemplateResp setName(String name) {
+    public RequestTemplateDTO setName(String name) {
         this.name = name;
         return this;
     }
@@ -130,7 +129,7 @@ public class RequestTemplateResp {
         return version;
     }
 
-    public RequestTemplateResp setVersion(String version) {
+    public RequestTemplateDTO setVersion(String version) {
         this.version = version;
         return this;
     }
@@ -139,16 +138,16 @@ public class RequestTemplateResp {
         return tags;
     }
 
-    public RequestTemplateResp setTags(String tags) {
+    public RequestTemplateDTO setTags(String tags) {
         this.tags = tags;
         return this;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public RequestTemplateResp setStatus(Integer status) {
+    public RequestTemplateDTO setStatus(String status) {
         this.status = status;
         return this;
     }

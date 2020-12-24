@@ -42,9 +42,14 @@ public class DynamicWorkflowInstCreationInfoDto {
     public void setTaskNodeBindInfos(List<DynamicTaskNodeBindInfoDto> taskNodeBindInfos) {
         this.taskNodeBindInfos = taskNodeBindInfos;
     }
-    
-    
-    
 
-    
+    @Override
+    public String toString() {
+        return "DynamicWorkflowInstCreationInfoDto{" +
+                "procDefId='" + procDefId + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", rootEntityValue=" + rootEntityValue +
+                ", taskNodeBindInfos=" + taskNodeBindInfos +
+                '}';
+    }
 }

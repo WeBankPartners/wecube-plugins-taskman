@@ -1,23 +1,29 @@
 package com.webank.taskman.support.core.dto;
 
-import java.util.List;
+import io.swagger.annotations.ApiModel;
 
-public class ReviewEntitiesDTO {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+
+@ApiModel
+public class ProcessDataPreviewDto {
 
     private String processSessionId;
 
 
-    private List<EntityTreeNodesBean> entityTreeNodes;
+    private List<GraphNodeDto> entityTreeNodes = new ArrayList<>();
 
-    public List<EntityTreeNodesBean> getEntityTreeNodes() {
+    public List<GraphNodeDto> getEntityTreeNodes() {
         return entityTreeNodes;
     }
 
-    public void setEntityTreeNodes(List<EntityTreeNodesBean> entityTreeNodes) {
+    public void setEntityTreeNodes(List<GraphNodeDto> entityTreeNodes) {
         this.entityTreeNodes = entityTreeNodes;
     }
 
-    public static class EntityTreeNodesBean {
+    @ApiModel
+    public static class GraphNodeDto {
         /**
          * packageName : wecmdb
          * entityName : deploy_package
@@ -33,7 +39,7 @@ public class ReviewEntitiesDTO {
         private String dataId;
         private String displayName;
         private String id;
-        private List<?> previousIds;
+        private List<String> previousIds;
         private List<String> succeedingIds;
 
         public String getPackageName() {
@@ -76,11 +82,11 @@ public class ReviewEntitiesDTO {
             this.id = id;
         }
 
-        public List<?> getPreviousIds() {
+        public List<String> getPreviousIds() {
             return previousIds;
         }
 
-        public void setPreviousIds(List<?> previousIds) {
+        public void setPreviousIds(List<String> previousIds) {
             this.previousIds = previousIds;
         }
 
@@ -91,6 +97,19 @@ public class ReviewEntitiesDTO {
         public void setSucceedingIds(List<String> succeedingIds) {
             this.succeedingIds = succeedingIds;
         }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", GraphNodeDto.class.getSimpleName() + "[", "]")
+                    .add("packageName='" + packageName + "'")
+                    .add("entityName='" + entityName + "'")
+                    .add("dataId='" + dataId + "'")
+                    .add("displayName='" + displayName + "'")
+                    .add("id='" + id + "'")
+                    .add("previousIds=" + previousIds)
+                    .add("succeedingIds=" + succeedingIds)
+                    .toString();
+        }
     }
 
     public String getProcessSessionId() {
@@ -100,4 +119,14 @@ public class ReviewEntitiesDTO {
     public void setProcessSessionId(String processSessionId) {
         this.processSessionId = processSessionId;
     }
+
+    @Override
+    public String toString() {
+        return "ProcessDataPreviewDto{" +
+                "processSessionId='" + processSessionId + '\'' +
+                ", entityTreeNodes=" + entityTreeNodes +
+                '}';
+    }
+
+
 }

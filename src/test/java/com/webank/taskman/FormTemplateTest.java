@@ -1,7 +1,6 @@
 package com.webank.taskman;
 
-import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormTemplateService;

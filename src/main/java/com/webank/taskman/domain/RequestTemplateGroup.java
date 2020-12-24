@@ -2,7 +2,10 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 
@@ -13,21 +16,38 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
-    
     private String manageRoleId;
-
-    
     private String manageRoleName;
-
-    
     private String name;
-
     private String description;
-
     private String version;
+    private String status;
 
-    private Integer status;
+    public RequestTemplateGroup() {
+    }
+
+    public RequestTemplateGroup(String id, String manageRoleId, String manageRoleName, String name, String description, String version, String status) {
+        this.id = id;
+        this.manageRoleId = manageRoleId;
+        this.manageRoleName = manageRoleName;
+        this.name = name;
+        this.description = description;
+        this.version = version;
+        this.status = status;
+    }
+
+    @JsonIgnore
+    public LambdaQueryWrapper getLambdaQueryWrapper() {
+        return new LambdaQueryWrapper<RequestTemplateGroup>()
+            .eq(!StringUtils.isEmpty(id), RequestTemplateGroup::getId, id)
+            .eq(!StringUtils.isEmpty(manageRoleId), RequestTemplateGroup::getManageRoleId, manageRoleId)
+            .eq(!StringUtils.isEmpty(manageRoleName), RequestTemplateGroup::getManageRoleName, manageRoleName)
+            .like(!StringUtils.isEmpty(name), RequestTemplateGroup::getName, name)
+            .like(!StringUtils.isEmpty(description), RequestTemplateGroup::getDescription, description)
+            .eq(!StringUtils.isEmpty(version), RequestTemplateGroup::getVersion, version)
+            .eq(!StringUtils.isEmpty(status), RequestTemplateGroup::getStatus, status)
+        ;
+    }
 
     public String getId() {
         return id;
@@ -42,48 +62,54 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
         return manageRoleId;
     }
 
-    public void setManageRoleId(String manageRoleId) {
+    public RequestTemplateGroup setManageRoleId(String manageRoleId) {
         this.manageRoleId = manageRoleId;
+        return this;
     }
 
     public String getManageRoleName() {
         return manageRoleName;
     }
 
-    public void setManageRoleName(String manageRoleName) {
+    public RequestTemplateGroup setManageRoleName(String manageRoleName) {
         this.manageRoleName = manageRoleName;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public RequestTemplateGroup setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public RequestTemplateGroup setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public RequestTemplateGroup setVersion(String version) {
         this.version = version;
+        return this;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public RequestTemplateGroup setStatus(String status) {
         this.status = status;
+        return this;
     }
 
     @Override
@@ -102,5 +128,9 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
         ", updatedTime=" + getUpdatedTime() +
         ", delFlag=" + getDelFlag() +
         "}";
+    }
+
+    public  enum  RequestTemplateGroupStatus{
+
     }
 }

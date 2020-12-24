@@ -12,7 +12,6 @@ import java.io.IOException;
 public class TaskManApplication {
     public static void main(String[] args) throws IOException {
         SpringApplication.run(TaskManApplication.class, args);
-        System.out.println();
 //        test();
     }
 

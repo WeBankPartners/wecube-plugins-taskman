@@ -6,7 +6,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
-public class BaseEntity {
+public class BaseEntity<T> {
 
     private String createdBy;
 
@@ -69,4 +69,5 @@ public class BaseEntity {
 
         return entity;
     }
+
 }

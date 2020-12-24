@@ -13,8 +13,8 @@ import com.webank.taskman.converter.SynthesisTaskTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
-import com.webank.taskman.dto.PageInfo;
-import com.webank.taskman.dto.QueryResponse;
+import com.webank.taskman.base.PageInfo;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
@@ -103,8 +103,9 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     public TaskTemplateResp selectTaskTemplateOne(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
         TaskTemplateResp taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
-        List<RoleRelation> relations = roleRelationService.list(new QueryWrapper<RoleRelation>()
-                .eq("record_id", id));
+        List<RoleRelation> relations = roleRelationService.list(
+                new RoleRelation().setRecordId(id).getLambdaQueryWrapper()
+        );
         relations.stream().forEach(roleRelation -> {
             RoleDTO roleDTO = new RoleDTO();
             roleDTO.setRoleName(roleRelation.getRoleName());

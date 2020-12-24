@@ -144,11 +144,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Override
     public SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception{
         FormInfo formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(id).getLambdaQueryWrapper());
-        if (StringUtils.isEmpty(id)){
-            throw new Exception("The request details do not exist");
-        }
-        if(StringUtils.isEmpty((CharSequence) formInfo)){
-            throw new Exception("Task information cannot be empty");
+        if (null==formInfo||"".equals(formInfo)){
+            throw new TaskmanRuntimeException("The request details do not exist");
         }
         List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
         SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);

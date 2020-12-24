@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.converter.*;
@@ -12,12 +15,14 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CheckTaskDTO;
-import com.webank.taskman.base.PageInfo;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
-import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
-import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.dto.resp.FormInfoResq;
+import com.webank.taskman.dto.resp.SaveTaskInfoResp;
+import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
+import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
 import com.webank.taskman.mapper.FormInfoMapper;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
@@ -63,23 +68,14 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
 
     @Override
-    public QueryResponse<TaskInfoResp> selectTaskInfoService(Integer page, Integer pageSize, SelectTaskInfoReq req) {
+    public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        IPage<TaskInfo> iPage = taskInfoMapper.selectTaskInfo(new Page<>(page, pageSize), currentUserRolesToString);
-        List<TaskInfoResp> respList = taskInfoConverter.toDto(iPage.getRecords());
-        for (TaskInfoResp taskInfoResp : respList) {
-            FormInfo formInfo = formInfoMapper.selectOne(
-                    new FormInfo().setRecordId(taskInfoResp.getId()).getLambdaQueryWrapper());
-            FormInfoResq formInfoResq = formInfoConverter.toDto(formInfo);
-            if (formInfoResq != null) {
-                formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(taskInfoResp.getId()));
-                taskInfoResp.setFormInfoResq(formInfoResq);
-            }
-        }
+        req.setSourceTableFix("tt");
+        req.setUseRoleName(currentUserRolesToString);
+        PageHelper.startPage(page,pageSize);
 
-        QueryResponse<TaskInfoResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
-        queryResponse.setContents(respList);
+        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectTaskInfo(req));
+        QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
     }
 
@@ -158,7 +154,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         List<SynthesisTaskInfoResp> srt=synthesisTaskInfoRespConverter.toDto(iPage.getRecords());
 
         QueryResponse<SynthesisTaskInfoResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
+        queryResponse.setPageInfo(new com.webank.taskman.base.PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
         queryResponse.setContents(srt);
 
         return queryResponse;
@@ -179,6 +175,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
         return srt;
     }
+
 
     public CheckTaskDTO checkTheTask(String taskId) {
         FormInfo formInfo = formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id", taskId));

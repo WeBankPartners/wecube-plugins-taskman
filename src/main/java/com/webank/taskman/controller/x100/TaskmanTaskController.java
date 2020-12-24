@@ -8,10 +8,7 @@ import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
-import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
-import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
-import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
-import com.webank.taskman.dto.resp.TaskTemplateResp;
+import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
@@ -97,6 +94,30 @@ public class TaskmanTaskController {
             throws Exception {
         SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
         return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
+    }
+
+
+    @ApiOperationSupport(order =6)
+    @PostMapping("/task/receive")
+    @ApiOperation(value = "Task-Info-receive")
+    public JsonResponse<TaskInfoGetResp> getTheTaskInfo(String id)
+            throws Exception {
+        TaskInfoGetResp taskInfoGetResp = taskInfoService.getTheTaskInfoService(id);
+        if (taskInfoGetResp.getId()==null){
+            return JsonResponse.customError("The task is not in an unclaimed state");
+        }
+        return JsonResponse.okayWithData(taskInfoGetResp);
+    }
+
+
+    @ApiOperationSupport(order =7)
+    @PostMapping("/task/instance")
+    @ApiOperation(value = "Task-Info-instance")
+    public JsonResponse<RequestInfoInstanceResq> selectTaskInfoinstance(@RequestParam("taskId") String taskId,
+                                                                        @RequestParam("requestId") String requestId)
+            throws Exception {
+        RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(taskId,requestId);
+        return JsonResponse.okayWithData(requestInfoInstanceResq);
     }
 
 }

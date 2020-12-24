@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
     public JsonResponse handleException(RuntimeException e) {
         String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
                 e.getMessage() == null ? "" : e.getMessage());
-        log.error(errMsg + "\n", e.getMessage());
+        log.error("错误异常:{}", e);
         String err = errMsg + e.getMessage();
         return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION, err);
     }

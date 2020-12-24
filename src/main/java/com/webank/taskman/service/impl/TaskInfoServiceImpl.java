@@ -9,24 +9,16 @@ import com.github.pagehelper.PageInfo;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
+import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.*;
-import com.webank.taskman.domain.FormInfo;
-import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.CheckTaskDTO;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
-import com.webank.taskman.dto.resp.FormInfoResq;
-import com.webank.taskman.dto.resp.SaveTaskInfoResp;
-import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
-import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
-import com.webank.taskman.mapper.FormInfoMapper;
-import com.webank.taskman.mapper.FormItemInfoMapper;
-import com.webank.taskman.mapper.FormItemTemplateMapper;
-import com.webank.taskman.mapper.TaskInfoMapper;
+import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.mapper.*;
 import com.webank.taskman.service.TaskInfoService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +58,18 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Autowired
     SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
+
+    @Autowired
+    RequestInfoMapper requestInfoMapper;
+
+    @Autowired
+    RequestInfoInstanceConverter requestInfoInstanceConverter;
+
+    @Autowired
+    TaskInfoInstanceConverter taskInfoInstanceConverter;
+
+    @Autowired
+    TaskInfoGetConverter taskInfoGetConverter;
 
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
@@ -176,6 +180,36 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         return srt;
     }
 
+    @Override
+    public RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId) {
+        RequestInfo requestInfo = requestInfoMapper.selectOne(new QueryWrapper<RequestInfo>().lambda().eq(RequestInfo::getId, requestId));
+        RequestInfoInstanceResq requestInfoInstanceResq = requestInfoInstanceConverter.toDto(requestInfo);
+
+        List<TaskInfo> taskInfos = taskInfoMapper.selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getRequestId, requestId));
+
+        List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
+        for (TaskInfo taskInfo : taskInfos) {
+            if (taskInfo.getId().equals(taskId)) {
+                taskInfoInstanceResps.add(taskInfoInstanceConverter.toDto(taskInfo));
+            }
+        }
+        requestInfoInstanceResq.setTaskInfoInstanceResps(taskInfoInstanceResps);
+
+        return requestInfoInstanceResq;
+    }
+
+    @Override
+    public TaskInfoGetResp getTheTaskInfoService(String id) {
+        TaskInfo taskInfo = taskInfoMapper.selectOne(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getId, id));
+        TaskInfoGetResp taskInfoGetResp=new TaskInfoGetResp();
+        if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
+            taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
+            taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
+            taskInfoMapper.updateById(taskInfo);
+            taskInfoGetResp= taskInfoGetConverter.toDto(taskInfo);
+        }
+        return taskInfoGetResp;
+    }
 
     public CheckTaskDTO checkTheTask(String taskId) {
         FormInfo formInfo = formInfoMapper.selectOne(new QueryWrapper<FormInfo>().eq("record_id", taskId));

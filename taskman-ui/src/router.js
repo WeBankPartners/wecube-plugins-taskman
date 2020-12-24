@@ -37,6 +37,11 @@ export default new Router({
           name: 'requestMgmt',
           component: () => import("./views/request/request-mgmt.vue")
         },
+        {
+          path: '/task-mgmt',
+          name: 'tasktMgmt',
+          component: () => import("./views/task/task-mgmt.vue")
+        },
       ]
     }
   ]

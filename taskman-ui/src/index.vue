@@ -22,6 +22,10 @@
             <Icon type="ios-paper" />
             <router-link to="/request-mgmt"><span>请求管理</span></router-link>
         </MenuItem>
+        <MenuItem name="6">
+            <Icon type="ios-paper" />
+            <router-link to="/task-mgmt"><span>任务管理</span></router-link>
+        </MenuItem>
     </Menu>
     </div>
     <div class="content-container">

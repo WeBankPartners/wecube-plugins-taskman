@@ -72,10 +72,13 @@ public class CoreServiceStub {
     }
 
     public List<RolesDataResponse> authRoleAll() {
+        List<RolesDataResponse> list= new ArrayList<>();
         if(isDev()){
-            return CoreServiceTestData.addRoles();
+            list = CoreServiceTestData.addRoles();
+            return  list;
         }
-        return template.get(asCoreUrl(GET_ALL_ROLES), ListRolesDataResponse.class);
+        list = template.get(asCoreUrl(GET_ALL_ROLES), ListRolesDataResponse.class);
+        return list;
     }
 
     public List<RolesDataResponse> authRoleCurrentUser(String userName) {
@@ -165,17 +168,23 @@ public class CoreServiceStub {
         if(isDev()){
             return addProcessTasknodes();
         }
-        return template.get(asCoreUrl(GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL, processSessionId),
-                ListTaskNodeDefObjectBindInfoResponse.class);
+        List list = template.get(asCoreUrl(GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL, processSessionId),ListDataResponse.class);
+        List<TaskNodeDefObjectBindInfoDto> taskNodes = new ArrayList<>();
+        list.stream().forEach(o->{
+            if(o instanceof  LinkedHashMap){
+                taskNodes.add(GsonUtil.toObject(GsonUtil.GsonString(o),new TypeToken<TaskNodeDefObjectBindInfoDto>(){}));
+            }else{
+                taskNodes.add((TaskNodeDefObjectBindInfoDto)o);
+            }
+        });
+        return taskNodes;
     }
 
 
     public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
         log.info("try to create new workflow instance with data: {}", creationInfoDto);
-
-        DynamicWorkflowInstInfoDto dto = template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DynamicWorkflowInstInfoResponse.class);
-
-        return dto;
+        LinkedHashMap result = template.postForResponse(asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE), creationInfoDto,LinkedHashMapResponse.class);
+        return GsonUtil.toObject(GsonUtil.GsonString(result),new TypeToken<DynamicWorkflowInstInfoDto>(){});
     }
 
     private List<DynamicTaskNodeBindInfoDto> createTaskNodeBindInfos(String processSessionId) {

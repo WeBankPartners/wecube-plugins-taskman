@@ -156,7 +156,7 @@ public class JwtSsoBasedAuthenticationFilter extends BasicAuthenticationFilter {
 
         String username = claims.getSubject();
 
-        log.info("subject:{}", username);
+//        log.info("subject:{}", username);
 
         String tokenType = claims.get(CLAIM_KEY_TYPE, String.class);
 
@@ -169,7 +169,7 @@ public class JwtSsoBasedAuthenticationFilter extends BasicAuthenticationFilter {
             sAuthorities = sAuthorities.substring(0, sAuthorities.length() - 1);
         }
 
-        log.info("Authority String:{}", sAuthorities);
+//        log.info("Authority String:{}", sAuthorities);
 
         ArrayList<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 

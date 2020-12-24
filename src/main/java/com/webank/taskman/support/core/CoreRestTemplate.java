@@ -73,7 +73,7 @@ public class CoreRestTemplate {
             throws CoreRemoteCallException {
         log.info("About to POST {} with postObject {}", targetUrl, postObject.toString());
         R jsonResponse = restTemplate.postForObject(targetUrl, postObject, responseType);
-        log.info("Core response: {} ", jsonResponse.toString());
+        log.info("Core response: {} ", jsonResponse);
         validateJsonResponse(jsonResponse, false);
         return (D)jsonResponse.getData();
     }

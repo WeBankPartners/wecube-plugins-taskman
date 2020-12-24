@@ -5,6 +5,7 @@ import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
@@ -106,6 +107,15 @@ public class TaskmanTaskController {
             throws Exception {
         RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(taskId,requestId);
         return JsonResponse.okayWithData(requestInfoInstanceResq);
+    }
+
+    @ApiOperationSupport(order =8)
+    @PostMapping("/task/processing")
+    @ApiOperation(value = "Task-Info-processing")
+    public JsonResponse<String> ProcessingTasksController(@Valid @RequestBody ProcessingTasksReq ptr)
+            throws Exception {
+        String msg=taskInfoService.ProcessingTasksService(ptr);
+        return JsonResponse.okayWithData(msg);
     }
 
 }

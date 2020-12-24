@@ -18,6 +18,8 @@ import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.mapper.*;
 import com.webank.taskman.service.TaskInfoService;
@@ -46,6 +48,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoMapper formItemInfoMapper;
 
+    @Autowired
+    FormItemInfoConverter formItemInfoConverter;
 
     @Autowired
     SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
@@ -152,6 +156,35 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         srt.setFormItemInfo(formItemInfos);
 
         return srt;
+    }
+
+    @Override
+    public String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception {
+        TaskInfo taskInfo=taskInfoMapper.selectById(ptr.getRecordId());
+        String currentUsername = AuthenticationContextHolder.getCurrentUsername();
+        if (!currentUsername.equals(taskInfo.getReporter())){
+            return "Failed to process. Please claim";
+        }
+        if (!"already_received".equals(taskInfo.getStatus())){
+            return "Processing failed. The current task is not claimed";
+        }
+        FormInfo formInfo=formInfoConverter.ProcessingTasks(ptr);
+        formInfo.setCreatedBy(currentUsername);
+        formInfo.setUpdatedBy(currentUsername);
+        formInfo.setType(1);
+        formInfoMapper.insert(formInfo);
+        for (FormItemInfoReq formItemInfo : ptr.getFormItemInfoList()) {
+            FormItemInfo formItemInfo1=formItemInfoConverter.processTask(formItemInfo);
+            formItemInfo1.setFormId(formInfo.getId());
+            formItemInfo1.setRecordId(taskInfo.getId());
+            formItemInfoMapper.insert(formItemInfo1);
+        }
+
+        taskInfo.setStatus("Processed");
+        taskInfo.setResult(""+ptr.toString());
+        taskInfoMapper.updateById(taskInfo);
+
+        return "processing successful";
     }
 
     @Override

@@ -218,7 +218,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
-            if (taskInfo.getId().equals(taskId)) {
+            if (!(taskInfo.getId().equals(taskId))) {
                 taskInfoInstanceResps.add(taskInfoInstanceConverter.toDto(taskInfo));
             }
         }

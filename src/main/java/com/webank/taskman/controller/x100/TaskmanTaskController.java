@@ -4,6 +4,8 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
@@ -67,8 +69,19 @@ public class TaskmanTaskController {
 
     @ApiOperationSupport(order = 4)
     @PostMapping("/task/search/{page}/{pageSize}")
+    @ApiOperation(value = "task-Info-search")
+    public JsonResponse<QueryResponse<TaskInfoDTO>> selectTaskInfo(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) QueryTaskInfoReq req) {
+        QueryResponse<TaskInfoDTO> queryResponse = taskInfoService.selectTaskInfo(page, pageSize,req);
+        return JsonResponse.okayWithData(queryResponse);
+    }
+
+    @ApiOperationSupport(order = 4)
+    @PostMapping("/task/search1/{page}/{pageSize}")
     @ApiOperation(value = "Task-Info-search")
-    public JsonResponse<QueryResponse<SynthesisTaskInfoResp>> selectSynthesisTaskInfo(
+    public JsonResponse<QueryResponse<SynthesisTaskInfoResp>> selectSynthesisTaskInfo1(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) SynthesisTaskInfoReq req)

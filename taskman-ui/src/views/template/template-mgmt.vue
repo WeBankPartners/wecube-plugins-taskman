@@ -88,7 +88,7 @@
           </Col>
           <Col span="20">
             <RadioGroup @on-change="taskNodeChanged" v-model="currentTaskNode" type="button" size="small">
-              <Radio v-for="node in procTaskNodes" :key="node.nodeName" :label="node.nodeName"></Radio>
+              <Radio v-for="node in procTaskNodes" :key="node.nodeId" :label="node.nodeName"></Radio>
             </RadioGroup>
           </Col>
         </Row>
@@ -605,12 +605,12 @@ export default {
       if (status === 'OK') {
         this.allEntityType = data.map(_ => {
           // handle result sort by name
-          const pluginPackageEntities = _.pluginPackageEntities.sort(function (a, b) {
+          const pluginPackageEntities = _.pluginPackageEntities ? _.pluginPackageEntities.sort(function (a, b) {
               var s = a.name.toLowerCase()
               var t = b.name.toLowerCase()
               if (s < t) return -1
               if (s > t) return 1
-            })
+            }) : []
           this.allEntityList = this.allEntityList.concat(pluginPackageEntities)
           return {
             ..._,

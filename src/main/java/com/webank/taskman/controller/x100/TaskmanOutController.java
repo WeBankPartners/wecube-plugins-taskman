@@ -2,13 +2,11 @@ package com.webank.taskman.controller.x100;
 
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
-import com.webank.taskman.dto.CoreCreateTaskResp;
-import com.webank.taskman.dto.resp.TaskServiceMetaResp;
 import com.webank.taskman.service.FormItemTemplateService;
+import com.webank.taskman.support.core.CommonResponseDto;
 import com.webank.taskman.utils.GsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -36,29 +34,29 @@ public class TaskmanOutController {
     @ApiOperationSupport(order = 1)
     @GetMapping("/task/create/service-meta/{proc-def-id}/{node-def-id}")
     @ApiOperation(value = "service-meta")
-    public JsonResponse<TaskServiceMetaResp> taskCreateServiceMeta(
+    public CommonResponseDto taskCreateServiceMeta(
             @PathVariable("proc-def-id") String procDefId,@PathVariable("node-def-id") String nodeDefId)
     {
-        return JsonResponse.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procDefId,nodeDefId));
+        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procDefId,nodeDefId));
     }
 
     @ApiOperationSupport(order = 2)
     @PostMapping("/task/create")
     @ApiOperation(value = "create")
-    public CoreCreateTaskResp createTask(@RequestBody CoreCreateTaskDTO req)
+    public CommonResponseDto createTask(@RequestBody CoreCreateTaskDTO req)
     {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         List<FormItemTemplate> list = new LinkedList<>();
-        return new CoreCreateTaskResp();
+        return CommonResponseDto.okay();
     }
 
     @ApiOperationSupport(order = 3)
     @PostMapping("/task/cancel")
     @ApiOperation(value = "cancel")
-    public CoreCreateTaskResp cancelTask(@RequestBody CoreCancelTaskDTO req)
+    public CommonResponseDto cancelTask(@RequestBody CoreCancelTaskDTO req)
     {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        return new CoreCreateTaskResp();
+        return CommonResponseDto.okay();
     }
 
 }

@@ -3,6 +3,8 @@ package com.webank.taskman.dto;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.StringJoiner;
+
 @ApiModel(value = "TemplateGroup respone object", description = "TemplateGroupDTO")
 public class RequestTemplateGroupDTO {
 
@@ -82,5 +84,18 @@ public class RequestTemplateGroupDTO {
 
     public void setManageRoleId(String manageRoleId) {
         this.manageRoleId = manageRoleId;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", RequestTemplateGroupDTO.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("name='" + name + "'")
+                .add("description='" + description + "'")
+                .add("version='" + version + "'")
+                .add("status=" + status)
+                .add("manageRoleId='" + manageRoleId + "'")
+                .add("manageRoleName='" + manageRoleName + "'")
+                .toString();
     }
 }

@@ -74,15 +74,27 @@ public class TaskmanFormController {
         return JsonResponse.okay();
     }
 
+    @ApiOperationSupport(order = 7)
+    @PostMapping("/item/template/search/{page}/{pageSize}")
+    @ApiOperation(value = "form-item-template-serach ")
+    public JsonResponse<QueryResponse<FormItemTemplateDTO>> searchFormItemTemplate(
+            @ApiParam(name = "page") @PathVariable("page") Integer page,
+            @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
+            @RequestBody(required = false) SelectFormItemTemplateReq req)
+    {
+        QueryResponse<FormItemTemplateDTO> queryResponse= formItemTemplateService.selectAllFormItemTemplateService(page, pageSize, req);
+        return JsonResponse.okayWithData(queryResponse);
+    }
 
-    @ApiOperationSupport(order = 5)
+    @ApiOperationSupport(order = 8)
     @PostMapping("/item/template/currency")
     @ApiOperation(value = "form-item-template-currency")
-    public JsonResponse<QueryResponse<FormItemTemplate>> formItemTemplateAvailable()
+    public JsonResponse<QueryResponse<FormItemTemplateDTO>> formItemTemplateAvailable()
     {
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<FormItemTemplate>();
         wrapper.eq("status",1);
-        return JsonResponse.okayWithData(formItemTemplateService.list(wrapper));
+        List<FormItemTemplateDTO> queryResponse= formItemTemplateConverter.toDto(formItemTemplateService.list(wrapper)) ;
+        return JsonResponse.okayWithData(queryResponse);
     }
 
 

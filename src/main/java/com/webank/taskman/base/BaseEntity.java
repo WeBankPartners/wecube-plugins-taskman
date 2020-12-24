@@ -69,5 +69,4 @@ public class BaseEntity<T> {
 
         return entity;
     }
-
 }

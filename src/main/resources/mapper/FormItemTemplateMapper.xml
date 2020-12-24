@@ -15,4 +15,18 @@
         </where>
     </delete>
 
+    <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.TaskServiceMetaFormItem">
+        SELECT
+        fit.id AS itemId,
+        fit.`name` AS `key`,
+        "ref" AS "valueDef.type",
+        CONCAT(fit.package_name,":",fit.entity) AS "valueDef.expr"
+        FROM form_item_template fit
+        WHERE
+        fit.form_template_id in (SELECT id FROM form_template ft
+        WHERE ft.temp_id in (SELECT id FROM task_template tt
+        WHERE tt.proc_def_id = #{procDefId} AND tt.node_def_id = #{nodeDefId}
+        ))
+    </select>
+
 </mapper>

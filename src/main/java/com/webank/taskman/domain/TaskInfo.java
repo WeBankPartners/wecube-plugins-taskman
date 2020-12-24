@@ -2,7 +2,10 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
+import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -46,164 +49,230 @@ public class TaskInfo extends BaseEntity implements Serializable {
     
     private String attachFileId;
 
-    private Integer status;
+    private String status;
     
     private String version;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
+
+    public TaskInfo() {
+    }
+
+    public TaskInfo(String id, String requestId, String requestNo, String parentId, String taskTempId, String nodeDefId, String nodeName, String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime, String emergency, String reportRole, String result, String description, String attachFileId, String status, String version) {
+        this.id = id;
+        this.requestId = requestId;
+        this.requestNo = requestNo;
+        this.parentId = parentId;
+        this.taskTempId = taskTempId;
+        this.nodeDefId = nodeDefId;
+        this.nodeName = nodeName;
+        this.callbackUrl = callbackUrl;
+        this.callbackParameter = callbackParameter;
+        this.name = name;
+        this.reporter = reporter;
+        this.reportTime = reportTime;
+        this.emergency = emergency;
+        this.reportRole = reportRole;
+        this.result = result;
+        this.description = description;
+        this.attachFileId = attachFileId;
+        this.status = status;
+        this.version = version;
+    }
+
+    @JsonIgnore
+    public LambdaQueryWrapper getLambdaQueryWrapper() {
+        return new LambdaQueryWrapper<TaskInfo>()
+                .eq(!StringUtils.isEmpty(id), TaskInfo::getId, id)
+                .eq(!StringUtils.isEmpty(requestId), TaskInfo::getRequestId, requestId)
+                .eq(!StringUtils.isEmpty(requestNo), TaskInfo::getRequestNo, requestNo)
+                .eq(!StringUtils.isEmpty(parentId), TaskInfo::getParentId, parentId)
+                .eq(!StringUtils.isEmpty(taskTempId), TaskInfo::getTaskTempId, taskTempId)
+                .eq(!StringUtils.isEmpty(nodeDefId), TaskInfo::getNodeDefId, nodeDefId)
+                .eq(!StringUtils.isEmpty(nodeName), TaskInfo::getNodeName, nodeName)
+                .eq(!StringUtils.isEmpty(callbackUrl), TaskInfo::getCallbackUrl, callbackUrl)
+                .eq(!StringUtils.isEmpty(callbackParameter), TaskInfo::getCallbackParameter, callbackParameter)
+                .like(!StringUtils.isEmpty(name), TaskInfo::getName, name)
+                .eq(!StringUtils.isEmpty(reporter), TaskInfo::getReporter, reporter)
+                .eq(!StringUtils.isEmpty(reportTime), TaskInfo::getReportTime, reportTime)
+                .eq(!StringUtils.isEmpty(emergency), TaskInfo::getEmergency, emergency)
+                .eq(!StringUtils.isEmpty(reportRole), TaskInfo::getReportRole, reportRole)
+                .eq(!StringUtils.isEmpty(result), TaskInfo::getResult, result)
+                .eq(!StringUtils.isEmpty(description), TaskInfo::getDescription, description)
+                .eq(!StringUtils.isEmpty(attachFileId), TaskInfo::getAttachFileId, attachFileId)
+                .eq(!StringUtils.isEmpty(status), TaskInfo::getStatus, status)
+                .eq(!StringUtils.isEmpty(version), TaskInfo::getVersion, version)
+                ;
     }
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public TaskInfo setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(String requestId) {
+    public TaskInfo setRequestId(String requestId) {
         this.requestId = requestId;
+        return this;
     }
 
     public String getRequestNo() {
         return requestNo;
     }
 
-    public void setRequestNo(String requestNo) {
+    public TaskInfo setRequestNo(String requestNo) {
         this.requestNo = requestNo;
+        return this;
     }
 
     public String getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public TaskInfo setParentId(String parentId) {
         this.parentId = parentId;
+        return this;
     }
 
     public String getTaskTempId() {
         return taskTempId;
     }
 
-    public void setTaskTempId(String taskTempId) {
+    public TaskInfo setTaskTempId(String taskTempId) {
         this.taskTempId = taskTempId;
+        return this;
     }
 
     public String getNodeDefId() {
         return nodeDefId;
     }
 
-    public void setNodeDefId(String nodeDefId) {
+    public TaskInfo setNodeDefId(String nodeDefId) {
         this.nodeDefId = nodeDefId;
+        return this;
     }
 
     public String getNodeName() {
         return nodeName;
     }
 
-    public void setNodeName(String nodeName) {
+    public TaskInfo setNodeName(String nodeName) {
         this.nodeName = nodeName;
+        return this;
     }
 
     public String getCallbackUrl() {
         return callbackUrl;
     }
 
-    public void setCallbackUrl(String callbackUrl) {
+    public TaskInfo setCallbackUrl(String callbackUrl) {
         this.callbackUrl = callbackUrl;
+        return this;
     }
 
     public String getCallbackParameter() {
         return callbackParameter;
     }
 
-    public void setCallbackParameter(String callbackParameter) {
+    public TaskInfo setCallbackParameter(String callbackParameter) {
         this.callbackParameter = callbackParameter;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public TaskInfo setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getReporter() {
         return reporter;
     }
 
-    public void setReporter(String reporter) {
+    public TaskInfo setReporter(String reporter) {
         this.reporter = reporter;
+        return this;
     }
 
     public Date getReportTime() {
         return reportTime;
     }
 
-    public void setReportTime(Date reportTime) {
+    public TaskInfo setReportTime(Date reportTime) {
         this.reportTime = reportTime;
+        return this;
     }
 
     public String getEmergency() {
         return emergency;
     }
 
-    public void setEmergency(String emergency) {
+    public TaskInfo setEmergency(String emergency) {
         this.emergency = emergency;
+        return this;
     }
 
     public String getReportRole() {
         return reportRole;
     }
 
-    public void setReportRole(String reportRole) {
+    public TaskInfo setReportRole(String reportRole) {
         this.reportRole = reportRole;
+        return this;
     }
 
     public String getResult() {
         return result;
     }
 
-    public void setResult(String result) {
+    public TaskInfo setResult(String result) {
         this.result = result;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public TaskInfo setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getAttachFileId() {
         return attachFileId;
     }
 
-    public void setAttachFileId(String attachFileId) {
+    public TaskInfo setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
+        return this;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public TaskInfo setStatus(String status) {
         this.status = status;
+        return this;
     }
 
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public TaskInfo setVersion(String version) {
         this.version = version;
+        return this;
     }
 
     @Override

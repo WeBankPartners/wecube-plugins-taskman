@@ -1,34 +1,31 @@
 package com.webank.taskman.dto.resp;
 
-import io.swagger.annotations.ApiModelProperty;
+import com.webank.taskman.domain.FormItemTemplate;
 
 import java.util.List;
 
-public class CoreTaskServiceMetaResp {
-
-    @ApiModelProperty(value = "",position = 1)
+public class DetilReuestTemplateFormResq {
     private String id;
 
-    @ApiModelProperty(value = "",position = 2)
+    private String tempId;
+
+    private String tempType;
+
     private String name;
 
-    @ApiModelProperty(value = "",position = 3)
     private String description;
 
-    @ApiModelProperty(value = "",position = 5)
+    private String style;
+
     private String targetEntitys;
 
-    @ApiModelProperty(value = "",position = 6)
     private String inputAttrDef;
 
-    @ApiModelProperty(value = "",position = 7)
     private String outputAttrDef;
 
-    @ApiModelProperty(value = "",position = 8)
     private String otherAttrDef;
 
-    @ApiModelProperty(value = "",position = 9)
-    private List<CoreTaskFormItemResp> items;
+    private List<FormItemTemplate> formItemTemplateList;
 
     public String getId() {
         return id;
@@ -36,6 +33,22 @@ public class CoreTaskServiceMetaResp {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTempId() {
+        return tempId;
+    }
+
+    public void setTempId(String tempId) {
+        this.tempId = tempId;
+    }
+
+    public String getTempType() {
+        return tempType;
+    }
+
+    public void setTempType(String tempType) {
+        this.tempType = tempType;
     }
 
     public String getName() {
@@ -52,6 +65,14 @@ public class CoreTaskServiceMetaResp {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 
     public String getTargetEntitys() {
@@ -86,11 +107,11 @@ public class CoreTaskServiceMetaResp {
         this.otherAttrDef = otherAttrDef;
     }
 
-    public List<CoreTaskFormItemResp> getItems() {
-        return items;
+    public List<FormItemTemplate> getFormItemTemplateList() {
+        return formItemTemplateList;
     }
 
-    public void setItems(List<CoreTaskFormItemResp> items) {
-        this.items = items;
+    public void setFormItemTemplateList(List<FormItemTemplate> formItemTemplateList) {
+        this.formItemTemplateList = formItemTemplateList;
     }
 }

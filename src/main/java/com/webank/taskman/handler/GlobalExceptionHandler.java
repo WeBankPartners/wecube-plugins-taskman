@@ -1,8 +1,9 @@
 package com.webank.taskman.handler;
 
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.TaskmanException;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.BizCodeEnum;
-import com.webank.taskman.dto.JsonResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,14 +39,14 @@ public class GlobalExceptionHandler {
     @Autowired
     private MessageSource messageSource;
 
-    @ExceptionHandler(TaskmanException.class)
+    @ExceptionHandler(TaskmanRuntimeException.class)
     @ResponseBody
     public JsonResponse handleWecubeException(HttpServletRequest request, final Exception e,
                                               HttpServletResponse response) {
         String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
                 e.getMessage() == null ? "" : e.getMessage());
-        log.error(errMsg + "\n", e);
-        TaskmanException wecubeError = (TaskmanException) e;
+        log.error(errMsg + "\n", e.getMessage());
+        TaskmanRuntimeException wecubeError = (TaskmanRuntimeException) e;
 
         return JsonResponse.customError(determineI18nErrorMessage(request, wecubeError));
     }
@@ -71,13 +75,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public JsonResponse defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        log.error("errors occurred:", e.getMessage());
         log.error("GlobalExceptionHandler: RequestHost {} invokes url {} ERROR: {}", req.getRemoteHost(),
                 req.getRequestURL(), e.getMessage());
+        if(e instanceof TaskmanException){
+            TaskmanException exception  = (TaskmanException)e;
+            return  JsonResponse.customError(exception.getStatusCodeEnum());
+
+        }
         return JsonResponse.customError(e.getMessage());
     }
 
-    private String determineI18nErrorMessage(HttpServletRequest request, TaskmanException e) {
+    private String determineI18nErrorMessage(HttpServletRequest request, TaskmanRuntimeException e) {
         Locale locale = request.getLocale();
         if (locale == null) {
             locale = DEF_LOCALE;

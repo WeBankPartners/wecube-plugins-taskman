@@ -8,12 +8,6 @@
         <result column="item_temp_id" property="itemTempId"/>
         <result column="name" property="name"/>
         <result column="value" property="value"/>
-        <result column="target_entitys" property="targetEntitys"/>
-        <result column="created_by" property="createdBy"/>
-        <result column="created_time" property="createdTime"/>
-        <result column="updated_by" property="updatedBy"/>
-        <result column="updated_time" property="updatedTime"/>
-        <result column="del_flag" property="delFlag"/>
     </resultMap>
 
     <select id="selectFormItemInfo" parameterType="java.lang.String"

@@ -2,11 +2,13 @@ package com.webank.taskman.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
-import io.swagger.annotations.ApiModelProperty;
+import org.springframework.util.StringUtils;
 
-import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.StringJoiner;
 
 public class FormTemplate extends BaseEntity implements Serializable {
 
@@ -32,100 +34,169 @@ public class FormTemplate extends BaseEntity implements Serializable {
     private String outputAttrDef;
     private String otherAttrDef;
 
+
+    public FormTemplate() {
+    }
+
+    public FormTemplate(String id, String tempId, String tempType) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+    }
+
+    public FormTemplate(String id, String tempId) {
+        this.id = id;
+        this.tempId = tempId;
+    }
+
+    public FormTemplate(String id, String tempId, String tempType, String name, String description) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+        this.name = name;
+        this.description = description;
+    }
+    public FormTemplate(String id, String tempId, String tempType, String name, String description, String style) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+        this.name = name;
+        this.description = description;
+        this.style = style;
+    }
+
+    public FormTemplate(String id, String tempId, String tempType, String name, String description, String style, String targetEntitys, String inputAttrDef, String outputAttrDef, String otherAttrDef) {
+        this.id = id;
+        this.tempId = tempId;
+        this.tempType = tempType;
+        this.name = name;
+        this.description = description;
+        this.style = style;
+        this.targetEntitys = targetEntitys;
+        this.inputAttrDef = inputAttrDef;
+        this.outputAttrDef = outputAttrDef;
+        this.otherAttrDef = otherAttrDef;
+    }
+
+    @JsonIgnore
+    public LambdaQueryWrapper getLambdaQueryWrapper() {
+        return new LambdaQueryWrapper<FormTemplate>()
+                .eq(!StringUtils.isEmpty(id), FormTemplate::getId, id)
+                .eq(!StringUtils.isEmpty(tempId), FormTemplate::getTempId, tempId)
+                .eq(!StringUtils.isEmpty(tempType), FormTemplate::getTempType, tempType)
+                .like(!StringUtils.isEmpty(name), FormTemplate::getName, name)
+                .like(!StringUtils.isEmpty(description), FormTemplate::getDescription, description)
+                .like(!StringUtils.isEmpty(style), FormTemplate::getStyle, style)
+                .eq(!StringUtils.isEmpty(targetEntitys), FormTemplate::getTargetEntitys, targetEntitys)
+                .eq(!StringUtils.isEmpty(inputAttrDef), FormTemplate::getInputAttrDef, inputAttrDef)
+                .eq(!StringUtils.isEmpty(outputAttrDef), FormTemplate::getOutputAttrDef, outputAttrDef)
+                .eq(!StringUtils.isEmpty(otherAttrDef), FormTemplate::getOtherAttrDef, otherAttrDef)
+                ;
+    }
+
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public FormTemplate setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getTempId() {
         return tempId;
     }
 
-    public void setTempId(String tempId) {
+    public FormTemplate setTempId(String tempId) {
         this.tempId = tempId;
+        return this;
     }
 
     public String getTempType() {
         return tempType;
     }
 
-    public void setTempType(String tempType) {
+    public FormTemplate setTempType(String tempType) {
         this.tempType = tempType;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public FormTemplate setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public FormTemplate setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getStyle() {
         return style;
     }
 
-    public void setStyle(String style) {
+    public FormTemplate setStyle(String style) {
         this.style = style;
-    }
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
+        return this;
     }
 
     public String getTargetEntitys() {
         return targetEntitys;
     }
 
-    public void setTargetEntitys(String targetEntitys) {
+    public FormTemplate setTargetEntitys(String targetEntitys) {
         this.targetEntitys = targetEntitys;
+        return this;
     }
 
     public String getInputAttrDef() {
         return inputAttrDef;
     }
 
-    public void setInputAttrDef(String inputAttrDef) {
+    public FormTemplate setInputAttrDef(String inputAttrDef) {
         this.inputAttrDef = inputAttrDef;
+        return this;
     }
 
     public String getOutputAttrDef() {
         return outputAttrDef;
     }
 
-    public void setOutputAttrDef(String outputAttrDef) {
+    public FormTemplate setOutputAttrDef(String outputAttrDef) {
         this.outputAttrDef = outputAttrDef;
+        return this;
     }
 
     public String getOtherAttrDef() {
         return otherAttrDef;
     }
 
-    public void setOtherAttrDef(String otherAttrDef) {
+    public FormTemplate setOtherAttrDef(String otherAttrDef) {
         this.otherAttrDef = otherAttrDef;
+        return this;
     }
 
     @Override
     public String toString() {
-        return "FormTemplate{" +
-                "id='" + id + '\'' +
-                ", tempId='" + tempId + '\'' +
-                ", tempType='" + tempType + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", targetEntitys='" + targetEntitys + '\'' +
-                ", style='" + style + '\'' +
-                '}';
+        return new StringJoiner(", ", FormTemplate.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("tempId='" + tempId + "'")
+                .add("tempType='" + tempType + "'")
+                .add("name='" + name + "'")
+                .add("description='" + description + "'")
+                .add("style='" + style + "'")
+                .add("targetEntitys='" + targetEntitys + "'")
+                .add("inputAttrDef='" + inputAttrDef + "'")
+                .add("outputAttrDef='" + outputAttrDef + "'")
+                .add("otherAttrDef='" + otherAttrDef + "'")
+                .toString();
     }
 }

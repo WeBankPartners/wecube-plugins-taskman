@@ -1,9 +1,9 @@
 package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.domain.TaskInfo;
-import com.webank.taskman.dto.QueryResponse;
-import com.webank.taskman.dto.req.SaveTaskInfoAndFormInfoReq;
+import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import com.webank.taskman.dto.resp.SaveTaskInfoResp;
@@ -11,14 +11,12 @@ import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
 import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
 import com.webank.taskman.dto.resp.TaskInfoResp;
 
-import java.util.Map;
-
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
     QueryResponse<TaskInfoResp> selectTaskInfoService(Integer page, Integer pageSize, SelectTaskInfoReq req);
-
-    SaveTaskInfoResp saveTaskInfo(SaveTaskInfoAndFormInfoReq saveTaskInfoAndFormInfoReq);
+//
+    SaveTaskInfoResp saveTaskInfo(SaveTaskInfoReq saveTaskInfoReq);
 
     QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);
 

@@ -1,6 +1,5 @@
 package com.webank.taskman.dto.req;
 
-import com.webank.taskman.dto.RoleDTO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -15,7 +14,7 @@ public class SaveRequestInfoReq {
     @ApiModelProperty(value = "请求模板id",required = true,dataType = "String",position = 101)
     private String requestTempId;
 
-    @ApiModelProperty(value = "目标对象",required = true,dataType = "String",position = 102)
+    @ApiModelProperty(value = "Existing data id,such as guid in cmdb",required = true,dataType = "String",position = 102)
     private String rootEntity;
 
     @ApiModelProperty(value = "请求信息名称",required = true,dataType = "String",position = 103)

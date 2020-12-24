@@ -3,6 +3,7 @@ package com.webank.taskman.dto;
 import com.webank.taskman.dto.resp.FormInfoResq;
 
 public class CheckTaskDTO {
+
     private FormInfoResq formInfoResq;
     /**
      * itemId : 999

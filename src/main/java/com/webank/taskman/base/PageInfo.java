@@ -1,4 +1,4 @@
-package com.webank.taskman.dto;
+package com.webank.taskman.base;
 
 public class PageInfo extends Pageable {
 	private Long totalRows;

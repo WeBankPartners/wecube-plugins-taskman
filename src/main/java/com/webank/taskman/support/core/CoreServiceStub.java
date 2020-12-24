@@ -1,14 +1,16 @@
 package com.webank.taskman.support.core;
 
+import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
-import com.webank.taskman.constant.TaskNodeTypeEnum;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
+import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -36,7 +38,11 @@ public class CoreServiceStub {
     public static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL= "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";
     public static final String GET_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/retrieve";
     public static final String QUERY_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/query";
-    public static final String GET_ENTITIES_BY_PROC_DEF_ID_AND_GUID_URL = "/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
+    public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/v1/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
+    public static final String GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL = "/platform/v1/process/instances/tasknodes/session/{process-session-id}/tasknode-bindings";
+
+
+
 
     @Autowired
     private CoreRestTemplate template;
@@ -61,73 +67,61 @@ public class CoreServiceStub {
         return null!=smProperties? smProperties.getWecubeCoreAddress() + path :path;
     }
 
-    //1
-    public List<RolesDataResponse> getAllRoles() {
-        if("dev".equals(SpringUtils.getActiveProfile())){
+    private boolean isDev(){
+        return "dev".equals(SpringUtils.getActiveProfile());
+    }
+
+    public List<RolesDataResponse> authRoleAll() {
+        if(isDev()){
             return CoreServiceTestData.addRoles();
         }
-        return template.get(asCoreUrl(GET_ALL_ROLES), GetAllRolesResponse.class);
+        return template.get(asCoreUrl(GET_ALL_ROLES), ListRolesDataResponse.class);
     }
-    // 1
-    public List<RolesDataResponse> getRolesByUserName(String userName) {
-        if("dev".equals(SpringUtils.getActiveProfile())){
+
+    public List<RolesDataResponse> authRoleCurrentUser(String userName) {
+        if(isDev()){
             return CoreServiceTestData.addRoleTestData();
         }
-        return template.get(asCoreUrl(GET_ROLES_BY_USER_NAME, userName), GetAllRolesResponse.class);
+        return template.get(asCoreUrl(GET_ROLES_BY_USER_NAME, userName), ListRolesDataResponse.class);
     }
 
-
-    // 1
-    public List<WorkflowDefInfoDto> fetchLatestReleasedWorkflowDefs()  {
-        if("dev".equals(SpringUtils.getActiveProfile())){
+    public List<WorkflowDefInfoDto> platformProcessAll()  {
+        if(isDev()){
             return CoreServiceTestData.addPdfTestData();
         }
-        return template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS), CommonResponseDto.class);
+        return template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS), ListWorkflowDefInfoResponse.class);
     }
 
-    //2
-    public List<WorkflowNodeDefInfoDto> fetchWorkflowTasknodeInfos(String procDefId)  {
-        List<LinkedHashMap> list = new ArrayList<>();
-        if("dev".equals(SpringUtils.getActiveProfile())){
+    public List<WorkflowNodeDefInfoDto> platformProcessNodes(String procDefId)  {
+        List list = new ArrayList<>();
+        if(isDev()){
             if("rYsEQg2D2Bu".equals(procDefId)) {
-                list =  addTestNodeList();
+                return  addTestNodeList();
             }
-        }else{
-            list = template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), CommonResponseDto.class);
         }
-        List filterList = list.stream().filter(node-> TaskNodeTypeEnum.SUTN.getType().equals(node.get("taskCategory")))
-                .collect(Collectors.toList());
-        return filterList;
+        return template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId), ListWorkflowNodeDefInfoResponse.class);
     }
 
-    // 3
-    public List<PluginPackageDataModelDto> allDataModels() {
-        if("dev".equals(SpringUtils.getActiveProfile())){
-            return  new ArrayList(addAllDataModels());
+    public List<PluginPackageDataModelDto> platformProcessModels(String packageName) {
+        String url = StringUtils.isEmpty(packageName) ? GET_MODELS_ALL_URL:GET_MODELS_BY_PACKAGE_URL;
+        if(isDev()){
+            List<PluginPackageDataModelDto> list =  addAllDataModels();
+            return  StringUtils.isEmpty(packageName)? new ArrayList(list):
+                    new ArrayList(list.stream().filter(model-> model.getPackageName().equals(packageName)).collect(Collectors.toList())) ;
         }
-        return template.get(asCoreUrl(GET_MODELS_ALL_URL),GetModelsAllResponse.class);
+        return template.get(asCoreUrl(url,packageName), ListPluginPackageDataModelResponse.class);
     }
 
-    // 4
-    public List<PluginPackageDataModelDto> getModelsByPackage(String packageName) {
-        if("dev".equals(SpringUtils.getActiveProfile())){
-            List list =  addAllDataModels().stream().filter(model->model.get("packageName").equals(packageName)).collect(Collectors.toList());
-            return list;
-        }
-        return template.get(asCoreUrl(GET_MODELS_BY_PACKAGE_URL, packageName), GetModelsAllResponse.class);
-    }
-
-    public List<Map<String, Object>> getProcessDefinitionRootEntitiesByProcDefKey(String procDefKey){
-        if("dev".equals(SpringUtils.getActiveProfile())){
+    public List<Map<String,Object>> platformProcessRootEntity(String procDefKey){
+        if(isDev()){
             return addRootEntityTestData();
         }
         return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL,procDefKey),ListMapDataResponse.class);
     }
 
-    // 5
-    public List<PluginPackageAttributeDto> getAttributesByPackageEntity(String packageName,String entity) {
-        if("dev".equals(SpringUtils.getActiveProfile())){
-            List<LinkedHashMap> models = new ArrayList(getModelsByPackage(packageName));
+    public List<PluginPackageAttributeDto> platformProcessEntityAttributes(String packageName, String entity) {
+        if(isDev()){
+            List<LinkedHashMap> models = new ArrayList(platformProcessModels(packageName));
             if(models.size() > 0){
                 List<LinkedHashMap> entitys = new ArrayList((ArrayList)models.get(0).get("pluginPackageEntities"));
                 if(entitys.size()>0){
@@ -138,46 +132,104 @@ public class CoreServiceStub {
             }
             return new ArrayList<>();
         }
-        return template.get(asCoreUrl(GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL, packageName,entity), GetModelsAllResponse.class);
+        return template.get(asCoreUrl(GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL, packageName,entity), ListPluginPackageAttributeResponse.class);
     }
 
-    // 6
-    public List<Object> retrieveEntity(String packageName, String entity, String filters) {
-        if("dev".equals(SpringUtils.getActiveProfile())){
+    public List<Object> platformProcessEntityRetrieve(String packageName, String entity, String filters) {
+        if(isDev()){
             if("resource_set".equals(entity)){
                 return addRetrieveEntityData();
             }
             return new ArrayList<>();
         }
-
         return template.get(asCoreUrl(GET_ENTITY_RETRIEVE_URL, packageName,entity), ListDataResponse.class,filters);
     }
 
-    //7
-    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
-        return template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DefaultCoreResponse.class);
-    }
-
-    public List<Object> rootEntities(String procDefId){
-        if("dev".equals(SpringUtils.getActiveProfile())){
-            if("sjqH9YVJ2DP".equals(procDefId)){
-                return addRetrieveEntityData();
-            }
-            return new ArrayList<>();
-        }
-        return template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL, procDefId),
-                ListDataResponse.class);
-    }
-
-    public ReviewEntitiesDTO entitiesByProcDefIdAndGuid(String procDefId,String guid){
-        if("dev".equals(SpringUtils.getActiveProfile())){
+    public ProcessDataPreviewDto platformProcessDataPreview(String procDefId, String guid){
+        if(isDev()){
             if("sjqH9YVJ2DP".equals(procDefId) && "0045_0000000100".equals(guid)){
-                return reviewEntities();
+                ProcessDataPreviewDto processDataPreviewDto = reviewEntities();
+                return processDataPreviewDto;
             }
             return  null;
         }
-        return template.get(asCoreUrl(GET_ENTITIES_BY_PROC_DEF_ID_AND_GUID_URL, procDefId,guid),
-                ReviewEntitiesDTOResponse.class);
+        Object o = template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),ProcessDataPreviewResponse.class);
+        log.info("v 0.2.28 result :{}",o.getClass());
+        if(o instanceof  LinkedHashMap){
+            return GsonUtil.toObject(GsonUtil.GsonString(o),new TypeToken<ProcessDataPreviewDto>(){});
+        }
+        return (ProcessDataPreviewDto)o ;
+    }
+
+    public List<TaskNodeDefObjectBindInfoDto> platformProcessTasknodeBindings(String processSessionId) {
+        if(isDev()){
+            return addProcessTasknodes();
+        }
+        return template.get(asCoreUrl(GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL, processSessionId),
+                ListTaskNodeDefObjectBindInfoResponse.class);
+    }
+
+
+    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+        log.info("try to create new workflow instance with data: {}", creationInfoDto);
+
+        DynamicWorkflowInstInfoDto dto = template.postForResponse(CREATE_NEW_WORKFLOW_INSTANCE, creationInfoDto,DynamicWorkflowInstInfoResponse.class);
+
+        return dto;
+    }
+
+    private List<DynamicTaskNodeBindInfoDto> createTaskNodeBindInfos(String processSessionId) {
+        List<DynamicTaskNodeBindInfoDto> dtoList = new ArrayList<>();
+        List<TaskNodeDefObjectBindInfoDto> taskNodeDefObjectBindInfoDtos = platformProcessTasknodeBindings(processSessionId);
+        Map<String,DynamicTaskNodeBindInfoDto> maps = new HashMap<>();
+        taskNodeDefObjectBindInfoDtos.stream().forEach( taskNode->{
+            String nodeDefId = taskNode.getNodeDefId();
+            DynamicTaskNodeBindInfoDto nodeDto = maps.get(nodeDefId);
+            if(null == nodeDto){
+                nodeDto = new DynamicTaskNodeBindInfoDto(nodeDefId,nodeDefId);
+            }
+            String[] entityTypeIds = taskNode.getEntityTypeId().split(":");
+            String guid = taskNode.getEntityDataId();
+            nodeDto.getBoundEntityValues().add(new DynamicEntityValueDto(guid,guid,guid,entityTypeIds[0],entityTypeIds[1]));
+            maps.put(nodeDefId,nodeDto);
+        });
+        dtoList = maps.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList());
+        return dtoList;
+    }
+
+    private List<DynamicTaskNodeBindInfoDto> createTaskNodeBindInfos(List<TaskNodeDefObjectBindInfoDto> taskNodeDefObjectBindInfoDtos) {
+        List<DynamicTaskNodeBindInfoDto> dtoList = new ArrayList<>();
+        Map<String,DynamicTaskNodeBindInfoDto> maps = new HashMap<>();
+        taskNodeDefObjectBindInfoDtos.stream().forEach( taskNode->{
+            String nodeDefId = taskNode.getNodeDefId();
+            DynamicTaskNodeBindInfoDto nodeDto = maps.get(nodeDefId);
+            if(null == nodeDto){
+                nodeDto = new DynamicTaskNodeBindInfoDto(nodeDefId,nodeDefId);
+            }
+            String[] entityTypeIds = taskNode.getEntityTypeId().split(":");
+            String guid = taskNode.getEntityDataId();
+            List<DynamicEntityValueDto> boundEntityValues = nodeDto.getBoundEntityValues();
+            boundEntityValues.add(new DynamicEntityValueDto(guid,entityTypeIds[0],entityTypeIds[1],guid,guid));
+            nodeDto.setBoundEntityValues(boundEntityValues.stream().collect(Collectors.collectingAndThen(
+                Collectors.toCollection(() ->new TreeSet<>(Comparator.comparing(DynamicEntityValueDto :: getDataId))),ArrayList::new)));
+            maps.put(nodeDefId,nodeDto);
+        });
+        dtoList = maps.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList());
+        maps.clear();
+        return dtoList;
+    }
+
+    public static void main(String[] args) {
+//        CoreServiceStub stub = new CoreServiceStub();
+//        System.out.println(stub.createTaskNodeBindInfos(addProcessTasknodes()));
+//
+//        LinkedHashMap linkedHashMap = new LinkedHashMap();
+//        linkedHashMap.put("processSessionId","1bc752e1-72bb-489c-a29b-7d47ce359da4");
+//        String json = GsonUtil.GsonString(linkedHashMap);
+//        System.out.println(json);
+//        ProcessDataPreviewDto p = GsonUtil.toObject(json,new TypeToken<ProcessDataPreviewDto>(){});
+//        System.out.println(p);
+
     }
 
 }

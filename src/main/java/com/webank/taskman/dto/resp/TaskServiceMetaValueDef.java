@@ -1,8 +1,12 @@
 package com.webank.taskman.dto.resp;
 
-public class CreateTaskServiceMetaValueDefResp {
+import io.swagger.annotations.ApiModelProperty;
 
+public class TaskServiceMetaValueDef {
+
+    @ApiModelProperty(value = "",position = 1)
     private String type;
+    @ApiModelProperty(value = "",position = 2)
     private String expr;
 
     public String getType() {

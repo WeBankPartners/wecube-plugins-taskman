@@ -1,4 +1,4 @@
-package com.webank.taskman.dto;
+package com.webank.taskman.support.core.dto;
 
 public class OperationEventResultDto {
     private String eventSeqNo;

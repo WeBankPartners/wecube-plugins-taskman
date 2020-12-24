@@ -4,12 +4,13 @@
 
     <resultMap id="BaseResultMap" type="com.webank.taskman.domain.RequestTemplate">
         <id column="id" property="id"/>
+        <result column="request_temp_group" property="requestTempGroup" />
         <result column="proc_def_key" property="procDefKey" />
         <result column="proc_def_id" property="procDefId" />
         <result column="proc_def_name" property="procDefName" />
         <result column="name" property="name" />
         <result column="description" property="description" />
-        <result column="description" property="version" />
+        <result column="version" property="version" />
         <result column="tags" property="tags" />
         <result column="status" property="status" />
         <result column="created_by" property="createdBy" />
@@ -19,18 +20,17 @@
         <result column="del_flag" property="delFlag" />
     </resultMap>
 
-    <sql id="Base_Column_List">
-        SELECT * FROM request_template
-    </sql>
 
     <select id="selectPageByParam" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq"
             resultMap="BaseResultMap">
-        SELECT rt.* FROM request_template rt
+        SELECT rt.*,rtg.name FROM request_template rt,
+        INNER JOIN request_template_group rtg ON rt.request_temp_group = rtg.id
         <where>
             <if test="param.requestTempGroup !=null and param.requestTempGroup !='' ">
-                INNER JOIN request_template_group rtg ON rt.request_template_group = rtg.id AND rtg.id = #{param.requestTempGroup}
+                AND rtg.id = #{param.requestTempGroup}
             </if>
-
+        </where>
+        <where>
             <if test="param.id !=null and param.id != ''">
                 AND rt.id = #{param.id}
             </if>
@@ -70,11 +70,49 @@
         </where>
     </select>
 
-    <select id="selectListByParam" resultMap="BaseResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
-        SELECT rt.* FROM  request_template rt
+    <resultMap id="DTOResultMap" type="com.webank.taskman.dto.RequestTemplateDTO" >
+        <id column="id" property="id"/>
+        <result column="request_temp_group" property="requestTempGroup" />
+        <result column="request_temp_group_name" property="requestTempGroupName" />
+        <result column="proc_def_key" property="procDefKey" />
+        <result column="proc_def_id" property="procDefId" />
+        <result column="proc_def_name" property="procDefName" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="version" property="version" />
+        <result column="tags" property="tags" />
+        <result column="status" property="status" />
+    </resultMap>
+
+    <select id="selectDTOListByParam" resultMap="DTOResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
+        SELECT rt.*,rtg.name FROM  request_template rt
+        INNER JOIN request_template_group rtg ON rt.request_temp_group = rtg.id
         <where>
-            <if test="status != null">
-               AND  rt.status = #{status}
+            <if test="requestTempGroup !=null and requestTempGroup !='' ">
+                AND rtg.id = #{requestTempGroup}
+            </if>
+        </where>
+        <where>
+            <if test="id !=null and id != ''">
+                AND rt.id = #{id}
+            </if>
+            <if test="procDefKey !=null and procDefKey != ''">
+                AND rt.proc_def_key = #{procDefKey}
+            </if>
+            <if test="procDefId !=null and procDefId != ''">
+                AND rt.proc_def_id = #{procDefId}
+            </if>
+            <if test="procDefName !=null and procDefName != ''">
+                AND rt.proc_def_name = #{procDefName}
+            </if>
+            <if test="name !=null and name != ''">
+                AND rt.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="tags !=null and tags != ''">
+                AND rt.tags like CONCAT('%',#{tags},'%')
+            </if>
+            <if test="status !=null and status != ''">
+                AND rt.status = #{status}
             </if>
             <if test="conditionSql!=null and conditionSql !=''">
                 AND ${conditionSql}

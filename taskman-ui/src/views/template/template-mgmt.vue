@@ -934,7 +934,7 @@ export default {
     },
     async getTaskNodesEntitys (id) {
       const nodes = await getTaskNodesEntitys(id)
-      this.procTaskNodes = nodes.data || []
+      this.procTaskNodes = nodes.data ? nodes.data.filter(node => node.taskCategory === 'SUTN') : []
       let entitys = new Set()
       this.procTaskNodes.filter(f=>f.boundEntity).forEach(node => {
         const entity = node.boundEntity

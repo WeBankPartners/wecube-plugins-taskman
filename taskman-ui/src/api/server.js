@@ -42,6 +42,12 @@ export const saveRequestInfo = data => request.post(`/taskman/v1/request/save`, 
 export const requestTemplateAvailable = () => request.get(`/taskman/v1/request/template/available`);
 export const getEntityDataByTemplateId = key => request.get(`/taskman/v1/core-resources/platform/${key}/root-entity`);
 export const workflowProcessPrevieEntities = (procId,entityDataId) => request.get(`/taskman/v1/core-resources/platform/process/definitions/${procId}/preview/entities/${entityDataId}`);
+export const searchTask = data => request.post(`/taskman/v1/task/task/search/${data.page}/${data.pageSize}`, data.data);
+export const getTaskInfoDetails = data => request.post(`/taskman/v1/task/task/details`, data);
+export const taskInfoReceive = data => request.post(`/taskman/v1/task/task/receive`, data);
+export const taskInfoProcessing = data => request.post(`/taskman/v1/task/task/processing`, data);
+export const getTaskInfoInstance = data => request.post(`/taskman/v1/task/task/instance`, data);
+
 
 
 

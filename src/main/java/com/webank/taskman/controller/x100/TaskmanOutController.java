@@ -2,10 +2,10 @@ package com.webank.taskman.controller.x100;
 
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
 import com.webank.taskman.service.FormItemTemplateService;
+import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
 import com.webank.taskman.utils.GsonUtil;
 import io.swagger.annotations.Api;
@@ -14,9 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.LinkedList;
-import java.util.List;
 
 
 @Api(tags = {"2、 Taskman open inteface API"})
@@ -40,13 +37,16 @@ public class TaskmanOutController {
         return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procDefId,nodeDefId));
     }
 
+    @Autowired
+    TaskInfoService taskInfoService;
+
     @ApiOperationSupport(order = 2)
     @PostMapping("/task/create")
     @ApiOperation(value = "create")
     public CommonResponseDto createTask(@RequestBody CoreCreateTaskDTO req)
     {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        List<FormItemTemplate> list = new LinkedList<>();
+        taskInfoService.createTask(req);
         return CommonResponseDto.okay();
     }
 

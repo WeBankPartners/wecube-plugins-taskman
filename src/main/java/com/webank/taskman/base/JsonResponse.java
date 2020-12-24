@@ -91,7 +91,7 @@ public class JsonResponse<T>  implements Serializable {
 	}
 
 	public static JsonResponse customError(String errorMessage) {
-		return new JsonResponse(STATUS_ERROR,null,null,null,null);
+		return new JsonResponse(STATUS_ERROR,errorMessage,null,null,null);
 	}
 	public static JsonResponse customError(BizCodeEnum bizCodeEnum, Object data) {
 		return new JsonResponse(STATUS_ERROR,null,bizCodeEnum.getCode(),bizCodeEnum.getMessage(),data);

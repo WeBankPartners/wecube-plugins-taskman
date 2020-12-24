@@ -12,6 +12,7 @@
         <menu code='JOBS_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
         <menu code='JOBS_TEMPLATE_MANAGEMENT' cat='JOBS' displayName="Template Management" localDisplayName="模板管理">/taskman/template-mgmt</menu>
         <menu code='JOBS_REQUEST_MANAGEMENT' cat='JOBS' displayName="Request Management" localDisplayName="请求管理">/taskman/request-mgmt</menu>
+        <menu code='JOBS_TASK_MANAGEMENT' cat='JOBS' displayName="Task Management" localDisplayName="任务管理">/taskman/task-mgmt</menu>
     </menus>
 
     <!-- 3.数据模型 - 描述本插件包的数据模型,并且描述和Framework数据模型的关系 -->
@@ -29,6 +30,7 @@
             <menu code="JOBS_TEMPLATE_GROUP_MANAGEMENT"/>
             <menu code="JOBS_TEMPLATE_MANAGEMENT"/>
             <menu code="JOBS_REQUEST_MANAGEMENT"/>
+            <menu code="JOBS_TASK_MANAGEMENT"/>
         </authority>
     </authorities>
 

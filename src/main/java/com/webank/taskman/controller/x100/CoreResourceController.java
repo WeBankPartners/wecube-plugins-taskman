@@ -1,19 +1,18 @@
 package com.webank.taskman.controller.x100;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.github.xiaoymin.knife4j.annotations.DynamicParameter;
-import com.github.xiaoymin.knife4j.annotations.DynamicResponseParameters;
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.commons.TaskmanException;
-import com.webank.taskman.dto.DownloadAttachFileResponse;
-import com.webank.taskman.dto.JsonResponse;
-import com.webank.taskman.dto.resp.FormItemTemplateResp;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.service.AttachFileService;
+import com.webank.taskman.service.RequestInfoService;
+import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
-import io.swagger.annotations.*;
+import com.webank.taskman.support.s3.dto.DownloadAttachFileResponse;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,8 +176,7 @@ public class CoreResourceController {
             throw new Exception("Invalid service-request-id: " + serviceRequestId);
         try {
             ServletOutputStream out = response.getOutputStream();
-            DownloadAttachFileResponse attachFileInfo = attachFileService
-                    .downloadServiceRequestAttachFile(serviceRequestId);
+            DownloadAttachFileResponse attachFileInfo = attachFileService.downloadServiceRequestAttachFile(serviceRequestId);
 
             response.setCharacterEncoding("utf-8");
             response.setContentType("application/vnd.ms-excel;charset=UTF-8");

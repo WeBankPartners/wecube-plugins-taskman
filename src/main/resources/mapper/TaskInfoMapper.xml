@@ -29,28 +29,28 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
-    <select id="selectTaskInfo" parameterType="com.webank.taskman.dto.req.SelectTaskInfoReq"
+    <select id="selectTaskInfo" parameterType="com.webank.taskman.dto.req.QueryTaskInfoReq"
             resultMap="TaskInfoMap">
-        SELECT *
-        FROM task_info ri,(
-        SELECT rt.*
-        FROM task_template rt
-        WHERE (
-        SELECT COUNT(1)
-        FROM role_relation rr
-        WHERE rt.id = rr.record_id AND rr.role_type = 1 AND
-        <foreach item="roleStr" index="index" collection="Info.roleName.split(',')" open="(" close=")" separator="OR">
-            rr.role_name = #{roleStr}
-        </foreach>
-        ) > 0
-        ) rts
-        WHERE ri.task_temp_id = rts.id
+        SELECT ti.* FROM task_info ti,task_template tt
+        <where>
+            AND tt.id = ti.task_temp_id
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
+            </if>
+            <if test="requestId!=null and requestId !=''">
+                AND ti.request_id = ${requestId}
+            </if>
+            <if test="name !=null and name != ''">
+                AND ti.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="status!=null and status !=''">
+                AND ti.status = ${status}
+            </if>
+        </where>
     </select>
 
     <select id="selectSynthesisRequestInfo" parameterType="com.webank.taskman.dto.req.SynthesisTaskInfoReq" resultMap="TaskInfoMap">
-        SELECT ri.*
-        FROM
-        task_info ri
+        SELECT ri.* FROM task_info ri
         WHERE
         <if test="param.status !=null and param.status !='' ">
             ri.`status`=#{param.status}
@@ -70,4 +70,6 @@
         </foreach>
         ) > 0
     </select>
+
+
 </mapper>

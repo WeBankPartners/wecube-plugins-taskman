@@ -1,9 +1,5 @@
 package com.webank.taskman;
 
-<<<<<<<<< Temporary merge branch 1
-import com.webank.taskman.dto.TemplateGroupVO;
-import com.webank.taskman.service.TemplateGroupService;
-=========
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.RolesDataResponse;

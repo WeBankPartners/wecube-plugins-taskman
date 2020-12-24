@@ -495,8 +495,19 @@ export default {
       if (status === 'OK') {
         this.isAdd = false
         this.formTemplateId = data.id ? data.id : undefined
+        this.formFields = data.items ? data.items.map( _ => {
+            return {
+              ..._,
+              dataOptions: _.dataOptions.length > 0 ? JSON.parse(_.dataOptions) : [],
+              isCustom: !(_.packageName.length > 0),
+              isActive:false,
+              isHover: false
+            }
+          }) : []
+          this.currentFieldList = this.formFields
         if (type === 0) {
           this.attrsSelections = data.otherAttrDef && data.otherAttrDef.length > 0 ? JSON.parse(data.otherAttrDef) : []
+          this.taskAttrsSelections = this.attrsSelections.concat(this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}}))
           this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
           this.list = this.entityList
           this.currentEntityList = this.entityList
@@ -523,19 +534,8 @@ export default {
           this.taskForm.useRoles = data.useRoles
           this.taskForm.outputAttrDef = data.outputAttrDef ? JSON.parse(data.outputAttrDef) : []
           this.taskForm.manageRoles = data.manageRoles
-          this.taskAttrsSelections = data.otherAttrDef && data.otherAttrDef.length > 0 ? JSON.parse(data.otherAttrDef) : []
         }
-          this.formFields = data.items ? data.items.map( _ => {
-            return {
-              ..._,
-              dataOptions: _.dataOptions.length > 0 ? JSON.parse(_.dataOptions) : [],
-              isCustom: !(_.packageName.length > 0),
-              isActive:false,
-              isHover: false
-            }
-          }) : []
-          this.currentFieldList = this.formFields
-          this.formFieldSortHandler(this.currentEntityList)
+        this.formFieldSortHandler(this.currentEntityList)
       }
     },
     async edit (row) {

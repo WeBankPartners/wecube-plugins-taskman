@@ -47,6 +47,7 @@ public class CoreRestTemplate {
         validateJsonResponse(jsonResponse);
         return (D)jsonResponse.getData();
     }
+
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType, String paramJsonStr) throws CoreRemoteCallException {
         log.info("About to call {} ", targetUrl);
         Object uriVariable = paramJsonStr;

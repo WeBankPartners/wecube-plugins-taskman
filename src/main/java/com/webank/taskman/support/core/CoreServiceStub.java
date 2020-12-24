@@ -219,17 +219,6 @@ public class CoreServiceStub {
         return dtoList;
     }
 
-    public static void main(String[] args) {
-//        CoreServiceStub stub = new CoreServiceStub();
-//        System.out.println(stub.createTaskNodeBindInfos(addProcessTasknodes()));
-//
-//        LinkedHashMap linkedHashMap = new LinkedHashMap();
-//        linkedHashMap.put("processSessionId","1bc752e1-72bb-489c-a29b-7d47ce359da4");
-//        String json = GsonUtil.GsonString(linkedHashMap);
-//        System.out.println(json);
-//        ProcessDataPreviewDto p = GsonUtil.toObject(json,new TypeToken<ProcessDataPreviewDto>(){});
-//        System.out.println(p);
 
-    }
 
 }

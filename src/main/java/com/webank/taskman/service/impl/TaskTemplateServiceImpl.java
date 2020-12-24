@@ -1,11 +1,11 @@
 package com.webank.taskman.service.impl;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.base.PageInfo;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
@@ -13,8 +13,6 @@ import com.webank.taskman.converter.SynthesisTaskTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
-import com.webank.taskman.base.PageInfo;
-import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
@@ -69,34 +67,6 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         TaskTemplateResp taskTemplateResp = new TaskTemplateResp();
         taskTemplateResp.setId(taskTemplateId);
         return taskTemplateResp;
-    }
-
-    @Override
-    public void deleteTaskTemplateByIDService(String id) {
-        UpdateWrapper<TaskTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.eq("id", id).set("del_flag", 1);
-        taskTemplateMapper.update(null, wrapper);
-    }
-
-    @Override
-    public List<TaskTemplateResp> selectTaskTemplateAll() {
-        List<TaskTemplate> taskTemplates = taskTemplateMapper.selectList(null);
-        List<TaskTemplateResp> svResps = taskTemplateConverter.toDto(taskTemplates);
-        for (TaskTemplateResp svResp : svResps) {
-            List<RoleRelation> roles = roleRelationService.list(new QueryWrapper<RoleRelation>()
-                    .eq("record_id", svResp.getId()));
-            roles.stream().forEach(roleRelation -> {
-                RoleDTO roleDTO = new RoleDTO();
-                roleDTO.setRoleName(roleRelation.getRoleName());
-                roleDTO.setDisplayName(roleRelation.getRoleName());
-                if (RoleTypeEnum.USE_ROLE.getType() == roleRelation.getRoleType()) {
-                    svResp.getUseRoles().add(roleDTO);
-                } else {
-                    svResp.getManageRoles().add(roleDTO);
-                }
-            });
-        }
-        return svResps;
     }
 
     @Override

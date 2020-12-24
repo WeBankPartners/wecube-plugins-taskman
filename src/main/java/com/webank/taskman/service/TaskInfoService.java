@@ -3,22 +3,29 @@ package com.webank.taskman.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
-import com.webank.taskman.dto.req.SelectTaskInfoReq;
+import com.webank.taskman.dto.CoreCreateTaskDTO;
+import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.req.QueryTaskInfoReq;
+import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
-import com.webank.taskman.dto.resp.SaveTaskInfoResp;
-import com.webank.taskman.dto.resp.SynthesisTaskInfoFormTask;
-import com.webank.taskman.dto.resp.SynthesisTaskInfoResp;
-import com.webank.taskman.dto.resp.TaskInfoResp;
+import com.webank.taskman.dto.resp.*;
 
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
-    QueryResponse<TaskInfoResp> selectTaskInfoService(Integer page, Integer pageSize, SelectTaskInfoReq req);
-//
-    SaveTaskInfoResp saveTaskInfo(SaveTaskInfoReq saveTaskInfoReq);
+    QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req);
 
-    QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req);
+
 
     SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception;
+
+    RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId);
+
+    TaskInfoGetResp getTheTaskInfoService(String id);
+
+    void createTask(CoreCreateTaskDTO req);
+
+    String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception;
 }

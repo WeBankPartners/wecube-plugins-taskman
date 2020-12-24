@@ -1,9 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.domain.FormInfo;
-import com.webank.taskman.domain.FormItemInfo;
-
-import java.util.List;
 
 public class RequestInfoResq {
     private String id;

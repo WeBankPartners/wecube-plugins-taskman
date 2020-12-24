@@ -47,6 +47,7 @@ public class CoreRestTemplate {
         validateJsonResponse(jsonResponse);
         return (D)jsonResponse.getData();
     }
+
     public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType, String paramJsonStr) throws CoreRemoteCallException {
         log.info("About to call {} ", targetUrl);
         Object uriVariable = paramJsonStr;
@@ -62,35 +63,6 @@ public class CoreRestTemplate {
         return (D)jsonResponse.getData();
     }
 
-    public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType,Object...uriVariables) throws CoreRemoteCallException {
-        log.info("About to call {} ", targetUrl);
-        R jsonResponse = restTemplate.getForObject(targetUrl, responseType,uriVariables);
-        log.info("Core response: {} ", jsonResponse);
-        validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
-    }
-
-    public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType, Map<String,?> uriVariable) throws CoreRemoteCallException {
-        log.info("About to call {} ", targetUrl);
-        R jsonResponse = restTemplate.getForObject(targetUrl, responseType,uriVariable);
-        log.info("Core response: {} ", jsonResponse);
-        validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
-    }
-    public <D, R extends CoreResponse> D get(String targetUrl, Class<R> responseType, String paramJsonStr) throws CoreRemoteCallException {
-        log.info("About to call {} ", targetUrl);
-        Object uriVariable = paramJsonStr;
-        try {
-            Map<String,Object> map = new HashMap<>();
-             uriVariable = JsonUtils.toObject(paramJsonStr,map.getClass());
-        }catch (Exception e){
-            log.error("paramJsonStr is not json: {} ", targetUrl);
-        }
-        R jsonResponse = restTemplate.getForObject(targetUrl, responseType,uriVariable);
-        log.info("Core response: {} ", jsonResponse);
-        validateJsonResponse(jsonResponse);
-        return (D) jsonResponse.getData();
-    }
     public <D, R extends CoreResponse> D postForResponse(String targetUrl, Class<R> responseType)
             throws CoreRemoteCallException {
         return postForResponse(targetUrl, null, responseType);

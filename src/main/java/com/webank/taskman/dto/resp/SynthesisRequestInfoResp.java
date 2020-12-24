@@ -1,9 +1,7 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.domain.FormItemInfo;
 
 import java.util.Date;
-import java.util.List;
 
 public class SynthesisRequestInfoResp {
     private String id;

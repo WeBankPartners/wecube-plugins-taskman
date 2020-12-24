@@ -8,6 +8,7 @@ import com.webank.taskman.base.BaseEntity;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.util.StringJoiner;
 
 public class AttachFile  extends BaseEntity implements Serializable {
 
@@ -49,7 +50,6 @@ public class AttachFile  extends BaseEntity implements Serializable {
             .eq(!StringUtils.isEmpty(s3BucketName), AttachFile::getS3BucketName, s3BucketName)
             .eq(!StringUtils.isEmpty(s3KeyName), AttachFile::getS3KeyName, s3KeyName);
     }
-
 
 
     public String getId() {
@@ -106,45 +106,15 @@ public class AttachFile  extends BaseEntity implements Serializable {
         return this;
     }
 
-    }
-
-    public String getS3Url() {
-        return s3Url;
-    }
-
-    public void setS3Url(String s3Url) {
-        this.s3Url = s3Url;
-    }
-
-    public String getS3BucketName() {
-        return s3BucketName;
-    }
-
-    public void setS3BucketName(String s3BucketName) {
-        this.s3BucketName = s3BucketName;
-    }
-
-    public String getS3KeyName() {
-        return s3KeyName;
-    }
-
-    public void setS3KeyName(String s3KeyName) {
-        this.s3KeyName = s3KeyName;
-    }
-
     @Override
     public String toString() {
-        return "AttachFile{" +
-        "id=" + id +
-        ", attachFileName=" + attachFileName +
-        ", s3Url=" + s3Url +
-        ", s3BucketName=" + s3BucketName +
-        ", s3KeyName=" + s3KeyName +
-        ", createdBy=" + getCreatedBy() +
-        ", createdTime=" + getCreatedTime() +
-        ", updatedBy=" + getUpdatedBy() +
-        ", updatedTime=" + getUpdatedTime() +
-        ", delFlag=" + getDelFlag() +
-        "}";
+        return new StringJoiner(", ", AttachFile.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("recordId='" + recordId + "'")
+                .add("attachFileName='" + attachFileName + "'")
+                .add("s3Url='" + s3Url + "'")
+                .add("s3BucketName='" + s3BucketName + "'")
+                .add("s3KeyName='" + s3KeyName + "'")
+                .toString();
     }
 }

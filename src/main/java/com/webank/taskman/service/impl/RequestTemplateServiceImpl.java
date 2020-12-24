@@ -126,16 +126,5 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         return detailRequestTemplateResq;
     }
 
-    @Override
-    public List<RequestTemplate> selectListByParam(QueryRequestTemplateReq req) {
-        return this.baseMapper.selectListByParam(req);
-    }
-
-    @Override
-    public List<RequestTemplateDTO> requestTemplateAvailable(QueryRequestTemplateReq req) {
-        List<RequestTemplateDTO> list = this.getBaseMapper().selectDTOListByParam(req);
-        return list;
-    }
-
 
 }

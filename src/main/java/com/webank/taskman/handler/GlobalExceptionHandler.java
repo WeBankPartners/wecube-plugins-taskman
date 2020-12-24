@@ -24,9 +24,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * 
  * @author gavin
- *
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -53,9 +51,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = RuntimeException.class)
     public JsonResponse handleException(RuntimeException e) {
+        String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
+                e.getMessage() == null ? "" : e.getMessage());
         log.error("错误异常:{}", e);
-
-        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION,e.getMessage());
+        String err = errMsg + e.getMessage();
+        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION, err);
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
@@ -69,7 +69,7 @@ public class GlobalExceptionHandler {
             errorMap.put(fieldError.getField(), fieldError.getDefaultMessage());
         }));
 
-        return JsonResponse.customError(BizCodeEnum.VAILD_EXCEPTION,errorMap);
+        return JsonResponse.customError(BizCodeEnum.VAILD_EXCEPTION, errorMap);
     }
 
     @ExceptionHandler(value = Exception.class)
@@ -77,9 +77,9 @@ public class GlobalExceptionHandler {
     public JsonResponse defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
         log.error("GlobalExceptionHandler: RequestHost {} invokes url {} ERROR: {}", req.getRemoteHost(),
                 req.getRequestURL(), e.getMessage());
-        if(e instanceof TaskmanException){
-            TaskmanException exception  = (TaskmanException)e;
-            return  JsonResponse.customError(exception.getStatusCodeEnum());
+        if (e instanceof TaskmanException) {
+            TaskmanException exception = (TaskmanException) e;
+            return JsonResponse.customError(exception.getStatusCodeEnum());
 
         }
         return JsonResponse.customError(e.getMessage());

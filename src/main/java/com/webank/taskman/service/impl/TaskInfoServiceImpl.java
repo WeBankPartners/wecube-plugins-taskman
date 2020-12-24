@@ -4,24 +4,24 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
+import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.*;
-import com.webank.taskman.domain.FormInfo;
-import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.CheckTaskDTO;
-import com.webank.taskman.base.PageInfo;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.dto.CoreCreateTaskDTO;
+import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
-import com.webank.taskman.dto.req.SelectTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
+import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.*;
-import com.webank.taskman.mapper.FormInfoMapper;
-import com.webank.taskman.mapper.FormItemInfoMapper;
-import com.webank.taskman.mapper.FormItemTemplateMapper;
-import com.webank.taskman.mapper.TaskInfoMapper;
+import com.webank.taskman.mapper.*;
 import com.webank.taskman.service.TaskInfoService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +39,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     TaskInfoMapper taskInfoMapper;
 
     @Autowired
-    TaskInfoConverter taskInfoConverter;
-
-    @Autowired
     FormInfoMapper formInfoMapper;
 
-    @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
 
     @Autowired
     FormInfoConverter formInfoConverter;
@@ -57,33 +52,33 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     FormItemInfoConverter formItemInfoConverter;
 
     @Autowired
-    SynthesisTaskInfoRespConverter synthesisTaskInfoRespConverter;
-
-    @Autowired
     SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
 
-    @Override
-    public QueryResponse<TaskInfoResp> selectTaskInfoService(Integer page, Integer pageSize, SelectTaskInfoReq req) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        IPage<TaskInfo> iPage = taskInfoMapper.selectTaskInfo(new Page<>(page, pageSize), currentUserRolesToString);
-        List<TaskInfoResp> respList = taskInfoConverter.toDto(iPage.getRecords());
-        for (TaskInfoResp taskInfoResp : respList) {
-            FormInfo formInfo = formInfoMapper.selectOne(
-                    new FormInfo().setRecordId(taskInfoResp.getId()).getLambdaQueryWrapper());
-            FormInfoResq formInfoResq = formInfoConverter.toDto(formInfo);
-            if (formInfoResq != null) {
-                formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(taskInfoResp.getId()));
-                taskInfoResp.setFormInfoResq(formInfoResq);
-            }
-        }
+    @Autowired
+    RequestInfoMapper requestInfoMapper;
 
-        QueryResponse<TaskInfoResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
-        queryResponse.setContents(respList);
+    @Autowired
+    RequestInfoInstanceConverter requestInfoInstanceConverter;
+
+    @Autowired
+    TaskInfoInstanceConverter taskInfoInstanceConverter;
+
+    @Autowired
+    TaskInfoGetConverter taskInfoGetConverter;
+
+    @Override
+    public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
+        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
+        req.setSourceTableFix("tt");
+        req.setUseRoleName(currentUserRolesToString);
+        PageHelper.startPage(page,pageSize);
+
+        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectTaskInfo(req));
+        QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
     }
 
-    @Override
+    /*@Override
     public SaveTaskInfoResp saveTaskInfo(SaveTaskInfoReq saveTaskInfoReq) {
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         TaskInfo taskInfo = taskInfoConverter.svTOInfo(saveTaskInfoReq);
@@ -148,36 +143,84 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         SaveTaskInfoResp saveTaskInfoResp=new SaveTaskInfoResp();
         saveTaskInfoResp.setId(taskInfoId);
         return saveTaskInfoResp;
-    }
-
-    @Override
-    public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        req.setRoleName(currentUserRolesToString);
-        IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);
-        List<SynthesisTaskInfoResp> srt=synthesisTaskInfoRespConverter.toDto(iPage.getRecords());
-
-        QueryResponse<SynthesisTaskInfoResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(srt);
-
-        return queryResponse;
-    }
+    }*/
 
     @Override
     public SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception{
         FormInfo formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(id).getLambdaQueryWrapper());
-        if (StringUtils.isEmpty(id)){
-            throw new Exception("The request details do not exist");
-        }
-        if(StringUtils.isEmpty((CharSequence) formInfo)){
-            throw new Exception("Task information cannot be empty");
+        if (null==formInfo||"".equals(formInfo)){
+            throw new TaskmanRuntimeException("The request details do not exist");
         }
         List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
         SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);
         srt.setFormItemInfo(formItemInfos);
 
         return srt;
+    }
+
+    @Override
+    public String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception {
+        TaskInfo taskInfo=taskInfoMapper.selectById(ptr.getRecordId());
+        String currentUsername = AuthenticationContextHolder.getCurrentUsername();
+        if (!currentUsername.equals(taskInfo.getReporter())){
+            return "Failed to process. Please claim";
+        }
+        if (!"already_received".equals(taskInfo.getStatus())){
+            return "Processing failed. The current task is not claimed";
+        }
+        FormInfo formInfo=formInfoConverter.ProcessingTasks(ptr);
+        formInfo.setCreatedBy(currentUsername);
+        formInfo.setUpdatedBy(currentUsername);
+        formInfo.setType(1);
+        formInfoMapper.insert(formInfo);
+        for (FormItemInfoReq formItemInfo : ptr.getFormItemInfoList()) {
+            FormItemInfo formItemInfo1=formItemInfoConverter.processTask(formItemInfo);
+            formItemInfo1.setFormId(formInfo.getId());
+            formItemInfo1.setRecordId(taskInfo.getId());
+            formItemInfoMapper.insert(formItemInfo1);
+        }
+
+        taskInfo.setStatus("Processed");
+        taskInfo.setResult(""+ptr.toString());
+        taskInfoMapper.updateById(taskInfo);
+
+        return "processing successful";
+    }
+
+    @Override
+    public RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId) {
+        RequestInfo requestInfo = requestInfoMapper.selectOne(new QueryWrapper<RequestInfo>().lambda().eq(RequestInfo::getId, requestId));
+        RequestInfoInstanceResq requestInfoInstanceResq = requestInfoInstanceConverter.toDto(requestInfo);
+
+        List<TaskInfo> taskInfos = taskInfoMapper.selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getRequestId, requestId));
+
+        List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
+        for (TaskInfo taskInfo : taskInfos) {
+            if (taskInfo.getId().equals(taskId)) {
+                taskInfoInstanceResps.add(taskInfoInstanceConverter.toDto(taskInfo));
+            }
+        }
+        requestInfoInstanceResq.setTaskInfoInstanceResps(taskInfoInstanceResps);
+
+        return requestInfoInstanceResq;
+    }
+
+    @Override
+    public TaskInfoGetResp getTheTaskInfoService(String id) {
+        TaskInfo taskInfo = taskInfoMapper.selectOne(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getId, id));
+        TaskInfoGetResp taskInfoGetResp=new TaskInfoGetResp();
+        if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
+            taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
+            taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
+            taskInfoMapper.updateById(taskInfo);
+            taskInfoGetResp= taskInfoGetConverter.toDto(taskInfo);
+        }
+        return taskInfoGetResp;
+    }
+
+    @Override
+    public void createTask(CoreCreateTaskDTO req) {
+
     }
 
     public CheckTaskDTO checkTheTask(String taskId) {

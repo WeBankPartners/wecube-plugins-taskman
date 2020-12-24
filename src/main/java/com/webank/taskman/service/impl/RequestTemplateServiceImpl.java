@@ -3,6 +3,7 @@ package com.webank.taskman.service.impl;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
@@ -92,7 +93,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
 
         PageHelper.startPage(pageNum,pageSize);
-        com.github.pagehelper.PageInfo<RequestTemplateDTO> pages = new com.github.pagehelper.PageInfo(requestTemplateMapper.selectDTOListByParam(req));
+        PageInfo<RequestTemplateDTO> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
 
         for (RequestTemplateDTO resp : pages.getList()) {
             List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());

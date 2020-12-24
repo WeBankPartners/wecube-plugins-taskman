@@ -62,7 +62,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             throw new TaskmanRuntimeException("Form template parameter cannot be ID");
         }
         UpdateWrapper<FormTemplate> wrapper=new UpdateWrapper<>();
-        wrapper.eq("id",id).set("del_flag",1);
+        wrapper.lambda().eq(FormTemplate::getId,id).set(FormTemplate::getDelFlag,1);
         formTemplateMapper.update(null,wrapper);
     }
 

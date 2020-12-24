@@ -146,12 +146,14 @@ public class CoreResourceController {
     {
         return okayWithData(requestInfoService.createDynamicWorkflowInstCreationInfoDto(procDefId,entityDataId));
     }
+
     @ApiOperationSupport(order = 12)
     @PostMapping("/platform/crate")
     @ApiOperation(value = "platform-process-create", notes = "")
     public JsonResponse<DynamicWorkflowInstInfoDto> platformProcessCreate(
             @RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto)
     {
+
         return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
     }
 

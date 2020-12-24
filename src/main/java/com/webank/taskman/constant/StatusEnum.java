@@ -10,7 +10,11 @@ public enum  StatusEnum {
 
     UNRELEASED,
 
-    RELEASED
+    RELEASED,
+
+    ALREADY_RECEIVED,
+
+    UNCLAIMED,
     ;
     @Override
     public String toString(){

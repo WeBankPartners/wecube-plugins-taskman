@@ -1,18 +1,16 @@
-package com.webank.taskman.dto.req;
+package com.webank.taskman.dto.resp;
 
 
 import io.swagger.annotations.ApiModel;
 
+import java.util.Date;
+
 @ApiModel
-public class SelectTaskInfoReq {
-
+public class TaskInfoInstanceResp {
     private String id;
-
-    private String taskTempId;
-
     private String name;
-
-    private Integer status;
+    private String status;
+    private String result;
 
     public String getId() {
         return id;
@@ -20,14 +18,6 @@ public class SelectTaskInfoReq {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getTaskTempId() {
-        return taskTempId;
-    }
-
-    public void setTaskTempId(String taskTempId) {
-        this.taskTempId = taskTempId;
     }
 
     public String getName() {
@@ -38,21 +28,29 @@ public class SelectTaskInfoReq {
         this.name = name;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 
     @Override
     public String toString() {
-        return "SelectTaskInfoReq{" +
+        return "TaskInfoInstanceResp{" +
                 "id='" + id + '\'' +
-                ", taskTempId='" + taskTempId + '\'' +
                 ", name='" + name + '\'' +
-                ", status=" + status +
+                ", status='" + status + '\'' +
+                ", result='" + result + '\'' +
                 '}';
     }
 }

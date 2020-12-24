@@ -27,10 +27,6 @@ public class QueryRoleRelationBaseReq {
     public QueryRoleRelationBaseReq() {
     }
 
-    protected static final  String NOT_ALL = "%s.id in(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s'))";
-    protected static final String ALL = "%s.id in (SELECT COUNT(1) FROM role_relation rr WHERE (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))";
-//    public static final String QUERY_BY_ROLE_SQL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s')";
-    public static final String QUERY_BY_ROLE_SQL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s')";
 
     public QueryRoleRelationBaseReq(String useRoleName, String manageRoleName, String sourceTableFix) {
         this.useRoleName = useRoleName;
@@ -89,6 +85,9 @@ public class QueryRoleRelationBaseReq {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
+    protected static final  String NOT_ALL = "%s.id in(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s'))";
+    protected static final String ALL = "%s.id in (SELECT COUNT(1) FROM role_relation rr WHERE (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))";
+    public static final String QUERY_BY_ROLE_SQL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s')";
 
     public String getConditionSql() {
         if(StringUtils.isEmpty(conditionSql) && null != getRoleType()) {
@@ -108,6 +107,4 @@ public class QueryRoleRelationBaseReq {
     public void setConditionSql(String conditionSql) {
         this.conditionSql = conditionSql;
     }
-
-
 }

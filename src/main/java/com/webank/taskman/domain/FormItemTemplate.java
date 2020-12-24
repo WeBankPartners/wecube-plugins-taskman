@@ -32,6 +32,8 @@ public class FormItemTemplate implements Serializable {
     private String packageName;
     @ApiModelProperty(value = "",position = 8)
     private String entity;
+    @ApiModelProperty(value = "",position = 8)
+    private String entityId;
     @ApiModelProperty(value = "",position = 9)
     private String attrDefId;
     @ApiModelProperty(value = "",position = 10)
@@ -85,6 +87,7 @@ public class FormItemTemplate implements Serializable {
                 .eq(!StringUtils.isEmpty(sort), FormItemTemplate::getSort, sort)
                 .eq(!StringUtils.isEmpty(packageName), FormItemTemplate::getPackageName, packageName)
                 .eq(!StringUtils.isEmpty(entity), FormItemTemplate::getEntity, entity)
+                .eq(!StringUtils.isEmpty(entityId), FormItemTemplate::getEntityId, entityId)
                 .eq(!StringUtils.isEmpty(attrDefId), FormItemTemplate::getAttrDefId, attrDefId)
                 .eq(!StringUtils.isEmpty(attrDefDataType), FormItemTemplate::getAttrDefDataType, attrDefDataType)
                 .eq(!StringUtils.isEmpty(elementType), FormItemTemplate::getElementType, elementType)
@@ -169,6 +172,15 @@ public class FormItemTemplate implements Serializable {
 
     public FormItemTemplate setEntity(String entity) {
         this.entity = entity;
+        return this;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public FormItemTemplate setEntityId(String entityId) {
+        this.entityId = entityId;
         return this;
     }
 

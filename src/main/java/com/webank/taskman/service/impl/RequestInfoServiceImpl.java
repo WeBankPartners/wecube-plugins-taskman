@@ -96,7 +96,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Override
     @Transactional
-    public SaveRequestInfoReq saveRequestInfo(SaveRequestInfoReq req) {
+    public RequestInfoResq saveRequestInfo(SaveRequestInfoReq req) {
         RequestInfo requestInfo = requestInfoConverter.reqToDomain(req);
         requestInfo.setCurrenUserName(requestInfo,requestInfo.getId());
         saveOrUpdate(requestInfo);
@@ -124,7 +124,12 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         if(null == response){
             throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
         }
-        return new SaveRequestInfoReq().setId(requestInfo.getId());
+        if(StatusEnum.InProgress.name().equals(response.getStatus())){
+            requestInfo.setProcInstKey(response.getProcInstKey());
+            requestInfo.setStatus(response.getStatus());
+            updateById(requestInfo);
+        }
+        return requestInfoConverter.toDto(requestInfo);
     }
 
     @Override
@@ -172,7 +177,8 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         DynamicEntityValueDto rootEntityValue = createDynamicEntityValues(processDataPreviewDto, guid);
         creationInfoDto.setRootEntityValue(rootEntityValue);
         creationInfoDto.setTaskNodeBindInfos(createTaskNodeBindInfos(processDataPreviewDto.getProcessSessionId()));
-        return coreServiceStub.createNewWorkflowInstance(creationInfoDto);
+        DynamicWorkflowInstInfoDto dto = coreServiceStub.createNewWorkflowInstance(creationInfoDto);
+        return dto;
     }
 
     @Override

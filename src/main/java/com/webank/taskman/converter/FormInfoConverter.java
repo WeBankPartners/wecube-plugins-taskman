@@ -2,6 +2,7 @@ package com.webank.taskman.converter;
 
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.FormInfo;
+import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.SaveFormInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
 import org.mapstruct.Mapper;
@@ -12,5 +13,6 @@ public interface FormInfoConverter extends BaseConverter<FormInfoResq, FormInfo>
 
     FormInfo saveReqToEntity(SaveFormInfoReq saveFormInfoReq);
 
+    FormInfo ProcessingTasks(ProcessingTasksReq ptr);
 
 }

@@ -3,11 +3,12 @@ package com.webank.taskman.controller.x100;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.webank.taskman.converter.FormItemTemplateConverter;
-import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.converter.FormItemTemplateConverter;
+import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
+import com.webank.taskman.dto.resp.FormItemTemplateDTO;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 
 @RestController
@@ -75,14 +77,15 @@ public class TaskmanFormController {
     }
 
 
-    @ApiOperationSupport(order = 5)
+    @ApiOperationSupport(order = 8)
     @PostMapping("/item/template/currency")
     @ApiOperation(value = "form-item-template-currency")
-    public JsonResponse<QueryResponse<FormItemTemplate>> formItemTemplateAvailable()
+    public JsonResponse<QueryResponse<FormItemTemplateDTO>> formItemTemplateAvailable()
     {
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<FormItemTemplate>();
         wrapper.eq("status",1);
-        return JsonResponse.okayWithData(formItemTemplateService.list(wrapper));
+        List<FormItemTemplateDTO> queryResponse= formItemTemplateConverter.toDto(formItemTemplateService.list(wrapper)) ;
+        return JsonResponse.okayWithData(queryResponse);
     }
 
 

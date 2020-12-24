@@ -275,19 +275,16 @@ export default {
     },
     async workflowProcessPrevieEntities (v) {
       // workflowProcessPrevieEntities
-      const processKey = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId).procDefId
       if (v) {
+        const processKey = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId).procDefId
         // const processKey = 'sjqH9YVJ2DP'
         const {status, message, data} = await workflowProcessPrevieEntities(processKey, v)
         if (status === 'OK') {
+          this.currentFields.entitys.forEach(entity => entity.options = [])
+          Object.keys(this.currentForm).forEach(field => {
+            this.currentForm[field] = []
+          })
           data.entityTreeNodes.forEach(node => {
-            // this.currentFields.entitys.forEach(entity => {
-            //   if (entity.options) {
-            //     entity.options.push({...node,label:node.displayName,value:node.dataId})
-            //   }else{
-            //     entity.options = [{...node,label:node.displayName,value:node.dataId}]
-            //   }
-            // })
             const found = this.currentFields.entitys.find(entity => entity.name === node.entityName)
             if (found && !found.options) {
               found.options = [{...node,label:node.displayName,value:node.dataId}]
@@ -295,11 +292,12 @@ export default {
             if (found && found.options) {
               found.options.push({...node,label:node.displayName,value:node.dataId})
             }
-            this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
-            this.$nextTick(() => {
-              this.currentFields = {}
-              this.currentFields = JSON.parse(JSON.stringify(this.currentFieldsBackUp))
-            })
+            if (this.currentForm[node.entityName]) {this.currentForm[node.entityName].push(node.dataId)}
+          })
+          this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
+          this.$nextTick(() => {
+            this.currentFields = {}
+            this.currentFields = JSON.parse(JSON.stringify(this.currentFieldsBackUp))
           })
         }
       }
@@ -356,7 +354,8 @@ export default {
           this.currentFields['entitys'] = data.items.sort(this.compare).map(i => {
             return {
               ...i,
-              isMultiple: true
+              isMultiple: true,
+              options: []
             }
           })
           this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
@@ -370,7 +369,7 @@ export default {
     async getEntityDataByTemplateId (v) {
       if (v && this.requestForm.requestTempId && this.requestForm.requestTempId.length > 0) {
         const found  = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId)
-        const { data, status } = await getEntityDataByTemplateId(found.procDefKey) //getEntityDataByTemplateId
+        const { data, status } = await getEntityDataByTemplateId(found.procDefId) //getEntityDataByTemplateId
         this.entityData = []
         if (status === "OK") {
           this.entityData = data

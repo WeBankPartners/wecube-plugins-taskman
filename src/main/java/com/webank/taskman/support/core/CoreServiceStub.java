@@ -1,8 +1,10 @@
 package com.webank.taskman.support.core;
 
+import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
+import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,9 @@ public class CoreServiceStub {
     public static final String QUERY_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/query";
     public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/v1/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
     public static final String GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL = "/platform/v1/process/instances/tasknodes/session/{process-session-id}/tasknode-bindings";
+
+
+
 
     @Autowired
     private CoreRestTemplate template;
@@ -149,8 +154,10 @@ public class CoreServiceStub {
             return  null;
         }
         Object o = template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId,guid),ProcessDataPreviewResponse.class);
-        log.info("result class:{}",o.getClass());
-        log.info("v 0.2.23 result :{}",o);
+        log.info("v 0.2.28 result :{}",o.getClass());
+        if(o instanceof  LinkedHashMap){
+            return GsonUtil.toObject(GsonUtil.GsonString(o),new TypeToken<ProcessDataPreviewDto>(){});
+        }
         return (ProcessDataPreviewDto)o ;
     }
 
@@ -212,9 +219,6 @@ public class CoreServiceStub {
         return dtoList;
     }
 
-    public static void main(String[] args) {
-        CoreServiceStub stub = new CoreServiceStub();
-        System.out.println(stub.createTaskNodeBindInfos(addProcessTasknodes()));
-    }
+
 
 }

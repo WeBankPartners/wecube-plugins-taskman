@@ -13,6 +13,7 @@ import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.CheckTaskDTO;
+import com.webank.taskman.dto.CoreCreateTaskDTO;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
@@ -36,13 +37,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     TaskInfoMapper taskInfoMapper;
 
     @Autowired
-    TaskInfoConverter taskInfoConverter;
-
-    @Autowired
     FormInfoMapper formInfoMapper;
 
-    @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
 
     @Autowired
     FormInfoConverter formInfoConverter;
@@ -50,11 +46,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoMapper formItemInfoMapper;
 
-    @Autowired
-    FormItemInfoConverter formItemInfoConverter;
-
-    @Autowired
-    SynthesisTaskInfoRespConverter synthesisTaskInfoRespConverter;
 
     @Autowired
     SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
@@ -83,7 +74,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         return queryResponse;
     }
 
-    @Override
+    /*@Override
     public SaveTaskInfoResp saveTaskInfo(SaveTaskInfoReq saveTaskInfoReq) {
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         TaskInfo taskInfo = taskInfoConverter.svTOInfo(saveTaskInfoReq);
@@ -148,21 +139,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         SaveTaskInfoResp saveTaskInfoResp=new SaveTaskInfoResp();
         saveTaskInfoResp.setId(taskInfoId);
         return saveTaskInfoResp;
-    }
-
-    @Override
-    public QueryResponse<SynthesisTaskInfoResp> selectSynthesisTaskInfoService(Integer page, Integer pageSize, SynthesisTaskInfoReq req) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        req.setRoleName(currentUserRolesToString);
-        IPage<TaskInfo> iPage = taskInfoMapper.selectSynthesisRequestInfo(new Page<TaskInfo>(page, pageSize),req);
-        List<SynthesisTaskInfoResp> srt=synthesisTaskInfoRespConverter.toDto(iPage.getRecords());
-
-        QueryResponse<SynthesisTaskInfoResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new com.webank.taskman.base.PageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize()));
-        queryResponse.setContents(srt);
-
-        return queryResponse;
-    }
+    }*/
 
     @Override
     public SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception{
@@ -209,6 +186,11 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             taskInfoGetResp= taskInfoGetConverter.toDto(taskInfo);
         }
         return taskInfoGetResp;
+    }
+
+    @Override
+    public void createTask(CoreCreateTaskDTO req) {
+
     }
 
     public CheckTaskDTO checkTheTask(String taskId) {

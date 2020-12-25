@@ -202,8 +202,16 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             formItemInfoMapper.insert(formItemInfo1);
         }
 
+//        List<FormItemInfo> list=formItemInfoMapper.selectList(
+//                new QueryWrapper<FormItemInfo>()
+//                        .eq("form_id",formInfo.getId()));
+//        FormInfo formInfo1=formInfoMapper.selectById(formInfo.getId());
+//        ProcessingTasksResp processingTasksResp=formInfoConverter.processingTasksResp(formInfo1);
+//        processingTasksResp.setFormItemInfoList(list);
+
         taskInfo.setStatus("Processed");
-        taskInfo.setResult(""+ptr.toString());
+        taskInfo.setResult(ptr.getResult());
+        taskInfo.setUpdatedBy(currentUsername);
         taskInfoMapper.updateById(taskInfo);
 
         return "processing successful";

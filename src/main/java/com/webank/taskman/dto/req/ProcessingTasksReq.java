@@ -8,6 +8,8 @@ import java.util.List;
 public class ProcessingTasksReq {
     private String recordId;
 
+    private String result;
+
     private List<FormItemInfoReq> formItemInfoList;
 
     public String getRecordId() {
@@ -16,6 +18,14 @@ public class ProcessingTasksReq {
 
     public void setRecordId(String recordId) {
         this.recordId = recordId;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 
     public List<FormItemInfoReq> getFormItemInfoList() {

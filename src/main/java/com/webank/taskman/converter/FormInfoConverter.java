@@ -5,6 +5,7 @@ import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.SaveFormInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
+import com.webank.taskman.dto.resp.ProcessingTasksResp;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -14,5 +15,7 @@ public interface FormInfoConverter extends BaseConverter<FormInfoResq, FormInfo>
     FormInfo saveReqToEntity(SaveFormInfoReq saveFormInfoReq);
 
     FormInfo ProcessingTasks(ProcessingTasksReq ptr);
+
+    ProcessingTasksResp processingTasksResp(FormInfo formInfo);
 
 }

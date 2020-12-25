@@ -236,7 +236,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         requestInfoInstanceResq.setRequestFormResq(requestFormInfoConverter.toDto(formInfo));
         requestInfoInstanceResq.getRequestFormResq().setFormItemInfo(formItemInfos);
 
-        List<TaskInfo> taskInfos = taskInfoMapper.selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getRequestId, requestId));
+        List<TaskInfo> taskInfos = taskInfoMapper.selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getRequestId, requestId).orderBy(true,true,TaskInfo::getUpdatedTime));
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {

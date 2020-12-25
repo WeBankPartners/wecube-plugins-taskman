@@ -20,6 +20,7 @@ import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
+import com.webank.taskman.dto.resp.SynthesisRequestInfoForm;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.service.RequestInfoService;
@@ -208,10 +209,10 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 13)
     @GetMapping("/details/{id}")
     @ApiOperation(value = "request-info-detail")
-    public JsonResponse<SynthesisRequestInfoFormRequest> requestInfoDetail(@PathVariable("id") String id)
+    public JsonResponse<SynthesisRequestInfoForm> requestInfoDetail(@PathVariable("id") String id)
             throws TaskmanRuntimeException {
-        SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestInfoService.selectSynthesisRequestInfoFormService(id);
-        return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
+        SynthesisRequestInfoForm synthesisRequestInfoForm = requestInfoService.selectSynthesisRequestInfoFormService(id);
+        return JsonResponse.okayWithData(synthesisRequestInfoForm);
     }
 
 

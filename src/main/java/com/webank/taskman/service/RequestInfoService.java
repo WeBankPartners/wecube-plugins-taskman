@@ -7,6 +7,7 @@ import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
+import com.webank.taskman.dto.resp.SynthesisRequestInfoForm;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
 import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
@@ -20,7 +21,7 @@ public interface RequestInfoService extends IService<RequestInfo> {
 
     RequestInfoResq saveRequestInfo(SaveRequestInfoReq req);
 
-    SynthesisRequestInfoFormRequest selectSynthesisRequestInfoFormService(String id) throws TaskmanRuntimeException;
+    SynthesisRequestInfoForm selectSynthesisRequestInfoFormService(String id) throws TaskmanRuntimeException;
 
     QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService
             (Integer current, Integer limit, SynthesisRequestInfoReq req) throws TaskmanRuntimeException;

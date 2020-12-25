@@ -99,6 +99,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     public RequestInfoResq saveRequestInfo(SaveRequestInfoReq req) {
         RequestInfo requestInfo = requestInfoConverter.reqToDomain(req);
         requestInfo.setCurrenUserName(requestInfo,requestInfo.getId());
+        requestInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
+        requestInfo.setReportTime(new Date());
+        requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
         saveOrUpdate(requestInfo);
         List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(req.getFormItems());
         String requestTempId = requestInfo.getRequestTempId();

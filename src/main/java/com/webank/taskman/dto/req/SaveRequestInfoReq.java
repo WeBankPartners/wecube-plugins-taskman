@@ -17,6 +17,9 @@ public class SaveRequestInfoReq {
     @ApiModelProperty(value = "Existing data id,such as guid in cmdb",required = true,dataType = "String",position = 102)
     private String rootEntity;
 
+    @ApiModelProperty(value = "紧急程度",required = true,dataType = "String",position = 103)
+    private String emergency;
+
     @ApiModelProperty(value = "请求信息名称",required = true,dataType = "String",position = 103)
     private String name;
 

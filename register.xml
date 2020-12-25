@@ -55,9 +55,11 @@
                     </parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">taskName</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">roleName</parameter>
-                    <parameter datatype="string" mappingType="constant" required="N">reporter</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reporter</parameter>
                     <parameter datatype="string" mappingType="constant" required="N">taskDescription</parameter>
                     <parameter datatype="string" mappingType="context" required="Y">procInstId</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">overTime</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">procDefId</parameter>
                 </inputParameters>
                 <outputParameters>
                      <parameter datatype="string" mappingType="context">errorCode</parameter>

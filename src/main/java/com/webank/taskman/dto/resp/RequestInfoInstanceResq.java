@@ -21,6 +21,8 @@ public class RequestInfoInstanceResq {
     private String dueDate;
     private String result;
 
+    private RequestFormResq requestFormResq;
+
     private List<TaskInfoInstanceResp> taskInfoInstanceResps;
 
     public String getId() {
@@ -127,6 +129,14 @@ public class RequestInfoInstanceResq {
         this.result = result;
     }
 
+    public RequestFormResq getRequestFormResq() {
+        return requestFormResq;
+    }
+
+    public void setRequestFormResq(RequestFormResq requestFormResq) {
+        this.requestFormResq = requestFormResq;
+    }
+
     public List<TaskInfoInstanceResp> getTaskInfoInstanceResps() {
         return taskInfoInstanceResps;
     }
@@ -151,6 +161,7 @@ public class RequestInfoInstanceResq {
                 ", status='" + status + '\'' +
                 ", dueDate='" + dueDate + '\'' +
                 ", result='" + result + '\'' +
+                ", requestFormResq=" + requestFormResq +
                 ", taskInfoInstanceResps=" + taskInfoInstanceResps +
                 '}';
     }

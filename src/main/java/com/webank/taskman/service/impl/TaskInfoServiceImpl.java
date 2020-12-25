@@ -76,6 +76,12 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
 
+    @Autowired
+    RequestFormInfoConverter requestFormInfoConverter;
+
+    @Autowired
+    TaskFormInfoConverter taskFormInfoConverter;
+
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
         String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
@@ -222,12 +228,29 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         RequestInfo requestInfo = requestInfoMapper.selectOne(new QueryWrapper<RequestInfo>().lambda().eq(RequestInfo::getId, requestId));
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoInstanceConverter.toDto(requestInfo);
 
+        FormInfo formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
+        if (null==formInfo||"".equals(formInfo)){
+            throw new TaskmanRuntimeException("The request details do not exist");
+        }
+        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
+        requestInfoInstanceResq.setRequestFormResq(requestFormInfoConverter.toDto(formInfo));
+        requestInfoInstanceResq.getRequestFormResq().setFormItemInfo(formItemInfos);
+
         List<TaskInfo> taskInfos = taskInfoMapper.selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getRequestId, requestId));
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
             if (!(taskInfo.getId().equals(taskId))) {
-                taskInfoInstanceResps.add(taskInfoInstanceConverter.toDto(taskInfo));
+                TaskInfoInstanceResp resp =taskInfoInstanceConverter.toDto(taskInfo);
+                formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(taskInfo.getId()).getLambdaQueryWrapper());
+                if (null==formInfo||"".equals(formInfo)){
+                    throw new TaskmanRuntimeException("The request details do not exist");
+                }
+                formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
+                resp.setTaskFormResq(taskFormInfoConverter.toDto(formInfo));
+                resp.getTaskFormResq().setFormItemInfo(formItemInfos);
+
+                taskInfoInstanceResps.add(resp);
             }
         }
         requestInfoInstanceResq.setTaskInfoInstanceResps(taskInfoInstanceResps);

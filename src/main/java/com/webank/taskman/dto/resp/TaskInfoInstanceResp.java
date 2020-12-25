@@ -12,6 +12,8 @@ public class TaskInfoInstanceResp {
     private String status;
     private String result;
 
+    private TaskFormResq taskFormResq;
+
     public String getId() {
         return id;
     }
@@ -44,6 +46,14 @@ public class TaskInfoInstanceResp {
         this.result = result;
     }
 
+    public TaskFormResq getTaskFormResq() {
+        return taskFormResq;
+    }
+
+    public void setTaskFormResq(TaskFormResq taskFormResq) {
+        this.taskFormResq = taskFormResq;
+    }
+
     @Override
     public String toString() {
         return "TaskInfoInstanceResp{" +
@@ -51,6 +61,7 @@ public class TaskInfoInstanceResp {
                 ", name='" + name + '\'' +
                 ", status='" + status + '\'' +
                 ", result='" + result + '\'' +
+                ", taskFormResq=" + taskFormResq +
                 '}';
     }
 }

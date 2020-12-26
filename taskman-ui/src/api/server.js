@@ -47,7 +47,7 @@ export const getTaskInfoDetails = data => request.post(`/taskman/v1/task/details
 export const taskInfoReceive = data => request.post(`/taskman/v1/task/receive`, data);
 export const taskInfoProcessing = data => request.post(`/taskman/v1/task/processing`, data);
 export const getTaskInfoInstance = data => request.post(`/taskman/v1/task/instance`, data);
-
+export const getRequestInfoDetails = id => request.get(`/taskman/v1/request/details/${id}`);
 
 
 

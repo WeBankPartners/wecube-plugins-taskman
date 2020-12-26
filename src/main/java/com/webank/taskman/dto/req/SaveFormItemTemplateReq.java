@@ -21,20 +21,24 @@ public class SaveFormItemTemplateReq {
     @ApiModelProperty(value = "",position = 6)
     private Integer sort;
 
-    @ApiModelProperty(value = "",position = 7)
-    private String packageName;
+
     @ApiModelProperty(value = "",position = 8)
+    private String packageName;
+    @ApiModelProperty(value = "",position = 9)
     private String entity;
     @ApiModelProperty(value = "",position = 9)
-    private String attrDefId;
+    private String entityId;
+
     @ApiModelProperty(value = "",position = 10)
+    private String attrDefId;
+    @ApiModelProperty(value = "",position = 11)
     private String attrDefDataType;
 
-    @ApiModelProperty(value = "",position = 11)
-    private String elementType;
     @ApiModelProperty(value = "",position = 12)
-    private String title;
+    private String elementType;
     @ApiModelProperty(value = "",position = 13)
+    private String title;
+    @ApiModelProperty(value = "",position = 14)
     private Integer width;
 
     @ApiModelProperty(value = "",position = 14)
@@ -116,6 +120,15 @@ public class SaveFormItemTemplateReq {
 
     public SaveFormItemTemplateReq setEntity(String entity) {
         this.entity = entity;
+        return this;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public SaveFormItemTemplateReq setEntityId(String entityId) {
+        this.entityId = entityId;
         return this;
     }
 

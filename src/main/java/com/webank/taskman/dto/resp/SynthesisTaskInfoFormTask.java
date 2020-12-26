@@ -17,7 +17,7 @@ public class SynthesisTaskInfoFormTask {
 
     private Integer type;
 
-    private List<FormItemInfo> formItemInfo;
+    private List<FormItemInfoResp> formItemInfo;
 
     public String getId() {
         return id;
@@ -59,11 +59,11 @@ public class SynthesisTaskInfoFormTask {
         this.type = type;
     }
 
-    public List<FormItemInfo> getFormItemInfo() {
+    public List<FormItemInfoResp> getFormItemInfo() {
         return formItemInfo;
     }
 
-    public void setFormItemInfo(List<FormItemInfo> formItemInfo) {
+    public void setFormItemInfo(List<FormItemInfoResp> formItemInfo) {
         this.formItemInfo = formItemInfo;
     }
 }

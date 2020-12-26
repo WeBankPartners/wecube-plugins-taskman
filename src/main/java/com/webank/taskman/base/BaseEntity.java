@@ -2,7 +2,6 @@ package com.webank.taskman.base;
 
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
@@ -62,9 +61,10 @@ public class BaseEntity<T> {
     }
 
     public BaseEntity setCurrenUserName(BaseEntity entity, String Id) {
-        if(StringUtils.isEmpty(Id)){
-            entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
-        }
+//        if(StringUtils.isEmpty(Id)){
+//            entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+//        }
+        entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
 
         return entity;

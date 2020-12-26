@@ -48,8 +48,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoMapper formItemInfoMapper;
 
-    @Autowired
-    FormItemInfoConverter formItemInfoConverter;
 
     @Autowired
     SynthesisTaskInfoFormTaskConverter synthesisTaskInfoFormTaskConverter;
@@ -65,6 +63,18 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Autowired
     TaskInfoGetConverter taskInfoGetConverter;
+
+    @Autowired
+    FormItemInfoRespConverter formItemInfoRespConverter;
+
+    @Autowired
+    FormItemTemplateMapper formItemTemplateMapper;
+
+    @Autowired
+    FormItemTemplateRespConverter formItemTemplateRespConverter;
+
+    @Autowired
+    FormItemInfoConverter formItemInfoConverter;
 
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
@@ -152,9 +162,21 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             throw new TaskmanRuntimeException("The request details do not exist");
         }
         List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
-        SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);
-        srt.setFormItemInfo(formItemInfos);
+        List<FormItemInfoResp> formItemInfoResps = formItemInfoRespConverter.toDto(formItemInfos);
+        for (FormItemInfoResp formItemInfoResp : formItemInfoResps) {
+            FormItemTemplate formItemTemplate = formItemTemplateMapper.selectOne(new QueryWrapper<FormItemTemplate>().lambda().
+                    eq(FormItemTemplate::getId, formItemInfoResp.getItemTempId()));
+           formItemInfoResp.setElementType(formItemTemplate.getElementType());
+           formItemInfoResp.setTitle(formItemTemplate.getTitle());
+           formItemInfoResp.setWidth(formItemTemplate.getWidth());
+           formItemInfoResp.setIsEdit(formItemTemplate.getIsEdit());
+           formItemInfoResp.setIsView(formItemTemplate.getIsView());
+           formItemInfoResp.setSort(formItemTemplate.getSort());
+           formItemInfoResp.setName(formItemTemplate.getName());
+        }
 
+        SynthesisTaskInfoFormTask srt=synthesisTaskInfoFormTaskConverter.toDto(formInfo);
+        srt.setFormItemInfo(formItemInfoResps);
         return srt;
     }
 
@@ -196,7 +218,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
-            if (taskInfo.getId().equals(taskId)) {
+            if (!(taskInfo.getId().equals(taskId))) {
                 taskInfoInstanceResps.add(taskInfoInstanceConverter.toDto(taskInfo));
             }
         }

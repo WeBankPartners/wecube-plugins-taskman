@@ -48,36 +48,23 @@
     <!-- 7.插件列表 - 描述插件包中单个插件的输入和输出 -->
     <plugins>
         <plugin name="task">
-            <interface action="create" path="/taskman/v1/tasks" httpMethod="POST" isAsyncProcessing="Y" type="APPROVAL">
+            <interface action="create" path="/taskman/v1/task/create" httpMethod="POST" isAsyncProcessing="Y" type="APPROVAL">
                 <inputParameters>
                     <parameter datatype="string" mappingType="system_variable" mappingSystemVariableName="CALLBACK_URL" required="Y">
                         callbackUrl
                     </parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">taskName</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">roleName</parameter>
-                    <parameter datatype="string" mappingType="constant" required="N">reporter</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reporter</parameter>
                     <parameter datatype="string" mappingType="constant" required="N">taskDescription</parameter>
                     <parameter datatype="string" mappingType="context" required="Y">procInstId</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">overTime</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">procDefId</parameter>
                 </inputParameters>
                 <outputParameters>
                      <parameter datatype="string" mappingType="context">errorCode</parameter>
                      <parameter datatype="string" mappingType="context">errorMessage</parameter>
                      <parameter datatype="string" mappingType="context">comment</parameter>
-                </outputParameters>
-            </interface>
-        </plugin>
-        <plugin name="serviceRequest">
-            <interface action="update" path="/taskman/v1/service-requests/done"
-                       httpMethod='PUT'>
-                <inputParameters>
-                    <parameter datatype="string" mappingType="context" required="Y">
-                        service-request-id
-                    </parameter>
-                    <parameter datatype="string" mappingType="context" required="Y">result</parameter>
-                </inputParameters>
-                <outputParameters>
-                    <parameter datatype="string">status</parameter>
-                    <parameter datatype="string">message</parameter>
                 </outputParameters>
             </interface>
         </plugin>

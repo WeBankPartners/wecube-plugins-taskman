@@ -15,13 +15,13 @@ public enum  StatusEnum {
     ALREADY_RECEIVED,
 
     UNCLAIMED,
+
+    InProgress, // createNewWorkflowInstance is success!
+
     ;
     @Override
     public String toString(){
        return this.name().toLowerCase();
     }
 
-    public static void main(String[] args) {
-        System.out.println(StatusEnum.ENABLE);
-    }
 }

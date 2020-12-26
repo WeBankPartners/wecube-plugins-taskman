@@ -12,8 +12,12 @@ public class CoreResponse<DATATYPE> {
 
     public static class DefaultCoreResponse extends CoreResponse<Object> {
     }
+    public static class LinkedHashMapResponse extends CoreResponse<LinkedHashMap> {
+    }
 
     public static class ListDataResponse extends CoreResponse<List<Object>> {
+    }
+    public static class ListLinkedHashMapResponse extends CoreResponse<List<LinkedHashMap>> {
     }
     public static class ListMapDataResponse extends CoreResponse<List<Map<String,Object>>> {
     }

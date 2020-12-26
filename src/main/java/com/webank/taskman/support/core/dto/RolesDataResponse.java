@@ -11,6 +11,15 @@ public class RolesDataResponse {
     @JsonAlias("displayName")
     private String description;
 
+    public RolesDataResponse() {
+    }
+
+    public RolesDataResponse(String roleId, String roleName, String description) {
+        this.roleId = roleId;
+        this.roleName = roleName;
+        this.description = description;
+    }
+
     public String getRoleId() {
         return roleId;
     }

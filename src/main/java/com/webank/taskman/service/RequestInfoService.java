@@ -18,7 +18,7 @@ public interface RequestInfoService extends IService<RequestInfo> {
     QueryResponse<RequestInfoResq> selectRequestInfoService
             (Integer current, Integer limit, SaveRequestInfoReq req) throws TaskmanRuntimeException;
 
-    SaveRequestInfoReq saveRequestInfo(SaveRequestInfoReq req);
+    RequestInfoResq saveRequestInfo(SaveRequestInfoReq req);
 
     SynthesisRequestInfoFormRequest selectSynthesisRequestInfoFormService(String id) throws TaskmanRuntimeException;
 

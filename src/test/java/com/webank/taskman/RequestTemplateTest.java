@@ -31,6 +31,5 @@ public class RequestTemplateTest {
         PageHelper.startPage(1,10);
         List<RequestTemplateDTO> list = requestTemplateMapper.selectDTOListByParam(new QueryRequestTemplateReq());
         PageInfo page = new PageInfo(list);
-        System.out.println(page);
     }
 }

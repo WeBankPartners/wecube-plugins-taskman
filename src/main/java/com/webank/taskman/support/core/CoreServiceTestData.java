@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.GsonUtil;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +27,15 @@ public class CoreServiceTestData {
         rolesDataResponses.add(response);
         return rolesDataResponses;
     }
+
+
     public static List<RolesDataResponse> addRoles(){
         String json = "[{\"id\":\"2c9280827019695c017019ac974f001c\",\"name\":\"SUPER_ADMIN\",\"displayName\":\"SUPER_ADMIN\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794c3a270000\",\"name\":\"CMDB_ADMIN\",\"displayName\":\"CMDB管理员\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794cd6dd0001\",\"name\":\"MONITOR_ADMIN\",\"displayName\":\"监控管理员\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794d6bb50002\",\"name\":\"PRD_OPS\",\"displayName\":\"生产运维\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794e0d3b0003\",\"name\":\"STG_OPS\",\"displayName\":\"测试运维\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794e9b170004\",\"name\":\"APP_ARC\",\"displayName\":\"应用架构师\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794f20440005\",\"name\":\"IFA_ARC\",\"displayName\":\"基础架构师\",\"email\":null},{\"id\":\"2c9280836f78a84b016f794ff45e0006\",\"name\":\"APP_DEV\",\"displayName\":\"应用开发人员\",\"email\":null},{\"id\":\"2c9280836f78a84b016f795068870007\",\"name\":\"IFA_OPS\",\"displayName\":\"基础架构运维人员\",\"email\":null},{\"id\":\"8ab86ba0723a78fe01723a790ceb0000\",\"name\":\"SUB_SYSTEM\",\"displayName\":\"后台系统\",\"email\":null}]";
-        List<RolesDataResponse> list = GsonUtil.toObject(json, new TypeToken<List<RolesDataResponse>>(){});
+        List<RolesDataDTO> DTOList = GsonUtil.toObject(json, new TypeToken<List<RolesDataDTO>>(){});
+        List<RolesDataResponse> list = new ArrayList<>();
+        DTOList.stream().forEach(dto->{
+            list.add(new RolesDataResponse(dto.getId(),dto.getName(),dto.getDisplayName()));
+        });
         return list;
     }
 
@@ -99,4 +106,5 @@ public class CoreServiceTestData {
         String json  ="[{\"nodeDefId\":\"sjqH9ZQJ2DU\",\"orderedNo\":\"6\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqH9ZXJ2DV\",\"orderedNo\":\"7\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa03J2DW\",\"orderedNo\":\"10\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa09J2DX\",\"orderedNo\":\"2\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0GJ2E4\",\"orderedNo\":\"4\",\"entityTypeId\":\"wecmdb:app_instance\",\"entityDataId\":\"0050_0000000012\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0GJ2E4\",\"orderedNo\":\"4\",\"entityTypeId\":\"wecmdb:app_instance\",\"entityDataId\":\"0050_0000000013\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0GJ2E4\",\"orderedNo\":\"4\",\"entityTypeId\":\"wecmdb:app_instance\",\"entityDataId\":\"0050_0000000010\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0GJ2E4\",\"orderedNo\":\"4\",\"entityTypeId\":\"wecmdb:app_instance\",\"entityDataId\":\"0050_0000000011\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0MJ2E5\",\"orderedNo\":\"1\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0GJ2E4\",\"orderedNo\":\"4\",\"entityTypeId\":\"wecmdb:app_instance\",\"entityDataId\":\"0050_0000000011\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0uJ2E1\",\"orderedNo\":\"9\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"},{\"nodeDefId\":\"sjqHa0yJ2E2\",\"orderedNo\":\"8\",\"entityTypeId\":\"wecmdb:deploy_package\",\"entityDataId\":\"0045_0000000100\",\"bound\":\"Y\"}]";
         return GsonUtil.toObject(json, new TypeToken<List<TaskNodeDefObjectBindInfoDto>>(){});
     }
+
 }

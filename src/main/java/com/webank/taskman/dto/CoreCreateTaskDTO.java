@@ -15,11 +15,11 @@ public class CoreCreateTaskDTO {
     private String dueDate;
     private List<InputsBean> inputs;
 
-    public String getAllowedOptions() {
+    public List<String> getAllowedOptions() {
         return allowedOptions;
     }
 
-    public void setAllowedOptions(String allowedOptions) {
+    public void setAllowedOptions(List<String> allowedOptions) {
         this.allowedOptions = allowedOptions;
     }
 

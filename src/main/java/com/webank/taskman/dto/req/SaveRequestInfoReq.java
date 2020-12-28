@@ -26,10 +26,11 @@ public class SaveRequestInfoReq {
     @ApiModelProperty(value = "描述",required = false,dataType = "String",position = 104)
     private String description;
 
-    @ApiModelProperty(value = "发布状态(0.未发布 1.已发布 2.已完成)",required = false,position = 107)
+    @ApiModelProperty(value = "",required = false,position = 107)
     private String status;
 
     private List<SaveFormItemInfoReq> formItems;
+
 
     public String getId() {
         return id;
@@ -44,39 +45,62 @@ public class SaveRequestInfoReq {
         return requestTempId;
     }
 
-    public void setRequestTempId(String requestTempId) {
+    public SaveRequestInfoReq setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
+        return this;
     }
 
     public String getRootEntity() {
         return rootEntity;
     }
 
-    public void setRootEntity(String rootEntity) {
+    public SaveRequestInfoReq setRootEntity(String rootEntity) {
         this.rootEntity = rootEntity;
+        return this;
+    }
+
+    public String getEmergency() {
+        return emergency;
+    }
+
+    public SaveRequestInfoReq setEmergency(String emergency) {
+        this.emergency = emergency;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public SaveRequestInfoReq setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public SaveRequestInfoReq setDescription(String description) {
         this.description = description;
+        return this;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public SaveRequestInfoReq setStatus(String status) {
+        this.status = status;
+        return this;
     }
 
     public List<SaveFormItemInfoReq> getFormItems() {
         return formItems;
     }
 
-    public void setFormItems(List<SaveFormItemInfoReq> formItems) {
+    public SaveRequestInfoReq setFormItems(List<SaveFormItemInfoReq> formItems) {
         this.formItems = formItems;
+        return this;
     }
 }

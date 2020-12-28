@@ -12,17 +12,20 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.converter.FormItemInfoConverter;
+import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
+import com.webank.taskman.domain.FormItemInfo;
+import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
+import com.webank.taskman.dto.RequestInfoDTO;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
-import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoForm;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
+import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
@@ -198,23 +201,33 @@ public class TaskmanRequestController {
     public JsonResponse<QueryResponse<SynthesisRequestInfoResp>> requestInfoSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SynthesisRequestInfoReq req)
+            @RequestBody(required = false) QueryRequestInfoReq req)
             throws TaskmanRuntimeException {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        QueryResponse<SynthesisRequestInfoResp> list = requestInfoService.selectSynthesisRequestInfoService(page, pageSize,req);
+        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
 
 
+    @Autowired
+    RequestInfoConverter requestInfoConverter;
+
+    @Autowired
+    FormItemInfoService formItemInfoService;
+
+    @Autowired
+    FormItemInfoConverter formItemInfoConverter;
+
     @ApiOperationSupport(order = 13)
     @GetMapping("/details/{id}")
     @ApiOperation(value = "request-info-detail")
-    public JsonResponse<SynthesisRequestInfoForm> requestInfoDetail(@PathVariable("id") String id)
+    public JsonResponse<RequestInfoResq> requestInfoDetail(@PathVariable("id") String id)
             throws TaskmanRuntimeException {
-        SynthesisRequestInfoForm synthesisRequestInfoForm = requestInfoService.selectSynthesisRequestInfoFormService(id);
-        return JsonResponse.okayWithData(synthesisRequestInfoForm);
+        RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfoService.getById(id));
+        List<FormItemInfo> items = formItemInfoService.list(new FormItemInfo().setRecordId(id).getLambdaQueryWrapper());
+        requestInfoResq.setFormItemInfos(formItemInfoConverter.toDto(items));
+        return JsonResponse.okayWithData(requestInfoResq);
     }
-
 
 }
 

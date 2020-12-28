@@ -25,6 +25,10 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     private String taskTempId;
 
+    private String procDefId;
+    private String procDefName;
+    private String procInstKey;
+
     private String nodeDefId;
 
     private String nodeName;
@@ -52,6 +56,8 @@ public class TaskInfo extends BaseEntity implements Serializable {
     private String status;
     
     private String version;
+
+    private int  overTime;
 
 
     public TaskInfo() {
@@ -146,6 +152,33 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     public TaskInfo setTaskTempId(String taskTempId) {
         this.taskTempId = taskTempId;
+        return this;
+    }
+
+    public String getProcDefId() {
+        return procDefId;
+    }
+
+    public TaskInfo setProcDefId(String procDefId) {
+        this.procDefId = procDefId;
+        return this;
+    }
+
+    public String getProcDefName() {
+        return procDefName;
+    }
+
+    public TaskInfo setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
+        return this;
+    }
+
+    public String getProcInstKey() {
+        return procInstKey;
+    }
+
+    public TaskInfo setProcInstKey(String procInstKey) {
+        this.procInstKey = procInstKey;
         return this;
     }
 
@@ -272,6 +305,15 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     public TaskInfo setVersion(String version) {
         this.version = version;
+        return this;
+    }
+
+    public int getOverTime() {
+        return overTime;
+    }
+
+    public TaskInfo setOverTime(int overTime) {
+        this.overTime = overTime;
         return this;
     }
 

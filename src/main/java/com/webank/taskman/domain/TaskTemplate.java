@@ -17,6 +17,8 @@ public class TaskTemplate extends BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
+    private String requestTempalteId;
+
     private String procDefId;
 
     private String procDefKey;
@@ -65,6 +67,15 @@ public class TaskTemplate extends BaseEntity implements Serializable {
 
     public TaskTemplate setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getRequestTempalteId() {
+        return requestTempalteId;
+    }
+
+    public TaskTemplate setRequestTempalteId(String requestTempalteId) {
+        this.requestTempalteId = requestTempalteId;
         return this;
     }
 

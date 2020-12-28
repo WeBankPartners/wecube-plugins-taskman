@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.PageInfo;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.converter.SynthesisTaskTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
+import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDTO;
@@ -21,6 +23,7 @@ import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.mapper.TaskTemplateMapper;
 import com.webank.taskman.service.FormTemplateService;
+import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.service.TaskTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,14 +49,22 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     TaskTemplateMapper taskTemplateMapper;
 
+    @Autowired
+    RequestTemplateService requestTemplateService;
+
 
     @Autowired
     SynthesisTaskTemplateConverter synthesisTaskTemplateConverter;
 
     @Override
     @Transactional
-    public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) {
+    public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) throws TaskmanRuntimeException{
+        RequestTemplate requestTemplate = requestTemplateService.getById(req.getTempId());
+        if(null == requestTemplate){
+            throw  new TaskmanRuntimeException("The RequestTemplate is not exists! id:"+req.getTempId());
+        }
         TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
+        taskTemplate.setRequestTempalteId(req.getTempId());
         taskTemplate.setCurrenUserName(taskTemplate, taskTemplate.getId());
         saveOrUpdate(taskTemplate);
         String taskTemplateId = taskTemplate.getId();

@@ -50,8 +50,7 @@ public class TaskmanTaskController {
     @ApiOperation(value = "Task-Template-selectAll")
     public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
-            throws Exception{
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize){
         QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
         return JsonResponse.okayWithData(queryResponse);
     }

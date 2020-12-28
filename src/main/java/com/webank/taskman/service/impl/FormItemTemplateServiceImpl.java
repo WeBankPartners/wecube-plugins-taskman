@@ -24,9 +24,9 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
     }
 
     @Override
-    public TaskServiceMetaResp getTaskCreateServiceMeta(String procDefId, String nodeDefId) {
+    public TaskServiceMetaResp getTaskCreateServiceMeta(String procInstKey, String nodeDefId) {
         TaskServiceMetaResp resp = new TaskServiceMetaResp();
-        resp.setFormItems(this.getBaseMapper().getCreateTaskServiceMeta(procDefId,nodeDefId));
+        resp.setFormItems(this.getBaseMapper().getCreateTaskServiceMeta(procInstKey,nodeDefId));
         return resp;
     }
 

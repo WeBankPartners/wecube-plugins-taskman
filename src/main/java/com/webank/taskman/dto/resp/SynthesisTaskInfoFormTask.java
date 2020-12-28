@@ -18,6 +18,10 @@ public class SynthesisTaskInfoFormTask {
 
     private String taskTempId;
 
+    private String procDefId;
+    private String procDefName;
+    private String procInstKey;
+
     private String nodeDefId;
 
     private String nodeName;
@@ -45,6 +49,8 @@ public class SynthesisTaskInfoFormTask {
     private String status;
 
     private String version;
+
+    private int overTime;
 
     private List<FormItemInfoResp> formItemInfo;
 
@@ -202,6 +208,38 @@ public class SynthesisTaskInfoFormTask {
 
     public List<FormItemInfoResp> getFormItemInfo() {
         return formItemInfo;
+    }
+
+    public String getProcDefId() {
+        return procDefId;
+    }
+
+    public void setProcDefId(String procDefId) {
+        this.procDefId = procDefId;
+    }
+
+    public String getProcDefName() {
+        return procDefName;
+    }
+
+    public void setProcDefName(String procDefName) {
+        this.procDefName = procDefName;
+    }
+
+    public String getProcInstKey() {
+        return procInstKey;
+    }
+
+    public void setProcInstKey(String procInstKey) {
+        this.procInstKey = procInstKey;
+    }
+
+    public int getOverTime() {
+        return overTime;
+    }
+
+    public void setOverTime(int overTime) {
+        this.overTime = overTime;
     }
 
     public void setFormItemInfo(List<FormItemInfoResp> formItemInfo) {

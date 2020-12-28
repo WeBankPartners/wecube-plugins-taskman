@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 
 import static com.webank.taskman.base.JsonResponse.okay;
@@ -136,6 +137,7 @@ public class TaskmanRequestController {
         requestTemplate.setStatus(StatusEnum.UNRELEASED.toString().equals(requestTemplate.getStatus())?
                 StatusEnum.RELEASED.toString() :StatusEnum.UNRELEASED.toString());
         requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestTemplate.setUpdatedTime(new Date());
         requestTemplateService.updateById(requestTemplate);
         return okayWithData(new RequestTemplateDTO().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
     }

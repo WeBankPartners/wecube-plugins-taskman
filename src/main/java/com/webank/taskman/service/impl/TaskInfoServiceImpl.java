@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -245,6 +246,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
             taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
             taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
+            taskInfo.setUpdatedTime(new Date());
             taskInfoMapper.updateById(taskInfo);
             taskInfoGetResp= taskInfoGetConverter.toDto(taskInfo);
         }

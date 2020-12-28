@@ -13,6 +13,8 @@ import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.support.core.CommonResponseDto;
 
+import java.util.List;
+
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
@@ -26,6 +28,8 @@ public interface TaskInfoService extends IService<TaskInfo> {
     TaskInfoGetResp getTheTaskInfoService(String id);
 
     CommonResponseDto createTask(CoreCreateTaskDTO req);
+
+    List<FormItemInfoResp> returnDetail(String id);
 
     String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception;
 }

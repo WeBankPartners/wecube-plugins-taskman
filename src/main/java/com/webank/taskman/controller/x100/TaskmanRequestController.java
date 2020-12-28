@@ -25,10 +25,7 @@ import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.*;
-import com.webank.taskman.service.FormItemInfoService;
-import com.webank.taskman.service.RequestInfoService;
-import com.webank.taskman.service.RequestTemplateGroupService;
-import com.webank.taskman.service.RequestTemplateService;
+import com.webank.taskman.service.*;
 import com.webank.taskman.utils.GsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -62,6 +59,9 @@ public class TaskmanRequestController {
 
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
+
+    @Autowired
+    TaskInfoService taskInfoService;
 
 
 
@@ -226,6 +226,8 @@ public class TaskmanRequestController {
         RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfoService.getById(id));
         List<FormItemInfo> items = formItemInfoService.list(new FormItemInfo().setRecordId(id).getLambdaQueryWrapper());
         requestInfoResq.setFormItemInfos(formItemInfoConverter.toDto(items));
+        List<FormItemInfoResp> formItemInfoResps = taskInfoService.returnDetail(id);
+        requestInfoResq.setFormItemInfos(formItemInfoResps);
         return JsonResponse.okayWithData(requestInfoResq);
     }
 

@@ -36,6 +36,7 @@ public class TaskmanTaskController {
     @Autowired
     private TaskInfoService taskInfoService;
 
+
     @ApiOperationSupport(order = 1)
     @PostMapping("/template/save")
     @ApiOperation(value = "Task-Template-save", notes = "Need to pass in object: ")
@@ -81,6 +82,7 @@ public class TaskmanTaskController {
     public JsonResponse<SynthesisTaskInfoFormTask> selectSynthesisTaskInfoForm(String id)
             throws Exception {
         SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
+
         return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
     }
 

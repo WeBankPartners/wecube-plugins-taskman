@@ -10,7 +10,6 @@ import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
-import com.webank.taskman.converter.SynthesisTaskTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
@@ -52,9 +51,6 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     RequestTemplateService requestTemplateService;
 
-
-    @Autowired
-    SynthesisTaskTemplateConverter synthesisTaskTemplateConverter;
 
     @Override
     @Transactional
@@ -110,7 +106,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
 
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectSynthesisRequestTemple(new Page<TaskTemplate>(page, pageSize), sql);
 
-        List<TaskTemplateByRoleResp> srt = synthesisTaskTemplateConverter.toDto(iPage.getRecords());
+        List<TaskTemplateByRoleResp> srt = taskTemplateConverter.toRoleRespList(iPage.getRecords());
 
         QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));

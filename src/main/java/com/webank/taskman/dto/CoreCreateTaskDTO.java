@@ -53,8 +53,7 @@ public class CoreCreateTaskDTO {
          * taskName :
          */
 
-        private String procDefId;
-        private String procDefName;
+        private String id;
         private String procInstKey;
         private String taskNodeId;
         private int overTime;
@@ -66,20 +65,12 @@ public class CoreCreateTaskDTO {
         private String taskName;
         private List<FormItemBean> formItems;
 
-        public String getProcDefId() {
-            return procDefId;
+        public String getId() {
+            return id;
         }
 
-        public void setProcDefId(String procDefId) {
-            this.procDefId = procDefId;
-        }
-
-        public String getProcDefName() {
-            return procDefName;
-        }
-
-        public TaskInfoReq setProcDefName(String procDefName) {
-            this.procDefName = procDefName;
+        public TaskInfoReq setId(String id) {
+            this.id = id;
             return this;
         }
 

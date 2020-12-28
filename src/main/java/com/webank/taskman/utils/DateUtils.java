@@ -62,4 +62,41 @@ public class DateUtils {
         return calendar.getTime();
     }
 
+    public static String formatLongToTimeStr(Long date) {
+        if(date < 1000){ return date +" ms"; }
+        StringBuffer sbf = new StringBuffer();
+        long day=0;
+        long hour = 0;
+        long minute = 0;
+        long ms = date % 1000;
+        long second = date / 1000;
+        if (second > 60) {
+            minute = second / 60;
+            second = second % 60;
+        }
+        if (minute > 60) {
+            hour = minute / 60;
+            minute = minute % 60;
+        }
+        if(hour > 24){
+            day = hour / 24;
+            hour = hour % 24;
+        }
+        if(day > 0){
+            sbf.append(day +"d");
+        }
+        if(hour > 0){
+            sbf.append(hour +"h");
+        }
+        if(minute > 0){
+            sbf.append(minute +"m");
+        }
+        if(second > 0){
+            sbf.append(second +"s");
+        }
+        if(ms > 0){
+            sbf.append( ms +"ms");
+        }
+        return sbf.toString();
+    }
 }

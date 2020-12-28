@@ -109,7 +109,7 @@ public class QueryRoleRelationBaseReq {
         this.conditionSql = conditionSql;
     }
 
-
+    @ApiModelProperty(hidden = true)
     public void setEqUseRole(String tableFix){
         this.setSourceTableFix(tableFix);
         StringBuffer useRole = new StringBuffer();

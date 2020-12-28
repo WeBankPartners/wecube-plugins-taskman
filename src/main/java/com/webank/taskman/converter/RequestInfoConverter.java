@@ -4,6 +4,7 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.RequestInfoDTO;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
+import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -14,4 +15,6 @@ public interface RequestInfoConverter extends BaseConverter<RequestInfoDTO, Requ
     RequestInfo reqToDomain(SaveRequestInfoReq req);
 
     RequestInfoResq toResp(RequestInfo requestInfo);
+
+    RequestInfoInstanceResq toInstanceResp(RequestInfo requestInfo);
 }

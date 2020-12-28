@@ -1,6 +1,7 @@
 package com.webank.taskman.dto.resp;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -27,14 +28,14 @@ public class RequestInfoResq  {
     private String description;
     @ApiModelProperty(value = "",position = 8)
     private String reporter;
+
     @ApiModelProperty(value = "",position = 9)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date reportTime;
     @ApiModelProperty(value = "",position = 10)
     private String emergency;
     @ApiModelProperty(value = "",position = 11)
     private String reportRole;
-    @ApiModelProperty(value = "",position = 12)
-    private String attachFileId;
     @ApiModelProperty(value = "",position = 13)
     private String status;
     @ApiModelProperty(value = "",position = 14)
@@ -42,6 +43,8 @@ public class RequestInfoResq  {
     @ApiModelProperty(value = "",position = 15)
     private String result;
     @ApiModelProperty(value = "",position = 16)
+    private String attachFileId;
+    @ApiModelProperty(value = "",position = 17)
     private List<FormItemInfoResp> formItemInfos;
 
     public String getId() {

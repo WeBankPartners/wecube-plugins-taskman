@@ -74,7 +74,6 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupDTO> requestGroupTemplateSave(
             @Valid @RequestBody SaveRequestTemplateGropReq req) throws TaskmanException {
-        log.info("Received request parameters:{}",req);
         return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
@@ -87,7 +86,6 @@ public class TaskmanRequestController {
             @RequestBody(required = false) RequestTemplateGroupDTO req
     ) throws TaskmanRuntimeException
     {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return JsonResponse.okayWithData(requestTemplateGroupService.selectByParam(page, pageSize, req));
     }
 
@@ -106,7 +104,6 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-delete", notes = "")
     public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException
     {
-        log.info("Received request parameters:{}",id);
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return okay();
     }
@@ -117,7 +114,6 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req
     )throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
@@ -126,7 +122,6 @@ public class TaskmanRequestController {
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
     public JsonResponse<RequestTemplateDTO> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         if(StringUtils.isEmpty(req.getId())){
             return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
@@ -150,7 +145,6 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -177,7 +171,7 @@ public class TaskmanRequestController {
     @GetMapping(value = "/template/available")
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
-    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable(@ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
+    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable() throws TaskmanRuntimeException {
         RequestTemplate query = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
         QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("status",StatusEnum.RELEASED.toString())
@@ -193,7 +187,6 @@ public class TaskmanRequestController {
     @PostMapping("/save")
     @ApiOperation(value = "request-info-save")
     public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return okayWithData(requestInfoService.saveRequestInfo(req));
     }
 
@@ -205,7 +198,6 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestInfoReq req)
             throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }

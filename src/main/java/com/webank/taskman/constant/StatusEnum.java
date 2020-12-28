@@ -18,6 +18,7 @@ public enum  StatusEnum {
 
     InProgress, // createNewWorkflowInstance is success!
 
+    SUSPENSION, // taskInfo is canl
     ;
     @Override
     public String toString(){

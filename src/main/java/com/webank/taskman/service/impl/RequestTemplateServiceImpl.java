@@ -88,10 +88,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer pageNum, Integer pageSize, QueryRequestTemplateReq req) {
-        req.setSourceTableFix("rt");
-        StringBuffer useRole = new StringBuffer().append(StringUtils.isEmpty(req.getUseRoleName()) ? "" : req.getUseRoleName() + ",");
-        req.setUseRoleName(useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString()).toString());
-
+        req.setEqUseRole("rt");
         PageHelper.startPage(pageNum,pageSize);
         PageInfo<RequestTemplateDTO> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
 

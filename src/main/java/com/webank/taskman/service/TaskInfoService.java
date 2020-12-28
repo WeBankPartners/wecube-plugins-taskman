@@ -11,12 +11,14 @@ import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.SaveTaskInfoReq;
 import com.webank.taskman.dto.req.SynthesisTaskInfoReq;
 import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.support.core.CommonResponseDto;
+
+import java.util.List;
 
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
     QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req);
-
 
 
     SynthesisTaskInfoFormTask selectSynthesisTaskInfoFormService(String id) throws Exception;
@@ -25,7 +27,9 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     TaskInfoGetResp getTheTaskInfoService(String id);
 
-    void createTask(CoreCreateTaskDTO req);
+    CommonResponseDto createTask(CoreCreateTaskDTO req);
+
+    List<FormItemInfoResp> returnDetail(String id);
 
     String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception;
 }

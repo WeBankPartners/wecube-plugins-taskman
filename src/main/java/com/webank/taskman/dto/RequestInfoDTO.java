@@ -1,54 +1,32 @@
-package com.webank.taskman.dto.resp;
+package com.webank.taskman.dto;
 
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Date;
-import java.util.List;
 import java.util.StringJoiner;
 
-@ApiModel
-public class RequestInfoResq  {
+public class RequestInfoDTO {
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
-    @ApiModelProperty(value = "",position = 2)
     private String requestTempId;
-    @ApiModelProperty(value = "",position = 3)
-    private String requestTempName;
-    @ApiModelProperty(value = "",position = 4)
     private String procInstKey;
-    @ApiModelProperty(value = "",position = 5)
     private String rootEntity;
-    @ApiModelProperty(value = "",position = 6)
     private String name;
-    @ApiModelProperty(value = "",position = 7)
-    private String description;
-    @ApiModelProperty(value = "",position = 8)
     private String reporter;
-    @ApiModelProperty(value = "",position = 9)
     private Date reportTime;
-    @ApiModelProperty(value = "",position = 10)
     private String emergency;
-    @ApiModelProperty(value = "",position = 11)
     private String reportRole;
-    @ApiModelProperty(value = "",position = 12)
     private String attachFileId;
-    @ApiModelProperty(value = "",position = 13)
     private String status;
-    @ApiModelProperty(value = "",position = 14)
     private String dueDate;
-    @ApiModelProperty(value = "",position = 15)
     private String result;
-    @ApiModelProperty(value = "",position = 16)
-    private List<FormItemInfoResp> formItemInfos;
+    private String description;
 
     public String getId() {
         return id;
     }
 
-    public RequestInfoResq setId(String id) {
+    public RequestInfoDTO setId(String id) {
         this.id = id;
         return this;
     }
@@ -57,17 +35,8 @@ public class RequestInfoResq  {
         return requestTempId;
     }
 
-    public RequestInfoResq setRequestTempId(String requestTempId) {
+    public RequestInfoDTO setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
-        return this;
-    }
-
-    public String getRequestTempName() {
-        return requestTempName;
-    }
-
-    public RequestInfoResq setRequestTempName(String requestTempName) {
-        this.requestTempName = requestTempName;
         return this;
     }
 
@@ -75,7 +44,7 @@ public class RequestInfoResq  {
         return procInstKey;
     }
 
-    public RequestInfoResq setProcInstKey(String procInstKey) {
+    public RequestInfoDTO setProcInstKey(String procInstKey) {
         this.procInstKey = procInstKey;
         return this;
     }
@@ -84,7 +53,7 @@ public class RequestInfoResq  {
         return rootEntity;
     }
 
-    public RequestInfoResq setRootEntity(String rootEntity) {
+    public RequestInfoDTO setRootEntity(String rootEntity) {
         this.rootEntity = rootEntity;
         return this;
     }
@@ -93,17 +62,8 @@ public class RequestInfoResq  {
         return name;
     }
 
-    public RequestInfoResq setName(String name) {
+    public RequestInfoDTO setName(String name) {
         this.name = name;
-        return this;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public RequestInfoResq setDescription(String description) {
-        this.description = description;
         return this;
     }
 
@@ -111,7 +71,7 @@ public class RequestInfoResq  {
         return reporter;
     }
 
-    public RequestInfoResq setReporter(String reporter) {
+    public RequestInfoDTO setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -120,7 +80,7 @@ public class RequestInfoResq  {
         return reportTime;
     }
 
-    public RequestInfoResq setReportTime(Date reportTime) {
+    public RequestInfoDTO setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -129,7 +89,7 @@ public class RequestInfoResq  {
         return emergency;
     }
 
-    public RequestInfoResq setEmergency(String emergency) {
+    public RequestInfoDTO setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -138,7 +98,7 @@ public class RequestInfoResq  {
         return reportRole;
     }
 
-    public RequestInfoResq setReportRole(String reportRole) {
+    public RequestInfoDTO setReportRole(String reportRole) {
         this.reportRole = reportRole;
         return this;
     }
@@ -147,7 +107,7 @@ public class RequestInfoResq  {
         return attachFileId;
     }
 
-    public RequestInfoResq setAttachFileId(String attachFileId) {
+    public RequestInfoDTO setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
         return this;
     }
@@ -156,7 +116,7 @@ public class RequestInfoResq  {
         return status;
     }
 
-    public RequestInfoResq setStatus(String status) {
+    public RequestInfoDTO setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -165,7 +125,7 @@ public class RequestInfoResq  {
         return dueDate;
     }
 
-    public RequestInfoResq setDueDate(String dueDate) {
+    public RequestInfoDTO setDueDate(String dueDate) {
         this.dueDate = dueDate;
         return this;
     }
@@ -174,26 +134,25 @@ public class RequestInfoResq  {
         return result;
     }
 
-    public RequestInfoResq setResult(String result) {
+    public RequestInfoDTO setResult(String result) {
         this.result = result;
         return this;
     }
 
-    public List<FormItemInfoResp> getFormItemInfos() {
-        return formItemInfos;
+    public String getDescription() {
+        return description;
     }
 
-    public RequestInfoResq setFormItemInfos(List<FormItemInfoResp> formItemInfos) {
-        this.formItemInfos = formItemInfos;
+    public RequestInfoDTO setDescription(String description) {
+        this.description = description;
         return this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RequestInfoResq.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", RequestInfoDTO.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("requestTempId='" + requestTempId + "'")
-                .add("requestTempName='" + requestTempName + "'")
                 .add("procInstKey='" + procInstKey + "'")
                 .add("rootEntity='" + rootEntity + "'")
                 .add("name='" + name + "'")
@@ -205,6 +164,7 @@ public class RequestInfoResq  {
                 .add("status='" + status + "'")
                 .add("dueDate='" + dueDate + "'")
                 .add("result='" + result + "'")
+                .add("description='" + description + "'")
                 .toString();
     }
 }

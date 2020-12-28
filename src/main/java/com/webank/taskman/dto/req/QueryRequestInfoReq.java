@@ -1,15 +1,12 @@
-package com.webank.taskman.dto.resp;
+package com.webank.taskman.dto.req;
 
 
-import io.swagger.annotations.ApiModel;
+import com.webank.taskman.dto.RequestInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
 
-@ApiModel
-public class RequestInfoResq  {
+public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
 
     @ApiModelProperty(value = "",position = 1)
     private String id;
@@ -41,14 +38,12 @@ public class RequestInfoResq  {
     private String dueDate;
     @ApiModelProperty(value = "",position = 15)
     private String result;
-    @ApiModelProperty(value = "",position = 16)
-    private List<FormItemInfoResp> formItemInfos;
 
     public String getId() {
         return id;
     }
 
-    public RequestInfoResq setId(String id) {
+    public QueryRequestInfoReq setId(String id) {
         this.id = id;
         return this;
     }
@@ -57,7 +52,7 @@ public class RequestInfoResq  {
         return requestTempId;
     }
 
-    public RequestInfoResq setRequestTempId(String requestTempId) {
+    public QueryRequestInfoReq setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
         return this;
     }
@@ -66,7 +61,7 @@ public class RequestInfoResq  {
         return requestTempName;
     }
 
-    public RequestInfoResq setRequestTempName(String requestTempName) {
+    public QueryRequestInfoReq setRequestTempName(String requestTempName) {
         this.requestTempName = requestTempName;
         return this;
     }
@@ -75,7 +70,7 @@ public class RequestInfoResq  {
         return procInstKey;
     }
 
-    public RequestInfoResq setProcInstKey(String procInstKey) {
+    public QueryRequestInfoReq setProcInstKey(String procInstKey) {
         this.procInstKey = procInstKey;
         return this;
     }
@@ -84,7 +79,7 @@ public class RequestInfoResq  {
         return rootEntity;
     }
 
-    public RequestInfoResq setRootEntity(String rootEntity) {
+    public QueryRequestInfoReq setRootEntity(String rootEntity) {
         this.rootEntity = rootEntity;
         return this;
     }
@@ -93,7 +88,7 @@ public class RequestInfoResq  {
         return name;
     }
 
-    public RequestInfoResq setName(String name) {
+    public QueryRequestInfoReq setName(String name) {
         this.name = name;
         return this;
     }
@@ -102,7 +97,7 @@ public class RequestInfoResq  {
         return description;
     }
 
-    public RequestInfoResq setDescription(String description) {
+    public QueryRequestInfoReq setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -111,7 +106,7 @@ public class RequestInfoResq  {
         return reporter;
     }
 
-    public RequestInfoResq setReporter(String reporter) {
+    public QueryRequestInfoReq setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -120,7 +115,7 @@ public class RequestInfoResq  {
         return reportTime;
     }
 
-    public RequestInfoResq setReportTime(Date reportTime) {
+    public QueryRequestInfoReq setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -129,7 +124,7 @@ public class RequestInfoResq  {
         return emergency;
     }
 
-    public RequestInfoResq setEmergency(String emergency) {
+    public QueryRequestInfoReq setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -138,7 +133,7 @@ public class RequestInfoResq  {
         return reportRole;
     }
 
-    public RequestInfoResq setReportRole(String reportRole) {
+    public QueryRequestInfoReq setReportRole(String reportRole) {
         this.reportRole = reportRole;
         return this;
     }
@@ -147,7 +142,7 @@ public class RequestInfoResq  {
         return attachFileId;
     }
 
-    public RequestInfoResq setAttachFileId(String attachFileId) {
+    public QueryRequestInfoReq setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
         return this;
     }
@@ -156,7 +151,7 @@ public class RequestInfoResq  {
         return status;
     }
 
-    public RequestInfoResq setStatus(String status) {
+    public QueryRequestInfoReq setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -165,7 +160,7 @@ public class RequestInfoResq  {
         return dueDate;
     }
 
-    public RequestInfoResq setDueDate(String dueDate) {
+    public QueryRequestInfoReq setDueDate(String dueDate) {
         this.dueDate = dueDate;
         return this;
     }
@@ -174,37 +169,8 @@ public class RequestInfoResq  {
         return result;
     }
 
-    public RequestInfoResq setResult(String result) {
+    public QueryRequestInfoReq setResult(String result) {
         this.result = result;
         return this;
-    }
-
-    public List<FormItemInfoResp> getFormItemInfos() {
-        return formItemInfos;
-    }
-
-    public RequestInfoResq setFormItemInfos(List<FormItemInfoResp> formItemInfos) {
-        this.formItemInfos = formItemInfos;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", RequestInfoResq.class.getSimpleName() + "[", "]")
-                .add("id='" + id + "'")
-                .add("requestTempId='" + requestTempId + "'")
-                .add("requestTempName='" + requestTempName + "'")
-                .add("procInstKey='" + procInstKey + "'")
-                .add("rootEntity='" + rootEntity + "'")
-                .add("name='" + name + "'")
-                .add("reporter='" + reporter + "'")
-                .add("reportTime=" + reportTime)
-                .add("emergency='" + emergency + "'")
-                .add("reportRole='" + reportRole + "'")
-                .add("attachFileId='" + attachFileId + "'")
-                .add("status='" + status + "'")
-                .add("dueDate='" + dueDate + "'")
-                .add("result='" + result + "'")
-                .toString();
     }
 }

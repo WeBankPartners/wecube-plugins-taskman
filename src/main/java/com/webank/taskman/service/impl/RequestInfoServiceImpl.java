@@ -11,12 +11,10 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.*;
+import com.webank.taskman.dto.req.QueryRequestInfoReq;
+import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
-import com.webank.taskman.dto.req.SynthesisRequestInfoReq;
 import com.webank.taskman.dto.resp.*;
-import com.webank.taskman.mapper.FormInfoMapper;
-import com.webank.taskman.mapper.FormItemInfoMapper;
-import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormTemplateService;
@@ -46,8 +44,6 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
 
-    @Autowired
-    FormItemInfoMapper formItemInfoMapper;
 
     @Autowired
     FormInfoService formInfoService;
@@ -58,43 +54,14 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Autowired
     FormItemInfoServiceImpl formItemInfoService;
 
-    @Autowired
-    FormInfoConverter formInfoConverter;
-
-    @Autowired
-    FormInfoMapper formInfoMapper;
-
-    @Autowired
-    SynthesisRequestInfoRespConverter synthesisRequestInfoRespConverter;
-
-    @Autowired
-    SynthesisRequestInfoFormConverter synthesisRequestInfoFormConverter;
-
-    @Autowired
-    FormItemInfoRespConverter formItemInfoRespConverter;
-
-    @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
-
-
-    private final static String STATUS_DONE = "Done";
 
     @Override
-    public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, SaveRequestInfoReq req) {
-
-        IPage<RequestInfo> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
-        List<RequestInfoResq> respList = requestInfoConverter.toDto(iPage.getRecords());
-
-        for (RequestInfoResq requestInfoResq : respList) {
-            FormInfo formInfo = formInfoService.getOne(new FormInfo().setRecordId(requestInfoResq.getId()).getLambdaQueryWrapper());
-            FormInfoResq formInfoResq = formInfoConverter.toDto(formInfo);
-            formInfoResq.setFormItemInfo(formItemInfoMapper.selectFormItemInfo(requestInfoResq.getId()));
-            requestInfoResq.setFormInfoResq(formInfoResq);
-        }
-
+    public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, QueryRequestInfoReq req) {
+        req.setEqUseRole("rt");
+        IPage<RequestInfoResq> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
         QueryResponse<RequestInfoResq> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
-        queryResponse.setContents(respList);
+        queryResponse.setContents(iPage.getRecords());
         return queryResponse;
     }
 
@@ -108,10 +75,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         requestInfo.setReportTime(new Date());
         requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
         saveOrUpdate(requestInfo);
-        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntity(req.getFormItems());
+        List<SaveFormItemInfoReq>  formItems = req.getFormItems();
         String requestTempId = requestInfo.getRequestTempId();
-        if (null != formItemInfos && formItemInfos.size() > 0) {
-
+        if (null != formItems && formItems.size() > 0) {
             FormTemplate formTemplate = formTemplateService.getOne(
                     new FormTemplate(null, requestTempId, StatusEnum.DEFAULT.ordinal() + "").getLambdaQueryWrapper());
             if (null == formTemplate) {
@@ -123,11 +89,15 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             form.setFormTemplateId(formTemplate.getId());
             form.setCurrenUserName(form, form.getId());
             formInfoService.save(form);
-            formItemInfos.stream().forEach(item -> {
-                item.setFormId(form.getId());
-                formItemInfoService.save(item);
+            formItems.stream().forEach(item -> {
+                FormItemInfo formItemInfo = formItemInfoConverter.toEntityBySave(item);
+                formItemInfo.setFormId(form.getId());
+                formItemInfo.setRecordId(requestInfo.getId());
+                formItemInfo.setItemTempId(item.getItemTempId());
+                formItemInfoService.save(formItemInfo);
             });
         }
+
         DynamicWorkflowInstInfoDto response = createNewWorkflowInstance(requestInfo);
         if (null == response) {
             throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
@@ -137,51 +107,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             requestInfo.setStatus(response.getStatus());
             updateById(requestInfo);
         }
-        return requestInfoConverter.toDto(requestInfo);
-    }
-
-    @Override
-    public SynthesisRequestInfoForm selectSynthesisRequestInfoFormService(String id) throws TaskmanRuntimeException {
-        FormInfo formInfo = formInfoMapper.selectOne(new FormInfo().setRecordId(id).getLambdaQueryWrapper());
-        if (null == formInfo || "".equals(formInfo)) {
-            throw new TaskmanRuntimeException("The request details do not exist");
-        }
-        List<FormItemInfo> formItemInfos = formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
-        List<FormItemInfoResp> formItemInfoResps = formItemInfoRespConverter.toDto(formItemInfos);
-        for (FormItemInfoResp formItemInfoResp : formItemInfoResps) {
-            FormItemTemplate formItemTemplate = formItemTemplateMapper.selectOne(new QueryWrapper<FormItemTemplate>().lambda().
-                    eq(FormItemTemplate::getId, formItemInfoResp.getItemTempId()));
-            formItemInfoResp.setElementType(formItemTemplate.getElementType());
-            formItemInfoResp.setTitle(formItemTemplate.getTitle());
-            formItemInfoResp.setWidth(formItemTemplate.getWidth());
-            formItemInfoResp.setIsEdit(formItemTemplate.getIsEdit());
-            formItemInfoResp.setIsView(formItemTemplate.getIsView());
-            formItemInfoResp.setSort(formItemTemplate.getSort());
-            formItemInfoResp.setName(formItemTemplate.getName());
-        }
-
-        SynthesisRequestInfoForm srt = synthesisRequestInfoFormConverter.toDto(formInfo);
-        RequestInfo requestInfo = requestInfoMapper.selectOne(new QueryWrapper<RequestInfo>().lambda().eq(RequestInfo::getId, id));
-        srt.setRootEntity(requestInfo.getRootEntity());
-        srt.setEmergency(requestInfo.getEmergency());
-        srt.setDescription(requestInfo.getDescription());
-        srt.setFormItemInfo(formItemInfoResps);
-        return srt;
-
-    }
-
-    @Override
-    public QueryResponse<SynthesisRequestInfoResp> selectSynthesisRequestInfoService(Integer current, Integer limit, SynthesisRequestInfoReq req) throws TaskmanRuntimeException {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        req.setRoleName(currentUserRolesToString);
-        IPage<RequestInfo> iPage = requestInfoMapper.selectSynthesisRequestInfo(new Page<>(current, limit), req);
-        List<SynthesisRequestInfoResp> srt = synthesisRequestInfoRespConverter.toDto(iPage.getRecords());
-
-        QueryResponse<SynthesisRequestInfoResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
-        queryResponse.setContents(srt);
-
-        return queryResponse;
+        return requestInfoConverter.toResp(requestInfo);
     }
 
     @Autowired

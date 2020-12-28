@@ -24,6 +24,8 @@ public class FormItemInfoResp {
 
     private Integer sort;
 
+    private String dataOptions;
+
     public String getId() {
         return id;
     }
@@ -102,5 +104,13 @@ public class FormItemInfoResp {
 
     public void setSort(Integer sort) {
         this.sort = sort;
+    }
+
+    public String getDataOptions() {
+        return dataOptions;
+    }
+
+    public void setDataOptions(String dataOptions) {
+        this.dataOptions = dataOptions;
     }
 }

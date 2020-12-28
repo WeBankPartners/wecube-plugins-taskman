@@ -8,7 +8,7 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
-import com.webank.taskman.dto.resp.FormItemTemplateDTO;
+import com.webank.taskman.dto.FormItemTemplateDTO;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;

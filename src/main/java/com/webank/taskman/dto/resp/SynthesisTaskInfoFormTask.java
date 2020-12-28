@@ -3,19 +3,48 @@ package com.webank.taskman.dto.resp;
 import com.webank.taskman.domain.FormItemInfo;
 import io.swagger.annotations.ApiModel;
 
+import java.util.Date;
 import java.util.List;
 
 @ApiModel
 public class SynthesisTaskInfoFormTask {
     private String id;
 
-    private String recordId;
+    private String requestId;
 
-    private String formTemplateId;
+    private String requestNo;
+
+    private String parentId;
+
+    private String taskTempId;
+
+    private String nodeDefId;
+
+    private String nodeName;
+
+    private String callbackUrl;
+
+    private String callbackParameter;
 
     private String name;
 
-    private Integer type;
+    private String reporter;
+
+    private Date reportTime;
+
+    private String emergency;
+
+    private String reportRole;
+
+    private String result;
+
+    private String description;
+
+    private String attachFileId;
+
+    private String status;
+
+    private String version;
 
     private List<FormItemInfoResp> formItemInfo;
 
@@ -27,20 +56,68 @@ public class SynthesisTaskInfoFormTask {
         this.id = id;
     }
 
-    public String getRecordId() {
-        return recordId;
+    public String getRequestId() {
+        return requestId;
     }
 
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
-    public String getFormTemplateId() {
-        return formTemplateId;
+    public String getRequestNo() {
+        return requestNo;
     }
 
-    public void setFormTemplateId(String formTemplateId) {
-        this.formTemplateId = formTemplateId;
+    public void setRequestNo(String requestNo) {
+        this.requestNo = requestNo;
+    }
+
+    public String getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(String parentId) {
+        this.parentId = parentId;
+    }
+
+    public String getTaskTempId() {
+        return taskTempId;
+    }
+
+    public void setTaskTempId(String taskTempId) {
+        this.taskTempId = taskTempId;
+    }
+
+    public String getNodeDefId() {
+        return nodeDefId;
+    }
+
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public String getCallbackUrl() {
+        return callbackUrl;
+    }
+
+    public void setCallbackUrl(String callbackUrl) {
+        this.callbackUrl = callbackUrl;
+    }
+
+    public String getCallbackParameter() {
+        return callbackParameter;
+    }
+
+    public void setCallbackParameter(String callbackParameter) {
+        this.callbackParameter = callbackParameter;
     }
 
     public String getName() {
@@ -51,12 +128,76 @@ public class SynthesisTaskInfoFormTask {
         this.name = name;
     }
 
-    public Integer getType() {
-        return type;
+    public String getReporter() {
+        return reporter;
     }
 
-    public void setType(Integer type) {
-        this.type = type;
+    public void setReporter(String reporter) {
+        this.reporter = reporter;
+    }
+
+    public Date getReportTime() {
+        return reportTime;
+    }
+
+    public void setReportTime(Date reportTime) {
+        this.reportTime = reportTime;
+    }
+
+    public String getEmergency() {
+        return emergency;
+    }
+
+    public void setEmergency(String emergency) {
+        this.emergency = emergency;
+    }
+
+    public String getReportRole() {
+        return reportRole;
+    }
+
+    public void setReportRole(String reportRole) {
+        this.reportRole = reportRole;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getAttachFileId() {
+        return attachFileId;
+    }
+
+    public void setAttachFileId(String attachFileId) {
+        this.attachFileId = attachFileId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public List<FormItemInfoResp> getFormItemInfo() {

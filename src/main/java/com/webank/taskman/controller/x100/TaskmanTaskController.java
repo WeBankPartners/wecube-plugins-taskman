@@ -36,6 +36,7 @@ public class TaskmanTaskController {
     @Autowired
     private TaskInfoService taskInfoService;
 
+
     @ApiOperationSupport(order = 1)
     @PostMapping("/template/save")
     @ApiOperation(value = "Task-Template-save", notes = "Need to pass in object: ")
@@ -50,8 +51,7 @@ public class TaskmanTaskController {
     @ApiOperation(value = "Task-Template-selectAll")
     public JsonResponse<QueryResponse<TaskTemplateByRoleResp>> selectTaskSynthesis(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize)
-            throws Exception{
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize){
         QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -82,6 +82,7 @@ public class TaskmanTaskController {
     public JsonResponse<SynthesisTaskInfoFormTask> selectSynthesisTaskInfoForm(String id)
             throws Exception {
         SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
+
         return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
     }
 

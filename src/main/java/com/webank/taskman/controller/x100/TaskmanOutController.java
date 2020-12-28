@@ -29,12 +29,12 @@ public class TaskmanOutController {
     FormItemTemplateService formItemTemplateService;
 
     @ApiOperationSupport(order = 1)
-    @GetMapping("/task/create/service-meta/{proc-def-id}/{node-def-id}")
+    @GetMapping("/task/create/service-meta/{proc-inst-key}/{node-def-id}")
     @ApiOperation(value = "service-meta")
     public CommonResponseDto taskCreateServiceMeta(
-            @PathVariable("proc-def-id") String procDefId,@PathVariable("node-def-id") String nodeDefId)
+            @PathVariable("proc-inst-key") String procInstKey,@PathVariable("node-def-id") String nodeDefId)
     {
-        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procDefId,nodeDefId));
+        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstKey,nodeDefId));
     }
 
     @Autowired
@@ -46,8 +46,7 @@ public class TaskmanOutController {
     public CommonResponseDto createTask(@RequestBody CoreCreateTaskDTO req)
     {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        taskInfoService.createTask(req);
-        return CommonResponseDto.okay();
+        return taskInfoService.createTask(req);
     }
 
     @ApiOperationSupport(order = 3)

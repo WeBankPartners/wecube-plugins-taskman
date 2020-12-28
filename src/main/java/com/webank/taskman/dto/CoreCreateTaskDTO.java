@@ -11,15 +11,15 @@ public class CoreCreateTaskDTO {
      * inputs : [{"formItems":[{"itemId":"999","key":"app_inst","val":["0047_0000000026","0047_0000000027"]}],"procDefId":"","taskNodeId":"","overTime":123456,"callbackParameter":"","callbackUrl":"","reporter":"","roleName":"","taskDescription":"","taskName":""}]
      */
 
-    private String allowedOptions;
+    private List<String> allowedOptions;
     private String dueDate;
     private List<InputsBean> inputs;
 
-    public String getAllowedOptions() {
+    public List<String> getAllowedOptions() {
         return allowedOptions;
     }
 
-    public void setAllowedOptions(String allowedOptions) {
+    public void setAllowedOptions(List<String> allowedOptions) {
         this.allowedOptions = allowedOptions;
     }
 

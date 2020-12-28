@@ -99,7 +99,8 @@ import {
   getTargetOptions,
   requestTemplateAvailable,
   getEntityDataByTemplateId,
-  workflowProcessPrevieEntities
+  workflowProcessPrevieEntities,
+  getRequestInfoDetails
 } from "../../api/server.js"
 export default {
   components: {
@@ -270,8 +271,8 @@ export default {
   },
   methods: {
 
-    details (row) {
-
+    async details (row) {
+      const {status, message, data} = await getRequestInfoDetails(row.id)
     },
     async workflowProcessPrevieEntities (v) {
       // workflowProcessPrevieEntities
@@ -280,7 +281,7 @@ export default {
         // const processKey = 'sjqH9YVJ2DP'
         const {status, message, data} = await workflowProcessPrevieEntities(processKey, v)
         if (status === 'OK') {
-          this.currentFields.entitys.forEach(entity => entity.options = [])
+          this.currentFields.entitys.filter(en => en.entity && en.entity.length > 0).forEach(entity => entity.options = [])
           Object.keys(this.currentForm).forEach(field => {
             this.currentForm[field] = []
           })
@@ -355,7 +356,7 @@ export default {
             return {
               ...i,
               isMultiple: true,
-              options: []
+              options: i.dataOptions.length > 0 ? JSON.parse(i.dataOptions) : []
             }
           })
           this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))

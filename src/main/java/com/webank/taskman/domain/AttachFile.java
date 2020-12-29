@@ -41,7 +41,7 @@ public class AttachFile  extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<AttachFile> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<AttachFile>()
             .eq(!StringUtils.isEmpty(id), AttachFile::getId, id)
             .eq(!StringUtils.isEmpty(recordId), AttachFile::getRecordId, recordId)

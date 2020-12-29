@@ -37,7 +37,7 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<RequestTemplateGroup> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<RequestTemplateGroup>()
             .eq(!StringUtils.isEmpty(id), RequestTemplateGroup::getId, id)
             .eq(!StringUtils.isEmpty(manageRoleId), RequestTemplateGroup::getManageRoleId, manageRoleId)

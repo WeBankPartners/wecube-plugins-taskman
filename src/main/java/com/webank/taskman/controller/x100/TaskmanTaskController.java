@@ -84,7 +84,7 @@ public class TaskmanTaskController {
     @ApiOperation(value = "task-info-detail")
     public JsonResponse<TaskInfoResp> taskInfoDetail(String id)
             throws Exception {
-        TaskInfoResp taskInfoResp = taskInfoService.selectSynthesisTaskInfoFormService(id);
+        TaskInfoResp taskInfoResp = taskInfoService.taskInfoDetail(id);
 
         return JsonResponse.okayWithData(taskInfoResp);
     }

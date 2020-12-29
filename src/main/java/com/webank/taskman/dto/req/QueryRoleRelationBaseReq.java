@@ -1,6 +1,7 @@
 package com.webank.taskman.dto.req;
 
 import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.constant.RoleTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -117,5 +118,12 @@ public class QueryRoleRelationBaseReq {
         useRole.append(org.springframework.util.StringUtils.isEmpty(queryUseRole) ? "" : queryUseRole + ",");
         useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString());
         this.setUseRoleName(useRole.toString());
+    }
+
+    @ApiModelProperty(hidden = true)
+    public String getEqUseRole(){
+        String  inSql = String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL, RoleTypeEnum.USE_ROLE.getType(),
+                AuthenticationContextHolder.getCurrentUserRolesToString());
+        return inSql;
     }
 }

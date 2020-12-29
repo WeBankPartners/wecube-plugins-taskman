@@ -171,12 +171,10 @@ public class TaskmanRequestController {
     @GetMapping(value = "/template/available")
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
-    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable() throws TaskmanRuntimeException {
-        String  inSql = String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL,RoleTypeEnum.USE_ROLE.getType(),
-                AuthenticationContextHolder.getCurrentUserRolesToString());
-        LambdaQueryWrapper<RequestTemplate> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(RequestTemplate::getStatus,StatusEnum.RELEASED.toString())
-                .inSql(RequestTemplate::getId,inSql);
+    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable(@ApiIgnore QueryRoleRelationBaseReq req) throws TaskmanRuntimeException {
+        RequestTemplate requestTemplate = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
+        LambdaQueryWrapper<RequestTemplate> queryWrapper = requestTemplate.getLambdaQueryWrapper()
+                .inSql(RequestTemplate::getId,req.getEqUseRole());
         return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
     }
 

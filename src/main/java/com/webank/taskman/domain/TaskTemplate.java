@@ -48,7 +48,7 @@ public class TaskTemplate extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<TaskTemplate> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<TaskTemplate>()
             .eq(!StringUtils.isEmpty(id), TaskTemplate::getId, id)
             .eq(!StringUtils.isEmpty(procDefId), TaskTemplate::getProcDefId, procDefId)

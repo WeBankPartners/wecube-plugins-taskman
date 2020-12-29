@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -71,12 +72,10 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        req.setSourceTableFix("tt");
-        req.setUseRoleName(currentUserRolesToString);
+        LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
+                .getLambdaQueryWrapper().inSql(TaskInfo::getId,req.getEqUseRole());
         PageHelper.startPage(page,pageSize);
-
-        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectTaskInfo(req));
+        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectList(queryWrapper));
         QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
     }
@@ -142,6 +141,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
+    public TaskInfoResp taskInfoDetail(String id) {
+        TaskInfo taskInfo = new TaskInfo().setId(id);
+
+        return null;
+    }
+
+    @Override
         public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstId,String taskId) {
         RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
@@ -203,7 +209,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             throw new TaskmanRuntimeException(" inputs is null");
         }
         req.getInputs().stream().forEach(task->{
-            TaskInfo taskInfo = taskInfoConverter.toentityByReq(task);
+            TaskInfo taskInfo = taskInfoConverter.toEntityByReq(task);
             TaskInfo isExists =  taskInfoMapper.selectOne(new TaskInfo().setProcInstId(
                     task.getProcInstId()).setNodeDefId(task.getTaskNodeId()).getLambdaQueryWrapper());
             if(null != isExists){

@@ -30,8 +30,9 @@ public class RoleRelation  implements Serializable {
         this.displayName = displayName;
     }
 
+
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<RoleRelation> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<RoleRelation>()
                 .eq(!StringUtils.isEmpty(id), RoleRelation::getId, id)
                 .eq(!StringUtils.isEmpty(recordId), RoleRelation::getRecordId, recordId)

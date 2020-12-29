@@ -80,7 +80,7 @@ public class FormItemInfo  implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<FormItemInfo> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<FormItemInfo>()
                 .eq(!StringUtils.isEmpty(id), FormItemInfo::getId, id)
                 .eq(!StringUtils.isEmpty(recordId), FormItemInfo::getRecordId, recordId)

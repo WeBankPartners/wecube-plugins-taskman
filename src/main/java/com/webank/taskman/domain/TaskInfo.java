@@ -63,7 +63,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<TaskInfo> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<TaskInfo>()
                 .eq(!StringUtils.isEmpty(id), TaskInfo::getId, id)
                 .eq(!StringUtils.isEmpty(parentId), TaskInfo::getParentId, parentId)

@@ -52,7 +52,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<RequestInfo> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<RequestInfo>()
             .eq(!StringUtils.isEmpty(id), RequestInfo::getId, id)
             .eq(!StringUtils.isEmpty(requestTempId), RequestInfo::getRequestTempId, requestTempId)

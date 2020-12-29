@@ -32,4 +32,6 @@ public interface TaskInfoService extends IService<TaskInfo> {
     String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception;
 
     CommonResponseDto cancelTask(CoreCancelTaskDTO req);
+
+    TaskInfoResp taskInfoDetail(String id);
 }

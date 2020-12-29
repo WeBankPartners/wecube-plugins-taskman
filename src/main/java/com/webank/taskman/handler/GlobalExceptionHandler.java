@@ -92,7 +92,12 @@ public class GlobalExceptionHandler {
         }
         if (StringUtils.isNoneBlank(e.getErrorCode())) {
             String msgCode = MSG_ERR_CODE_PREFIX + e.getErrorCode();
-            String msg = messageSource.getMessage(msgCode, e.getArgs(), locale);
+            String msg = "";
+            try {
+                msg = messageSource.getMessage(msgCode, e.getArgs(), locale);
+            }catch (Exception ex){
+                log.error("not find key:{}",msgCode);
+            }
             return msg;
         } else {
             return e.getMessage();

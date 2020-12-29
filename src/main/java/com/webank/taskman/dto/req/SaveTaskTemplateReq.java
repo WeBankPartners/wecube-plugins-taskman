@@ -14,16 +14,16 @@ public class SaveTaskTemplateReq {
 
     @ApiModelProperty(value = "主键",required = false,dataType = "String",position = 1)
     private String id;
-
     @NotBlank(message = "流程编排id不能为空")
+    @ApiModelProperty(value = "",position = 2)
+    private String tempId;
+
     @ApiModelProperty(value = "流程编排id",required = true,dataType = "String",position = 2)
     private String procDefId;
 
-    @NotBlank(message = "流程编排key不能为空")
     @ApiModelProperty(value = "流程编排key",required = true,dataType = "String",position = 3)
     private String procDefKey;
 
-    @NotBlank(message = "流程编排名称不能为空")
     @ApiModelProperty(value = "流程编排名称",required = true,dataType = "String",position = 4)
     private String procDefName;
 
@@ -38,7 +38,6 @@ public class SaveTaskTemplateReq {
     @ApiModelProperty(value = "任务名称",required = true,dataType = "String",position = 7)
     private String name;
 
-    @NotBlank(message = "描述不能为空")
     @ApiModelProperty(value = "任务描述",required = true,dataType = "String",position = 8)
     private String description;
 
@@ -57,6 +56,15 @@ public class SaveTaskTemplateReq {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTempId() {
+        return tempId;
+    }
+
+    public SaveTaskTemplateReq setTempId(String tempId) {
+        this.tempId = tempId;
+        return this;
     }
 
     public String getProcDefId() {

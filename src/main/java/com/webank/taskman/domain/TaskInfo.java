@@ -16,51 +16,34 @@ public class TaskInfo extends BaseEntity implements Serializable {
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
-    private String requestId;
-
-    private String requestNo;
-
     private String parentId;
-
     private String taskTempId;
-
+    private String procInstKey;
     private String nodeDefId;
-
     private String nodeName;
-
     private String callbackUrl;
-    
     private String callbackParameter;
-
     private String name;
-
     private String reporter;
-    
     private Date reportTime;
-
     private String emergency;
-
     private String reportRole;
-
     private String result;
-    
     private String description;
-    
     private String attachFileId;
 
     private String status;
     
     private String version;
 
+    private int  overTime;
+
 
     public TaskInfo() {
     }
 
-    public TaskInfo(String id, String requestId, String requestNo, String parentId, String taskTempId, String nodeDefId, String nodeName, String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime, String emergency, String reportRole, String result, String description, String attachFileId, String status, String version) {
+    public TaskInfo(String id, String parentId, String taskTempId, String nodeDefId, String nodeName, String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime, String emergency, String reportRole, String result, String description, String attachFileId, String status, String version) {
         this.id = id;
-        this.requestId = requestId;
-        this.requestNo = requestNo;
         this.parentId = parentId;
         this.taskTempId = taskTempId;
         this.nodeDefId = nodeDefId;
@@ -83,8 +66,6 @@ public class TaskInfo extends BaseEntity implements Serializable {
     public LambdaQueryWrapper getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<TaskInfo>()
                 .eq(!StringUtils.isEmpty(id), TaskInfo::getId, id)
-                .eq(!StringUtils.isEmpty(requestId), TaskInfo::getRequestId, requestId)
-                .eq(!StringUtils.isEmpty(requestNo), TaskInfo::getRequestNo, requestNo)
                 .eq(!StringUtils.isEmpty(parentId), TaskInfo::getParentId, parentId)
                 .eq(!StringUtils.isEmpty(taskTempId), TaskInfo::getTaskTempId, taskTempId)
                 .eq(!StringUtils.isEmpty(nodeDefId), TaskInfo::getNodeDefId, nodeDefId)
@@ -113,24 +94,6 @@ public class TaskInfo extends BaseEntity implements Serializable {
         return this;
     }
 
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public TaskInfo setRequestId(String requestId) {
-        this.requestId = requestId;
-        return this;
-    }
-
-    public String getRequestNo() {
-        return requestNo;
-    }
-
-    public TaskInfo setRequestNo(String requestNo) {
-        this.requestNo = requestNo;
-        return this;
-    }
-
     public String getParentId() {
         return parentId;
     }
@@ -146,6 +109,15 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     public TaskInfo setTaskTempId(String taskTempId) {
         this.taskTempId = taskTempId;
+        return this;
+    }
+
+    public String getProcInstKey() {
+        return procInstKey;
+    }
+
+    public TaskInfo setProcInstKey(String procInstKey) {
+        this.procInstKey = procInstKey;
         return this;
     }
 
@@ -275,12 +247,19 @@ public class TaskInfo extends BaseEntity implements Serializable {
         return this;
     }
 
+    public int getOverTime() {
+        return overTime;
+    }
+
+    public TaskInfo setOverTime(int overTime) {
+        this.overTime = overTime;
+        return this;
+    }
+
     @Override
     public String toString() {
         return "TaskInfo{" +
                 "id='" + id + '\'' +
-                ", requestId='" + requestId + '\'' +
-                ", requestNo='" + requestNo + '\'' +
                 ", parentId='" + parentId + '\'' +
                 ", taskTempId='" + taskTempId + '\'' +
                 ", nodeDefId='" + nodeDefId + '\'' +

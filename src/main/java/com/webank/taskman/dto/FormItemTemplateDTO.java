@@ -1,4 +1,4 @@
-package com.webank.taskman.dto.resp;
+package com.webank.taskman.dto;
 
 
 import io.swagger.annotations.ApiModel;

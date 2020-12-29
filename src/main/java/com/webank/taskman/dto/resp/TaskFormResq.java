@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModel;
 import java.util.List;
 
 @ApiModel
-public class SynthesisTaskInfoFormTask {
+public class TaskFormResq {
     private String id;
 
     private String recordId;
@@ -17,7 +17,7 @@ public class SynthesisTaskInfoFormTask {
 
     private Integer type;
 
-    private List<FormItemInfoResp> formItemInfo;
+    private List<FormItemInfo> formItemInfo;
 
     public String getId() {
         return id;
@@ -59,11 +59,23 @@ public class SynthesisTaskInfoFormTask {
         this.type = type;
     }
 
-    public List<FormItemInfoResp> getFormItemInfo() {
+    public List<FormItemInfo> getFormItemInfo() {
         return formItemInfo;
     }
 
-    public void setFormItemInfo(List<FormItemInfoResp> formItemInfo) {
+    public void setFormItemInfo(List<FormItemInfo> formItemInfo) {
         this.formItemInfo = formItemInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "RequestFormResq{" +
+                "id='" + id + '\'' +
+                ", recordId='" + recordId + '\'' +
+                ", formTemplateId='" + formTemplateId + '\'' +
+                ", name='" + name + '\'' +
+                ", type=" + type +
+                ", formItemInfo=" + formItemInfo +
+                '}';
     }
 }

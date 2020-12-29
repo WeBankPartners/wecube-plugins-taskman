@@ -21,8 +21,6 @@ public class FormItemInfo  implements Serializable {
 
     private String itemTempId;
 
-    private String isCurrency;
-
     private String name;
 
     private String value;
@@ -63,15 +61,6 @@ public class FormItemInfo  implements Serializable {
         return this;
     }
 
-    public String getIsCurrency() {
-        return isCurrency;
-    }
-
-    public FormItemInfo setIsCurrency(String isCurrency) {
-        this.isCurrency = isCurrency;
-        return this;
-    }
-
     public String getName() {
         return name;
     }
@@ -97,7 +86,6 @@ public class FormItemInfo  implements Serializable {
                 .eq(!StringUtils.isEmpty(recordId), FormItemInfo::getRecordId, recordId)
                 .eq(!StringUtils.isEmpty(formId), FormItemInfo::getFormId, formId)
                 .eq(!StringUtils.isEmpty(itemTempId), FormItemInfo::getItemTempId, itemTempId)
-                .eq(!StringUtils.isEmpty(isCurrency), FormItemInfo::getIsCurrency, isCurrency)
                 .eq(!StringUtils.isEmpty(name), FormItemInfo::getName, name)
                 .like(!StringUtils.isEmpty(value), FormItemInfo::getValue, value);
     }
@@ -108,7 +96,6 @@ public class FormItemInfo  implements Serializable {
                 "id='" + id + '\'' +
                 ", formId='" + formId + '\'' +
                 ", itemTempId='" + itemTempId + '\'' +
-                ", isCurrency='" + isCurrency + '\'' +
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +
                 '}';

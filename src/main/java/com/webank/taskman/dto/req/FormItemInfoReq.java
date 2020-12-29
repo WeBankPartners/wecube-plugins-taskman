@@ -4,8 +4,6 @@ public class FormItemInfoReq {
 
     private String itemTempId;
 
-    private String isCurrency;
-
     private String name;
 
     private String value;
@@ -16,14 +14,6 @@ public class FormItemInfoReq {
 
     public void setItemTempId(String itemTempId) {
         this.itemTempId = itemTempId;
-    }
-
-    public String getIsCurrency() {
-        return isCurrency;
-    }
-
-    public void setIsCurrency(String isCurrency) {
-        this.isCurrency = isCurrency;
     }
 
     public String getName() {
@@ -46,7 +36,6 @@ public class FormItemInfoReq {
     public String toString() {
         return "FormItemInfoReq{" +
                 "itemTempId='" + itemTempId + '\'' +
-                ", isCurrency='" + isCurrency + '\'' +
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +
                 '}';

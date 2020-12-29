@@ -12,19 +12,20 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.converter.FormItemInfoConverter;
+import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
+import com.webank.taskman.domain.FormItemInfo;
+import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
+import com.webank.taskman.dto.RequestInfoDTO;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
-import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoFormRequest;
-import com.webank.taskman.dto.resp.SynthesisRequestInfoResp;
-import com.webank.taskman.service.RequestInfoService;
-import com.webank.taskman.service.RequestTemplateGroupService;
-import com.webank.taskman.service.RequestTemplateService;
+import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.service.*;
 import com.webank.taskman.utils.GsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 
 import static com.webank.taskman.base.JsonResponse.okay;
@@ -59,6 +61,9 @@ public class TaskmanRequestController {
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
+    @Autowired
+    TaskInfoService taskInfoService;
+
 
 
     @Autowired
@@ -69,7 +74,6 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-save", notes = "")
     public JsonResponse<RequestTemplateGroupDTO> requestGroupTemplateSave(
             @Valid @RequestBody SaveRequestTemplateGropReq req) throws TaskmanException {
-        log.info("Received request parameters:{}",req);
         return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
@@ -82,7 +86,6 @@ public class TaskmanRequestController {
             @RequestBody(required = false) RequestTemplateGroupDTO req
     ) throws TaskmanRuntimeException
     {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return JsonResponse.okayWithData(requestTemplateGroupService.selectByParam(page, pageSize, req));
     }
 
@@ -101,7 +104,6 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-delete", notes = "")
     public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException
     {
-        log.info("Received request parameters:{}",id);
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return okay();
     }
@@ -112,7 +114,6 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-save", notes = "Need to pass in object: ")
     public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req
     )throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
@@ -121,7 +122,6 @@ public class TaskmanRequestController {
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
     public JsonResponse<RequestTemplateDTO> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         if(StringUtils.isEmpty(req.getId())){
             return  JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
         }
@@ -132,6 +132,7 @@ public class TaskmanRequestController {
         requestTemplate.setStatus(StatusEnum.UNRELEASED.toString().equals(requestTemplate.getStatus())?
                 StatusEnum.RELEASED.toString() :StatusEnum.UNRELEASED.toString());
         requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestTemplate.setUpdatedTime(new Date());
         requestTemplateService.updateById(requestTemplate);
         return okayWithData(new RequestTemplateDTO().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
     }
@@ -144,7 +145,6 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestTemplateReq req)
             throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -171,7 +171,7 @@ public class TaskmanRequestController {
     @GetMapping(value = "/template/available")
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
-    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable(@ApiIgnore QueryRequestTemplateReq req) throws TaskmanRuntimeException {
+    public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable() throws TaskmanRuntimeException {
         RequestTemplate query = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
         QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("status",StatusEnum.RELEASED.toString())
@@ -187,7 +187,6 @@ public class TaskmanRequestController {
     @PostMapping("/save")
     @ApiOperation(value = "request-info-save")
     public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return okayWithData(requestInfoService.saveRequestInfo(req));
     }
 
@@ -197,23 +196,34 @@ public class TaskmanRequestController {
     public JsonResponse<QueryResponse<SynthesisRequestInfoResp>> requestInfoSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) SynthesisRequestInfoReq req)
+            @RequestBody(required = false) QueryRequestInfoReq req)
             throws TaskmanRuntimeException {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        QueryResponse<SynthesisRequestInfoResp> list = requestInfoService.selectSynthesisRequestInfoService(page, pageSize,req);
+        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoService(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
 
 
+    @Autowired
+    RequestInfoConverter requestInfoConverter;
+
+    @Autowired
+    FormItemInfoService formItemInfoService;
+
+    @Autowired
+    FormItemInfoConverter formItemInfoConverter;
+
     @ApiOperationSupport(order = 13)
     @GetMapping("/details/{id}")
     @ApiOperation(value = "request-info-detail")
-    public JsonResponse<SynthesisRequestInfoFormRequest> requestInfoDetail(@PathVariable("id") String id)
+    public JsonResponse<RequestInfoResq> requestInfoDetail(@PathVariable("id") String id)
             throws TaskmanRuntimeException {
-        SynthesisRequestInfoFormRequest synthesisRequestInfoFormRequest = requestInfoService.selectSynthesisRequestInfoFormService(id);
-        return JsonResponse.okayWithData(synthesisRequestInfoFormRequest);
+        RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfoService.getById(id));
+        List<FormItemInfo> items = formItemInfoService.list(new FormItemInfo().setRecordId(id).getLambdaQueryWrapper());
+        requestInfoResq.setFormItemInfos(formItemInfoConverter.toDto(items));
+        List<FormItemInfoResp> formItemInfoResps = taskInfoService.returnDetail(id);
+        requestInfoResq.setFormItemInfos(formItemInfoResps);
+        return JsonResponse.okayWithData(requestInfoResq);
     }
-
 
 }
 

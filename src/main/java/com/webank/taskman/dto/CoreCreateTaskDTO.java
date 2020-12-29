@@ -13,7 +13,7 @@ public class CoreCreateTaskDTO {
 
     private List<String> allowedOptions;
     private String dueDate;
-    private List<InputsBean> inputs;
+    private List<TaskInfoReq> inputs;
 
     public List<String> getAllowedOptions() {
         return allowedOptions;
@@ -31,15 +31,15 @@ public class CoreCreateTaskDTO {
         this.dueDate = dueDate;
     }
 
-    public List<InputsBean> getInputs() {
+    public List<TaskInfoReq> getInputs() {
         return inputs;
     }
 
-    public void setInputs(List<InputsBean> inputs) {
+    public void setInputs(List<TaskInfoReq> inputs) {
         this.inputs = inputs;
     }
 
-    public static class InputsBean {
+    public static class TaskInfoReq {
         /**
          * formItems : [{"itemId":"999","key":"app_inst","val":["0047_0000000026","0047_0000000027"]}]
          * procDefId :
@@ -53,7 +53,8 @@ public class CoreCreateTaskDTO {
          * taskName :
          */
 
-        private String procDefId;
+        private String id;
+        private String procInstKey;
         private String taskNodeId;
         private int overTime;
         private String callbackParameter;
@@ -62,14 +63,24 @@ public class CoreCreateTaskDTO {
         private String roleName;
         private String taskDescription;
         private String taskName;
-        private List<FormItemsBean> formItems;
+        private List<FormItemBean> formItems;
 
-        public String getProcDefId() {
-            return procDefId;
+        public String getId() {
+            return id;
         }
 
-        public void setProcDefId(String procDefId) {
-            this.procDefId = procDefId;
+        public TaskInfoReq setId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public String getProcInstKey() {
+            return procInstKey;
+        }
+
+        public TaskInfoReq setProcInstKey(String procInstKey) {
+            this.procInstKey = procInstKey;
+            return this;
         }
 
         public String getTaskNodeId() {
@@ -136,15 +147,15 @@ public class CoreCreateTaskDTO {
             this.taskName = taskName;
         }
 
-        public List<FormItemsBean> getFormItems() {
+        public List<FormItemBean> getFormItems() {
             return formItems;
         }
 
-        public void setFormItems(List<FormItemsBean> formItems) {
+        public void setFormItems(List<FormItemBean> formItems) {
             this.formItems = formItems;
         }
 
-        public static class FormItemsBean {
+        public static class FormItemBean {
             /**
              * itemId : 999
              * key : app_inst

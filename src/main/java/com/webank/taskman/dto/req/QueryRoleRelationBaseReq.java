@@ -1,5 +1,6 @@
 package com.webank.taskman.dto.req;
 
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -106,5 +107,15 @@ public class QueryRoleRelationBaseReq {
     }
     public void setConditionSql(String conditionSql) {
         this.conditionSql = conditionSql;
+    }
+
+    @ApiModelProperty(hidden = true)
+    public void setEqUseRole(String tableFix){
+        this.setSourceTableFix(tableFix);
+        StringBuffer useRole = new StringBuffer();
+        String queryUseRole = this.getUseRoleName();
+        useRole.append(org.springframework.util.StringUtils.isEmpty(queryUseRole) ? "" : queryUseRole + ",");
+        useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString());
+        this.setUseRoleName(useRole.toString());
     }
 }

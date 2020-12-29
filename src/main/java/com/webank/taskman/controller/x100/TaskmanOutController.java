@@ -2,6 +2,8 @@ package com.webank.taskman.controller.x100;
 
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
 import com.webank.taskman.service.FormItemTemplateService;
@@ -29,12 +31,12 @@ public class TaskmanOutController {
     FormItemTemplateService formItemTemplateService;
 
     @ApiOperationSupport(order = 1)
-    @GetMapping("/task/create/service-meta/{proc-def-id}/{node-def-id}")
-    @ApiOperation(value = "service-meta")
+    @GetMapping("/task/create/service-meta/{proc-inst-key}/{node-def-id}")
+    @ApiOperation(value = "task-create-service-meta")
     public CommonResponseDto taskCreateServiceMeta(
-            @PathVariable("proc-def-id") String procDefId,@PathVariable("node-def-id") String nodeDefId)
+            @PathVariable("proc-inst-key") String procInstKey,@PathVariable("node-def-id") String nodeDefId)
     {
-        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procDefId,nodeDefId));
+        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstKey,nodeDefId));
     }
 
     @Autowired
@@ -45,9 +47,7 @@ public class TaskmanOutController {
     @ApiOperation(value = "create")
     public CommonResponseDto createTask(@RequestBody CoreCreateTaskDTO req)
     {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        taskInfoService.createTask(req);
-        return CommonResponseDto.okay();
+        return taskInfoService.createTask(req);
     }
 
     @ApiOperationSupport(order = 3)
@@ -55,8 +55,7 @@ public class TaskmanOutController {
     @ApiOperation(value = "cancel")
     public CommonResponseDto cancelTask(@RequestBody CoreCancelTaskDTO req)
     {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        return CommonResponseDto.okay();
+        return taskInfoService.cancelTask(req);
     }
 
 }

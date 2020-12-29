@@ -30,6 +30,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
     private String status;
     private String dueDate;
     private String result;
+    private String description;
 
     public RequestInfo() {
     }
@@ -184,5 +185,13 @@ public class RequestInfo extends BaseEntity implements Serializable {
     public RequestInfo setResult(String result) {
         this.result = result;
         return this;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

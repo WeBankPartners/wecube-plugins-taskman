@@ -15,7 +15,21 @@ spring:
     encoding: UTF-8
   banner:
     location: classpath:/banner.txt
-
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    generator:
+      write_numbers_as_strings: true
+    serialization:
+      indent_output: true
+      fail_on_empty_beans: false
+      #defaultPropertyInclusion: NON_EMPTY
+    deserialization:
+      fail_on_unknown_properties: false
+    parser:
+      allow_unquoted_control_chars: true
+      allow_single_quotes: true
+      #property-naming-strategy: CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES﻿
 mybatis-plus:
   mapper-locations: mapper/*.xml
   global-config:
@@ -65,7 +79,9 @@ service:
     system-code: SYS_SRV_MGMT
     jwt-signing-key: ${JWT_SIGNING_KEY:}
     property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}
-
+    aspect:
+      log:
+        controller: true
 logging:
   level:
     root: info

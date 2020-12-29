@@ -1,16 +1,14 @@
-package com.webank.taskman.dto;
+package com.webank.taskman.dto.resp;
 
-
+import com.webank.taskman.domain.FormItemInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Date;
-import java.util.StringJoiner;
+import java.util.List;
 
 @ApiModel
-public class TaskInfoDTO {
-
-
+public class TaskInfoResp {
     @ApiModelProperty(value = "任务id",position = 1)
     private String id;
     @ApiModelProperty(value = "前置任务ID",position = 2)
@@ -38,27 +36,21 @@ public class TaskInfoDTO {
     private String result;
     @ApiModelProperty(value = "任务状态",position = 13)
     private String status;
+    @ApiModelProperty(value = "版本",position = 13)
+    private String version;
     @ApiModelProperty(value = "处理角色",position = 14)
     private String reportRole;
     @ApiModelProperty(value = "附件ID",position = 14)
     private String attachFileId;
 
+    private List<FormItemInfoResp> formItemInfo;
+
     public String getId() {
         return id;
     }
 
-    public TaskInfoDTO setId(String id) {
+    public TaskInfoResp setId(String id) {
         this.id = id;
-        return this;
-    }
-
-
-    public String getTaskTempId() {
-        return taskTempId;
-    }
-
-    public TaskInfoDTO setTaskTempId(String taskTempId) {
-        this.taskTempId = taskTempId;
         return this;
     }
 
@@ -66,8 +58,17 @@ public class TaskInfoDTO {
         return parentId;
     }
 
-    public TaskInfoDTO setParentId(String parentId) {
+    public TaskInfoResp setParentId(String parentId) {
         this.parentId = parentId;
+        return this;
+    }
+
+    public String getTaskTempId() {
+        return taskTempId;
+    }
+
+    public TaskInfoResp setTaskTempId(String taskTempId) {
+        this.taskTempId = taskTempId;
         return this;
     }
 
@@ -75,7 +76,7 @@ public class TaskInfoDTO {
         return procInstKey;
     }
 
-    public TaskInfoDTO setProcInstKey(String procInstKey) {
+    public TaskInfoResp setProcInstKey(String procInstKey) {
         this.procInstKey = procInstKey;
         return this;
     }
@@ -84,7 +85,7 @@ public class TaskInfoDTO {
         return nodeDefId;
     }
 
-    public TaskInfoDTO setNodeDefId(String nodeDefId) {
+    public TaskInfoResp setNodeDefId(String nodeDefId) {
         this.nodeDefId = nodeDefId;
         return this;
     }
@@ -93,7 +94,7 @@ public class TaskInfoDTO {
         return nodeName;
     }
 
-    public TaskInfoDTO setNodeName(String nodeName) {
+    public TaskInfoResp setNodeName(String nodeName) {
         this.nodeName = nodeName;
         return this;
     }
@@ -102,7 +103,7 @@ public class TaskInfoDTO {
         return name;
     }
 
-    public TaskInfoDTO setName(String name) {
+    public TaskInfoResp setName(String name) {
         this.name = name;
         return this;
     }
@@ -111,7 +112,7 @@ public class TaskInfoDTO {
         return description;
     }
 
-    public TaskInfoDTO setDescription(String description) {
+    public TaskInfoResp setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -120,7 +121,7 @@ public class TaskInfoDTO {
         return reporter;
     }
 
-    public TaskInfoDTO setReporter(String reporter) {
+    public TaskInfoResp setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -129,7 +130,7 @@ public class TaskInfoDTO {
         return reportTime;
     }
 
-    public TaskInfoDTO setReportTime(Date reportTime) {
+    public TaskInfoResp setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -138,7 +139,7 @@ public class TaskInfoDTO {
         return emergency;
     }
 
-    public TaskInfoDTO setEmergency(String emergency) {
+    public TaskInfoResp setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -147,7 +148,7 @@ public class TaskInfoDTO {
         return result;
     }
 
-    public TaskInfoDTO setResult(String result) {
+    public TaskInfoResp setResult(String result) {
         this.result = result;
         return this;
     }
@@ -156,8 +157,17 @@ public class TaskInfoDTO {
         return status;
     }
 
-    public TaskInfoDTO setStatus(String status) {
+    public TaskInfoResp setStatus(String status) {
         this.status = status;
+        return this;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public TaskInfoResp setVersion(String version) {
+        this.version = version;
         return this;
     }
 
@@ -165,7 +175,7 @@ public class TaskInfoDTO {
         return reportRole;
     }
 
-    public TaskInfoDTO setReportRole(String reportRole) {
+    public TaskInfoResp setReportRole(String reportRole) {
         this.reportRole = reportRole;
         return this;
     }
@@ -174,29 +184,17 @@ public class TaskInfoDTO {
         return attachFileId;
     }
 
-    public TaskInfoDTO setAttachFileId(String attachFileId) {
+    public TaskInfoResp setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
         return this;
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", TaskInfoDTO.class.getSimpleName() + "[", "]")
-                .add("id='" + id + "'")
-                .add("parentId='" + parentId + "'")
-                .add("taskTempId='" + taskTempId + "'")
-                .add("procInstKey='" + procInstKey + "'")
-                .add("nodeDefId='" + nodeDefId + "'")
-                .add("nodeName='" + nodeName + "'")
-                .add("name='" + name + "'")
-                .add("description='" + description + "'")
-                .add("reporter='" + reporter + "'")
-                .add("reportTime=" + reportTime)
-                .add("emergency='" + emergency + "'")
-                .add("result='" + result + "'")
-                .add("status=" + status)
-                .add("reportRole='" + reportRole + "'")
-                .add("attachFileId='" + attachFileId + "'")
-                .toString();
+    public List<FormItemInfoResp> getFormItemInfo() {
+        return formItemInfo;
+    }
+
+    public TaskInfoResp setFormItemInfo(List<FormItemInfoResp> formItemInfo) {
+        this.formItemInfo = formItemInfo;
+        return this;
     }
 }

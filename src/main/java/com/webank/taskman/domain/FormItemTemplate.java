@@ -18,6 +18,8 @@ public class FormItemTemplate implements Serializable {
     @ApiModelProperty(value = "",position = 1)
     private String id;
     @ApiModelProperty(value = "",position = 2)
+    private String tempId;
+    @ApiModelProperty(value = "",position = 2)
     private String formTemplateId;
     @ApiModelProperty(value = "",position = 3)
     private String name;
@@ -80,6 +82,7 @@ public class FormItemTemplate implements Serializable {
     public LambdaQueryWrapper getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<FormItemTemplate>()
                 .eq(!StringUtils.isEmpty(id), FormItemTemplate::getId, id)
+                .eq(!StringUtils.isEmpty(tempId), FormItemTemplate::getTempId, tempId)
                 .eq(!StringUtils.isEmpty(formTemplateId), FormItemTemplate::getFormTemplateId, formTemplateId)
                 .eq(!StringUtils.isEmpty(name), FormItemTemplate::getName, name)
                 .eq(!StringUtils.isEmpty(defaultValue), FormItemTemplate::getDefaultValue, defaultValue)
@@ -107,8 +110,18 @@ public class FormItemTemplate implements Serializable {
         return id;
     }
 
+
     public FormItemTemplate setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getTempId() {
+        return tempId;
+    }
+
+    public FormItemTemplate setTempId(String tempId) {
+        this.tempId = tempId;
         return this;
     }
 

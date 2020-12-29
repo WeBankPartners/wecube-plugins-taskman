@@ -1,5 +1,7 @@
 package com.webank.taskman.base;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 
@@ -14,7 +16,7 @@ public class BaseEntity<T> {
 
     private String updatedBy;
 
-
+    @TableField(fill = FieldFill.UPDATE)
     private Date updatedTime;
 
     @TableLogic

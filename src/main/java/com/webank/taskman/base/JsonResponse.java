@@ -100,13 +100,13 @@ public class JsonResponse<T>  implements Serializable {
 		return new JsonResponse(STATUS_ERROR,null,code,codeMessage,data);
 	}
 	public static JsonResponse customError(Integer code, String codeMessage,String errorMessage,Object data) {
-		return new JsonResponse(STATUS_ERROR,errorMessage,code,codeMessage,data);
+		return new JsonResponse(STATUS_ERROR,codeMessage,code,errorMessage,data);
 	}
 	public static JsonResponse customError(BizCodeEnum bizCodeEnum, String errorMessage) {
-		return new JsonResponse(STATUS_ERROR,errorMessage,bizCodeEnum.getCode(),bizCodeEnum.getMessage(),null);
+		return new JsonResponse(STATUS_ERROR,bizCodeEnum.getMessage(),bizCodeEnum.getCode(),errorMessage,null);
 	}
 
 	public static JsonResponse customError(StatusCodeEnum statusCodeEnum) {
-		return new JsonResponse(STATUS_ERROR,null,Integer.valueOf(statusCodeEnum.getCode()),statusCodeEnum.getMessage(),null);
+		return new JsonResponse(STATUS_ERROR,statusCodeEnum.getMessage(),Integer.valueOf(statusCodeEnum.getCode()),statusCodeEnum.getMessage(),null);
 	}
 }

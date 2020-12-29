@@ -4,10 +4,9 @@
 
     <resultMap id="TaskInfoMap" type="com.webank.taskman.domain.TaskInfo">
         <id column="id" property="id"/>
-        <result column="request_id" property="requestId"/>
-        <result column="request_no" property="requestNo"/>
         <result column="parent_id" property="parentId"/>
         <result column="task_temp_id" property="taskTempId"/>
+        <result column="proc_inst_key" property="procInstKey"/>
         <result column="node_def_id" property="nodeDefId"/>
         <result column="node_name" property="nodeName"/>
         <result column="callback_url" property="callbackUrl"/>
@@ -27,6 +26,7 @@
         <result column="updated_by" property="updatedBy"/>
         <result column="updated_time" property="updatedTime"/>
         <result column="del_flag" property="delFlag"/>
+        <result column="over_time" property="overTime"/>
     </resultMap>
 
     <select id="selectTaskInfo" parameterType="com.webank.taskman.dto.req.QueryTaskInfoReq"
@@ -34,42 +34,19 @@
         SELECT ti.* FROM task_info ti,task_template tt
         <where>
             AND tt.id = ti.task_temp_id
-            <if test="conditionSql!=null and conditionSql !=''">
-                AND ${conditionSql}
-            </if>
-            <if test="requestId!=null and requestId !=''">
-                AND ti.request_id = ${requestId}
+            <if test="procInstKey!=null and procInstKey !=''">
+                AND ti.proc_inst_key = #{procInstKey}
             </if>
             <if test="name !=null and name != ''">
                 AND ti.name like CONCAT('%',#{name},'%')
             </if>
             <if test="status!=null and status !=''">
-                AND ti.status = ${status}
+                AND ti.status = #{status}
+            </if>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND ${conditionSql}
             </if>
         </where>
     </select>
-
-    <select id="selectSynthesisRequestInfo" parameterType="com.webank.taskman.dto.req.SynthesisTaskInfoReq" resultMap="TaskInfoMap">
-        SELECT ri.* FROM task_info ri
-        WHERE
-        <if test="param.status !=null and param.status !='' ">
-            ri.`status`=#{param.status}
-            and
-        </if>
-        (
-        SELECT COUNT(1)
-        FROM role_relation rr
-        WHERE
-        ri.task_temp_id = rr.record_id
-        AND
-        rr.role_type =0
-        AND
-        <foreach item="roleStr" index="index" collection="param.roleName.split(',')" open="(" close=")" separator="OR">
-            MATCH(rr.role_name)
-            AGAINST(#{roleStr})
-        </foreach>
-        ) > 0
-    </select>
-
 
 </mapper>

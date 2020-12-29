@@ -79,11 +79,11 @@ public class TaskmanTaskController {
     @ApiOperationSupport(order =5)
     @PostMapping("/details")
     @ApiOperation(value = "Task-Info-details")
-    public JsonResponse<SynthesisTaskInfoFormTask> selectSynthesisTaskInfoForm(String id)
+    public JsonResponse<TaskInfoResp> selectSynthesisTaskInfoForm(String id)
             throws Exception {
-        SynthesisTaskInfoFormTask synthesisTaskInfoFormTask = taskInfoService.selectSynthesisTaskInfoFormService(id);
+        TaskInfoResp taskInfoResp = taskInfoService.selectSynthesisTaskInfoFormService(id);
 
-        return JsonResponse.okayWithData(synthesisTaskInfoFormTask);
+        return JsonResponse.okayWithData(taskInfoResp);
     }
 
 
@@ -101,21 +101,21 @@ public class TaskmanTaskController {
 
 
     @ApiOperationSupport(order =7)
-    @PostMapping("/instance")
-    @ApiOperation(value = "Task-Info-instance")
-    public JsonResponse<RequestInfoInstanceResq> selectTaskInfoinstance(@RequestParam("taskId") String taskId,
-                                                                        @RequestParam("requestId") String requestId)
+    @GetMapping("/instance/{proc-inst-key}/{task-id}")
+    @ApiOperation(value = "task-Info-instance")
+    public JsonResponse<RequestInfoInstanceResq> selectTaskInfoinstance(
+            @PathVariable("proc-inst-key") String procInstKey, @PathVariable("task-id") String taskId)
             throws Exception {
-        RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(taskId,requestId);
+        RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(procInstKey,taskId);
         return JsonResponse.okayWithData(requestInfoInstanceResq);
     }
 
     @ApiOperationSupport(order =8)
     @PostMapping("/processing")
     @ApiOperation(value = "Task-Info-processing")
-    public JsonResponse<String> ProcessingTasksController(@Valid @RequestBody ProcessingTasksReq ptr)
+    public JsonResponse<String> ProcessingTasksController(@Valid @RequestBody ProcessingTasksReq req)
             throws Exception {
-        String msg=taskInfoService.ProcessingTasksService(ptr);
+        String msg = taskInfoService.ProcessingTasksService(req);
         return JsonResponse.okayWithData(msg);
     }
 

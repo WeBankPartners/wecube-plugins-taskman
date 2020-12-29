@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -82,7 +83,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.lambda().eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, 1);
+        wrapper.lambda().eq(RequestTemplate::getId, id)
+                .set(RequestTemplate::getDelFlag, 1)
+                .set(RequestTemplate::getUpdatedTime,new Date());;
         requestTemplateMapper.update(null, wrapper);
     }
 

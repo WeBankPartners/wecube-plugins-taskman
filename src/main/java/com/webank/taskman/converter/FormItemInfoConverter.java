@@ -12,7 +12,5 @@ public interface FormItemInfoConverter extends BaseConverter<FormItemInfoResp, F
 
     FormItemInfo processTask(FormItemInfoReq formItemInfoReq);
 
-    SaveFormItemInfoReq toSaveReq(FormItemInfo formItemInfo);
-
     FormItemInfo   toEntityBySave(SaveFormItemInfoReq req);
 }

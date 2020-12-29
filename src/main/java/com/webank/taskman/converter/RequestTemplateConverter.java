@@ -11,7 +11,6 @@ import org.mapstruct.ReportingPolicy;
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface RequestTemplateConverter extends BaseConverter<RequestTemplateDTO, RequestTemplate> {
 
-    SaveRequestTemplateReq entityToSaveReq(RequestTemplate requestTemplate);
 
     RequestTemplate saveReqToEntity(SaveRequestTemplateReq req);
 

@@ -2,6 +2,8 @@ package com.webank.taskman.controller.x100;
 
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
 import com.webank.taskman.service.FormItemTemplateService;
@@ -30,7 +32,7 @@ public class TaskmanOutController {
 
     @ApiOperationSupport(order = 1)
     @GetMapping("/task/create/service-meta/{proc-inst-key}/{node-def-id}")
-    @ApiOperation(value = "service-meta")
+    @ApiOperation(value = "task-create-service-meta")
     public CommonResponseDto taskCreateServiceMeta(
             @PathVariable("proc-inst-key") String procInstKey,@PathVariable("node-def-id") String nodeDefId)
     {
@@ -45,7 +47,6 @@ public class TaskmanOutController {
     @ApiOperation(value = "create")
     public CommonResponseDto createTask(@RequestBody CoreCreateTaskDTO req)
     {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         return taskInfoService.createTask(req);
     }
 
@@ -54,8 +55,7 @@ public class TaskmanOutController {
     @ApiOperation(value = "cancel")
     public CommonResponseDto cancelTask(@RequestBody CoreCancelTaskDTO req)
     {
-        log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        return CommonResponseDto.okay();
+        return taskInfoService.cancelTask(req);
     }
 
 }

@@ -4,23 +4,32 @@ package com.webank.taskman.dto.req;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Date;
+import java.util.StringJoiner;
+
 @ApiModel
 public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
 
+
     @ApiModelProperty(value = "任务id",position = 1)
     private String id;
-    @ApiModelProperty(value = "请求ID",position = 1)
-    private String requestId;
-    @ApiModelProperty(value = "流程节点名称",position = 6)
-    private String nodeName;
+
+    @ApiModelProperty(value = "流程实例ID",position = 4)
+    private String procInstKey;
+    @ApiModelProperty(value = "流程节点ID",position = 5)
+    private String nodeDefId;
     @ApiModelProperty(value = "任务名称",position = 7)
     private String name;
     @ApiModelProperty(value = "处理人",position = 9)
     private String reporter;
+    @ApiModelProperty(value = "处理时间",position = 10)
+    private Date reportTime;
     @ApiModelProperty(value = "紧急程度",position = 11)
     private String emergency;
+    @ApiModelProperty(value = "任务状态",position = 12)
+    private String status;
     @ApiModelProperty(value = "任务状态",position = 13)
-    private Integer status;
+    private String result;
 
     public String getId() {
         return id;
@@ -31,21 +40,21 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return this;
     }
 
-    public String getRequestId() {
-        return requestId;
+    public String getProcInstKey() {
+        return procInstKey;
     }
 
-    public QueryTaskInfoReq setRequestId(String requestId) {
-        this.requestId = requestId;
+    public QueryTaskInfoReq setProcInstKey(String procInstKey) {
+        this.procInstKey = procInstKey;
         return this;
     }
 
-    public String getNodeName() {
-        return nodeName;
+    public String getNodeDefId() {
+        return nodeDefId;
     }
 
-    public QueryTaskInfoReq setNodeName(String nodeName) {
-        this.nodeName = nodeName;
+    public QueryTaskInfoReq setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
         return this;
     }
 
@@ -67,6 +76,15 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return this;
     }
 
+    public Date getReportTime() {
+        return reportTime;
+    }
+
+    public QueryTaskInfoReq setReportTime(Date reportTime) {
+        this.reportTime = reportTime;
+        return this;
+    }
+
     public String getEmergency() {
         return emergency;
     }
@@ -76,12 +94,35 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return this;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public QueryTaskInfoReq setStatus(Integer status) {
+    public QueryTaskInfoReq setStatus(String status) {
         this.status = status;
         return this;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public QueryTaskInfoReq setResult(String result) {
+        this.result = result;
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", QueryTaskInfoReq.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("procInstKey='" + procInstKey + "'")
+                .add("nodeDefId='" + nodeDefId + "'")
+                .add("name='" + name + "'")
+                .add("reporter='" + reporter + "'")
+                .add("reportTime=" + reportTime)
+                .add("emergency='" + emergency + "'")
+                .add("status=" + status)
+                .toString();
     }
 }

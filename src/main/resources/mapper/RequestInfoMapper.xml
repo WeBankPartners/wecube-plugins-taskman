@@ -48,28 +48,34 @@
         INNER JOIN request_template rt ON rt.id = ri.request_temp_id
         <where>
             <if test="param.id !=null and param.id !=''">
-               AND  ri.id = #{id}
+               AND  ri.id = #{param.id}
             </if>
             <if test="param.requestTempId !=null and param.requestTempId !=''">
-               AND  ri.request_temp_id = #{requestTempId}
+               AND  ri.request_temp_id = #{param.requestTempId}
             </if>
-            <if test="param.procInstKey !=null and param.procInstKey !=''">
-               AND  ri.proc_inst_key = #{procInstKey}
-            </if>
-            <if test="param.rootEntity !=null and param.rootEntity !=''">
-               AND  ri.root_entity = #{rootEntity}
+            <if test="param.requestTempName !=null and param.requestTempName !=''">
+               AND  rt.name  LIKE CONCAT('%',#{param.requestTempName},'%')
             </if>
             <if test="param.name !=null and param.name !=''">
-               AND  ri.name LIKE CONCAT('%',#{name},'%')
-            </if>
-            <if test="param.reporter !=null and param.reporter !=''">
-               AND  ri.reporter LIKE CONCAT('%',#{reporter},'%')
-            </if>
-            <if test="param.status !=null and param.requestTempId !=''">
-               AND  ri.status = #{status}
+               AND  ri.name LIKE CONCAT('%',#{param.name},'%')
             </if>
             <if test="param.description !=null and param.description !=''">
-                AND  ri.description LIKE CONCAT('%',#{description},'%')
+               AND  ri.description LIKE CONCAT('%',#{param.description},'%')
+            </if>
+            <if test="param.reporter !=null and param.reporter !=''">
+               AND  ri.reporter LIKE CONCAT('%',#{param.reporter},'%')
+            </if>
+            <if test="param.emergency !=null and param.emergency !=''">
+               AND  ri.emergency = #{param.emergency}
+            </if>
+            <if test="param.status !=null and param.status !=''">
+               AND  ri.status = #{param.status}
+            </if>
+            <if test="param.reportTimeBegin !=null and param.reportTimeBegin !=''">
+                <![CDATA[ AND  date_format(ri.report_time,'%Y-%m-%d') >= #{param.reportTimeBegin} ]]>
+            </if>
+            <if test="param.reportTimeEnd !=null and param.reportTimeEnd !=''">
+                <![CDATA[  AND  date_format(ri.report_time,'%Y-%m-%d') <= #{param.reportTimeEnd} ]]>
             </if>
             <if test="param.conditionSql!=null and param.conditionSql !=''">
                 AND ${param.conditionSql}

@@ -3,6 +3,7 @@ package com.webank.taskman.dto.req;
 
 import com.webank.taskman.dto.RequestInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 
@@ -14,10 +15,6 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
     private String requestTempId;
     @ApiModelProperty(value = "",position = 3)
     private String requestTempName;
-    @ApiModelProperty(value = "",position = 4)
-    private String procInstKey;
-    @ApiModelProperty(value = "",position = 5)
-    private String rootEntity;
     @ApiModelProperty(value = "",position = 6)
     private String name;
     @ApiModelProperty(value = "",position = 7)
@@ -25,19 +22,16 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
     @ApiModelProperty(value = "",position = 8)
     private String reporter;
     @ApiModelProperty(value = "",position = 9)
-    private Date reportTime;
-    @ApiModelProperty(value = "",position = 10)
-    private String emergency;
-    @ApiModelProperty(value = "",position = 11)
-    private String reportRole;
+    private String reportTime;
     @ApiModelProperty(value = "",position = 12)
-    private String attachFileId;
-    @ApiModelProperty(value = "",position = 13)
-    private String status;
-    @ApiModelProperty(value = "",position = 14)
-    private String dueDate;
+    private String emergency;
     @ApiModelProperty(value = "",position = 15)
-    private String result;
+    private String status;
+
+    @ApiModelProperty(value = "",hidden = true)
+    private String reportTimeBegin;
+    @ApiModelProperty(value = "",hidden = true)
+    private String reportTimeEnd;
 
     public String getId() {
         return id;
@@ -63,24 +57,6 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
 
     public QueryRequestInfoReq setRequestTempName(String requestTempName) {
         this.requestTempName = requestTempName;
-        return this;
-    }
-
-    public String getProcInstKey() {
-        return procInstKey;
-    }
-
-    public QueryRequestInfoReq setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
-        return this;
-    }
-
-    public String getRootEntity() {
-        return rootEntity;
-    }
-
-    public QueryRequestInfoReq setRootEntity(String rootEntity) {
-        this.rootEntity = rootEntity;
         return this;
     }
 
@@ -111,12 +87,35 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return this;
     }
 
-    public Date getReportTime() {
+    public String getReportTime() {
         return reportTime;
     }
 
-    public QueryRequestInfoReq setReportTime(Date reportTime) {
+    public QueryRequestInfoReq setReportTime(String reportTime) {
         this.reportTime = reportTime;
+        if(!StringUtils.isEmpty(reportTime)){
+            String [] reportTimes = reportTime.split(",");
+            this.reportTimeBegin = reportTimes[0];
+            this.reportTimeEnd = reportTimes.length > 1 ? reportTimes[1] :"";
+        }
+        return this;
+    }
+
+    public String getReportTimeBegin() {
+        return reportTimeBegin;
+    }
+
+    public QueryRequestInfoReq setReportTimeBegin(String reportTimeBegin) {
+        this.reportTimeBegin = reportTimeBegin;
+        return this;
+    }
+
+    public String getReportTimeEnd() {
+        return reportTimeEnd;
+    }
+
+    public QueryRequestInfoReq setReportTimeEnd(String reportTimeEnd) {
+        this.reportTimeEnd = reportTimeEnd;
         return this;
     }
 
@@ -129,48 +128,12 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return this;
     }
 
-    public String getReportRole() {
-        return reportRole;
-    }
-
-    public QueryRequestInfoReq setReportRole(String reportRole) {
-        this.reportRole = reportRole;
-        return this;
-    }
-
-    public String getAttachFileId() {
-        return attachFileId;
-    }
-
-    public QueryRequestInfoReq setAttachFileId(String attachFileId) {
-        this.attachFileId = attachFileId;
-        return this;
-    }
-
     public String getStatus() {
         return status;
     }
 
     public QueryRequestInfoReq setStatus(String status) {
         this.status = status;
-        return this;
-    }
-
-    public String getDueDate() {
-        return dueDate;
-    }
-
-    public QueryRequestInfoReq setDueDate(String dueDate) {
-        this.dueDate = dueDate;
-        return this;
-    }
-
-    public String getResult() {
-        return result;
-    }
-
-    public QueryRequestInfoReq setResult(String result) {
-        this.result = result;
         return this;
     }
 }

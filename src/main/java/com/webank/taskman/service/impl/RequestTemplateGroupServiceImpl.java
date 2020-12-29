@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 
 @Service
@@ -39,6 +42,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
             if(null == query){
                 throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
             }
+            requestTemplateGroup.setUpdatedTime(new Date());
             updateById(requestTemplateGroup);
         }else {
             save(requestTemplateGroup);
@@ -56,6 +60,10 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     @Override
     public void deleteTemplateGroupByIDService(String id)  {
 
-        templateGroupMapper.deleteTemplateGroupByIDMapper(id);
+        UpdateWrapper<RequestTemplateGroup> wrapper = new UpdateWrapper<>();
+        wrapper.lambda().eq(RequestTemplateGroup::getId, id)
+                .set(RequestTemplateGroup::getDelFlag, 1)
+                .set(RequestTemplateGroup::getUpdatedTime,new Date());
+        templateGroupMapper.update(null,wrapper);
     }
 }

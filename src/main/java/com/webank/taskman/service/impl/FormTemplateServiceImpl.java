@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -62,7 +63,9 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             throw new TaskmanRuntimeException("Form template parameter cannot be ID");
         }
         UpdateWrapper<FormTemplate> wrapper=new UpdateWrapper<>();
-        wrapper.lambda().eq(FormTemplate::getId,id).set(FormTemplate::getDelFlag,1);
+        wrapper.lambda().eq(FormTemplate::getId,id)
+                .set(FormTemplate::getDelFlag,1)
+                .set(FormTemplate::getUpdatedTime,new Date());;
         formTemplateMapper.update(null,wrapper);
     }
 

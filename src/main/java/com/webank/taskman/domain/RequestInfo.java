@@ -19,7 +19,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
     private String id;
 
     private String requestTempId;
-    private String procInstKey;
+    private String procInstId;
     private String rootEntity;
     private String name;
     private String reporter;
@@ -35,10 +35,10 @@ public class RequestInfo extends BaseEntity implements Serializable {
     public RequestInfo() {
     }
 
-    public RequestInfo(String id, String requestTempId, String procInstKey, String rootEntity, String name, String reporter, Date reportTime, String emergency, String reportRole, String attachFileId, String status, String dueDate, String result) {
+    public RequestInfo(String id, String requestTempId, String procInstId, String rootEntity, String name, String reporter, Date reportTime, String emergency, String reportRole, String attachFileId, String status, String dueDate, String result) {
         this.id = id;
         this.requestTempId = requestTempId;
-        this.procInstKey = procInstKey;
+        this.procInstId = procInstId;
         this.rootEntity = rootEntity;
         this.name = name;
         this.reporter = reporter;
@@ -56,7 +56,7 @@ public class RequestInfo extends BaseEntity implements Serializable {
         return new LambdaQueryWrapper<RequestInfo>()
             .eq(!StringUtils.isEmpty(id), RequestInfo::getId, id)
             .eq(!StringUtils.isEmpty(requestTempId), RequestInfo::getRequestTempId, requestTempId)
-            .eq(!StringUtils.isEmpty(procInstKey), RequestInfo::getProcInstKey, procInstKey)
+            .eq(!StringUtils.isEmpty(procInstId), RequestInfo::getProcInstId, procInstId)
             .eq(!StringUtils.isEmpty(rootEntity), RequestInfo::getRootEntity, rootEntity)
             .like(!StringUtils.isEmpty(name), RequestInfo::getName, name)
             .eq(!StringUtils.isEmpty(reporter), RequestInfo::getReporter, reporter)
@@ -88,12 +88,12 @@ public class RequestInfo extends BaseEntity implements Serializable {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public RequestInfo setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public RequestInfo setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 
@@ -193,5 +193,25 @@ public class RequestInfo extends BaseEntity implements Serializable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "RequestInfo{" +
+                "id='" + id + '\'' +
+                ", requestTempId='" + requestTempId + '\'' +
+                ", procInstId='" + procInstId + '\'' +
+                ", rootEntity='" + rootEntity + '\'' +
+                ", name='" + name + '\'' +
+                ", reporter='" + reporter + '\'' +
+                ", reportTime=" + reportTime +
+                ", emergency='" + emergency + '\'' +
+                ", reportRole='" + reportRole + '\'' +
+                ", attachFileId='" + attachFileId + '\'' +
+                ", status='" + status + '\'' +
+                ", dueDate='" + dueDate + '\'' +
+                ", result='" + result + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

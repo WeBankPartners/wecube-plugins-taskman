@@ -167,4 +167,23 @@ public class RequestTemplateDTO {
     public void setManageRoles(List<RoleDTO> manageRoles) {
         this.manageRoles = manageRoles;
     }
+
+    @Override
+    public String toString() {
+        return "RequestTemplateDTO{" +
+                "id='" + id + '\'' +
+                ", requestTempGroup='" + requestTempGroup + '\'' +
+                ", requestTempGroupName='" + requestTempGroupName + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", procDefName='" + procDefName + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", version='" + version + '\'' +
+                ", tags='" + tags + '\'' +
+                ", status='" + status + '\'' +
+                ", useRoles=" + useRoles +
+                ", manageRoles=" + manageRoles +
+                '}';
+    }
 }

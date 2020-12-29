@@ -54,7 +54,7 @@ public class CoreCreateTaskDTO {
          */
 
         private String id;
-        private String procInstKey;
+        private String procInstId;
         private String taskNodeId;
         private int overTime;
         private String callbackParameter;
@@ -74,12 +74,12 @@ public class CoreCreateTaskDTO {
             return this;
         }
 
-        public String getProcInstKey() {
-            return procInstKey;
+        public String getProcInstId() {
+            return procInstId;
         }
 
-        public TaskInfoReq setProcInstKey(String procInstKey) {
-            this.procInstKey = procInstKey;
+        public TaskInfoReq setProcInstId(String procInstId) {
+            this.procInstId = procInstId;
             return this;
         }
 

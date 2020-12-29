@@ -35,13 +35,13 @@
         <where>
             AND tt.id = ti.task_temp_id
             <if test="procInstKey!=null and procInstKey !=''">
-                AND ti.proc_inst_key = ${procInstKey}
+                AND ti.proc_inst_key = #{procInstKey}
             </if>
             <if test="name !=null and name != ''">
                 AND ti.name like CONCAT('%',#{name},'%')
             </if>
             <if test="status!=null and status !=''">
-                AND ti.status = ${status}
+                AND ti.status = #{status}
             </if>
             <if test="conditionSql!=null and conditionSql !=''">
                 AND ${conditionSql}

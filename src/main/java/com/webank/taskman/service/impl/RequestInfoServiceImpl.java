@@ -103,7 +103,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
         }
         if (StatusEnum.InProgress.name().equals(response.getStatus())) {
-            requestInfo.setProcInstKey(response.getProcInstKey());
+            requestInfo.setProcInstId(response.getProcInstId());
             requestInfo.setStatus(response.getStatus());
             updateById(requestInfo);
         }

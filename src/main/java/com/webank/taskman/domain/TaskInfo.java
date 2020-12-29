@@ -18,7 +18,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     private String id;
     private String parentId;
     private String taskTempId;
-    private String procInstKey;
+    private String procInstId;
     private String nodeDefId;
     private String nodeName;
     private String callbackUrl;
@@ -112,12 +112,12 @@ public class TaskInfo extends BaseEntity implements Serializable {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public TaskInfo setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public TaskInfo setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 

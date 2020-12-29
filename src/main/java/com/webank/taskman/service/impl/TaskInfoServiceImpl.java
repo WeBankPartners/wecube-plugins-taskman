@@ -63,8 +63,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
 
-
-
     @Autowired
     FormItemInfoService formItemInfoService;
 
@@ -132,7 +130,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Override
     public CommonResponseDto cancelTask(CoreCancelTaskDTO req) {
         TaskInfo taskInfo = taskInfoMapper.selectOne(
-                new TaskInfo().setProcInstKey(req.getProcInstId()).setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
+                new TaskInfo().setProcInstId(req.getProcInstId()).setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
         if(null == taskInfo){
             throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
         }
@@ -144,8 +142,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstKey,String taskId) {
-        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstKey(procInstKey).getLambdaQueryWrapper());
+        public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstId,String taskId) {
+        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
         FormInfo formInfo = formInfoMapper.selectOne(new FormInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
@@ -156,7 +154,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         requestInfoInstanceResq.setRequestFormResq(formInfoConverter.toRequestFormResq(formInfo));
         requestInfoInstanceResq.getRequestFormResq().setFormItemInfo(formItemInfos);
 
-        List<TaskInfo> taskInfos = taskInfoMapper.selectList( new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstKey, procInstKey).orderByAsc(TaskInfo::getUpdatedTime));
+        List<TaskInfo> taskInfos = taskInfoMapper.selectList( new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstId, procInstId).orderByAsc(TaskInfo::getUpdatedTime));
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
@@ -202,12 +200,12 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
         req.getInputs().stream().forEach(task->{
             TaskInfo taskInfo = taskInfoConverter.toentityByReq(task);
-            TaskInfo isExists =  taskInfoMapper.selectOne(new TaskInfo().setProcInstKey(
-                    task.getProcInstKey()).setNodeDefId(task.getTaskNodeId()).getLambdaQueryWrapper());
+            TaskInfo isExists =  taskInfoMapper.selectOne(new TaskInfo().setProcInstId(
+                    task.getProcInstId()).setNodeDefId(task.getTaskNodeId()).getLambdaQueryWrapper());
             if(null != isExists){
                 throw new TaskmanRuntimeException(String.format(
-                        "Task is exists! procInstKey:%s,TaskNodeId:%s",
-                        task.getProcInstKey(),task.getTaskNodeId()));
+                        "Task is exists! procInstId:%s,TaskNodeId:%s",
+                        task.getProcInstId(),task.getTaskNodeId()));
             }
             taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
             saveOrUpdate(taskInfo);

@@ -2,7 +2,7 @@ package com.webank.taskman.support.core.dto;
 
 public class DynamicWorkflowInstInfoDto {
     private String id;
-    private String procInstId;
+    private String procInstKey;
     private String procDefId;
     private String procDefKey;
     private String status;
@@ -12,11 +12,11 @@ public class DynamicWorkflowInstInfoDto {
     public void setId(String id) {
         this.id = id;
     }
-    public String getProcInstId() {
-        return procInstId;
+    public String getProcInstKey() {
+        return procInstKey;
     }
-    public void setProcInstId(String procInstId) {
-        this.procInstId = procInstId;
+    public void setProcInstKey(String procInstKey) {
+        this.procInstKey = procInstKey;
     }
     public String getProcDefId() {
         return procDefId;

@@ -45,7 +45,7 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 1)
     @PostMapping("/template/save")
     @ApiOperation(value = "form-template-save", notes = "")
-    public JsonResponse saveFormTemplate(@Valid @RequestBody SaveFormTemplateReq req) throws Exception {
+    public JsonResponse formTemplateSave(@Valid @RequestBody SaveFormTemplateReq req) throws Exception {
 
         FormTemplateResp formTemplateResp= formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);
@@ -54,7 +54,7 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 2)
     @DeleteMapping("/template/delete/{id}")
     @ApiOperation(value = "form-template-delete")
-    public JsonResponse deleteFormTemplateByID(@PathVariable("id") String id) throws Exception {
+    public JsonResponse formTemplateDelete(@PathVariable("id") String id) throws Exception {
         formTemplateService.deleteFormTemplate(id);
         return JsonResponse.okay();
     }
@@ -71,7 +71,7 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 4)
     @DeleteMapping("/item/delete/{id}")
     @ApiOperation(value = "form-item-template-delete", notes = "")
-    public JsonResponse deleteRequestTemplate(@PathVariable("id") String id) throws Exception {
+    public JsonResponse formItemTemplateDelete(@PathVariable("id") String id) throws Exception {
         formItemTemplateService.deleteRequestTemplateByID(id);
         return JsonResponse.okay();
     }

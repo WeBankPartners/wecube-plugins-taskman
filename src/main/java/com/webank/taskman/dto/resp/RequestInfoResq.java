@@ -19,7 +19,7 @@ public class RequestInfoResq  {
     @ApiModelProperty(value = "",position = 3)
     private String requestTempName;
     @ApiModelProperty(value = "",position = 4)
-    private String procInstKey;
+    private String procInstId;
     @ApiModelProperty(value = "",position = 5)
     private String rootEntity;
     @ApiModelProperty(value = "",position = 6)
@@ -74,12 +74,12 @@ public class RequestInfoResq  {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public RequestInfoResq setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public RequestInfoResq setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 
@@ -197,7 +197,7 @@ public class RequestInfoResq  {
                 .add("id='" + id + "'")
                 .add("requestTempId='" + requestTempId + "'")
                 .add("requestTempName='" + requestTempName + "'")
-                .add("procInstKey='" + procInstKey + "'")
+                .add("procInstId='" + procInstId + "'")
                 .add("rootEntity='" + rootEntity + "'")
                 .add("name='" + name + "'")
                 .add("reporter='" + reporter + "'")

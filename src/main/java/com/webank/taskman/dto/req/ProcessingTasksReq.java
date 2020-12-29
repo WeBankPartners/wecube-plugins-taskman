@@ -1,7 +1,5 @@
 package com.webank.taskman.dto.req;
 
-import com.webank.taskman.domain.FormInfo;
-import com.webank.taskman.domain.FormItemInfo;
 
 import java.util.List;
 

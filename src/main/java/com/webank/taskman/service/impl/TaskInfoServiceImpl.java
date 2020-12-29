@@ -177,17 +177,21 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public TaskInfoGetResp getTheTaskInfoService(String id) {
+    public TaskInfoDTO getTheTaskInfoService(String id) {
         TaskInfo taskInfo = taskInfoMapper.selectOne(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getId, id));
-        TaskInfoGetResp taskInfoGetResp=new TaskInfoGetResp();
+
         if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
             taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
             taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
             taskInfo.setUpdatedTime(new Date());
             taskInfoMapper.updateById(taskInfo);
-            taskInfoGetResp = taskInfoConverter.toGetResp(taskInfo);
         }
-        return taskInfoGetResp;
+        TaskInfoDTO dto = new TaskInfoDTO(
+                taskInfo.getId(),
+                taskInfo.getReporter(),
+                taskInfo.getReportTime(),
+                taskInfo.getStatus());
+        return dto;
     }
 
 

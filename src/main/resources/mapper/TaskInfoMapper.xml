@@ -6,7 +6,7 @@
         <id column="id" property="id"/>
         <result column="parent_id" property="parentId"/>
         <result column="task_temp_id" property="taskTempId"/>
-        <result column="proc_inst_key" property="procInstKey"/>
+        <result column="proc_inst_id" property="procInstId"/>
         <result column="node_def_id" property="nodeDefId"/>
         <result column="node_name" property="nodeName"/>
         <result column="callback_url" property="callbackUrl"/>
@@ -34,8 +34,8 @@
         SELECT ti.* FROM task_info ti,task_template tt
         <where>
             AND tt.id = ti.task_temp_id
-            <if test="procInstKey!=null and procInstKey !=''">
-                AND ti.proc_inst_key = #{procInstKey}
+            <if test="procInstId!=null and procInstId !=''">
+                AND ti.proc_inst_id = #{procInstId}
             </if>
             <if test="name !=null and name != ''">
                 AND ti.name like CONCAT('%',#{name},'%')

@@ -172,12 +172,11 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 10)
     @ApiOperation(value = "request-template-available")
     public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable() throws TaskmanRuntimeException {
-        RequestTemplate query = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
-        QueryWrapper<RequestTemplate> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("status",StatusEnum.RELEASED.toString())
-                .inSql("id",String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL,
-                        RoleTypeEnum.USE_ROLE.getType(),
-                        AuthenticationContextHolder.getCurrentUserRolesToString()));
+        String  inSql = String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL,RoleTypeEnum.USE_ROLE.getType(),
+                AuthenticationContextHolder.getCurrentUserRolesToString());
+        LambdaQueryWrapper<RequestTemplate> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(RequestTemplate::getStatus,StatusEnum.RELEASED.toString())
+                .inSql(RequestTemplate::getId,inSql);
         return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
     }
 
@@ -193,7 +192,7 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 12)
     @PostMapping("/search/{page}/{pageSize}")
     @ApiOperation(value = "request-info-search")
-    public JsonResponse<QueryResponse<SynthesisRequestInfoResp>> requestInfoSearch(
+    public JsonResponse<QueryResponse<RequestInfoResq>> requestInfoSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestInfoReq req)

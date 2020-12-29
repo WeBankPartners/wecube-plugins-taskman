@@ -9,7 +9,7 @@ public class RequestInfoDTO {
 
     private String id;
     private String requestTempId;
-    private String procInstKey;
+    private String procInstId;
     private String rootEntity;
     private String name;
     private String reporter;
@@ -40,12 +40,12 @@ public class RequestInfoDTO {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public RequestInfoDTO setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public RequestInfoDTO setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 
@@ -153,7 +153,7 @@ public class RequestInfoDTO {
         return new StringJoiner(", ", RequestInfoDTO.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("requestTempId='" + requestTempId + "'")
-                .add("procInstKey='" + procInstKey + "'")
+                .add("procInstId='" + procInstId + "'")
                 .add("rootEntity='" + rootEntity + "'")
                 .add("name='" + name + "'")
                 .add("reporter='" + reporter + "'")

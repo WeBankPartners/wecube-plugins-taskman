@@ -15,16 +15,17 @@
         </where>
     </delete>
 
-    <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.TaskServiceMetaFormItem">
+    <!--<select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.TaskServiceMetaFormItem">-->
+    <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.FormItemInfoResp">
         SELECT
-            fit.id AS itemId,
-            fit.`name` AS `key`,
-            (CASE WHEN fit.element_type ='PluginSelect' THEN "ref" ELSE fit.element_type END ) AS "valueDef.type",
-            (CASE WHEN fit.element_type ='PluginSelect' THEN CONCAT(fit.package_name,":",fit.entity) ELSE "" END ) AS "valueDef.expr"
+            fit.id,
+            fit.`name`,
+            (CASE WHEN fit.element_type ='PluginSelect' THEN "ref" ELSE fit.element_type END ) AS elementType,
+            (CASE WHEN fit.element_type ='PluginSelect' THEN CONCAT(fit.package_name,":",fit.entity) ELSE "" END ) AS value
         FROM form_item_template fit
         WHERE fit.temp_id in (
             SELECT tt.id FROM task_template tt INNER JOIN request_info ri ON ri.request_temp_id = tt.request_template_id
-            AND ri.proc_inst_key= #{procInstKey}
+            AND ri.proc_inst_id= #{procInstId}
             WHERE tt.node_def_id = #{nodeDefId}
         )
     </select>

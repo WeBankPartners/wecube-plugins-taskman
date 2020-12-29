@@ -15,7 +15,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
     private String id;
 
     @ApiModelProperty(value = "流程实例ID",position = 4)
-    private String procInstKey;
+    private String procInstId;
     @ApiModelProperty(value = "流程节点ID",position = 5)
     private String nodeDefId;
     @ApiModelProperty(value = "任务名称",position = 7)
@@ -31,6 +31,8 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
     @ApiModelProperty(value = "任务状态",position = 13)
     private String result;
 
+
+
     public String getId() {
         return id;
     }
@@ -40,12 +42,12 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public QueryTaskInfoReq setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public QueryTaskInfoReq setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 
@@ -116,13 +118,14 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
     public String toString() {
         return new StringJoiner(", ", QueryTaskInfoReq.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
-                .add("procInstKey='" + procInstKey + "'")
+                .add("procInstId='" + procInstId + "'")
                 .add("nodeDefId='" + nodeDefId + "'")
                 .add("name='" + name + "'")
                 .add("reporter='" + reporter + "'")
                 .add("reportTime=" + reportTime)
                 .add("emergency='" + emergency + "'")
-                .add("status=" + status)
+                .add("status='" + status + "'")
+                .add("result='" + result + "'")
                 .toString();
     }
 }

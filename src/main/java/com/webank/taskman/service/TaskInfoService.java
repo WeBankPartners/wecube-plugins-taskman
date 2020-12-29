@@ -23,7 +23,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId);
 
-    TaskInfoGetResp getTheTaskInfoService(String id);
+    TaskInfoDTO getTheTaskInfoService(String id);
 
     CommonResponseDto createTask(CoreCreateTaskDTO req);
 

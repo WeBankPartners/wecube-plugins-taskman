@@ -4,8 +4,8 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq;
 import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.resp.FormItemInfoResp;
 import com.webank.taskman.dto.resp.TaskInfoResp;
-import com.webank.taskman.dto.resp.TaskInfoGetResp;
 import com.webank.taskman.dto.resp.TaskInfoInstanceResp;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -23,9 +23,9 @@ public interface TaskInfoConverter extends BaseConverter<TaskInfoDTO, TaskInfo> 
     })
     TaskInfo toentityByReq(TaskInfoReq req);
 
-    TaskInfoGetResp toGetResp(TaskInfo taskInfo);
-
     TaskInfoInstanceResp toInstanceResp(TaskInfo taskInfo);
 
     TaskInfoResp toResp(TaskInfo taskInfo);
+
+
 }

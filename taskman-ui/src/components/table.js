@@ -25,7 +25,7 @@ export default {
     };
   },
   mounted() {
-    this.timer = setInterval(() => {this.handleSubmit("form")}, 60000);
+    // this.timer = setInterval(() => {this.handleSubmit("form")}, 60000);
   },
   beforeDestroy() {
     clearInterval(this.timer);
@@ -35,7 +35,9 @@ export default {
     tableColumns: {
       handler(val, oldval) {
         this.tableColumns.forEach(_ => {
-          this.$set(this.form, _.inputKey, "");
+          if (!_.isNotFilterable) {
+            this.$set(this.form, _.inputKey, "");
+          }
         });
       },
       deep: true,

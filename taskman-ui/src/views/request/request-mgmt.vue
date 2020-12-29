@@ -88,6 +88,63 @@
         </Form>
       </div>
     </Modal>
+    <Modal
+      v-model="detailModalVisible"
+      title="详情"
+      footer-hide
+      fullscreen
+      @on-cancel="detailCancel"
+    >
+      <div style="padding:20px">
+        <Form ref="requestForm" :model="detailForm" :label-width="110">
+          <Row>
+            <Col span="12">
+          <FormItem :label="$t('template')">
+            <Select disabled v-model="detailForm.requestTempId">
+              <Option v-for="tem in allTemplates" :key="tem.id" :value="tem.id">{{tem.name}}</Option>
+            </Select>
+          </FormItem>
+          </Col>
+          <Col span="12">
+          <FormItem :label="$t('target_object')">
+            <Select disabled v-model="detailForm.rootEntity">
+              <Option v-for="tem in detailEntityData" :key="tem.guid" :value="tem.guid">{{tem.displayName}}</Option>
+            </Select>
+          </FormItem>
+          </Col>
+          <Col span="12">
+          <FormItem :label="$t('service_request_name')" prop="name">
+            <Input disabled v-model="detailForm.name" :placeholder="$t('service_request_name')"></Input>
+          </FormItem>
+          </Col>
+          <Col span="12">
+          <FormItem :label="$t('emergency_level')">
+            <Select disabled v-model="detailForm.emergency">
+              <Option value="normal">{{$t('not_urgent')}}</Option>
+              <Option value="urgent">{{$t('emergency')}}</Option>
+            </Select>
+          </FormItem>
+          </Col>
+          <Col span="12">
+          <FormItem :label="$t('describe')">
+            <Input type="textarea" v-model="detailForm.description" :placeholder="$t('describe')"></Input>
+          </FormItem>
+          </Col>
+          </Row>
+          <hr style="margin-bottom:10px"/>
+          <Row>
+            <Form ref="form" :label-width="110">
+              <Row v-for="(fields, i) in Object.values(detailFields)" :key="i">
+                <TaskFormItem v-for="(item, index) in fields" :index="index" v-model="currentForm[item.name]" :item="item" :key="index"></TaskFormItem>
+              </Row>
+            </Form>
+          </Row>
+          <div style="position:absolute; bottom:10px;text-align:center;width:95%">
+            <Button style="margin-left: 15px" @click="detailCancel">{{$t('cancle')}}</Button>
+          </div>
+        </Form>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -112,6 +169,7 @@ export default {
       currentFieldsBackUp: {},
       targetEntityList: [],
       requestModalVisible: false,
+      detailModalVisible: false,
       ruleValidate: {
         name: [
           {
@@ -123,11 +181,22 @@ export default {
       },
       requestLoading: false,
       entityData: [],
+      detailEntityData: [],
       allTemplates: [],
        requestPagination: {
         currentPage: 1,
         pageSize: 10,
         total: 0
+      },
+      detailFields: {},
+      detailForm: {
+        name: "",
+        emergency: "",
+        description: "",
+        attachFileId: null,
+        requestTempId:'',
+        roleName:'',
+        rootEntity: ''
       },
       requestForm: {
         name: "",
@@ -221,6 +290,7 @@ export default {
           type: "datetimerange",
           inputType: "date",
           sortable: 'custom',
+          isNotFilterable: true
         },
         {
           title: '标签',
@@ -273,6 +343,37 @@ export default {
 
     async details (row) {
       const {status, message, data} = await getRequestInfoDetails(row.id)
+      if (status === 'OK') {
+        this.detailForm = {...data}
+        this.detailFields['entitys'] = data.formItemInfos.sort(this.compare).map(i => {
+            return {
+              ...i,
+              isMultiple: true,
+              options: i.dataOptions && i.dataOptions.length > 0 ? JSON.parse(i.dataOptions) : []
+            }
+          })
+          const found  = this.allTemplates.find(_ => _.id === this.detailForm.requestTempId)
+        const entityData = await getEntityDataByTemplateId(found.procDefId) //getEntityDataByTemplateId
+        this.detailEntityData = []
+        if (entityData.status === "OK") {
+          this.detailEntityData = entityData.data
+        }
+        const preview = await workflowProcessPrevieEntities(found.procDefId, this.detailForm.rootEntity)
+        if (preview.status === "OK") {
+          preview.data.entityTreeNodes.forEach(node => {
+            const found = this.detailFields.entitys.find(entity => entity.name === node.entityName)
+            if (found && !found.options) {
+              found.options = [{...node,label:node.displayName,value:node.dataId}]
+            } 
+            if (found && found.options) {
+              found.options.push({...node,label:node.displayName,value:node.dataId})
+            }
+            if (this.currentForm[node.entityName]) {this.currentForm[node.entityName].push(node.dataId)}
+          })
+        }
+        this.detailModalVisible = true
+      }
+
     },
     async workflowProcessPrevieEntities (v) {
       // workflowProcessPrevieEntities
@@ -381,6 +482,9 @@ export default {
       this.requestModalVisible = false;
       this.currentFields = {}
     },
+    detailCancel () {
+      this.detailModalVisible = false;
+    },
     requestCancel() {
       this.requestModalVisible = false;
       this.requestForm.name = "";
@@ -450,6 +554,7 @@ export default {
   },
   mounted() {
     this.getData();
+    this.getTemplates()
   }
 }
 </script>

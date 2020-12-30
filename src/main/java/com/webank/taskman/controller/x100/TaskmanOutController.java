@@ -31,12 +31,12 @@ public class TaskmanOutController {
     FormItemTemplateService formItemTemplateService;
 
     @ApiOperationSupport(order = 1)
-    @GetMapping("/task/create/service-meta/{proc-inst-key}/{node-def-id}")
+    @GetMapping("/task/create/service-meta/{proc-inst-id}/{node-def-id}")
     @ApiOperation(value = "task-create-service-meta")
     public CommonResponseDto taskCreateServiceMeta(
-            @PathVariable("proc-inst-key") String procInstKey,@PathVariable("node-def-id") String nodeDefId)
+            @PathVariable("proc-inst-id") String procInstId,@PathVariable("node-def-id") String nodeDefId)
     {
-        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstKey,nodeDefId));
+        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstId,nodeDefId));
     }
 
     @Autowired
@@ -44,16 +44,16 @@ public class TaskmanOutController {
 
     @ApiOperationSupport(order = 2)
     @PostMapping("/task/create")
-    @ApiOperation(value = "create")
-    public CommonResponseDto createTask(@RequestBody CoreCreateTaskDTO req)
+    @ApiOperation(value = "task-create")
+    public CommonResponseDto taskCreate(@RequestBody CoreCreateTaskDTO req)
     {
         return taskInfoService.createTask(req);
     }
 
     @ApiOperationSupport(order = 3)
     @PostMapping("/task/cancel")
-    @ApiOperation(value = "cancel")
-    public CommonResponseDto cancelTask(@RequestBody CoreCancelTaskDTO req)
+    @ApiOperation(value = "task-cancel")
+    public CommonResponseDto taskCancel(@RequestBody CoreCancelTaskDTO req)
     {
         return taskInfoService.cancelTask(req);
     }

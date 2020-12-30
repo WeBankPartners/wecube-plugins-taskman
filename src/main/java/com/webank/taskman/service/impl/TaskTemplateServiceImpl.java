@@ -1,10 +1,10 @@
 package com.webank.taskman.service.impl;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.PageInfo;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
@@ -16,6 +16,7 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
+import com.webank.taskman.dto.req.QueryTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
@@ -30,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
 
 @Service
 public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, TaskTemplate> implements TaskTemplateService {
@@ -54,7 +54,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
 
     @Override
     @Transactional
-    public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) throws TaskmanRuntimeException{
+    public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) throws TaskmanRuntimeException {
         RequestTemplate requestTemplate = requestTemplateService.getById(req.getTempId());
         if(null == requestTemplate){
             throw  new TaskmanRuntimeException("The RequestTemplate is not exists! id:"+req.getTempId());
@@ -77,7 +77,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public TaskTemplateResp selectTaskTemplateOne(String id) {
+    public TaskTemplateResp taskTemplateDetail(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
         TaskTemplateResp taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
         List<RoleRelation> relations = roleRelationService.list(
@@ -97,20 +97,12 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplateByRole(Integer page, Integer pageSize) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        QueryRoleRelationBaseReq req = new QueryRoleRelationBaseReq();
-        req.setSourceTableFix("rt");
-        req.setUseRoleName(currentUserRolesToString);
-        String sql = req.getConditionSql();
-
-        IPage<TaskTemplate> iPage = taskTemplateMapper.selectSynthesisRequestTemple(new Page<TaskTemplate>(page, pageSize), sql);
-
-        List<TaskTemplateByRoleResp> srt = taskTemplateConverter.toRoleRespList(iPage.getRecords());
-
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
-        queryResponse.setContents(srt);
+    public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplatePage(Integer page, Integer pageSize, QueryTemplateReq req) {
+        LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
+                .getLambdaQueryWrapper().inSql(TaskTemplate::getId,req.getEqUseRole());
+        IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize),queryWrapper);
+        List<TaskTemplateByRoleResp> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
+        QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>(iPage.getTotal(), iPage.getCurrent(), iPage.getSize(),list);
         return queryResponse;
     }
 

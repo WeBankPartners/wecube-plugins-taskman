@@ -63,7 +63,7 @@ public class DateUtils {
     }
 
     public static String formatLongToTimeStr(Long date) {
-        if(date < 1000){ return date +" ms"; }
+        if(date < 1000){ return date +"ms"; }
         StringBuffer sbf = new StringBuffer();
         long day=0;
         long hour = 0;
@@ -83,19 +83,19 @@ public class DateUtils {
             hour = hour % 24;
         }
         if(day > 0){
-            sbf.append(day +"d");
+            sbf.append(day +"d ");
         }
         if(hour > 0){
-            sbf.append(hour +"h");
+            sbf.append(hour +"h ");
         }
         if(minute > 0){
-            sbf.append(minute +"m");
+            sbf.append(minute +"m ");
         }
         if(second > 0){
-            sbf.append(second +"s");
+            sbf.append(second +"s ");
         }
         if(ms > 0){
-            sbf.append( ms +"ms");
+            sbf.append( ms +"ms ");
         }
         return sbf.toString();
     }

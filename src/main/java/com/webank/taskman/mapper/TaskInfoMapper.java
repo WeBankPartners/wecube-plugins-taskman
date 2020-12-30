@@ -9,5 +9,4 @@ import java.util.List;
 
 public interface TaskInfoMapper extends BaseMapper<TaskInfo> {
 
-    List<TaskInfo> selectTaskInfo(QueryTaskInfoReq req);
 }

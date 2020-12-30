@@ -1,6 +1,6 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,20 +9,20 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.*;
-import com.webank.taskman.domain.*;
+import com.webank.taskman.converter.FormItemInfoConverter;
+import com.webank.taskman.converter.RequestInfoConverter;
+import com.webank.taskman.domain.RequestInfo;
+import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.req.QueryRequestInfoReq;
-import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
-import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.FormInfoService;
-import com.webank.taskman.service.FormTemplateService;
+import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
-import com.webank.taskman.support.core.dto.ProcessDataPreviewDto.GraphNodeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 @Service
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {
@@ -41,22 +40,20 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Autowired
     RequestInfoConverter requestInfoConverter;
-    @Autowired
-    FormItemInfoConverter formItemInfoConverter;
-
 
     @Autowired
     FormInfoService formInfoService;
 
     @Autowired
-    FormTemplateService formTemplateService;
+    FormItemInfoConverter formItemInfoConverter;
 
     @Autowired
-    FormItemInfoServiceImpl formItemInfoService;
+    FormItemInfoService formItemInfoService;
+
 
 
     @Override
-    public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, QueryRequestInfoReq req) {
+    public QueryResponse<RequestInfoResq> selectRequestInfoPage(Integer current, Integer limit, QueryRequestInfoReq req) {
         req.setEqUseRole("rt");
         IPage<RequestInfoResq> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
         QueryResponse<RequestInfoResq> queryResponse = new QueryResponse<>();
@@ -75,40 +72,21 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         requestInfo.setReportTime(new Date());
         requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
         saveOrUpdate(requestInfo);
-        List<SaveFormItemInfoReq>  formItems = req.getFormItems();
-        String requestTempId = requestInfo.getRequestTempId();
-        if (null != formItems && formItems.size() > 0) {
-            FormTemplate formTemplate = formTemplateService.getOne(
-                    new FormTemplate(null, requestTempId, StatusEnum.DEFAULT.ordinal() + "").getLambdaQueryWrapper());
-            if (null == formTemplate) {
-                throw new TaskmanRuntimeException("The FormTemplate do not exist");
-            }
-            formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
-            FormInfo form = new FormInfo();
-            form.setRecordId(requestInfo.getId());
-            form.setFormTemplateId(formTemplate.getId());
-            form.setCurrenUserName(form, form.getId());
-            formInfoService.save(form);
-            formItems.stream().forEach(item -> {
-                FormItemInfo formItemInfo = formItemInfoConverter.toEntityBySave(item);
-                formItemInfo.setFormId(form.getId());
-                formItemInfo.setRecordId(requestInfo.getId());
-                formItemInfo.setItemTempId(item.getItemTempId());
-                formItemInfoService.save(formItemInfo);
-            });
-        }
+        formInfoService.saveFormInfoAndItems(formItemInfoConverter.toEntityByReqs(req.getFormItems()), requestInfo.getRequestTempId(), requestInfo.getId());
 
         DynamicWorkflowInstInfoDto response = createNewWorkflowInstance(requestInfo);
         if (null == response) {
             throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
         }
         if (StatusEnum.InProgress.name().equals(response.getStatus())) {
-            requestInfo.setProcInstKey(response.getProcInstKey());
+            requestInfo.setProcInstId(response.getProcInstKey());
             requestInfo.setStatus(response.getStatus());
             updateById(requestInfo);
         }
         return requestInfoConverter.toResp(requestInfo);
     }
+
+
 
     @Autowired
     CoreServiceStub coreServiceStub;
@@ -145,9 +123,17 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         return creationInfoDto;
     }
 
+    @Override
+    public RequestInfoResq selectDetail(String id) {
+        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setId(id).getLambdaQueryWrapper());
+        RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfo);
+        requestInfoResq.setFormItemInfos(formItemInfoService.returnDetail(id));
+        return requestInfoResq;
+    }
+
     private DynamicEntityValueDto createDynamicEntityValues(ProcessDataPreviewDto processDataPreviewDto, String guid) {
 
-        List<GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
+        List<ProcessDataPreviewDto.GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
         if (null == entityTreeNodes) {
             throw new TaskmanRuntimeException(String.format("getProcessDataPreview is error:%s", entityTreeNodes));
         }

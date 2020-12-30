@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +35,7 @@ public class GlobalExceptionHandler {
     public static final String MSG_ERR_CODE_PREFIX = "servicemgmt.msg.errcode.";
 
     public static final Locale DEF_LOCALE = Locale.ENGLISH;
+    public static final String SQL_Exception = "Exception: ";
 
     @Autowired
     private MessageSource messageSource;
@@ -54,9 +57,15 @@ public class GlobalExceptionHandler {
         String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
                 e.getMessage() == null ? "" : e.getMessage());
         log.error("错误异常:{}", e);
-        String err = errMsg + e.getMessage();
-        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION, err);
+        String err =  e.getMessage();
+        if(e instanceof DuplicateKeyException){
+            err = err.substring(err.indexOf(SQL_Exception)).replace(SQL_Exception,"");
+            err = err.substring(0,err.indexOf("###")-3);
+        }
+        err = String.format("Processing failed cause by :%s",err);
+        return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION, err,err);
     }
+
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -96,6 +105,7 @@ public class GlobalExceptionHandler {
             try {
                 msg = messageSource.getMessage(msgCode, e.getArgs(), locale);
             }catch (Exception ex){
+                msg = e.getMessageKey();
                 log.error("not find key:{}",msgCode);
             }
             return msg;

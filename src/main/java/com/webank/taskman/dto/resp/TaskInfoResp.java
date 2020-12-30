@@ -1,6 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.domain.FormItemInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -17,7 +16,7 @@ public class TaskInfoResp {
     private String taskTempId;
 
     @ApiModelProperty(value = "流程实例ID",position = 4)
-    private String procInstKey;
+    private String procInstId;
     @ApiModelProperty(value = "流程节点ID",position = 5)
     private String nodeDefId;
     @ApiModelProperty(value = "流程节点名称",position = 6)
@@ -72,12 +71,12 @@ public class TaskInfoResp {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public TaskInfoResp setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public TaskInfoResp setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 

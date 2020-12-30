@@ -3,11 +3,13 @@ package com.webank.taskman.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
 import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
+import java.util.Date;
 
 public class RequestTemplateGroup extends BaseEntity implements Serializable {
 
@@ -37,7 +39,7 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<RequestTemplateGroup> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<RequestTemplateGroup>()
             .eq(!StringUtils.isEmpty(id), RequestTemplateGroup::getId, id)
             .eq(!StringUtils.isEmpty(manageRoleId), RequestTemplateGroup::getManageRoleId, manageRoleId)
@@ -47,6 +49,21 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
             .eq(!StringUtils.isEmpty(version), RequestTemplateGroup::getVersion, version)
             .eq(!StringUtils.isEmpty(status), RequestTemplateGroup::getStatus, status)
         ;
+    }
+
+    @JsonIgnore
+    public UpdateWrapper<RequestTemplateGroup> getUpdateWrapper() {
+        UpdateWrapper<RequestTemplateGroup> wrapper = new UpdateWrapper<>();
+        wrapper.lambda().eq(!StringUtils.isEmpty(id), RequestTemplateGroup::getId, id)
+                .set(!StringUtils.isEmpty(id), RequestTemplateGroup::getId, id)
+                .set(!StringUtils.isEmpty(manageRoleId), RequestTemplateGroup::getManageRoleId, manageRoleId)
+                .set(!StringUtils.isEmpty(manageRoleName), RequestTemplateGroup::getManageRoleName, manageRoleName)
+                .set(!StringUtils.isEmpty(name), RequestTemplateGroup::getName, name)
+                .set(!StringUtils.isEmpty(description), RequestTemplateGroup::getDescription, description)
+                .set(!StringUtils.isEmpty(version), RequestTemplateGroup::getVersion, version)
+                .set(!StringUtils.isEmpty(status), RequestTemplateGroup::getStatus, status)
+        ;
+        return wrapper;
     }
 
     public String getId() {

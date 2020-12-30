@@ -5,7 +5,7 @@
     <resultMap id="RequestInfoMap" type="com.webank.taskman.domain.RequestInfo">
         <id column="id" property="id"/>
         <result column="request_temp_id" property="requestTempId"/>
-        <result column="proc_inst_key" property="procInstKey"/>
+        <result column="proc_inst_id" property="procInstId"/>
         <result column="root_entity" property="rootEntity"/>
         <result column="name" property="name"/>
         <result column="reporter" property="reporter"/>
@@ -28,7 +28,7 @@
         <id column="id" property="id"/>
         <result column="request_temp_id" property="requestTempId"/>
         <result column="request_temp_name" property="requestTempName"/>
-        <result column="proc_inst_key" property="procInstKey"/>
+        <result column="proc_inst_id" property="procInstId"/>
         <result column="root_entity" property="rootEntity"/>
         <result column="name" property="name"/>
         <result column="reporter" property="reporter"/>
@@ -82,30 +82,6 @@
             </if>
         </where>
         ORDER BY ri.updated_time DESC
-    </select>
-
-    <select id="selectSynthesisRequestInfo" parameterType="com.webank.taskman.dto.req.SynthesisRequestInfoReq" resultMap="RequestInfoMap">
-        SELECT ri.*
-        FROM
-        request_info ri
-        WHERE
-        <if test="param.status !=null and param.status !='' ">
-            ri.`status`=#{param.status}
-            and
-        </if>
-        (
-        SELECT COUNT(1)
-        FROM role_relation rr
-        WHERE
-        ri.request_temp_id = rr.record_id
-        AND
-        rr.role_type =0
-        AND
-        <foreach item="roleStr" index="index" collection="param.roleName.split(',')" open="(" close=")" separator="OR">
-            MATCH(rr.role_name)
-            AGAINST(#{roleStr})
-        </foreach>
-        ) > 0
     </select>
 
 </mapper>

@@ -33,6 +33,7 @@ spring:
 mybatis-plus:
   mapper-locations: mapper/*.xml
   global-config:
+    banner: false
     db-config:
       logic-not-delete-value: 0
       logic-delete-value: 1
@@ -79,10 +80,17 @@ service:
     system-code: SYS_SRV_MGMT
     jwt-signing-key: ${JWT_SIGNING_KEY:}
     property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}
-    aspect:
-      log:
-        controller: true
+    aspect-log-controller: true
+    aspect-log-controller-printResult: true
+
 logging:
   level:
     root: info
     com.webank.taskman.mapper: debug
+    com.zaxxer.hikari.HikariDataSource: ERROR
+    org.springframework.web.servlet: WARN
+    org.springframework.security.web: WARN
+    #org.springframework.boot.web: WARN
+    org.apache.catalina.core: WARN
+    com.ulisesbocchio.jasyptspringboot: WARN
+    springfox.documentation.spring.web: WARN

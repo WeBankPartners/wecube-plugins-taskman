@@ -26,40 +26,46 @@ public class BaseEntity<T> {
         return createdBy;
     }
 
-    public void setCreatedBy(String createdBy) {
+    public <T extends BaseEntity> T  setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+        return (T)this;
     }
 
     public Date getCreatedTime() {
         return createdTime;
     }
 
-    public void setCreatedTime(Date createdTime) {
+    public <T extends BaseEntity> T setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
+        return (T)this;
     }
 
     public String getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(String updatedBy) {
+    public <T extends BaseEntity> T setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
+        return (T)this;
     }
 
     public Date getUpdatedTime() {
         return updatedTime;
+
     }
 
-    public void setUpdatedTime(Date updatedTime) {
+    public <T extends BaseEntity> T setUpdatedTime(Date updatedTime) {
         this.updatedTime = updatedTime;
+        return (T)this;
     }
 
     public Integer getDelFlag() {
         return delFlag;
     }
 
-    public void setDelFlag(Integer delFlag) {
+    public <T extends BaseEntity> T setDelFlag(Integer delFlag) {
         this.delFlag = delFlag;
+        return (T)this;
     }
 
     public BaseEntity setCurrenUserName(BaseEntity entity, String Id) {

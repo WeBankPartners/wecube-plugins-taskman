@@ -82,7 +82,7 @@ public class FormInfo extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<FormInfo> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<FormInfo>()
             .eq(!StringUtils.isEmpty(id), FormInfo::getId, id)
             .eq(!StringUtils.isEmpty(recordId), FormInfo::getRecordId, recordId)

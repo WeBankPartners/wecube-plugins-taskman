@@ -21,7 +21,7 @@ public class RequestTemplateGroupDTO {
     private String version;
 
     @ApiModelProperty(value = "状态", position = 5)
-    private Integer status;
+    private String status;
 
     @ApiModelProperty(value = "管理角色", position = 6)
     private String manageRoleId;
@@ -62,11 +62,11 @@ public class RequestTemplateGroupDTO {
         this.version = version;
     }
 
-    public Integer getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(Integer status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

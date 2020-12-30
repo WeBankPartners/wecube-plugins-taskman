@@ -19,7 +19,7 @@ public class TaskInfoDTO {
     private String taskTempId;
 
     @ApiModelProperty(value = "流程实例ID",position = 4)
-    private String procInstKey;
+    private String procInstId;
     @ApiModelProperty(value = "流程节点ID",position = 5)
     private String nodeDefId;
     @ApiModelProperty(value = "流程节点名称",position = 6)
@@ -42,6 +42,16 @@ public class TaskInfoDTO {
     private String reportRole;
     @ApiModelProperty(value = "附件ID",position = 14)
     private String attachFileId;
+
+    public TaskInfoDTO() {
+    }
+
+    public TaskInfoDTO(String id, String reporter, Date reportTime, String status) {
+        this.id = id;
+        this.reporter = reporter;
+        this.reportTime = reportTime;
+        this.status = status;
+    }
 
     public String getId() {
         return id;
@@ -71,12 +81,12 @@ public class TaskInfoDTO {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public TaskInfoDTO setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public TaskInfoDTO setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 
@@ -185,7 +195,7 @@ public class TaskInfoDTO {
                 .add("id='" + id + "'")
                 .add("parentId='" + parentId + "'")
                 .add("taskTempId='" + taskTempId + "'")
-                .add("procInstKey='" + procInstKey + "'")
+                .add("procInstId='" + procInstId + "'")
                 .add("nodeDefId='" + nodeDefId + "'")
                 .add("nodeName='" + nodeName + "'")
                 .add("name='" + name + "'")
@@ -194,7 +204,7 @@ public class TaskInfoDTO {
                 .add("reportTime=" + reportTime)
                 .add("emergency='" + emergency + "'")
                 .add("result='" + result + "'")
-                .add("status=" + status)
+                .add("status='" + status + "'")
                 .add("reportRole='" + reportRole + "'")
                 .add("attachFileId='" + attachFileId + "'")
                 .toString();

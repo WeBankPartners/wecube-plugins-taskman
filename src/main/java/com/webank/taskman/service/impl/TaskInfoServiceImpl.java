@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -13,12 +14,12 @@ import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
-import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq.FormItemBean;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.mapper.*;
+import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
@@ -56,14 +57,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     RequestInfoConverter requestInfoConverter;
 
-
-    @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
-
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
-
-
 
     @Autowired
     FormItemInfoService formItemInfoService;
@@ -71,23 +66,17 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     TaskInfoConverter taskInfoConverter;
 
+    @Autowired
+    FormInfoService formInfoService;
+
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
-        String currentUserRolesToString = AuthenticationContextHolder.getCurrentUserRolesToString();
-        req.setSourceTableFix("tt");
-        req.setUseRoleName(currentUserRolesToString);
+        LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
+                .getLambdaQueryWrapper().inSql(TaskInfo::getId,req.getEqUseRole());
         PageHelper.startPage(page,pageSize);
-
-        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectTaskInfo(req));
+        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectList(queryWrapper));
         QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
-    }
-
-    @Override
-    public TaskInfoResp selectSynthesisTaskInfoFormService(String id) throws Exception{
-        TaskInfoResp resp =taskInfoConverter.toResp(taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper()));
-        resp.setFormItemInfo(returnDetail(id));
-        return resp;
     }
 
     @Override
@@ -102,13 +91,11 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
         FormInfo formInfo = new FormInfo();
         formInfo.setRecordId(taskInfo.getId());
-
-        formInfo.setCreatedBy(currentUsername);
         formInfo.setUpdatedBy(currentUsername);
-        formInfo.setType(1);
+        formInfo.setType(StatusEnum.ENABLE.ordinal());
         formInfoMapper.insert(formInfo);
-        for (FormItemInfoReq formItemInfo : req.getFormItemInfoList()) {
-            FormItemInfo formItemInfo1=formItemInfoConverter.processTask(formItemInfo);
+        for (SaveFormItemInfoReq formItemInfo : req.getFormItemInfoList()) {
+            FormItemInfo formItemInfo1=formItemInfoConverter.toEntityByReq(formItemInfo);
             formItemInfo1.setFormId(formInfo.getId());
             formItemInfo1.setRecordId(taskInfo.getId());
             formItemInfoMapper.insert(formItemInfo1);
@@ -132,7 +119,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Override
     public CommonResponseDto cancelTask(CoreCancelTaskDTO req) {
         TaskInfo taskInfo = taskInfoMapper.selectOne(
-                new TaskInfo().setProcInstKey(req.getProcInstId()).setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
+                new TaskInfo().setProcInstId(req.getProcInstId()).setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
         if(null == taskInfo){
             throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
         }
@@ -144,8 +131,17 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstKey,String taskId) {
-        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstKey(procInstKey).getLambdaQueryWrapper());
+    public TaskInfoResp taskInfoDetail(String id) {
+        TaskInfo taskInfo = taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper());
+        TaskInfoResp taskInfoResp = taskInfoConverter.toResp(taskInfo);
+        taskInfoResp.setFormItemInfo(formItemInfoService.returnDetail(id));
+        return taskInfoResp;
+    }
+
+    @Override
+        public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstId,String taskId) {
+
+        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
         FormInfo formInfo = formInfoMapper.selectOne(new FormInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
@@ -156,7 +152,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         requestInfoInstanceResq.setRequestFormResq(formInfoConverter.toRequestFormResq(formInfo));
         requestInfoInstanceResq.getRequestFormResq().setFormItemInfo(formItemInfos);
 
-        List<TaskInfo> taskInfos = taskInfoMapper.selectList( new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstKey, procInstKey).orderByAsc(TaskInfo::getUpdatedTime));
+        List<TaskInfo> taskInfos = taskInfoMapper.selectList( new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstId, procInstId).orderByAsc(TaskInfo::getUpdatedTime));
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
@@ -179,20 +175,17 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public TaskInfoGetResp getTheTaskInfoService(String id) {
-        TaskInfo taskInfo = taskInfoMapper.selectOne(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getId, id));
-        TaskInfoGetResp taskInfoGetResp=new TaskInfoGetResp();
+    public TaskInfoDTO taskInfoReceive(String id) {
+        TaskInfo taskInfo = taskInfoMapper.selectById(id);
+
         if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
             taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
             taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
             taskInfo.setUpdatedTime(new Date());
             taskInfoMapper.updateById(taskInfo);
-            taskInfoGetResp = taskInfoConverter.toGetResp(taskInfo);
         }
-        return taskInfoGetResp;
+        return taskInfoConverter.toDto(taskInfo);
     }
-
-
 
     @Override
     @Transactional
@@ -201,51 +194,20 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             throw new TaskmanRuntimeException(" inputs is null");
         }
         req.getInputs().stream().forEach(task->{
-            TaskInfo taskInfo = taskInfoConverter.toentityByReq(task);
-            TaskInfo isExists =  taskInfoMapper.selectOne(new TaskInfo().setProcInstKey(
-                    task.getProcInstKey()).setNodeDefId(task.getTaskNodeId()).getLambdaQueryWrapper());
+            TaskInfo taskInfo = taskInfoConverter.toEntityByReq(task);
+            TaskInfo isExists = taskInfoMapper.selectOne(
+                    new TaskInfo(task.getProcInstId(),task.getTaskNodeId()).getLambdaQueryWrapper());
             if(null != isExists){
                 throw new TaskmanRuntimeException(String.format(
-                        "Task is exists! procInstKey:%s,TaskNodeId:%s",
-                        task.getProcInstKey(),task.getTaskNodeId()));
+                        "Task is exists! procInstId:%s,TaskNodeId:%s",
+                        task.getProcInstId(),task.getTaskNodeId()));
             }
             taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
-            saveOrUpdate(taskInfo);
-            List<FormItemBean> items = task.getFormItems();
-            if(null != items && items.size() > 0){
-                items.stream().forEach(item->{
-                    FormItemInfo formItemInfo = new FormItemInfo();
-                    formItemInfo.setRecordId(taskInfo.getId());
-                    formItemInfo.setItemTempId(item.getItemId());
-                    formItemInfo.setName(item.getKey());
-                    formItemInfo.setValue(item.getVal().stream().collect(Collectors.joining(",")));
-                    formItemInfoService.save(formItemInfo);
-                });
-            }
+            save(taskInfo);
+            List<FormItemInfo> items = formItemInfoConverter.toEntityByBeans(task.getFormItems());
+            formInfoService.saveFormInfoAndItems(items,taskInfo.getTaskTempId(),taskInfo.getId());
         });
         return  CommonResponseDto.okay();
     }
 
-
-    public  List<FormItemInfoResp> returnDetail(String id){
-        FormInfo formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(id).getLambdaQueryWrapper());
-        if (null==formInfo||"".equals(formInfo)){
-            throw new TaskmanRuntimeException("The request details do not exist");
-        }
-        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
-        List<FormItemInfoResp> formItemInfoResps = formItemInfoConverter.toDto(formItemInfos);
-        for (FormItemInfoResp formItemInfoResp : formItemInfoResps) {
-            FormItemTemplate formItemTemplate = formItemTemplateMapper.selectOne(new QueryWrapper<FormItemTemplate>().lambda().
-                    eq(FormItemTemplate::getId, formItemInfoResp.getItemTempId()));
-            formItemInfoResp.setElementType(formItemTemplate.getElementType());
-            formItemInfoResp.setTitle(formItemTemplate.getTitle());
-            formItemInfoResp.setWidth(formItemTemplate.getWidth());
-            formItemInfoResp.setIsEdit(formItemTemplate.getIsEdit());
-            formItemInfoResp.setIsView(formItemTemplate.getIsView());
-            formItemInfoResp.setSort(formItemTemplate.getSort());
-            formItemInfoResp.setName(formItemTemplate.getName());
-            formItemInfoResp.setDataOptions(formItemTemplate.getDataOptions());
-        }
-        return formItemInfoResps;
-    }
 }

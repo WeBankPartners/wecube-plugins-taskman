@@ -21,7 +21,7 @@ public class SaveFormTemplateReq {
     private String tempId;
 
     @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType = "int",position = 3)
-    private Integer tempType=0;
+    private String tempType="0";
 
     @NotBlank(message = "名称不能为空")
     @ApiModelProperty(value = "",required = true,position = 4)
@@ -53,7 +53,7 @@ public class SaveFormTemplateReq {
     public SaveFormTemplateReq() {
     }
 
-    public SaveFormTemplateReq(String tempId, Integer tempType) {
+    public SaveFormTemplateReq(String tempId, String tempType) {
         this.tempId = tempId;
         this.tempType = tempType;
     }
@@ -74,11 +74,11 @@ public class SaveFormTemplateReq {
         this.tempId = tempId;
     }
 
-    public Integer getTempType() {
+    public String getTempType() {
         return tempType;
     }
 
-    public void setTempType(Integer tempType) {
+    public void setTempType(String tempType) {
         this.tempType = tempType;
     }
 

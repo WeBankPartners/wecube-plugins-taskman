@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.domain.RoleRelation;
@@ -22,9 +23,9 @@ public class RoleRelationServiceImpl  extends ServiceImpl<RoleRelationMapper, Ro
     }
 
     @Override
-    public void saveRoleRelation(String recordId,RoleTypeEnum roleType,List<RoleDTO> roles) {
+    public void saveRoleRelation(String recordId, RoleTypeEnum roleType, List<RoleDTO> roles) {
         roles.stream().forEach(role-> {
-            if(!org.springframework.util.StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())  ){
+            if(!StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())  ){
                 this.getBaseMapper().insert( new RoleRelation(recordId, roleType.getType(),role.getRoleName(),role.getDisplayName()));
             }
         });

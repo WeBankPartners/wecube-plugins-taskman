@@ -1,13 +1,22 @@
 package com.webank.taskman.aspect;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.webank.taskman.base.JsonResponse;
+import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.utils.DateUtils;
 import com.webank.taskman.utils.GsonUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.*;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.aspectj.lang.reflect.SourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.aspectj.MethodInvocationProceedingJoinPoint;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -16,13 +25,18 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Aspect
 @Component
-@ConditionalOnProperty(value = "service.taskman.aspect.log.controller")
+@ConditionalOnProperty(value = "service.taskman.aspect-log-controller")
 public class ControllerLogAspect {
 
     private static final Logger log = LoggerFactory.getLogger(ControllerLogAspect.class);
@@ -31,18 +45,21 @@ public class ControllerLogAspect {
 
     static final String pCutStr = "execution(* com.webank.taskman.controller.**.*.*(..))";
 
+    @Value(value = "${service.taskman.aspect-log-controller-printResult:false}")
+    private boolean printResult = false;
     public ControllerLogAspect(){
         log.info("Create log AOP instance:ControllerLogAspect...");
     }
+
     @Pointcut(value = pCutStr)
-    public void logPointcut() {
-    }
+    public void logPointcut() {}
+
     @Around("logPointcut()")
-    public Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
+    public <T> Object doAround(JoinPoint joinPoint) throws Throwable {
         try {
             HttpServletRequest request = getHttpServletRequest();
             String tragetClassName = joinPoint.getSignature().getDeclaringTypeName();
-            String method = request.getMethod();
+            String requestMethod = request.getMethod();
             String methodName = joinPoint.getSignature().getName();
             String uri = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
             StringBuffer logs = new StringBuffer();
@@ -50,30 +67,37 @@ public class ControllerLogAspect {
             String jsonKey = "\n\t\"%s\":";
             String josnValue = "\"%s\"";
             logs.append(String.format("==========================Receive Request: [%s] start==========================",bestMatchingPattern)).append("\n{");
-            logs.append(String.format(jsonKey,"URI")).append(uri);
-            logs.append(String.format(jsonKey,"RequestMethod")).append(String.format(josnValue,method)).append(",");
+            logs.append(String.format(jsonKey,"URI")).append(String.format(josnValue,uri)).append(",");
+            logs.append(String.format(jsonKey,"RequestMethod")).append(String.format(josnValue,requestMethod)).append(",");
             logs.append(String.format(jsonKey,"className")).append(String.format(josnValue,tragetClassName)).append(",");
             logs.append(String.format(jsonKey,"inteface")).append(String.format(josnValue,methodName)).append(",");
             Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
             if(null != pathVariables){
-                logs.append(String.format(jsonKey,"pathParam")).append(String.format(josnValue,GsonUtil.GsonString(pathVariables))).append(",");
+                logs.append(String.format(jsonKey,"pathParam")).append(GsonUtil.GsonString(pathVariables)).append(",");
             }
             String queryString = request.getQueryString();
             if(!StringUtils.isEmpty(request.getQueryString())){
                 logs.append(String.format(jsonKey,"queryParam")).append(String.format(josnValue,queryString)).append(",");
             }
             Object[] args = joinPoint.getArgs();
-            if(!methodName.contains("S3") &&"POST".equals(method) && null != args && args.length > 0 ) {
-                logs.append(String.format(jsonKey,"body")).append(String.format(josnValue,GsonUtil.GsonString(args[args.length - 1]))).append(",");
+            if(!methodName.contains("S3") &&"POST".equals(requestMethod) && null != args && args.length > 0 ) {
+                logs.append(String.format(jsonKey,"body")).append(GsonUtil.GsonString(args[args.length - 1])).append(",");
             }
-            logs.append("\n}");
-            String logContent = URLDecoder.decode(logs.toString(), "UTF-8");
-            log.info(logContent);
-            Object result = joinPoint.proceed();
+            logs.append(String.format(jsonKey,"returnClass")).append(String.format(josnValue,
+                    getResultClass(((MethodSignature)joinPoint.getSignature()).getMethod().getGenericReturnType().getTypeName())
+            )).append(",");
+            Object result = ((ProceedingJoinPoint)joinPoint).proceed();
             if(null == result) {
                 return null;
             }
-            log.info("result is Class：{}",result.getClass().getName());
+            if(printResult){
+                logs.append(String.format(jsonKey,"respone")).append(GsonUtil.GsonString(result));
+            }
+            logs.append("\n}");
+            String logContent = URLDecoder.decode(logs.toString(), "UTF-8");
+
+            log.info(logContent);
+            log.info("==========================Response Request: [{}] complete=========================",bestMatchingPattern);
             return result;
         } catch (Throwable e) {
             log.error("error：{}"+e.getMessage());
@@ -81,6 +105,14 @@ public class ControllerLogAspect {
         }
     }
 
+    private  String getResultClass(String name){
+        String[] typeNames = name.split("<");
+        for(int i=0;i<typeNames.length;i++){
+            String str = typeNames[i].substring(0,typeNames[i].lastIndexOf(".")+1);
+            name = name.replace(str,"");
+        }
+        return name;
+    }
 
     @Before(value =pCutStr)
     public void beforMehhod() {
@@ -89,34 +121,14 @@ public class ControllerLogAspect {
 
     @AfterReturning(returning="result",value = pCutStr)
     public void afterMehhod(JoinPoint joinPoint, Object result) {
-        long end = System.currentTimeMillis();
-        long total = end - startTime.get();
-        HttpServletRequest request = getHttpServletRequest();
-        String methodName = joinPoint.getSignature().getName();
-        String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-        log.info("The total execution time of method [{}] is：{}",methodName, DateUtils.formatLongToTimeStr(total));
-        log.info("==========================Response Request: [{}] complete=========================",bestMatchingPattern);
+        log.info("The total execution time of method [{}] is：{}",
+                joinPoint.getSignature().getName(),
+                DateUtils.formatLongToTimeStr(System.currentTimeMillis() - startTime.get()));
     }
 
     private HttpServletRequest getHttpServletRequest() {
         ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return servletRequestAttributes.getRequest();
-    }
-
-    private void getparams(Object[] args,StringBuffer logs) throws UnsupportedEncodingException {
-        HttpServletRequest request = getHttpServletRequest();
-        String method = request.getMethod();
-
-        switch (method){
-            case "POST":
-                logs.append("body:").append(GsonUtil.GsonString(args[args.length-1]));
-                break;
-            case "GET":
-                logs.append("queryParam:").append(request.getQueryString());
-                break;
-            default:
-                break;
-        }
     }
 
 }

@@ -1,17 +1,24 @@
 package com.webank.taskman.service.impl;
 
+
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.converter.FormItemInfoConverter;
 import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.dto.resp.FormItemInfoResp;
 import com.webank.taskman.dto.resp.TaskServiceMetaResp;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 
 
 @Service
 public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMapper, FormItemTemplate> implements FormItemTemplateService {
 
+    @Autowired
+    FormItemInfoConverter formItemInfoConverter;
 
     @Override
     public void deleteRequestTemplateByID(String id) {
@@ -24,9 +31,10 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
     }
 
     @Override
-    public TaskServiceMetaResp getTaskCreateServiceMeta(String procInstKey, String nodeDefId) {
+    public TaskServiceMetaResp getTaskCreateServiceMeta(String procInstId, String nodeDefId) {
         TaskServiceMetaResp resp = new TaskServiceMetaResp();
-        resp.setFormItems(this.getBaseMapper().getCreateTaskServiceMeta(procInstKey,nodeDefId));
+        List<FormItemInfoResp> list = getBaseMapper().getCreateTaskServiceMeta(procInstId,nodeDefId);
+        resp.setFormItems(formItemInfoConverter.respToServiceMetas(list));
         return resp;
     }
 

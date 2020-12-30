@@ -9,5 +9,4 @@ import java.util.Map;
 
 public interface AttachFileMapper extends BaseMapper<AttachFile> {
 
-    List<Map<String,Object>> getList();
 }

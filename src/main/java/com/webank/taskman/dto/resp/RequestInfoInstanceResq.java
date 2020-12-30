@@ -4,12 +4,13 @@ import io.swagger.annotations.ApiModel;
 
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 
 @ApiModel
 public class RequestInfoInstanceResq {
     private String id;
     private String requestTempId;
-    private String procInstKey;
+    private String procInstId;
     private String rootEntity;
     private String name;
     private String reporter;
@@ -41,12 +42,12 @@ public class RequestInfoInstanceResq {
         this.requestTempId = requestTempId;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public void setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public void setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
     }
 
     public String getRootEntity() {
@@ -147,22 +148,22 @@ public class RequestInfoInstanceResq {
 
     @Override
     public String toString() {
-        return "RequestInfoInstanceResq{" +
-                "id='" + id + '\'' +
-                ", requestTempId='" + requestTempId + '\'' +
-                ", procInstKey='" + procInstKey + '\'' +
-                ", rootEntity='" + rootEntity + '\'' +
-                ", name='" + name + '\'' +
-                ", reporter='" + reporter + '\'' +
-                ", reportTime=" + reportTime +
-                ", emergency='" + emergency + '\'' +
-                ", reportRole='" + reportRole + '\'' +
-                ", attachFileId='" + attachFileId + '\'' +
-                ", status='" + status + '\'' +
-                ", dueDate='" + dueDate + '\'' +
-                ", result='" + result + '\'' +
-                ", requestFormResq=" + requestFormResq +
-                ", taskInfoInstanceResps=" + taskInfoInstanceResps +
-                '}';
+        return new StringJoiner(", ", RequestInfoInstanceResq.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("requestTempId='" + requestTempId + "'")
+                .add("procInstId='" + procInstId + "'")
+                .add("rootEntity='" + rootEntity + "'")
+                .add("name='" + name + "'")
+                .add("reporter='" + reporter + "'")
+                .add("reportTime=" + reportTime)
+                .add("emergency='" + emergency + "'")
+                .add("reportRole='" + reportRole + "'")
+                .add("attachFileId='" + attachFileId + "'")
+                .add("status='" + status + "'")
+                .add("dueDate='" + dueDate + "'")
+                .add("result='" + result + "'")
+                .add("requestFormResq=" + requestFormResq)
+                .add("taskInfoInstanceResps=" + taskInfoInstanceResps)
+                .toString();
     }
 }

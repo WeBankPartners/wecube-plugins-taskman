@@ -18,7 +18,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     private String id;
     private String parentId;
     private String taskTempId;
-    private String procInstKey;
+    private String procInstId;
     private String nodeDefId;
     private String nodeName;
     private String callbackUrl;
@@ -42,6 +42,11 @@ public class TaskInfo extends BaseEntity implements Serializable {
     public TaskInfo() {
     }
 
+    public TaskInfo(String parentId, String nodeDefId) {
+        this.parentId = parentId;
+        this.nodeDefId = nodeDefId;
+    }
+
     public TaskInfo(String id, String parentId, String taskTempId, String nodeDefId, String nodeName, String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime, String emergency, String reportRole, String result, String description, String attachFileId, String status, String version) {
         this.id = id;
         this.parentId = parentId;
@@ -63,7 +68,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     }
 
     @JsonIgnore
-    public LambdaQueryWrapper getLambdaQueryWrapper() {
+    public LambdaQueryWrapper<TaskInfo> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<TaskInfo>()
                 .eq(!StringUtils.isEmpty(id), TaskInfo::getId, id)
                 .eq(!StringUtils.isEmpty(parentId), TaskInfo::getParentId, parentId)
@@ -112,12 +117,12 @@ public class TaskInfo extends BaseEntity implements Serializable {
         return this;
     }
 
-    public String getProcInstKey() {
-        return procInstKey;
+    public String getProcInstId() {
+        return procInstId;
     }
 
-    public TaskInfo setProcInstKey(String procInstKey) {
-        this.procInstKey = procInstKey;
+    public TaskInfo setProcInstId(String procInstId) {
+        this.procInstId = procInstId;
         return this;
     }
 

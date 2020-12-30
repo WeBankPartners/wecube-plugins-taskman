@@ -58,10 +58,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     RequestInfoConverter requestInfoConverter;
 
-
-    @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
-
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
 
@@ -87,7 +83,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Override
     public TaskInfoResp selectSynthesisTaskInfoFormService(String id){
         TaskInfoResp resp =taskInfoConverter.toResp(taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper()));
-        resp.setFormItemInfo(returnDetail(id));
+        resp.setFormItemInfo(formItemInfoService.returnDetail(id));
         return resp;
     }
 
@@ -144,9 +140,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public TaskInfoResp taskInfoDetail(String id) {
-        TaskInfoResp taskInfoResp = taskInfoConverter.toResp(getById(id));
-        List<FormItemInfo> formItemInfo = formItemInfoService.list(new FormItemInfo().setRecordId(id).getLambdaQueryWrapper());
-        taskInfoResp.setFormItemInfo(formItemInfoConverter.toDto(formItemInfo));
+        TaskInfo taskInfo = taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper());
+        TaskInfoResp taskInfoResp = taskInfoConverter.toResp(taskInfo);
+        taskInfoResp.setFormItemInfo(formItemInfoService.returnDetail(id));
         return taskInfoResp;
     }
 
@@ -222,26 +218,4 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         return  CommonResponseDto.okay();
     }
 
-
-    public  List<FormItemInfoResp> returnDetail(String id){
-        FormInfo formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(id).getLambdaQueryWrapper());
-        if (null==formInfo||"".equals(formInfo)){
-            throw new TaskmanRuntimeException("The request details do not exist");
-        }
-        List<FormItemInfo> formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
-        List<FormItemInfoResp> formItemInfoResps = formItemInfoConverter.toDto(formItemInfos);
-        for (FormItemInfoResp formItemInfoResp : formItemInfoResps) {
-            FormItemTemplate formItemTemplate = formItemTemplateMapper.selectOne(new QueryWrapper<FormItemTemplate>().lambda().
-                    eq(FormItemTemplate::getId, formItemInfoResp.getItemTempId()));
-            formItemInfoResp.setElementType(formItemTemplate.getElementType());
-            formItemInfoResp.setTitle(formItemTemplate.getTitle());
-            formItemInfoResp.setWidth(formItemTemplate.getWidth());
-            formItemInfoResp.setIsEdit(formItemTemplate.getIsEdit());
-            formItemInfoResp.setIsView(formItemTemplate.getIsView());
-            formItemInfoResp.setSort(formItemTemplate.getSort());
-            formItemInfoResp.setName(formItemTemplate.getName());
-            formItemInfoResp.setDataOptions(formItemTemplate.getDataOptions());
-        }
-        return formItemInfoResps;
-    }
 }

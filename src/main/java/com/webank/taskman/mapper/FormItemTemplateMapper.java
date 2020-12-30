@@ -15,4 +15,6 @@ public interface FormItemTemplateMapper extends BaseMapper<FormItemTemplate> {
     int deleteByDomain(FormItemTemplate formItemTemplate);
 
     List<FormItemInfoResp> getCreateTaskServiceMeta(@Param("procInstId")String procInstId, @Param("nodeDefId") String nodeDefId);
+
+    List<FormItemInfoResp> selectDetail(String id);
 }

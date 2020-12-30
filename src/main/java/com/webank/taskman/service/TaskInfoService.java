@@ -19,7 +19,6 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req);
 
-
     TaskInfoResp selectSynthesisTaskInfoFormService(String id) throws TaskmanRuntimeException;
 
     RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId);
@@ -27,8 +26,6 @@ public interface TaskInfoService extends IService<TaskInfo> {
     TaskInfoDTO taskInfoReceive(String id);
 
     CommonResponseDto createTask(CoreCreateTaskDTO req);
-
-    List<FormItemInfoResp> returnDetail(String id);
 
     String ProcessingTasksService(ProcessingTasksReq ptr) throws TaskmanRuntimeException;
 

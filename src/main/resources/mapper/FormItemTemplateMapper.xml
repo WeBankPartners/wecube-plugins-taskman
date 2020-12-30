@@ -30,4 +30,26 @@
         )
     </select>
 
+    <resultMap id="selectDetailMap" type="com.webank.taskman.dto.resp.FormItemInfoResp">
+        <id property="id" column="id"/>
+        <result property="value" column="value"/>
+        <result property="itemTempId" column="item_temp_id"/>
+        <result property="isView" column="is_view"/>
+        <result property="isEdit" column="is_edit"/>
+        <result property="width" column="width"/>
+        <result property="name" column="name"/>
+        <result property="elementType" column="element_type"/>
+        <result property="dataOptions" column="data_options"/>
+    </resultMap>
+
+    <select id="selectDetail" resultMap="selectDetailMap">
+        SELECT
+        fii.id,fii.value,fii.item_temp_id,fit.is_view,fit.is_edit,fit.width,fit.title,fit.`name`,fit.element_type,fit.data_options
+        FROM
+        form_item_template fit
+        LEFT JOIN form_item_info fii ON fii.item_temp_id = fit.id
+        WHERE
+        fii.record_id = #{id}
+    </select>
+
 </mapper>

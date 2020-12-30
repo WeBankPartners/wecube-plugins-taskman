@@ -16,10 +16,7 @@ import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.mapper.RequestInfoMapper;
-import com.webank.taskman.service.FormInfoService;
-import com.webank.taskman.service.FormTemplateService;
-import com.webank.taskman.service.RequestInfoService;
-import com.webank.taskman.service.RequestTemplateService;
+import com.webank.taskman.service.*;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.support.core.dto.ProcessDataPreviewDto.GraphNodeDto;
@@ -47,6 +44,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Autowired
     FormItemInfoConverter formItemInfoConverter;
+
+    @Autowired
+    FormItemInfoService formItemInfoService;
 
 
 
@@ -119,6 +119,14 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         creationInfoDto.setRootEntityValue(rootEntityValue);
         creationInfoDto.setTaskNodeBindInfos(createTaskNodeBindInfos(processDataPreviewDto.getProcessSessionId()));
         return creationInfoDto;
+    }
+
+    @Override
+    public RequestInfoResq selectDetail(String id) {
+        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setId(id).getLambdaQueryWrapper());
+        RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfo);
+        requestInfoResq.setFormItemInfos(formItemInfoService.returnDetail(id));
+        return requestInfoResq;
     }
 
     private DynamicEntityValueDto createDynamicEntityValues(ProcessDataPreviewDto processDataPreviewDto, String guid) {

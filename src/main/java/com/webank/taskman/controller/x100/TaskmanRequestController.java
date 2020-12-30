@@ -214,11 +214,9 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-info-detail")
     public JsonResponse<RequestInfoResq> requestInfoDetail(@PathVariable("id") String id)
             throws TaskmanRuntimeException {
-        RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfoService.getById(id));
-        List<FormItemInfo> items = formItemInfoService.list(new FormItemInfo().setRecordId(id).getLambdaQueryWrapper());
-        requestInfoResq.setFormItemInfos(formItemInfoConverter.toDto(items));
-        List<FormItemInfoResp> formItemInfoResps = taskInfoService.returnDetail(id);
-        requestInfoResq.setFormItemInfos(formItemInfoResps);
+
+        RequestInfoResq requestInfoResq =requestInfoService.selectDetail(id);
+
         return JsonResponse.okayWithData(requestInfoResq);
     }
 

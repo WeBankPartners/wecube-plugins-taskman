@@ -23,4 +23,5 @@ public interface RequestInfoService extends IService<RequestInfo> {
 
     DynamicWorkflowInstCreationInfoDto createDynamicWorkflowInstCreationInfoDto(String procDefId, String guid);
 
+    RequestInfoResq selectDetail(String id);
 }

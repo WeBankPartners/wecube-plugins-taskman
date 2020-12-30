@@ -28,13 +28,17 @@ import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
+import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.dto.RolesDataResponse;
+import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate> implements RequestTemplateService {
@@ -62,10 +66,18 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Autowired
     FormItemTemplateMapper formItemTemplateMapper;
 
+    @Autowired
+    CoreServiceStub coreServiceStub;
+
 
     @Override
     @Transactional
     public RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq req) {
+        List<RoleDTO> roles =roleRelationConverter.rolesDataResponseToDtoList(
+                coreServiceStub.authRoleCurrentUser(AuthenticationContextHolder.getCurrentUsername()));
+        Set<RoleDTO> ts = new HashSet<RoleDTO>(roles);
+        ts.addAll(req.getUseRoles());
+        req.setUseRoles(new ArrayList<>(ts));
         RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);

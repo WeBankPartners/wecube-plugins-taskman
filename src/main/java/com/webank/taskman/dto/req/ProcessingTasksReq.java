@@ -8,7 +8,7 @@ public class ProcessingTasksReq {
 
     private String result;
 
-    private List<FormItemInfoReq> formItemInfoList;
+    private List<SaveFormItemInfoReq> formItemInfoList;
 
     public String getRecordId() {
         return recordId;
@@ -26,11 +26,11 @@ public class ProcessingTasksReq {
         this.result = result;
     }
 
-    public List<FormItemInfoReq> getFormItemInfoList() {
+    public List<SaveFormItemInfoReq> getFormItemInfoList() {
         return formItemInfoList;
     }
 
-    public void setFormItemInfoList(List<FormItemInfoReq> formItemInfoList) {
+    public void setFormItemInfoList(List<SaveFormItemInfoReq> formItemInfoList) {
         this.formItemInfoList = formItemInfoList;
     }
 

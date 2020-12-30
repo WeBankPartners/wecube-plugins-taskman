@@ -41,18 +41,13 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Autowired
     RequestInfoConverter requestInfoConverter;
-    @Autowired
-    FormItemInfoConverter formItemInfoConverter;
-
 
     @Autowired
     FormInfoService formInfoService;
 
     @Autowired
-    FormTemplateService formTemplateService;
+    FormItemInfoConverter formItemInfoConverter;
 
-    @Autowired
-    FormItemInfoServiceImpl formItemInfoService;
 
 
     @Override
@@ -75,28 +70,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         requestInfo.setReportTime(new Date());
         requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
         saveOrUpdate(requestInfo);
-        List<SaveFormItemInfoReq>  formItems = req.getFormItems();
-        String requestTempId = requestInfo.getRequestTempId();
-        if (null != formItems && formItems.size() > 0) {
-            FormTemplate formTemplate = formTemplateService.getOne(
-                    new FormTemplate(null, requestTempId, StatusEnum.DEFAULT.ordinal() + "").getLambdaQueryWrapper());
-            if (null == formTemplate) {
-                throw new TaskmanRuntimeException("The FormTemplate do not exist");
-            }
-            formInfoService.remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfo.getId())));
-            FormInfo form = new FormInfo();
-            form.setRecordId(requestInfo.getId());
-            form.setFormTemplateId(formTemplate.getId());
-            form.setCurrenUserName(form, form.getId());
-            formInfoService.save(form);
-            formItems.stream().forEach(item -> {
-                FormItemInfo formItemInfo = formItemInfoConverter.toEntityBySave(item);
-                formItemInfo.setFormId(form.getId());
-                formItemInfo.setRecordId(requestInfo.getId());
-                formItemInfo.setItemTempId(item.getItemTempId());
-                formItemInfoService.save(formItemInfo);
-            });
-        }
+        formInfoService.saveFormInfoAndItems(formItemInfoConverter.toEntityByReqs(req.getFormItems()), requestInfo.getRequestTempId(), requestInfo.getId());
 
         DynamicWorkflowInstInfoDto response = createNewWorkflowInstance(requestInfo);
         if (null == response) {
@@ -109,6 +83,8 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         }
         return requestInfoConverter.toResp(requestInfo);
     }
+
+
 
     @Autowired
     CoreServiceStub coreServiceStub;

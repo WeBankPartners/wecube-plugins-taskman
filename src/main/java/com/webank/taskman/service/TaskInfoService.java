@@ -2,6 +2,7 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
@@ -19,17 +20,17 @@ public interface TaskInfoService extends IService<TaskInfo> {
     QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req);
 
 
-    TaskInfoResp selectSynthesisTaskInfoFormService(String id) throws Exception;
+    TaskInfoResp selectSynthesisTaskInfoFormService(String id) throws TaskmanRuntimeException;
 
     RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId);
 
-    TaskInfoDTO getTheTaskInfoService(String id);
+    TaskInfoDTO taskInfoReceive(String id);
 
     CommonResponseDto createTask(CoreCreateTaskDTO req);
 
     List<FormItemInfoResp> returnDetail(String id);
 
-    String ProcessingTasksService(ProcessingTasksReq ptr) throws Exception;
+    String ProcessingTasksService(ProcessingTasksReq ptr) throws TaskmanRuntimeException;
 
     CommonResponseDto cancelTask(CoreCancelTaskDTO req);
 

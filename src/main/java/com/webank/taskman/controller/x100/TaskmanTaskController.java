@@ -2,7 +2,6 @@ package com.webank.taskman.controller.x100;
 
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
-import com.ulisesbocchio.jasyptspringboot.EncryptablePropertySourceConverter;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.TaskInfoDTO;
@@ -30,7 +29,6 @@ import javax.validation.Valid;
 public class TaskmanTaskController {
 
     private static final Logger log = LoggerFactory.getLogger(TaskmanTaskController.class);
-
 
     @Autowired
     private TaskTemplateService taskTemplateService;
@@ -63,7 +61,7 @@ public class TaskmanTaskController {
     @GetMapping("/template/detail/{id}")
     @ApiOperation(value = "task-template-detail", notes = "需要传入id")
     public JsonResponse taskTemplateDetail(@PathVariable("id") String id) throws Exception {
-        TaskTemplateResp taskTemplateResp = taskTemplateService.selectTaskTemplateOne(id);
+        TaskTemplateResp taskTemplateResp = taskTemplateService.taskTemplateDetail(id);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
@@ -78,15 +76,12 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
-
     @ApiOperationSupport(order =5)
     @PostMapping("/details")
     @ApiOperation(value = "task-info-detail")
     public JsonResponse<TaskInfoResp> taskInfoDetail(String id)
-            throws Exception {
-        TaskInfoResp taskInfoResp = taskInfoService.taskInfoDetail(id);
-
-        return JsonResponse.okayWithData(taskInfoResp);
+    {
+        return JsonResponse.okayWithData(taskInfoService.taskInfoDetail(id));
     }
 
 
@@ -94,12 +89,12 @@ public class TaskmanTaskController {
     @PostMapping("/receive")
     @ApiOperation(value = "task-info-receive")
     public JsonResponse<TaskInfoDTO> taskInfoReceive(String id)
-            throws Exception {
-        TaskInfoDTO taskInfoGetResp = taskInfoService.getTheTaskInfoService(id);
-        if (taskInfoGetResp.getId()==null){
+    {
+        TaskInfoDTO taskDTO = taskInfoService.taskInfoReceive(id);
+        if (null == taskDTO.getId()){
             return JsonResponse.customError("The task is not in an unclaimed state");
         }
-        return JsonResponse.okayWithData(taskInfoGetResp);
+        return JsonResponse.okayWithData(taskDTO);
     }
 
 
@@ -107,8 +102,8 @@ public class TaskmanTaskController {
     @GetMapping("/instance/{proc-inst-id}/{task-id}")
     @ApiOperation(value = "task-info-instance")
     public JsonResponse<RequestInfoInstanceResq> taskInfoInstance(
-            @PathVariable("proc-inst-id") String procInstId, @PathVariable("task-id") String taskId)
-            throws Exception {
+        @PathVariable("proc-inst-id") String procInstId,@PathVariable("task-id") String taskId)
+    {
         RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(procInstId,taskId);
         return JsonResponse.okayWithData(requestInfoInstanceResq);
     }
@@ -117,7 +112,7 @@ public class TaskmanTaskController {
     @PostMapping("/processing")
     @ApiOperation(value = "task-info-processing")
     public JsonResponse<String> taskInfoProcessing(@Valid @RequestBody ProcessingTasksReq req)
-            throws Exception {
+    {
         String msg = taskInfoService.ProcessingTasksService(req);
         return JsonResponse.okayWithData(msg);
     }

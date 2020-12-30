@@ -42,6 +42,11 @@ public class TaskInfo extends BaseEntity implements Serializable {
     public TaskInfo() {
     }
 
+    public TaskInfo(String parentId, String nodeDefId) {
+        this.parentId = parentId;
+        this.nodeDefId = nodeDefId;
+    }
+
     public TaskInfo(String id, String parentId, String taskTempId, String nodeDefId, String nodeName, String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime, String emergency, String reportRole, String result, String description, String attachFileId, String status, String version) {
         this.id = id;
         this.parentId = parentId;

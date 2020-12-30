@@ -12,7 +12,7 @@ public interface TaskTemplateService extends IService<TaskTemplate> {
 
     TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq taskTemplateReq);
 
-    TaskTemplateResp selectTaskTemplateOne(String id);
+    TaskTemplateResp taskTemplateDetail(String id);
 
     QueryResponse<TaskTemplateByRoleResp> selectTaskTemplateByRole(Integer page, Integer pageSize);
 }

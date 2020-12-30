@@ -20,6 +20,7 @@ import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.mapper.*;
+import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
@@ -70,6 +71,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     TaskInfoConverter taskInfoConverter;
 
+    @Autowired
+    FormInfoService formInfoService;
+
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
@@ -81,7 +85,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public TaskInfoResp selectSynthesisTaskInfoFormService(String id) throws Exception{
+    public TaskInfoResp selectSynthesisTaskInfoFormService(String id){
         TaskInfoResp resp =taskInfoConverter.toResp(taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper()));
         resp.setFormItemInfo(returnDetail(id));
         return resp;
@@ -99,13 +103,11 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
         FormInfo formInfo = new FormInfo();
         formInfo.setRecordId(taskInfo.getId());
-
-        formInfo.setCreatedBy(currentUsername);
         formInfo.setUpdatedBy(currentUsername);
-        formInfo.setType(1);
+        formInfo.setType(StatusEnum.ENABLE.ordinal());
         formInfoMapper.insert(formInfo);
-        for (FormItemInfoReq formItemInfo : req.getFormItemInfoList()) {
-            FormItemInfo formItemInfo1=formItemInfoConverter.processTask(formItemInfo);
+        for (SaveFormItemInfoReq formItemInfo : req.getFormItemInfoList()) {
+            FormItemInfo formItemInfo1=formItemInfoConverter.toEntityByReq(formItemInfo);
             formItemInfo1.setFormId(formInfo.getId());
             formItemInfo1.setRecordId(taskInfo.getId());
             formItemInfoMapper.insert(formItemInfo1);
@@ -142,13 +144,15 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public TaskInfoResp taskInfoDetail(String id) {
-        TaskInfo taskInfo = new TaskInfo().setId(id);
-
-        return null;
+        TaskInfoResp taskInfoResp = taskInfoConverter.toResp(getById(id));
+        List<FormItemInfo> formItemInfo = formItemInfoService.list(new FormItemInfo().setRecordId(id).getLambdaQueryWrapper());
+        taskInfoResp.setFormItemInfo(formItemInfoConverter.toDto(formItemInfo));
+        return taskInfoResp;
     }
 
     @Override
         public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstId,String taskId) {
+
         RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
@@ -183,8 +187,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public TaskInfoDTO getTheTaskInfoService(String id) {
-        TaskInfo taskInfo = taskInfoMapper.selectOne(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getId, id));
+    public TaskInfoDTO taskInfoReceive(String id) {
+        TaskInfo taskInfo = taskInfoMapper.selectById(id);
 
         if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
             taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
@@ -192,15 +196,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             taskInfo.setUpdatedTime(new Date());
             taskInfoMapper.updateById(taskInfo);
         }
-        TaskInfoDTO dto = new TaskInfoDTO(
-                taskInfo.getId(),
-                taskInfo.getReporter(),
-                taskInfo.getReportTime(),
-                taskInfo.getStatus());
-        return dto;
+        return taskInfoConverter.toDto(taskInfo);
     }
-
-
 
     @Override
     @Transactional
@@ -210,26 +207,17 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
         req.getInputs().stream().forEach(task->{
             TaskInfo taskInfo = taskInfoConverter.toEntityByReq(task);
-            TaskInfo isExists =  taskInfoMapper.selectOne(new TaskInfo().setProcInstId(
-                    task.getProcInstId()).setNodeDefId(task.getTaskNodeId()).getLambdaQueryWrapper());
+            TaskInfo isExists = taskInfoMapper.selectOne(
+                    new TaskInfo(task.getProcInstId(),task.getTaskNodeId()).getLambdaQueryWrapper());
             if(null != isExists){
                 throw new TaskmanRuntimeException(String.format(
                         "Task is exists! procInstId:%s,TaskNodeId:%s",
                         task.getProcInstId(),task.getTaskNodeId()));
             }
             taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
-            saveOrUpdate(taskInfo);
-            List<FormItemBean> items = task.getFormItems();
-            if(null != items && items.size() > 0){
-                items.stream().forEach(item->{
-                    FormItemInfo formItemInfo = new FormItemInfo();
-                    formItemInfo.setRecordId(taskInfo.getId());
-                    formItemInfo.setItemTempId(item.getItemId());
-                    formItemInfo.setName(item.getKey());
-                    formItemInfo.setValue(item.getVal().stream().collect(Collectors.joining(",")));
-                    formItemInfoService.save(formItemInfo);
-                });
-            }
+            save(taskInfo);
+            List<FormItemInfo> items = formItemInfoConverter.toEntityByBeans(task.getFormItems());
+            formInfoService.saveFormInfoAndItems(items,taskInfo.getTaskTempId(),taskInfo.getId());
         });
         return  CommonResponseDto.okay();
     }

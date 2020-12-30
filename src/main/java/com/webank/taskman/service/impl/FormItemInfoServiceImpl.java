@@ -6,8 +6,21 @@ import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.service.FormItemInfoService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class FormItemInfoServiceImpl extends ServiceImpl<FormItemInfoMapper, FormItemInfo> implements FormItemInfoService {
 
+
+    @Override
+    public void saveItemInfoByList(List<FormItemInfo> formItems, String recordId, String formId) {
+        if (null != formItems && formItems.size() > 0) {
+            formItems.stream().forEach(item -> {
+                item.setFormId(formId);
+                item.setRecordId(recordId);
+                save(item);
+            });
+        }
+    }
 }

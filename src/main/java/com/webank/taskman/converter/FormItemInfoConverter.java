@@ -1,7 +1,7 @@
 package com.webank.taskman.converter;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.dto.req.FormItemInfoReq;
+import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq.FormItemBean;
 import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.resp.FormItemInfoResp;
 import com.webank.taskman.dto.resp.TaskServiceMetaResp.TaskServiceMetaFormItem;
@@ -14,9 +14,10 @@ import java.util.List;
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface FormItemInfoConverter extends BaseConverter<FormItemInfoResp, FormItemInfo> {
 
-    FormItemInfo processTask(FormItemInfoReq formItemInfoReq);
+    FormItemInfo toEntityByReq(SaveFormItemInfoReq req);
 
-    FormItemInfo   toEntityBySave(SaveFormItemInfoReq req);
+    List<FormItemInfo> toEntityByReqs(List<SaveFormItemInfoReq> req);
+
 
     @Mappings({
             @Mapping(target = "itemId",source = "id"),
@@ -27,4 +28,14 @@ public interface FormItemInfoConverter extends BaseConverter<FormItemInfoResp, F
     TaskServiceMetaFormItem respToServiceMeta(FormItemInfoResp resp);
 
     List<TaskServiceMetaFormItem> respToServiceMetas(List<FormItemInfoResp> resp);
+
+    @Mappings({
+            @Mapping(target = "itemTempId",source = "itemId"),
+            @Mapping(target = "name",source = "key"),
+            @Mapping(target = "value",expression=
+                    "java(bean.getVal().stream().collect(java.util.stream.Collectors.joining(\",\")))"),
+    })
+    FormItemInfo toEntityByBean(FormItemBean bean);
+
+    List<FormItemInfo> toEntityByBeans(List<FormItemBean> bean);
 }

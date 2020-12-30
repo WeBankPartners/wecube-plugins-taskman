@@ -1,12 +1,18 @@
 package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.FormInfo;
-import com.webank.taskman.dto.req.SaveFormInfoReq;
-import com.webank.taskman.dto.req.SaveFormTemplateReq;
+import com.webank.taskman.domain.FormItemInfo;
+
+import java.util.List;
 
 
 public interface FormInfoService extends IService<FormInfo> {
 
-    void saveFormInfoByReq(SaveFormInfoReq req);
+
+    FormInfo saveFormInfoByExists(String requestTempId, String requestInfoId) throws TaskmanRuntimeException;
+
+    void saveFormInfoAndItems(List<FormItemInfo> formItems, String templateId, String recordId);
+
 }

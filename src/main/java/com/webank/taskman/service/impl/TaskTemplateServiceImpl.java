@@ -77,7 +77,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public TaskTemplateResp selectTaskTemplateOne(String id) {
+    public TaskTemplateResp taskTemplateDetail(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
         TaskTemplateResp taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
         List<RoleRelation> relations = roleRelationService.list(

@@ -39,7 +39,7 @@ public class RequestTest extends TmallApplicationTests {
         req.setStatus("");
         req.setEmergency("");
         req.setReporter("");
-        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoService(page, pageSize, req);
+        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         for (RequestInfoResq content : list.getContents()) {
             System.out.println(content.toString());
         }

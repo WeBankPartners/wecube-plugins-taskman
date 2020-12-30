@@ -14,7 +14,6 @@ import com.webank.taskman.converter.*;
 import com.webank.taskman.domain.*;
 import com.webank.taskman.dto.CoreCancelTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO;
-import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq.FormItemBean;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.*;
@@ -78,13 +77,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectList(queryWrapper));
         QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
-    }
-
-    @Override
-    public TaskInfoResp selectSynthesisTaskInfoFormService(String id){
-        TaskInfoResp resp =taskInfoConverter.toResp(taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper()));
-        resp.setFormItemInfo(formItemInfoService.returnDetail(id));
-        return resp;
     }
 
     @Override

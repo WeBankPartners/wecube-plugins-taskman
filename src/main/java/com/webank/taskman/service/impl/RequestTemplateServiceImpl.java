@@ -1,5 +1,6 @@
 package com.webank.taskman.service.impl;
 
+
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -8,6 +9,8 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
@@ -32,7 +35,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
-
 
 @Service
 public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate> implements RequestTemplateService {
@@ -84,7 +86,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
         wrapper.lambda().eq(RequestTemplate::getId, id)
-                .set(RequestTemplate::getDelFlag, 1)
+                .set(RequestTemplate::getDelFlag, StatusEnum.ENABLE.ordinal())
                 .set(RequestTemplate::getUpdatedTime,new Date());;
         requestTemplateMapper.update(null, wrapper);
     }
@@ -118,7 +120,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                         formTemplateMapper.selectOne(
                                 new FormTemplate()
                                         .setTempId(detailRequestTemplateResq.getId())
-                                        .setTempType("0").getLambdaQueryWrapper()
+                                        .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()
                         )));
         detailRequestTemplateResq.getDetilReuestTemplateFormResq().setFormItemTemplateList(
                 formItemTemplateMapper.selectList(

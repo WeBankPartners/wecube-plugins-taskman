@@ -2,31 +2,23 @@ package com.webank.taskman.controller.x100;
 
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.FormItemInfoConverter;
-import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
-import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.RequestInfoDTO;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.*;
-import com.webank.taskman.utils.GsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -86,7 +78,7 @@ public class TaskmanRequestController {
             @RequestBody(required = false) RequestTemplateGroupDTO req
     ) throws TaskmanRuntimeException
     {
-        return JsonResponse.okayWithData(requestTemplateGroupService.selectByParam(page, pageSize, req));
+        return JsonResponse.okayWithData(requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req));
     }
 
     @ApiOperationSupport(order = 3)
@@ -94,7 +86,7 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-group-template-available")
     public JsonResponse<List<RequestTemplateGroupDTO>> requestGroupTemplateAvailable() throws TaskmanRuntimeException
     {
-        LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus("0").getLambdaQueryWrapper();
+        LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus(StatusEnum.DEFAULT.toString()).getLambdaQueryWrapper();
         List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter.toDto(requestTemplateGroupService.list(lambdaQueryWrapper));
         return JsonResponse.okayWithData(dtoList);
     }
@@ -195,28 +187,17 @@ public class TaskmanRequestController {
             @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryRequestInfoReq req)
             throws TaskmanRuntimeException {
-        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoService(page, pageSize,req);
+        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize,req);
         return JsonResponse.okayWithData(list);
     }
 
-
-    @Autowired
-    RequestInfoConverter requestInfoConverter;
-
-    @Autowired
-    FormItemInfoService formItemInfoService;
-
-    @Autowired
-    FormItemInfoConverter formItemInfoConverter;
 
     @ApiOperationSupport(order = 13)
     @GetMapping("/details/{id}")
     @ApiOperation(value = "request-info-detail")
     public JsonResponse<RequestInfoResq> requestInfoDetail(@PathVariable("id") String id)
             throws TaskmanRuntimeException {
-
-        RequestInfoResq requestInfoResq =requestInfoService.selectDetail(id);
-
+        RequestInfoResq requestInfoResq = requestInfoService.selectDetail(id);
         return JsonResponse.okayWithData(requestInfoResq);
     }
 

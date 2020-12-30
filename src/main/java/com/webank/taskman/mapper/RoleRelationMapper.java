@@ -12,5 +12,4 @@ public interface RoleRelationMapper extends BaseMapper<RoleRelation> {
 
     int deleteByTemplate(@Param("tempId")  String tempId);
 
-    List<RoleRelation> selectRole(String recordTable, String recordId);
 }

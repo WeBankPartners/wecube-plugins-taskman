@@ -10,7 +10,7 @@
         <result column="value" property="value"/>
     </resultMap>
 
-    <select id="selectFormItemInfo" parameterType="java.lang.String"
+    <!--<select id="selectFormItemInfo" parameterType="java.lang.String"
             resultMap="FormItemInfoMap">
         SELECT * FROM form_item_info fii
         WHERE fii.form_id
@@ -19,6 +19,6 @@
         WHERE
         fi.record_id =#{id}
         )
-    </select>
+    </select>-->
 
 </mapper>

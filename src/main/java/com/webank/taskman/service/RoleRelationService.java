@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDTO;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

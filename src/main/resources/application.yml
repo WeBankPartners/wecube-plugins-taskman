@@ -87,7 +87,7 @@ logging:
   level:
     root: info
     com.webank.taskman.mapper: debug
-    com.zaxxer.hikari.HikariDataSource: WARN
+    com.zaxxer.hikari.HikariDataSource: ERROR
     org.springframework.web.servlet: WARN
     org.springframework.security.web: WARN
     #org.springframework.boot.web: WARN

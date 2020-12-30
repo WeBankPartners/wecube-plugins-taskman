@@ -105,6 +105,9 @@ public class JsonResponse<T>  implements Serializable {
 	public static JsonResponse customError(BizCodeEnum bizCodeEnum, String errorMessage) {
 		return new JsonResponse(STATUS_ERROR,bizCodeEnum.getMessage(),bizCodeEnum.getCode(),errorMessage,null);
 	}
+	public static JsonResponse customError(BizCodeEnum bizCodeEnum,String message, String errorMessage) {
+		return new JsonResponse(STATUS_ERROR,message,bizCodeEnum.getCode(),errorMessage,null);
+	}
 
 	public static JsonResponse customError(StatusCodeEnum statusCodeEnum) {
 		return new JsonResponse(STATUS_ERROR,statusCodeEnum.getMessage(),Integer.valueOf(statusCodeEnum.getCode()),statusCodeEnum.getMessage(),null);

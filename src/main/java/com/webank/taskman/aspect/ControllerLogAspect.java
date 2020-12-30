@@ -30,6 +30,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Aspect
@@ -93,6 +95,7 @@ public class ControllerLogAspect {
             }
             logs.append("\n}");
             String logContent = URLDecoder.decode(logs.toString(), "UTF-8");
+
             log.info(logContent);
             log.info("==========================Response Request: [{}] complete=========================",bestMatchingPattern);
             return result;

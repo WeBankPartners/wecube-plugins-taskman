@@ -1,6 +1,6 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -9,17 +9,20 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.*;
-import com.webank.taskman.domain.*;
+import com.webank.taskman.converter.FormItemInfoConverter;
+import com.webank.taskman.converter.RequestInfoConverter;
+import com.webank.taskman.domain.RequestInfo;
+import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.req.QueryRequestInfoReq;
-import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
-import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.mapper.RequestInfoMapper;
-import com.webank.taskman.service.*;
+import com.webank.taskman.service.FormInfoService;
+import com.webank.taskman.service.FormItemInfoService;
+import com.webank.taskman.service.RequestInfoService;
+import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.*;
-import com.webank.taskman.support.core.dto.ProcessDataPreviewDto.GraphNodeDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 
 @Service
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {
@@ -51,7 +53,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
 
     @Override
-    public QueryResponse<RequestInfoResq> selectRequestInfoService(Integer current, Integer limit, QueryRequestInfoReq req) {
+    public QueryResponse<RequestInfoResq> selectRequestInfoPage(Integer current, Integer limit, QueryRequestInfoReq req) {
         req.setEqUseRole("rt");
         IPage<RequestInfoResq> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
         QueryResponse<RequestInfoResq> queryResponse = new QueryResponse<>();
@@ -131,7 +133,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     private DynamicEntityValueDto createDynamicEntityValues(ProcessDataPreviewDto processDataPreviewDto, String guid) {
 
-        List<GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
+        List<ProcessDataPreviewDto.GraphNodeDto> entityTreeNodes = processDataPreviewDto.getEntityTreeNodes();
         if (null == entityTreeNodes) {
             throw new TaskmanRuntimeException(String.format("getProcessDataPreview is error:%s", entityTreeNodes));
         }

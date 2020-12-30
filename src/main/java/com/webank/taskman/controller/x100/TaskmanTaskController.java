@@ -7,6 +7,7 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
+import com.webank.taskman.dto.req.QueryTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.service.TaskInfoService;
@@ -51,9 +52,9 @@ public class TaskmanTaskController {
     @ApiOperation(value = "task-template-search")
     public JsonResponse<QueryResponse<TaskTemplateResp>> taskTemplateSearch(
             @ApiParam(name = "page") @PathVariable("page") Integer page,
-            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize){
+            @ApiParam(name = "pageSize") @PathVariable("pageSize") Integer pageSize,@RequestBody  QueryTemplateReq req){
         DefaultSecurityFilterChain D = null;
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplateByRole(page,pageSize);
+        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplatePage(page,pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

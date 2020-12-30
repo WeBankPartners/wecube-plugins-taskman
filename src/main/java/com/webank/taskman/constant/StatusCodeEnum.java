@@ -2,6 +2,7 @@ package com.webank.taskman.constant;
 
 public enum  StatusCodeEnum {
 
+    SAVE_ERROR("1000","Save error:%s","Save error:%s"),
     PARAM_ISNULL("1001","param is null ","param is null"),
     NOT_FOUND_RECORD("3007","Record does not exist ","Record does not exist"),
     ;
@@ -40,5 +41,10 @@ public enum  StatusCodeEnum {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public StatusCodeEnum setErrorMsg(String msg){
+        this.message = String.format(message,msg);
+        return this;
     }
 }

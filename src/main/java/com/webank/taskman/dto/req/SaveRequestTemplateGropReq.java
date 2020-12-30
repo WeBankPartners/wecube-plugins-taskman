@@ -29,6 +29,8 @@ public class SaveRequestTemplateGropReq {
     @ApiModelProperty(value = "版本号",dataType = "String",position =7)
     private String version;
 
+    @ApiModelProperty(hidden = true)
+    private String Status;
 
     public String getId() {
         return id;
@@ -76,6 +78,15 @@ public class SaveRequestTemplateGropReq {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getStatus() {
+        return Status;
+    }
+
+    public SaveRequestTemplateGropReq setStatus(String status) {
+        Status = status;
+        return this;
     }
 
     @Override

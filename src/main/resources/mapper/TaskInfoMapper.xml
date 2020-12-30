@@ -2,51 +2,5 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.webank.taskman.mapper.TaskInfoMapper">
 
-    <resultMap id="TaskInfoMap" type="com.webank.taskman.domain.TaskInfo">
-        <id column="id" property="id"/>
-        <result column="parent_id" property="parentId"/>
-        <result column="task_temp_id" property="taskTempId"/>
-        <result column="proc_inst_id" property="procInstId"/>
-        <result column="node_def_id" property="nodeDefId"/>
-        <result column="node_name" property="nodeName"/>
-        <result column="callback_url" property="callbackUrl"/>
-        <result column="callback_parameter" property="callbackParameter"/>
-        <result column="name" property="name"/>
-        <result column="reporter" property="reporter"/>
-        <result column="report_time" property="reportTime"/>
-        <result column="emergency" property="emergency"/>
-        <result column="report_role" property="reportRole"/>
-        <result column="result" property="result"/>
-        <result column="description" property="description"/>
-        <result column="attach_file_id" property="attachFileId"/>
-        <result column="status" property="status"/>
-        <result column="version" property="version"/>
-        <result column="created_by" property="createdBy"/>
-        <result column="created_time" property="createdTime"/>
-        <result column="updated_by" property="updatedBy"/>
-        <result column="updated_time" property="updatedTime"/>
-        <result column="del_flag" property="delFlag"/>
-        <result column="over_time" property="overTime"/>
-    </resultMap>
-
-    <select id="selectTaskInfo" parameterType="com.webank.taskman.dto.req.QueryTaskInfoReq"
-            resultMap="TaskInfoMap">
-        SELECT ti.* FROM task_info ti,task_template tt
-        <where>
-            AND tt.id = ti.task_temp_id
-            <if test="procInstId!=null and procInstId !=''">
-                AND ti.proc_inst_id = #{procInstId}
-            </if>
-            <if test="name !=null and name != ''">
-                AND ti.name like CONCAT('%',#{name},'%')
-            </if>
-            <if test="status!=null and status !=''">
-                AND ti.status = #{status}
-            </if>
-            <if test="conditionSql!=null and conditionSql !=''">
-                AND ${conditionSql}
-            </if>
-        </where>
-    </select>
 
 </mapper>

@@ -22,7 +22,7 @@ public class RequestInfoListTest extends TmallApplicationTests {
         Integer pageSize=2;
         QueryRequestInfoReq req=new QueryRequestInfoReq();
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
-        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoService(page, pageSize,req);
+        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize,req);
         for (RequestInfoResq content : list.getContents()) {
             System.out.println(content.toString());
         }

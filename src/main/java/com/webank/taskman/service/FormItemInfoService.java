@@ -2,7 +2,6 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.resp.FormItemInfoResp;
 
 import java.util.List;

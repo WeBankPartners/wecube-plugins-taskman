@@ -62,7 +62,7 @@ public class TaskmanFormController {
     @ApiOperationSupport(order = 3)
     @GetMapping("/template/detail/{tempType}/{tempId}")
     @ApiOperation(value = "form-template-detail")
-    public JsonResponse<FormTemplateResp> FormTemplateDetail(@PathVariable("tempType") Integer tempType,@PathVariable("tempId") String tempId) throws Exception {
+    public JsonResponse<FormTemplateResp> FormTemplateDetail(@PathVariable("tempType") String tempType,@PathVariable("tempId") String tempId) throws Exception {
         return JsonResponse.okayWithData(
                 formTemplateService.detailFormTemplate(
                         new SaveFormTemplateReq(tempId,tempType)));

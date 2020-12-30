@@ -15,7 +15,6 @@
         </where>
     </delete>
 
-    <!--<select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.TaskServiceMetaFormItem">-->
     <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.FormItemInfoResp">
         SELECT
             fit.id,

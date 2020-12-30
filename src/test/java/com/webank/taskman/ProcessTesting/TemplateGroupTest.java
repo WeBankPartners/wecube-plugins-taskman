@@ -9,8 +9,6 @@ import com.webank.taskman.service.RequestTemplateGroupService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Scanner;
-
 public class TemplateGroupTest extends TmallApplicationTests {
 
 
@@ -23,7 +21,7 @@ public class TemplateGroupTest extends TmallApplicationTests {
         Integer pageSize=10;
         RequestTemplateGroupDTO req=new RequestTemplateGroupDTO();
         QueryResponse<RequestTemplateGroupDTO> queryResponse=new QueryResponse<>();
-        queryResponse=requestTemplateGroupService.selectByParam(page, pageSize, req);
+        queryResponse=requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req);
         for (RequestTemplateGroupDTO content : queryResponse.getContents()) {
             System.out.println(content.toString());
         }

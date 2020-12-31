@@ -4,7 +4,7 @@ server:
     context-path: /taskman
 spring:
   profiles:
-    active: dev
+    active: test
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8&serverTimezone=Asia/Shanghai

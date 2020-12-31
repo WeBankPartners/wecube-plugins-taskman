@@ -21,6 +21,7 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
@@ -105,7 +106,8 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer pageNum, Integer pageSize, QueryRequestTemplateReq req) {
-        req.setEqUseRole("rt");
+        req.setSourceTableFix("rt");
+        req.queryCurrentUserRoles();
         PageHelper.startPage(pageNum,pageSize);
         PageInfo<RequestTemplateDTO> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
 

@@ -6,8 +6,8 @@
         <id column="id" property="id"/>
         <result column="request_temp_group" property="requestTempGroup" />
         <result column="request_temp_group_name" property="requestTempGroupName" />
-        <result column="proc_def_key" property="procDefKey" />
         <result column="proc_def_id" property="procDefId" />
+        <result column="proc_def_key" property="procDefKey" />
         <result column="proc_def_name" property="procDefName" />
         <result column="name" property="name" />
         <result column="description" property="description" />
@@ -17,14 +17,24 @@
     </resultMap>
 
     <select id="selectDTOListByParam" resultMap="DTOResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
-        SELECT rt.*,rtg.name FROM  request_template rt
-        INNER JOIN request_template_group rtg ON rt.request_temp_group = rtg.id
+        SELECT
+            rt.id,
+            rt.request_temp_group,
+            rtg.`name` request_temp_group_name,
+            rt.proc_def_id,
+            rt.proc_def_key,
+            rt.proc_def_name,
+            rt.`name`,
+            rt.description,
+            rt.`name`,
+            rt.tags,
+            rt.`status`
+        FROM request_template rt,request_template_group rtg
         <where>
+            AND rt.request_temp_group = rtg.id
             <if test="requestTempGroup !=null and requestTempGroup !='' ">
                 AND rtg.id = #{requestTempGroup}
             </if>
-        </where>
-        <where>
             <if test="id !=null and id != ''">
                 AND rt.id = #{id}
             </if>

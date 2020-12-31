@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 
 @ApiModel
 public class TaskInfoResp {
@@ -195,5 +196,28 @@ public class TaskInfoResp {
     public TaskInfoResp setFormItemInfo(List<FormItemInfoResp> formItemInfo) {
         this.formItemInfo = formItemInfo;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", TaskInfoResp.class.getSimpleName() + "[", "]")
+                .add("id='" + id + "'")
+                .add("parentId='" + parentId + "'")
+                .add("taskTempId='" + taskTempId + "'")
+                .add("procInstId='" + procInstId + "'")
+                .add("nodeDefId='" + nodeDefId + "'")
+                .add("nodeName='" + nodeName + "'")
+                .add("name='" + name + "'")
+                .add("description='" + description + "'")
+                .add("reporter='" + reporter + "'")
+                .add("reportTime=" + reportTime)
+                .add("emergency='" + emergency + "'")
+                .add("result='" + result + "'")
+                .add("status='" + status + "'")
+                .add("version='" + version + "'")
+                .add("reportRole='" + reportRole + "'")
+                .add("attachFileId='" + attachFileId + "'")
+                .add("formItemInfo=" + formItemInfo)
+                .toString();
     }
 }

@@ -3,7 +3,11 @@ package com.webank.taskman.dto.req;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.constant.RoleTypeEnum;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class QueryRoleRelationBaseReq {
 
@@ -41,8 +45,8 @@ public class QueryRoleRelationBaseReq {
     }
 
     public void setUseRoleName(String useRoleName) {
+        this.conditionSql = null;
         if(!StringUtils.isEmpty(useRoleName)){
-            this.conditionSql = null;
             this.roleType = !StringUtils.isEmpty(this.manageRoleName) ?2:1;
             this.roleName = useRoleName;
         }
@@ -70,6 +74,7 @@ public class QueryRoleRelationBaseReq {
 
     public void setSourceTableFix(String sourceTableFix) {
         this.sourceTableFix = sourceTableFix;
+
     }
 
     public Integer getRoleType() {
@@ -87,19 +92,19 @@ public class QueryRoleRelationBaseReq {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-    protected static final  String NOT_ALL = "%s.id in(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s'))";
-    protected static final String ALL = "%s.id in (SELECT COUNT(1) FROM role_relation rr WHERE (rr.role_type =0 AND MATCH(rr.role_name) AGAINST('%s')) OR (rr.role_type =1 AND MATCH(rr.role_name) AGAINST('%s')))";
-    public static final String QUERY_BY_ROLE_SQL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND MATCH(rr.role_name) AGAINST('%s')";
+    protected static final  String NOT_ALL = "%s.id in(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND rr.role_name IN('%s'))";
+    protected static final String ALL = "%s.id in (SELECT rr.record_id FROM role_relation rr WHERE (rr.role_type =0 AND rr.role_name IN('%s')) OR (rr.role_type =1  AND rr.role_name IN('%s')))";
+    public static final String QUERY_BY_ROLE_SQL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND rr.role_name IN('%s')";
 
     public String getConditionSql() {
-        if(StringUtils.isEmpty(conditionSql) && null != getRoleType()) {
+        if( null != getRoleType()) {
             switch (this.roleType) {
                 case 0:
                 case 1:
-                    conditionSql = String.format(NOT_ALL, sourceTableFix,getRoleType(), getRoleName());
+                    conditionSql = String.format(NOT_ALL, sourceTableFix,getRoleType(), getRoleNameStr(getRoleName()));
                     break;
                 default:
-                    conditionSql = String.format(ALL, sourceTableFix,getUseRoleName(), getManageRoleName());
+                    conditionSql = String.format(ALL, sourceTableFix, getRoleNameStr(getManageRoleName()),getRoleNameStr(getUseRoleName()));
                     break;
 
             }
@@ -113,17 +118,33 @@ public class QueryRoleRelationBaseReq {
     @ApiModelProperty(hidden = true)
     public void setEqUseRole(String tableFix){
         this.setSourceTableFix(tableFix);
-        StringBuffer useRole = new StringBuffer();
-        String queryUseRole = this.getUseRoleName();
-        useRole.append(org.springframework.util.StringUtils.isEmpty(queryUseRole) ? "" : queryUseRole + ",");
-        useRole.append(AuthenticationContextHolder.getCurrentUserRolesToString());
-        this.setUseRoleName(useRole.toString());
+        queryCurrentUserRoles();
     }
 
     @ApiModelProperty(hidden = true)
     public static String getEqUseRole(){
         String  inSql = String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL, RoleTypeEnum.USE_ROLE.getType(),
-                AuthenticationContextHolder.getCurrentUserRolesToString());
+                String.join("','",AuthenticationContextHolder.getCurrentUserRoles()));
         return inSql;
+    }
+
+    public void queryCurrentUserRoles(){
+        Set<String> sets = new HashSet<>();
+        if(!StringUtils.isEmpty(getUseRoleName()) ){
+            sets.addAll(Arrays.asList(getUseRoleName().split(",")));
+        }
+        if(null != AuthenticationContextHolder.getCurrentUserRoles()){
+            sets.addAll( AuthenticationContextHolder.getCurrentUserRoles());
+        }
+
+        setUseRoleName(String.join(",",sets));
+    }
+    public String getRoleNameStr(String roles){
+        Set<String> sets = new HashSet<>();
+        if(!StringUtils.isEmpty(roles)){
+            sets.addAll(Arrays.asList(roles.split(",")));
+           return String.join("','",sets);
+        }
+        return "";
     }
 }

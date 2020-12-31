@@ -38,7 +38,7 @@
         <result column="attach_file_id" property="attachFileId"/>
         <result column="status" property="status"/>
         <result column="due_date" property="dueDate"/>
-        <result column="status" property="result"/>
+        <result column="result" property="result"/>
     </resultMap>
 
     <select id="selectRequestInfo" parameterType="com.webank.taskman.dto.req.QueryRequestInfoReq"

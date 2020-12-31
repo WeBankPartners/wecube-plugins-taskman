@@ -55,7 +55,7 @@ public class ControllerLogAspect {
     public void logPointcut() {}
 
     @Around("logPointcut()")
-    public <T> Object doAround(JoinPoint joinPoint) throws Throwable {
+    public <T> Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             HttpServletRequest request = getHttpServletRequest();
             String tragetClassName = joinPoint.getSignature().getDeclaringTypeName();
@@ -66,7 +66,7 @@ public class ControllerLogAspect {
             String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
             String jsonKey = "\n\t\"%s\":";
             String josnValue = "\"%s\"";
-            logs.append(String.format("==========================Receive Request: [%s] start==========================",bestMatchingPattern)).append("\n{");
+            logs.append(String.format("========Receive Request: [%s] start========",bestMatchingPattern)).append("\n{");
             logs.append(String.format(jsonKey,"URI")).append(String.format(josnValue,uri)).append(",");
             logs.append(String.format(jsonKey,"RequestMethod")).append(String.format(josnValue,requestMethod)).append(",");
             logs.append(String.format(jsonKey,"className")).append(String.format(josnValue,tragetClassName)).append(",");
@@ -86,26 +86,29 @@ public class ControllerLogAspect {
             logs.append(String.format(jsonKey,"returnClass")).append(String.format(josnValue,
                     getResultClass(((MethodSignature)joinPoint.getSignature()).getMethod().getGenericReturnType().getTypeName())
             )).append(",");
-            Object result = ((ProceedingJoinPoint)joinPoint).proceed();
+            Object result = joinPoint.proceed();
             if(null == result) {
                 return null;
             }
             if(printResult){
-                logs.append(String.format(jsonKey,"respone")).append(GsonUtil.GsonString(result));
+                logs.append(String.format(jsonKey,"respone")).append(result);
             }
             logs.append("\n}");
             String logContent = URLDecoder.decode(logs.toString(), "UTF-8");
-
             log.info(logContent);
-            log.info("==========================Response Request: [{}] complete=========================",bestMatchingPattern);
+            log.info("The total execution time of method [{}] is：{}",
+                    joinPoint.getSignature().getName(),
+                    DateUtils.formatLongToTimeStr(System.currentTimeMillis() - startTime.get()));
+            log.info("========Response Request: [{}] complete========",bestMatchingPattern);
             return result;
         } catch (Throwable e) {
-            log.error("error：{}"+e.getMessage());
+            log.error("error：{}",e.getMessage());
             throw e;
         }
     }
 
     private  String getResultClass(String name){
+
         String[] typeNames = name.split("<");
         for(int i=0;i<typeNames.length;i++){
             String str = typeNames[i].substring(0,typeNames[i].lastIndexOf(".")+1);
@@ -121,9 +124,7 @@ public class ControllerLogAspect {
 
     @AfterReturning(returning="result",value = pCutStr)
     public void afterMehhod(JoinPoint joinPoint, Object result) {
-        log.info("The total execution time of method [{}] is：{}",
-                joinPoint.getSignature().getName(),
-                DateUtils.formatLongToTimeStr(System.currentTimeMillis() - startTime.get()));
+
     }
 
     private HttpServletRequest getHttpServletRequest() {

@@ -1,11 +1,8 @@
 package com.webank.taskman.dto.req;
 
 
-import com.webank.taskman.dto.RequestInfoDTO;
 import io.swagger.annotations.ApiModelProperty;
-import org.springframework.util.StringUtils;
 
-import java.util.Date;
 
 public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
 
@@ -15,22 +12,20 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
     private String requestTempId;
     @ApiModelProperty(value = "",position = 3)
     private String requestTempName;
-    @ApiModelProperty(value = "",position = 6)
+    @ApiModelProperty(value = "",position = 4)
     private String name;
-    @ApiModelProperty(value = "",position = 7)
+    @ApiModelProperty(value = "",position = 5)
     private String description;
-    @ApiModelProperty(value = "",position = 8)
+    @ApiModelProperty(value = "",position = 6)
     private String reporter;
-    @ApiModelProperty(value = "",position = 9)
-    private String reportTime;
-    @ApiModelProperty(value = "",position = 12)
+    @ApiModelProperty(value = "",position = 7)
     private String emergency;
-    @ApiModelProperty(value = "",position = 15)
+    @ApiModelProperty(value = "",position = 8)
     private String status;
 
-    @ApiModelProperty(value = "",hidden = true)
+    @ApiModelProperty(value = "",position = 9)
     private String reportTimeBegin;
-    @ApiModelProperty(value = "",hidden = true)
+    @ApiModelProperty(value = "",position = 15)
     private String reportTimeEnd;
 
     public String getId() {
@@ -87,7 +82,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return this;
     }
 
-    public String getReportTime() {
+    /*public String getReportTime() {
         return reportTime;
     }
 
@@ -99,7 +94,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
             this.reportTimeEnd = reportTimes.length > 1 ? reportTimes[1] :"";
         }
         return this;
-    }
+    }*/
 
     public String getReportTimeBegin() {
         return reportTimeBegin;

@@ -1,5 +1,6 @@
 package com.webank.taskman.base;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.webank.taskman.constant.BizCodeEnum;
 import com.webank.taskman.constant.StatusCodeEnum;
 import io.swagger.annotations.ApiModel;
@@ -7,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.StringJoiner;
 
 @ApiModel(value = "",description = "JsonResponse")
 public class JsonResponse<T>  implements Serializable {
@@ -111,5 +113,16 @@ public class JsonResponse<T>  implements Serializable {
 
 	public static JsonResponse customError(StatusCodeEnum statusCodeEnum) {
 		return new JsonResponse(STATUS_ERROR,statusCodeEnum.getMessage(),Integer.valueOf(statusCodeEnum.getCode()),statusCodeEnum.getMessage(),null);
+	}
+
+	@Override
+	public String toString() {
+		return new StringJoiner(", ", JsonResponse.class.getSimpleName() + "[", "]")
+				.add("status='" + status + "'")
+				.add("message='" + message + "'")
+				.add("code=" + code)
+				.add("codeMessage='" + codeMessage + "'")
+				.add("data=" + data.getClass().getTypeName())
+				.toString();
 	}
 }

@@ -2,6 +2,7 @@ package com.webank.taskman.support.core;
 
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.support.core.dto.CoreResponse;
+import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,7 @@ public class CoreRestTemplate {
             throws CoreRemoteCallException {
         log.info("About to POST {} with postObject {}", targetUrl, postObject.toString());
         R jsonResponse = restTemplate.postForObject(targetUrl, postObject, responseType);
-        log.info("Core response: {} ", jsonResponse);
+        log.info("Core response: {} ", GsonUtil.GsonString(jsonResponse));
         validateJsonResponse(jsonResponse, false);
         return (D)jsonResponse.getData();
     }

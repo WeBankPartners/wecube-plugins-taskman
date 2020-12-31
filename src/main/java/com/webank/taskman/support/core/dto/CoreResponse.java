@@ -3,6 +3,7 @@ package com.webank.taskman.support.core.dto;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 public class CoreResponse<DATATYPE> {
 
@@ -77,5 +78,14 @@ public class CoreResponse<DATATYPE> {
     @SuppressWarnings("unchecked")
     public void setData(Object data) {
         this.data = (DATATYPE) data;
+    }
+
+    @Override
+    public String toString() {
+        return "CoreResponse{" +
+                "status='" + status + '\'' +
+                ", message='" + message + '\'' +
+                ", data=" + data +
+                '}';
     }
 }

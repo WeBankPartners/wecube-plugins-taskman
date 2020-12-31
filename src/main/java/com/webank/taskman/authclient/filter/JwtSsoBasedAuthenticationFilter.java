@@ -181,7 +181,7 @@ public class JwtSsoBasedAuthenticationFilter extends BasicAuthenticationFilter {
             }
         }
 
-        log.info("Authorities:{}", authorities);
+//        log.info("Authorities:{}", authorities);
 
         return new UsernamePasswordAuthenticationToken(username, sAccessTokenHeader, authorities);
 

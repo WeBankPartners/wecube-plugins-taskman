@@ -27,7 +27,6 @@ public class RequestTemplateGroupListTest extends TmallApplicationTests {
         QueryResponse<RequestTemplateGroupDTO> queryResponse=new QueryResponse<>();
         queryResponse=requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req);
         for (RequestTemplateGroupDTO content : queryResponse.getContents()) {
-            System.out.println(content.toString());
         }
     }
 

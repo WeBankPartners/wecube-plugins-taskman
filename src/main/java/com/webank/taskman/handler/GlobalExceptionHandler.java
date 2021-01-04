@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    public static final String MSG_ERR_CODE_PREFIX = "servicemgmt.msg.errcode.";
+    public static final String MSG_ERR_CODE_PREFIX = "taskman.msg.errcode.";
 
     public static final Locale DEF_LOCALE = Locale.ENGLISH;
     public static final String SQL_Exception = "Exception: ";
@@ -53,14 +54,23 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(value = RuntimeException.class)
-    public JsonResponse handleException(RuntimeException e) {
+    public JsonResponse handleException(RuntimeException e,HttpServletRequest request,HttpServletResponse response) {
         String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
                 e.getMessage() == null ? "" : e.getMessage());
-        log.error("错误异常:{}", e);
+        log.error("ERROR :{}", errMsg);
         String err =  e.getMessage();
         if(e instanceof DuplicateKeyException){
             err = err.substring(err.indexOf(SQL_Exception)).replace(SQL_Exception,"");
             err = err.substring(0,err.indexOf("###")-3);
+        }
+        if(e instanceof HttpClientErrorException){
+            HttpClientErrorException he = (HttpClientErrorException)e;
+            int rawStatusCode = he.getRawStatusCode();
+            switch (rawStatusCode){
+                case  401:
+                    response.setStatus(he.getStatusCode().value());
+                    break;
+            }
         }
         err = String.format("Processing failed cause by :%s",err);
         return JsonResponse.customError(BizCodeEnum.RUNTIME_EXCEPTION, err,err);

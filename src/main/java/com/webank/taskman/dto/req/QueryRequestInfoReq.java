@@ -82,19 +82,6 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return this;
     }
 
-    /*public String getReportTime() {
-        return reportTime;
-    }
-
-    public QueryRequestInfoReq setReportTime(String reportTime) {
-        this.reportTime = reportTime;
-        if(!StringUtils.isEmpty(reportTime)){
-            String [] reportTimes = reportTime.split(",");
-            this.reportTimeBegin = reportTimes[0];
-            this.reportTimeEnd = reportTimes.length > 1 ? reportTimes[1] :"";
-        }
-        return this;
-    }*/
 
     public String getReportTimeBegin() {
         return reportTimeBegin;

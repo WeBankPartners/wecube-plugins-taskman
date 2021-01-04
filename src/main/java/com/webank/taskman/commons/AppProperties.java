@@ -74,6 +74,8 @@ public class AppProperties {
 
     @ConfigurationProperties(prefix = "service.taskman")
     public class ServiceTaskmanProperties {
+
+        private String version="V0.2.00";
         private String wecubeCoreAddress;
         private String wecubePlatformToken = "";
         private String s3AccessKey = "";
@@ -83,6 +85,15 @@ public class AppProperties {
         private String systemCode = "";
         private String jwtSigningKey = "Platform+Auth+Server+Secret";
         private String propertyEncryptKeyPath;
+
+        public String getVersion() {
+            return version;
+        }
+
+        public ServiceTaskmanProperties setVersion(String version) {
+            this.version = version;
+            return this;
+        }
 
         public String getPropertyEncryptKeyPath() {
             return propertyEncryptKeyPath;

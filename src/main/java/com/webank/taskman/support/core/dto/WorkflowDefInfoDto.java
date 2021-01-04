@@ -1,5 +1,8 @@
 package com.webank.taskman.support.core.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class WorkflowDefInfoDto {
     private String procDefId;
     private String procDefKey;
@@ -57,7 +60,9 @@ public class WorkflowDefInfoDto {
     public void setCreatedTime(String createdTime) {
         this.createdTime = createdTime;
     }
-    
-    
+
+
+
+
 
 }

@@ -5,7 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.mapper.RequestTemplateMapper;
-import com.webank.taskman.service.RequestTemplateService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +16,6 @@ import java.util.List;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class RequestTemplateTest {
-
-    @Autowired
-    RequestTemplateService requestTemplateService;
 
     @Autowired
     RequestTemplateMapper requestTemplateMapper;

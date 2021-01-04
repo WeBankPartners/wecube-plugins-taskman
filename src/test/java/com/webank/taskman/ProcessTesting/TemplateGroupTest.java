@@ -23,7 +23,6 @@ public class TemplateGroupTest extends TmallApplicationTests {
         QueryResponse<RequestTemplateGroupDTO> queryResponse=new QueryResponse<>();
         queryResponse=requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req);
         for (RequestTemplateGroupDTO content : queryResponse.getContents()) {
-            System.out.println(content.toString());
         }
 
     }
@@ -38,7 +37,6 @@ public class TemplateGroupTest extends TmallApplicationTests {
         req.setDescription("测试描述");
         RequestTemplateGroupDTO response=new RequestTemplateGroupDTO();
         response=requestTemplateGroupService.saveTemplateGroupByReq(req);
-        System.out.println(response.toString());
 
     }
 

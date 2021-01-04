@@ -24,7 +24,6 @@ public class RequestInfoListTest extends TmallApplicationTests {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize,req);
         for (RequestInfoResq content : list.getContents()) {
-            System.out.println(content.toString());
         }
     }
 }

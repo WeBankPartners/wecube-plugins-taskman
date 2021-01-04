@@ -9,6 +9,7 @@ core_addr=$6
 s3_endpoint=$7
 s3_access_key=$8
 s3_secret_key=$9
+version=$10
 
 /bin/sh /scripts/tomcat_exporter/start.sh
 mkdir -p /log
@@ -23,6 +24,7 @@ java -Djava.security.egd=file:/dev/urandom -Duser.timezone=Asia/Shanghai \
 --spring.datasource.url=jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8\&serverTimezone=Asia\/Shanghai \
 --spring.datasource.username=${db_username} \
 --spring.datasource.password=${db_password} \
+--taskman.plugin.version=${version} \
 --taskman.wecube-core-address=${core_addr} \
 --taskman.s3-endpoint=${s3_endpoint} \
 --taskman.s3-access-key=${s3_access_key} \

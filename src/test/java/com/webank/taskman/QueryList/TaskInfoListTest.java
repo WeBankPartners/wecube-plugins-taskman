@@ -27,6 +27,5 @@ public class TaskInfoListTest extends TmallApplicationTests {
         QueryResponse<TaskInfoDTO> queryResponse = taskInfoService.selectTaskInfo(page, pageSize,req);
         JsonResponse<QueryResponse<TaskInfoDTO>> jsonResponse=new JsonResponse<>();
         jsonResponse.setData(queryResponse);
-        System.out.println(jsonResponse.getData());
     }
 }

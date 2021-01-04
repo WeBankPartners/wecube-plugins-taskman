@@ -49,4 +49,51 @@ public class QueryResponse<T> {
     public void addContent(T ciObj) {
         this.contents.add(ciObj);
     }
+
+    public static class Pageable {
+        private Long startIndex;
+        private Long pageSize = 10000L;
+
+        public Pageable() {
+        }
+
+        public Pageable(Long startIndex, Long pageSize) {
+            this.startIndex = startIndex;
+            this.pageSize = pageSize;
+        }
+
+        public Long getPageSize() {
+            return pageSize;
+        }
+        public void setPageSize(Long pageSize) {
+            this.pageSize = pageSize;
+        }
+        public Long getStartIndex() {
+            return startIndex;
+        }
+        public void setStartIndex(Long startIndex) {
+            this.startIndex = startIndex;
+        }
+    }
+
+    public static class PageInfo extends Pageable {
+        private Long totalRows;
+
+        public PageInfo() {
+            this.totalRows = 0L;
+        }
+
+        public PageInfo(Long totalRows, Long startIndex, Long pageSize) {
+            super(startIndex, pageSize);
+            this.totalRows = totalRows;
+        }
+
+        public Long getTotalRows() {
+            return totalRows;
+        }
+
+        public void setTotalRows(Long totalRows) {
+            this.totalRows = totalRows;
+        }
+    }
 }

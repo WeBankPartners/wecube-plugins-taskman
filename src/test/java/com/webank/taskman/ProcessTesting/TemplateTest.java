@@ -24,7 +24,6 @@ public class TemplateTest extends TmallApplicationTests {
         req.setTags("");
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         for (RequestTemplateDTO content : queryResponse.getContents()) {
-            System.out.println(content.toString());
         }
     }
 
@@ -32,6 +31,5 @@ public class TemplateTest extends TmallApplicationTests {
     public void AddTemplateTest(){
         SaveRequestTemplateReq req=new SaveRequestTemplateReq();
         RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
-        System.out.println(requestTemplateDTO.toString());
     }
 }

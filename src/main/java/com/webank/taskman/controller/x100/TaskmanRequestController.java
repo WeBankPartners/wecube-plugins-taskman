@@ -165,8 +165,9 @@ public class TaskmanRequestController {
     @ApiOperation(value = "request-template-available")
     public JsonResponse<List<RequestTemplateDTO>> requestTemplateAvailable(@ApiIgnore QueryRoleRelationBaseReq req) throws TaskmanRuntimeException {
         RequestTemplate requestTemplate = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
+        String inSql = req.getEqUseRole();
         LambdaQueryWrapper<RequestTemplate> queryWrapper = requestTemplate.getLambdaQueryWrapper()
-                .inSql(RequestTemplate::getId,req.getEqUseRole());
+                .inSql(!StringUtils.isEmpty(inSql),RequestTemplate::getId,req.getEqUseRole());
         return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
     }
 

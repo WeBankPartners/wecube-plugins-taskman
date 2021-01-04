@@ -11,7 +11,7 @@ spring:
     username: ${db_username}
     password: ${db_password}
   messages:
-    basename: message/service_mgmt_err_message
+    basename: message/taskman_err_message
     encoding: UTF-8
   banner:
     location: classpath:/banner.txt
@@ -69,6 +69,7 @@ knife4j:
 
 service:
   taskman:
+    version: ${version}
     httpclient:
       max-total-connections: 200
     wecube-core-address: ${core_addr}
@@ -81,7 +82,7 @@ service:
     jwt-signing-key: ${JWT_SIGNING_KEY:}
     property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}
     aspect-log-controller: true
-    aspect-log-controller-printResult: true
+    aspect-log-controller-printResult: false
 
 logging:
   level:

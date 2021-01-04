@@ -41,7 +41,6 @@ public class RequestTest extends TmallApplicationTests {
         req.setReporter("");
         QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         for (RequestInfoResq content : list.getContents()) {
-            System.out.println(content.toString());
         }
     }
 
@@ -56,7 +55,6 @@ public class RequestTest extends TmallApplicationTests {
                         AuthenticationContextHolder.getCurrentUserRolesToString()));
         List<RequestTemplateDTO> list=requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper));
         for (RequestTemplateDTO requestTemplateDTO : list) {
-            System.out.println(requestTemplateDTO.toString());
         }
 
     }

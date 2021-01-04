@@ -102,7 +102,6 @@ public class ControllerLogAspect {
             log.info("========Response Request: [{}] complete========",bestMatchingPattern);
             return result;
         } catch (Throwable e) {
-            log.error("error：{}",e.getMessage());
             throw e;
         }
     }

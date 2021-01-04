@@ -25,7 +25,6 @@ public class RequestTemplateListTest extends TmallApplicationTests {
         log.info("Received request parameters:{}", GsonUtil.GsonString(req) );
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page, pageSize, req);
         for (RequestTemplateDTO content : queryResponse.getContents()) {
-            System.out.println(content.toString());
         }
     }
 }

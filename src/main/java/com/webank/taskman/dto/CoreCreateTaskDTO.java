@@ -56,7 +56,7 @@ public class CoreCreateTaskDTO {
         private String id;
         private String procInstId;
         private String taskNodeId;
-        private int overTime;
+        private String overTime;
         private String callbackParameter;
         private String callbackUrl;
         private String reporter;
@@ -91,11 +91,11 @@ public class CoreCreateTaskDTO {
             this.taskNodeId = taskNodeId;
         }
 
-        public int getOverTime() {
+        public String getOverTime() {
             return overTime;
         }
 
-        public void setOverTime(int overTime) {
+        public void setOverTime(String overTime) {
             this.overTime = overTime;
         }
 

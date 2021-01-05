@@ -12,7 +12,7 @@ s3_secret_key=$9
 version=$10
 
 /bin/sh /scripts/tomcat_exporter/start.sh
-mkdir -p /log
+mkdir -p /data/wecube/taskman/log
 java -Djava.security.egd=file:/dev/urandom -Duser.timezone=Asia/Shanghai \
 -Dcom.sun.management.jmxremote \
 -Dcom.sun.management.jmxremote.port=18082 \
@@ -28,4 +28,6 @@ java -Djava.security.egd=file:/dev/urandom -Duser.timezone=Asia/Shanghai \
 --taskman.wecube-core-address=${core_addr} \
 --taskman.s3-endpoint=${s3_endpoint} \
 --taskman.s3-access-key=${s3_access_key} \
---taskman.s3-secret-key=${s3_secret_key}  >> /log/taskman.log
+--taskman.s3-secret-key=${s3_secret_key}  \
+${WECUBE_CUSTOM_PARAM} \
+>>/data/wecube/taskman/log/taskman.log

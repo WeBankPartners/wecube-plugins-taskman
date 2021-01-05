@@ -6,14 +6,23 @@ public class CoreCreateTaskDTO {
 
 
     /**
+     * requestId :
      * allowedOptions :
      * dueDate :
      * inputs : [{"formItems":[{"itemId":"999","key":"app_inst","val":["0047_0000000026","0047_0000000027"]}],"procDefId":"","taskNodeId":"","overTime":123456,"callbackParameter":"","callbackUrl":"","reporter":"","roleName":"","taskDescription":"","taskName":""}]
      */
-
+    private String requestId;
     private List<String> allowedOptions;
     private String dueDate;
     private List<TaskInfoReq> inputs;
+
+    public String getRequestId() {
+        return requestId;
+    }
+    public CoreCreateTaskDTO setRequestId(String requestId) {
+        this.requestId = requestId;
+        return this;
+    }
 
     public List<String> getAllowedOptions() {
         return allowedOptions;

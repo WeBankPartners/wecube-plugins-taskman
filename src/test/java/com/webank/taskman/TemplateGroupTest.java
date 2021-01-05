@@ -35,7 +35,7 @@ public class TemplateGroupTest {
     public void createRequestTemplateGroup() throws Exception {
         RolesDataResponse role = getRole();
         String request ="{\"id\": \"%s\",\"name\": \"%s\",\"manageRoleId\": \"%s\",\"manageRoleName\": \"%s\",\"description\": \"%s\",\"version\": \"%s\"}";
-        request = String.format(request,"","应用部署模板组",role.getRoleName(),role.getDescription(),"应用部署","1.0");
+        request = String.format(request,"","应用部署模板组",role.getName(),role.getDisplayName(),"应用部署","1.0");
         SaveRequestTemplateGropReq req = GsonUtil.toObject(request,new TypeToken<SaveRequestTemplateGropReq>(){});
         try {
             RequestTemplateGroupDTO dto =  requestTemplateGroupService.saveTemplateGroupByReq(req);

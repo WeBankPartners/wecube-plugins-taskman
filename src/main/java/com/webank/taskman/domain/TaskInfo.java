@@ -36,7 +36,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     
     private String version;
 
-    private int  overTime;
+    private String  overTime;
 
 
     public TaskInfo() {
@@ -252,11 +252,11 @@ public class TaskInfo extends BaseEntity implements Serializable {
         return this;
     }
 
-    public int getOverTime() {
+    public String getOverTime() {
         return overTime;
     }
 
-    public TaskInfo setOverTime(int overTime) {
+    public TaskInfo setOverTime(String overTime) {
         this.overTime = overTime;
         return this;
     }

@@ -3,7 +3,6 @@ package com.webank.taskman.converter;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDTO;
-import com.webank.taskman.support.core.dto.RolesDataDTO;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,18 +16,10 @@ public interface RoleRelationConverter extends BaseConverter<RoleDTO, RoleRelati
 
 
     @Mappings({
-            @Mapping(target = "displayName",source ="description" ),
+            @Mapping(target = "roleName",source ="name" ),
     })
     RoleDTO rolesDataResponseToDto(RolesDataResponse rolesDataResponse);
 
     List<RoleDTO> rolesDataResponseToDtoList(List<RolesDataResponse> rolesDataResponseList);
 
-    @Mappings({
-            @Mapping(target = "description",source ="displayName" ),
-            @Mapping(target = "roleName",source ="name" ),
-            @Mapping(target = "roleId",source ="id" ),
-    })
-    RolesDataResponse  roleDTOToRolesDataResponse(RolesDataDTO rolesDataDTO);
-
-    List<RolesDataResponse> roleDTOToRolesDataResponseList(List<RolesDataDTO> rolesDataDTOList);
 }

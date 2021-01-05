@@ -2,12 +2,10 @@ package com.webank.taskman.support.core;
 
 import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
-import com.webank.taskman.converter.RoleRelationConverter;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.SpringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +48,6 @@ public class CoreServiceStub {
     @Autowired
     private ServiceTaskmanProperties smProperties;
 
-    @Autowired
-    RoleRelationConverter roleRelationConverter;
 
     private String asCoreUrl(String path, Object... pathVariables) {
         log.info("URL before formatting:{}",path);
@@ -79,8 +75,7 @@ public class CoreServiceStub {
             return  CoreServiceTestData.addRoles();
         }
         String json = template.get(asCoreUrl(GET_ALL_ROLES));
-        List<RolesDataResponse> list =  roleRelationConverter.roleDTOToRolesDataResponseList(
-                GsonUtil.toObject(json,new TypeToken<List<RolesDataDTO>>(){}));
+        List<RolesDataResponse> list =  GsonUtil.toObject(json,new TypeToken<List<RolesDataResponse>>(){});
         return list;
     }
 
@@ -89,8 +84,7 @@ public class CoreServiceStub {
             return CoreServiceTestData.addRoleTestData();
         }
         String json = template.get(asCoreUrl(GET_ROLES_BY_USER_NAME, userName));
-        List<RolesDataResponse> list = roleRelationConverter.roleDTOToRolesDataResponseList(
-                GsonUtil.toObject(json,new TypeToken<List<RolesDataDTO>>(){}));
+        List<RolesDataResponse> list = GsonUtil.toObject(json,new TypeToken<List<RolesDataResponse>>(){});
         return list;
     }
 

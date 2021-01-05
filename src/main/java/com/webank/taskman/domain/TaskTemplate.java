@@ -16,21 +16,14 @@ public class TaskTemplate extends BaseEntity implements Serializable {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
     private String requestTemplateId;
-
     private String procDefId;
-
     private String procDefKey;
-
     private String procDefName;
-
     private String name;
-
     private String nodeDefId;
 
     private String nodeName;
-
     private String description;
 
     public TaskTemplate() {

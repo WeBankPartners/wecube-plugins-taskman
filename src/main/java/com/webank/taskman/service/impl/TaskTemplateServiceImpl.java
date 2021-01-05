@@ -60,7 +60,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
             throw  new TaskmanRuntimeException("The RequestTemplate is not exists! id:"+req.getTempId());
         }
         TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
-        taskTemplate.setRequestTempalteId(req.getTempId());
+        taskTemplate.setRequestTemplateId(req.getTempId());
         taskTemplate.setCurrenUserName(taskTemplate, taskTemplate.getId());
         saveOrUpdate(taskTemplate);
         String taskTemplateId = taskTemplate.getId();

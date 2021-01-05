@@ -17,7 +17,7 @@ public class TaskTemplate extends BaseEntity implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    private String requestTempalteId;
+    private String requestTemplateId;
 
     private String procDefId;
 
@@ -51,6 +51,7 @@ public class TaskTemplate extends BaseEntity implements Serializable {
     public LambdaQueryWrapper<TaskTemplate> getLambdaQueryWrapper() {
         return new LambdaQueryWrapper<TaskTemplate>()
             .eq(!StringUtils.isEmpty(id), TaskTemplate::getId, id)
+            .eq(!StringUtils.isEmpty(requestTemplateId), TaskTemplate::getRequestTemplateId, requestTemplateId)
             .eq(!StringUtils.isEmpty(procDefId), TaskTemplate::getProcDefId, procDefId)
             .eq(!StringUtils.isEmpty(procDefKey), TaskTemplate::getProcDefKey, procDefKey)
             .eq(!StringUtils.isEmpty(procDefName), TaskTemplate::getProcDefName, procDefName)
@@ -70,12 +71,12 @@ public class TaskTemplate extends BaseEntity implements Serializable {
         return this;
     }
 
-    public String getRequestTempalteId() {
-        return requestTempalteId;
+    public String getRequestTemplateId() {
+        return requestTemplateId;
     }
 
-    public TaskTemplate setRequestTempalteId(String requestTempalteId) {
-        this.requestTempalteId = requestTempalteId;
+    public TaskTemplate setRequestTemplateId(String requestTemplateId) {
+        this.requestTemplateId = requestTemplateId;
         return this;
     }
 

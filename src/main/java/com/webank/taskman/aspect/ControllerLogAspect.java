@@ -56,14 +56,16 @@ public class ControllerLogAspect {
 
     @Around("logPointcut()")
     public <T> Object doAround(ProceedingJoinPoint joinPoint) throws Throwable {
+        StringBuffer logs = new StringBuffer();
+        HttpServletRequest request = getHttpServletRequest();
+        String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
         try {
-            HttpServletRequest request = getHttpServletRequest();
+
             String tragetClassName = joinPoint.getSignature().getDeclaringTypeName();
             String requestMethod = request.getMethod();
             String methodName = joinPoint.getSignature().getName();
             String uri = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
-            StringBuffer logs = new StringBuffer();
-            String bestMatchingPattern = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE).toString();
+
             String jsonKey = "\n\t\"%s\":";
             String josnValue = "\"%s\"";
             logs.append(String.format("========Receive Request: [%s] start========",bestMatchingPattern)).append("\n{");
@@ -102,6 +104,11 @@ public class ControllerLogAspect {
             log.info("========Response Request: [{}] complete========",bestMatchingPattern);
             return result;
         } catch (Throwable e) {
+            logs.append("error:").append(e.getMessage());
+            logs.append("\n}");
+            String logContent = URLDecoder.decode(logs.toString(), "UTF-8");
+            log.info(logContent);
+            log.info("========Response Request: [{}] complete========",bestMatchingPattern);
             throw e;
         }
     }

@@ -12,6 +12,8 @@ import com.webank.taskman.mapper.FormInfoMapper;
 import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.FormTemplateService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,9 @@ import java.util.List;
 
 @Service
 public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> implements FormInfoService {
+
+
+    private static final Logger log = LoggerFactory.getLogger(FormInfoServiceImpl.class);
 
     @Autowired
     FormTemplateService formTemplateService;
@@ -45,6 +50,10 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
 
     @Override
     public void saveFormInfoAndItems(List<FormItemInfo> formItems, String requestTempId, String requestInfoId) {
+        if(null == formItems || formItems.size() == 0){
+            log.info("The formItems is null.");
+            return;
+        }
         FormInfo form = saveFormInfoByExists(requestTempId, requestInfoId);
         String formId = form.getId();
         formItemInfoService.saveItemInfoByList(formItems, requestInfoId, formId);

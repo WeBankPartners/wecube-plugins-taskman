@@ -195,13 +195,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
         req.getInputs().stream().forEach(task->{
             TaskInfo taskInfo = taskInfoConverter.toEntityByReq(task);
-            TaskInfo isExists = taskInfoMapper.selectOne(
+            /*int isExists = taskInfoMapper.selectCount(
                     new TaskInfo(task.getProcInstId(),task.getTaskNodeId()).getLambdaQueryWrapper());
-            if(null != isExists){
+            if(0 < isExists){
                 throw new TaskmanRuntimeException(String.format(
                         "Task is exists! procInstId:%s,TaskNodeId:%s",
                         task.getProcInstId(),task.getTaskNodeId()));
-            }
+            }*/
             taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
             save(taskInfo);
             List<FormItemInfo> items = formItemInfoConverter.toEntityByBeans(task.getFormItems());

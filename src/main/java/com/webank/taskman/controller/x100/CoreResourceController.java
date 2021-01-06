@@ -92,6 +92,17 @@ public class CoreResourceController {
     }
 
     @ApiOperationSupport(order = 7)
+    @ApiOperation(value = "platform-process-entity-info", notes = "")
+    @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}")
+    public JsonResponse<DataModelEntityDto> platformProcessEntityInfo(
+            @PathVariable(value = "package-name") String packageName,
+            @PathVariable(value = "entity-name") String entityName) {
+        DataModelEntityDto result = coreServiceStub.getEntityByPackageNameAndName(packageName,
+                entityName);
+        return okayWithData(result);
+    }
+
+    @ApiOperationSupport(order = 7)
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}/attributes")
     @ApiOperation(value = "platform-process-entity-attributes", notes = "")
     public JsonResponse platformProcessEntityAttributes(

@@ -1,6 +1,8 @@
 package com.webank.taskman.support.core.dto;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -25,12 +27,12 @@ public class PluginPackageDataModelDto {
 
     private Long updateTime;
 
-    private Set<PluginPackageEntityDto> pluginPackageEntities;
+    private List<PluginPackageEntityDto> entities = new ArrayList<>();
 
     public PluginPackageDataModelDto() {
     }
 
-    public PluginPackageDataModelDto(String id, Integer version, String packageName, boolean isDynamic, String updatePath, String updateMethod, String updateSource, Long updateTime, Set<PluginPackageEntityDto> pluginPackageEntities) {
+    public PluginPackageDataModelDto(String id, Integer version, String packageName, boolean isDynamic, String updatePath, String updateMethod, String updateSource, Long updateTime, List<PluginPackageEntityDto> entities) {
         this.id = id;
         this.version = version;
         this.packageName = packageName;
@@ -39,7 +41,7 @@ public class PluginPackageDataModelDto {
         this.updateMethod = updateMethod;
         this.updateSource = updateSource;
         this.updateTime = updateTime;
-        this.pluginPackageEntities = pluginPackageEntities;
+        this.entities = entities;
     }
 
     public String getId() {
@@ -106,12 +108,13 @@ public class PluginPackageDataModelDto {
         this.updateTime = updateTime;
     }
 
-    public Set<PluginPackageEntityDto> getPluginPackageEntities() {
-        return pluginPackageEntities;
+    public List<PluginPackageEntityDto> getEntities() {
+        return entities;
     }
 
-    public void setPluginPackageEntities(Set<PluginPackageEntityDto> pluginPackageEntities) {
-        this.pluginPackageEntities = pluginPackageEntities;
+    public PluginPackageDataModelDto setEntities(List<PluginPackageEntityDto> entities) {
+        this.entities = entities;
+        return this;
     }
 
     @Override
@@ -125,7 +128,7 @@ public class PluginPackageDataModelDto {
                 .add("updateMethod='" + updateMethod + "'")
                 .add("updateSource='" + updateSource + "'")
                 .add("updateTime=" + updateTime)
-                .add("pluginPackageEntities=" + pluginPackageEntities)
+                .add("entities=" + entities)
                 .toString();
     }
 }

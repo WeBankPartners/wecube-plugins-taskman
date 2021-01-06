@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
@@ -21,8 +23,14 @@ import com.webank.taskman.dto.resp.*;
 import com.webank.taskman.mapper.*;
 import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
+import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
+import com.webank.taskman.support.core.CoreRemoteCallException;
+import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.dto.CallbackRequestDto;
+import com.webank.taskman.support.core.dto.CallbackRequestDto.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,17 +38,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
 public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> implements TaskInfoService {
 
-    @Autowired
-    TaskInfoMapper taskInfoMapper;
-
-    @Autowired
-    FormInfoMapper formInfoMapper;
 
 
     @Autowired
@@ -49,10 +51,6 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormItemInfoMapper formItemInfoMapper;
 
-
-
-    @Autowired
-    RequestInfoMapper requestInfoMapper;
 
     @Autowired
     RequestInfoConverter requestInfoConverter;
@@ -69,56 +67,66 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     @Autowired
     FormInfoService formInfoService;
 
+    @Autowired
+    CoreServiceStub coreServiceStub;
+
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
+        String inSql = req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
-                .getLambdaQueryWrapper().inSql(TaskInfo::getId,req.getEqUseRole());
+                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskInfo::getId,req.getEqUseRole());
         PageHelper.startPage(page,pageSize);
-        PageInfo<TaskInfo> pages = new PageInfo(taskInfoMapper.selectList(queryWrapper));
+        PageInfo<TaskInfo> pages = new PageInfo(getBaseMapper().selectList(queryWrapper));
         QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
         return queryResponse;
     }
 
     @Override
-    public String ProcessingTasksService(ProcessingTasksReq req) throws TaskmanRuntimeException {
-        TaskInfo taskInfo=taskInfoMapper.selectById(req.getRecordId());
+    public JsonResponse taskInfoProcessing(ProcessingTasksReq req) throws TaskmanRuntimeException {
+        TaskInfo taskInfo = getBaseMapper().selectById(req.getRecordId());
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         if (!currentUsername.equals(taskInfo.getReporter())){
-            return "Failed to process. Please claim";
+            throw  new TaskmanRuntimeException("Failed to process. Please claim") ;
         }
         if (!"already_received".equals(taskInfo.getStatus())){
-            return "Processing failed. The current task is not claimed";
+            throw  new TaskmanRuntimeException("Processing failed. The current task is not claimed") ;
         }
-        FormInfo formInfo = new FormInfo();
-        formInfo.setRecordId(taskInfo.getId());
-        formInfo.setUpdatedBy(currentUsername);
-        formInfo.setType(StatusEnum.ENABLE.ordinal());
-        formInfoMapper.insert(formInfo);
-        for (SaveFormItemInfoReq formItemInfo : req.getFormItemInfoList()) {
-            FormItemInfo formItemInfo1=formItemInfoConverter.toEntityByReq(formItemInfo);
-            formItemInfo1.setFormId(formInfo.getId());
-            formItemInfo1.setRecordId(taskInfo.getId());
-            formItemInfoMapper.insert(formItemInfo1);
-        }
-
-//        List<FormItemInfo> list=formItemInfoMapper.selectList(
-//                new QueryWrapper<FormItemInfo>()
-//                        .eq("form_id",formInfo.getId()));
-//        FormInfo formInfo1=formInfoMapper.selectById(formInfo.getId());
-//        ProcessingTasksResp processingTasksResp=formInfoConverter.processingTasksResp(formInfo1);
-//        processingTasksResp.setFormItemInfoList(list);
-
-        taskInfo.setStatus("Processed");
+        callbackByTaskInfo(req, taskInfo);
+        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntityByReqs(req.getFormItemInfoList());
+        formInfoService.saveFormInfoAndItems(formItemInfos,taskInfo.getTaskTempId(),taskInfo.getId());
+        taskInfo.setStatus(StatusEnum.Processed.name());
         taskInfo.setResult(req.getResult());
         taskInfo.setUpdatedBy(currentUsername);
-        taskInfoMapper.updateById(taskInfo);
+        taskInfo.setUpdatedTime(new Date());
+        updateById(taskInfo);
 
-        return "processing successful";
+        return JsonResponse.okay();
+    }
+
+    private void callbackByTaskInfo(ProcessingTasksReq req, TaskInfo taskInfo) {
+        CallbackRequestDto callbackRequest = new CallbackRequestDto();
+        CallbackRequestResultDataDto callbackRequestResultDataDto = new CallbackRequestResultDataDto();
+        callbackRequestResultDataDto.setRequestId(taskInfo.getRequestId());
+        callbackRequestResultDataDto.setOutputs(Lists.newArrayList(new CallbackRequestOutputsDto(
+                CallbackRequestOutputsDto.ERROR_CODE_SUCCESSFUL, req.getResultMessage(),
+                req.getResultMessage(), taskInfo.getCallbackParameter())));
+
+        callbackRequest.setResults(callbackRequestResultDataDto);
+        callbackRequest.setResultMessage(req.getResultMessage());
+        callbackRequest.setResultCode(req.getResult());
+
+        try {
+            coreServiceStub.callback(taskInfo.getCallbackUrl(), callbackRequest);
+        } catch (CoreRemoteCallException e) {
+            String msg = String.format("Callback wecube meet error: %s", e.getMessage());
+            log.error(msg);
+            throw new TaskmanRuntimeException("3014", msg, e.getMessage());
+        }
     }
 
     @Override
     public CommonResponseDto cancelTask(CoreCancelTaskDTO req) {
-        TaskInfo taskInfo = taskInfoMapper.selectOne(
+        TaskInfo taskInfo = getBaseMapper().selectOne(
                 new TaskInfo().setProcInstId(req.getProcInstId()).setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
         if(null == taskInfo){
             throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
@@ -126,25 +134,27 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
         taskInfo.setUpdatedTime(new Date());
         taskInfo.setStatus(StatusEnum.SUSPENSION.toString());
-        updateById(taskInfo);
+        getBaseMapper().updateById(taskInfo);
         return CommonResponseDto.okay();
     }
 
     @Override
     public TaskInfoResp taskInfoDetail(String id) {
-        TaskInfo taskInfo = taskInfoMapper.selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper());
+        TaskInfo taskInfo = getBaseMapper().selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper());
         TaskInfoResp taskInfoResp = taskInfoConverter.toResp(taskInfo);
         taskInfoResp.setFormItemInfo(formItemInfoService.returnDetail(id));
         return taskInfoResp;
     }
+    @Autowired
+    RequestInfoService requestInfoService;
 
     @Override
         public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstId,String taskId) {
 
-        RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
+        RequestInfo requestInfo = requestInfoService.getOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
-        FormInfo formInfo = formInfoMapper.selectOne(new FormInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
+        FormInfo formInfo = formInfoService.getOne(new FormInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
         if (null == formInfo){
             throw new TaskmanRuntimeException("The request details do not exist");
         }
@@ -152,13 +162,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         requestInfoInstanceResq.setRequestFormResq(formInfoConverter.toRequestFormResq(formInfo));
         requestInfoInstanceResq.getRequestFormResq().setFormItemInfo(formItemInfos);
 
-        List<TaskInfo> taskInfos = taskInfoMapper.selectList( new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstId, procInstId).orderByAsc(TaskInfo::getUpdatedTime));
+        List<TaskInfo> taskInfos = getBaseMapper().selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstId, procInstId).orderByAsc(TaskInfo::getUpdatedTime));
 
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
             if (!(taskInfo.getId().equals(taskId))) {
                 TaskInfoInstanceResp resp = taskInfoConverter.toInstanceResp(taskInfo);
-                formInfo=formInfoMapper.selectOne(new FormInfo().setRecordId(taskInfo.getId()).getLambdaQueryWrapper());
+                formInfo= formInfoService.getOne(new FormInfo().setRecordId(taskInfo.getId()).getLambdaQueryWrapper());
                 if (null==formInfo||"".equals(formInfo)){
                     throw new TaskmanRuntimeException("The request details do not exist");
                 }
@@ -176,13 +186,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public TaskInfoDTO taskInfoReceive(String id) {
-        TaskInfo taskInfo = taskInfoMapper.selectById(id);
+        TaskInfo taskInfo = getBaseMapper().selectById(id);
 
         if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
             taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
             taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
             taskInfo.setUpdatedTime(new Date());
-            taskInfoMapper.updateById(taskInfo);
+            getBaseMapper().updateById(taskInfo);
         }
         return taskInfoConverter.toDto(taskInfo);
     }

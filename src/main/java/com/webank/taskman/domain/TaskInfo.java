@@ -16,6 +16,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
+    private String requestId;
     private String parentId;
     private String taskTempId;
     private String procInstId;
@@ -96,6 +97,15 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     public TaskInfo setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public TaskInfo setRequestId(String requestId) {
+        this.requestId = requestId;
         return this;
     }
 

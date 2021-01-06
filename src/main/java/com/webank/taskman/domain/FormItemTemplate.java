@@ -40,6 +40,8 @@ public class FormItemTemplate implements Serializable {
     private String attrDefId;
     @ApiModelProperty(value = "",position = 10)
     private String attrDefDataType;
+    @ApiModelProperty(value = "",position = 10)
+    private String routineExp;
 
     @ApiModelProperty(value = "",position = 11)
     private String elementType;
@@ -106,10 +108,13 @@ public class FormItemTemplate implements Serializable {
                 .eq(!StringUtils.isEmpty(isView), FormItemTemplate::getIsView, isView);
     }
 
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
     public String getId() {
         return id;
     }
-
 
     public FormItemTemplate setId(String id) {
         this.id = id;
@@ -212,6 +217,15 @@ public class FormItemTemplate implements Serializable {
 
     public FormItemTemplate setAttrDefDataType(String attrDefDataType) {
         this.attrDefDataType = attrDefDataType;
+        return this;
+    }
+
+    public String getRoutineExp() {
+        return routineExp;
+    }
+
+    public FormItemTemplate setRoutineExp(String routineExp) {
+        this.routineExp = routineExp;
         return this;
     }
 

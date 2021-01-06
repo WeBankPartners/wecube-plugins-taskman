@@ -112,10 +112,9 @@ public class TaskmanTaskController {
     @ApiOperationSupport(order =8)
     @PostMapping("/processing")
     @ApiOperation(value = "task-info-processing")
-    public JsonResponse<String> taskInfoProcessing(@Valid @RequestBody ProcessingTasksReq req)
+    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProcessingTasksReq req)
     {
-        String msg = taskInfoService.ProcessingTasksService(req);
-        return JsonResponse.okayWithData(msg);
+        return taskInfoService.taskInfoProcessing(req);
     }
 
 }

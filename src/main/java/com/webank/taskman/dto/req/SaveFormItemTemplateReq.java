@@ -47,6 +47,9 @@ public class SaveFormItemTemplateReq {
     private String refPackageName;
     @ApiModelProperty(value = "",position = 16)
     private String refFilters;
+    @ApiModelProperty(value = "",position = 10)
+    private String routineExp;
+
     @ApiModelProperty(value = "",position = 17)
     private String dataOptions;
 
@@ -201,6 +204,15 @@ public class SaveFormItemTemplateReq {
 
     public SaveFormItemTemplateReq setRefFilters(String refFilters) {
         this.refFilters = refFilters;
+        return this;
+    }
+
+    public String getRoutineExp() {
+        return routineExp;
+    }
+
+    public SaveFormItemTemplateReq setRoutineExp(String routineExp) {
+        this.routineExp = routineExp;
         return this;
     }
 

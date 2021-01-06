@@ -4,9 +4,14 @@ package com.webank.taskman.dto.req;
 import java.util.List;
 
 public class ProcessingTasksReq {
-    private String recordId;
 
+    public static final String RESULT_SUCCESSFUL="Successful/Approved";
+    public static final String RESULT_FAILED="Failed/Rejected";
+
+
+    private String recordId;
     private String result;
+    private String resultMessage;
 
     private List<SaveFormItemInfoReq> formItemInfoList;
 
@@ -24,6 +29,15 @@ public class ProcessingTasksReq {
 
     public void setResult(String result) {
         this.result = result;
+    }
+
+    public String getResultMessage() {
+        return resultMessage;
+    }
+
+    public ProcessingTasksReq setResultMessage(String resultMessage) {
+        this.resultMessage = resultMessage;
+        return this;
     }
 
     public List<SaveFormItemInfoReq> getFormItemInfoList() {

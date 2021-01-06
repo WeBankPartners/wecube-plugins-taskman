@@ -26,6 +26,7 @@ import com.webank.taskman.service.FormTemplateService;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.service.TaskTemplateService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,8 +99,9 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
 
     @Override
     public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplatePage(Integer page, Integer pageSize, QueryTemplateReq req) {
+        String inSql = req.getEqUseRole();
         LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
-                .getLambdaQueryWrapper().inSql(TaskTemplate::getId,req.getEqUseRole());
+                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskTemplate::getId,inSql);
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize),queryWrapper);
         List<TaskTemplateByRoleResp> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
         QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>(iPage.getTotal(), iPage.getCurrent(), iPage.getSize(),list);

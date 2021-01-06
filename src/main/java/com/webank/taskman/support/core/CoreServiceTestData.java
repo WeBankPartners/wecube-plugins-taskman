@@ -4,7 +4,6 @@ import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.GsonUtil;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

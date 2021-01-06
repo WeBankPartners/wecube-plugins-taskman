@@ -30,6 +30,7 @@ import com.webank.taskman.support.core.CoreRemoteCallException;
 import com.webank.taskman.support.core.CoreServiceStub;
 import com.webank.taskman.support.core.dto.CallbackRequestDto;
 import com.webank.taskman.support.core.dto.CallbackRequestDto.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,8 +72,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
+        String inSql = req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
-                .getLambdaQueryWrapper().inSql(TaskInfo::getId,req.getEqUseRole());
+                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskInfo::getId,req.getEqUseRole());
         PageHelper.startPage(page,pageSize);
         PageInfo<TaskInfo> pages = new PageInfo(getBaseMapper().selectList(queryWrapper));
         QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());

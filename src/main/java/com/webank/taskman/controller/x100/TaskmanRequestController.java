@@ -14,6 +14,7 @@ import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
+import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.*;
@@ -176,9 +177,16 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 22)
     @PostMapping("/save")
     @ApiOperation(value = "request-info-save")
-    public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
-        return okayWithData(requestInfoService.saveRequestInfo(req));
+    public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody CreateTaskDto req) throws TaskmanRuntimeException {
+        return okayWithData(new SaveRequestInfoReq());
     }
+//
+//    @ApiOperationSupport(order = 22)
+//    @PostMapping("/save")
+//    @ApiOperation(value = "request-info-save")
+//    public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
+//        return okayWithData(requestInfoService.saveRequestInfo(req));
+//    }
 
     @ApiOperationSupport(order = 12)
     @PostMapping("/search/{page}/{pageSize}")

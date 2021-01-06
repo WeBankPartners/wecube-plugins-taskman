@@ -17,6 +17,7 @@ public enum  StatusEnum {
     UNCLAIMED,
 
     InProgress, // createNewWorkflowInstance is success!
+    Processed,  // task is Processed!
 
     SUSPENSION, // taskInfo is canl
     ;

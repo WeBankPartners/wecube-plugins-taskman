@@ -2,6 +2,7 @@ package com.webank.taskman.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.TaskInfo;
@@ -24,7 +25,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     CommonResponseDto createTask(CoreCreateTaskDTO req);
 
-    String ProcessingTasksService(ProcessingTasksReq ptr) throws TaskmanRuntimeException;
+    JsonResponse taskInfoProcessing(ProcessingTasksReq ptr) throws TaskmanRuntimeException;
 
     CommonResponseDto cancelTask(CoreCancelTaskDTO req);
 

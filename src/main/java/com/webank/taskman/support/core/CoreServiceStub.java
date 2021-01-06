@@ -2,6 +2,8 @@ package com.webank.taskman.support.core;
 
 import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
+import com.webank.taskman.commons.TaskmanRuntimeException;
+import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.GsonUtil;
@@ -18,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.webank.taskman.support.core.CoreServiceTestData.*;
+
 
 @Service
 public class CoreServiceStub {
@@ -204,6 +207,10 @@ public class CoreServiceStub {
         LinkedHashMap result = template.postForResponse(asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE), creationInfoDto,LinkedHashMapResponse.class);
         return GsonUtil.toObject(GsonUtil.GsonString(result),new TypeToken<DynamicWorkflowInstInfoDto>(){});
     }
+    public Object callback(String callbackUrl, CallbackRequestDto callbackRequest) {
+        return template.postForResponse(asCoreUrl(callbackUrl), callbackRequest, DefaultCoreResponse.class);
+    }
+
 
     private List<DynamicTaskNodeBindInfoDto> createTaskNodeBindInfos(String processSessionId)
     {

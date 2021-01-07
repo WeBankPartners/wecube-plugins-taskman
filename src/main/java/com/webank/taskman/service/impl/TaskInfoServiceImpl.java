@@ -44,7 +44,6 @@ import java.util.List;
 public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> implements TaskInfoService {
 
 
-
     @Autowired
     FormInfoConverter formInfoConverter;
 
@@ -74,10 +73,10 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
         String inSql = req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
-                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskInfo::getId,req.getEqUseRole());
-        PageHelper.startPage(page,pageSize);
+                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, req.getEqUseRole());
+        PageHelper.startPage(page, pageSize);
         PageInfo<TaskInfo> pages = new PageInfo(getBaseMapper().selectList(queryWrapper));
-        QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(),page.longValue(),pageSize.longValue(),pages.getList());
+        QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(), page.longValue(), pageSize.longValue(), pages.getList());
         return queryResponse;
     }
 
@@ -85,15 +84,15 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     public JsonResponse taskInfoProcessing(ProcessingTasksReq req) throws TaskmanRuntimeException {
         TaskInfo taskInfo = getBaseMapper().selectById(req.getRecordId());
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
-        if (!currentUsername.equals(taskInfo.getReporter())){
-            throw  new TaskmanRuntimeException("Failed to process. Please claim") ;
+        if (!currentUsername.equals(taskInfo.getReporter())) {
+            throw new TaskmanRuntimeException("Failed to process. Please claim");
         }
-        if (!"already_received".equals(taskInfo.getStatus())){
-            throw  new TaskmanRuntimeException("Processing failed. The current task is not claimed") ;
+        if (!"already_received".equals(taskInfo.getStatus())) {
+            throw new TaskmanRuntimeException("Processing failed. The current task is not claimed");
         }
         callbackByTaskInfo(req, taskInfo);
         List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntityByReq(req.getFormItemInfoList());
-        formInfoService.saveFormInfoAndItems(formItemInfos,taskInfo.getTaskTempId(),taskInfo.getId());
+        formInfoService.saveFormInfoAndItems(formItemInfos, taskInfo.getTaskTempId(), taskInfo.getId());
         taskInfo.setStatus(StatusEnum.Processed.name());
         taskInfo.setResult(req.getResult());
         taskInfo.setUpdatedBy(currentUsername);
@@ -128,10 +127,10 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     public CommonResponseDto cancelTask(CoreCancelTaskDTO req) {
         TaskInfo taskInfo = getBaseMapper().selectOne(
                 new TaskInfo().setProcInstId(req.getProcInstId()).setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
-        if(null == taskInfo){
+        if (null == taskInfo) {
             throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
         }
-        taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
+        taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
         taskInfo.setUpdatedTime(new Date());
         taskInfo.setStatus(StatusEnum.SUSPENSION.toString());
         getBaseMapper().updateById(taskInfo);
@@ -145,23 +144,23 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         taskInfoResp.setFormItemInfo(formItemInfoService.returnDetail(id));
         return taskInfoResp;
     }
+
     @Autowired
     RequestInfoService requestInfoService;
 
     @Override
-        public RequestInfoInstanceResq selectTaskInfoInstanceService(String procInstId,String taskId) {
-
-        RequestInfo requestInfo = requestInfoService.getOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
+    public RequestInfoInstanceResq selectTaskInfoInstanceService(String requestId, String taskId) {
+        RequestInfo requestInfo = requestInfoService.getOne(new RequestInfo().setId(requestId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
-        requestInfoInstanceResq.setRequestFormResq(getFormInfoResq(requestInfo.getId()));
-        List<TaskInfo> taskInfos = getBaseMapper().selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstId, procInstId).orderByAsc(TaskInfo::getUpdatedTime));
+        requestInfoInstanceResq.setRequestFormResq(getFormInfoResq(requestId));
+        List<TaskInfo> taskInfos = getBaseMapper().selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getRequestId,requestId).orderByAsc(TaskInfo::getUpdatedTime));
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
             if (!(taskInfo.getId().equals(taskId))) {
                 TaskInfoInstanceResp resp = taskInfoConverter.toInstanceResp(taskInfo);
                 FormInfoResq taskForm = formInfoConverter.toDto(formInfoService.getOne(new FormInfo().setRecordId(taskInfo.getId()).getLambdaQueryWrapper()));
-                if (null == taskForm){
+                if (null == taskForm) {
                     throw new TaskmanRuntimeException("The request details do not exist");
                 }
                 resp.setTaskFormResq(getFormInfoResq(taskId));
@@ -175,7 +174,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     private FormInfoResq getFormInfoResq(String recordId) {
         FormInfoResq formInfoResq = formInfoConverter.toDto(formInfoService.getOne(new FormInfo().setRecordId(recordId).getLambdaQueryWrapper()));
-        if (null == formInfoResq){
+        if (null == formInfoResq) {
             throw new TaskmanRuntimeException("The request details do not exist");
         }
         List<FormItemInfo> formItemInfos = formItemInfoMapper.selectList(new FormItemInfo().setRecordId(recordId).getLambdaQueryWrapper());
@@ -187,7 +186,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     public TaskInfoDTO taskInfoReceive(String id) {
         TaskInfo taskInfo = getBaseMapper().selectById(id);
 
-        if(taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())){
+        if (taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())) {
             taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
             taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
             taskInfo.setUpdatedTime(new Date());
@@ -198,11 +197,11 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     @Transactional
-    public CommonResponseDto createTask(CoreCreateTaskDTO req) throws TaskmanRuntimeException{
-        if(null == req.getInputs() || req.getInputs().size()==0){
+    public CommonResponseDto createTask(CoreCreateTaskDTO req) throws TaskmanRuntimeException {
+        if (null == req.getInputs() || req.getInputs().size() == 0) {
             throw new TaskmanRuntimeException(" inputs is null");
         }
-        req.getInputs().stream().forEach(task->{
+        req.getInputs().stream().forEach(task -> {
             TaskInfo taskInfo = taskInfoConverter.toEntityByReq(task);
             /*int isExists = taskInfoMapper.selectCount(
                     new TaskInfo(task.getProcInstId(),task.getTaskNodeId()).getLambdaQueryWrapper());
@@ -211,12 +210,12 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                         "Task is exists! procInstId:%s,TaskNodeId:%s",
                         task.getProcInstId(),task.getTaskNodeId()));
             }*/
-            taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
+            taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
             save(taskInfo);
             List<FormItemInfo> items = formItemInfoConverter.toEntityByBean(task.getFormItems());
-            formInfoService.saveFormInfoAndItems(items,taskInfo.getTaskTempId(),taskInfo.getId());
+            formInfoService.saveFormInfoAndItems(items, taskInfo.getTaskTempId(), taskInfo.getId());
         });
-        return  CommonResponseDto.okay();
+        return CommonResponseDto.okay();
     }
 
 }

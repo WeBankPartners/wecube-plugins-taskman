@@ -19,7 +19,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req);
 
-    RequestInfoInstanceResq selectTaskInfoInstanceService(String taskId, String requestId);
+    RequestInfoInstanceResq selectTaskInfoInstanceService(String requestId, String taskId);
 
     TaskInfoDTO taskInfoReceive(String id);
 

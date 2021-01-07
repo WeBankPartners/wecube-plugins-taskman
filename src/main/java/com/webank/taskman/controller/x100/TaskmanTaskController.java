@@ -100,12 +100,12 @@ public class TaskmanTaskController {
 
 
     @ApiOperationSupport(order =7)
-    @GetMapping("/instance/{proc-inst-id}/{task-id}")
+    @GetMapping("/instance")
     @ApiOperation(value = "task-info-instance")
     public JsonResponse<RequestInfoInstanceResq> taskInfoInstance(
-        @PathVariable("proc-inst-id") String procInstId,@PathVariable("task-id") String taskId)
+        @RequestParam("requestId") String requestId,@RequestParam("taskId") String taskId)
     {
-        RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(procInstId,taskId);
+        RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(requestId,taskId);
         return JsonResponse.okayWithData(requestInfoInstanceResq);
     }
 

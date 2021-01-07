@@ -5,7 +5,6 @@ import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.support.core.dto.CoreResponse.*;
 import com.webank.taskman.support.core.dto.*;
 import com.webank.taskman.utils.GsonUtil;
-import com.webank.taskman.utils.SpringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,7 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static com.webank.taskman.support.core.CoreServiceTestData.*;
 
 
 @Service
@@ -29,13 +26,10 @@ public class CoreServiceStub {
     public static final String GET_ALL_ROLES = "/auth/v1/roles";
     public static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/{user-name}/roles";
 
-    public static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/release/process/instances";
-    public static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/release/process/definitions";
-    public static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/release/process/definitions/{proc-def-id}/tasknodes";
 
-   /* public static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/public/process/instances";
+    public static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/public/process/instances";
     public static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/public/process/definitions";
-    public static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/public/process/definitions/{proc-def-id}/tasknodes";*/
+    public static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/public/process/definitions/{proc-def-id}/tasknodes";
 
     public static final String GET_MODELS_ALL_URL= "/platform/v1/models";
     public static final String GET_MODELS_BY_PACKAGE_URL= "/platform/v1/packages/{package-name}/models";

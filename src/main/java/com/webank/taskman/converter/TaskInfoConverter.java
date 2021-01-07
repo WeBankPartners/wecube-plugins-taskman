@@ -5,7 +5,6 @@ import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
-import com.webank.taskman.dto.resp.FormItemInfoResp;
 import com.webank.taskman.dto.resp.TaskInfoResp;
 import com.webank.taskman.dto.resp.TaskInfoInstanceResp;
 import org.mapstruct.Mapper;

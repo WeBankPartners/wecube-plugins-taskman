@@ -54,8 +54,6 @@ public class TaskmanRequestController {
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
-    @Autowired
-    TaskInfoService taskInfoService;
 
 
 

@@ -103,7 +103,6 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer pageNum, Integer pageSize, QueryRequestTemplateReq req) {
-        req.setSourceTableFix("rt");
         req.queryCurrentUserRoles();
         PageHelper.startPage(pageNum,pageSize);
         PageInfo<RequestTemplateDTO> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));

@@ -57,7 +57,7 @@
                 AND rt.status = #{status}
             </if>
             <if test="conditionSql!=null and conditionSql !=''">
-                AND ${conditionSql}
+                AND  rt. id IN(${conditionSql})
             </if>
         </where>
     </select>

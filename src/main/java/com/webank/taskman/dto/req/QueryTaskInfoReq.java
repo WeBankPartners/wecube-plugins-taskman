@@ -11,25 +11,26 @@ import java.util.StringJoiner;
 public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
 
 
-    @ApiModelProperty(value = "任务id",position = 1)
+    @ApiModelProperty(value = "",position = 1)
     private String id;
-
-    @ApiModelProperty(value = "流程实例ID",position = 4)
+    @ApiModelProperty(value = "",position = 4)
     private String procInstId;
-    @ApiModelProperty(value = "流程节点ID",position = 5)
+    @ApiModelProperty(value = "",position = 5)
     private String nodeDefId;
-    @ApiModelProperty(value = "任务名称",position = 7)
+    @ApiModelProperty(value = "",position = 7)
     private String name;
-    @ApiModelProperty(value = "处理人",position = 9)
+    @ApiModelProperty(value = "",position = 9)
     private String reporter;
-    @ApiModelProperty(value = "处理时间",position = 10)
+    @ApiModelProperty(value = "",position = 10)
     private Date reportTime;
-    @ApiModelProperty(value = "紧急程度",position = 11)
+    @ApiModelProperty(value = "",position = 11)
     private String emergency;
-    @ApiModelProperty(value = "任务状态",position = 12)
+    @ApiModelProperty(value = "",position = 12)
     private String status;
-    @ApiModelProperty(value = "任务状态",position = 13)
+    @ApiModelProperty(value = "",position = 13)
     private String result;
+
+    private String isMy;
 
 
 
@@ -111,6 +112,15 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
 
     public QueryTaskInfoReq setResult(String result) {
         this.result = result;
+        return this;
+    }
+
+    public String getIsMy() {
+        return isMy;
+    }
+
+    public QueryTaskInfoReq setIsMy(String isMy) {
+        this.isMy = isMy;
         return this;
     }
 

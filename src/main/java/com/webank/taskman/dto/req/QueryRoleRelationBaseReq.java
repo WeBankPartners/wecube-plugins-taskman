@@ -17,8 +17,6 @@ public class QueryRoleRelationBaseReq {
     @ApiModelProperty(value = "管理角色",required = false,position = 110)
     private String manageRoleName;
 
-    @ApiModelProperty(hidden = true)
-    private String sourceTableFix;
 
 
     @ApiModelProperty(hidden = true)
@@ -34,10 +32,9 @@ public class QueryRoleRelationBaseReq {
     }
 
 
-    public QueryRoleRelationBaseReq(String useRoleName, String manageRoleName, String sourceTableFix) {
+    public QueryRoleRelationBaseReq(String useRoleName, String manageRoleName) {
         this.useRoleName = useRoleName;
         this.manageRoleName = manageRoleName;
-        this.sourceTableFix = sourceTableFix;
     }
 
     public String getUseRoleName() {
@@ -68,15 +65,6 @@ public class QueryRoleRelationBaseReq {
         this.manageRoleName = manageRoleName;
     }
 
-    public String getSourceTableFix() {
-        return sourceTableFix;
-    }
-
-    public void setSourceTableFix(String sourceTableFix) {
-        this.sourceTableFix = sourceTableFix;
-
-    }
-
     public Integer getRoleType() {
         return roleType;
     }
@@ -92,8 +80,8 @@ public class QueryRoleRelationBaseReq {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-    protected static final  String NOT_ALL = "%s.id in(SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND rr.role_name IN('%s'))";
-    protected static final String ALL = "%s.id in (SELECT rr.record_id FROM role_relation rr WHERE (rr.role_type =0 AND rr.role_name IN('%s')) OR (rr.role_type =1  AND rr.role_name IN('%s')))";
+    protected static final  String NOT_ALL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND rr.role_name IN('%s')";
+    protected static final String ALL = "SELECT rr.record_id FROM role_relation rr WHERE (rr.role_type =0 AND rr.role_name IN('%s')) OR (rr.role_type =1  AND rr.role_name IN('%s'))";
     public static final String QUERY_BY_ROLE_SQL = "SELECT rr.record_id FROM role_relation rr WHERE rr.role_type =%s AND rr.role_name IN('%s')";
 
     public String getConditionSql() {
@@ -101,10 +89,10 @@ public class QueryRoleRelationBaseReq {
             switch (this.roleType) {
                 case 0:
                 case 1:
-                    conditionSql = String.format(NOT_ALL, sourceTableFix,getRoleType(), getRoleNameStr(getRoleName()));
+                    conditionSql = String.format(NOT_ALL,getRoleType(), getRoleNameStr(getRoleName()));
                     break;
                 default:
-                    conditionSql = String.format(ALL, sourceTableFix, getRoleNameStr(getManageRoleName()),getRoleNameStr(getUseRoleName()));
+                    conditionSql = String.format(ALL,getRoleNameStr(getManageRoleName()),getRoleNameStr(getUseRoleName()));
                     break;
 
             }
@@ -117,7 +105,6 @@ public class QueryRoleRelationBaseReq {
 
     @ApiModelProperty(hidden = true)
     public void setEqUseRole(String tableFix){
-        this.setSourceTableFix(tableFix);
         queryCurrentUserRoles();
     }
 

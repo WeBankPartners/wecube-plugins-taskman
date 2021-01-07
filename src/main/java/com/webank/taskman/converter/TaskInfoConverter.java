@@ -2,6 +2,7 @@ package com.webank.taskman.converter;
 
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.dto.CoreCreateTaskDTO;
 import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;

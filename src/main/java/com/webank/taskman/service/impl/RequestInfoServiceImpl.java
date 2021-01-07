@@ -53,7 +53,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Override
     public QueryResponse<RequestInfoResq> selectRequestInfoPage(Integer current, Integer limit, QueryRequestInfoReq req) {
-        req.setEqUseRole("rt");
+        req.queryCurrentUserRoles();
         IPage<RequestInfoResq> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
         QueryResponse<RequestInfoResq> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));

@@ -71,11 +71,11 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
-        String inSql = req.getEqUseRole();
+        String inSql = req.getConditionSql();// req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req)
-                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, req.getEqUseRole());
+                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, inSql);
         PageHelper.startPage(page, pageSize);
-        PageInfo<TaskInfo> pages = new PageInfo(getBaseMapper().selectList(queryWrapper));
+        PageInfo<TaskInfoDTO> pages = new PageInfo( taskInfoConverter.toDto(getBaseMapper().selectList(queryWrapper)));
         QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(), page.longValue(), pageSize.longValue(), pages.getList());
         return queryResponse;
     }
@@ -210,6 +210,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                         "Task is exists! procInstId:%s,TaskNodeId:%s",
                         task.getProcInstId(),task.getTaskNodeId()));
             }*/
+            taskInfo.setRequestId(req.getRequestId());
             taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
             save(taskInfo);
             List<FormItemInfo> items = formItemInfoConverter.toEntityByBean(task.getFormItems());

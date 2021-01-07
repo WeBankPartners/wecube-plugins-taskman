@@ -1,7 +1,7 @@
 package com.webank.taskman.converter;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.dto.CoreCreateTaskDTO.TaskInfoReq.FormItemBean;
+import com.webank.taskman.dto.CoreCreateTaskDTO.FormItemBean;
 import com.webank.taskman.dto.CreateTaskDto.EntityAttrValueDto;
 import com.webank.taskman.dto.req.SaveFormItemInfoReq;
 import com.webank.taskman.dto.resp.FormItemInfoResp;

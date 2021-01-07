@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CreateTaskDto {
+    @ApiModelProperty(value = "",position = 1,hidden = true)
+    private String id;
     @ApiModelProperty(value = "",position = 1)
     private String requestTempId;
     @ApiModelProperty(value = "",position = 2)
@@ -18,6 +20,16 @@ public class CreateTaskDto {
     private String rootEntity;
     @ApiModelProperty(value = "",position = 6)
     private List<EntityValueDto> entitys = new ArrayList<>();
+
+
+    public String getId() {
+        return id;
+    }
+
+    public CreateTaskDto setId(String id) {
+        this.id = id;
+        return this;
+    }
 
     public String getRequestTempId() {
         return requestTempId;
@@ -74,7 +86,11 @@ public class CreateTaskDto {
     }
 
     public static class EntityValueDto {
+        @ApiModelProperty(value = "",position = 1)
+        private String nodeId;
         @ApiModelProperty(value = "",position = 2)
+        private String nodeDefId;
+        @ApiModelProperty(value = "",position = 3)
         private String dataId;
         @ApiModelProperty(value = "",position = 4)
         private String packageName;
@@ -84,8 +100,26 @@ public class CreateTaskDto {
         private List<String> previousOids = new ArrayList<>();
         @ApiModelProperty(value = "",position = 7)
         private List<String> succeedingOids = new ArrayList<>();
-        @ApiModelProperty(value = "",position = 8)
+        @ApiModelProperty(value = "",position = 6)
         private List<EntityAttrValueDto> attrValues = new ArrayList<>();
+
+        public String getNodeId() {
+            return nodeId;
+        }
+
+        public EntityValueDto setNodeId(String nodeId) {
+            this.nodeId = nodeId;
+            return this;
+        }
+
+        public String getNodeDefId() {
+            return nodeDefId;
+        }
+
+        public EntityValueDto setNodeDefId(String nodeDefId) {
+            this.nodeDefId = nodeDefId;
+            return this;
+        }
 
         public String getDataId() {
             return dataId;
@@ -142,61 +176,17 @@ public class CreateTaskDto {
         }
     }
 
-    public static class TaskNodeBindInfoDto {
-        @ApiModelProperty(value = "",position = 1)
-        private String taskTempId;
-        @ApiModelProperty(value = "",position = 2)
-        private String nodeId;
-        @ApiModelProperty(value = "",position = 3)
-        private String nodeDefId;
-        @ApiModelProperty(value = "",position = 4)
-        private List<EntityValueDto> formItems = new ArrayList<>();
-
-        public String getTaskTempId() {
-            return taskTempId;
-        }
-
-        public TaskNodeBindInfoDto setTaskTempId(String taskTempId) {
-            this.taskTempId = taskTempId;
-            return this;
-        }
-
-        public String getNodeId() {
-            return nodeId;
-        }
-
-        public TaskNodeBindInfoDto setNodeId(String nodeId) {
-            this.nodeId = nodeId;
-            return this;
-        }
-
-        public String getNodeDefId() {
-            return nodeDefId;
-        }
-
-        public TaskNodeBindInfoDto setNodeDefId(String nodeDefId) {
-            this.nodeDefId = nodeDefId;
-            return this;
-        }
-
-        public List<EntityValueDto> getFormItems() {
-            return formItems;
-        }
-
-        public TaskNodeBindInfoDto setFormItems(List<EntityValueDto> formItems) {
-            this.formItems = formItems;
-            return this;
-        }
-    }
-
     public static class EntityAttrValueDto {
+
         @ApiModelProperty(value = "",position = 1)
         private String itemTempId;
         @ApiModelProperty(value = "",position = 2)
-        private String name;
+        private String attrDefId;
         @ApiModelProperty(value = "",position = 3)
         private String dataType;
         @ApiModelProperty(value = "",position = 4)
+        private String name;
+        @ApiModelProperty(value = "",position = 5)
         private Object dataValue;
 
         public String getItemTempId() {
@@ -208,12 +198,12 @@ public class CreateTaskDto {
             return this;
         }
 
-        public String getName() {
-            return name;
+        public String getAttrDefId() {
+            return attrDefId;
         }
 
-        public EntityAttrValueDto setName(String name) {
-            this.name = name;
+        public EntityAttrValueDto setAttrDefId(String attrDefId) {
+            this.attrDefId = attrDefId;
             return this;
         }
 
@@ -223,6 +213,15 @@ public class CreateTaskDto {
 
         public EntityAttrValueDto setDataType(String dataType) {
             this.dataType = dataType;
+            return this;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public EntityAttrValueDto setName(String name) {
+            this.name = name;
             return this;
         }
 

@@ -22,7 +22,7 @@ public class RequestInfoInstanceResq {
     private String dueDate;
     private String result;
 
-    private RequestFormResq requestFormResq;
+    private FormInfoResq requestFormResq;
 
     private List<TaskInfoInstanceResp> taskInfoInstanceResps;
 
@@ -130,11 +130,11 @@ public class RequestInfoInstanceResq {
         this.result = result;
     }
 
-    public RequestFormResq getRequestFormResq() {
+    public FormInfoResq getRequestFormResq() {
         return requestFormResq;
     }
 
-    public void setRequestFormResq(RequestFormResq requestFormResq) {
+    public void setRequestFormResq(FormInfoResq requestFormResq) {
         this.requestFormResq = requestFormResq;
     }
 

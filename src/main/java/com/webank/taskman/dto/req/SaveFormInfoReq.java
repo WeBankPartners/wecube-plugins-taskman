@@ -9,17 +9,23 @@ import java.util.List;
 public class SaveFormInfoReq {
 
 
-    @ApiModelProperty(value = "表单名称",required = true)
+    @ApiModelProperty(value = "",required = true,position = 1)
     private String name;
 
+    @ApiModelProperty(value = "",position = 2)
     private String description;
 
-    @ApiModelProperty(value = "输入",position = 8)
+    @ApiModelProperty(value = "",position = 3)
     private String inputAttrDef;
-    @ApiModelProperty(value = "输出参数",position = 9)
+
+    @ApiModelProperty(value = "",position = 4)
     private String outputAttrDef;
-    @ApiModelProperty(value = "其他参数",position = 10)
+
+    @ApiModelProperty(value = "",position = 5)
     private String otherAttrDef;
+
+    @ApiModelProperty(value = "",position = 6)
+    private String formType;
 
     private List<SaveFormItemInfoReq> formItems;
 
@@ -63,6 +69,15 @@ public class SaveFormInfoReq {
         this.otherAttrDef = otherAttrDef;
     }
 
+    public String getFormType() {
+        return formType;
+    }
+
+    public SaveFormInfoReq setFormType(String formType) {
+        this.formType = formType;
+        return this;
+    }
+
     public List<SaveFormItemInfoReq> getFormItems() {
         return formItems;
     }
@@ -70,4 +85,6 @@ public class SaveFormInfoReq {
     public void setFormItems(List<SaveFormItemInfoReq> formItems) {
         this.formItems = formItems;
     }
+
+
 }

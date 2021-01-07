@@ -26,6 +26,8 @@ public class FormItemInfoResp {
 
     private String dataOptions;
 
+    private String routineExp;
+
     public String getId() {
         return id;
     }
@@ -112,5 +114,14 @@ public class FormItemInfoResp {
 
     public void setDataOptions(String dataOptions) {
         this.dataOptions = dataOptions;
+    }
+
+    public String getRoutineExp() {
+        return routineExp;
+    }
+
+    public FormItemInfoResp setRoutineExp(String routineExp) {
+        this.routineExp = routineExp;
+        return this;
     }
 }

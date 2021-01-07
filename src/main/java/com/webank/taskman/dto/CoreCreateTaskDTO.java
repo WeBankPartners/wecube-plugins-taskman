@@ -166,13 +166,28 @@ public class CoreCreateTaskDTO {
 
         public static class FormItemBean {
             /**
-             * itemId : 999
-             * key : app_inst
-             * val : ["0047_0000000026","0047_0000000027"]
+             *
+             * "1":[
+             *
+             *   {app_inst:"0047_0000000026", name:"app1"},
+             *   {app_inst:"0047_0000000027",name:""},
+             * ]
+             *
+             *
+             *
+             *
+             * [
+             * {itemId : 999,key : app_inst,val : "0047_0000000026",guid:1},
+             * {itemId : 999,key : app_inst,val : "0047_0000000027",guid:1},
+             * {itemId : 999,key : name,val : "app1",guid:1},
+             * ]
+             *
+             *
              */
 
             private String itemId;
             private String key;
+            private String guid;
             private List<String> val;
 
             public String getItemId() {

@@ -17,19 +17,13 @@ public class FormTemplate extends BaseEntity implements Serializable {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
     private String tempId;
-
     private String tempType;
-
+    private String formType;
     private String name;
-
     private String description;
-
     private String style;
-
     private String targetEntitys;
-
     private String inputAttrDef;
     private String outputAttrDef;
     private String otherAttrDef;
@@ -118,6 +112,15 @@ public class FormTemplate extends BaseEntity implements Serializable {
 
     public FormTemplate setTempType(String tempType) {
         this.tempType = tempType;
+        return this;
+    }
+
+    public String getFormType() {
+        return formType;
+    }
+
+    public FormTemplate setFormType(String formType) {
+        this.formType = formType;
         return this;
     }
 

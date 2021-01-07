@@ -1,6 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.domain.FormItemTemplate;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
@@ -15,6 +14,9 @@ public class FormTemplateResp {
 
     @ApiModelProperty(value = "",position = 3)
     private String tempType;
+
+    @ApiModelProperty(value = "",position = 4)
+    private String formType;
 
     @ApiModelProperty(value = "",position = 4)
     private String name;
@@ -38,7 +40,7 @@ public class FormTemplateResp {
     private String otherAttrDef;
 
     @ApiModelProperty(value = "",position = 11)
-    private List<FormItemTemplate> items;
+    private List<FormItemTemplateResp> items;
 
 
     public String getId() {
@@ -64,6 +66,15 @@ public class FormTemplateResp {
 
     public void setTempType(String tempType) {
         this.tempType = tempType;
+    }
+
+    public String getFormType() {
+        return formType;
+    }
+
+    public FormTemplateResp setFormType(String formType) {
+        this.formType = formType;
+        return this;
     }
 
     public String getName() {
@@ -122,11 +133,11 @@ public class FormTemplateResp {
         this.otherAttrDef = otherAttrDef;
     }
 
-    public List<FormItemTemplate> getItems() {
+    public List<FormItemTemplateResp> getItems() {
         return items;
     }
 
-    public void setItems(List<FormItemTemplate> items) {
+    public void setItems(List<FormItemTemplateResp> items) {
         this.items = items;
     }
 

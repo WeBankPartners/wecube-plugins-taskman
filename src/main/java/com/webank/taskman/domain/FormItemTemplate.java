@@ -14,58 +14,33 @@ public class FormItemTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
-
-    @ApiModelProperty(value = "",position = 1)
     private String id;
-    @ApiModelProperty(value = "",position = 2)
     private String tempId;
-    @ApiModelProperty(value = "",position = 2)
     private String formTemplateId;
-    @ApiModelProperty(value = "",position = 3)
     private String name;
-    @ApiModelProperty(value = "",position = 4)
     private String defaultValue;
-    @ApiModelProperty(value = "",position = 5)
     private Integer isCurrency;
-    @ApiModelProperty(value = "",position = 6)
     private Integer sort;
 
-    @ApiModelProperty(value = "",position = 7)
     private String packageName;
-    @ApiModelProperty(value = "",position = 8)
     private String entity;
-    @ApiModelProperty(value = "",position = 8)
     private String entityId;
-    @ApiModelProperty(value = "",position = 9)
     private String attrDefId;
-    @ApiModelProperty(value = "",position = 10)
     private String attrDefDataType;
-    @ApiModelProperty(value = "",position = 10)
     private String routineExp;
 
-    @ApiModelProperty(value = "",position = 11)
     private String elementType;
-    @ApiModelProperty(value = "",position = 12)
     private String title;
-    @ApiModelProperty(value = "",position = 13)
     private Integer width;
 
-    @ApiModelProperty(value = "",position = 14)
     private String refEntity;
-    @ApiModelProperty(value = "",position = 15)
     private String refPackageName;
-    @ApiModelProperty(value = "",position = 16)
     private String refFilters;
-    @ApiModelProperty(value = "",position = 17)
     private String dataOptions;
 
-    @ApiModelProperty(value = "",position = 18)
     private Integer required;
-    @ApiModelProperty(value = "",position = 19)
     private String regular;
-    @ApiModelProperty(value = "",position = 20)
     private Integer isEdit;
-    @ApiModelProperty(value = "",position = 21)
     private Integer isView;
 
     public FormItemTemplate() {
@@ -129,6 +104,7 @@ public class FormItemTemplate implements Serializable {
         this.tempId = tempId;
         return this;
     }
+
 
     public String getFormTemplateId() {
         return formTemplateId;

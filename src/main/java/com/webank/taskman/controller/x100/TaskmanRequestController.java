@@ -153,8 +153,8 @@ public class TaskmanRequestController {
     @ApiOperationSupport(order = 9)
     @GetMapping("/template/detail/{id}")
     @ApiOperation(value = "request-template-detail", notes = "需要传入id")
-    public JsonResponse<DetailRequestTemplateResq> requestTemplateDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
-        DetailRequestTemplateResq detailRequestTemplateResq= requestTemplateService.detailRequestTemplate(id);
+    public JsonResponse<RequestTemplateResp> requestTemplateDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
+        RequestTemplateResp detailRequestTemplateResq= requestTemplateService.detailRequestTemplate(id);
         return JsonResponse.okayWithData(detailRequestTemplateResq);
     }
 
@@ -178,15 +178,8 @@ public class TaskmanRequestController {
     @PostMapping("/save")
     @ApiOperation(value = "request-info-save")
     public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody CreateTaskDto req) throws TaskmanRuntimeException {
-        return okayWithData(new SaveRequestInfoReq());
+        return okayWithData(requestInfoService.saveRequestInfoByDto(req));
     }
-//
-//    @ApiOperationSupport(order = 22)
-//    @PostMapping("/save")
-//    @ApiOperation(value = "request-info-save")
-//    public JsonResponse<SaveRequestInfoReq> requestInfoSave(@RequestBody SaveRequestInfoReq req) throws TaskmanRuntimeException {
-//        return okayWithData(requestInfoService.saveRequestInfo(req));
-//    }
 
     @ApiOperationSupport(order = 12)
     @PostMapping("/search/{page}/{pageSize}")

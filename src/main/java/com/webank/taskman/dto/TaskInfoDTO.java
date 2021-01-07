@@ -1,6 +1,7 @@
 package com.webank.taskman.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -30,7 +31,9 @@ public class TaskInfoDTO {
     private String description;
     @ApiModelProperty(value = "处理人",position = 9)
     private String reporter;
+
     @ApiModelProperty(value = "处理时间",position = 10)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date reportTime;
     @ApiModelProperty(value = "紧急程度",position = 11)
     private String emergency;

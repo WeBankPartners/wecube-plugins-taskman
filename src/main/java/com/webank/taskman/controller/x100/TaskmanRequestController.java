@@ -109,7 +109,7 @@ public class TaskmanRequestController {
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
 
-    @ApiOperationSupport(order = 6,ignoreParameters = {"requestTempGroup","procDefId","procDefName","description","name","tags","manageRoles","useRoles"})
+    @ApiOperationSupport(order = 6,includeParameters ={"id"})
     @PostMapping("/template/release")
     @ApiOperation(value = "request-template-release", notes = "Need to pass in object: ")
     public JsonResponse<RequestTemplateDTO> requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {

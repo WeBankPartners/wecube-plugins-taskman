@@ -34,7 +34,7 @@ public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMap
     public TaskServiceMetaResp getTaskCreateServiceMeta(String procInstId, String nodeDefId) {
         TaskServiceMetaResp resp = new TaskServiceMetaResp();
         List<FormItemInfoResp> list = getBaseMapper().getCreateTaskServiceMeta(procInstId,nodeDefId);
-        resp.setFormItems(formItemInfoConverter.respToServiceMetas(list));
+        resp.setFormItems(formItemInfoConverter.respToServiceMeta(list));
         return resp;
     }
 

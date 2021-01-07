@@ -65,8 +65,8 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         FormTemplateResp formTemplateResp = formTemplateConverter.toDto(
                 formTemplateMapper.selectOne(formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper()));
         if(null !=formTemplateResp){
-            formTemplateResp.setItems(formItemTemplateService.list(
-                new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper()));
+            formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(
+                formItemTemplateService.list(new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper())));
         }
         return formTemplateResp;
     }

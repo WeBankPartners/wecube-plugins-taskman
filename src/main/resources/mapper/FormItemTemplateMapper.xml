@@ -20,7 +20,7 @@
             fit.id,
             fit.`name`,
             (CASE WHEN fit.element_type ='PluginSelect' THEN "ref" ELSE fit.element_type END ) AS elementType,
-            (CASE WHEN fit.element_type ='PluginSelect' THEN CONCAT(fit.package_name,":",fit.entity) ELSE "" END ) AS value
+            (CASE WHEN fit.element_type ='PluginSelect' THEN routine_exp ELSE "" END ) AS value
         FROM form_item_template fit
         WHERE fit.temp_id in (
             SELECT tt.id FROM task_template tt INNER JOIN request_info ri ON ri.request_temp_id = tt.request_template_id
@@ -32,6 +32,7 @@
     <resultMap id="selectDetailMap" type="com.webank.taskman.dto.resp.FormItemInfoResp">
         <id property="id" column="id"/>
         <result property="value" column="value"/>
+
         <result property="itemTempId" column="item_temp_id"/>
         <result property="isView" column="is_view"/>
         <result property="isEdit" column="is_edit"/>
@@ -39,11 +40,22 @@
         <result property="name" column="name"/>
         <result property="elementType" column="element_type"/>
         <result property="dataOptions" column="data_options"/>
+        <result property="routineExp" column="routine_exp"/>
     </resultMap>
 
     <select id="selectDetail" resultMap="selectDetailMap">
         SELECT
-        fii.id,fii.value,fii.item_temp_id,fit.is_view,fit.is_edit,fit.width,fit.title,fit.`name`,fit.element_type,fit.data_options
+            fii.id,
+            fii.value,
+            fii.item_temp_id,
+            fit.is_view,
+            fit.is_edit,
+            fit.width,
+            fit.title,
+            fit.`name`,
+            fit.element_type,
+            fit.data_options,
+            fit.routine_exp
         FROM
         form_item_template fit
         LEFT JOIN form_item_info fii ON fii.item_temp_id = fit.id

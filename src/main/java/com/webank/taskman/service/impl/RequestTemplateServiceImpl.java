@@ -11,6 +11,7 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RoleRelationConverter;
@@ -21,25 +22,21 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDTO;
 import com.webank.taskman.dto.RoleDTO;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
-import com.webank.taskman.dto.resp.DetailRequestTemplateResq;
+import com.webank.taskman.dto.resp.FormTemplateResp;
+import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.support.core.CoreServiceStub;
-import com.webank.taskman.support.core.dto.RolesDataResponse;
-import net.bytebuddy.asm.Advice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate> implements RequestTemplateService {
@@ -126,21 +123,20 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         return queryResponse;
     }
 
+    @Autowired
+    FormItemTemplateConverter formItemTemplateConverter;
     @Override
-    public DetailRequestTemplateResq detailRequestTemplate(String id) {
-        DetailRequestTemplateResq detailRequestTemplateResq = requestTemplateConverter.detailRequest(requestTemplateMapper.selectById(id));
-        detailRequestTemplateResq.setDetilReuestTemplateFormResq(
-                formTemplateConverter.detailForm(
-                        formTemplateMapper.selectOne(
-                                new FormTemplate()
-                                        .setTempId(detailRequestTemplateResq.getId())
-                                        .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()
-                        )));
-        detailRequestTemplateResq.getDetilReuestTemplateFormResq().setFormItemTemplateList(
-                formItemTemplateMapper.selectList(
-                        new FormItemTemplate().setFormTemplateId(detailRequestTemplateResq.getDetilReuestTemplateFormResq().getId()).getLambdaQueryWrapper()
-                ));
-        return detailRequestTemplateResq;
+    public RequestTemplateResp detailRequestTemplate(String id) {
+        RequestTemplateResp requestTemplateResp = requestTemplateConverter.toRespByEntity(requestTemplateMapper.selectById(id));
+        FormTemplateResp formTemplateResp =  formTemplateConverter.toDto(
+                formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
+                        .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()
+        ));
+        List<FormItemTemplate> items =  formItemTemplateMapper.selectList(
+                new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper());
+        formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(items));
+        requestTemplateResp.setFormTemplateResp(formTemplateResp);
+        return requestTemplateResp;
     }
 
 

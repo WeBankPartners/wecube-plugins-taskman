@@ -16,14 +16,11 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
-
     private String recordId;
-
     private String formTemplateId;
-
     private String name;
-
     private Integer type;
+    private String formType;
 
     public String getId() {
         return id;
@@ -67,6 +64,15 @@ public class FormInfo extends BaseEntity implements Serializable {
 
     public FormInfo setType(Integer type) {
         this.type = type;
+        return this;
+    }
+
+    public String getFormType() {
+        return formType;
+    }
+
+    public FormInfo setFormType(String formType) {
+        this.formType = formType;
         return this;
     }
 

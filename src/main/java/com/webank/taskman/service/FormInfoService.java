@@ -12,7 +12,7 @@ import java.util.List;
 public interface FormInfoService extends IService<FormInfo> {
 
 
-    FormInfo saveFormInfoByExists(String requestTempId, String requestInfoId) throws TaskmanRuntimeException;
+    FormInfo saveFormInfoByExists(String requestTempId, String recordId) throws TaskmanRuntimeException;
 
     void saveFormInfoAndItems(List<FormItemInfo> formItems, String templateId, String recordId);
 

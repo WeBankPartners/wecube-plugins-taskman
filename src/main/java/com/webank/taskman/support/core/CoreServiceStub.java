@@ -29,12 +29,18 @@ public class CoreServiceStub {
     public static final String GET_ALL_ROLES = "/auth/v1/roles";
     public static final String GET_ROLES_BY_USER_NAME = "/auth/v1/users/{user-name}/roles";
 
-    public static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/public/process/instances";
+    public static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/release/process/instances";
+    public static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/release/process/definitions";
+    public static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/release/process/definitions/{proc-def-id}/tasknodes";
+
+   /* public static final String CREATE_NEW_WORKFLOW_INSTANCE = "/platform/v1/public/process/instances";
+    public static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/public/process/definitions";
+    public static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/public/process/definitions/{proc-def-id}/tasknodes";*/
 
     public static final String GET_MODELS_ALL_URL= "/platform/v1/models";
     public static final String GET_MODELS_BY_PACKAGE_URL= "/platform/v1/packages/{package-name}/models";
-    public static final String FETCH_LATEST_RELEASED_WORKFLOW_DEFS = "/platform/v1/public/process/definitions";
-    public static final String FETCH_WORKFLOW_TASKNODE_INFOS = "/platform/v1/public/process/definitions/{proc-def-id}/tasknodes";
+
+
     public static final String GET_ROOT_ENTITIES_BY_PROC_URL= "/platform/v1/process/definitions/{proc-def-id}/root-entities";
     public static final String GET_ENTITY_BY_PACKAGE_NAME_AND_ENTITY_NAME_URL = "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}";
     public static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL= "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";

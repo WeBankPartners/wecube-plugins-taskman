@@ -150,15 +150,6 @@ public class CoreResourceController {
 
 
     @ApiOperationSupport(order = 12)
-    @GetMapping("/platform/crate/{proc-def-id}/{entity-data-id}")
-    @ApiOperation(value = "platform-process-create-examples", notes = "just is examples")
-    public JsonResponse<DynamicWorkflowInstInfoDto> platformProcessCreateExamples(
-            @PathVariable("proc-def-id") String procDefId,@PathVariable("entity-data-id")String entityDataId)
-    {
-        return okayWithData(requestInfoService.createDynamicWorkflowInstCreationInfoDto(procDefId,entityDataId));
-    }
-
-    @ApiOperationSupport(order = 12)
     @PostMapping("/platform/crate")
     @ApiOperation(value = "platform-process-create", notes = "")
     public JsonResponse<DynamicWorkflowInstInfoDto> platformProcessCreate(

@@ -3,7 +3,6 @@ package com.webank.taskman.dto.resp;
 
 import io.swagger.annotations.ApiModel;
 
-import java.util.Date;
 
 @ApiModel
 public class TaskInfoInstanceResp {
@@ -12,7 +11,7 @@ public class TaskInfoInstanceResp {
     private String status;
     private String result;
 
-    private TaskFormResq taskFormResq;
+    private FormInfoResq taskFormResq;
 
     public String getId() {
         return id;
@@ -46,11 +45,11 @@ public class TaskInfoInstanceResp {
         this.result = result;
     }
 
-    public TaskFormResq getTaskFormResq() {
+    public FormInfoResq getTaskFormResq() {
         return taskFormResq;
     }
 
-    public void setTaskFormResq(TaskFormResq taskFormResq) {
+    public void setTaskFormResq(FormInfoResq taskFormResq) {
         this.taskFormResq = taskFormResq;
     }
 

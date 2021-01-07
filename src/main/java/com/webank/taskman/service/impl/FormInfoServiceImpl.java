@@ -34,14 +34,14 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
 
 
     @Override
-    public FormInfo saveFormInfoByExists(String requestTempId, String requestInfoId) {
+    public FormInfo saveFormInfoByExists(String requestTempId, String recordId) {
         FormTemplate formTemplate = formTemplateService.getOne(new FormTemplate(null, requestTempId, StatusEnum.DEFAULT.ordinal() + "").getLambdaQueryWrapper());
         if (null == formTemplate) {
             throw new TaskmanRuntimeException("The FormTemplate do not exist");
         }
-        remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(requestInfoId)));
+        remove(new QueryWrapper<FormInfo>().setEntity(new FormInfo().setRecordId(recordId)));
         FormInfo form = new FormInfo();
-        form.setRecordId(requestInfoId);
+        form.setRecordId(recordId);
         form.setFormTemplateId(formTemplate.getId());
         form.setCurrenUserName(form, form.getId());
         save(form);
@@ -49,14 +49,14 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
     }
 
     @Override
-    public void saveFormInfoAndItems(List<FormItemInfo> formItems, String requestTempId, String requestInfoId) {
+    public void saveFormInfoAndItems(List<FormItemInfo> formItems, String requestTempId, String recordId) {
         if(null == formItems || formItems.size() == 0){
             log.info("The formItems is null.");
             return;
         }
-        FormInfo form = saveFormInfoByExists(requestTempId, requestInfoId);
+        FormInfo form = saveFormInfoByExists(requestTempId, recordId);
         String formId = form.getId();
-        formItemInfoService.saveItemInfoByList(formItems, requestInfoId, formId);
+        formItemInfoService.saveItemInfoByList(formItems, recordId, formId);
     }
 
 

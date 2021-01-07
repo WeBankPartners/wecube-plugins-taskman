@@ -11,7 +11,6 @@ import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.QueryTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
-import com.webank.taskman.interceptor.AuthenticationRequestContextInterceptor;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
@@ -25,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 
 @RestController
@@ -83,21 +83,21 @@ public class TaskmanTaskController {
         return JsonResponse.okayWithData(queryResponse);
     }
 
-    @ApiOperationSupport(order =5)
+    @ApiOperationSupport(order =5,includeParameters ={"id"})
     @PostMapping("/details")
     @ApiOperation(value = "task-info-detail")
-    public JsonResponse<TaskInfoResp> taskInfoDetail(String id)
+    public JsonResponse<TaskInfoResp> taskInfoDetail(@RequestBody  TaskInfoDTO req )
     {
-        return JsonResponse.okayWithData(taskInfoService.taskInfoDetail(id));
+        return JsonResponse.okayWithData(taskInfoService.taskInfoDetail(req.getId()));
     }
 
 
-    @ApiOperationSupport(order =6)
+    @ApiOperationSupport(order =6,includeParameters ={"id"})
     @PostMapping("/receive")
     @ApiOperation(value = "task-info-receive")
-    public JsonResponse<TaskInfoDTO> taskInfoReceive(String id)
+    public JsonResponse<TaskInfoDTO> taskInfoReceive(@RequestBody  TaskInfoDTO req )
     {
-        TaskInfoDTO taskDTO = taskInfoService.taskInfoReceive(id);
+        TaskInfoDTO taskDTO = taskInfoService.taskInfoReceive(req.getId());
         if (null == taskDTO.getId()){
             return JsonResponse.customError("The task is not in an unclaimed state");
         }

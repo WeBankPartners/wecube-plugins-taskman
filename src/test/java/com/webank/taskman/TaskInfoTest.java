@@ -21,7 +21,6 @@ public class TaskInfoTest extends TmallApplicationTests {
         int page = 1;
         int pageSize = 10;
         QueryTaskInfoReq req = new QueryTaskInfoReq();
-        req.setSourceTableFix("tt");
         QueryResponse<TaskInfoDTO> response = taskInfoService.selectTaskInfo(page,pageSize,req);
         log.info("query result:{}", GsonUtil.GsonString(response));
     }

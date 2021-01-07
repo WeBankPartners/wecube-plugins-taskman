@@ -78,7 +78,7 @@
                 <![CDATA[  AND  date_format(ri.report_time,'%Y-%m-%d') <= #{param.reportTimeEnd} ]]>
             </if>
             <if test="param.conditionSql!=null and param.conditionSql !=''">
-                AND ${param.conditionSql}
+                AND rt.IN(${param.conditionSql})
             </if>
         </where>
         ORDER BY ri.updated_time DESC

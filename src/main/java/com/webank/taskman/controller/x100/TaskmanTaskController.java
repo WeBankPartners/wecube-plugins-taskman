@@ -4,12 +4,14 @@ package com.webank.taskman.controller.x100;
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.TaskInfoDTO;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.QueryTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
 import com.webank.taskman.dto.resp.*;
+import com.webank.taskman.interceptor.AuthenticationRequestContextInterceptor;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
 import io.swagger.annotations.Api;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -73,6 +76,9 @@ public class TaskmanTaskController {
             @ApiParam(name = "page") @PathVariable("page") Integer page,
             @ApiParam(name = "pageSize")  @PathVariable("pageSize") Integer pageSize,
             @RequestBody(required = false) QueryTaskInfoReq req) {
+        if(!StringUtils.isEmpty(req.getIsMy())){
+            req.setReporter(AuthenticationContextHolder.getCurrentUsername());
+        }
         QueryResponse<TaskInfoDTO> queryResponse = taskInfoService.selectTaskInfo(page, pageSize,req);
         return JsonResponse.okayWithData(queryResponse);
     }

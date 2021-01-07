@@ -3,4 +3,8 @@
 <mapper namespace="com.webank.taskman.mapper.TaskInfoMapper">
 
 
+
+    <select id="selectTaskInfo" >
+
+    </select>
 </mapper>

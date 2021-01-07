@@ -2,6 +2,7 @@ package com.webank.taskman.converter;
 
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestInfo;
+import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestInfoDTO;
 import com.webank.taskman.dto.req.SaveRequestInfoReq;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
@@ -13,6 +14,8 @@ import org.mapstruct.ReportingPolicy;
 public interface RequestInfoConverter extends BaseConverter<RequestInfoDTO, RequestInfo> {
 
     RequestInfo reqToDomain(SaveRequestInfoReq req);
+
+    RequestInfo createDtoToDomain(CreateTaskDto dto);
 
     RequestInfoResq toResp(RequestInfo requestInfo);
 

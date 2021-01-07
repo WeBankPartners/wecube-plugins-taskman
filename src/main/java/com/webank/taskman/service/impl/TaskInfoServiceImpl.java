@@ -92,7 +92,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             throw  new TaskmanRuntimeException("Processing failed. The current task is not claimed") ;
         }
         callbackByTaskInfo(req, taskInfo);
-        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntityByReqs(req.getFormItemInfoList());
+        List<FormItemInfo> formItemInfos = formItemInfoConverter.toEntityByReq(req.getFormItemInfoList());
         formInfoService.saveFormInfoAndItems(formItemInfos,taskInfo.getTaskTempId(),taskInfo.getId());
         taskInfo.setStatus(StatusEnum.Processed.name());
         taskInfo.setResult(req.getResult());
@@ -154,34 +154,33 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         RequestInfo requestInfo = requestInfoService.getOne(new RequestInfo().setProcInstId(procInstId).getLambdaQueryWrapper());
         RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
-        FormInfo formInfo = formInfoService.getOne(new FormInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
-        if (null == formInfo){
-            throw new TaskmanRuntimeException("The request details do not exist");
-        }
-        List<FormItemInfo> formItemInfos = formItemInfoMapper.selectList(new FormItemInfo().setRecordId(requestInfo.getId()).getLambdaQueryWrapper());
-        requestInfoInstanceResq.setRequestFormResq(formInfoConverter.toRequestFormResq(formInfo));
-        requestInfoInstanceResq.getRequestFormResq().setFormItemInfo(formItemInfos);
-
+        requestInfoInstanceResq.setRequestFormResq(getFormInfoResq(requestInfo.getId()));
         List<TaskInfo> taskInfos = getBaseMapper().selectList(new QueryWrapper<TaskInfo>().lambda().eq(TaskInfo::getProcInstId, procInstId).orderByAsc(TaskInfo::getUpdatedTime));
-
         List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
             if (!(taskInfo.getId().equals(taskId))) {
                 TaskInfoInstanceResp resp = taskInfoConverter.toInstanceResp(taskInfo);
-                formInfo= formInfoService.getOne(new FormInfo().setRecordId(taskInfo.getId()).getLambdaQueryWrapper());
-                if (null==formInfo||"".equals(formInfo)){
+                FormInfoResq taskForm = formInfoConverter.toDto(formInfoService.getOne(new FormInfo().setRecordId(taskInfo.getId()).getLambdaQueryWrapper()));
+                if (null == taskForm){
                     throw new TaskmanRuntimeException("The request details do not exist");
                 }
-                formItemInfos=formItemInfoMapper.selectList(new FormItemInfo().setFormId(formInfo.getId()).getLambdaQueryWrapper());
-                resp.setTaskFormResq(formInfoConverter.toTaskFormResq(formInfo));
-                resp.getTaskFormResq().setFormItemInfo(formItemInfos);
-
+                resp.setTaskFormResq(getFormInfoResq(taskId));
                 taskInfoInstanceResps.add(resp);
             }
         }
         requestInfoInstanceResq.setTaskInfoInstanceResps(taskInfoInstanceResps);
 
         return requestInfoInstanceResq;
+    }
+
+    private FormInfoResq getFormInfoResq(String recordId) {
+        FormInfoResq formInfoResq = formInfoConverter.toDto(formInfoService.getOne(new FormInfo().setRecordId(recordId).getLambdaQueryWrapper()));
+        if (null == formInfoResq){
+            throw new TaskmanRuntimeException("The request details do not exist");
+        }
+        List<FormItemInfo> formItemInfos = formItemInfoMapper.selectList(new FormItemInfo().setRecordId(recordId).getLambdaQueryWrapper());
+        formInfoResq.setFormItemInfo(formItemInfoConverter.toDto(formItemInfos));
+        return formInfoResq;
     }
 
     @Override
@@ -214,7 +213,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             }*/
             taskInfo.setCurrenUserName(taskInfo,taskInfo.getId());
             save(taskInfo);
-            List<FormItemInfo> items = formItemInfoConverter.toEntityByBeans(task.getFormItems());
+            List<FormItemInfo> items = formItemInfoConverter.toEntityByBean(task.getFormItems());
             formInfoService.saveFormInfoAndItems(items,taskInfo.getTaskTempId(),taskInfo.getId());
         });
         return  CommonResponseDto.okay();

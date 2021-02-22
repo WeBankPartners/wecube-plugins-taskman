@@ -1,13 +1,13 @@
 package com.webank.taskman.domain;
 
+import java.io.Serializable;
+
+import org.springframework.util.StringUtils;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
-import org.springframework.util.StringUtils;
-
-import java.io.Serializable;
 
 public class FormItemTemplate implements Serializable {
 

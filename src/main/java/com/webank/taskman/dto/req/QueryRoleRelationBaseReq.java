@@ -108,7 +108,6 @@ public class QueryRoleRelationBaseReq {
         queryCurrentUserRoles();
     }
 
-    @ApiModelProperty(hidden = true)
     public static String getEqUseRole(){
         String roles = String.join("','",AuthenticationContextHolder.getCurrentUserRoles());
         return StringUtils.isEmpty(roles) ? null :String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL, RoleTypeEnum.USE_ROLE.getType(),roles);

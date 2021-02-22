@@ -21,7 +21,7 @@ import com.webank.taskman.dto.req.QueryRequestInfoReq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.*;
-import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
 import com.webank.taskman.support.core.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Autowired
     FormInfoService formInfoService;
     @Autowired
-    CoreServiceStub coreServiceStub;
+    PlatformCoreServiceRestClient coreServiceStub;
     @Autowired
     FormItemInfoService formItemInfoService;
     @Autowired

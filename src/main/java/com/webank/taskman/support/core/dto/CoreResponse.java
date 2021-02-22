@@ -9,15 +9,6 @@ public class CoreResponse<DATATYPE> {
     private String message;
     private DATATYPE data;
 
-
-    public static class DefaultCoreResponse extends CoreResponse<Object> {
-    }
-    public static class LinkedHashMapResponse extends CoreResponse<LinkedHashMap> {
-    }
-
-    public static class ListDataResponse extends CoreResponse<List<Object>> {
-    }
-
     public String getStatus() {
         return status;
     }
@@ -46,11 +37,20 @@ public class CoreResponse<DATATYPE> {
 
     @Override
     public String toString() {
-        return "CoreResponse{" +
-                "status='" + status + '\'' +
-                ", message='" + message + '\'' +
-                ", data=" + (null != data ? data.getClass() :"[]" )+
-//                ", data=" + data.toString() +
+        return "CoreResponse{" + "status='" + status + '\'' + ", message='" + message + '\'' + ", data="
+                + (null != data ? data.getClass() : "[]") +
+                // ", data=" + data.toString() +
                 '}';
     }
+
+    public static class DefaultCoreResponse extends CoreResponse<Object> {
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static class LinkedHashMapResponse extends CoreResponse<LinkedHashMap> {
+    }
+
+    public static class ListDataResponse extends CoreResponse<List<Object>> {
+    }
+
 }

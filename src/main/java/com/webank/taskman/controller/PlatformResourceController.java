@@ -20,10 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.webank.taskman.base.JsonResponse;
-import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.service.AttachFileService;
-import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
 import com.webank.taskman.support.core.dto.DataModelEntityDto;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
 import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
@@ -31,73 +30,77 @@ import com.webank.taskman.support.s3.dto.DownloadAttachFileResponse;
 
 @RestController
 @RequestMapping("/v1/core-resources")
-public class CoreResourceController {
+public class PlatformResourceController {
 
-    private static final Logger log = LoggerFactory.getLogger(CoreResourceController.class);
+    private static final Logger log = LoggerFactory.getLogger(PlatformResourceController.class);
 
     @Autowired
-    private CoreServiceStub coreServiceStub;
+    private PlatformCoreServiceRestClient platformCoreServiceRestClient;
 
     @Autowired
     private AttachFileService attachFileService;
 
     @GetMapping("/roles")
-    public JsonResponse authRoleAll() {
-        return okayWithData(coreServiceStub.authRoleAll());
+    public JsonResponse getAllPlatformAuthRoles() {
+        return okayWithData(platformCoreServiceRestClient.getAllPlatformAuthRoles());
     }
 
     @GetMapping("/users/current-user/roles")
-    public JsonResponse authRoleCurrentUser() {
-        String currentUserName = AuthenticationContextHolder.getCurrentUsername();
-        return okayWithData(coreServiceStub.authRoleCurrentUser(currentUserName));
+    public JsonResponse getAllAuthRolesOfCurrentUser() {
+        return okayWithData(platformCoreServiceRestClient.getAllAuthRolesOfCurrentUser());
     }
 
-    @GetMapping("/platform/process-definition-keys")
-    public JsonResponse platformProcessAll() {
-        return okayWithData(coreServiceStub.platformProcessAll());
+    @GetMapping("/platform/process-definitions")
+    public JsonResponse getAllLatestPlatformProcesses() {
+        return okayWithData(platformCoreServiceRestClient.getAllLatestPlatformProcesses());
     }
 
-    @GetMapping("/platform/process-definitions-nodes/{proc-def-id}")
-    public JsonResponse platformProcessNodes(@PathVariable("proc-def-id") String procDefId) {
-        return okayWithData(coreServiceStub.platformProcessNodes(procDefId));
+    @GetMapping("/platform/process-definitions/{proc-def-id}/nodes")
+    public JsonResponse getPlatformProcessDefinitionNodes(@PathVariable("proc-def-id") String procDefId) {
+        return okayWithData(platformCoreServiceRestClient.getPlatformProcessDefinitionNodes(procDefId));
     }
 
-    @GetMapping(value = { "/platform/models", "/platform/models/{package-name}" })
-    public JsonResponse platformProcessModels(
-            @PathVariable(value = "package-name", required = false) String packageName) {
-        return okayWithData(coreServiceStub.platformProcessModels(packageName));
+    @GetMapping("/platform/models")
+    public JsonResponse getAllPlatformProcessModels() {
+        return okayWithData(platformCoreServiceRestClient.getAllPlatformProcessModels(null));
+    }
+
+    @GetMapping("/platform/models/{package-name}")
+    public JsonResponse getAllPlatformProcessModelsOfPackage(@PathVariable("package-name") String packageName) {
+        return okayWithData(platformCoreServiceRestClient.getAllPlatformProcessModels(packageName));
     }
 
     /**/
     @GetMapping("/platform/{proc-def-id}/root-entity")
     public JsonResponse platformProcessRootEntity(@PathVariable("proc-def-id") String procDefId) {
-        return okayWithData(coreServiceStub.platformProcessRootEntity(procDefId));
+        return okayWithData(platformCoreServiceRestClient.platformProcessRootEntity(procDefId));
     }
 
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}")
     public JsonResponse platformProcessEntityInfo(@PathVariable(value = "package-name") String packageName,
             @PathVariable(value = "entity-name") String entityName) {
-        DataModelEntityDto result = coreServiceStub.getEntityByPackageNameAndName(packageName, entityName);
+        DataModelEntityDto result = platformCoreServiceRestClient.getEntityByPackageNameAndName(packageName,
+                entityName);
         return okayWithData(result);
     }
 
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}/attributes")
     public JsonResponse platformProcessEntityAttributes(@PathVariable("package-name") String packageName,
             @PathVariable("entity-name") String entity) {
-        return okayWithData(coreServiceStub.platformProcessEntityAttributes(packageName, entity));
+        return okayWithData(platformCoreServiceRestClient.platformProcessEntityAttributes(packageName, entity));
     }
 
     @GetMapping("/platform/packages/{package-name}/entities/{entity-name}/retrieve")
     public JsonResponse platformProcessEntityRetrieve(@PathVariable("package-name") String packageName,
             @PathVariable("entity-name") String entity, @RequestParam(required = false) String filters) {
-        return okayWithData(coreServiceStub.platformProcessEntityRetrieve(packageName, entity, filters));
+        return okayWithData(platformCoreServiceRestClient.platformProcessEntityRetrieve(packageName, entity, filters));
     }
 
     @GetMapping("/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}")
     public JsonResponse platformProcessDataPreview(@PathVariable("proc-def-id") String procDefId,
             @PathVariable("entity-data-id") String entityDataId) {
-        ProcessDataPreviewDto processDataPreviewDto = coreServiceStub.platformProcessDataPreview(procDefId,
-                entityDataId);
+        ProcessDataPreviewDto processDataPreviewDto = platformCoreServiceRestClient
+                .platformProcessDataPreview(procDefId, entityDataId);
         log.info("platform-process-data-preview is result:{}", processDataPreviewDto);
         return okayWithData(processDataPreviewDto);
     }
@@ -105,14 +108,14 @@ public class CoreResourceController {
     @GetMapping("/platform/process/tasknodes/session/{process-session-id}/tasknode-bindings")
     public JsonResponse platformProcessTasknodeBindings(
             @PathVariable(name = "process-session-id") String processSessionId) {
-        return okayWithData(coreServiceStub.platformProcessTasknodeBindings(processSessionId));
+        return okayWithData(platformCoreServiceRestClient.platformProcessTasknodeBindings(processSessionId));
 
     }
 
     @PostMapping("/platform/create")
     public JsonResponse platformProcessCreate(@RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto) {
 
-        return okayWithData(coreServiceStub.createNewWorkflowInstance(creationInfoDto));
+        return okayWithData(platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto));
     }
 
     @PostMapping("/attach-file")

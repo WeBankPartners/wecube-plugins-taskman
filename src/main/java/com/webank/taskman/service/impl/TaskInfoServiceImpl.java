@@ -27,7 +27,7 @@ import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
 import com.webank.taskman.support.core.CoreRemoteCallException;
-import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
 import com.webank.taskman.support.core.dto.CallbackRequestDto;
 import com.webank.taskman.support.core.dto.CallbackRequestDto.*;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +67,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     FormInfoService formInfoService;
 
     @Autowired
-    CoreServiceStub coreServiceStub;
+    PlatformCoreServiceRestClient coreServiceStub;
 
     @Override
     public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {

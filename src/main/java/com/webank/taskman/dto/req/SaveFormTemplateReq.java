@@ -16,7 +16,6 @@ public class SaveFormTemplateReq {
     @ApiModelProperty(value = "",position = 1)
     private String id;
 
-    @NotBlank(message = "模板id不能为空")
     @ApiModelProperty(value = "",position = 2)
     private String tempId;
 

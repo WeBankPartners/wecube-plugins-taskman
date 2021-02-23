@@ -128,7 +128,7 @@ public class PlatformCoreServiceRestClient {
         return list;
     }
 
-    public List<Map<String, Object>> platformProcessRootEntity(String procDefKey) {
+    public List<Map<String, Object>> getPlatformProcessRootEntities(String procDefKey) {
         String json = template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL, procDefKey));
         List<Map<String, Object>> list = GsonUtil.toObject(json, new TypeToken<List<Map<String, Object>>>() {
         });

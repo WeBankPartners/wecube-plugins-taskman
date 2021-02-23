@@ -71,9 +71,9 @@ public class PlatformResourceController {
     }
 
     /**/
-    @GetMapping("/platform/{proc-def-id}/root-entity")
-    public JsonResponse platformProcessRootEntity(@PathVariable("proc-def-id") String procDefId) {
-        return okayWithData(platformCoreServiceRestClient.platformProcessRootEntity(procDefId));
+    @GetMapping("/platform/process/{proc-def-id}/root-entities")
+    public JsonResponse getPlatformProcessRootEntities(@PathVariable("proc-def-id") String procDefId) {
+        return okayWithData(platformCoreServiceRestClient.getPlatformProcessRootEntities(procDefId));
     }
 
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}")

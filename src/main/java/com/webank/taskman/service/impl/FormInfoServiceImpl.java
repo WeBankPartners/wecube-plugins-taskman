@@ -1,8 +1,8 @@
 package com.webank.taskman.service.impl;
 
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.domain.FormInfo;
@@ -22,7 +22,6 @@ import java.util.List;
 @Service
 public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> implements FormInfoService {
 
-
     private static final Logger log = LoggerFactory.getLogger(FormInfoServiceImpl.class);
 
     @Autowired
@@ -31,11 +30,10 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
     @Autowired
     FormItemInfoService formItemInfoService;
 
-
-
     @Override
     public FormInfo saveFormInfoByExists(String requestTempId, String recordId) {
-        FormTemplate formTemplate = formTemplateService.getOne(new FormTemplate(null, requestTempId, StatusEnum.DEFAULT.ordinal() + "").getLambdaQueryWrapper());
+        FormTemplate formTemplate = formTemplateService.getOne(
+                new FormTemplate(null, requestTempId, StatusEnum.DEFAULT.ordinal() + "").getLambdaQueryWrapper());
         if (null == formTemplate) {
             throw new TaskmanRuntimeException("The FormTemplate do not exist");
         }
@@ -43,14 +41,17 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
         FormInfo form = new FormInfo();
         form.setRecordId(recordId);
         form.setFormTemplateId(formTemplate.getId());
-        form.setCurrenUserName(form, form.getId());
+        form.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+        form.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        
         save(form);
+        
         return form;
     }
 
     @Override
     public void saveFormInfoAndItems(List<FormItemInfo> formItems, String requestTempId, String recordId) {
-        if(null == formItems || formItems.size() == 0){
+        if (formItems == null || formItems.isEmpty()) {
             log.info("The formItems is null.");
             return;
         }
@@ -58,6 +59,5 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
         String formId = form.getId();
         formItemInfoService.saveItemInfoByList(formItems, recordId, formId);
     }
-
 
 }

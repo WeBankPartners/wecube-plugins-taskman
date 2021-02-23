@@ -73,7 +73,9 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Transactional
     public RequestInfoResq saveRequestInfoByDto(CreateTaskDto req) {
         RequestInfo requestInfo = requestInfoConverter.createDtoToDomain(req);
-        requestInfo.setCurrenUserName(requestInfo, requestInfo.getId());
+//        requestInfo.setCurrenUserName(requestInfo, requestInfo.getId());
+        requestInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
         requestInfo.setReportTime(new Date());
         requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());

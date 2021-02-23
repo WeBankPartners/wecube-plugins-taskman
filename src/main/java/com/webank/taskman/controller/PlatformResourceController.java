@@ -119,7 +119,7 @@ public class PlatformResourceController {
     }
 
     @PostMapping("/attach-file")
-    public JsonResponse S3UploadFile(@RequestParam(value = "file") MultipartFile attachFile) throws Exception {
+    public JsonResponse s3UploadFile(@RequestParam(value = "file") MultipartFile attachFile) throws Exception {
         String attachFileId = attachFileService.uploadServiceRequestAttachFile(attachFile);
 
         return okayWithData(attachFileId);

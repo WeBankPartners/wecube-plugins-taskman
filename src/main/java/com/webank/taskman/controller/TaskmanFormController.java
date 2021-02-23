@@ -37,7 +37,7 @@ public class TaskmanFormController {
     private FormItemTemplateConverter formItemTemplateConverter;
 
     @PostMapping("/template/save")
-    public JsonResponse formTemplateSave(@Valid @RequestBody SaveFormTemplateReq req) throws Exception {
+    public JsonResponse createFormTemplate(@Valid @RequestBody SaveFormTemplateReq req){
 
         FormTemplateResp formTemplateResp = formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);

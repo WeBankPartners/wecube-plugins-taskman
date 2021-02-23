@@ -1,67 +1,37 @@
 package com.webank.taskman.dto.req;
 
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.StringJoiner;
 
-@ApiModel
 public class SaveFormItemTemplateReq {
 
-
-    @ApiModelProperty(value = "",position = 2)
     private String formTemplateId;
-    @ApiModelProperty(value = "",position = 3)
     private String name;
-    @ApiModelProperty(value = "",position = 4)
     private String defaultValue;
-    @ApiModelProperty(value = "",position = 5)
     private Integer isCurrency;
-    @ApiModelProperty(value = "",position = 6)
     private Integer sort;
 
-
-    @ApiModelProperty(value = "",position = 8)
     private String packageName;
-    @ApiModelProperty(value = "",position = 9)
     private String entity;
-    @ApiModelProperty(value = "",position = 9)
     private String entityId;
 
-    @ApiModelProperty(value = "",position = 10)
     private String attrDefId;
-    @ApiModelProperty(value = "",position = 11)
     private String attrDefDataType;
 
-    @ApiModelProperty(value = "",position = 12)
     private String elementType;
-    @ApiModelProperty(value = "",position = 13)
     private String title;
-    @ApiModelProperty(value = "",position = 14)
     private Integer width;
 
-    @ApiModelProperty(value = "",position = 14)
     private String refEntity;
-    @ApiModelProperty(value = "",position = 15)
     private String refPackageName;
-    @ApiModelProperty(value = "",position = 16)
     private String refFilters;
-    @ApiModelProperty(value = "",position = 10)
     private String routineExp;
 
-    @ApiModelProperty(value = "",position = 17)
     private String dataOptions;
 
-    @ApiModelProperty(value = "",position = 18)
     private Integer required;
-    @ApiModelProperty(value = "",position = 19)
     private String regular;
-    @ApiModelProperty(value = "",position = 20)
     private Integer isEdit;
-    @ApiModelProperty(value = "",position = 21)
     private Integer isView;
-
 
     public String getFormTemplateId() {
         return formTemplateId;
@@ -264,26 +234,14 @@ public class SaveFormItemTemplateReq {
     @Override
     public String toString() {
         return new StringJoiner(", ", SaveFormItemTemplateReq.class.getSimpleName() + "[", "]")
-                .add("formTemplateId='" + formTemplateId + "'")
-                .add("name='" + name + "'")
-                .add("defaultValue='" + defaultValue + "'")
-                .add("isCurrency=" + isCurrency)
-                .add("sort=" + sort)
-                .add("packageName='" + packageName + "'")
-                .add("entity='" + entity + "'")
-                .add("attrDefId='" + attrDefId + "'")
-                .add("attrDefDataType='" + attrDefDataType + "'")
-                .add("elementType='" + elementType + "'")
-                .add("title='" + title + "'")
-                .add("width=" + width)
-                .add("refEntity='" + refEntity + "'")
-                .add("refPackageName='" + refPackageName + "'")
-                .add("refFilters='" + refFilters + "'")
-                .add("dataOptions='" + dataOptions + "'")
-                .add("required=" + required)
-                .add("regular='" + regular + "'")
-                .add("isEdit=" + isEdit)
-                .add("isView=" + isView)
-                .toString();
+                .add("formTemplateId='" + formTemplateId + "'").add("name='" + name + "'")
+                .add("defaultValue='" + defaultValue + "'").add("isCurrency=" + isCurrency).add("sort=" + sort)
+                .add("packageName='" + packageName + "'").add("entity='" + entity + "'")
+                .add("attrDefId='" + attrDefId + "'").add("attrDefDataType='" + attrDefDataType + "'")
+                .add("elementType='" + elementType + "'").add("title='" + title + "'").add("width=" + width)
+                .add("refEntity='" + refEntity + "'").add("refPackageName='" + refPackageName + "'")
+                .add("refFilters='" + refFilters + "'").add("dataOptions='" + dataOptions + "'")
+                .add("required=" + required).add("regular='" + regular + "'").add("isEdit=" + isEdit)
+                .add("isView=" + isView).toString();
     }
 }

@@ -1,54 +1,39 @@
 package com.webank.taskman.dto.req;
 
-import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.dto.RoleDTO;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import java.util.LinkedList;
 import java.util.List;
 
-@ApiModel
+import com.webank.taskman.dto.RoleDTO;
+
 public class SaveFormTemplateReq {
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
 
-    @ApiModelProperty(value = "",position = 2)
     private String tempId;
 
-    @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType = "int",position = 3)
-    private String tempType="0";
+    // @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType
+    // = "int",position = 3)
+    private String tempType = "0";
 
     private String formType;
 
-    @ApiModelProperty(value = "",required = true,position = 4)
     private String name;
 
-    @ApiModelProperty(value = "",position = 5)
     private String description;
 
-    @ApiModelProperty(value = "",position = 6)
     private String style;
 
-    @ApiModelProperty(value = "目标对象",position = 7)
+    // TODO
+    // FIXME misspelling
     private String targetEntitys;
 
-    @ApiModelProperty(value = "输入",position = 8)
     private String inputAttrDef;
-    @ApiModelProperty(value = "输出参数",position = 9)
     private String outputAttrDef;
-    @ApiModelProperty(value = "其他参数",position = 10)
     private String otherAttrDef;
 
-    @ApiModelProperty(value = "使用角色集",position = 12)
     private List<RoleDTO> useRole;
 
-    @ApiModelProperty(value = "表单项",position = 13)
     private List<SaveFormItemTemplateReq> formItems = new LinkedList<>();
-
 
     public SaveFormTemplateReq() {
     }

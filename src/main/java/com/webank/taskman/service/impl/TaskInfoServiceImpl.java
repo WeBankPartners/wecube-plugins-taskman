@@ -131,7 +131,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         if (null == taskInfo) {
             throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
         }
-        taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
+//        taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
+        taskInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+        taskInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskInfo.setUpdatedTime(new Date());
         taskInfo.setStatus(StatusEnum.SUSPENSION.toString());
         getBaseMapper().updateById(taskInfo);
@@ -208,7 +210,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
                         task.getProcInstId(),task.getTaskNodeId()));
             }*/
             taskInfo.setRequestId(req.getRequestId());
-            taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
+//            taskInfo.setCurrenUserName(taskInfo, taskInfo.getId());
+            taskInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+            taskInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
             save(taskInfo);
             List<FormItemInfo> items = formItemInfoConverter.toEntityByBean(task.getFormItems());
             formInfoService.saveFormInfoAndItems(items, taskInfo.getTaskTempId(), taskInfo.getId());

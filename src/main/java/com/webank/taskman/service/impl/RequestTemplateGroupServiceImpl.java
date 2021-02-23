@@ -1,11 +1,11 @@
 package com.webank.taskman.service.impl;
 
-
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusCodeEnum;
@@ -24,7 +24,8 @@ import org.springframework.util.StringUtils;
 import java.util.Date;
 
 @Service
-public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplateGroupMapper, RequestTemplateGroup> implements RequestTemplateGroupService {
+public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplateGroupMapper, RequestTemplateGroup>
+        implements RequestTemplateGroupService {
 
     @Autowired
     RequestTemplateGroupMapper templateGroupMapper;
@@ -32,36 +33,41 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     @Autowired
     RequestTemplateGroupConverter requestTemplateGroupConverter;
 
-
     @Override
     @Transactional
-    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGropReq req)  throws TaskmanException {
+    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGropReq req) throws TaskmanException {
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
-        requestTemplateGroup.setCurrenUserName(requestTemplateGroup,requestTemplateGroup.getId());
-        if(!StringUtils.isEmpty(requestTemplateGroup.getId())){
+        // requestTemplateGroup.setCurrenUserName(requestTemplateGroup,requestTemplateGroup.getId());
+        requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestTemplateGroup.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        ;
+        if (!StringUtils.isEmpty(requestTemplateGroup.getId())) {
             RequestTemplateGroup query = this.getById(requestTemplateGroup.getId());
-            if(null == query){
+            if (null == query) {
                 throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
             }
             requestTemplateGroup.setUpdatedTime(new Date());
-            update( requestTemplateGroup.getUpdateWrapper());
-        }else {
+            update(requestTemplateGroup.getUpdateWrapper());
+        } else {
             save(requestTemplateGroup);
         }
         return requestTemplateGroupConverter.toDto(requestTemplateGroup);
     }
 
     @Override
-    public QueryResponse<RequestTemplateGroupDTO> selectRequestTemplateGroupPage(Integer current, Integer limit, RequestTemplateGroupDTO req) {
+    public QueryResponse<RequestTemplateGroupDTO> selectRequestTemplateGroupPage(Integer current, Integer limit,
+            RequestTemplateGroupDTO req) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
                 requestTemplateGroupConverter.toEntity(req).getLambdaQueryWrapper());
-        return new QueryResponse(iPage,requestTemplateGroupConverter.toDto(iPage.getRecords()));
+        return new QueryResponse(iPage, requestTemplateGroupConverter.toDto(iPage.getRecords()));
     }
 
     @Override
-    public void deleteTemplateGroupByIDService(String id)  {
-        RequestTemplateGroup requestTemplateGroup = (RequestTemplateGroup)new RequestTemplateGroup()
-                .setId(id).setDelFlag(StatusEnum.ENABLE.ordinal()).setUpdatedTime(new Date());
-        templateGroupMapper.update(null,requestTemplateGroup.getUpdateWrapper());
+    public void deleteTemplateGroupByIDService(String id) {
+        RequestTemplateGroup requestTemplateGroup = new RequestTemplateGroup();
+        requestTemplateGroup.setId(id);
+        requestTemplateGroup.setDelFlag(StatusEnum.ENABLE.ordinal());
+        requestTemplateGroup.setUpdatedTime(new Date());
+        templateGroupMapper.update(null, requestTemplateGroup.getUpdateWrapper());
     }
 }

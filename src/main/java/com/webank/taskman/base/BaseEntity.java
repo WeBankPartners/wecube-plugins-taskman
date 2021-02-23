@@ -13,7 +13,6 @@ public class BaseEntity<T> {
 
     private Date createdTime;
 
-
     private String updatedBy;
 
     @TableField(fill = FieldFill.UPDATE)
@@ -26,27 +25,24 @@ public class BaseEntity<T> {
         return createdBy;
     }
 
-    public <T extends BaseEntity> T  setCreatedBy(String createdBy) {
+    public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
-        return (T)this;
     }
 
     public Date getCreatedTime() {
         return createdTime;
     }
 
-    public <T extends BaseEntity> T setCreatedTime(Date createdTime) {
+    public void setCreatedTime(Date createdTime) {
         this.createdTime = createdTime;
-        return (T)this;
     }
 
     public String getUpdatedBy() {
         return updatedBy;
     }
 
-    public <T extends BaseEntity> T setUpdatedBy(String updatedBy) {
+    public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
-        return (T)this;
     }
 
     public Date getUpdatedTime() {
@@ -54,27 +50,24 @@ public class BaseEntity<T> {
 
     }
 
-    public <T extends BaseEntity> T setUpdatedTime(Date updatedTime) {
+    public void setUpdatedTime(Date updatedTime) {
         this.updatedTime = updatedTime;
-        return (T)this;
     }
 
     public Integer getDelFlag() {
         return delFlag;
     }
 
-    public <T extends BaseEntity> T setDelFlag(Integer delFlag) {
+    public void setDelFlag(Integer delFlag) {
         this.delFlag = delFlag;
-        return (T)this;
     }
 
-    public BaseEntity setCurrenUserName(BaseEntity entity, String Id) {
-//        if(StringUtils.isEmpty(Id)){
-//            entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
-//        }
-        entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
-        entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
-
-        return entity;
-    }
+//    public void setCurrenUserName(BaseEntity entity, String Id) {
+//        // if(StringUtils.isEmpty(Id)){
+//        // entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+//        // }
+//        entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+//        entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+//
+//    }
 }

@@ -17,7 +17,7 @@ import java.util.List;
 public class FormItemInfoServiceImpl extends ServiceImpl<FormItemInfoMapper, FormItemInfo> implements FormItemInfoService {
 
     @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
+    private FormItemTemplateMapper formItemTemplateMapper;
 
 
     @Override

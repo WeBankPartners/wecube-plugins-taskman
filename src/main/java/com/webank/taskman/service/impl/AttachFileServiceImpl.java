@@ -24,7 +24,7 @@ public class AttachFileServiceImpl extends ServiceImpl<AttachFileMapper, AttachF
 
 
     @Autowired
-    ServiceTaskmanProperties ServiceTaskmanProperties;
+    private ServiceTaskmanProperties ServiceTaskmanProperties;
 
     public DownloadAttachFileResponse downloadServiceRequestAttachFile(String attachFileId) throws TaskmanRuntimeException {
 

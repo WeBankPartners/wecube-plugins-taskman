@@ -35,20 +35,20 @@ import java.util.stream.Stream;
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {
 
     @Autowired
-    FormInfoService formInfoService;
+    private FormInfoService formInfoService;
     @Autowired
-    PlatformCoreServiceRestClient coreServiceStub;
+    private PlatformCoreServiceRestClient coreServiceStub;
     @Autowired
-    FormItemInfoService formItemInfoService;
+    private FormItemInfoService formItemInfoService;
     @Autowired
-    RequestTemplateService requestTemplateService;
+    private RequestTemplateService requestTemplateService;
 
     @Autowired
-    RequestInfoMapper requestInfoMapper;
+    private RequestInfoMapper requestInfoMapper;
     @Autowired
-    RequestInfoConverter requestInfoConverter;
+    private RequestInfoConverter requestInfoConverter;
     @Autowired
-    FormItemInfoConverter formItemInfoConverter;
+    private FormItemInfoConverter formItemInfoConverter;
 
 
     @Override

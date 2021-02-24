@@ -54,28 +54,28 @@ import com.webank.taskman.support.core.dto.CallbackRequestDto.CallbackRequestRes
 public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> implements TaskInfoService {
 
     @Autowired
-    FormInfoConverter formInfoConverter;
+    private FormInfoConverter formInfoConverter;
 
     @Autowired
-    FormItemInfoMapper formItemInfoMapper;
+    private FormItemInfoMapper formItemInfoMapper;
 
     @Autowired
-    RequestInfoConverter requestInfoConverter;
+    private RequestInfoConverter requestInfoConverter;
 
     @Autowired
-    FormItemInfoConverter formItemInfoConverter;
+    private FormItemInfoConverter formItemInfoConverter;
 
     @Autowired
-    FormItemInfoService formItemInfoService;
+    private FormItemInfoService formItemInfoService;
 
     @Autowired
-    TaskInfoConverter taskInfoConverter;
+    private TaskInfoConverter taskInfoConverter;
 
     @Autowired
-    FormInfoService formInfoService;
+    private FormInfoService formInfoService;
 
     @Autowired
-    PlatformCoreServiceRestClient coreServiceStub;
+    private PlatformCoreServiceRestClient coreServiceStub;
 
     @Override
     public QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {

@@ -18,7 +18,7 @@ import java.util.List;
 public class FormItemTemplateServiceImpl extends ServiceImpl<FormItemTemplateMapper, FormItemTemplate> implements FormItemTemplateService {
 
     @Autowired
-    FormItemInfoConverter formItemInfoConverter;
+    private FormItemInfoConverter formItemInfoConverter;
 
     @Override
     public void deleteRequestTemplateByID(String id) {

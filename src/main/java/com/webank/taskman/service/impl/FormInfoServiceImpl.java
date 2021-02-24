@@ -25,10 +25,10 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
     private static final Logger log = LoggerFactory.getLogger(FormInfoServiceImpl.class);
 
     @Autowired
-    FormTemplateService formTemplateService;
+    private FormTemplateService formTemplateService;
 
     @Autowired
-    FormItemInfoService formItemInfoService;
+    private FormItemInfoService formItemInfoService;
 
     @Override
     public FormInfo saveFormInfoByExists(String requestTempId, String recordId) {

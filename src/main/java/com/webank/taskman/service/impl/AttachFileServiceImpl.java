@@ -24,9 +24,9 @@ public class AttachFileServiceImpl extends ServiceImpl<AttachFileMapper, AttachF
 
 
     @Autowired
-    private ServiceTaskmanProperties ServiceTaskmanProperties;
+    private ServiceTaskmanProperties serviceTaskmanProperties;
 
-    public DownloadAttachFileResponse downloadServiceRequestAttachFile(String attachFileId) throws TaskmanRuntimeException {
+    public DownloadAttachFileResponse downloadServiceRequestAttachFile(String attachFileId){
 
         AttachFile attachFile = getById(attachFileId);
         if (null == attachFile){
@@ -37,7 +37,7 @@ public class AttachFileServiceImpl extends ServiceImpl<AttachFileMapper, AttachF
             String tempDownloadFilePath = SystemUtils.getTempFolderPath() + fileName;
             File downloadFile = new File(tempDownloadFilePath);
 
-            new S3Client(ServiceTaskmanProperties).downFile(fileName, tempDownloadFilePath);
+            new S3Client(serviceTaskmanProperties).downFile(fileName, tempDownloadFilePath);
             DownloadAttachFileResponse response = new DownloadAttachFileResponse(
                     FileUtils.readFileToByteArray(downloadFile), fileName);
 
@@ -49,7 +49,7 @@ public class AttachFileServiceImpl extends ServiceImpl<AttachFileMapper, AttachF
     }
 
     @Override
-    public String uploadServiceRequestAttachFile(MultipartFile attachFile) throws TaskmanRuntimeException {
+    public String uploadServiceRequestAttachFile(MultipartFile attachFile) {
         if (attachFile.isEmpty()) {
             throw new TaskmanRuntimeException("3008", "Empty file!");
         }
@@ -66,9 +66,9 @@ public class AttachFileServiceImpl extends ServiceImpl<AttachFileMapper, AttachF
             String uploadFileName = FilenameUtils.getBaseName(attachFile.getOriginalFilename()) + "-" + tmpFileName + "."
                     + fileExtension;
 
-            String s3Url = new S3Client(ServiceTaskmanProperties).uploadFile(uploadFileName, tempUploadFile);
+            String s3Url = new S3Client(serviceTaskmanProperties).uploadFile(uploadFileName, tempUploadFile);
             AttachFile attachFileObject = new AttachFile(uploadFileName, s3Url,
-                    ServiceTaskmanProperties.getS3DefaultBucket(), uploadFileName);
+                    serviceTaskmanProperties.getS3DefaultBucket(), uploadFileName);
             save(attachFileObject);
             FileUtils.forceDelete(tempUploadFile);
             return attachFileObject.getId();

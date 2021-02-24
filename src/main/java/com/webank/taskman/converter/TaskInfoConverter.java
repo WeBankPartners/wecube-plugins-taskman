@@ -1,17 +1,17 @@
 package com.webank.taskman.converter;
 
-import com.webank.taskman.base.BaseConverter;
-import com.webank.taskman.domain.TaskInfo;
-import com.webank.taskman.dto.CoreCreateTaskDto;
-import com.webank.taskman.dto.CoreCreateTaskDto.TaskInfoReq;
-import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.QueryTaskInfoReq;
-import com.webank.taskman.dto.resp.TaskInfoResp;
-import com.webank.taskman.dto.resp.TaskInfoInstanceResp;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
+
+import com.webank.taskman.base.BaseConverter;
+import com.webank.taskman.domain.TaskInfo;
+import com.webank.taskman.dto.CoreCreateTaskDto.TaskInfoReq;
+import com.webank.taskman.dto.TaskInfoDto;
+import com.webank.taskman.dto.req.QueryTaskInfoReq;
+import com.webank.taskman.dto.resp.TaskInfoInstanceResp;
+import com.webank.taskman.dto.resp.TaskInfoResp;
 
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TaskInfoConverter extends BaseConverter<TaskInfoDto, TaskInfo> {

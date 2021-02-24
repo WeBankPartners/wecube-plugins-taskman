@@ -1,8 +1,7 @@
 package com.webank.taskman.interceptor;
 
-import com.webank.taskman.commons.AppProperties;
-import com.webank.taskman.commons.AuthenticationContextHolder;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.io.IOException;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -10,12 +9,10 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.webank.taskman.commons.AuthenticationContextHolder;
 
 @Component
 public class RestTemplateInterceptor implements ClientHttpRequestInterceptor {
-    @Autowired
-    private AppProperties.ServiceTaskmanProperties smProperties;
 
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)

@@ -119,14 +119,14 @@ public class PlatformResourceController {
     }
 
     @PostMapping("/attach-file")
-    public JsonResponse s3UploadFile(@RequestParam(value = "file") MultipartFile attachFile) throws Exception {
+    public JsonResponse uploadS3File(@RequestParam(value = "file") MultipartFile attachFile) throws Exception {
         String attachFileId = attachFileService.uploadServiceRequestAttachFile(attachFile);
 
         return okayWithData(attachFileId);
     }
 
     @GetMapping("/{attach-id}/attach-file")
-    public void S3DownloadFile(@PathVariable(value = "attach-id") String serviceRequestId, HttpServletResponse response)
+    public void downloadS3File(@PathVariable(value = "attach-id") String serviceRequestId, HttpServletResponse response)
             throws Exception {
         if (serviceRequestId == null || serviceRequestId.isEmpty())
             throw new Exception("Invalid service-request-id: " + serviceRequestId);

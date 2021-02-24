@@ -59,8 +59,7 @@ public class TaskmanRequestController {
     private RequestInfoService requestInfoService;
 
     @PostMapping("/template/group/save")
-    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody SaveRequestTemplateGropReq req)
-            {
+    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody SaveRequestTemplateGropReq req) {
         return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
@@ -73,7 +72,7 @@ public class TaskmanRequestController {
     }
 
     @GetMapping("/template/group/available")
-    public JsonResponse requestGroupTemplateAvailable() throws TaskmanRuntimeException {
+    public JsonResponse requestGroupTemplateAvailable() {
         LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus(StatusEnum.DEFAULT.toString())
                 .getLambdaQueryWrapper();
         List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter
@@ -82,14 +81,13 @@ public class TaskmanRequestController {
     }
 
     @DeleteMapping("/template/group/delete/{id}")
-    public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException {
+    public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) {
         requestTemplateGroupService.deleteTemplateGroupByIDService(id);
         return okay();
     }
 
     @PostMapping("/template/save")
-    public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req)
-            throws TaskmanRuntimeException {
+    public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req) {
         RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
@@ -115,21 +113,20 @@ public class TaskmanRequestController {
 
     @PostMapping("/template/search/{page}/{pageSize}")
     public JsonResponse requestTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestTemplateReq req)
-            throws TaskmanRuntimeException {
+            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestTemplateReq req) {
         QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
                 pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
     @DeleteMapping("/template/delete/{id}")
-    public JsonResponse requestTemplateDelete(@PathVariable("id") String id) throws TaskmanRuntimeException {
+    public JsonResponse requestTemplateDelete(@PathVariable("id") String id) {
         requestTemplateService.deleteRequestTemplateService(id);
         return okay();
     }
 
     @GetMapping("/template/detail/{id}")
-    public JsonResponse requestTemplateDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
+    public JsonResponse requestTemplateDetail(@PathVariable("id") String id) {
         RequestTemplateResp detailRequestTemplateResq = requestTemplateService.detailRequestTemplate(id);
         return JsonResponse.okayWithData(detailRequestTemplateResq);
     }
@@ -147,20 +144,19 @@ public class TaskmanRequestController {
     }
 
     @PostMapping("/save")
-    public JsonResponse requestInfoSave(@RequestBody CreateTaskDto req) throws TaskmanRuntimeException {
+    public JsonResponse requestInfoSave(@RequestBody CreateTaskDto req) {
         return okayWithData(requestInfoService.saveRequestInfoByDto(req));
     }
 
     @PostMapping("/search/{page}/{pageSize}")
     public JsonResponse requestInfoSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestInfoReq req)
-            throws TaskmanRuntimeException {
+            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestInfoReq req) {
         QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         return JsonResponse.okayWithData(list);
     }
 
     @GetMapping("/details/{id}")
-    public JsonResponse requestInfoDetail(@PathVariable("id") String id) throws TaskmanRuntimeException {
+    public JsonResponse requestInfoDetail(@PathVariable("id") String id) {
         RequestInfoResq requestInfoResq = requestInfoService.selectDetail(id);
         return JsonResponse.okayWithData(requestInfoResq);
     }

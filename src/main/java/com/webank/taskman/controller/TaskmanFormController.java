@@ -37,27 +37,27 @@ public class TaskmanFormController {
     private FormItemTemplateConverter formItemTemplateConverter;
 
     @PostMapping("/template/save")
-    public JsonResponse createFormTemplate(@Valid @RequestBody SaveFormTemplateReq req){
+    public JsonResponse createFormTemplate(@Valid @RequestBody SaveFormTemplateReq req) {
 
         FormTemplateResp formTemplateResp = formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 
     @DeleteMapping("/template/delete/{id}")
-    public JsonResponse formTemplateDelete(@PathVariable("id") String id) throws Exception {
+    public JsonResponse formTemplateDelete(@PathVariable("id") String id) {
         formTemplateService.deleteFormTemplate(id);
         return JsonResponse.okay();
     }
 
     @GetMapping("/template/detail/{tempType}/{tempId}")
     public JsonResponse formTemplateDetail(@PathVariable("tempType") String tempType,
-            @PathVariable("tempId") String tempId) throws Exception {
+            @PathVariable("tempId") String tempId) {
         return JsonResponse
                 .okayWithData(formTemplateService.detailFormTemplate(new SaveFormTemplateReq(tempId, tempType)));
     }
 
     @DeleteMapping("/item/delete/{id}")
-    public JsonResponse formItemTemplateDelete(@PathVariable("id") String id) throws Exception {
+    public JsonResponse formItemTemplateDelete(@PathVariable("id") String id) {
         formItemTemplateService.deleteRequestTemplateByID(id);
         return JsonResponse.okay();
     }

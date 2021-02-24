@@ -38,7 +38,7 @@ public class TaskmanTaskController {
     private TaskInfoService taskInfoService;
 
     @PostMapping("/template/save")
-    public JsonResponse taskTemplateSave(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq) throws Exception {
+    public JsonResponse taskTemplateSave(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq){
 
         TaskTemplateResp taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
         return JsonResponse.okayWithData(taskTemplateResp);
@@ -54,7 +54,7 @@ public class TaskmanTaskController {
     }
 
     @GetMapping("/template/detail/{id}")
-    public JsonResponse taskTemplateDetail(@PathVariable("id") String id) throws Exception {
+    public JsonResponse taskTemplateDetail(@PathVariable("id") String id){
         TaskTemplateResp taskTemplateResp = taskTemplateService.taskTemplateDetail(id);
         return JsonResponse.okayWithData(taskTemplateResp);
     }

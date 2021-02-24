@@ -14,6 +14,10 @@ import com.webank.taskman.base.BaseEntity;
 public class RequestTemplateGroup extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    
+    public static final String STATUS_AVAILABLE = "1";
+    public static final String STATUS_NOT_AVAILABLE = "0";
 
     
     @TableId(value = "id", type = IdType.ASSIGN_ID)

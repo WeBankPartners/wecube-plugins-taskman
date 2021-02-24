@@ -34,7 +34,7 @@ import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.QueryRequestInfoReq;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateGroupReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
@@ -59,7 +59,7 @@ public class TaskmanRequestController {
     private RequestInfoService requestInfoService;
 
     @PostMapping("/template/group/save")
-    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody SaveRequestTemplateGropReq req) {
+    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody SaveRequestTemplateGroupReq req) {
         return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
@@ -73,7 +73,7 @@ public class TaskmanRequestController {
 
     @GetMapping("/template/group/available")
     public JsonResponse requestGroupTemplateAvailable() {
-        LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus(StatusEnum.DEFAULT.toString())
+        LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus(RequestTemplateGroup.STATUS_AVAILABLE)
                 .getLambdaQueryWrapper();
         List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter
                 .toDto(requestTemplateGroupService.list(lambdaQueryWrapper));

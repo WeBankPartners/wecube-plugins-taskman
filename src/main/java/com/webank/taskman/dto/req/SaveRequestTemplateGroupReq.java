@@ -1,6 +1,6 @@
 package com.webank.taskman.dto.req;
 
-public class SaveRequestTemplateGropReq {
+public class SaveRequestTemplateGroupReq {
 
     private String id;
     private String name;
@@ -8,7 +8,7 @@ public class SaveRequestTemplateGropReq {
     private String manageRoleName;
     private String description;
     private String version;
-    private String Status;
+    private String status;
 
     public String getId() {
         return id;
@@ -59,22 +59,33 @@ public class SaveRequestTemplateGropReq {
     }
 
     public String getStatus() {
-        return Status;
+        return status;
     }
 
-    public SaveRequestTemplateGropReq setStatus(String status) {
-        Status = status;
+    public SaveRequestTemplateGroupReq setStatus(String status) {
+        this.status = status;
         return this;
     }
 
     @Override
     public String toString() {
-        return "SaveAndUpdateTemplateGropReq{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", manageRoleId='" + manageRoleId + '\'' +
-                ", description='" + description + '\'' +
-                ", manageRoleName='" + manageRoleName + '\'' +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        builder.append("SaveRequestTemplateGroupReq [id=");
+        builder.append(id);
+        builder.append(", name=");
+        builder.append(name);
+        builder.append(", manageRoleId=");
+        builder.append(manageRoleId);
+        builder.append(", manageRoleName=");
+        builder.append(manageRoleName);
+        builder.append(", description=");
+        builder.append(description);
+        builder.append(", version=");
+        builder.append(version);
+        builder.append(", status=");
+        builder.append(status);
+        builder.append("]");
+        return builder.toString();
     }
+
 }

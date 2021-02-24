@@ -17,7 +17,7 @@ import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDTO;
-import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
+import com.webank.taskman.dto.req.SaveRequestTemplateGroupReq;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 
@@ -33,15 +33,14 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
     @Override
     @Transactional
-    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGropReq req){
+    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGroupReq req) {
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
-        // requestTemplateGroup.setCurrenUserName(requestTemplateGroup,requestTemplateGroup.getId());
         requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateGroup.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
-        ;
+        requestTemplateGroup.setStatus(RequestTemplateGroup.STATUS_AVAILABLE);
         if (!StringUtils.isEmpty(requestTemplateGroup.getId())) {
             RequestTemplateGroup query = this.getById(requestTemplateGroup.getId());
-            if (null == query) {
+            if (query == null) {
                 throw new TaskmanRuntimeException("NOT_FOUND_RECORD");
             }
             requestTemplateGroup.setUpdatedTime(new Date());

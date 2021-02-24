@@ -38,7 +38,6 @@ mybatis-plus:
       logic-not-delete-value: 0
       logic-delete-value: 1
 
-#分页插件
 pagehelper:
   helperDialect: mysql
   paramsCount: countSql
@@ -81,8 +80,6 @@ service:
     system-code: SYS_SRV_MGMT
     jwt-signing-key: ${JWT_SIGNING_KEY:}
     property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}
-    aspect-log-controller: true
-    aspect-log-controller-printResult: false
 
 logging:
   level:

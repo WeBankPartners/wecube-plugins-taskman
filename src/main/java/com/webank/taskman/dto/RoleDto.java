@@ -1,6 +1,6 @@
 package com.webank.taskman.dto;
 
-public class RoleDTO {
+public class RoleDto {
 
     private String roleName;
     private String displayName;

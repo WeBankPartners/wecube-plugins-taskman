@@ -17,7 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.dto.FormItemTemplateDTO;
+import com.webank.taskman.dto.FormItemTemplateDto;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
@@ -66,7 +66,7 @@ public class TaskmanFormController {
     public JsonResponse formItemTemplateAvailable() {
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<FormItemTemplate>();
         wrapper.eq("status", 1);
-        List<FormItemTemplateDTO> queryResponse = formItemTemplateConverter
+        List<FormItemTemplateDto> queryResponse = formItemTemplateConverter
                 .toDto(formItemTemplateService.list(wrapper));
         return JsonResponse.okayWithData(queryResponse);
     }

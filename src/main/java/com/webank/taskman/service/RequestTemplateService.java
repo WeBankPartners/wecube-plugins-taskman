@@ -5,18 +5,18 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.RequestTemplate;
-import com.webank.taskman.dto.RequestTemplateDTO;
+import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 
 public interface RequestTemplateService extends IService<RequestTemplate> {
 
-    RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
+    RequestTemplateDto saveRequestTemplate(SaveRequestTemplateReq saveRequestTemplateReq);
 
     void deleteRequestTemplateService(String id) throws TaskmanRuntimeException;
 
-    QueryResponse<RequestTemplateDTO> selectRequestTemplatePage
+    QueryResponse<RequestTemplateDto> selectRequestTemplatePage
             (Integer current, Integer limit, QueryRequestTemplateReq req) throws TaskmanRuntimeException;
 
     RequestTemplateResp detailRequestTemplate(String id) throws TaskmanRuntimeException;

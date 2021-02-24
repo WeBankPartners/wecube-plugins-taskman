@@ -1,6 +1,6 @@
 package com.webank.taskman.dto;
 
-public class FormItemTemplateDTO {
+public class FormItemTemplateDto {
 
     private String id;
     private String formTemplateId;
@@ -23,7 +23,7 @@ public class FormItemTemplateDTO {
         return id;
     }
 
-    public FormItemTemplateDTO setId(String id) {
+    public FormItemTemplateDto setId(String id) {
         this.id = id;
         return this;
     }

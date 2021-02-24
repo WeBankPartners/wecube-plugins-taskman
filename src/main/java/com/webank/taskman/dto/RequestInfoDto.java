@@ -5,7 +5,7 @@ package com.webank.taskman.dto;
 import java.util.Date;
 import java.util.StringJoiner;
 
-public class RequestInfoDTO {
+public class RequestInfoDto {
 
     private String id;
     private String requestTempId;
@@ -26,7 +26,7 @@ public class RequestInfoDTO {
         return id;
     }
 
-    public RequestInfoDTO setId(String id) {
+    public RequestInfoDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -35,7 +35,7 @@ public class RequestInfoDTO {
         return requestTempId;
     }
 
-    public RequestInfoDTO setRequestTempId(String requestTempId) {
+    public RequestInfoDto setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
         return this;
     }
@@ -44,7 +44,7 @@ public class RequestInfoDTO {
         return procInstId;
     }
 
-    public RequestInfoDTO setProcInstId(String procInstId) {
+    public RequestInfoDto setProcInstId(String procInstId) {
         this.procInstId = procInstId;
         return this;
     }
@@ -53,7 +53,7 @@ public class RequestInfoDTO {
         return rootEntity;
     }
 
-    public RequestInfoDTO setRootEntity(String rootEntity) {
+    public RequestInfoDto setRootEntity(String rootEntity) {
         this.rootEntity = rootEntity;
         return this;
     }
@@ -62,7 +62,7 @@ public class RequestInfoDTO {
         return name;
     }
 
-    public RequestInfoDTO setName(String name) {
+    public RequestInfoDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -71,7 +71,7 @@ public class RequestInfoDTO {
         return reporter;
     }
 
-    public RequestInfoDTO setReporter(String reporter) {
+    public RequestInfoDto setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -80,7 +80,7 @@ public class RequestInfoDTO {
         return reportTime;
     }
 
-    public RequestInfoDTO setReportTime(Date reportTime) {
+    public RequestInfoDto setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -89,7 +89,7 @@ public class RequestInfoDTO {
         return emergency;
     }
 
-    public RequestInfoDTO setEmergency(String emergency) {
+    public RequestInfoDto setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -98,7 +98,7 @@ public class RequestInfoDTO {
         return reportRole;
     }
 
-    public RequestInfoDTO setReportRole(String reportRole) {
+    public RequestInfoDto setReportRole(String reportRole) {
         this.reportRole = reportRole;
         return this;
     }
@@ -107,7 +107,7 @@ public class RequestInfoDTO {
         return attachFileId;
     }
 
-    public RequestInfoDTO setAttachFileId(String attachFileId) {
+    public RequestInfoDto setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
         return this;
     }
@@ -116,7 +116,7 @@ public class RequestInfoDTO {
         return status;
     }
 
-    public RequestInfoDTO setStatus(String status) {
+    public RequestInfoDto setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -125,7 +125,7 @@ public class RequestInfoDTO {
         return dueDate;
     }
 
-    public RequestInfoDTO setDueDate(String dueDate) {
+    public RequestInfoDto setDueDate(String dueDate) {
         this.dueDate = dueDate;
         return this;
     }
@@ -134,7 +134,7 @@ public class RequestInfoDTO {
         return result;
     }
 
-    public RequestInfoDTO setResult(String result) {
+    public RequestInfoDto setResult(String result) {
         this.result = result;
         return this;
     }
@@ -143,14 +143,14 @@ public class RequestInfoDTO {
         return description;
     }
 
-    public RequestInfoDTO setDescription(String description) {
+    public RequestInfoDto setDescription(String description) {
         this.description = description;
         return this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RequestInfoDTO.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", RequestInfoDto.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("requestTempId='" + requestTempId + "'")
                 .add("procInstId='" + procInstId + "'")

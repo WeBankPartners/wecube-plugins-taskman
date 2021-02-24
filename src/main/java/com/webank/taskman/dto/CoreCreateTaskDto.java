@@ -2,7 +2,7 @@ package com.webank.taskman.dto;
 
 import java.util.List;
 
-public class CoreCreateTaskDTO {
+public class CoreCreateTaskDto {
 
     private String requestId;
     private String dueDate;
@@ -12,7 +12,7 @@ public class CoreCreateTaskDTO {
     public String getRequestId() {
         return requestId;
     }
-    public CoreCreateTaskDTO setRequestId(String requestId) {
+    public CoreCreateTaskDto setRequestId(String requestId) {
         this.requestId = requestId;
         return this;
     }

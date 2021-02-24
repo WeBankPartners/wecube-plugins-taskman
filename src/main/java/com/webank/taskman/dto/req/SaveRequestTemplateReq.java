@@ -2,7 +2,7 @@ package com.webank.taskman.dto.req;
 
 import java.util.List;
 
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RoleDto;
 
 public class SaveRequestTemplateReq {
     private String id;
@@ -13,8 +13,8 @@ public class SaveRequestTemplateReq {
     private String name;
     private String description;
     private String tags;
-    private List<RoleDTO> useRoles;
-    private List<RoleDTO> manageRoles;
+    private List<RoleDto> useRoles;
+    private List<RoleDto> manageRoles;
 
     public String getId() {
         return id;
@@ -56,19 +56,19 @@ public class SaveRequestTemplateReq {
         this.procDefName = procDefName;
     }
 
-    public List<RoleDTO> getUseRoles() {
+    public List<RoleDto> getUseRoles() {
         return useRoles;
     }
 
-    public void setUseRoles(List<RoleDTO> useRoles) {
+    public void setUseRoles(List<RoleDto> useRoles) {
         this.useRoles = useRoles;
     }
 
-    public List<RoleDTO> getManageRoles() {
+    public List<RoleDto> getManageRoles() {
         return manageRoles;
     }
 
-    public void setManageRoles(List<RoleDTO> manageRoles) {
+    public void setManageRoles(List<RoleDto> manageRoles) {
         this.manageRoles = manageRoles;
     }
 

@@ -28,9 +28,9 @@ import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.TaskInfo;
-import com.webank.taskman.dto.CoreCancelTaskDTO;
-import com.webank.taskman.dto.CoreCreateTaskDTO;
-import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.CoreCancelTaskDto;
+import com.webank.taskman.dto.CoreCreateTaskDto;
+import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.resp.FormInfoResq;
@@ -78,13 +78,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     PlatformCoreServiceRestClient coreServiceStub;
 
     @Override
-    public QueryResponse<TaskInfoDTO> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
+    public QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
         String inSql = req.getConditionSql();// req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req).getLambdaQueryWrapper()
                 .inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, inSql);
         PageHelper.startPage(page, pageSize);
-        PageInfo<TaskInfoDTO> pages = new PageInfo(taskInfoConverter.toDto(getBaseMapper().selectList(queryWrapper)));
-        QueryResponse<TaskInfoDTO> queryResponse = new QueryResponse(pages.getTotal(), page.longValue(),
+        PageInfo<TaskInfoDto> pages = new PageInfo(taskInfoConverter.toDto(getBaseMapper().selectList(queryWrapper)));
+        QueryResponse<TaskInfoDto> queryResponse = new QueryResponse(pages.getTotal(), page.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }
@@ -136,7 +136,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public CommonResponseDto cancelTask(CoreCancelTaskDTO req) {
+    public CommonResponseDto cancelTask(CoreCancelTaskDto req) {
         TaskInfo taskInfo = getBaseMapper().selectOne(new TaskInfo().setProcInstId(req.getProcInstId())
                 .setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
         if (null == taskInfo) {
@@ -195,7 +195,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public TaskInfoDTO taskInfoReceive(String id) {
+    public TaskInfoDto taskInfoReceive(String id) {
         TaskInfo taskInfo = getBaseMapper().selectById(id);
 
         if (taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())) {
@@ -210,7 +210,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     @Transactional
-    public CommonResponseDto createTask(CoreCreateTaskDTO req) throws TaskmanRuntimeException {
+    public CommonResponseDto createTask(CoreCreateTaskDto req) throws TaskmanRuntimeException {
         if (null == req.getInputs() || req.getInputs().size() == 0) {
             throw new TaskmanRuntimeException(" inputs is null");
         }

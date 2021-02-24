@@ -16,7 +16,7 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.RequestTemplateGroupDTO;
+import com.webank.taskman.dto.RequestTemplateGroupDto;
 import com.webank.taskman.dto.req.SaveRequestTemplateGroupReq;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
@@ -26,14 +26,14 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         implements RequestTemplateGroupService {
 
     @Autowired
-    RequestTemplateGroupMapper templateGroupMapper;
+    private RequestTemplateGroupMapper templateGroupMapper;
 
     @Autowired
-    RequestTemplateGroupConverter requestTemplateGroupConverter;
+    private RequestTemplateGroupConverter requestTemplateGroupConverter;
 
     @Override
     @Transactional
-    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGroupReq req) {
+    public RequestTemplateGroupDto saveTemplateGroupByReq(SaveRequestTemplateGroupReq req) {
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
         requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateGroup.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
@@ -52,8 +52,8 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     }
 
     @Override
-    public QueryResponse<RequestTemplateGroupDTO> selectRequestTemplateGroupPage(Integer current, Integer limit,
-            RequestTemplateGroupDTO req) {
+    public QueryResponse<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit,
+            RequestTemplateGroupDto req) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
                 requestTemplateGroupConverter.toEntity(req).getLambdaQueryWrapper());
         return new QueryResponse(iPage, requestTemplateGroupConverter.toDto(iPage.getRecords()));

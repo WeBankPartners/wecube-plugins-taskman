@@ -18,8 +18,8 @@ import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
-import com.webank.taskman.dto.RequestTemplateDTO;
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RequestTemplateDto;
+import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.SaveRequestTemplateReq;
 import com.webank.taskman.dto.resp.FormTemplateResp;
@@ -70,10 +70,10 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     @Transactional
-    public RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq req) {
-        List<RoleDTO> roles = roleRelationConverter
+    public RequestTemplateDto saveRequestTemplate(SaveRequestTemplateReq req) {
+        List<RoleDto> roles = roleRelationConverter
                 .rolesDataResponseToDtoList(coreServiceStub.getAllAuthRolesOfCurrentUser());
-        Set<RoleDTO> ts = new HashSet<RoleDTO>(roles);
+        Set<RoleDto> ts = new HashSet<RoleDto>(roles);
         ts.addAll(req.getUseRoles());
         req.setUseRoles(new ArrayList<>(ts));
         RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
@@ -85,7 +85,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         saveOrUpdate(requestTemplate);
         roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(),
                 req.getManageRoles());
-        return new RequestTemplateDTO().setId(requestTemplate.getId());
+        return new RequestTemplateDto().setId(requestTemplate.getId());
 
     }
 
@@ -102,17 +102,17 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
+    public QueryResponse<RequestTemplateDto> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
             QueryRequestTemplateReq req) {
         req.queryCurrentUserRoles();
         PageHelper.startPage(pageNum, pageSize);
-        PageInfo<RequestTemplateDTO> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
+        PageInfo<RequestTemplateDto> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
 
-        for (RequestTemplateDTO resp : pages.getList()) {
+        for (RequestTemplateDto resp : pages.getList()) {
             List<RoleRelation> roles = roleRelationService
                     .list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
             roles.stream().forEach(role -> {
-                RoleDTO roleDTO = roleRelationConverter.toDto(role);
+                RoleDto roleDTO = roleRelationConverter.toDto(role);
                 if (RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()) {
                     resp.getUseRoles().add(roleDTO);
                 } else {
@@ -120,7 +120,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
             });
         }
-        QueryResponse<RequestTemplateDTO> queryResponse = new QueryResponse(pages.getTotal(), pageNum.longValue(),
+        QueryResponse<RequestTemplateDto> queryResponse = new QueryResponse(pages.getTotal(), pageNum.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }

@@ -3,7 +3,7 @@ package com.webank.taskman.dto.req;
 import java.util.List;
 
 import com.webank.taskman.constant.TemplateTypeEnum;
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RoleDto;
 
 public class SaveTaskTemplateReq {
 
@@ -25,10 +25,10 @@ public class SaveTaskTemplateReq {
     private String description;
 
     // @ApiModelProperty(value = "使用角色集",required = false,position = 9)
-    private List<RoleDTO> useRoles;
+    private List<RoleDto> useRoles;
 
     // @ApiModelProperty(value = "管理角色集",required = false,position = 10)
-    private List<RoleDTO> manageRoles;
+    private List<RoleDto> manageRoles;
 
     // @ApiModelProperty(value = "任务表单模板", required = false, position = 11)
     private SaveFormTemplateReq form;
@@ -106,19 +106,19 @@ public class SaveTaskTemplateReq {
         this.description = description;
     }
 
-    public List<RoleDTO> getUseRoles() {
+    public List<RoleDto> getUseRoles() {
         return useRoles;
     }
 
-    public void setUseRoles(List<RoleDTO> useRoles) {
+    public void setUseRoles(List<RoleDto> useRoles) {
         this.useRoles = useRoles;
     }
 
-    public List<RoleDTO> getManageRoles() {
+    public List<RoleDto> getManageRoles() {
         return manageRoles;
     }
 
-    public void setManageRoles(List<RoleDTO> manageRoles) {
+    public void setManageRoles(List<RoleDto> manageRoles) {
         this.manageRoles = manageRoles;
     }
 

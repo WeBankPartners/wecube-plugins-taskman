@@ -21,7 +21,7 @@ import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.QueryTemplateReq;
 import com.webank.taskman.dto.req.SaveFormTemplateReq;
 import com.webank.taskman.dto.req.SaveTaskTemplateReq;
@@ -87,7 +87,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
                 new RoleRelation().setRecordId(id).getLambdaQueryWrapper()
         );
         relations.stream().forEach(roleRelation -> {
-            RoleDTO roleDTO = new RoleDTO();
+            RoleDto roleDTO = new RoleDto();
             roleDTO.setRoleName(roleRelation.getRoleName());
             roleDTO.setDisplayName(roleRelation.getRoleName());
             if (RoleTypeEnum.USE_ROLE.getType() == roleRelation.getRoleType()) {

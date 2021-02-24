@@ -1,6 +1,6 @@
 package com.webank.taskman.dto;
 
-public class CoreCancelTaskDTO {
+public class CoreCancelTaskDto {
 
     private String procInstId;
     private String taskNodeId;
@@ -9,7 +9,7 @@ public class CoreCancelTaskDTO {
         return procInstId;
     }
 
-    public CoreCancelTaskDTO setProcInstId(String procInstId) {
+    public CoreCancelTaskDto setProcInstId(String procInstId) {
         this.procInstId = procInstId;
         return this;
     }
@@ -18,7 +18,7 @@ public class CoreCancelTaskDTO {
         return taskNodeId;
     }
 
-    public CoreCancelTaskDTO setTaskNodeId(String taskNodeId) {
+    public CoreCancelTaskDto setTaskNodeId(String taskNodeId) {
         this.taskNodeId = taskNodeId;
         return this;
     }

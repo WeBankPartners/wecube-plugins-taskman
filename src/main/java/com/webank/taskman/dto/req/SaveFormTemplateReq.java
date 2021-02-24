@@ -3,7 +3,7 @@ package com.webank.taskman.dto.req;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RoleDto;
 
 public class SaveFormTemplateReq {
 
@@ -31,7 +31,7 @@ public class SaveFormTemplateReq {
     private String outputAttrDef;
     private String otherAttrDef;
 
-    private List<RoleDTO> useRole;
+    private List<RoleDto> useRole;
 
     private List<SaveFormItemTemplateReq> formItems = new LinkedList<>();
 
@@ -132,11 +132,11 @@ public class SaveFormTemplateReq {
         this.otherAttrDef = otherAttrDef;
     }
 
-    public List<RoleDTO> getUseRole() {
+    public List<RoleDto> getUseRole() {
         return useRole;
     }
 
-    public void setUseRole(List<RoleDTO> useRole) {
+    public void setUseRole(List<RoleDto> useRole) {
         this.useRole = useRole;
     }
 

@@ -3,7 +3,7 @@ package com.webank.taskman.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RequestTemplateDTO {
+public class RequestTemplateDto {
 
     private String id;
 
@@ -26,15 +26,15 @@ public class RequestTemplateDTO {
 
     private String status;
 
-    private List<RoleDTO> useRoles = new ArrayList<>();
+    private List<RoleDto> useRoles = new ArrayList<>();
 
-    private List<RoleDTO> manageRoles = new ArrayList<>();
+    private List<RoleDto> manageRoles = new ArrayList<>();
 
     public String getId() {
         return id;
     }
 
-    public RequestTemplateDTO setId(String id) {
+    public RequestTemplateDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -43,7 +43,7 @@ public class RequestTemplateDTO {
         return requestTempGroup;
     }
 
-    public RequestTemplateDTO setRequestTempGroup(String requestTempGroup) {
+    public RequestTemplateDto setRequestTempGroup(String requestTempGroup) {
         this.requestTempGroup = requestTempGroup;
         return this;
     }
@@ -60,7 +60,7 @@ public class RequestTemplateDTO {
         return procDefKey;
     }
 
-    public RequestTemplateDTO setProcDefKey(String procDefKey) {
+    public RequestTemplateDto setProcDefKey(String procDefKey) {
         this.procDefKey = procDefKey;
         return this;
     }
@@ -69,7 +69,7 @@ public class RequestTemplateDTO {
         return procDefId;
     }
 
-    public RequestTemplateDTO setProcDefId(String procDefId) {
+    public RequestTemplateDto setProcDefId(String procDefId) {
         this.procDefId = procDefId;
         return this;
     }
@@ -78,7 +78,7 @@ public class RequestTemplateDTO {
         return procDefName;
     }
 
-    public RequestTemplateDTO setProcDefName(String procDefName) {
+    public RequestTemplateDto setProcDefName(String procDefName) {
         this.procDefName = procDefName;
         return this;
     }
@@ -87,7 +87,7 @@ public class RequestTemplateDTO {
         return name;
     }
 
-    public RequestTemplateDTO setName(String name) {
+    public RequestTemplateDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -104,7 +104,7 @@ public class RequestTemplateDTO {
         return version;
     }
 
-    public RequestTemplateDTO setVersion(String version) {
+    public RequestTemplateDto setVersion(String version) {
         this.version = version;
         return this;
     }
@@ -113,7 +113,7 @@ public class RequestTemplateDTO {
         return tags;
     }
 
-    public RequestTemplateDTO setTags(String tags) {
+    public RequestTemplateDto setTags(String tags) {
         this.tags = tags;
         return this;
     }
@@ -122,24 +122,24 @@ public class RequestTemplateDTO {
         return status;
     }
 
-    public RequestTemplateDTO setStatus(String status) {
+    public RequestTemplateDto setStatus(String status) {
         this.status = status;
         return this;
     }
 
-    public List<RoleDTO> getUseRoles() {
+    public List<RoleDto> getUseRoles() {
         return useRoles;
     }
 
-    public void setUseRoles(List<RoleDTO> useRoles) {
+    public void setUseRoles(List<RoleDto> useRoles) {
         this.useRoles = useRoles;
     }
 
-    public List<RoleDTO> getManageRoles() {
+    public List<RoleDto> getManageRoles() {
         return manageRoles;
     }
 
-    public void setManageRoles(List<RoleDTO> manageRoles) {
+    public void setManageRoles(List<RoleDto> manageRoles) {
         this.manageRoles = manageRoles;
     }
 

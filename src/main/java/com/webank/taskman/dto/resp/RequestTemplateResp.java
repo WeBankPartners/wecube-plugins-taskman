@@ -3,7 +3,7 @@ package com.webank.taskman.dto.resp;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RoleDto;
 
 public class RequestTemplateResp  {
 
@@ -18,8 +18,8 @@ public class RequestTemplateResp  {
     private String version;
     private String tags;
     private String status;
-    private List<RoleDTO> useRoles = new ArrayList<>();
-    private List<RoleDTO> manageRoles = new ArrayList<>();
+    private List<RoleDto> useRoles = new ArrayList<>();
+    private List<RoleDto> manageRoles = new ArrayList<>();
 
     private FormTemplateResp formTemplateResp;
 
@@ -122,20 +122,20 @@ public class RequestTemplateResp  {
         return this;
     }
 
-    public List<RoleDTO> getUseRoles() {
+    public List<RoleDto> getUseRoles() {
         return useRoles;
     }
 
-    public RequestTemplateResp setUseRoles(List<RoleDTO> useRoles) {
+    public RequestTemplateResp setUseRoles(List<RoleDto> useRoles) {
         this.useRoles = useRoles;
         return this;
     }
 
-    public List<RoleDTO> getManageRoles() {
+    public List<RoleDto> getManageRoles() {
         return manageRoles;
     }
 
-    public RequestTemplateResp setManageRoles(List<RoleDTO> manageRoles) {
+    public RequestTemplateResp setManageRoles(List<RoleDto> manageRoles) {
         this.manageRoles = manageRoles;
         return this;
     }

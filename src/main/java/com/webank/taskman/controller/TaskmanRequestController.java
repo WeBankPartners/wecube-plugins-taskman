@@ -29,8 +29,8 @@ import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.CreateTaskDto;
-import com.webank.taskman.dto.RequestTemplateDTO;
-import com.webank.taskman.dto.RequestTemplateGroupDTO;
+import com.webank.taskman.dto.RequestTemplateDto;
+import com.webank.taskman.dto.RequestTemplateGroupDto;
 import com.webank.taskman.dto.req.QueryRequestInfoReq;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
@@ -65,7 +65,7 @@ public class TaskmanRequestController {
 
     @PostMapping("/template/group/search/{page}/{pageSize}")
     public JsonResponse requestGroupTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDTO req)
+            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDto req)
             throws TaskmanRuntimeException {
         return JsonResponse
                 .okayWithData(requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req));
@@ -75,7 +75,7 @@ public class TaskmanRequestController {
     public JsonResponse requestGroupTemplateAvailable() {
         LambdaQueryWrapper lambdaQueryWrapper = new RequestTemplateGroup().setStatus(RequestTemplateGroup.STATUS_AVAILABLE)
                 .getLambdaQueryWrapper();
-        List<RequestTemplateGroupDTO> dtoList = requestTemplateGroupConverter
+        List<RequestTemplateGroupDto> dtoList = requestTemplateGroupConverter
                 .toDto(requestTemplateGroupService.list(lambdaQueryWrapper));
         return JsonResponse.okayWithData(dtoList);
     }
@@ -88,7 +88,7 @@ public class TaskmanRequestController {
 
     @PostMapping("/template/save")
     public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req) {
-        RequestTemplateDTO requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
+        RequestTemplateDto requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
 
@@ -108,13 +108,13 @@ public class TaskmanRequestController {
         requestTemplate.setUpdatedTime(new Date());
         requestTemplateService.updateById(requestTemplate);
         return okayWithData(
-                new RequestTemplateDTO().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
+                new RequestTemplateDto().setId(requestTemplate.getId()).setStatus(requestTemplate.getStatus()));
     }
 
     @PostMapping("/template/search/{page}/{pageSize}")
     public JsonResponse requestTemplateSearch(@PathVariable("page") Integer page,
             @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestTemplateReq req) {
-        QueryResponse<RequestTemplateDTO> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
+        QueryResponse<RequestTemplateDto> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
                 pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }

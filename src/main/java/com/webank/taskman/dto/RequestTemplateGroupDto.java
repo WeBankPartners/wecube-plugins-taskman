@@ -2,7 +2,7 @@ package com.webank.taskman.dto;
 
 import java.util.StringJoiner;
 
-public class RequestTemplateGroupDTO {
+public class RequestTemplateGroupDto {
 
     private String id;
 
@@ -22,7 +22,7 @@ public class RequestTemplateGroupDTO {
         return id;
     }
 
-    public RequestTemplateGroupDTO setId(String id) {
+    public RequestTemplateGroupDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -77,7 +77,7 @@ public class RequestTemplateGroupDTO {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RequestTemplateGroupDTO.class.getSimpleName() + "[", "]").add("id='" + id + "'")
+        return new StringJoiner(", ", RequestTemplateGroupDto.class.getSimpleName() + "[", "]").add("id='" + id + "'")
                 .add("name='" + name + "'").add("description='" + description + "'").add("version='" + version + "'")
                 .add("status=" + status).add("manageRoleId='" + manageRoleId + "'")
                 .add("manageRoleName='" + manageRoleName + "'").toString();

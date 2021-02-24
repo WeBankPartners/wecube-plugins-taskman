@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.dto.TaskInfoDTO;
+import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.QueryTemplateReq;
@@ -66,18 +66,18 @@ public class TaskmanTaskController {
         if (!StringUtils.isEmpty(req.getIsMy())) {
             req.setReporter(AuthenticationContextHolder.getCurrentUsername());
         }
-        QueryResponse<TaskInfoDTO> queryResponse = taskInfoService.selectTaskInfo(page, pageSize, req);
+        QueryResponse<TaskInfoDto> queryResponse = taskInfoService.selectTaskInfo(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
     @PostMapping("/details")
-    public JsonResponse taskInfoDetail(@RequestBody TaskInfoDTO req) {
+    public JsonResponse taskInfoDetail(@RequestBody TaskInfoDto req) {
         return JsonResponse.okayWithData(taskInfoService.taskInfoDetail(req.getId()));
     }
 
     @PostMapping("/receive")
-    public JsonResponse taskInfoReceive(@RequestBody TaskInfoDTO req) {
-        TaskInfoDTO taskDTO = taskInfoService.taskInfoReceive(req.getId());
+    public JsonResponse taskInfoReceive(@RequestBody TaskInfoDto req) {
+        TaskInfoDto taskDTO = taskInfoService.taskInfoReceive(req.getId());
         if (null == taskDTO.getId()) {
             return JsonResponse.error("The task is not in an unclaimed state");
         }

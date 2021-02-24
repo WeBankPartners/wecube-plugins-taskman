@@ -22,9 +22,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
@@ -62,7 +60,7 @@ public class TaskmanRequestController {
 
     @PostMapping("/template/group/save")
     public JsonResponse requestGroupTemplateSave(@Valid @RequestBody SaveRequestTemplateGropReq req)
-            throws TaskmanException {
+            {
         return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
@@ -97,14 +95,14 @@ public class TaskmanRequestController {
     }
 
     @PostMapping("/template/release")
-    public JsonResponse requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) throws TaskmanRuntimeException {
-        if (StringUtils.isEmpty(req.getId())) {
-            return JsonResponse.customError(StatusCodeEnum.PARAM_ISNULL);
+    public JsonResponse requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) {
+        if (StringUtils.isBlank(req.getId())) {
+            throw new TaskmanRuntimeException("Request template ID should provide.");
         }
         RequestTemplate requestTemplate = requestTemplateService
                 .getOne(new RequestTemplate().setId(req.getId()).getLambdaQueryWrapper());
         if (null == requestTemplate) {
-            return JsonResponse.customError(StatusCodeEnum.NOT_FOUND_RECORD);
+            return JsonResponse.error("Request template does not find.");
         }
         requestTemplate.setStatus(StatusEnum.UNRELEASED.toString().equals(requestTemplate.getStatus())
                 ? StatusEnum.RELEASED.toString() : StatusEnum.UNRELEASED.toString());

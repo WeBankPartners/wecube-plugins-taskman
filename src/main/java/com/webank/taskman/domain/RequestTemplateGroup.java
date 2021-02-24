@@ -1,15 +1,15 @@
 package com.webank.taskman.domain;
 
+import java.io.Serializable;
+
+import org.springframework.util.StringUtils;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.webank.taskman.base.BaseEntity;
-import org.springframework.util.StringUtils;
-
-import java.io.Serializable;
-import java.util.Date;
 
 public class RequestTemplateGroup extends BaseEntity implements Serializable {
 

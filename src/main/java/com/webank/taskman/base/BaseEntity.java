@@ -1,13 +1,12 @@
 package com.webank.taskman.base;
 
+import java.util.Date;
+
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.webank.taskman.commons.AuthenticationContextHolder;
 
-import java.util.Date;
-
-public class BaseEntity<T> {
+public class BaseEntity {
 
     private String createdBy;
 
@@ -61,13 +60,4 @@ public class BaseEntity<T> {
     public void setDelFlag(Integer delFlag) {
         this.delFlag = delFlag;
     }
-
-//    public void setCurrenUserName(BaseEntity entity, String Id) {
-//        // if(StringUtils.isEmpty(Id)){
-//        // entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
-//        // }
-//        entity.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
-//        entity.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
-//
-//    }
 }

@@ -79,7 +79,7 @@ public class TaskmanTaskController {
     public JsonResponse taskInfoReceive(@RequestBody TaskInfoDTO req) {
         TaskInfoDTO taskDTO = taskInfoService.taskInfoReceive(req.getId());
         if (null == taskDTO.getId()) {
-            return JsonResponse.customError("The task is not in an unclaimed state");
+            return JsonResponse.error("The task is not in an unclaimed state");
         }
         return JsonResponse.okayWithData(taskDTO);
     }

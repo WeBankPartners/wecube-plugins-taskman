@@ -1,14 +1,18 @@
 package com.webank.taskman.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.commons.TaskmanException;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusCodeEnum;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
@@ -16,12 +20,6 @@ import com.webank.taskman.dto.RequestTemplateGroupDTO;
 import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.Date;
 
 @Service
 public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplateGroupMapper, RequestTemplateGroup>
@@ -35,7 +33,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
     @Override
     @Transactional
-    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGropReq req) throws TaskmanException {
+    public RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGropReq req){
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
         // requestTemplateGroup.setCurrenUserName(requestTemplateGroup,requestTemplateGroup.getId());
         requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
@@ -44,7 +42,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         if (!StringUtils.isEmpty(requestTemplateGroup.getId())) {
             RequestTemplateGroup query = this.getById(requestTemplateGroup.getId());
             if (null == query) {
-                throw new TaskmanRuntimeException(StatusCodeEnum.NOT_FOUND_RECORD);
+                throw new TaskmanRuntimeException("NOT_FOUND_RECORD");
             }
             requestTemplateGroup.setUpdatedTime(new Date());
             update(requestTemplateGroup.getUpdateWrapper());

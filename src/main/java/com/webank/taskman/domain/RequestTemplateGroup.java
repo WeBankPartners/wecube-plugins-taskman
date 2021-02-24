@@ -150,8 +150,4 @@ public class RequestTemplateGroup extends BaseEntity implements Serializable {
         ", delFlag=" + getDelFlag() +
         "}";
     }
-
-    public  enum  RequestTemplateGroupStatus{
-
-    }
 }

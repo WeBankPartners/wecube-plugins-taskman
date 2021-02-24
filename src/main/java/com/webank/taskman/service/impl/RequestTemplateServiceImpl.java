@@ -21,7 +21,7 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateReq;
+import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
@@ -70,7 +70,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     @Transactional
-    public RequestTemplateDto saveRequestTemplate(SaveRequestTemplateReq req) {
+    public RequestTemplateDto saveRequestTemplate(RequestTemplateSaveReqDto req) {
         List<RoleDto> roles = roleRelationConverter
                 .rolesDataResponseToDtoList(coreServiceStub.getAllAuthRolesOfCurrentUser());
         Set<RoleDto> ts = new HashSet<RoleDto>(roles);

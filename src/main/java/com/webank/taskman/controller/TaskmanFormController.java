@@ -18,7 +18,7 @@ import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.FormItemTemplateDto;
-import com.webank.taskman.dto.req.SaveFormTemplateReq;
+import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
@@ -37,7 +37,7 @@ public class TaskmanFormController {
     private FormItemTemplateConverter formItemTemplateConverter;
 
     @PostMapping("/template/save")
-    public JsonResponse createFormTemplate(@Valid @RequestBody SaveFormTemplateReq req) {
+    public JsonResponse createFormTemplate(@Valid @RequestBody FormTemplateSaveReqDto req) {
 
         FormTemplateResp formTemplateResp = formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);
@@ -53,7 +53,7 @@ public class TaskmanFormController {
     public JsonResponse formTemplateDetail(@PathVariable("tempType") String tempType,
             @PathVariable("tempId") String tempId) {
         return JsonResponse
-                .okayWithData(formTemplateService.detailFormTemplate(new SaveFormTemplateReq(tempId, tempType)));
+                .okayWithData(formTemplateService.detailFormTemplate(new FormTemplateSaveReqDto(tempId, tempType)));
     }
 
     @DeleteMapping("/item/delete/{id}")

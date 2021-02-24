@@ -17,7 +17,7 @@ import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
-import com.webank.taskman.dto.req.SaveRequestTemplateGroupReq;
+import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 
@@ -33,7 +33,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
     @Override
     @Transactional
-    public RequestTemplateGroupDto saveTemplateGroupByReq(SaveRequestTemplateGroupReq req) {
+    public RequestTemplateGroupDto saveTemplateGroupByReq(RequestTemplateGroupSaveReqDto req) {
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
         requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateGroup.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());

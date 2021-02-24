@@ -1,6 +1,6 @@
 package com.webank.taskman.dto.req;
 
-public class SaveRequestTemplateGroupReq {
+public class RequestTemplateGroupSaveReqDto {
 
     private String id;
     private String name;
@@ -62,7 +62,7 @@ public class SaveRequestTemplateGroupReq {
         return status;
     }
 
-    public SaveRequestTemplateGroupReq setStatus(String status) {
+    public RequestTemplateGroupSaveReqDto setStatus(String status) {
         this.status = status;
         return this;
     }

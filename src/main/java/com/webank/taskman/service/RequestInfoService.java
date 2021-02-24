@@ -7,7 +7,7 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.req.QueryRequestInfoReq;
-import com.webank.taskman.dto.req.SaveRequestInfoReq;
+import com.webank.taskman.dto.req.RequestInfoSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;

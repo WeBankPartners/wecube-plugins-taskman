@@ -20,7 +20,7 @@ import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
-import com.webank.taskman.dto.req.SaveFormTemplateReq;
+import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.FormTemplateResp;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
@@ -42,7 +42,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     private FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
-    public QueryResponse<FormTemplateResp> selectFormTemplate(Integer page, Integer pageSize, SaveFormTemplateReq req) {
+    public QueryResponse<FormTemplateResp> selectFormTemplate(Integer page, Integer pageSize, FormTemplateSaveReqDto req) {
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(new Page<>(page, pageSize),
                 formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper());
         List<FormTemplateResp> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
@@ -62,7 +62,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public FormTemplateResp detailFormTemplate(SaveFormTemplateReq req) {
+    public FormTemplateResp detailFormTemplate(FormTemplateSaveReqDto req) {
 
         FormTemplateResp formTemplateResp = formTemplateConverter
                 .toDto(formTemplateMapper.selectOne(formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper()));
@@ -75,7 +75,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateResp saveFormTemplateByReq(SaveFormTemplateReq formTemplateReq) {
+    public FormTemplateResp saveFormTemplateByReq(FormTemplateSaveReqDto formTemplateReq) {
         FormTemplate formTemplate = formTemplateConverter.reqToDomain(formTemplateReq);
 
         formTemplate.setName(StringUtils.isEmpty(formTemplate.getName()) ? "" : formTemplate.getName());

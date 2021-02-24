@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.webank.taskman.dto.RoleDto;
 
-public class SaveRequestTemplateReq {
+public class RequestTemplateSaveReqDto {
     private String id;
     private String requestTempGroup;
     private String procDefId;

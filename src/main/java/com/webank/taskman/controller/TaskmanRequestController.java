@@ -34,8 +34,8 @@ import com.webank.taskman.dto.RequestTemplateGroupDto;
 import com.webank.taskman.dto.req.QueryRequestInfoReq;
 import com.webank.taskman.dto.req.QueryRequestTemplateReq;
 import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateGroupReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateReq;
+import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
+import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResq;
 import com.webank.taskman.dto.resp.RequestTemplateResp;
 import com.webank.taskman.service.RequestInfoService;
@@ -59,7 +59,7 @@ public class TaskmanRequestController {
     private RequestInfoService requestInfoService;
 
     @PostMapping("/template/group/save")
-    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody SaveRequestTemplateGroupReq req) {
+    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody RequestTemplateGroupSaveReqDto req) {
         return JsonResponse.okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
@@ -87,13 +87,13 @@ public class TaskmanRequestController {
     }
 
     @PostMapping("/template/save")
-    public JsonResponse requestTemplateSave(@Valid @RequestBody SaveRequestTemplateReq req) {
+    public JsonResponse requestTemplateSave(@Valid @RequestBody RequestTemplateSaveReqDto req) {
         RequestTemplateDto requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
         return JsonResponse.okayWithData(requestTemplateDTO);
     }
 
     @PostMapping("/template/release")
-    public JsonResponse requestTemplateRelease(@RequestBody SaveRequestTemplateReq req) {
+    public JsonResponse requestTemplateRelease(@RequestBody RequestTemplateSaveReqDto req) {
         if (StringUtils.isBlank(req.getId())) {
             throw new TaskmanRuntimeException("Request template ID should provide.");
         }

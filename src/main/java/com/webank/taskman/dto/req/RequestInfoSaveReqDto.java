@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 
 @ApiModel(value = "AddRequestInfoReq",description = "add RequestInfo req")
-public class SaveRequestInfoReq {
+public class RequestInfoSaveReqDto {
 
     @ApiModelProperty(value = "主键",required = false,dataType = "String",position = 100)
     private String id;
@@ -36,7 +36,7 @@ public class SaveRequestInfoReq {
         return id;
     }
 
-    public SaveRequestInfoReq setId(String id) {
+    public RequestInfoSaveReqDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -45,7 +45,7 @@ public class SaveRequestInfoReq {
         return requestTempId;
     }
 
-    public SaveRequestInfoReq setRequestTempId(String requestTempId) {
+    public RequestInfoSaveReqDto setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
         return this;
     }
@@ -54,7 +54,7 @@ public class SaveRequestInfoReq {
         return rootEntity;
     }
 
-    public SaveRequestInfoReq setRootEntity(String rootEntity) {
+    public RequestInfoSaveReqDto setRootEntity(String rootEntity) {
         this.rootEntity = rootEntity;
         return this;
     }
@@ -63,7 +63,7 @@ public class SaveRequestInfoReq {
         return emergency;
     }
 
-    public SaveRequestInfoReq setEmergency(String emergency) {
+    public RequestInfoSaveReqDto setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -72,7 +72,7 @@ public class SaveRequestInfoReq {
         return name;
     }
 
-    public SaveRequestInfoReq setName(String name) {
+    public RequestInfoSaveReqDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -81,7 +81,7 @@ public class SaveRequestInfoReq {
         return description;
     }
 
-    public SaveRequestInfoReq setDescription(String description) {
+    public RequestInfoSaveReqDto setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -90,7 +90,7 @@ public class SaveRequestInfoReq {
         return status;
     }
 
-    public SaveRequestInfoReq setStatus(String status) {
+    public RequestInfoSaveReqDto setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -99,7 +99,7 @@ public class SaveRequestInfoReq {
         return formItems;
     }
 
-    public SaveRequestInfoReq setFormItems(List<FormItemInfoRequestDto> formItems) {
+    public RequestInfoSaveReqDto setFormItems(List<FormItemInfoRequestDto> formItems) {
         this.formItems = formItems;
         return this;
     }

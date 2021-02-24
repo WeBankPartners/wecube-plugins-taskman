@@ -2,7 +2,7 @@ package com.webank.taskman.dto.req;
 
 import java.util.StringJoiner;
 
-public class SaveFormItemTemplateReq {
+public class FormItemTemplateSaveReqDto {
 
     private String formTemplateId;
     private String name;
@@ -37,7 +37,7 @@ public class SaveFormItemTemplateReq {
         return formTemplateId;
     }
 
-    public SaveFormItemTemplateReq setFormTemplateId(String formTemplateId) {
+    public FormItemTemplateSaveReqDto setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
         return this;
     }
@@ -46,7 +46,7 @@ public class SaveFormItemTemplateReq {
         return name;
     }
 
-    public SaveFormItemTemplateReq setName(String name) {
+    public FormItemTemplateSaveReqDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -55,7 +55,7 @@ public class SaveFormItemTemplateReq {
         return defaultValue;
     }
 
-    public SaveFormItemTemplateReq setDefaultValue(String defaultValue) {
+    public FormItemTemplateSaveReqDto setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
@@ -64,7 +64,7 @@ public class SaveFormItemTemplateReq {
         return isCurrency;
     }
 
-    public SaveFormItemTemplateReq setIsCurrency(Integer isCurrency) {
+    public FormItemTemplateSaveReqDto setIsCurrency(Integer isCurrency) {
         this.isCurrency = isCurrency;
         return this;
     }
@@ -73,7 +73,7 @@ public class SaveFormItemTemplateReq {
         return sort;
     }
 
-    public SaveFormItemTemplateReq setSort(Integer sort) {
+    public FormItemTemplateSaveReqDto setSort(Integer sort) {
         this.sort = sort;
         return this;
     }
@@ -82,7 +82,7 @@ public class SaveFormItemTemplateReq {
         return packageName;
     }
 
-    public SaveFormItemTemplateReq setPackageName(String packageName) {
+    public FormItemTemplateSaveReqDto setPackageName(String packageName) {
         this.packageName = packageName;
         return this;
     }
@@ -91,7 +91,7 @@ public class SaveFormItemTemplateReq {
         return entity;
     }
 
-    public SaveFormItemTemplateReq setEntity(String entity) {
+    public FormItemTemplateSaveReqDto setEntity(String entity) {
         this.entity = entity;
         return this;
     }
@@ -100,7 +100,7 @@ public class SaveFormItemTemplateReq {
         return entityId;
     }
 
-    public SaveFormItemTemplateReq setEntityId(String entityId) {
+    public FormItemTemplateSaveReqDto setEntityId(String entityId) {
         this.entityId = entityId;
         return this;
     }
@@ -109,7 +109,7 @@ public class SaveFormItemTemplateReq {
         return attrDefId;
     }
 
-    public SaveFormItemTemplateReq setAttrDefId(String attrDefId) {
+    public FormItemTemplateSaveReqDto setAttrDefId(String attrDefId) {
         this.attrDefId = attrDefId;
         return this;
     }
@@ -118,7 +118,7 @@ public class SaveFormItemTemplateReq {
         return attrDefDataType;
     }
 
-    public SaveFormItemTemplateReq setAttrDefDataType(String attrDefDataType) {
+    public FormItemTemplateSaveReqDto setAttrDefDataType(String attrDefDataType) {
         this.attrDefDataType = attrDefDataType;
         return this;
     }
@@ -127,7 +127,7 @@ public class SaveFormItemTemplateReq {
         return elementType;
     }
 
-    public SaveFormItemTemplateReq setElementType(String elementType) {
+    public FormItemTemplateSaveReqDto setElementType(String elementType) {
         this.elementType = elementType;
         return this;
     }
@@ -136,7 +136,7 @@ public class SaveFormItemTemplateReq {
         return title;
     }
 
-    public SaveFormItemTemplateReq setTitle(String title) {
+    public FormItemTemplateSaveReqDto setTitle(String title) {
         this.title = title;
         return this;
     }
@@ -145,7 +145,7 @@ public class SaveFormItemTemplateReq {
         return width;
     }
 
-    public SaveFormItemTemplateReq setWidth(Integer width) {
+    public FormItemTemplateSaveReqDto setWidth(Integer width) {
         this.width = width;
         return this;
     }
@@ -154,7 +154,7 @@ public class SaveFormItemTemplateReq {
         return refEntity;
     }
 
-    public SaveFormItemTemplateReq setRefEntity(String refEntity) {
+    public FormItemTemplateSaveReqDto setRefEntity(String refEntity) {
         this.refEntity = refEntity;
         return this;
     }
@@ -163,7 +163,7 @@ public class SaveFormItemTemplateReq {
         return refPackageName;
     }
 
-    public SaveFormItemTemplateReq setRefPackageName(String refPackageName) {
+    public FormItemTemplateSaveReqDto setRefPackageName(String refPackageName) {
         this.refPackageName = refPackageName;
         return this;
     }
@@ -172,7 +172,7 @@ public class SaveFormItemTemplateReq {
         return refFilters;
     }
 
-    public SaveFormItemTemplateReq setRefFilters(String refFilters) {
+    public FormItemTemplateSaveReqDto setRefFilters(String refFilters) {
         this.refFilters = refFilters;
         return this;
     }
@@ -181,7 +181,7 @@ public class SaveFormItemTemplateReq {
         return routineExp;
     }
 
-    public SaveFormItemTemplateReq setRoutineExp(String routineExp) {
+    public FormItemTemplateSaveReqDto setRoutineExp(String routineExp) {
         this.routineExp = routineExp;
         return this;
     }
@@ -190,7 +190,7 @@ public class SaveFormItemTemplateReq {
         return dataOptions;
     }
 
-    public SaveFormItemTemplateReq setDataOptions(String dataOptions) {
+    public FormItemTemplateSaveReqDto setDataOptions(String dataOptions) {
         this.dataOptions = dataOptions;
         return this;
     }
@@ -199,7 +199,7 @@ public class SaveFormItemTemplateReq {
         return required;
     }
 
-    public SaveFormItemTemplateReq setRequired(Integer required) {
+    public FormItemTemplateSaveReqDto setRequired(Integer required) {
         this.required = required;
         return this;
     }
@@ -208,7 +208,7 @@ public class SaveFormItemTemplateReq {
         return regular;
     }
 
-    public SaveFormItemTemplateReq setRegular(String regular) {
+    public FormItemTemplateSaveReqDto setRegular(String regular) {
         this.regular = regular;
         return this;
     }
@@ -217,7 +217,7 @@ public class SaveFormItemTemplateReq {
         return isEdit;
     }
 
-    public SaveFormItemTemplateReq setIsEdit(Integer isEdit) {
+    public FormItemTemplateSaveReqDto setIsEdit(Integer isEdit) {
         this.isEdit = isEdit;
         return this;
     }
@@ -226,14 +226,14 @@ public class SaveFormItemTemplateReq {
         return isView;
     }
 
-    public SaveFormItemTemplateReq setIsView(Integer isView) {
+    public FormItemTemplateSaveReqDto setIsView(Integer isView) {
         this.isView = isView;
         return this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", SaveFormItemTemplateReq.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", FormItemTemplateSaveReqDto.class.getSimpleName() + "[", "]")
                 .add("formTemplateId='" + formTemplateId + "'").add("name='" + name + "'")
                 .add("defaultValue='" + defaultValue + "'").add("isCurrency=" + isCurrency).add("sort=" + sort)
                 .add("packageName='" + packageName + "'").add("entity='" + entity + "'")

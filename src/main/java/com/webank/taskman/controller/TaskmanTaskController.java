@@ -19,7 +19,7 @@ import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.req.ProcessingTasksReq;
 import com.webank.taskman.dto.req.QueryTaskInfoReq;
 import com.webank.taskman.dto.req.QueryTemplateReq;
-import com.webank.taskman.dto.req.SaveTaskTemplateReq;
+import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
@@ -38,7 +38,7 @@ public class TaskmanTaskController {
     private TaskInfoService taskInfoService;
 
     @PostMapping("/template/save")
-    public JsonResponse taskTemplateSave(@Valid @RequestBody SaveTaskTemplateReq taskTemplateReq){
+    public JsonResponse taskTemplateSave(@Valid @RequestBody TaskTemplateSaveReqDto taskTemplateReq){
 
         TaskTemplateResp taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
         return JsonResponse.okayWithData(taskTemplateResp);

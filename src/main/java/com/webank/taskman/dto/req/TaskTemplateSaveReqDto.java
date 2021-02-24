@@ -5,7 +5,7 @@ import java.util.List;
 import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.dto.RoleDto;
 
-public class SaveTaskTemplateReq {
+public class TaskTemplateSaveReqDto {
 
     private String id;
     private String tempId;
@@ -31,7 +31,7 @@ public class SaveTaskTemplateReq {
     private List<RoleDto> manageRoles;
 
     // @ApiModelProperty(value = "任务表单模板", required = false, position = 11)
-    private SaveFormTemplateReq form;
+    private FormTemplateSaveReqDto form;
 
     public String getId() {
         return id;
@@ -45,7 +45,7 @@ public class SaveTaskTemplateReq {
         return tempId;
     }
 
-    public SaveTaskTemplateReq setTempId(String tempId) {
+    public TaskTemplateSaveReqDto setTempId(String tempId) {
         this.tempId = tempId;
         return this;
     }
@@ -122,13 +122,13 @@ public class SaveTaskTemplateReq {
         this.manageRoles = manageRoles;
     }
 
-    public SaveFormTemplateReq getForm() {
+    public FormTemplateSaveReqDto getForm() {
         this.form.setTempType(TemplateTypeEnum.TASK.getType());
         return form;
 
     }
 
-    public void setForm(SaveFormTemplateReq form) {
+    public void setForm(FormTemplateSaveReqDto form) {
         this.form = form;
     }
 }

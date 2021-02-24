@@ -23,8 +23,8 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.QueryTemplateReq;
-import com.webank.taskman.dto.req.SaveFormTemplateReq;
-import com.webank.taskman.dto.req.SaveTaskTemplateReq;
+import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
+import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.mapper.TaskTemplateMapper;
@@ -55,21 +55,20 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
 
     @Override
     @Transactional
-    public TaskTemplateResp saveTaskTemplateByReq(SaveTaskTemplateReq req) throws TaskmanRuntimeException {
+    public TaskTemplateResp saveTaskTemplateByReq(TaskTemplateSaveReqDto req) throws TaskmanRuntimeException {
         RequestTemplate requestTemplate = requestTemplateService.getById(req.getTempId());
-        if(null == requestTemplate){
+        if(requestTemplate == null){
             throw  new TaskmanRuntimeException("The RequestTemplate is not exists! id:"+req.getTempId());
         }
         TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
         taskTemplate.setRequestTemplateId(req.getTempId());
-//        taskTemplate.setCurrenUserName(taskTemplate, taskTemplate.getId());
         taskTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         saveOrUpdate(taskTemplate);
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 
-        SaveFormTemplateReq formTemplateReq = req.getForm();
+        FormTemplateSaveReqDto formTemplateReq = req.getForm();
         formTemplateReq.setTempId(taskTemplateId);
         formTemplateReq.setTempType(TemplateTypeEnum.TASK.getType());
         formTemplateService.saveFormTemplateByReq(req.getForm());
@@ -101,7 +100,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
 
     @Override
     public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplatePage(Integer page, Integer pageSize, QueryTemplateReq req) {
-        String inSql = req.getEqUseRole();
+        String inSql = QueryTemplateReq.getEqUseRole();
         LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
                 .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskTemplate::getId,inSql);
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize),queryWrapper);

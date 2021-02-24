@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.webank.taskman.dto.RoleDto;
 
-public class SaveFormTemplateReq {
+public class FormTemplateSaveReqDto {
 
     private String id;
 
@@ -33,12 +33,12 @@ public class SaveFormTemplateReq {
 
     private List<RoleDto> useRole;
 
-    private List<SaveFormItemTemplateReq> formItems = new LinkedList<>();
+    private List<FormItemTemplateSaveReqDto> formItems = new LinkedList<>();
 
-    public SaveFormTemplateReq() {
+    public FormTemplateSaveReqDto() {
     }
 
-    public SaveFormTemplateReq(String tempId, String tempType) {
+    public FormTemplateSaveReqDto(String tempId, String tempType) {
         this.tempId = tempId;
         this.tempType = tempType;
     }
@@ -71,7 +71,7 @@ public class SaveFormTemplateReq {
         return formType;
     }
 
-    public SaveFormTemplateReq setFormType(String formType) {
+    public FormTemplateSaveReqDto setFormType(String formType) {
         this.formType = formType;
         return this;
     }
@@ -140,11 +140,11 @@ public class SaveFormTemplateReq {
         this.useRole = useRole;
     }
 
-    public List<SaveFormItemTemplateReq> getFormItems() {
+    public List<FormItemTemplateSaveReqDto> getFormItems() {
         return formItems;
     }
 
-    public void setFormItems(List<SaveFormItemTemplateReq> formItems) {
+    public void setFormItems(List<FormItemTemplateSaveReqDto> formItems) {
         this.formItems = formItems;
     }
 }

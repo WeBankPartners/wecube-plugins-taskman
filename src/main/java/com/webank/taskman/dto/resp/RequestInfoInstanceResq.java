@@ -1,12 +1,9 @@
 package com.webank.taskman.dto.resp;
 
-import io.swagger.annotations.ApiModel;
-
 import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
 
-@ApiModel
 public class RequestInfoInstanceResq {
     private String id;
     private String requestTempId;

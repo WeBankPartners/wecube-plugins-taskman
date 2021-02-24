@@ -1,32 +1,21 @@
 package com.webank.taskman.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.StringJoiner;
 
-@ApiModel(value = "TemplateGroup respone object", description = "TemplateGroupDTO")
 public class RequestTemplateGroupDTO {
 
-    @ApiModelProperty(value = "主键", position = 1)
     private String id;
 
-    @ApiModelProperty(value = "名称", position = 2)
     private String name;
 
-    @ApiModelProperty(value = "描述", position = 3)
     private String description;
 
-    @ApiModelProperty(value = "版本号", position = 4)
     private String version;
 
-    @ApiModelProperty(value = "状态", position = 5)
     private String status;
 
-    @ApiModelProperty(value = "管理角色", position = 6)
     private String manageRoleId;
 
-    @ApiModelProperty(value = "管理角色姓名", position = 6)
     private String manageRoleName;
 
     public String getId() {
@@ -88,14 +77,9 @@ public class RequestTemplateGroupDTO {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RequestTemplateGroupDTO.class.getSimpleName() + "[", "]")
-                .add("id='" + id + "'")
-                .add("name='" + name + "'")
-                .add("description='" + description + "'")
-                .add("version='" + version + "'")
-                .add("status=" + status)
-                .add("manageRoleId='" + manageRoleId + "'")
-                .add("manageRoleName='" + manageRoleName + "'")
-                .toString();
+        return new StringJoiner(", ", RequestTemplateGroupDTO.class.getSimpleName() + "[", "]").add("id='" + id + "'")
+                .add("name='" + name + "'").add("description='" + description + "'").add("version='" + version + "'")
+                .add("status=" + status).add("manageRoleId='" + manageRoleId + "'")
+                .add("manageRoleName='" + manageRoleName + "'").toString();
     }
 }

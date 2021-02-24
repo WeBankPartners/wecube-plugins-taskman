@@ -1,8 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-import io.swagger.annotations.ApiModel;
-
-@ApiModel
 public class FormItemInfoResp {
     private String id;
 

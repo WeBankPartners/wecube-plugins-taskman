@@ -1,45 +1,29 @@
 package com.webank.taskman.dto.resp;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
 
 public class FormTemplateResp {
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
 
-    @ApiModelProperty(value = "",position = 2)
     private String tempId;
 
-    @ApiModelProperty(value = "",position = 3)
     private String tempType;
 
-    @ApiModelProperty(value = "",position = 4)
     private String formType;
 
-    @ApiModelProperty(value = "",position = 4)
     private String name;
 
-    @ApiModelProperty(value = "",position = 5)
     private String description;
 
-    @ApiModelProperty(value = "",position = 6)
     private String style;
 
-    @ApiModelProperty(value = "",position = 7)
     private String targetEntitys;
 
-    @ApiModelProperty(value = "",position = 8)
     private String inputAttrDef;
-
-    @ApiModelProperty(value = "",position = 9)
     private String outputAttrDef;
-
-    @ApiModelProperty(value = "",position = 10)
     private String otherAttrDef;
 
-    @ApiModelProperty(value = "",position = 11)
     private List<FormItemTemplateResp> items;
 
 

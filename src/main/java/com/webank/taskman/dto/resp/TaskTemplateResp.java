@@ -1,13 +1,11 @@
 package com.webank.taskman.dto.resp;
 
 
-import com.webank.taskman.dto.RoleDTO;
-import io.swagger.annotations.ApiModel;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel
+import com.webank.taskman.dto.RoleDTO;
+
 public class TaskTemplateResp {
     private String id;
 

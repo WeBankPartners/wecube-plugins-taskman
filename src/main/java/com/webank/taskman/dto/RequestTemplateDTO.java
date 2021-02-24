@@ -1,59 +1,34 @@
 package com.webank.taskman.dto;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@ApiModel
 public class RequestTemplateDTO {
 
-
-
-    @ApiModelProperty(value = "",position = 100)
     private String id;
 
-    @ApiModelProperty(value = "",position = 101)
     private String requestTempGroup;
 
     private String requestTempGroupName;
 
-    @ApiModelProperty(value = "",position = 102)
     private String procDefKey;
 
-
-    @ApiModelProperty(value = "",position = 103)
     private String procDefId;
 
-
-    @ApiModelProperty(value = "",position = 104)
     private String procDefName;
 
-
-    @ApiModelProperty(value = "",position = 105)
     private String name;
 
-
-    @ApiModelProperty(value = "",position = 106)
     private String description;
-    @ApiModelProperty(value = "",position = 106)
     private String version;
 
-
-    @ApiModelProperty(value = "",position = 107)
     private String tags;
 
-
-    @ApiModelProperty(value = "",position = 108)
     private String status;
 
-    @ApiModelProperty(value = "",position = 109)
     private List<RoleDTO> useRoles = new ArrayList<>();
 
-    @ApiModelProperty(value = "",position = 100)
     private List<RoleDTO> manageRoles = new ArrayList<>();
-
 
     public String getId() {
         return id;
@@ -170,20 +145,10 @@ public class RequestTemplateDTO {
 
     @Override
     public String toString() {
-        return "RequestTemplateDTO{" +
-                "id='" + id + '\'' +
-                ", requestTempGroup='" + requestTempGroup + '\'' +
-                ", requestTempGroupName='" + requestTempGroupName + '\'' +
-                ", procDefKey='" + procDefKey + '\'' +
-                ", procDefId='" + procDefId + '\'' +
-                ", procDefName='" + procDefName + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", version='" + version + '\'' +
-                ", tags='" + tags + '\'' +
-                ", status='" + status + '\'' +
-                ", useRoles=" + useRoles +
-                ", manageRoles=" + manageRoles +
-                '}';
+        return "RequestTemplateDTO{" + "id='" + id + '\'' + ", requestTempGroup='" + requestTempGroup + '\''
+                + ", requestTempGroupName='" + requestTempGroupName + '\'' + ", procDefKey='" + procDefKey + '\''
+                + ", procDefId='" + procDefId + '\'' + ", procDefName='" + procDefName + '\'' + ", name='" + name + '\''
+                + ", description='" + description + '\'' + ", version='" + version + '\'' + ", tags='" + tags + '\''
+                + ", status='" + status + '\'' + ", useRoles=" + useRoles + ", manageRoles=" + manageRoles + '}';
     }
 }

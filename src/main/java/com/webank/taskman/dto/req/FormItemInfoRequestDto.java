@@ -1,7 +1,6 @@
 package com.webank.taskman.dto.req;
 
-public class SaveFormItemInfoReq {
-
+public class FormItemInfoRequestDto {
 
     private String itemTempId;
 

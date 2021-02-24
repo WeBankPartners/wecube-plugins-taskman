@@ -1,31 +1,17 @@
 package com.webank.taskman.dto.req;
 
-
-import io.swagger.annotations.ApiModelProperty;
-
-
 public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
-    @ApiModelProperty(value = "",position = 2)
     private String requestTempId;
-    @ApiModelProperty(value = "",position = 3)
     private String requestTempName;
-    @ApiModelProperty(value = "",position = 4)
     private String name;
-    @ApiModelProperty(value = "",position = 5)
     private String description;
-    @ApiModelProperty(value = "",position = 6)
     private String reporter;
-    @ApiModelProperty(value = "",position = 7)
     private String emergency;
-    @ApiModelProperty(value = "",position = 8)
     private String status;
 
-    @ApiModelProperty(value = "",position = 9)
     private String reportTimeBegin;
-    @ApiModelProperty(value = "",position = 15)
     private String reportTimeEnd;
 
     public String getId() {
@@ -81,7 +67,6 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         this.reporter = reporter;
         return this;
     }
-
 
     public String getReportTimeBegin() {
         return reportTimeBegin;

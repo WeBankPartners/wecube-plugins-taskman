@@ -1,43 +1,22 @@
 package com.webank.taskman.dto;
 
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-@ApiModel
 public class FormItemTemplateDTO {
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
-    @ApiModelProperty(value = "",position = 2)
     private String formTemplateId;
-    @ApiModelProperty(value = "",position = 3)
     private String attrDefId;
-    @ApiModelProperty(value = "",position = 4)
     private String attrDataType;
-    @ApiModelProperty(value = "",position = 5)
     private String name;
-    @ApiModelProperty(value = "",position = 6)
     private String title;
-    @ApiModelProperty(value = "",position = 7)
     private String elementType;
-    @ApiModelProperty(value = "",position = 8)
     private String defaultValue;
-    @ApiModelProperty(value = "",position = 9)
     private Integer required;
-    @ApiModelProperty(value = "",position = 10)
     private Integer isEdit;
-    @ApiModelProperty(value = "",position = 11)
     private String regular;
-    @ApiModelProperty(value = "",position = 12)
     private Integer width;
-    @ApiModelProperty(value = "",position = 13)
     private Integer sort;
-    @ApiModelProperty(value = "",position = 14)
     private String entityId;
-    @ApiModelProperty(value = "",position = 15)
     private String entityFilters;
-    @ApiModelProperty(value = "",position = 16)
     private String dataOptions;
 
     public String getId() {

@@ -1,10 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-
-import io.swagger.annotations.ApiModel;
-
-
-@ApiModel
 public class TaskInfoInstanceResp {
     private String id;
     private String name;

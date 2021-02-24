@@ -1,7 +1,5 @@
 package com.webank.taskman.dto.resp;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
 
 public class TaskServiceMetaResp {
@@ -19,11 +17,8 @@ public class TaskServiceMetaResp {
 
     public static class TaskServiceMetaFormItem {
 
-        @ApiModelProperty(value = "",position = 1)
         private String itemId;
-        @ApiModelProperty(value = "",position = 2)
         private String key;
-        @ApiModelProperty(value = "",position = 3)
         private TaskServiceMetaValueDef valueDef;
 
         public String getItemId() {
@@ -50,28 +45,28 @@ public class TaskServiceMetaResp {
             this.valueDef = valueDef;
         }
 
-        public static class TaskServiceMetaValueDef {
+        
+    }
+    
+    public static class TaskServiceMetaValueDef {
 
-            @ApiModelProperty(value = "",position = 1)
-            private String type;
-            @ApiModelProperty(value = "",position = 2)
-            private String expr;
+        private String type;
+        private String expr;
 
-            public String getType() {
-                return type;
-            }
+        public String getType() {
+            return type;
+        }
 
-            public void setType(String type) {
-                this.type = type;
-            }
+        public void setType(String type) {
+            this.type = type;
+        }
 
-            public String getExpr() {
-                return expr;
-            }
+        public String getExpr() {
+            return expr;
+        }
 
-            public void setExpr(String expr) {
-                this.expr = expr;
-            }
+        public void setExpr(String expr) {
+            this.expr = expr;
         }
     }
 

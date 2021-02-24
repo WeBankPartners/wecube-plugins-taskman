@@ -29,7 +29,7 @@ public class SaveRequestInfoReq {
     @ApiModelProperty(value = "",required = false,position = 107)
     private String status;
 
-    private List<SaveFormItemInfoReq> formItems;
+    private List<FormItemInfoRequestDto> formItems;
 
 
     public String getId() {
@@ -95,11 +95,11 @@ public class SaveRequestInfoReq {
         return this;
     }
 
-    public List<SaveFormItemInfoReq> getFormItems() {
+    public List<FormItemInfoRequestDto> getFormItems() {
         return formItems;
     }
 
-    public SaveRequestInfoReq setFormItems(List<SaveFormItemInfoReq> formItems) {
+    public SaveRequestInfoReq setFormItems(List<FormItemInfoRequestDto> formItems) {
         this.formItems = formItems;
         return this;
     }

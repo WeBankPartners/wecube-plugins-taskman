@@ -1,33 +1,22 @@
 package com.webank.taskman.dto.req;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
 
-@ApiModel
-public class SaveFormInfoReq {
+public class FormInfoRequestDto {
 
-
-    @ApiModelProperty(value = "",required = true,position = 1)
     private String name;
 
-    @ApiModelProperty(value = "",position = 2)
     private String description;
 
-    @ApiModelProperty(value = "",position = 3)
     private String inputAttrDef;
 
-    @ApiModelProperty(value = "",position = 4)
     private String outputAttrDef;
 
-    @ApiModelProperty(value = "",position = 5)
     private String otherAttrDef;
 
-    @ApiModelProperty(value = "",position = 6)
     private String formType;
 
-    private List<SaveFormItemInfoReq> formItems;
+    private List<FormItemInfoRequestDto> formItems;
 
     public String getName() {
         return name;
@@ -73,18 +62,17 @@ public class SaveFormInfoReq {
         return formType;
     }
 
-    public SaveFormInfoReq setFormType(String formType) {
+    public FormInfoRequestDto setFormType(String formType) {
         this.formType = formType;
         return this;
     }
 
-    public List<SaveFormItemInfoReq> getFormItems() {
+    public List<FormItemInfoRequestDto> getFormItems() {
         return formItems;
     }
 
-    public void setFormItems(List<SaveFormItemInfoReq> formItems) {
+    public void setFormItems(List<FormItemInfoRequestDto> formItems) {
         this.formItems = formItems;
     }
-
 
 }

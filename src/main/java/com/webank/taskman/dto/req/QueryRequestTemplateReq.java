@@ -1,33 +1,21 @@
 package com.webank.taskman.dto.req;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq {
 
-@ApiModel(value = "AddRequestTemplateReq",description = "add RequestTemplate req")
-public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
-
-    @ApiModelProperty(value = "主键",required = false,dataType = "String",position = 100)
     private String id;
 
-    @ApiModelProperty(value = "模板组编号",required = false,dataType = "String",position = 101)
     private String requestTempGroup;
 
-    @ApiModelProperty(value = "流程编排Id",required = false,dataType = "String",position = 102)
     private String procDefId;
 
-    @ApiModelProperty(value = "流程编排key",required = false,dataType = "String",position = 103)
     private String procDefKey;
 
-    @ApiModelProperty(value = "流程编排名称",required = false,dataType = "String",position = 104)
     private String procDefName;
 
-    @ApiModelProperty(value = "请求模板名称",required = false,dataType = "String",position = 105)
     private String name;
 
-    @ApiModelProperty(value = "标签",required = false,dataType = "String",position = 107)
     private String tags;
 
-    @ApiModelProperty(value = "发布状态",required = false,dataType = "Integer",position = 108)
     private String status;
 
     public String getId() {
@@ -70,7 +58,6 @@ public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
         this.procDefName = procDefName;
     }
 
-
     public String getName() {
         return name;
     }
@@ -78,8 +65,6 @@ public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
     public void setName(String name) {
         this.name = name;
     }
-
-
 
     public String getStatus() {
         return status;
@@ -96,7 +81,5 @@ public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq{
     public void setTags(String tags) {
         this.tags = tags;
     }
-
-
 
 }

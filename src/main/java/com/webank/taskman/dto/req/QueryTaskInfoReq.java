@@ -1,33 +1,20 @@
 package com.webank.taskman.dto.req;
 
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Date;
 import java.util.StringJoiner;
 
-@ApiModel
 public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
 
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
-    @ApiModelProperty(value = "",position = 4)
     private String procInstId;
-    @ApiModelProperty(value = "",position = 5)
     private String nodeDefId;
-    @ApiModelProperty(value = "",position = 7)
     private String name;
-    @ApiModelProperty(value = "",position = 9)
     private String reporter;
-    @ApiModelProperty(value = "",position = 10)
     private Date reportTime;
-    @ApiModelProperty(value = "",position = 11)
     private String emergency;
-    @ApiModelProperty(value = "",position = 12)
     private String status;
-    @ApiModelProperty(value = "",position = 13)
     private String result;
 
     private String isMy;

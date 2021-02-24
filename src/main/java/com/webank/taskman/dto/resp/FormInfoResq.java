@@ -1,25 +1,15 @@
 package com.webank.taskman.dto.resp;
 
-import com.webank.taskman.domain.FormItemInfo;
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.List;
 
 public class FormInfoResq {
 
-    @ApiModelProperty(value = "",position = 1)
     private String id;
-    @ApiModelProperty(value = "",position = 2)
     private String recordId;
-    @ApiModelProperty(value = "",position = 3)
     private String formTemplateId;
-    @ApiModelProperty(value = "",position = 4)
     private String name;
-    @ApiModelProperty(value = "",position = 5)
     private Integer type;
-    @ApiModelProperty(value = "",position = 6)
     private String formType;
-    @ApiModelProperty(value = "",position = 7)
     private List<FormItemInfoResp> formItemInfo;
 
     public String getId() {

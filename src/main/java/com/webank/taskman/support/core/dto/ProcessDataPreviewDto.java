@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
-@ApiModel
 public class ProcessDataPreviewDto {
 
     private String processSessionId;
@@ -22,7 +21,6 @@ public class ProcessDataPreviewDto {
         this.entityTreeNodes = entityTreeNodes;
     }
 
-    @ApiModel
     public static class GraphNodeDto {
         /**
          * packageName : wecmdb

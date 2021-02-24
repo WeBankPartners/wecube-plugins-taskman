@@ -1,9 +1,8 @@
 package com.webank.taskman.support.core.dto;
 
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.springframework.util.StringUtils;
-
 import java.util.Objects;
+
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 
 public class PluginPackageAttributeDto {
     private String id;

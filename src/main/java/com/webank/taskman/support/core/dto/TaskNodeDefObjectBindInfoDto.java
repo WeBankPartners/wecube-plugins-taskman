@@ -5,59 +5,59 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TaskNodeDefObjectBindInfoDto {
 
-	private String nodeDefId;
-	private String orderedNo;
-	private String entityTypeId;
-	private String entityDataId;
-	private String entityDisplayName;
+    private String nodeDefId;
+    private String orderedNo;
+    private String entityTypeId;
+    private String entityDataId;
+    private String entityDisplayName;
 
-	private String bound;// "Y"-bound,default;"N"-unbound;
+    private String bound;// "Y"-bound,default;"N"-unbound;
 
-	public String getOrderedNo() {
-		return orderedNo;
-	}
+    public String getOrderedNo() {
+        return orderedNo;
+    }
 
-	public void setOrderedNo(String orderedNo) {
-		this.orderedNo = orderedNo;
-	}
+    public void setOrderedNo(String orderedNo) {
+        this.orderedNo = orderedNo;
+    }
 
-	public String getNodeDefId() {
-		return nodeDefId;
-	}
+    public String getNodeDefId() {
+        return nodeDefId;
+    }
 
-	public void setNodeDefId(String nodeDefId) {
-		this.nodeDefId = nodeDefId;
-	}
+    public void setNodeDefId(String nodeDefId) {
+        this.nodeDefId = nodeDefId;
+    }
 
-	public String getEntityTypeId() {
-		return entityTypeId;
-	}
+    public String getEntityTypeId() {
+        return entityTypeId;
+    }
 
-	public void setEntityTypeId(String entityTypeId) {
-		this.entityTypeId = entityTypeId;
-	}
+    public void setEntityTypeId(String entityTypeId) {
+        this.entityTypeId = entityTypeId;
+    }
 
-	public String getEntityDataId() {
-		return entityDataId;
-	}
+    public String getEntityDataId() {
+        return entityDataId;
+    }
 
-	public void setEntityDataId(String entityDataId) {
-		this.entityDataId = entityDataId;
-	}
+    public void setEntityDataId(String entityDataId) {
+        this.entityDataId = entityDataId;
+    }
 
-	public String getBound() {
-		return bound;
-	}
+    public String getBound() {
+        return bound;
+    }
 
-	public void setBound(String bound) {
-		this.bound = bound;
-	}
+    public void setBound(String bound) {
+        this.bound = bound;
+    }
 
-	public String getEntityDisplayName() {
-		return entityDisplayName;
-	}
+    public String getEntityDisplayName() {
+        return entityDisplayName;
+    }
 
-	public void setEntityDisplayName(String entityDisplayName) {
-		this.entityDisplayName = entityDisplayName;
-	}
+    public void setEntityDisplayName(String entityDisplayName) {
+        this.entityDisplayName = entityDisplayName;
+    }
 }

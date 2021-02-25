@@ -122,12 +122,8 @@
             <groupId>com.github.ulisesbocchio</groupId>
             <artifactId>jasypt-spring-boot-starter</artifactId>
         </dependency>
-        <!-- 
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>knife4j-spring-boot-starter</artifactId>
-        </dependency>
-         -->
+        <!-- <dependency> <groupId>com.github.xiaoymin</groupId> <artifactId>knife4j-spring-boot-starter</artifactId> 
+            </dependency> -->
 
         <dependency>
             <groupId>io.springfox</groupId>
@@ -201,13 +197,8 @@
                 <artifactId>mapstruct</artifactId>
                 <version>${org.mapstruct.version}</version>
             </dependency>
-            <!-- 
-            <dependency>
-                <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-spring-boot-starter</artifactId>
-                <version>${knife4j.version}</version>
-            </dependency>
-             -->
+            <!-- <dependency> <groupId>com.github.xiaoymin</groupId> <artifactId>knife4j-spring-boot-starter</artifactId> 
+                <version>${knife4j.version}</version> </dependency> -->
             <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-java-sdk-s3</artifactId>
@@ -245,8 +236,7 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <!-- 
-                     -->
+                    <!-- -->
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.mapstruct</groupId>
@@ -256,7 +246,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-                <!-- 
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -268,52 +257,19 @@
                     </execution>
                 </executions>
             </plugin>
-                 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <!-- 
-                <executions>
-                    <execution>
-                        <id>copy frontend content</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>src/main/resources/static</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>../taskman-ui/dist</directory>
-                                    <includes>
-                                        <include>**/*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>copy frontend content - index.html</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>src/main/resources/templates</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>../taskman-ui/dist</directory>
-                                    <includes>
-                                        <include>index.html</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-                 -->
+                <!-- <executions> <execution> <id>copy frontend content</id> 
+                    <phase>generate-resources</phase> <goals> <goal>copy-resources</goal> </goals> 
+                    <configuration> <outputDirectory>src/main/resources/static</outputDirectory> 
+                    <overwrite>true</overwrite> <resources> <resource> <directory>../taskman-ui/dist</directory> 
+                    <includes> <include>**/*</include> </includes> </resource> </resources> </configuration> 
+                    </execution> <execution> <id>copy frontend content - index.html</id> <phase>generate-resources</phase> 
+                    <goals> <goal>copy-resources</goal> </goals> <configuration> <outputDirectory>src/main/resources/templates</outputDirectory> 
+                    <overwrite>true</overwrite> <resources> <resource> <directory>../taskman-ui/dist</directory> 
+                    <includes> <include>index.html</include> </includes> </resource> </resources> 
+                    </configuration> </execution> </executions> -->
             </plugin>
         </plugins>
     </build>

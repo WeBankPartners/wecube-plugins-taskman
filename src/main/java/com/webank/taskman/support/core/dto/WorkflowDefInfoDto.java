@@ -1,8 +1,5 @@
 package com.webank.taskman.support.core.dto;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class WorkflowDefInfoDto {
     private String procDefId;
     private String procDefKey;

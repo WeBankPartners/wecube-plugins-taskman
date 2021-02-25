@@ -13,7 +13,6 @@ public class TaskTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
     private String requestTemplateId;
@@ -29,7 +28,8 @@ public class TaskTemplate extends BaseEntity implements Serializable {
     public TaskTemplate() {
     }
 
-    public TaskTemplate(String id, String procDefId, String procDefKey, String procDefName, String name, String nodeDefId, String nodeName, String description) {
+    public TaskTemplate(String id, String procDefId, String procDefKey, String procDefName, String name,
+            String nodeDefId, String nodeName, String description) {
         this.id = id;
         this.procDefId = procDefId;
         this.procDefKey = procDefKey;
@@ -42,17 +42,15 @@ public class TaskTemplate extends BaseEntity implements Serializable {
 
     @JsonIgnore
     public LambdaQueryWrapper<TaskTemplate> getLambdaQueryWrapper() {
-        return new LambdaQueryWrapper<TaskTemplate>()
-            .eq(!StringUtils.isEmpty(id), TaskTemplate::getId, id)
-            .eq(!StringUtils.isEmpty(requestTemplateId), TaskTemplate::getRequestTemplateId, requestTemplateId)
-            .eq(!StringUtils.isEmpty(procDefId), TaskTemplate::getProcDefId, procDefId)
-            .eq(!StringUtils.isEmpty(procDefKey), TaskTemplate::getProcDefKey, procDefKey)
-            .eq(!StringUtils.isEmpty(procDefName), TaskTemplate::getProcDefName, procDefName)
-            .like(!StringUtils.isEmpty(name), TaskTemplate::getName, name)
-            .eq(!StringUtils.isEmpty(nodeDefId), TaskTemplate::getNodeDefId, nodeDefId)
-            .eq(!StringUtils.isEmpty(nodeName), TaskTemplate::getNodeName, nodeName)
-            .eq(!StringUtils.isEmpty(description), TaskTemplate::getDescription, description)
-        ;
+        return new LambdaQueryWrapper<TaskTemplate>().eq(!StringUtils.isEmpty(id), TaskTemplate::getId, id)
+                .eq(!StringUtils.isEmpty(requestTemplateId), TaskTemplate::getRequestTemplateId, requestTemplateId)
+                .eq(!StringUtils.isEmpty(procDefId), TaskTemplate::getProcDefId, procDefId)
+                .eq(!StringUtils.isEmpty(procDefKey), TaskTemplate::getProcDefKey, procDefKey)
+                .eq(!StringUtils.isEmpty(procDefName), TaskTemplate::getProcDefName, procDefName)
+                .like(!StringUtils.isEmpty(name), TaskTemplate::getName, name)
+                .eq(!StringUtils.isEmpty(nodeDefId), TaskTemplate::getNodeDefId, nodeDefId)
+                .eq(!StringUtils.isEmpty(nodeName), TaskTemplate::getNodeName, nodeName)
+                .eq(!StringUtils.isEmpty(description), TaskTemplate::getDescription, description);
     }
 
     public String getId() {
@@ -138,17 +136,9 @@ public class TaskTemplate extends BaseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "TaskTemplate{" +
-                "id='" + id + '\'' +
-                ", procDefId='" + procDefId + '\'' +
-                ", procDefKey='" + procDefKey + '\'' +
-                ", procDefName='" + procDefName + '\'' +
-                ", name='" + name + '\'' +
-                ", nodeDefId='" + nodeDefId + '\'' +
-                ", nodeName='" + nodeName + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+        return "TaskTemplate{" + "id='" + id + '\'' + ", procDefId='" + procDefId + '\'' + ", procDefKey='" + procDefKey
+                + '\'' + ", procDefName='" + procDefName + '\'' + ", name='" + name + '\'' + ", nodeDefId='" + nodeDefId
+                + '\'' + ", nodeName='" + nodeName + '\'' + ", description='" + description + '\'' + '}';
     }
-
 
 }

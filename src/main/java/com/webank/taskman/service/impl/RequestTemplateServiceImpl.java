@@ -1,6 +1,5 @@
 package com.webank.taskman.service.impl;
 
-
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -19,18 +18,18 @@ import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
-import com.webank.taskman.dto.RequestTemplateDTO;
-import com.webank.taskman.dto.RoleDTO;
-import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.req.SaveRequestTemplateReq;
-import com.webank.taskman.dto.resp.FormTemplateResp;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.RequestTemplateDto;
+import com.webank.taskman.dto.RoleDto;
+import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
+import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
+import com.webank.taskman.dto.resp.FormTemplateRespDto;
+import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
-import com.webank.taskman.support.core.CoreServiceStub;
+import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,41 +38,42 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 @Service
-public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate> implements RequestTemplateService {
+public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate>
+        implements RequestTemplateService {
 
     @Autowired
-    RequestTemplateMapper requestTemplateMapper;
-
-
-    @Autowired
-    RequestTemplateConverter requestTemplateConverter;
-
+    private RequestTemplateMapper requestTemplateMapper;
 
     @Autowired
-    RoleRelationService roleRelationService;
+    private RequestTemplateConverter requestTemplateConverter;
 
     @Autowired
-    RoleRelationConverter roleRelationConverter;
+    private RoleRelationService roleRelationService;
 
     @Autowired
-    FormTemplateConverter formTemplateConverter;
+    private RoleRelationConverter roleRelationConverter;
 
     @Autowired
-    FormTemplateMapper formTemplateMapper;
+    private FormTemplateConverter formTemplateConverter;
 
     @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
+    private FormTemplateMapper formTemplateMapper;
 
     @Autowired
-    CoreServiceStub coreServiceStub;
+    private FormItemTemplateMapper formItemTemplateMapper;
 
+    @Autowired
+    private PlatformCoreServiceRestClient coreServiceStub;
+
+    @Autowired
+    private FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
     @Transactional
-    public RequestTemplateDTO saveRequestTemplate(SaveRequestTemplateReq req) {
-        List<RoleDTO> roles =roleRelationConverter.rolesDataResponseToDtoList(
-                coreServiceStub.authRoleCurrentUser(AuthenticationContextHolder.getCurrentUsername()));
-        Set<RoleDTO> ts = new HashSet<RoleDTO>(roles);
+    public RequestTemplateDto saveRequestTemplate(RequestTemplateSaveReqDto req) {
+        List<RoleDto> roles = roleRelationConverter
+                .rolesDataResponseToDtoList(coreServiceStub.getAllAuthRolesOfCurrentUser());
+        Set<RoleDto> ts = new HashSet<RoleDto>(roles);
         ts.addAll(req.getUseRoles());
         req.setUseRoles(new ArrayList<>(ts));
         RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
@@ -83,11 +83,11 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             requestTemplate.setCreatedBy(currentUsername);
         }
         saveOrUpdate(requestTemplate);
-        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(), req.getManageRoles());
-        return new RequestTemplateDTO().setId(requestTemplate.getId());
+        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(),
+                req.getManageRoles());
+        return new RequestTemplateDto().setId(requestTemplate.getId());
 
     }
-
 
     @Override
     public void deleteRequestTemplateService(String id) throws TaskmanRuntimeException {
@@ -95,22 +95,24 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.lambda().eq(RequestTemplate::getId, id)
-                .set(RequestTemplate::getDelFlag, StatusEnum.ENABLE.ordinal())
-                .set(RequestTemplate::getUpdatedTime,new Date());;
+        wrapper.lambda().eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, StatusEnum.ENABLE.ordinal())
+                .set(RequestTemplate::getUpdatedTime, new Date());
+        ;
         requestTemplateMapper.update(null, wrapper);
     }
 
     @Override
-    public QueryResponse<RequestTemplateDTO> selectRequestTemplatePage(Integer pageNum, Integer pageSize, QueryRequestTemplateReq req) {
+    public QueryResponse<RequestTemplateDto> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
+            RequestTemplateQueryReqDto req) {
         req.queryCurrentUserRoles();
-        PageHelper.startPage(pageNum,pageSize);
-        PageInfo<RequestTemplateDTO> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
+        PageHelper.startPage(pageNum, pageSize);
+        PageInfo<RequestTemplateDto> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
 
-        for (RequestTemplateDTO resp : pages.getList()) {
-            List<RoleRelation> roles = roleRelationService.list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
+        for (RequestTemplateDto resp : pages.getList()) {
+            List<RoleRelation> roles = roleRelationService
+                    .list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
             roles.stream().forEach(role -> {
-                RoleDTO roleDTO = roleRelationConverter.toDto(role);
+                RoleDto roleDTO = roleRelationConverter.toDto(role);
                 if (RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()) {
                     resp.getUseRoles().add(roleDTO);
                 } else {
@@ -118,25 +120,23 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
             });
         }
-        QueryResponse<RequestTemplateDTO> queryResponse = new QueryResponse(pages.getTotal(),pageNum.longValue(),pageSize.longValue(),pages.getList());
+        QueryResponse<RequestTemplateDto> queryResponse = new QueryResponse(pages.getTotal(), pageNum.longValue(),
+                pageSize.longValue(), pages.getList());
         return queryResponse;
     }
 
-    @Autowired
-    FormItemTemplateConverter formItemTemplateConverter;
     @Override
-    public RequestTemplateResp detailRequestTemplate(String id) {
-        RequestTemplateResp requestTemplateResp = requestTemplateConverter.toRespByEntity(requestTemplateMapper.selectById(id));
-        FormTemplateResp formTemplateResp =  formTemplateConverter.toDto(
-                formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
-                        .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()
-        ));
-        List<FormItemTemplate> items =  formItemTemplateMapper.selectList(
-                new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper());
+    public RequestTemplateRespDto detailRequestTemplate(String id) {
+        RequestTemplateRespDto requestTemplateResp = requestTemplateConverter
+                .toRespByEntity(requestTemplateMapper.selectById(id));
+        FormTemplateRespDto formTemplateResp = formTemplateConverter
+                .toDto(formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
+                        .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()));
+        List<FormItemTemplate> items = formItemTemplateMapper
+                .selectList(new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper());
         formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(items));
         requestTemplateResp.setFormTemplateResp(formTemplateResp);
         return requestTemplateResp;
     }
-
 
 }

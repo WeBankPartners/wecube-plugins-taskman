@@ -2,9 +2,7 @@ package com.webank.taskman.constant;
 
 public enum TemplateTypeEnum {
 
-    REQUEST("0","request"),
-    TASK("1","task"),
-    ;
+    REQUEST("0", "request"), TASK("1", "task");
     private String type;
 
     private String description;

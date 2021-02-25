@@ -5,6 +5,9 @@ import com.webank.taskman.authclient.filter.JwtClientConfig;
 import com.webank.taskman.authclient.filter.JwtSsoBasedAuthenticationFilter;
 import com.webank.taskman.commons.AppProperties;
 import com.webank.taskman.interceptor.AuthenticationRequestContextInterceptor;
+
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -22,6 +25,7 @@ import javax.servlet.Filter;
 @EnableWebMvc
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(jsr250Enabled = true, prePostEnabled = true, securedEnabled = true)
+@EnableSwagger2
 public class SpringWebConfig extends WebSecurityConfigurerAdapter implements WebMvcConfigurer {
 
     @Autowired

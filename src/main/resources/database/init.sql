@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS `attach_file` (
   `s3_bucket_name` varchar(50)  DEFAULT NULL COMMENT 's3_bucket',
   `s3_key_name` varchar(50)  DEFAULT NULL COMMENT 's3_key',
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -22,11 +22,12 @@ CREATE TABLE IF NOT EXISTS `form_info` (
   `form_template_id` varchar(50)  DEFAULT NULL,
   `name` varchar(255)  NOT NULL,
   `type` tinyint(2) NOT NULL DEFAULT '0',
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `created_by` varchar(255)  NOT NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
+  `form_type` varchar(45) NULL,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
@@ -68,13 +69,15 @@ CREATE TABLE IF NOT EXISTS `form_item_template` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-INSERT INTO `form_item_template` (`id`, `form_template_id`, `name`, `default_value`, `is_currency`, `sort`, `package_name`, `entity`, `attr_def_id`, `attr_def_data_type`, `element_type`, `title`, `width`, `ref_package_name`, `ref_entity`, `ref_filters`, `data_options`, `required`, `regular`, `is_edit`, `is_view`) VALUES
-	('1333228970392473601', '', 'reporter', NULL, 0, 0, '0', '0', NULL, NULL, 'text', '上报人', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
-	('1333303089673617409', '', 'emergency', NULL, 0, 0, '0', '0', NULL, NULL, 'select', '紧急程度', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
-	('1333304415006547970', '', 'attach_file_id', NULL, 0, 0, '0', '0', NULL, NULL, 'file', '附件', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
-	('1333319171714420738', '', 'result', NULL, 0, 0, '0', '0', NULL, NULL, 'text', '处理结果', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
-	('1333324857626169346', '', 'report_time', NULL, 0, 0, '0', '0', NULL, NULL, 'date', '上报时间', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
-	('1333324857626169347', '', 'due_data', NULL, 0, 0, '0', '0', NULL, NULL, 'date', '过期时间', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0);
+INSERT INTO `form_item_template` 
+(`id`, `form_template_id`, `name`, `default_value`, `is_currency`, `sort`, `package_name`, `entity`, `attr_def_id`, `attr_def_data_type`, `element_type`, `title`, `width`, `ref_package_name`, `ref_entity`, `ref_filters`, `data_options`, `required`, `regular`, `is_edit`, `is_view`)
+ VALUES
+    ('1333228970392473601', '', 'reporter', NULL, 0, 0, '0', '0', NULL, NULL, 'text', '上报人', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+    ('1333303089673617409', '', 'emergency', NULL, 0, 0, '0', '0', NULL, NULL, 'select', '紧急程度', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+    ('1333304415006547970', '', 'attach_file_id', NULL, 0, 0, '0', '0', NULL, NULL, 'file', '附件', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+    ('1333319171714420738', '', 'result', NULL, 0, 0, '0', '0', NULL, NULL, 'text', '处理结果', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+    ('1333324857626169346', '', 'report_time', NULL, 0, 0, '0', '0', NULL, NULL, 'date', '上报时间', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0),
+    ('1333324857626169347', '', 'due_data', NULL, 0, 0, '0', '0', NULL, NULL, 'date', '过期时间', NULL, NULL, NULL, '', NULL, 0, NULL, 0, 0);
 
 DROP TABLE IF EXISTS `form_template`;
 CREATE TABLE IF NOT EXISTS `form_template` (
@@ -89,10 +92,11 @@ CREATE TABLE IF NOT EXISTS `form_template` (
   `other_attr_def` text ,
   `style` varchar(50)  DEFAULT NULL,
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
+  `form_type` varchar(45) NULL,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
@@ -110,9 +114,9 @@ CREATE TABLE IF NOT EXISTS `request_info` (
   `status` varchar(50)  NOT NULL DEFAULT '0',
   `result` mediumtext ,
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -130,9 +134,9 @@ CREATE TABLE IF NOT EXISTS `request_template` (
   `tags` varchar(512)  DEFAULT NULL,
   `status` tinyint(2) NOT NULL DEFAULT '0',
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -147,9 +151,9 @@ CREATE TABLE IF NOT EXISTS `request_template_group` (
   `version` varchar(50)  NOT NULL DEFAULT '1',
   `status` tinyint(2) NOT NULL DEFAULT '0',
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -188,9 +192,9 @@ CREATE TABLE IF NOT EXISTS `task_info` (
   `status` tinyint(2) DEFAULT '0',
   `version` varchar(50)  DEFAULT NULL,
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -206,9 +210,9 @@ CREATE TABLE IF NOT EXISTS `task_template` (
   `name` varchar(255)  NOT NULL,
   `description` varchar(512)  DEFAULT NULL,
   `created_by` varchar(255)  NOT NULL,
-  `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_time` datetime NULL,
   `updated_by` varchar(255)  NOT NULL,
-  `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;

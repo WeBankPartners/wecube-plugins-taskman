@@ -3,7 +3,7 @@ package com.webank.taskman.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.dto.resp.FormItemInfoResp;
+import com.webank.taskman.dto.resp.FormItemInfoRespDto;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.service.FormItemInfoService;
@@ -17,12 +17,12 @@ import java.util.List;
 public class FormItemInfoServiceImpl extends ServiceImpl<FormItemInfoMapper, FormItemInfo> implements FormItemInfoService {
 
     @Autowired
-    FormItemTemplateMapper formItemTemplateMapper;
+    private FormItemTemplateMapper formItemTemplateMapper;
 
 
     @Override
-    public List<FormItemInfoResp> returnDetail(String id) {
-        List<FormItemInfoResp> formItemInfoResps = formItemTemplateMapper.selectDetail(id);
+    public List<FormItemInfoRespDto> returnDetail(String id) {
+        List<FormItemInfoRespDto> formItemInfoResps = formItemTemplateMapper.selectDetail(id);
         return formItemInfoResps;
     }
 

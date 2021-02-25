@@ -3,7 +3,7 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.dto.resp.TaskServiceMetaResp;
+import com.webank.taskman.dto.resp.TaskServiceMetaRespDto;
 
 public interface FormItemTemplateService extends IService<FormItemTemplate> {
 
@@ -12,5 +12,5 @@ public interface FormItemTemplateService extends IService<FormItemTemplate> {
 
     int deleteByDomain(FormItemTemplate formItemTemplate);
 
-    TaskServiceMetaResp getTaskCreateServiceMeta(String procDefId, String nodeDefId);
+    TaskServiceMetaRespDto getTaskCreateServiceMeta(String procDefId, String nodeDefId);
 }

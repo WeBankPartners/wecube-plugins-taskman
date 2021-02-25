@@ -1,24 +1,15 @@
 package com.webank.taskman.dto;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class CreateTaskDto {
-    @ApiModelProperty(value = "",position = 1,hidden = true)
     private String id;
-    @ApiModelProperty(value = "",position = 1)
     private String requestTempId;
-    @ApiModelProperty(value = "",position = 2)
     private String emergency;
-    @ApiModelProperty(value = "",position = 3)
     private String name;
-    @ApiModelProperty(value = "",position = 4)
     private String description;
-    @ApiModelProperty(value = "",position = 5)
     private String rootEntity;
-    @ApiModelProperty(value = "",position = 6)
     private List<EntityValueDto> entitys = new ArrayList<>();
 
 
@@ -86,21 +77,13 @@ public class CreateTaskDto {
     }
 
     public static class EntityValueDto {
-        @ApiModelProperty(value = "",position = 1)
         private String nodeId;
-        @ApiModelProperty(value = "",position = 2)
         private String nodeDefId;
-        @ApiModelProperty(value = "",position = 3)
         private String dataId;
-        @ApiModelProperty(value = "",position = 4)
         private String packageName;
-        @ApiModelProperty(value = "",position = 5)
         private String entityName;
-        @ApiModelProperty(value = "",position = 6)
         private List<String> previousOids = new ArrayList<>();
-        @ApiModelProperty(value = "",position = 7)
         private List<String> succeedingOids = new ArrayList<>();
-        @ApiModelProperty(value = "",position = 6)
         private List<EntityAttrValueDto> attrValues = new ArrayList<>();
 
         public String getNodeId() {
@@ -178,15 +161,10 @@ public class CreateTaskDto {
 
     public static class EntityAttrValueDto {
 
-        @ApiModelProperty(value = "",position = 1)
         private String itemTempId;
-        @ApiModelProperty(value = "",position = 2)
         private String attrDefId;
-        @ApiModelProperty(value = "",position = 3)
         private String dataType;
-        @ApiModelProperty(value = "",position = 4)
         private String name;
-        @ApiModelProperty(value = "",position = 5)
         private Object dataValue;
 
         public String getItemTempId() {

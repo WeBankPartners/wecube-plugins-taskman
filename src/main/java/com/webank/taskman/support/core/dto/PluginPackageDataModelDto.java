@@ -3,7 +3,6 @@ package com.webank.taskman.support.core.dto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.StringJoiner;
 
 public class PluginPackageDataModelDto {

@@ -3,18 +3,16 @@ package com.webank.taskman.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.base.QueryResponse;
-import com.webank.taskman.commons.TaskmanException;
-import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.RequestTemplateGroup;
-import com.webank.taskman.dto.RequestTemplateGroupDTO;
-import com.webank.taskman.dto.req.SaveRequestTemplateGropReq;
+import com.webank.taskman.dto.RequestTemplateGroupDto;
+import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 
 public interface RequestTemplateGroupService extends IService<RequestTemplateGroup> {
 
 
-    RequestTemplateGroupDTO saveTemplateGroupByReq(SaveRequestTemplateGropReq gropReq) throws TaskmanException;
+    RequestTemplateGroupDto saveTemplateGroupByReq(RequestTemplateGroupSaveReqDto gropReq);
 
-    QueryResponse<RequestTemplateGroupDTO> selectRequestTemplateGroupPage(Integer current, Integer limit, RequestTemplateGroupDTO req) throws TaskmanRuntimeException;
+    QueryResponse<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit, RequestTemplateGroupDto req);
 
-    void deleteTemplateGroupByIDService(String id) throws TaskmanRuntimeException;
+    void deleteTemplateGroupByIDService(String id);
 }

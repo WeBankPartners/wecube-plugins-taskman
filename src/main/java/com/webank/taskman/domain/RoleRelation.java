@@ -8,11 +8,10 @@ import org.springframework.util.StringUtils;
 
 import java.io.Serializable;
 
-public class RoleRelation  implements Serializable {
+public class RoleRelation implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
     private String recordId;
@@ -23,23 +22,20 @@ public class RoleRelation  implements Serializable {
     public RoleRelation() {
     }
 
-    public RoleRelation( String recordId, Integer roleType, String roleName, String displayName) {
+    public RoleRelation(String recordId, Integer roleType, String roleName, String displayName) {
         this.recordId = recordId;
         this.roleType = roleType;
         this.roleName = roleName;
         this.displayName = displayName;
     }
 
-
     @JsonIgnore
     public LambdaQueryWrapper<RoleRelation> getLambdaQueryWrapper() {
-        return new LambdaQueryWrapper<RoleRelation>()
-                .eq(!StringUtils.isEmpty(id), RoleRelation::getId, id)
+        return new LambdaQueryWrapper<RoleRelation>().eq(!StringUtils.isEmpty(id), RoleRelation::getId, id)
                 .eq(!StringUtils.isEmpty(recordId), RoleRelation::getRecordId, recordId)
                 .eq(!StringUtils.isEmpty(roleType), RoleRelation::getRoleType, roleType)
                 .eq(!StringUtils.isEmpty(roleName), RoleRelation::getRoleName, roleName)
-                .like(!StringUtils.isEmpty(displayName), RoleRelation::getDisplayName, displayName)
-                ;
+                .like(!StringUtils.isEmpty(displayName), RoleRelation::getDisplayName, displayName);
     }
 
     public String getId() {
@@ -89,12 +85,7 @@ public class RoleRelation  implements Serializable {
 
     @Override
     public String toString() {
-        return "RoleRelation{" +
-                "id='" + id + '\'' +
-                ", recordId='" + recordId + '\'' +
-                ", roleType=" + roleType +
-                ", roleName='" + roleName + '\'' +
-                ", displayName='" + displayName + '\'' +
-                '}';
+        return "RoleRelation{" + "id='" + id + '\'' + ", recordId='" + recordId + '\'' + ", roleType=" + roleType
+                + ", roleName='" + roleName + '\'' + ", displayName='" + displayName + '\'' + '}';
     }
 }

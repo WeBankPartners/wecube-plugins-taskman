@@ -3,21 +3,21 @@ package com.webank.taskman.converter;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.CreateTaskDto;
-import com.webank.taskman.dto.RequestInfoDTO;
-import com.webank.taskman.dto.req.SaveRequestInfoReq;
-import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
-import com.webank.taskman.dto.resp.RequestInfoResq;
+import com.webank.taskman.dto.RequestInfoDto;
+import com.webank.taskman.dto.req.RequestInfoSaveReqDto;
+import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
+import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface RequestInfoConverter extends BaseConverter<RequestInfoDTO, RequestInfo> {
+public interface RequestInfoConverter extends BaseConverter<RequestInfoDto, RequestInfo> {
 
-    RequestInfo reqToDomain(SaveRequestInfoReq req);
+    RequestInfo reqToDomain(RequestInfoSaveReqDto req);
 
     RequestInfo createDtoToDomain(CreateTaskDto dto);
 
-    RequestInfoResq toResp(RequestInfo requestInfo);
+    RequestInfoResqDto toResp(RequestInfo requestInfo);
 
-    RequestInfoInstanceResq toInstanceResp(RequestInfo requestInfo);
+    RequestInfoInstanceResqDto toInstanceResp(RequestInfo requestInfo);
 }

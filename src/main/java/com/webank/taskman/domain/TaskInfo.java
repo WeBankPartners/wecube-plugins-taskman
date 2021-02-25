@@ -13,7 +13,7 @@ import java.util.Date;
 public class TaskInfo extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
     private String requestId;
@@ -34,11 +34,10 @@ public class TaskInfo extends BaseEntity implements Serializable {
     private String attachFileId;
 
     private String status;
-    
+
     private String version;
 
-    private String  overTime;
-
+    private String overTime;
 
     public TaskInfo() {
     }
@@ -48,7 +47,10 @@ public class TaskInfo extends BaseEntity implements Serializable {
         this.nodeDefId = nodeDefId;
     }
 
-    public TaskInfo(String id, String parentId, String taskTempId, String nodeDefId, String nodeName, String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime, String emergency, String reportRole, String result, String description, String attachFileId, String status, String version) {
+    public TaskInfo(String id, String parentId, String taskTempId, String nodeDefId, String nodeName,
+            String callbackUrl, String callbackParameter, String name, String reporter, Date reportTime,
+            String emergency, String reportRole, String result, String description, String attachFileId, String status,
+            String version) {
         this.id = id;
         this.parentId = parentId;
         this.taskTempId = taskTempId;
@@ -70,8 +72,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     @JsonIgnore
     public LambdaQueryWrapper<TaskInfo> getLambdaQueryWrapper() {
-        return new LambdaQueryWrapper<TaskInfo>()
-                .eq(!StringUtils.isEmpty(id), TaskInfo::getId, id)
+        return new LambdaQueryWrapper<TaskInfo>().eq(!StringUtils.isEmpty(id), TaskInfo::getId, id)
                 .eq(!StringUtils.isEmpty(parentId), TaskInfo::getParentId, parentId)
                 .eq(!StringUtils.isEmpty(taskTempId), TaskInfo::getTaskTempId, taskTempId)
                 .eq(!StringUtils.isEmpty(nodeDefId), TaskInfo::getNodeDefId, nodeDefId)
@@ -87,8 +88,7 @@ public class TaskInfo extends BaseEntity implements Serializable {
                 .eq(!StringUtils.isEmpty(description), TaskInfo::getDescription, description)
                 .eq(!StringUtils.isEmpty(attachFileId), TaskInfo::getAttachFileId, attachFileId)
                 .eq(!StringUtils.isEmpty(status), TaskInfo::getStatus, status)
-                .eq(!StringUtils.isEmpty(version), TaskInfo::getVersion, version)
-                ;
+                .eq(!StringUtils.isEmpty(version), TaskInfo::getVersion, version);
     }
 
     public String getId() {
@@ -273,24 +273,12 @@ public class TaskInfo extends BaseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "TaskInfo{" +
-                "id='" + id + '\'' +
-                ", parentId='" + parentId + '\'' +
-                ", taskTempId='" + taskTempId + '\'' +
-                ", nodeDefId='" + nodeDefId + '\'' +
-                ", nodeName='" + nodeName + '\'' +
-                ", callbackUrl='" + callbackUrl + '\'' +
-                ", callbackParameter='" + callbackParameter + '\'' +
-                ", name='" + name + '\'' +
-                ", reporter='" + reporter + '\'' +
-                ", reportTime=" + reportTime +
-                ", emergency='" + emergency + '\'' +
-                ", reportRole='" + reportRole + '\'' +
-                ", result='" + result + '\'' +
-                ", description='" + description + '\'' +
-                ", attachFileId='" + attachFileId + '\'' +
-                ", status=" + status +
-                ", version='" + version + '\'' +
-                '}';
+        return "TaskInfo{" + "id='" + id + '\'' + ", parentId='" + parentId + '\'' + ", taskTempId='" + taskTempId
+                + '\'' + ", nodeDefId='" + nodeDefId + '\'' + ", nodeName='" + nodeName + '\'' + ", callbackUrl='"
+                + callbackUrl + '\'' + ", callbackParameter='" + callbackParameter + '\'' + ", name='" + name + '\''
+                + ", reporter='" + reporter + '\'' + ", reportTime=" + reportTime + ", emergency='" + emergency + '\''
+                + ", reportRole='" + reportRole + '\'' + ", result='" + result + '\'' + ", description='" + description
+                + '\'' + ", attachFileId='" + attachFileId + '\'' + ", status=" + status + ", version='" + version
+                + '\'' + '}';
     }
 }

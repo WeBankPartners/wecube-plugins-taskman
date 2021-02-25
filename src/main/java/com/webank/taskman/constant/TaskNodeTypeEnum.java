@@ -2,9 +2,8 @@ package com.webank.taskman.constant;
 
 public enum TaskNodeTypeEnum {
 
-    SSTN("SSTN","SSTN node "),
-    SUTN("SUTN","SUTN node"),//  artificial
-    ;
+    SSTN("SSTN", "SSTN node "), SUTN("SUTN", "SUTN node");
+    
     private String type;
 
     private String description;
@@ -22,5 +21,12 @@ public enum TaskNodeTypeEnum {
         this.type = type;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 }

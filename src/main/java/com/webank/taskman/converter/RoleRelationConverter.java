@@ -2,7 +2,7 @@ package com.webank.taskman.converter;
 
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RoleRelation;
-import com.webank.taskman.dto.RoleDTO;
+import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.support.core.dto.RolesDataResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,14 +12,14 @@ import org.mapstruct.ReportingPolicy;
 import java.util.List;
 
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface RoleRelationConverter extends BaseConverter<RoleDTO, RoleRelation> {
+public interface RoleRelationConverter extends BaseConverter<RoleDto, RoleRelation> {
 
 
     @Mappings({
             @Mapping(target = "roleName",source ="name" ),
     })
-    RoleDTO rolesDataResponseToDto(RolesDataResponse rolesDataResponse);
+    RoleDto rolesDataResponseToDto(RolesDataResponse rolesDataResponse);
 
-    List<RoleDTO> rolesDataResponseToDtoList(List<RolesDataResponse> rolesDataResponseList);
+    List<RoleDto> rolesDataResponseToDtoList(List<RolesDataResponse> rolesDataResponseList);
 
 }

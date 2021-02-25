@@ -8,6 +8,7 @@ s3_secret_key=secret_key
 
 clean:
 	rm -rf $(current_dir)/target
+        rm -rf $(current_dir)/taskman-core/target
 	rm -rf $(current_dir)/taskman-ui/dist
 
 .PHONY:build
@@ -28,7 +29,7 @@ package:
 	cd taskman-ui && cnpm install && npm run plugin
 	cd taskman-ui && zip -r ui.zip dist/* && mv ui.zip ../package/ui.zip
 	
-	cp src/main/resources/database/init.sql package/init.sql
+	cp taskman-core/src/main/resources/database/init.sql package/init.sql
 	
 	git checkout -- .
 	sh build/build_plugin_xml.sh $(version)

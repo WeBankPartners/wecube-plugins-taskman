@@ -8,7 +8,7 @@ s3_secret_key=secret_key
 
 clean:
 	rm -rf $(current_dir)/target
-        rm -rf $(current_dir)/taskman-core/target
+	rm -rf $(current_dir)/taskman-core/target
 	rm -rf $(current_dir)/taskman-ui/dist
 
 .PHONY:build

@@ -1,6 +1,6 @@
 FROM platten/alpine-oracle-jre8-docker:latest
 LABEL maintainer = "Webank Open-Platform Team"
-ADD target/taskman-0.0.1-SNAPSHOT.jar  /taskman/taskman.jar
+ADD taskman-core/target/taskman-core-0.0.1-SNAPSHOT.jar  /taskman/taskman.jar
 ADD build/start.sh /scripts/start.sh
 RUN chmod +x /scripts/start.sh
 ADD build/tomcat_exporter.tar /scripts/

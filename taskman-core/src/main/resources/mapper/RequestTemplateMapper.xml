@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.webank.taskman.mapper.RequestTemplateMapper">
 
-    <resultMap id="DTOResultMap" type="com.webank.taskman.dto.RequestTemplateDTO" >
-        <id column="id" property="id"/>
+    <resultMap id="DTOResultMap" type="com.webank.taskman.dto.RequestTemplateDto">
+        <id column="id" property="id" />
         <result column="request_temp_group" property="requestTempGroup" />
         <result column="request_temp_group_name" property="requestTempGroupName" />
         <result column="proc_def_id" property="procDefId" />
@@ -16,19 +16,20 @@
         <result column="status" property="status" />
     </resultMap>
 
-    <select id="selectDTOListByParam" resultMap="DTOResultMap" parameterType="com.webank.taskman.dto.req.QueryRequestTemplateReq">
+    <select id="selectDTOListByParam" resultMap="DTOResultMap"
+        parameterType="com.webank.taskman.dto.req.RequestTemplateQueryReqDto">
         SELECT
-            rt.id,
-            rt.request_temp_group,
-            rtg.`name` request_temp_group_name,
-            rt.proc_def_id,
-            rt.proc_def_key,
-            rt.proc_def_name,
-            rt.`name`,
-            rt.description,
-            rt.`name`,
-            rt.tags,
-            rt.`status`
+        rt.id,
+        rt.request_temp_group,
+        rtg.`name` request_temp_group_name,
+        rt.proc_def_id,
+        rt.proc_def_key,
+        rt.proc_def_name,
+        rt.`name`,
+        rt.description,
+        rt.`name`,
+        rt.tags,
+        rt.`status`
         FROM request_template rt,request_template_group rtg
         <where>
             AND rt.request_temp_group = rtg.id
@@ -57,7 +58,7 @@
                 AND rt.status = #{status}
             </if>
             <if test="conditionSql!=null and conditionSql !=''">
-                AND  rt. id IN(${conditionSql})
+                AND rt. id IN(${conditionSql})
             </if>
         </where>
     </select>

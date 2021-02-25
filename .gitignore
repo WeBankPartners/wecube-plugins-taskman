@@ -14,6 +14,14 @@ gen
 /README.md
 .DS_Store
 
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
 **/resources/application-dev.yaml
 **/resources/application-dev.yml
 **/java/com/webank/taskman/TestAutoGenerate.java

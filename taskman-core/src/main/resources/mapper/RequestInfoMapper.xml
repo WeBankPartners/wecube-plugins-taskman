@@ -24,7 +24,7 @@
         <result column="del_flag" property="delFlag"/>
     </resultMap>
 
-    <resultMap id="RequestInfoDTOMap" type="com.webank.taskman.dto.resp.RequestInfoResq">
+    <resultMap id="RequestInfoDTOMap" type="com.webank.taskman.dto.resp.RequestInfoResqDto">
         <id column="id" property="id"/>
         <result column="request_temp_id" property="requestTempId"/>
         <result column="request_temp_name" property="requestTempName"/>
@@ -41,7 +41,7 @@
         <result column="result" property="result"/>
     </resultMap>
 
-    <select id="selectRequestInfo" parameterType="com.webank.taskman.dto.req.QueryRequestInfoReq"
+    <select id="selectRequestInfo" parameterType="com.webank.taskman.dto.req.RequestInfoQueryReqDto"
             resultMap="RequestInfoDTOMap">
         SELECT ri.*,rt.name  request_temp_name
         FROM request_info ri

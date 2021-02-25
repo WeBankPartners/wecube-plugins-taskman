@@ -1,57 +1,45 @@
 server:
-   port: 9999
-   servlet:
-      context-path: /taskman
+  port: 9999
+  servlet:
+    context-path: /taskman
 spring:
-   profiles:
-      active: test
-   datasource:
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      url: jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8&serverTimezone=Asia/Shanghai
-      username: ${db_username}
-      password: ${db_password}
-   messages:
-      basename: message/taskman_err_message
-      encoding: UTF-8
-   banner:
-      location: classpath:/banner.txt
-   jackson:
-      date-format: yyyy-MM-dd HH:mm:ss
-      generator:
-         write_numbers_as_strings: true
-      serialization:
-         indent_output: true
-         fail_on_empty_beans: false
-#defaultPropertyInclusion: NON_EMPTY
-      deserialization:
-         fail_on_unknown_properties: false
-      parser:
-         allow_unquoted_control_chars: true
-         allow_single_quotes: true
-#property-naming-strategy: CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES﻿
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${db_host}:${db_port}/${db_schema}?characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: ${db_username}
+    password: ${db_password}
+  messages:
+    basename: message/taskman_err_message
+    encoding: UTF-8
+  banner:
+    location: classpath:/banner.txt
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
 mybatis-plus:
-   mapper-locations: mapper/*.xml
-   global-config:
-      banner: false
-      db-config:
-         logic-not-delete-value: 0
-         logic-delete-value: 1
+  mapper-locations: mapper/*.xml
+  global-config:
+    banner: false
+    db-config:
+      logic-not-delete-value: 0
+      logic-delete-value: 1
 pagehelper:
-   helperDialect: mysql
-   paramsCount: countSql
-   reasonable: true
-   supportMethodsArguments: true
+  helperDialect: mysql
+  paramsCount: countSql
+  reasonable: true
+  supportMethodsArguments: true
 service:
-   taskman:
-      version: ${version}
-      httpclient:
-         max-total-connections: 200
-      wecube-core-address: ${core_addr}
-      wecube-platform-token: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJIVFRQLU1PQ0siLCJpYXQiOjE1NzYwNTMxOTcsInR5cGUiOiJhY2Nlc3NUb2tlbiIsImNsaWVudFR5cGUiOiJTVUJfU1lTVEVNIiwiZXhwIjoxNjAxOTczMTk3LCJhdXRob3JpdHkiOiJbU1VCX1NZU1RFTV0ifQ.Wd5rhFX3G-dtqlqYzgnkzd9i8T0xJkkPQSAckzO3V3NWXMCw3B9JWe7JlMjbNtE7va8qce1qcrz6qaa4pB0t5A
-      s3-endpoint: ${s3_endpoint}
-      s3-access-key: ${s3_access_key}
-      s3-secret-key: ${s3_secret_key}
-      s3-default-bucket: service-taskman
-      system-code: SYS_SRV_MGMT
-      jwt-signing-key: ${JWT_SIGNING_KEY:}
-      property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}
+  taskman:
+    version: ${version}
+    httpclient:
+      max-total-connections: 200
+    wecube-core-address: ${core_addr}
+    wecube-platform-token: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJIVFRQLU1PQ0siLCJpYXQiOjE1NzYwNTMxOTcsInR5cGUiOiJhY2Nlc3NUb2tlbiIsImNsaWVudFR5cGUiOiJTVUJfU1lTVEVNIiwiZXhwIjoxNjAxOTczMTk3LCJhdXRob3JpdHkiOiJbU1VCX1NZU1RFTV0ifQ.Wd5rhFX3G-dtqlqYzgnkzd9i8T0xJkkPQSAckzO3V3NWXMCw3B9JWe7JlMjbNtE7va8qce1qcrz6qaa4pB0t5A
+    s3-endpoint: ${s3_endpoint}
+    s3-access-key: ${s3_access_key}
+    s3-secret-key: ${s3_secret_key}
+    s3-default-bucket: service-taskman
+    system-code: SYS_SRV_MGMT
+    jwt-signing-key: ${JWT_SIGNING_KEY:}
+    property-encrypt-key-path: ${PROPERTY_ENCRYPT_KEY_PATH:/data/certs/rsa_key}

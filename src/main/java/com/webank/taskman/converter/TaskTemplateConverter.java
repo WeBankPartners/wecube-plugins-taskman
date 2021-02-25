@@ -2,9 +2,9 @@ package com.webank.taskman.converter;
 
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.TaskTemplate;
-import com.webank.taskman.dto.req.QueryTemplateReq;
+import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
+import com.webank.taskman.dto.resp.TaskTemplateByRoleRespDto;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
@@ -16,7 +16,7 @@ public interface TaskTemplateConverter extends BaseConverter<TaskTemplateResp, T
 
     TaskTemplate toEntityBySaveReq(TaskTemplateSaveReqDto req);
 
-    TaskTemplate toEntityByQueryReq(QueryTemplateReq req);
+    TaskTemplate toEntityByQueryReq(TemplateQueryReqDto req);
 
-    List<TaskTemplateByRoleResp> toRoleRespList(List<TaskTemplate> list);
+    List<TaskTemplateByRoleRespDto> toRoleRespList(List<TaskTemplate> list);
 }

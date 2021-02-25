@@ -6,9 +6,9 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.RequestTemplateDto;
-import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 
 public interface RequestTemplateService extends IService<RequestTemplate> {
 
@@ -17,8 +17,8 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
     void deleteRequestTemplateService(String id) throws TaskmanRuntimeException;
 
     QueryResponse<RequestTemplateDto> selectRequestTemplatePage
-            (Integer current, Integer limit, QueryRequestTemplateReq req) throws TaskmanRuntimeException;
+            (Integer current, Integer limit, RequestTemplateQueryReqDto req) throws TaskmanRuntimeException;
 
-    RequestTemplateResp detailRequestTemplate(String id) throws TaskmanRuntimeException;
+    RequestTemplateRespDto detailRequestTemplate(String id) throws TaskmanRuntimeException;
 
    }

@@ -8,17 +8,17 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class QueryRoleRelationBaseReq {
+public class RoleRelationBaseQueryReqDto {
     private String useRoleName;
     private String manageRoleName;
     private Integer roleType;
     private String roleName;
     private String conditionSql;
 
-    public QueryRoleRelationBaseReq() {
+    public RoleRelationBaseQueryReqDto() {
     }
 
-    public QueryRoleRelationBaseReq(String useRoleName, String manageRoleName) {
+    public RoleRelationBaseQueryReqDto(String useRoleName, String manageRoleName) {
         this.useRoleName = useRoleName;
         this.manageRoleName = manageRoleName;
     }
@@ -98,7 +98,7 @@ public class QueryRoleRelationBaseReq {
     public static String getEqUseRole() {
         String roles = String.join("','", AuthenticationContextHolder.getCurrentUserRoles());
         return StringUtils.isEmpty(roles) ? null
-                : String.format(QueryRoleRelationBaseReq.QUERY_BY_ROLE_SQL, RoleTypeEnum.USE_ROLE.getType(), roles);
+                : String.format(RoleRelationBaseQueryReqDto.QUERY_BY_ROLE_SQL, RoleTypeEnum.USE_ROLE.getType(), roles);
     }
 
     public void queryCurrentUserRoles() {

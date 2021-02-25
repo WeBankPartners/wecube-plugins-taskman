@@ -31,12 +31,12 @@ import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CoreCancelTaskDto;
 import com.webank.taskman.dto.CoreCreateTaskDto;
 import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.ProcessingTasksReq;
-import com.webank.taskman.dto.req.QueryTaskInfoReq;
-import com.webank.taskman.dto.resp.FormInfoResq;
-import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
-import com.webank.taskman.dto.resp.TaskInfoInstanceResp;
-import com.webank.taskman.dto.resp.TaskInfoResp;
+import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
+import com.webank.taskman.dto.resp.FormInfoResqDto;
+import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
+import com.webank.taskman.dto.resp.TaskInfoInstanceRespDto;
+import com.webank.taskman.dto.resp.TaskInfoRespDto;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.TaskInfoMapper;
 import com.webank.taskman.service.FormInfoService;
@@ -78,7 +78,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     private PlatformCoreServiceRestClient coreServiceStub;
 
     @Override
-    public QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req) {
+    public QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, TaskInfoQueryReqDto req) {
         String inSql = req.getConditionSql();// req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req).getLambdaQueryWrapper()
                 .inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, inSql);
@@ -91,7 +91,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     @Transactional
-    public JsonResponse taskInfoProcessing(ProcessingTasksReq req) throws TaskmanRuntimeException {
+    public JsonResponse taskInfoProcessing(ProcessingTasksReqDto req) throws TaskmanRuntimeException {
         TaskInfo taskInfo = getBaseMapper().selectById(req.getRecordId());
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         if (!currentUsername.equals(taskInfo.getReporter())) {
@@ -114,7 +114,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         return JsonResponse.okay();
     }
 
-    private void callbackByTaskInfo(ProcessingTasksReq req, TaskInfo taskInfo) {
+    private void callbackByTaskInfo(ProcessingTasksReqDto req, TaskInfo taskInfo) {
         CallbackRequestDto callbackRequest = new CallbackRequestDto();
         CallbackRequestResultDataDto callbackRequestResultDataDto = new CallbackRequestResultDataDto();
         callbackRequestResultDataDto.setRequestId(taskInfo.getRequestId());
@@ -152,9 +152,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public TaskInfoResp taskInfoDetail(String id) {
+    public TaskInfoRespDto taskInfoDetail(String id) {
         TaskInfo taskInfo = getBaseMapper().selectOne(new TaskInfo().setId(id).getLambdaQueryWrapper());
-        TaskInfoResp taskInfoResp = taskInfoConverter.toResp(taskInfo);
+        TaskInfoRespDto taskInfoResp = taskInfoConverter.toResp(taskInfo);
         taskInfoResp.setFormItemInfo(formItemInfoService.returnDetail(id));
         return taskInfoResp;
     }
@@ -163,17 +163,17 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     RequestInfoService requestInfoService;
 
     @Override
-    public RequestInfoInstanceResq selectTaskInfoInstanceService(String requestId, String taskId) {
+    public RequestInfoInstanceResqDto selectTaskInfoInstanceService(String requestId, String taskId) {
         RequestInfo requestInfo = requestInfoService.getOne(new RequestInfo().setId(requestId).getLambdaQueryWrapper());
-        RequestInfoInstanceResq requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
+        RequestInfoInstanceResqDto requestInfoInstanceResq = requestInfoConverter.toInstanceResp(requestInfo);
 
         requestInfoInstanceResq.setRequestFormResq(getFormInfoResq(requestId));
         List<TaskInfo> taskInfos = getBaseMapper().selectList(new QueryWrapper<TaskInfo>().lambda()
                 .eq(TaskInfo::getRequestId, requestId).orderByAsc(TaskInfo::getUpdatedTime));
-        List<TaskInfoInstanceResp> taskInfoInstanceResps = new ArrayList<>();
+        List<TaskInfoInstanceRespDto> taskInfoInstanceResps = new ArrayList<>();
         for (TaskInfo taskInfo : taskInfos) {
             if (!(taskInfo.getId().equals(taskId))) {
-                TaskInfoInstanceResp resp = taskInfoConverter.toInstanceResp(taskInfo);
+                TaskInfoInstanceRespDto resp = taskInfoConverter.toInstanceResp(taskInfo);
                 resp.setTaskFormResq(getFormInfoResq(taskId));
                 taskInfoInstanceResps.add(resp);
             }
@@ -183,8 +183,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         return requestInfoInstanceResq;
     }
 
-    private FormInfoResq getFormInfoResq(String recordId) {
-        FormInfoResq formInfoResq = formInfoConverter
+    private FormInfoResqDto getFormInfoResq(String recordId) {
+        FormInfoResqDto formInfoResq = formInfoConverter
                 .toDto(formInfoService.getOne(new FormInfo().setRecordId(recordId).getLambdaQueryWrapper()));
         if (null != formInfoResq) {
             List<FormItemInfo> formItemInfos = formItemInfoMapper

@@ -5,15 +5,15 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.dto.CoreCreateTaskDto.FormItemBean;
 import com.webank.taskman.dto.CreateTaskDto.EntityAttrValueDto;
 import com.webank.taskman.dto.req.FormItemInfoRequestDto;
-import com.webank.taskman.dto.resp.FormItemInfoResp;
-import com.webank.taskman.dto.resp.TaskServiceMetaResp.TaskServiceMetaFormItem;
+import com.webank.taskman.dto.resp.FormItemInfoRespDto;
+import com.webank.taskman.dto.resp.TaskServiceMetaRespDto.TaskServiceMetaFormItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface FormItemInfoConverter extends BaseConverter<FormItemInfoResp, FormItemInfo> {
+public interface FormItemInfoConverter extends BaseConverter<FormItemInfoRespDto, FormItemInfo> {
 
     FormItemInfo toEntityByReq(FormItemInfoRequestDto req);
 
@@ -23,9 +23,9 @@ public interface FormItemInfoConverter extends BaseConverter<FormItemInfoResp, F
     @Mapping(target = "key", source = "name")
     @Mapping(target = "valueDef.type", source = "elementType")
     @Mapping(target = "valueDef.expr", source = "value")
-    TaskServiceMetaFormItem respToServiceMeta(FormItemInfoResp resp);
+    TaskServiceMetaFormItem respToServiceMeta(FormItemInfoRespDto resp);
 
-    List<TaskServiceMetaFormItem> respToServiceMeta(List<FormItemInfoResp> resp);
+    List<TaskServiceMetaFormItem> respToServiceMeta(List<FormItemInfoRespDto> resp);
 
     @Mapping(target = "itemTempId", source = "itemId")
     @Mapping(target = "name", source = "key")

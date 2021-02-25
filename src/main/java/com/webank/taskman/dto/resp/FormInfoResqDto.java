@@ -2,7 +2,7 @@ package com.webank.taskman.dto.resp;
 
 import java.util.List;
 
-public class FormInfoResq {
+public class FormInfoResqDto {
 
     private String id;
     private String recordId;
@@ -10,7 +10,7 @@ public class FormInfoResq {
     private String name;
     private Integer type;
     private String formType;
-    private List<FormItemInfoResp> formItemInfo;
+    private List<FormItemInfoRespDto> formItemInfo;
 
     public String getId() {
         return id;
@@ -56,16 +56,16 @@ public class FormInfoResq {
         return formType;
     }
 
-    public FormInfoResq setFormType(String formType) {
+    public FormInfoResqDto setFormType(String formType) {
         this.formType = formType;
         return this;
     }
 
-    public List<FormItemInfoResp> getFormItemInfo() {
+    public List<FormItemInfoRespDto> getFormItemInfo() {
         return formItemInfo;
     }
 
-    public void setFormItemInfo(List<FormItemInfoResp> formItemInfo) {
+    public void setFormItemInfo(List<FormItemInfoRespDto> formItemInfo) {
         this.formItemInfo = formItemInfo;
     }
 }

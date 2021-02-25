@@ -16,8 +16,8 @@ import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.CreateTaskDto;
-import com.webank.taskman.dto.req.QueryRequestInfoReq;
-import com.webank.taskman.dto.resp.RequestInfoResq;
+import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
+import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.*;
 import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
@@ -55,27 +55,27 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     private EntityAttrValueConverter entityAttrValueConverter;
 
     @Override
-    public QueryResponse<RequestInfoResq> selectRequestInfoPage(Integer current, Integer limit,
-            QueryRequestInfoReq req) {
+    public QueryResponse<RequestInfoResqDto> selectRequestInfoPage(Integer current, Integer limit,
+            RequestInfoQueryReqDto req) {
         req.queryCurrentUserRoles();
-        IPage<RequestInfoResq> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
-        QueryResponse<RequestInfoResq> queryResponse = new QueryResponse<>();
+        IPage<RequestInfoResqDto> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
+        QueryResponse<RequestInfoResqDto> queryResponse = new QueryResponse<>();
         queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(iPage.getRecords());
         return queryResponse;
     }
 
     @Override
-    public RequestInfoResq selectDetail(String id) {
+    public RequestInfoResqDto selectDetail(String id) {
         RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setId(id).getLambdaQueryWrapper());
-        RequestInfoResq requestInfoResq = requestInfoConverter.toResp(requestInfo);
+        RequestInfoResqDto requestInfoResq = requestInfoConverter.toResp(requestInfo);
         requestInfoResq.setFormItemInfos(formItemInfoService.returnDetail(id));
         return requestInfoResq;
     }
 
     @Override
     @Transactional
-    public RequestInfoResq saveRequestInfoByDto(CreateTaskDto req) {
+    public RequestInfoResqDto saveRequestInfoByDto(CreateTaskDto req) {
         RequestInfo requestInfo = requestInfoConverter.createDtoToDomain(req);
         // requestInfo.setCurrenUserName(requestInfo, requestInfo.getId());
         requestInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());

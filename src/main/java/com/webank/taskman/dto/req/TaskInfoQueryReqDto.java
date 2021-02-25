@@ -4,7 +4,7 @@ package com.webank.taskman.dto.req;
 import java.util.Date;
 import java.util.StringJoiner;
 
-public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
+public class TaskInfoQueryReqDto extends RoleRelationBaseQueryReqDto{
 
 
     private String id;
@@ -25,7 +25,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return id;
     }
 
-    public QueryTaskInfoReq setId(String id) {
+    public TaskInfoQueryReqDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -34,7 +34,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return procInstId;
     }
 
-    public QueryTaskInfoReq setProcInstId(String procInstId) {
+    public TaskInfoQueryReqDto setProcInstId(String procInstId) {
         this.procInstId = procInstId;
         return this;
     }
@@ -43,7 +43,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return nodeDefId;
     }
 
-    public QueryTaskInfoReq setNodeDefId(String nodeDefId) {
+    public TaskInfoQueryReqDto setNodeDefId(String nodeDefId) {
         this.nodeDefId = nodeDefId;
         return this;
     }
@@ -52,7 +52,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return name;
     }
 
-    public QueryTaskInfoReq setName(String name) {
+    public TaskInfoQueryReqDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -61,7 +61,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return reporter;
     }
 
-    public QueryTaskInfoReq setReporter(String reporter) {
+    public TaskInfoQueryReqDto setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -70,7 +70,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return reportTime;
     }
 
-    public QueryTaskInfoReq setReportTime(Date reportTime) {
+    public TaskInfoQueryReqDto setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -79,7 +79,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return emergency;
     }
 
-    public QueryTaskInfoReq setEmergency(String emergency) {
+    public TaskInfoQueryReqDto setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -88,7 +88,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return status;
     }
 
-    public QueryTaskInfoReq setStatus(String status) {
+    public TaskInfoQueryReqDto setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -97,7 +97,7 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return result;
     }
 
-    public QueryTaskInfoReq setResult(String result) {
+    public TaskInfoQueryReqDto setResult(String result) {
         this.result = result;
         return this;
     }
@@ -106,14 +106,14 @@ public class QueryTaskInfoReq extends QueryRoleRelationBaseReq{
         return isMy;
     }
 
-    public QueryTaskInfoReq setIsMy(String isMy) {
+    public TaskInfoQueryReqDto setIsMy(String isMy) {
         this.isMy = isMy;
         return this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", QueryTaskInfoReq.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", TaskInfoQueryReqDto.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("procInstId='" + procInstId + "'")
                 .add("nodeDefId='" + nodeDefId + "'")

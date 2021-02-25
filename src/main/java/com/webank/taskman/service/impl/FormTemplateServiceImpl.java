@@ -21,7 +21,7 @@ import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.FormTemplateResp;
+import com.webank.taskman.dto.resp.FormTemplateRespDto;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
@@ -42,10 +42,10 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     private FormItemTemplateConverter formItemTemplateConverter;
 
     @Override
-    public QueryResponse<FormTemplateResp> selectFormTemplate(Integer page, Integer pageSize, FormTemplateSaveReqDto req) {
+    public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize, FormTemplateSaveReqDto req) {
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(new Page<>(page, pageSize),
                 formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper());
-        List<FormTemplateResp> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
+        List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
         return new QueryResponse(iPage.getSize(), iPage.getCurrent(), iPage.getSize(), formTemplateResps);
     }
 
@@ -62,9 +62,9 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public FormTemplateResp detailFormTemplate(FormTemplateSaveReqDto req) {
+    public FormTemplateRespDto detailFormTemplate(FormTemplateSaveReqDto req) {
 
-        FormTemplateResp formTemplateResp = formTemplateConverter
+        FormTemplateRespDto formTemplateResp = formTemplateConverter
                 .toDto(formTemplateMapper.selectOne(formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper()));
         if (null != formTemplateResp) {
             formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(formItemTemplateService
@@ -75,7 +75,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateResp saveFormTemplateByReq(FormTemplateSaveReqDto formTemplateReq) {
+    public FormTemplateRespDto saveFormTemplateByReq(FormTemplateSaveReqDto formTemplateReq) {
         FormTemplate formTemplate = formTemplateConverter.reqToDomain(formTemplateReq);
 
         formTemplate.setName(StringUtils.isEmpty(formTemplate.getName()) ? "" : formTemplate.getName());
@@ -92,11 +92,11 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             formItemTemplate.setTempId(formTemplate.getTempId());
             formItemTemplateService.save(formItemTemplate);
         });
-        return new FormTemplateResp().setId(formTemplate.getId());
+        return new FormTemplateRespDto().setId(formTemplate.getId());
     }
 
     @Override
-    public FormTemplateResp queryDetailByTemp(Integer tempType, String tempId) {
+    public FormTemplateRespDto queryDetailByTemp(Integer tempType, String tempId) {
         return formTemplateConverter
                 .toDto(getOne(new FormTemplate().setTempId(tempId).setTempType(tempType + "").getLambdaQueryWrapper()));
     }

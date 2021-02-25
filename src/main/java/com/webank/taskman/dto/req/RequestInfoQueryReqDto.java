@@ -1,6 +1,6 @@
 package com.webank.taskman.dto.req;
 
-public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
+public class RequestInfoQueryReqDto extends RoleRelationBaseQueryReqDto {
 
     private String id;
     private String requestTempId;
@@ -18,7 +18,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return id;
     }
 
-    public QueryRequestInfoReq setId(String id) {
+    public RequestInfoQueryReqDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -27,7 +27,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return requestTempId;
     }
 
-    public QueryRequestInfoReq setRequestTempId(String requestTempId) {
+    public RequestInfoQueryReqDto setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
         return this;
     }
@@ -36,7 +36,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return requestTempName;
     }
 
-    public QueryRequestInfoReq setRequestTempName(String requestTempName) {
+    public RequestInfoQueryReqDto setRequestTempName(String requestTempName) {
         this.requestTempName = requestTempName;
         return this;
     }
@@ -45,7 +45,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return name;
     }
 
-    public QueryRequestInfoReq setName(String name) {
+    public RequestInfoQueryReqDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -54,7 +54,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return description;
     }
 
-    public QueryRequestInfoReq setDescription(String description) {
+    public RequestInfoQueryReqDto setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -63,7 +63,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return reporter;
     }
 
-    public QueryRequestInfoReq setReporter(String reporter) {
+    public RequestInfoQueryReqDto setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -72,7 +72,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return reportTimeBegin;
     }
 
-    public QueryRequestInfoReq setReportTimeBegin(String reportTimeBegin) {
+    public RequestInfoQueryReqDto setReportTimeBegin(String reportTimeBegin) {
         this.reportTimeBegin = reportTimeBegin;
         return this;
     }
@@ -81,7 +81,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return reportTimeEnd;
     }
 
-    public QueryRequestInfoReq setReportTimeEnd(String reportTimeEnd) {
+    public RequestInfoQueryReqDto setReportTimeEnd(String reportTimeEnd) {
         this.reportTimeEnd = reportTimeEnd;
         return this;
     }
@@ -90,7 +90,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return emergency;
     }
 
-    public QueryRequestInfoReq setEmergency(String emergency) {
+    public RequestInfoQueryReqDto setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -99,7 +99,7 @@ public class QueryRequestInfoReq extends QueryRoleRelationBaseReq {
         return status;
     }
 
-    public QueryRequestInfoReq setStatus(String status) {
+    public RequestInfoQueryReqDto setStatus(String status) {
         this.status = status;
         return this;
     }

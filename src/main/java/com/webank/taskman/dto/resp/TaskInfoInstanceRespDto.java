@@ -1,12 +1,12 @@
 package com.webank.taskman.dto.resp;
 
-public class TaskInfoInstanceResp {
+public class TaskInfoInstanceRespDto {
     private String id;
     private String name;
     private String status;
     private String result;
 
-    private FormInfoResq taskFormResq;
+    private FormInfoResqDto taskFormResq;
 
     public String getId() {
         return id;
@@ -40,11 +40,11 @@ public class TaskInfoInstanceResp {
         this.result = result;
     }
 
-    public FormInfoResq getTaskFormResq() {
+    public FormInfoResqDto getTaskFormResq() {
         return taskFormResq;
     }
 
-    public void setTaskFormResq(FormInfoResq taskFormResq) {
+    public void setTaskFormResq(FormInfoResqDto taskFormResq) {
         this.taskFormResq = taskFormResq;
     }
 

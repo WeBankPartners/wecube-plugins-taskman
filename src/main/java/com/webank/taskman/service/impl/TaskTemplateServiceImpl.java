@@ -22,10 +22,10 @@ import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDto;
-import com.webank.taskman.dto.req.QueryTemplateReq;
+import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
+import com.webank.taskman.dto.resp.TaskTemplateByRoleRespDto;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.mapper.TaskTemplateMapper;
 import com.webank.taskman.service.FormTemplateService;
@@ -99,13 +99,13 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public QueryResponse<TaskTemplateByRoleResp> selectTaskTemplatePage(Integer page, Integer pageSize, QueryTemplateReq req) {
-        String inSql = QueryTemplateReq.getEqUseRole();
+    public QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize, TemplateQueryReqDto req) {
+        String inSql = TemplateQueryReqDto.getEqUseRole();
         LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
                 .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskTemplate::getId,inSql);
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize),queryWrapper);
-        List<TaskTemplateByRoleResp> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = new QueryResponse<>(iPage.getTotal(), iPage.getCurrent(), iPage.getSize(),list);
+        List<TaskTemplateByRoleRespDto> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
+        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = new QueryResponse<>(iPage.getTotal(), iPage.getCurrent(), iPage.getSize(),list);
         return queryResponse;
     }
 

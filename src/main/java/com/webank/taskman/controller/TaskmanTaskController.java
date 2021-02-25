@@ -16,12 +16,12 @@ import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.ProcessingTasksReq;
-import com.webank.taskman.dto.req.QueryTaskInfoReq;
-import com.webank.taskman.dto.req.QueryTemplateReq;
+import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
+import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
-import com.webank.taskman.dto.resp.TaskTemplateByRoleResp;
+import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
+import com.webank.taskman.dto.resp.TaskTemplateByRoleRespDto;
 import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
@@ -47,8 +47,8 @@ public class TaskmanTaskController {
     @PostMapping("/template/search/{page}/{pageSize}")
     public JsonResponse taskTemplateSearch( @PathVariable("page") Integer page,
             @PathVariable("pageSize") Integer pageSize,
-            @RequestBody QueryTemplateReq req) {
-        QueryResponse<TaskTemplateByRoleResp> queryResponse = taskTemplateService.selectTaskTemplatePage(page, pageSize,
+            @RequestBody TemplateQueryReqDto req) {
+        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page, pageSize,
                 req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -62,7 +62,7 @@ public class TaskmanTaskController {
     @PostMapping("/search/{page}/{pageSize}")
     public JsonResponse taskInfoSearch( @PathVariable("page") Integer page,
              @PathVariable("pageSize") Integer pageSize,
-            @RequestBody(required = false) QueryTaskInfoReq req) {
+            @RequestBody(required = false) TaskInfoQueryReqDto req) {
         if (!StringUtils.isEmpty(req.getIsMy())) {
             req.setReporter(AuthenticationContextHolder.getCurrentUsername());
         }
@@ -87,13 +87,13 @@ public class TaskmanTaskController {
     @GetMapping("/instance")
     public JsonResponse taskInfoInstance(@RequestParam("requestId") String requestId,
             @RequestParam("taskId") String taskId) {
-        RequestInfoInstanceResq requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(requestId,
+        RequestInfoInstanceResqDto requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(requestId,
                 taskId);
         return JsonResponse.okayWithData(requestInfoInstanceResq);
     }
 
     @PostMapping("/processing")
-    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProcessingTasksReq req) {
+    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProcessingTasksReqDto req) {
         return taskInfoService.taskInfoProcessing(req);
     }
 

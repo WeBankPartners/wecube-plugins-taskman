@@ -1,6 +1,6 @@
 package com.webank.taskman.dto.req;
 
-public class QueryRequestTemplateReq extends QueryRoleRelationBaseReq {
+public class RequestTemplateQueryReqDto extends RoleRelationBaseQueryReqDto {
 
     private String id;
 

@@ -20,10 +20,10 @@ import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RoleDto;
-import com.webank.taskman.dto.req.QueryRequestTemplateReq;
+import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.FormTemplateResp;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.resp.FormTemplateRespDto;
+import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
@@ -103,7 +103,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     public QueryResponse<RequestTemplateDto> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
-            QueryRequestTemplateReq req) {
+            RequestTemplateQueryReqDto req) {
         req.queryCurrentUserRoles();
         PageHelper.startPage(pageNum, pageSize);
         PageInfo<RequestTemplateDto> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
@@ -126,10 +126,10 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public RequestTemplateResp detailRequestTemplate(String id) {
-        RequestTemplateResp requestTemplateResp = requestTemplateConverter
+    public RequestTemplateRespDto detailRequestTemplate(String id) {
+        RequestTemplateRespDto requestTemplateResp = requestTemplateConverter
                 .toRespByEntity(requestTemplateMapper.selectById(id));
-        FormTemplateResp formTemplateResp = formTemplateConverter
+        FormTemplateRespDto formTemplateResp = formTemplateConverter
                 .toDto(formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
                         .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()));
         List<FormItemTemplate> items = formItemTemplateMapper

@@ -9,25 +9,25 @@ import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CoreCancelTaskDto;
 import com.webank.taskman.dto.CoreCreateTaskDto;
 import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.ProcessingTasksReq;
-import com.webank.taskman.dto.req.QueryTaskInfoReq;
-import com.webank.taskman.dto.resp.RequestInfoInstanceResq;
-import com.webank.taskman.dto.resp.TaskInfoResp;
+import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
+import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
+import com.webank.taskman.dto.resp.TaskInfoRespDto;
 import com.webank.taskman.support.core.CommonResponseDto;
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
-    QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, QueryTaskInfoReq req);
+    QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, TaskInfoQueryReqDto req);
 
-    RequestInfoInstanceResq selectTaskInfoInstanceService(String requestId, String taskId);
+    RequestInfoInstanceResqDto selectTaskInfoInstanceService(String requestId, String taskId);
 
     TaskInfoDto taskInfoReceive(String id);
 
     CommonResponseDto createTask(CoreCreateTaskDto req);
 
-    JsonResponse taskInfoProcessing(ProcessingTasksReq ptr) throws TaskmanRuntimeException;
+    JsonResponse taskInfoProcessing(ProcessingTasksReqDto ptr) throws TaskmanRuntimeException;
 
     CommonResponseDto cancelTask(CoreCancelTaskDto req);
 
-    TaskInfoResp taskInfoDetail(String id);
+    TaskInfoRespDto taskInfoDetail(String id);
 }

@@ -9,9 +9,9 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.CoreCreateTaskDto.TaskInfoReq;
 import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.QueryTaskInfoReq;
-import com.webank.taskman.dto.resp.TaskInfoInstanceResp;
-import com.webank.taskman.dto.resp.TaskInfoResp;
+import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
+import com.webank.taskman.dto.resp.TaskInfoInstanceRespDto;
+import com.webank.taskman.dto.resp.TaskInfoRespDto;
 
 @Mapper(componentModel = "spring",uses = {},unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface TaskInfoConverter extends BaseConverter<TaskInfoDto, TaskInfo> {
@@ -24,11 +24,11 @@ public interface TaskInfoConverter extends BaseConverter<TaskInfoDto, TaskInfo> 
     })
     TaskInfo toEntityByReq(TaskInfoReq req);
 
-    TaskInfo toEntityByQuery(QueryTaskInfoReq req);
+    TaskInfo toEntityByQuery(TaskInfoQueryReqDto req);
 
-    TaskInfoInstanceResp toInstanceResp(TaskInfo taskInfo);
+    TaskInfoInstanceRespDto toInstanceResp(TaskInfo taskInfo);
 
-    TaskInfoResp toResp(TaskInfo taskInfo);
+    TaskInfoRespDto toResp(TaskInfo taskInfo);
 
 
 }

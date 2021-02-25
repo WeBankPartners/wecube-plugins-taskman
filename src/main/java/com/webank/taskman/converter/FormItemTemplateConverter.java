@@ -4,7 +4,7 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.req.FormItemTemplateSaveReqDto;
 import com.webank.taskman.dto.FormItemTemplateDto;
-import com.webank.taskman.dto.resp.FormItemTemplateResp;
+import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -15,9 +15,9 @@ public interface FormItemTemplateConverter extends BaseConverter<FormItemTemplat
 
     FormItemTemplate toEntityBySaveReq(FormItemTemplateSaveReqDto req);
 
-    FormItemTemplateResp toRespByEntity(FormItemTemplate formItemTemplate);
+    FormItemTemplateRespDto toRespByEntity(FormItemTemplate formItemTemplate);
 
-    List<FormItemTemplateResp> toRespByEntity( List<FormItemTemplate> formItemTemplate);
+    List<FormItemTemplateRespDto> toRespByEntity( List<FormItemTemplate> formItemTemplate);
 
 
 }

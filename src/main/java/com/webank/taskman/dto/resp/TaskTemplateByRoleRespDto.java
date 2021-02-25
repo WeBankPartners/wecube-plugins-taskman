@@ -1,15 +1,20 @@
-package com.webank.taskman.dto.req;
+package com.webank.taskman.dto.resp;
 
-public class QueryTemplateReq extends QueryRoleRelationBaseReq {
-
+public class TaskTemplateByRoleRespDto {
     private String id;
-    private String tempId;
+
     private String procDefId;
+
     private String procDefKey;
+
     private String procDefName;
+
     private String nodeDefId;
+
     private String nodeName;
+
     private String name;
+
     private String description;
 
     public String getId() {
@@ -18,15 +23,6 @@ public class QueryTemplateReq extends QueryRoleRelationBaseReq {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getTempId() {
-        return tempId;
-    }
-
-    public QueryTemplateReq setTempId(String tempId) {
-        this.tempId = tempId;
-        return this;
     }
 
     public String getProcDefId() {
@@ -83,5 +79,19 @@ public class QueryTemplateReq extends QueryRoleRelationBaseReq {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "TaskTemplateByRoleResp{" +
+                "id='" + id + '\'' +
+                ", procDefId='" + procDefId + '\'' +
+                ", procDefKey='" + procDefKey + '\'' +
+                ", procDefName='" + procDefName + '\'' +
+                ", nodeDefId='" + nodeDefId + '\'' +
+                ", nodeName='" + nodeName + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

@@ -19,7 +19,7 @@ import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.dto.FormItemTemplateDto;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.FormTemplateResp;
+import com.webank.taskman.dto.resp.FormTemplateRespDto;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
 
@@ -39,7 +39,7 @@ public class TaskmanFormController {
     @PostMapping("/template/save")
     public JsonResponse createFormTemplate(@Valid @RequestBody FormTemplateSaveReqDto req) {
 
-        FormTemplateResp formTemplateResp = formTemplateService.saveFormTemplateByReq(req);
+        FormTemplateRespDto formTemplateResp = formTemplateService.saveFormTemplateByReq(req);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 
@@ -49,9 +49,9 @@ public class TaskmanFormController {
         return JsonResponse.okay();
     }
 
-    @GetMapping("/template/detail/{tempType}/{tempId}")
-    public JsonResponse formTemplateDetail(@PathVariable("tempType") String tempType,
-            @PathVariable("tempId") String tempId) {
+    @GetMapping("/template/detail/{temp-type}/{temp-id}")
+    public JsonResponse formTemplateDetail(@PathVariable("temp-type") String tempType,
+            @PathVariable("temp-id") String tempId) {
         return JsonResponse
                 .okayWithData(formTemplateService.detailFormTemplate(new FormTemplateSaveReqDto(tempId, tempType)));
     }

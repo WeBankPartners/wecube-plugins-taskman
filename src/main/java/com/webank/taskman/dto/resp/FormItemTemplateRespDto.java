@@ -1,6 +1,6 @@
 package com.webank.taskman.dto.resp;
 
-public class FormItemTemplateResp {
+public class FormItemTemplateRespDto {
 
     private String id;
     private String tempId;
@@ -36,7 +36,7 @@ public class FormItemTemplateResp {
         return id;
     }
 
-    public FormItemTemplateResp setId(String id) {
+    public FormItemTemplateRespDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -45,7 +45,7 @@ public class FormItemTemplateResp {
         return tempId;
     }
 
-    public FormItemTemplateResp setTempId(String tempId) {
+    public FormItemTemplateRespDto setTempId(String tempId) {
         this.tempId = tempId;
         return this;
     }
@@ -54,7 +54,7 @@ public class FormItemTemplateResp {
         return formType;
     }
 
-    public FormItemTemplateResp setFormType(String formType) {
+    public FormItemTemplateRespDto setFormType(String formType) {
         this.formType = formType;
         return this;
     }
@@ -63,7 +63,7 @@ public class FormItemTemplateResp {
         return formTemplateId;
     }
 
-    public FormItemTemplateResp setFormTemplateId(String formTemplateId) {
+    public FormItemTemplateRespDto setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
         return this;
     }
@@ -72,7 +72,7 @@ public class FormItemTemplateResp {
         return name;
     }
 
-    public FormItemTemplateResp setName(String name) {
+    public FormItemTemplateRespDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -81,7 +81,7 @@ public class FormItemTemplateResp {
         return defaultValue;
     }
 
-    public FormItemTemplateResp setDefaultValue(String defaultValue) {
+    public FormItemTemplateRespDto setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
@@ -90,7 +90,7 @@ public class FormItemTemplateResp {
         return isCurrency;
     }
 
-    public FormItemTemplateResp setIsCurrency(Integer isCurrency) {
+    public FormItemTemplateRespDto setIsCurrency(Integer isCurrency) {
         this.isCurrency = isCurrency;
         return this;
     }
@@ -99,7 +99,7 @@ public class FormItemTemplateResp {
         return sort;
     }
 
-    public FormItemTemplateResp setSort(Integer sort) {
+    public FormItemTemplateRespDto setSort(Integer sort) {
         this.sort = sort;
         return this;
     }
@@ -108,7 +108,7 @@ public class FormItemTemplateResp {
         return packageName;
     }
 
-    public FormItemTemplateResp setPackageName(String packageName) {
+    public FormItemTemplateRespDto setPackageName(String packageName) {
         this.packageName = packageName;
         return this;
     }
@@ -117,7 +117,7 @@ public class FormItemTemplateResp {
         return entity;
     }
 
-    public FormItemTemplateResp setEntity(String entity) {
+    public FormItemTemplateRespDto setEntity(String entity) {
         this.entity = entity;
         return this;
     }
@@ -126,7 +126,7 @@ public class FormItemTemplateResp {
         return entityId;
     }
 
-    public FormItemTemplateResp setEntityId(String entityId) {
+    public FormItemTemplateRespDto setEntityId(String entityId) {
         this.entityId = entityId;
         return this;
     }
@@ -135,7 +135,7 @@ public class FormItemTemplateResp {
         return attrDefId;
     }
 
-    public FormItemTemplateResp setAttrDefId(String attrDefId) {
+    public FormItemTemplateRespDto setAttrDefId(String attrDefId) {
         this.attrDefId = attrDefId;
         return this;
     }
@@ -144,7 +144,7 @@ public class FormItemTemplateResp {
         return attrDefDataType;
     }
 
-    public FormItemTemplateResp setAttrDefDataType(String attrDefDataType) {
+    public FormItemTemplateRespDto setAttrDefDataType(String attrDefDataType) {
         this.attrDefDataType = attrDefDataType;
         return this;
     }
@@ -153,7 +153,7 @@ public class FormItemTemplateResp {
         return routineExp;
     }
 
-    public FormItemTemplateResp setRoutineExp(String routineExp) {
+    public FormItemTemplateRespDto setRoutineExp(String routineExp) {
         this.routineExp = routineExp;
         return this;
     }
@@ -162,7 +162,7 @@ public class FormItemTemplateResp {
         return elementType;
     }
 
-    public FormItemTemplateResp setElementType(String elementType) {
+    public FormItemTemplateRespDto setElementType(String elementType) {
         this.elementType = elementType;
         return this;
     }
@@ -171,7 +171,7 @@ public class FormItemTemplateResp {
         return title;
     }
 
-    public FormItemTemplateResp setTitle(String title) {
+    public FormItemTemplateRespDto setTitle(String title) {
         this.title = title;
         return this;
     }
@@ -180,7 +180,7 @@ public class FormItemTemplateResp {
         return width;
     }
 
-    public FormItemTemplateResp setWidth(Integer width) {
+    public FormItemTemplateRespDto setWidth(Integer width) {
         this.width = width;
         return this;
     }
@@ -189,7 +189,7 @@ public class FormItemTemplateResp {
         return refEntity;
     }
 
-    public FormItemTemplateResp setRefEntity(String refEntity) {
+    public FormItemTemplateRespDto setRefEntity(String refEntity) {
         this.refEntity = refEntity;
         return this;
     }
@@ -198,7 +198,7 @@ public class FormItemTemplateResp {
         return refPackageName;
     }
 
-    public FormItemTemplateResp setRefPackageName(String refPackageName) {
+    public FormItemTemplateRespDto setRefPackageName(String refPackageName) {
         this.refPackageName = refPackageName;
         return this;
     }
@@ -207,7 +207,7 @@ public class FormItemTemplateResp {
         return refFilters;
     }
 
-    public FormItemTemplateResp setRefFilters(String refFilters) {
+    public FormItemTemplateRespDto setRefFilters(String refFilters) {
         this.refFilters = refFilters;
         return this;
     }
@@ -216,7 +216,7 @@ public class FormItemTemplateResp {
         return dataOptions;
     }
 
-    public FormItemTemplateResp setDataOptions(String dataOptions) {
+    public FormItemTemplateRespDto setDataOptions(String dataOptions) {
         this.dataOptions = dataOptions;
         return this;
     }
@@ -225,7 +225,7 @@ public class FormItemTemplateResp {
         return required;
     }
 
-    public FormItemTemplateResp setRequired(Integer required) {
+    public FormItemTemplateRespDto setRequired(Integer required) {
         this.required = required;
         return this;
     }
@@ -234,7 +234,7 @@ public class FormItemTemplateResp {
         return regular;
     }
 
-    public FormItemTemplateResp setRegular(String regular) {
+    public FormItemTemplateRespDto setRegular(String regular) {
         this.regular = regular;
         return this;
     }
@@ -243,7 +243,7 @@ public class FormItemTemplateResp {
         return isEdit;
     }
 
-    public FormItemTemplateResp setIsEdit(Integer isEdit) {
+    public FormItemTemplateRespDto setIsEdit(Integer isEdit) {
         this.isEdit = isEdit;
         return this;
     }
@@ -252,7 +252,7 @@ public class FormItemTemplateResp {
         return isView;
     }
 
-    public FormItemTemplateResp setIsView(Integer isView) {
+    public FormItemTemplateRespDto setIsView(Integer isView) {
         this.isView = isView;
         return this;
     }

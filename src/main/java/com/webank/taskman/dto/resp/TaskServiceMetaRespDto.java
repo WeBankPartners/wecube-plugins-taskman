@@ -2,7 +2,7 @@ package com.webank.taskman.dto.resp;
 
 import java.util.List;
 
-public class TaskServiceMetaResp {
+public class TaskServiceMetaRespDto {
 
 
     private List<TaskServiceMetaFormItem> formItems;

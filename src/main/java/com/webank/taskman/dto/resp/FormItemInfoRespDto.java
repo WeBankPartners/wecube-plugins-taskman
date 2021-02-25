@@ -1,6 +1,6 @@
 package com.webank.taskman.dto.resp;
 
-public class FormItemInfoResp {
+public class FormItemInfoRespDto {
     private String id;
 
     private String value;
@@ -117,7 +117,7 @@ public class FormItemInfoResp {
         return routineExp;
     }
 
-    public FormItemInfoResp setRoutineExp(String routineExp) {
+    public FormItemInfoRespDto setRoutineExp(String routineExp) {
         this.routineExp = routineExp;
         return this;
     }

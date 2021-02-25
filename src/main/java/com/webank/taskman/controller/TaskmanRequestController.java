@@ -31,13 +31,13 @@ import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
-import com.webank.taskman.dto.req.QueryRequestInfoReq;
-import com.webank.taskman.dto.req.QueryRequestTemplateReq;
-import com.webank.taskman.dto.req.QueryRoleRelationBaseReq;
+import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
+import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
+import com.webank.taskman.dto.req.RoleRelationBaseQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.RequestInfoResq;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.resp.RequestInfoResqDto;
+import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
@@ -113,7 +113,7 @@ public class TaskmanRequestController {
 
     @PostMapping("/template/search/{page}/{pageSize}")
     public JsonResponse requestTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestTemplateReq req) {
+            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestTemplateQueryReqDto req) {
         QueryResponse<RequestTemplateDto> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
                 pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
@@ -127,7 +127,7 @@ public class TaskmanRequestController {
 
     @GetMapping("/template/detail/{id}")
     public JsonResponse requestTemplateDetail(@PathVariable("id") String id) {
-        RequestTemplateResp detailRequestTemplateResq = requestTemplateService.detailRequestTemplate(id);
+        RequestTemplateRespDto detailRequestTemplateResq = requestTemplateService.detailRequestTemplate(id);
         return JsonResponse.okayWithData(detailRequestTemplateResq);
     }
 
@@ -137,9 +137,9 @@ public class TaskmanRequestController {
     @GetMapping(value = "/template/available")
     public JsonResponse requestTemplateAvailable() {
         RequestTemplate requestTemplate = new RequestTemplate().setStatus(StatusEnum.RELEASED.toString());
-        String inSql = QueryRoleRelationBaseReq.getEqUseRole();
+        String inSql = RoleRelationBaseQueryReqDto.getEqUseRole();
         LambdaQueryWrapper<RequestTemplate> queryWrapper = requestTemplate.getLambdaQueryWrapper()
-                .inSql(!StringUtils.isEmpty(inSql), RequestTemplate::getId, QueryRoleRelationBaseReq.getEqUseRole());
+                .inSql(!StringUtils.isEmpty(inSql), RequestTemplate::getId, RoleRelationBaseQueryReqDto.getEqUseRole());
         return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
     }
 
@@ -150,14 +150,14 @@ public class TaskmanRequestController {
 
     @PostMapping("/search/{page}/{pageSize}")
     public JsonResponse requestInfoSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) QueryRequestInfoReq req) {
-        QueryResponse<RequestInfoResq> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
+            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestInfoQueryReqDto req) {
+        QueryResponse<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         return JsonResponse.okayWithData(list);
     }
 
     @GetMapping("/details/{id}")
     public JsonResponse requestInfoDetail(@PathVariable("id") String id) {
-        RequestInfoResq requestInfoResq = requestInfoService.selectDetail(id);
+        RequestInfoResqDto requestInfoResq = requestInfoService.selectDetail(id);
         return JsonResponse.okayWithData(requestInfoResq);
     }
 

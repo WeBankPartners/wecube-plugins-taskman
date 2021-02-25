@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.webank.taskman.dto.RoleDto;
 
-public class RequestTemplateResp  {
+public class RequestTemplateRespDto  {
 
     private String id;
     private String requestTempGroup;
@@ -21,13 +21,13 @@ public class RequestTemplateResp  {
     private List<RoleDto> useRoles = new ArrayList<>();
     private List<RoleDto> manageRoles = new ArrayList<>();
 
-    private FormTemplateResp formTemplateResp;
+    private FormTemplateRespDto formTemplateResp;
 
     public String getId() {
         return id;
     }
 
-    public RequestTemplateResp setId(String id) {
+    public RequestTemplateRespDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -36,7 +36,7 @@ public class RequestTemplateResp  {
         return requestTempGroup;
     }
 
-    public RequestTemplateResp setRequestTempGroup(String requestTempGroup) {
+    public RequestTemplateRespDto setRequestTempGroup(String requestTempGroup) {
         this.requestTempGroup = requestTempGroup;
         return this;
     }
@@ -45,7 +45,7 @@ public class RequestTemplateResp  {
         return requestTempGroupName;
     }
 
-    public RequestTemplateResp setRequestTempGroupName(String requestTempGroupName) {
+    public RequestTemplateRespDto setRequestTempGroupName(String requestTempGroupName) {
         this.requestTempGroupName = requestTempGroupName;
         return this;
     }
@@ -54,7 +54,7 @@ public class RequestTemplateResp  {
         return procDefKey;
     }
 
-    public RequestTemplateResp setProcDefKey(String procDefKey) {
+    public RequestTemplateRespDto setProcDefKey(String procDefKey) {
         this.procDefKey = procDefKey;
         return this;
     }
@@ -63,7 +63,7 @@ public class RequestTemplateResp  {
         return procDefId;
     }
 
-    public RequestTemplateResp setProcDefId(String procDefId) {
+    public RequestTemplateRespDto setProcDefId(String procDefId) {
         this.procDefId = procDefId;
         return this;
     }
@@ -72,7 +72,7 @@ public class RequestTemplateResp  {
         return procDefName;
     }
 
-    public RequestTemplateResp setProcDefName(String procDefName) {
+    public RequestTemplateRespDto setProcDefName(String procDefName) {
         this.procDefName = procDefName;
         return this;
     }
@@ -81,7 +81,7 @@ public class RequestTemplateResp  {
         return name;
     }
 
-    public RequestTemplateResp setName(String name) {
+    public RequestTemplateRespDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -90,7 +90,7 @@ public class RequestTemplateResp  {
         return description;
     }
 
-    public RequestTemplateResp setDescription(String description) {
+    public RequestTemplateRespDto setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -99,7 +99,7 @@ public class RequestTemplateResp  {
         return version;
     }
 
-    public RequestTemplateResp setVersion(String version) {
+    public RequestTemplateRespDto setVersion(String version) {
         this.version = version;
         return this;
     }
@@ -108,7 +108,7 @@ public class RequestTemplateResp  {
         return tags;
     }
 
-    public RequestTemplateResp setTags(String tags) {
+    public RequestTemplateRespDto setTags(String tags) {
         this.tags = tags;
         return this;
     }
@@ -117,7 +117,7 @@ public class RequestTemplateResp  {
         return status;
     }
 
-    public RequestTemplateResp setStatus(String status) {
+    public RequestTemplateRespDto setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -126,7 +126,7 @@ public class RequestTemplateResp  {
         return useRoles;
     }
 
-    public RequestTemplateResp setUseRoles(List<RoleDto> useRoles) {
+    public RequestTemplateRespDto setUseRoles(List<RoleDto> useRoles) {
         this.useRoles = useRoles;
         return this;
     }
@@ -135,16 +135,16 @@ public class RequestTemplateResp  {
         return manageRoles;
     }
 
-    public RequestTemplateResp setManageRoles(List<RoleDto> manageRoles) {
+    public RequestTemplateRespDto setManageRoles(List<RoleDto> manageRoles) {
         this.manageRoles = manageRoles;
         return this;
     }
 
-    public FormTemplateResp getFormTemplateResp() {
+    public FormTemplateRespDto getFormTemplateResp() {
         return formTemplateResp;
     }
 
-    public RequestTemplateResp setFormTemplateResp(FormTemplateResp formTemplateResp) {
+    public RequestTemplateRespDto setFormTemplateResp(FormTemplateRespDto formTemplateResp) {
         this.formTemplateResp = formTemplateResp;
         return this;
     }

@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
 
-public class TaskInfoResp {
+public class TaskInfoRespDto {
     private String id;
     private String parentId;
     private String taskTempId;
@@ -22,13 +22,13 @@ public class TaskInfoResp {
     private String reportRole;
     private String attachFileId;
 
-    private List<FormItemInfoResp> formItemInfo;
+    private List<FormItemInfoRespDto> formItemInfo;
 
     public String getId() {
         return id;
     }
 
-    public TaskInfoResp setId(String id) {
+    public TaskInfoRespDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -37,7 +37,7 @@ public class TaskInfoResp {
         return parentId;
     }
 
-    public TaskInfoResp setParentId(String parentId) {
+    public TaskInfoRespDto setParentId(String parentId) {
         this.parentId = parentId;
         return this;
     }
@@ -46,7 +46,7 @@ public class TaskInfoResp {
         return taskTempId;
     }
 
-    public TaskInfoResp setTaskTempId(String taskTempId) {
+    public TaskInfoRespDto setTaskTempId(String taskTempId) {
         this.taskTempId = taskTempId;
         return this;
     }
@@ -55,7 +55,7 @@ public class TaskInfoResp {
         return procInstId;
     }
 
-    public TaskInfoResp setProcInstId(String procInstId) {
+    public TaskInfoRespDto setProcInstId(String procInstId) {
         this.procInstId = procInstId;
         return this;
     }
@@ -64,7 +64,7 @@ public class TaskInfoResp {
         return nodeDefId;
     }
 
-    public TaskInfoResp setNodeDefId(String nodeDefId) {
+    public TaskInfoRespDto setNodeDefId(String nodeDefId) {
         this.nodeDefId = nodeDefId;
         return this;
     }
@@ -73,7 +73,7 @@ public class TaskInfoResp {
         return nodeName;
     }
 
-    public TaskInfoResp setNodeName(String nodeName) {
+    public TaskInfoRespDto setNodeName(String nodeName) {
         this.nodeName = nodeName;
         return this;
     }
@@ -82,7 +82,7 @@ public class TaskInfoResp {
         return name;
     }
 
-    public TaskInfoResp setName(String name) {
+    public TaskInfoRespDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -91,7 +91,7 @@ public class TaskInfoResp {
         return description;
     }
 
-    public TaskInfoResp setDescription(String description) {
+    public TaskInfoRespDto setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -100,7 +100,7 @@ public class TaskInfoResp {
         return reporter;
     }
 
-    public TaskInfoResp setReporter(String reporter) {
+    public TaskInfoRespDto setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -109,7 +109,7 @@ public class TaskInfoResp {
         return reportTime;
     }
 
-    public TaskInfoResp setReportTime(Date reportTime) {
+    public TaskInfoRespDto setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -118,7 +118,7 @@ public class TaskInfoResp {
         return emergency;
     }
 
-    public TaskInfoResp setEmergency(String emergency) {
+    public TaskInfoRespDto setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -127,7 +127,7 @@ public class TaskInfoResp {
         return result;
     }
 
-    public TaskInfoResp setResult(String result) {
+    public TaskInfoRespDto setResult(String result) {
         this.result = result;
         return this;
     }
@@ -136,7 +136,7 @@ public class TaskInfoResp {
         return status;
     }
 
-    public TaskInfoResp setStatus(String status) {
+    public TaskInfoRespDto setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -145,7 +145,7 @@ public class TaskInfoResp {
         return version;
     }
 
-    public TaskInfoResp setVersion(String version) {
+    public TaskInfoRespDto setVersion(String version) {
         this.version = version;
         return this;
     }
@@ -154,7 +154,7 @@ public class TaskInfoResp {
         return reportRole;
     }
 
-    public TaskInfoResp setReportRole(String reportRole) {
+    public TaskInfoRespDto setReportRole(String reportRole) {
         this.reportRole = reportRole;
         return this;
     }
@@ -163,23 +163,23 @@ public class TaskInfoResp {
         return attachFileId;
     }
 
-    public TaskInfoResp setAttachFileId(String attachFileId) {
+    public TaskInfoRespDto setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
         return this;
     }
 
-    public List<FormItemInfoResp> getFormItemInfo() {
+    public List<FormItemInfoRespDto> getFormItemInfo() {
         return formItemInfo;
     }
 
-    public TaskInfoResp setFormItemInfo(List<FormItemInfoResp> formItemInfo) {
+    public TaskInfoRespDto setFormItemInfo(List<FormItemInfoRespDto> formItemInfo) {
         this.formItemInfo = formItemInfo;
         return this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", TaskInfoResp.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", TaskInfoRespDto.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("parentId='" + parentId + "'")
                 .add("taskTempId='" + taskTempId + "'")

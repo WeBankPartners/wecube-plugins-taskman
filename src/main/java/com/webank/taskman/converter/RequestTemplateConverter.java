@@ -4,7 +4,7 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.RequestTemplateDto;
-import com.webank.taskman.dto.resp.RequestTemplateResp;
+import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -14,7 +14,7 @@ public interface RequestTemplateConverter extends BaseConverter<RequestTemplateD
 
     RequestTemplate saveReqToEntity(RequestTemplateSaveReqDto req);
 
-    RequestTemplateResp toRespByEntity(RequestTemplate req);
+    RequestTemplateRespDto toRespByEntity(RequestTemplate req);
 
 
 

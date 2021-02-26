@@ -1,5 +1,16 @@
 package com.webank.taskman.service.impl;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
@@ -30,12 +41,6 @@ import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
 
 @Service
 public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate>
@@ -73,9 +78,26 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     public RequestTemplateDto saveRequestTemplate(RequestTemplateSaveReqDto req) {
         List<RoleDto> roles = roleRelationConverter
                 .rolesDataResponseToDtoList(coreServiceStub.getAllAuthRolesOfCurrentUser());
-        Set<RoleDto> ts = new HashSet<RoleDto>(roles);
-        ts.addAll(req.getUseRoles());
-        req.setUseRoles(new ArrayList<>(ts));
+        
+        Set<String> toAddUseRoles = new HashSet<String>();
+        if(roles != null){
+            for(RoleDto roleDto : roles){
+                if(StringUtils.isNoneBlank(roleDto.getRoleName())){
+                    toAddUseRoles.add(roleDto.getRoleName());
+                }
+            }
+        }
+        
+        List<RoleDto> inputRoleDtos = req.getUseRoles();
+        if(inputRoleDtos != null){
+            for(RoleDto roleDto : inputRoleDtos){
+                if(StringUtils.isNoneBlank(roleDto.getRoleName())){
+                    toAddUseRoles.add(roleDto.getRoleName());
+                }
+            }
+        }
+        
+        req.setUseRoles(new ArrayList<>(inputRoleDtos));
         RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);

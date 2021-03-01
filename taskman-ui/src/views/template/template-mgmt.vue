@@ -73,10 +73,12 @@
       </div>
     </Row>
     <Row v-show="isEdit && currentStep === 1">
-      <div style="width:1000px;margin:10px auto;text-align: center">
-        <Table style="margin-bottom:10px;" ref="selection" @on-selection-change="attrsChangedHandler" border :data="attrsData" :columns="attrsColumns"></Table>
-        <Button >重置</Button>
-        <Button type="primary" @click="attrsSetHandler" style="margin-left: 8px">下一步</Button>
+      <div style="width:1000px;margin:10px auto;">
+        <Tree :data="attrsTreeData" style="margin:o auto;" @on-check-change="attrsChangedHandler" multiple show-checkbox></Tree>
+
+        <!-- <Table style="margin-bottom:10px;" ref="selection" @on-selection-change="attrsChangedHandler" border :data="attrsData" :columns="attrsColumns"></Table> -->
+        <!-- <Button >重置</Button> -->
+        <Button type="primary" @click="attrsSetHandler" style="margin-left: 8px;margin:10px auto;">下一步</Button>
       </div>
     </Row>
      <!-- v-show="isEdit && (currentStep === 2 || currentStep === 3)" -->
@@ -106,9 +108,18 @@
           </Col>
           <Col span="12">
             <FormItem label="输入项">
-              <Select multiple @on-change="requestFormFieldChanged($event,0)" v-model="requestForm.inputAttrDef">
+              <TreeSelect
+                v-model="requestForm.inputAttrDef"
+                :maxTagCount="3"
+                placeholder="输入项"
+                :data="attrsSelections"
+                @change="requestFormFieldChanged($event,0)"
+                :clearable="true"
+                style="width:100%"
+              ></TreeSelect>
+              <!-- <Select multiple @on-change="requestFormFieldChanged($event,0)" v-model="requestForm.inputAttrDef">
                 <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select>
+              </Select> -->
             </FormItem>
           </Col>
         </Form>
@@ -125,9 +136,17 @@
           </Col>
           <Col span="12">
             <FormItem label="输入项">
-              <Select multiple v-model="taskForm.inputAttrDef">
+              <TreeSelect
+                v-model="taskForm.inputAttrDef"
+                :maxTagCount="3"
+                placeholder="输入项"
+                :data="taskAttrsSelections"
+                :clearable="true"
+                style="width:100%"
+              ></TreeSelect>
+              <!-- <Select multiple v-model="taskForm.inputAttrDef">
                 <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select>
+              </Select> -->
             </FormItem>
           </Col>
           <Col span="6">
@@ -146,9 +165,18 @@
           </Col>
           <Col span="12">
             <FormItem label="输出项">
-              <Select multiple @on-change="requestFormFieldChanged($event,1)" v-model="taskForm.outputAttrDef">
+              <TreeSelect
+                v-model="taskForm.outputAttrDef"
+                :maxTagCount="3"
+                placeholder="输出项"
+                :data="taskAttrsSelections"
+                @change="requestFormFieldChanged($event,1)"
+                :clearable="true"
+                style="width:100%"
+              ></TreeSelect>
+              <!-- <Select multiple @on-change="requestFormFieldChanged($event,1)" v-model="taskForm.outputAttrDef">
                 <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select>
+              </Select> -->
             </FormItem>
           </Col>
         </Form>
@@ -283,11 +311,13 @@ import {
 } from "../../api/server.js"
 import PluginTable from "../../components/table";
 import FilterRule from "../../components/filter-rule";
+import TreeSelect from '../../components/tree-select.vue'
 import {addEvent, removeEvent} from "../../util/event"
 export default {
   components: {
     PluginTable,
-    FilterRule
+    FilterRule,
+    TreeSelect
   },
   data() {
     return {
@@ -433,6 +463,7 @@ export default {
       templateGroupList: [],
       currentTemplateId: '',
       attrsData: [],
+      attrsTreeData: [],
       procTaskNodes:[],
       attrsColumns: [
         {
@@ -447,12 +478,16 @@ export default {
         },
         {
           title: '对象',
+          key: "entity",
+        },
+        {
+          title: '属性',
           key: "name",
         },
-        // {
-        //   title: '属性',
-        //   key: "name",
-        // }
+        {
+          title: '描述',
+          key: "description",
+        }
       ],
       attrsSelections: [],
       taskAttrsSelections: [],
@@ -507,18 +542,25 @@ export default {
           this.currentFieldList = this.formFields
         if (type === 0) {
           this.attrsSelections = data.otherAttrDef && data.otherAttrDef.length > 0 ? JSON.parse(data.otherAttrDef) : []
-          this.taskAttrsSelections = this.attrsSelections.concat(this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}}))
+          this.taskAttrsSelections = this.attrsSelections.concat([{
+            title: '自定义',
+            expand: true,
+            children:this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}})
+          }])
           this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
           this.list = this.entityList
           this.currentEntityList = this.entityList
         }
         if (isEdit) {
-          let objData = this.$refs.selection.objData
-          Object.keys(objData).forEach(i => {
-            this.attrsSelections.forEach(j => {
-              if (j.id === objData[i].id) {
-                objData[i]._isChecked = true
-              }
+          this.attrsTreeData.forEach(i => {
+            i.children.forEach(child => {
+              this.attrsSelections.forEach(j => {
+                j.children.forEach(d => {
+                  if (d.name === child.name) {
+                    child.checked = true
+                  }
+                })
+              })
             })
           })
         }
@@ -605,7 +647,7 @@ export default {
       if (status === 'OK') {
         this.allEntityType = data.map(_ => {
           // handle result sort by name
-          const pluginPackageEntities = _.pluginPackageEntities ? _.pluginPackageEntities.sort(function (a, b) {
+          const pluginPackageEntities = _.entities ? _.entities.sort(function (a, b) {
               var s = a.name.toLowerCase()
               var t = b.name.toLowerCase()
               if (s < t) return -1
@@ -703,7 +745,11 @@ export default {
           desc: 'Success'
         })
         if (this.currentStep === 2) {
-          this.taskAttrsSelections = this.attrsSelections.concat(this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}}))
+          this.taskAttrsSelections = this.attrsSelections.concat([{
+            title: '自定义',
+            expand: true,
+            children:this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}})
+          }])
           this.currentStep++
           this.formFields = []
           this.currentFieldList = []
@@ -713,28 +759,27 @@ export default {
       }
     },
     requestFormFieldChanged (val,type) {
-      console.log('editor' ,val,type)
       //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
       const isAttrs = this.formFields.filter(field => !field.isCustom)
       isAttrs.forEach(attr => {
-        const found = val.find(v => attr.name === v)
+        const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name)
         if (!found) {
           const index = this.formFields.indexOf(attr)
           this.formFields.splice(index, 1)
         }
       })
-      const selections = type === 0 ? this.attrsSelections : this.taskAttrsSelections
-      val.forEach(item => {
-        const field = this.formFields.find(f => f.name === item)
+      const selections = type === 0 ? [].concat(...this.attrsSelections.map(_ => _.children)) : [].concat(...this.taskAttrsSelections.map(_ => _.children))
+      val.filter(e => !e.isEntity).forEach(item => {
+        const field = this.formFields.find(f => f.name === item.name)
         if (!field) {
-          const attr = selections.find(a => a.name === item)
+          const attr = selections.find(a => a.name === item.name)
           this.formFields.push({
             ...attr,
-            entity: attr.name,
+            entity: attr.entity,
             packageName: attr.packageName,
-            elementType: attr.elementType ? attr.elementType : 'PluginSelect',
+            elementType: attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'PluginSelect' : 'Input',
             width: 24,
-            title: attr.displayName,
+            title: attr.name,
             defaultValue: "",
             isHover: false,
             isActive: false,
@@ -765,9 +810,32 @@ export default {
     attrsSetHandler () {
       this.currentStep++
     },
-    attrsChangedHandler (selection) {
-      this.attrsSelections = selection
-      this.taskAttrsSelections = selection
+    attrsChangedHandler (selection, current) {
+      let data = []
+      selection.filter(i => !i.isEntity).forEach(sel => {
+        const found = data.find(d => d.title === sel.entity)
+        if (found) {
+          found.children.push({
+            ...sel,
+            checked: false,
+            nodeKey: null
+          })
+        } else {
+          data.push({
+            title: sel.entity,
+            checked: false,
+            isEntity: true,
+            expand: true,
+            children: [{
+              ...sel,
+              checked: false,
+              nodeKey: null
+            }]
+          })
+        }
+      })
+      this.attrsSelections = data
+      this.taskAttrsSelections = data
     },
     actionFun(type, data) {
       switch (type) {
@@ -795,6 +863,7 @@ export default {
             manageRoles:[]
           }
           this.attrsData = []
+          this.attrsTreeData = []
           this.formTemplateId = ''
           this.currentTemplateId = ''
           this.attrsSelections = []
@@ -919,14 +988,25 @@ export default {
         })
         this.currentStep++
         if (this.attrsSelections.length > 0) {
-          let objData = this.$refs.selection.objData
-          Object.keys(objData).forEach(i => {
-            this.attrsSelections.forEach(j => {
-              if (j.id === objData[i].id) {
-                objData[i]._isChecked = true
-              }
+          // let objData = this.$refs.selection.objData
+          this.attrsTreeData.forEach(i => {
+            i.children.forEach(child => {
+              this.attrsSelections.forEach(j => {
+                j.children.forEach(d => {
+                  if (d.name === child.name) {
+                    child.checked = true
+                  }
+                })
+              })
             })
           })
+          // Object.keys(objData).forEach(i => {
+          //   this.attrsSelections.forEach(j => {
+          //     if (j.id === objData[i].id) {
+          //       objData[i]._isChecked = true
+          //     }
+          //   })
+          // })
         } else {
           this.getTaskNodesEntitys(this.templateForm.procDefId)
         }
@@ -934,28 +1014,51 @@ export default {
     },
     async getTaskNodesEntitys (id) {
       const nodes = await getTaskNodesEntitys(id)
-      this.procTaskNodes = nodes.data ? nodes.data.filter(node => node.taskCategory === 'SUTN') : []
+      // this.procTaskNodes = nodes.data ? nodes.data.filter(node => node.taskCategory === 'SUTN') : []
+      this.procTaskNodes = nodes.data
       let entitys = new Set()
       const entityData = nodes.data ? nodes.data : []
-      entityData.filter(f=>f.boundEntity).forEach(node => {
-        const entity = node.boundEntity
-        entitys.add(entity.name)
-        const found = this.attrsData.find(_ => _.name == entity.name)
-        if (!found) {
-          this.attrsData.push(entity)
-        }
-      })
-      // this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
+      // entityData.filter(f=>f.boundEntity).forEach(node => {
       //   const entity = node.boundEntity
       //   entitys.add(entity.name)
-      //   return node.boundEntity.attributes.map(attr => {
-      //     return {
-      //       ...attr,
-      //       packageName:entity.packageName,
-      //       entity:entity.name
-      //     }
-      //   })
-      // }))
+      //   const found = this.attrsData.find(_ => _.name == entity.name)
+      //   if (!found) {
+      //     this.attrsData.push(entity)
+      //   }
+      // })
+      this.attrsData = [].concat(...this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).map(node => {
+        const entity = node.boundEntity
+        entitys.add(entity.name)
+        return node.boundEntity.attributes.map(attr => {
+          return {
+            ...attr,
+            packageName:entity.packageName,
+            entity:entity.name
+          }
+        })
+      }))
+      this.attrsTreeData = []
+      this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).forEach(node => {
+        const entity = node.boundEntity
+        entitys.add(entity.name)
+        const found = this.attrsTreeData.find(e => e.title === entity.name)
+        if (!found) {
+          this.attrsTreeData.push({
+            title: entity.name,
+            checked: false,
+            isEntity: true,
+            children: node.boundEntity.attributes.map(attr => {
+              return {
+                ...attr,
+                title: attr.name,
+                packageName:entity.packageName,
+                entity:entity.name,
+                checked: false
+              }
+            })
+          })
+        }
+      })
       this.entityList = Array.from(entitys)
       this.list = Array.from(entitys)
       this.currentEntityList = this.entityList
@@ -981,13 +1084,14 @@ export default {
     },
     deleteHandler (index) {
       // console.log(index)
+      this.formFields.splice(index, 1)
     },
     formFieldSortHandler (entityList) {
       let fields = []
       this.formFields = []
       entityList.forEach(entity => {
         this.currentFieldList.forEach(formField => {
-          if (formField.name === entity) {
+          if (formField.entity === entity) {
             fields.push(formField)
           }
         })
@@ -1007,7 +1111,6 @@ export default {
         sort: false,
         animation: 150,
         setData: (dataTransfer, dragEl) => {
-          // console.log(dataTransfer, dragEl)
           // const index = parseInt(dragEl.dataset.id)
           // dragEl.__item__ = items[index]
         }
@@ -1054,7 +1157,6 @@ export default {
             this.currentFieldList = fields
           }
           // this.formFields = []
-          console.log(1)
           this.formFieldSortHandler(this.currentEntityList)
           isAdd = false
         },

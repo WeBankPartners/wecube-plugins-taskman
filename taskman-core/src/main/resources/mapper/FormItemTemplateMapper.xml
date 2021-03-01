@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.webank.taskman.mapper.FormItemTemplateMapper">
+
+    <update id="deleteRequestTemplateByIDMapper">
+       UPDATE form_item_template SET del_flag=1 WHERE id = #{id}
+    </update>
+
+    <delete id="deleteByDomain" parameterType="com.webank.taskman.domain.FormItemTemplate">
+        DELETE FROM form_item_template
+        <where>
+            <if test="formTemplateId != null and formTemplateId != ''">
+               AND  form_template_id=#{formTemplateId}
+            </if>
+        </where>
+    </delete>
+
+    <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.FormItemInfoRespDto">
+        SELECT
+            fit.id,
+            fit.`name`,
+            (CASE WHEN fit.element_type ='PluginSelect' THEN "ref" ELSE fit.element_type END ) AS elementType,
+            (CASE WHEN fit.element_type ='PluginSelect' THEN routine_exp ELSE "" END ) AS value
+        FROM form_item_template fit
+        WHERE fit.temp_id in (
+            SELECT tt.id FROM task_template tt INNER JOIN request_info ri ON ri.request_temp_id = tt.request_template_id
+            AND ri.proc_inst_id= #{procInstId}
+            WHERE tt.node_def_id = #{nodeDefId}
+        )
+    </select>
+
+    <resultMap id="selectDetailMap" type="com.webank.taskman.dto.resp.FormItemInfoRespDto">
+        <id property="id" column="id"/>
+        <result property="value" column="value"/>
+
+        <result property="itemTempId" column="item_temp_id"/>
+        <result property="isView" column="is_view"/>
+        <result property="isEdit" column="is_edit"/>
+        <result property="width" column="width"/>
+        <result property="name" column="name"/>
+        <result property="elementType" column="element_type"/>
+        <result property="dataOptions" column="data_options"/>
+        <result property="routineExp" column="routine_exp"/>
+    </resultMap>
+
+    <select id="selectDetail" resultMap="selectDetailMap">
+        SELECT
+            fii.id,
+            fii.value,
+            fii.item_temp_id,
+            fit.is_view,
+            fit.is_edit,
+            fit.width,
+            fit.title,
+            fit.`name`,
+            fit.element_type,
+            fit.data_options,
+            fit.routine_exp
+        FROM
+        form_item_template fit
+        LEFT JOIN form_item_info fii ON fii.item_temp_id = fit.id
+        WHERE
+        fii.record_id = #{id}
+    </select>
+
+</mapper>

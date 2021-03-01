@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.webank.taskman.mapper.RequestTemplateMapper">
+
+    <resultMap id="DTOResultMap" type="com.webank.taskman.dto.RequestTemplateDto">
+        <id column="id" property="id" />
+        <result column="request_temp_group" property="requestTempGroup" />
+        <result column="request_temp_group_name" property="requestTempGroupName" />
+        <result column="proc_def_id" property="procDefId" />
+        <result column="proc_def_key" property="procDefKey" />
+        <result column="proc_def_name" property="procDefName" />
+        <result column="name" property="name" />
+        <result column="description" property="description" />
+        <result column="version" property="version" />
+        <result column="tags" property="tags" />
+        <result column="status" property="status" />
+    </resultMap>
+
+    <select id="selectDTOListByParam" resultMap="DTOResultMap"
+        parameterType="com.webank.taskman.dto.req.RequestTemplateQueryReqDto">
+        SELECT
+        rt.id,
+        rt.request_temp_group,
+        rtg.`name` request_temp_group_name,
+        rt.proc_def_id,
+        rt.proc_def_key,
+        rt.proc_def_name,
+        rt.`name`,
+        rt.description,
+        rt.`name`,
+        rt.tags,
+        rt.`status`
+        FROM request_template rt,request_template_group rtg
+        <where>
+            AND rt.request_temp_group = rtg.id
+            <if test="requestTempGroup !=null and requestTempGroup !='' ">
+                AND rtg.id = #{requestTempGroup}
+            </if>
+            <if test="id !=null and id != ''">
+                AND rt.id = #{id}
+            </if>
+            <if test="procDefKey !=null and procDefKey != ''">
+                AND rt.proc_def_key = #{procDefKey}
+            </if>
+            <if test="procDefId !=null and procDefId != ''">
+                AND rt.proc_def_id = #{procDefId}
+            </if>
+            <if test="procDefName !=null and procDefName != ''">
+                AND rt.proc_def_name = #{procDefName}
+            </if>
+            <if test="name !=null and name != ''">
+                AND rt.name like CONCAT('%',#{name},'%')
+            </if>
+            <if test="tags !=null and tags != ''">
+                AND rt.tags like CONCAT('%',#{tags},'%')
+            </if>
+            <if test="status !=null and status != ''">
+                AND rt.status = #{status}
+            </if>
+            <if test="conditionSql!=null and conditionSql !=''">
+                AND rt. id IN(${conditionSql})
+            </if>
+        </where>
+    </select>
+
+</mapper>

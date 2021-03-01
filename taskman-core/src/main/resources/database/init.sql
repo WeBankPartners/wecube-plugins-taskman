@@ -214,5 +214,6 @@ CREATE TABLE IF NOT EXISTS `task_template` (
   `updated_by` varchar(255)  NOT NULL,
   `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
+  `request_template_id` varchar(32) NULL,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;

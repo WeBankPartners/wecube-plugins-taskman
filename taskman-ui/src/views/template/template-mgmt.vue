@@ -556,7 +556,7 @@ export default {
             i.children.forEach(child => {
               this.attrsSelections.forEach(j => {
                 j.children.forEach(d => {
-                  if (d.id === child.id) {
+                  if (d.name === child.name) {
                     child.checked = true
                   }
                 })
@@ -779,7 +779,7 @@ export default {
             packageName: attr.packageName,
             elementType: attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'PluginSelect' : 'Input',
             width: 24,
-            title: attr.description,
+            title: attr.name,
             defaultValue: "",
             isHover: false,
             isActive: false,
@@ -992,9 +992,11 @@ export default {
           this.attrsTreeData.forEach(i => {
             i.children.forEach(child => {
               this.attrsSelections.forEach(j => {
-                if (j.id === child.id) {
-                  child.checked = true
-                }
+                j.children.forEach(d => {
+                  if (d.name === child.name) {
+                    child.checked = true
+                  }
+                })
               })
             })
           })
@@ -1082,6 +1084,7 @@ export default {
     },
     deleteHandler (index) {
       // console.log(index)
+      this.formFields.splice(index, 1)
     },
     formFieldSortHandler (entityList) {
       let fields = []

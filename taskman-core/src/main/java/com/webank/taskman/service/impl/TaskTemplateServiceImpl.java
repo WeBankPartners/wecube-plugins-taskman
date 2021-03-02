@@ -68,10 +68,11 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 
+        //Bad smells
         FormTemplateSaveReqDto formTemplateReq = req.getForm();
         formTemplateReq.setTempId(taskTemplateId);
         formTemplateReq.setTempType(TemplateTypeEnum.TASK.getType());
-        formTemplateService.saveFormTemplateByReq(req.getForm());
+        formTemplateService.saveFormTemplateByReq(formTemplateReq);
 
         TaskTemplateResp taskTemplateResp = new TaskTemplateResp();
         taskTemplateResp.setId(taskTemplateId);

@@ -115,7 +115,7 @@
               <Input v-model="requestForm.description"></Input>
             </FormItem>
           </Col>
-          <Col span="12">
+          <!-- <Col span="12">
             <FormItem label="输入项">
               <TreeSelect
                 v-model="requestForm.inputAttrDef"
@@ -126,11 +126,8 @@
                 :clearable="true"
                 style="width:100%"
               ></TreeSelect>
-              <!-- <Select multiple @on-change="requestFormFieldChanged($event,0)" v-model="requestForm.inputAttrDef">
-                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select> -->
             </FormItem>
-          </Col>
+          </Col> -->
         </Form>
         <Form v-if="isEdit && currentStep === 3" :model="taskForm" :label-width="100">
           <Col span="6">
@@ -153,9 +150,6 @@
                 :clearable="true"
                 style="width:100%"
               ></TreeSelect>
-              <!-- <Select multiple v-model="taskForm.inputAttrDef">
-                <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select> -->
             </FormItem>
           </Col>
           <Col span="6">
@@ -172,7 +166,7 @@
               </Select>
             </FormItem>
           </Col>
-          <Col span="12">
+          <!-- <Col span="12">
             <FormItem label="输出项">
               <TreeSelect
                 v-model="taskForm.outputAttrDef"
@@ -183,11 +177,8 @@
                 :clearable="true"
                 style="width:100%"
               ></TreeSelect>
-              <!-- <Select multiple @on-change="requestFormFieldChanged($event,1)" v-model="taskForm.outputAttrDef">
-                <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select> -->
             </FormItem>
-          </Col>
+          </Col> -->
         </Form>
       </Row>
       <hr />
@@ -196,6 +187,28 @@
         <div ref="entity" style="padding-right:10px;">
           <p style="font-size:16px;background:bisque;margin-bottom:5px;text-align: center" v-for="(entity,index) in entityList" :id="entity" :key="index">{{entity}}</p>
         </div>
+        <Divider v-if="isEdit && currentStep === 2">输入项</Divider>
+        <TreeSelect
+          v-if="isEdit && currentStep === 2"
+          v-model="requestForm.inputAttrDef"
+          :maxTagCount="3"
+          placeholder="输入项"
+          :data="attrsSelections"
+          @change="requestFormFieldChanged($event,0)"
+          :clearable="true"
+          style="width:100%"
+        ></TreeSelect>
+        <Divider v-if="isEdit && currentStep === 3">输出项</Divider>
+        <TreeSelect
+          v-if="isEdit && currentStep === 3"
+          v-model="taskForm.outputAttrDef"
+          :maxTagCount="3"
+          placeholder="输出项"
+          :data="taskAttrsSelections"
+          @change="requestFormFieldChanged($event,1)"
+          :clearable="true"
+          style="width:100%"
+        ></TreeSelect>
         <Divider>自定义表单项</Divider>
         <Row ref="fields">
           <Col span="6" v-for="(comp, index) in componentsList" :id="index" :key="index">

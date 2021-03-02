@@ -16,7 +16,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.RecordDeleteFlagEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
@@ -47,29 +47,34 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Autowired
     private FormItemTemplateConverter formItemTemplateConverter;
-    
+
     @Autowired
     private TaskTemplateService taskTemplateService;
-    
+
     @Autowired
     private TaskTemplateConverter taskTemplateConverter;
 
     @Override
     public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
             FormTemplateSaveReqDto req) {
-        IPage<FormTemplate> iPage = formTemplateMapper.selectPage(new Page<>(page, pageSize),
-                formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper());
+        Page<FormTemplate> pageInfo = new Page<>(page, pageSize);
+        LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
+                .getLambdaQueryWrapper();
+        IPage<FormTemplate> iPage = formTemplateMapper.selectPage(pageInfo, formTemplateQueryWrapper);
         List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
-        return new QueryResponse(iPage.getSize(), iPage.getCurrent(), iPage.getSize(), formTemplateResps);
+
+        QueryResponse<FormTemplateRespDto> queryResponse = new QueryResponse<>(iPage.getSize(), iPage.getCurrent(),
+                iPage.getSize(), formTemplateResps);
+        return queryResponse;
     }
 
     @Override
     public void deleteFormTemplate(String id) {
         if (StringUtils.isEmpty(id)) {
-            throw new TaskmanRuntimeException("Form template parameter cannot be ID");
+            throw new TaskmanRuntimeException("Form template parameter cannot be empty.");
         }
         UpdateWrapper<FormTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.lambda().eq(FormTemplate::getId, id).set(FormTemplate::getDelFlag, StatusEnum.ENABLE.ordinal())
+        wrapper.lambda().eq(FormTemplate::getId, id).set(FormTemplate::getDelFlag, RecordDeleteFlagEnum.Deleted.ordinal())
                 .set(FormTemplate::getUpdatedTime, new Date());
         ;
         formTemplateMapper.update(null, wrapper);
@@ -97,16 +102,15 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         formTemplateRespDto.setItems(formItemTemplateDtos);
 
         if (TemplateTypeEnum.REQUEST.getType().equals(req.getTempType())) {
-            // TODO
 
             LambdaQueryWrapper<TaskTemplate> taskTemplateQueryWrapper = new TaskTemplate()
                     .setRequestTemplateId(req.getTempId()).getLambdaQueryWrapper();
             List<TaskTemplate> taskTemplateEntities = taskTemplateService.list(taskTemplateQueryWrapper);
             List<TaskTemplateResp> taskTemplateDtos = taskTemplateConverter.toDto(taskTemplateEntities);
-            if(taskTemplateDtos != null){
+            if (taskTemplateDtos != null) {
                 formTemplateRespDto.setTaskTemplates(taskTemplateDtos);
             }
-            
+
         }
         return formTemplateRespDto;
     }

@@ -24,13 +24,13 @@ public class TaskTemplateSaveReqDto {
 
     private String description;
 
-    // @ApiModelProperty(value = "使用角色集",required = false,position = 9)
+    //使用角色集
     private List<RoleDto> useRoles;
 
-    // @ApiModelProperty(value = "管理角色集",required = false,position = 10)
+    //管理角色集
     private List<RoleDto> manageRoles;
 
-    // @ApiModelProperty(value = "任务表单模板", required = false, position = 11)
+    //任务表单模板
     private FormTemplateSaveReqDto form;
 
     public String getId() {

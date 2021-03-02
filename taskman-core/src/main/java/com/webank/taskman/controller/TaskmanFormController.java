@@ -50,10 +50,13 @@ public class TaskmanFormController {
     }
 
     @GetMapping("/template/detail/{temp-type}/{temp-id}")
-    public JsonResponse formTemplateDetail(@PathVariable("temp-type") String tempType,
+    public JsonResponse fetchFormTemplateDetail(@PathVariable("temp-type") String tempType,
             @PathVariable("temp-id") String tempId) {
+        
+        FormTemplateSaveReqDto criteriaDto = new FormTemplateSaveReqDto(tempId, tempType);
+        FormTemplateRespDto formTemplateDto = formTemplateService.detailFormTemplate(criteriaDto);
         return JsonResponse
-                .okayWithData(formTemplateService.detailFormTemplate(new FormTemplateSaveReqDto(tempId, tempType)));
+                .okayWithData(formTemplateDto);
     }
 
     @DeleteMapping("/item/delete/{id}")

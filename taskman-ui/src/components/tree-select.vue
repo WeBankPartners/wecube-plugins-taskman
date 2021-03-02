@@ -99,6 +99,13 @@ export default {
       handler (val) {
         this.restoreData()
       }
+    },
+    value: {
+      handler (val) {
+        this.restoreData()
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {

@@ -132,7 +132,7 @@
             </FormItem>
           </Col>
         </Form>
-        <Form v-show="isEdit && currentStep === 3" :model="taskForm" :label-width="100">
+        <Form v-if="isEdit && currentStep === 3" :model="taskForm" :label-width="100">
           <Col span="6">
             <FormItem label="名称">
               <Input v-model="taskForm.name"></Input>
@@ -517,6 +517,7 @@ export default {
       allEntityList: [],
       currentFormTemplate: {},
       currentFirstTaskFormTemplate: {},
+      taskTemplates: []
     }
   },
   methods: {
@@ -559,6 +560,7 @@ export default {
           this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
           this.list = this.entityList
           this.currentEntityList = this.entityList
+          this.taskTemplates = data.taskTemplates ? data.taskTemplates : []
         }
         if (isEdit) {
           this.attrsTreeData.forEach(i => {
@@ -612,7 +614,8 @@ export default {
     },
     taskNodeChanged (v) {
       this.currentTaskNode = v
-      const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+      const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+      const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
       this.getFormTemplateDetail(1,id)
       this.currentField = {}
     },
@@ -642,7 +645,8 @@ export default {
         this.formFields = []
         this.currentFieldList = this.formFields
         this.currentTaskNode = this.procTaskNodes[0].nodeName
-        const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+        const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+        const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
         this.getFormTemplateDetail(1,id)
       }
       if (this.currentStep === 2) {
@@ -715,6 +719,13 @@ export default {
                 displayName: found.displayName
               }
             }):[],
+          useRoles:this.taskForm.useRoles.length>0? this.taskForm.useRoles.map(role => {
+              const found = this.allRolesList.find(r => r.name === role)
+              return {
+                roleName: found.name,
+                displayName: found.displayName
+              }
+            }):[],
           form: {
             ...this.taskForm,
             targetEntitys: JSON.stringify(this.entityList),
@@ -735,16 +746,16 @@ export default {
             tempId: this.currentTemplateId,
             inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
             otherAttrDef: JSON.stringify(this.taskAttrsSelections),
-            outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef)
-          },
-          tempId: this.currentTemplateId,
-          formItems: this.formFields.map((i,index) => {
+            outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef),
+            formItems: this.formFields.map((i,index) => {
             return {
               ...i,
               sort:index,
               dataOptions: JSON.stringify(i.dataOptions)
             }
           })
+          },
+          tempId: this.currentTemplateId
         }
       }
       const {status, message, data} = this.currentStep === 2 ? await saveFormTemplate(payload) : await saveTaskTemplate(payload)

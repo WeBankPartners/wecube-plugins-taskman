@@ -73,13 +73,22 @@
       </div>
     </Row>
     <Row v-show="isEdit && currentStep === 1">
-      <div style="width:1000px;margin:10px auto;">
-        <Tree :data="attrsTreeData" style="margin:o auto;" @on-check-change="attrsChangedHandler" multiple show-checkbox></Tree>
-
+      <div style="width:1000px;max-height:500px;overflow:auto;margin:10px auto;">
+        <!-- <Tree :data="attrsTreeData" style="margin:o auto;" @on-check-change="attrsChangedHandler" multiple show-checkbox></Tree> -->
+        <Collapse accordion>
+          <Panel v-for="(entity, index) in attrsTreeData" :key="index" :name="index.toString()">
+            {{entity.title}}
+            <Row style="max-height:220px;overflow:auto;" slot="content">
+              <Col v-for="attr in entity.children" :key="attr.name" span="6">
+                <Checkbox @on-change="attrCheckboxChanged" v-model="attr.checked" >{{attr.title}}</Checkbox>
+              </Col>
+            </Row>
+          </Panel>
+        </Collapse>
         <!-- <Table style="margin-bottom:10px;" ref="selection" @on-selection-change="attrsChangedHandler" border :data="attrsData" :columns="attrsColumns"></Table> -->
         <!-- <Button >重置</Button> -->
-        <Button type="primary" @click="attrsSetHandler" style="margin-left: 8px;margin:10px auto;">下一步</Button>
       </div>
+      <Button type="primary" @click="attrsSetHandler" style="margin-left: 8px;margin-top:10px;margin-left:48%">下一步</Button>
     </Row>
      <!-- v-show="isEdit && (currentStep === 2 || currentStep === 3)" -->
     <Row v-show="isEdit && (currentStep === 2 || currentStep === 3)">
@@ -760,6 +769,7 @@ export default {
     },
     requestFormFieldChanged (val,type) {
       //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
+      console.log(val)
       const isAttrs = this.formFields.filter(field => !field.isCustom)
       isAttrs.forEach(attr => {
         const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name)
@@ -809,6 +819,41 @@ export default {
     },
     attrsSetHandler () {
       this.currentStep++
+    },
+    attrCheckboxChanged (checked) {
+      let selection = []
+      this.attrsTreeData.forEach(i => {
+        i.children.forEach(child => {
+          if (child.checked === true) {
+            selection.push(child)
+          }
+        })
+      })
+      let data = []
+      selection.forEach(sel => {
+        const found = data.find(d => d.title === sel.entity)
+        if (found) {
+          found.children.push({
+            ...sel,
+            checked: false,
+            nodeKey: null
+          })
+        } else {
+          data.push({
+            title: sel.entity,
+            checked: false,
+            isEntity: true,
+            expand: true,
+            children: [{
+              ...sel,
+              checked: false,
+              nodeKey: null
+            }]
+          })
+        }
+      })
+      this.attrsSelections = data
+      this.taskAttrsSelections = data
     },
     attrsChangedHandler (selection, current) {
       let data = []

@@ -26,6 +26,7 @@ public class FormTemplateRespDto {
 
     private List<FormItemTemplateRespDto> items;
 
+    private List<TaskTemplateResp> taskTemplates;
 
     public String getId() {
         return id;
@@ -127,18 +128,18 @@ public class FormTemplateRespDto {
 
     @Override
     public String toString() {
-        return "FormTemplateResp{" +
-                "id='" + id + '\'' +
-                ", tempId='" + tempId + '\'' +
-                ", tempType='" + tempType + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", style='" + style + '\'' +
-                ", targetEntitys='" + targetEntitys + '\'' +
-                ", inputAttrDef='" + inputAttrDef + '\'' +
-                ", outputAttrDef='" + outputAttrDef + '\'' +
-                ", otherAttrDef='" + otherAttrDef + '\'' +
-                ", items=" + items +
-                '}';
+        return "FormTemplateResp{" + "id='" + id + '\'' + ", tempId='" + tempId + '\'' + ", tempType='" + tempType
+                + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", style='" + style + '\''
+                + ", targetEntitys='" + targetEntitys + '\'' + ", inputAttrDef='" + inputAttrDef + '\''
+                + ", outputAttrDef='" + outputAttrDef + '\'' + ", otherAttrDef='" + otherAttrDef + '\'' + ", items="
+                + items + '}';
+    }
+
+    public List<TaskTemplateResp> getTaskTemplates() {
+        return taskTemplates;
+    }
+
+    public void setTaskTemplates(List<TaskTemplateResp> taskTemplates) {
+        this.taskTemplates = taskTemplates;
     }
 }

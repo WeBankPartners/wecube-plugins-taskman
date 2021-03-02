@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,15 +17,21 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
+import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
+import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
+import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
 import com.webank.taskman.dto.resp.FormTemplateRespDto;
+import com.webank.taskman.dto.resp.TaskTemplateResp;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
+import com.webank.taskman.service.TaskTemplateService;
 
 @Service
 public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, FormTemplate>
@@ -40,9 +47,16 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Autowired
     private FormItemTemplateConverter formItemTemplateConverter;
+    
+    @Autowired
+    private TaskTemplateService taskTemplateService;
+    
+    @Autowired
+    private TaskTemplateConverter taskTemplateConverter;
 
     @Override
-    public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize, FormTemplateSaveReqDto req) {
+    public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
+            FormTemplateSaveReqDto req) {
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(new Page<>(page, pageSize),
                 formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper());
         List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
@@ -64,13 +78,37 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     @Override
     public FormTemplateRespDto detailFormTemplate(FormTemplateSaveReqDto req) {
 
-        FormTemplateRespDto formTemplateResp = formTemplateConverter
-                .toDto(formTemplateMapper.selectOne(formTemplateConverter.reqToDomain(req).getLambdaQueryWrapper()));
-        if (null != formTemplateResp) {
-            formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(formItemTemplateService
-                    .list(new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper())));
+        LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
+                .getLambdaQueryWrapper();
+        FormTemplate formTemplateEntity = formTemplateMapper.selectOne(formTemplateQueryWrapper);
+        FormTemplateRespDto formTemplateRespDto = formTemplateConverter.toDto(formTemplateEntity);
+
+        if (formTemplateRespDto == null) {
+            return null;
         }
-        return formTemplateResp;
+        FormItemTemplate formItemTemplateCritetia = new FormItemTemplate()
+                .setFormTemplateId(formTemplateRespDto.getId());
+        LambdaQueryWrapper<FormItemTemplate> formItemTemplateQueryWrapper = formItemTemplateCritetia
+                .getLambdaQueryWrapper();
+
+        List<FormItemTemplate> formItemTemplateEntities = formItemTemplateService.list(formItemTemplateQueryWrapper);
+        List<FormItemTemplateRespDto> formItemTemplateDtos = formItemTemplateConverter
+                .toRespByEntity(formItemTemplateEntities);
+        formTemplateRespDto.setItems(formItemTemplateDtos);
+
+        if (TemplateTypeEnum.REQUEST.getType().equals(req.getTempType())) {
+            // TODO
+
+            LambdaQueryWrapper<TaskTemplate> taskTemplateQueryWrapper = new TaskTemplate()
+                    .setRequestTemplateId(req.getTempId()).getLambdaQueryWrapper();
+            List<TaskTemplate> taskTemplateEntities = taskTemplateService.list(taskTemplateQueryWrapper);
+            List<TaskTemplateResp> taskTemplateDtos = taskTemplateConverter.toDto(taskTemplateEntities);
+            if(taskTemplateDtos != null){
+                formTemplateRespDto.setTaskTemplates(taskTemplateDtos);
+            }
+            
+        }
+        return formTemplateRespDto;
     }
 
     @Override

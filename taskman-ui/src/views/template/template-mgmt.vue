@@ -115,7 +115,7 @@
               <Input v-model="requestForm.description"></Input>
             </FormItem>
           </Col>
-          <Col span="12">
+          <!-- <Col span="12">
             <FormItem label="输入项">
               <TreeSelect
                 v-model="requestForm.inputAttrDef"
@@ -126,13 +126,10 @@
                 :clearable="true"
                 style="width:100%"
               ></TreeSelect>
-              <!-- <Select multiple @on-change="requestFormFieldChanged($event,0)" v-model="requestForm.inputAttrDef">
-                <Option v-for="(attr,index) in attrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select> -->
             </FormItem>
-          </Col>
+          </Col> -->
         </Form>
-        <Form v-show="isEdit && currentStep === 3" :model="taskForm" :label-width="100">
+        <Form v-if="isEdit && currentStep === 3" :model="taskForm" :label-width="100">
           <Col span="6">
             <FormItem label="名称">
               <Input v-model="taskForm.name"></Input>
@@ -153,9 +150,6 @@
                 :clearable="true"
                 style="width:100%"
               ></TreeSelect>
-              <!-- <Select multiple v-model="taskForm.inputAttrDef">
-                <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select> -->
             </FormItem>
           </Col>
           <Col span="6">
@@ -172,7 +166,7 @@
               </Select>
             </FormItem>
           </Col>
-          <Col span="12">
+          <!-- <Col span="12">
             <FormItem label="输出项">
               <TreeSelect
                 v-model="taskForm.outputAttrDef"
@@ -183,11 +177,8 @@
                 :clearable="true"
                 style="width:100%"
               ></TreeSelect>
-              <!-- <Select multiple @on-change="requestFormFieldChanged($event,1)" v-model="taskForm.outputAttrDef">
-                <Option v-for="(attr,index) in taskAttrsSelections" :key="index" :value="attr.name" :label="attr.displayName"></Option>
-              </Select> -->
             </FormItem>
-          </Col>
+          </Col> -->
         </Form>
       </Row>
       <hr />
@@ -196,6 +187,28 @@
         <div ref="entity" style="padding-right:10px;">
           <p style="font-size:16px;background:bisque;margin-bottom:5px;text-align: center" v-for="(entity,index) in entityList" :id="entity" :key="index">{{entity}}</p>
         </div>
+        <Divider v-if="isEdit && currentStep === 2">输入项</Divider>
+        <TreeSelect
+          v-if="isEdit && currentStep === 2"
+          v-model="requestForm.inputAttrDef"
+          :maxTagCount="3"
+          placeholder="输入项"
+          :data="attrsSelections"
+          @change="requestFormFieldChanged($event,0)"
+          :clearable="true"
+          style="width:100%"
+        ></TreeSelect>
+        <Divider v-if="isEdit && currentStep === 3">输出项</Divider>
+        <TreeSelect
+          v-if="isEdit && currentStep === 3"
+          v-model="taskForm.outputAttrDef"
+          :maxTagCount="3"
+          placeholder="输出项"
+          :data="taskAttrsSelections"
+          @change="requestFormFieldChanged($event,1)"
+          :clearable="true"
+          style="width:100%"
+        ></TreeSelect>
         <Divider>自定义表单项</Divider>
         <Row ref="fields">
           <Col span="6" v-for="(comp, index) in componentsList" :id="index" :key="index">
@@ -517,6 +530,7 @@ export default {
       allEntityList: [],
       currentFormTemplate: {},
       currentFirstTaskFormTemplate: {},
+      taskTemplates: []
     }
   },
   methods: {
@@ -559,6 +573,7 @@ export default {
           this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
           this.list = this.entityList
           this.currentEntityList = this.entityList
+          this.taskTemplates = data.taskTemplates ? data.taskTemplates : []
         }
         if (isEdit) {
           this.attrsTreeData.forEach(i => {
@@ -612,7 +627,8 @@ export default {
     },
     taskNodeChanged (v) {
       this.currentTaskNode = v
-      const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+      const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+      const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
       this.getFormTemplateDetail(1,id)
       this.currentField = {}
     },
@@ -642,7 +658,8 @@ export default {
         this.formFields = []
         this.currentFieldList = this.formFields
         this.currentTaskNode = this.procTaskNodes[0].nodeName
-        const id = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+        const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+        const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
         this.getFormTemplateDetail(1,id)
       }
       if (this.currentStep === 2) {
@@ -715,6 +732,13 @@ export default {
                 displayName: found.displayName
               }
             }):[],
+          useRoles:this.taskForm.useRoles.length>0? this.taskForm.useRoles.map(role => {
+              const found = this.allRolesList.find(r => r.name === role)
+              return {
+                roleName: found.name,
+                displayName: found.displayName
+              }
+            }):[],
           form: {
             ...this.taskForm,
             targetEntitys: JSON.stringify(this.entityList),
@@ -735,16 +759,16 @@ export default {
             tempId: this.currentTemplateId,
             inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
             otherAttrDef: JSON.stringify(this.taskAttrsSelections),
-            outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef)
-          },
-          tempId: this.currentTemplateId,
-          formItems: this.formFields.map((i,index) => {
+            outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef),
+            formItems: this.formFields.map((i,index) => {
             return {
               ...i,
               sort:index,
               dataOptions: JSON.stringify(i.dataOptions)
             }
           })
+          },
+          tempId: this.currentTemplateId
         }
       }
       const {status, message, data} = this.currentStep === 2 ? await saveFormTemplate(payload) : await saveTaskTemplate(payload)

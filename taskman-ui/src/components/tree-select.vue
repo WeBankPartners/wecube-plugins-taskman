@@ -137,8 +137,8 @@ export default {
       })
       this.selectNodes = nodes
       const ids = nodes.map(_ => _.guid)
-      this.$emit('input', nodes)
-      this.$emit('change', nodes)
+      this.$emit('input', nodes.filter(e => !e.isEntity))
+      this.$emit('change', nodes.filter(e => !e.isEntity))
     },
     closeTag (event, value) {
       let curKey = JSON.parse(value)[this.pkey]

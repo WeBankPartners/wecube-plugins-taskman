@@ -837,7 +837,7 @@ export default {
             packageName: attr ? attr.packageName : '',
             elementType: attr ? (attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'PluginSelect' : 'Input') : item.type,
             width: 24,
-            title: attr ? attr.name : '',
+            title: attr && !attr.isCustom ? attr.name : item.title,
             defaultValue: "",
             isHover: false,
             isActive: false,

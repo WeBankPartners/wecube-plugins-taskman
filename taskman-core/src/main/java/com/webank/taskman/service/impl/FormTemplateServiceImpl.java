@@ -117,7 +117,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateRespDto saveFormTemplateByReq(FormTemplateSaveReqDto formTemplateReq) {
+    public FormTemplateRespDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq) {
         FormTemplate formTemplate = formTemplateConverter.reqToDomain(formTemplateReq);
 
         formTemplate.setName(StringUtils.isEmpty(formTemplate.getName()) ? "" : formTemplate.getName());
@@ -138,8 +138,10 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public FormTemplateRespDto queryDetailByTemp(Integer tempType, String tempId) {
+    public FormTemplateRespDto queryDetailByTemplate(Integer tempType, String tempId) {
+        
+        FormTemplate formTemplateEntity = getOne(new FormTemplate().setTempId(tempId).setTempType(tempType + "").getLambdaQueryWrapper());
         return formTemplateConverter
-                .toDto(getOne(new FormTemplate().setTempId(tempId).setTempType(tempType + "").getLambdaQueryWrapper()));
+                .toDto(formTemplateEntity);
     }
 }

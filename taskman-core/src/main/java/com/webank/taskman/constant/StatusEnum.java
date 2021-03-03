@@ -8,9 +8,9 @@ public enum  StatusEnum {
 
     DISABLE,
 
-    UNRELEASED,
-
-    RELEASED,
+//    UNRELEASED,
+//
+//    RELEASED,
 
     ALREADY_RECEIVED,
 

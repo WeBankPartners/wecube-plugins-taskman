@@ -140,7 +140,7 @@ export default {
     setSelectNodes () {
       let nodes = []
       this.traverseTree({ children: this.originData }, node => {
-        if (node.checked || node.indeterminate) nodes.push(node)
+        if (node.checked) nodes.push(node)
       })
       this.selectNodes = nodes
       const ids = nodes.map(_ => _.guid)

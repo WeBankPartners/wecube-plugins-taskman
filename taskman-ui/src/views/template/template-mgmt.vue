@@ -579,7 +579,10 @@ export default {
           this.taskAttrsSelections = this.attrsSelections.concat([{
             title: '自定义',
             expand: true,
-            children:this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}})
+            children:this.formFields.filter(_ => _.isCustom).map(f => {
+              delete f.nodeKey
+              return {...f, displayName: f.displayName ? f.displayName : f.title}
+            })
           }])
           this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
           this.list = this.entityList
@@ -590,7 +593,7 @@ export default {
           this.attrsTreeData.forEach(i => {
             i.children.forEach(child => {
               this.attrsSelections.forEach(j => {
-                j.children.forEach(d => {
+                j.children && j.children.forEach(d => {
                   if (d.name === child.name) {
                     child.checked = true
                   }
@@ -605,12 +608,12 @@ export default {
           this.requestForm.description = data.description
         }
         if (type === 1) {
-          this.taskForm.name = data.name
+          this.taskForm.name = data.name || []
           this.taskForm.inputAttrDef = data.inputAttrDef ? JSON.parse(data.inputAttrDef) : []
-          this.taskForm.description = data.description
-          this.taskForm.useRoles = data.useRoles
+          this.taskForm.description = data.description || ''
+          this.taskForm.useRoles = data.useRoles || []
           this.taskForm.outputAttrDef = data.outputAttrDef ? JSON.parse(data.outputAttrDef) : []
-          this.taskForm.manageRoles = data.manageRoles
+          this.taskForm.manageRoles = data.manageRoles || []
         }
         this.formFieldSortHandler(this.currentEntityList)
       }
@@ -763,6 +766,7 @@ export default {
             }):[],
           form: {
             ...this.taskForm,
+            id: this.formTemplateId,
             targetEntitys: JSON.stringify(this.entityList),
             manageRoles: this.taskForm.manageRoles && this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
               const found = this.allRolesList.find(r => r.name === role)
@@ -801,9 +805,12 @@ export default {
         })
         if (this.currentStep === 2) {
           this.taskAttrsSelections = this.attrsSelections.concat([{
-            title: '自定义',
+            title: '自定义表单项',
             expand: true,
-            children:this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}})
+            children:this.formFields.filter(_ => _.isCustom).map(f => {
+              delete f.nodeKey
+              return {...f, displayName: f.displayName ? f.displayName : f.title}
+            })
           }])
           this.currentStep++
           this.formFields = []
@@ -818,8 +825,8 @@ export default {
     },
     requestFormFieldChanged (val,type) {
       //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
-      const isAttrs = this.formFields.filter(field => !field.isCustom)
-      isAttrs.forEach(attr => {
+      // const isAttrs = this.formFields.filter(field => !field.isCustom)
+      this.formFields.forEach(attr => {
         const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name)
         if (!found) {
           const index = this.formFields.indexOf(attr)
@@ -1285,7 +1292,8 @@ export default {
               packageName: '',
               isCustom: true,
               entity: '',
-              sort: e.newIndex
+              sort: e.newIndex,
+              id: ''
             }
             this.formFields.splice(e.newIndex, 0, item)
             this.currentFieldList = this.formFields

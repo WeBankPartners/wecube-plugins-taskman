@@ -16,6 +16,6 @@ public interface FormTemplateService extends IService<FormTemplate> {
 
     FormTemplateRespDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq);
 
-    FormTemplateRespDto queryDetailByTemp(Integer tempType,String tempId);
+    FormTemplateRespDto queryDetailByTemplate(Integer tempType,String tempId);
 
 }

@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
             HttpServletResponse response) {
         String errMsg = String.format("Processing failed cause by %s:%s", e.getClass().getSimpleName(),
                 e.getMessage() == null ? "" : e.getMessage());
-        log.error(errMsg + "\n", e.getMessage());
+        log.error(errMsg, e);
         TaskmanRuntimeException wecubeError = (TaskmanRuntimeException) e;
 
         return JsonResponse.error(determineI18nErrorMessage(request, wecubeError));

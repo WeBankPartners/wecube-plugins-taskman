@@ -117,7 +117,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateRespDto saveFormTemplateByReq(FormTemplateSaveReqDto formTemplateReq) {
+    public FormTemplateRespDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq) {
         FormTemplate formTemplate = formTemplateConverter.reqToDomain(formTemplateReq);
 
         formTemplate.setName(StringUtils.isEmpty(formTemplate.getName()) ? "" : formTemplate.getName());

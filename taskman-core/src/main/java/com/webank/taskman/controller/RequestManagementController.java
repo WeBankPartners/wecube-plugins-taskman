@@ -41,7 +41,7 @@ import com.webank.taskman.service.RequestTemplateService;
 
 @RestController
 @RequestMapping("/v1/request")
-public class TaskmanRequestController {
+public class RequestManagementController {
 
     @Autowired
     private RequestTemplateService requestTemplateService;

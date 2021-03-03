@@ -25,7 +25,7 @@ import com.webank.taskman.service.FormTemplateService;
 
 @RestController
 @RequestMapping("/v1/form")
-public class TaskmanFormController {
+public class FormManagementController {
 
     @Autowired
     private FormItemTemplateService formItemTemplateService;
@@ -37,9 +37,9 @@ public class TaskmanFormController {
     private FormItemTemplateConverter formItemTemplateConverter;
 
     @PostMapping("/template/save")
-    public JsonResponse createFormTemplate(@Valid @RequestBody FormTemplateSaveReqDto req) {
+    public JsonResponse createFormTemplate(@Valid @RequestBody FormTemplateSaveReqDto reqDto) {
 
-        FormTemplateRespDto formTemplateResp = formTemplateService.saveFormTemplateByReq(req);
+        FormTemplateRespDto formTemplateResp = formTemplateService.saveOrUpdateFormTemplate(reqDto);
         return JsonResponse.okayWithData(formTemplateResp);
     }
 

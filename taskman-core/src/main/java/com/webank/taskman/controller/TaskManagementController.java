@@ -29,7 +29,7 @@ import com.webank.taskman.service.TaskTemplateService;
 
 @RestController
 @RequestMapping("/v1/task")
-public class TaskmanTaskController {
+public class TaskManagementController {
 
     @Autowired
     private TaskTemplateService taskTemplateService;
@@ -38,9 +38,9 @@ public class TaskmanTaskController {
     private TaskInfoService taskInfoService;
 
     @PostMapping("/template/save")
-    public JsonResponse taskTemplateSave(@Valid @RequestBody TaskTemplateSaveReqDto taskTemplateReq){
+    public JsonResponse taskTemplateSave(@Valid @RequestBody TaskTemplateSaveReqDto taskTemplateReqDto){
 
-        TaskTemplateRespDto taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
+        TaskTemplateRespDto taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReqDto);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 

@@ -140,7 +140,7 @@
               <Input v-model="taskForm.description"></Input>
             </FormItem>
           </Col>
-          <Col span="12">
+          <!-- <Col span="12">
             <FormItem label="输入项">
               <TreeSelect
                 v-model="taskForm.inputAttrDef"
@@ -151,7 +151,7 @@
                 style="width:100%"
               ></TreeSelect>
             </FormItem>
-          </Col>
+          </Col> -->
           <Col span="6">
             <FormItem label="管理角色">
               <Select multiple v-model="taskForm.manageRoles">
@@ -187,7 +187,15 @@
         <div ref="entity" style="padding-right:10px;">
           <p style="font-size:16px;background:bisque;margin-bottom:5px;text-align: center" v-for="(entity,index) in entityList" :id="entity" :key="index">{{entity}}</p>
         </div>
-        <Divider v-if="isEdit && currentStep === 2">输入项</Divider>
+        <Divider>输入项</Divider>
+        <TreeSelect
+          v-if="isEdit && currentStep === 3"
+          v-model="taskForm.inputAttrDef"
+          :maxTagCount="3"
+          placeholder="输入项"
+          :data="taskAttrsSelections"
+          style="width:100%"
+        ></TreeSelect>
         <TreeSelect
           v-if="isEdit && currentStep === 2"
           v-model="requestForm.inputAttrDef"
@@ -195,7 +203,6 @@
           placeholder="输入项"
           :data="attrsSelections"
           @change="requestFormFieldChanged($event,0)"
-          :clearable="true"
           style="width:100%"
         ></TreeSelect>
         <Divider v-if="isEdit && currentStep === 3">输出项</Divider>
@@ -206,7 +213,6 @@
           placeholder="输出项"
           :data="taskAttrsSelections"
           @change="requestFormFieldChanged($event,1)"
-          :clearable="true"
           style="width:100%"
         ></TreeSelect>
         <Divider>自定义表单项</Divider>
@@ -230,21 +236,21 @@
               <div slot="content">
                 <Form :model="currentField" :label-width="100">
                   <FormItem label="字段名">
-                    <Input v-model="currentField.name"></Input>
+                    <Input :disabled="currentFieldKeysLen < 2" v-model="currentField.name"></Input>
                   </FormItem>
                   <FormItem label="显示名">
-                    <Input v-model="currentField.title"></Input>
+                    <Input :disabled="currentFieldKeysLen < 2" v-model="currentField.title"></Input>
                   </FormItem>
                   <FormItem label="组件类型">
-                    <Select v-model="currentField.elementType">
+                    <Select :disabled="currentFieldKeysLen < 2" v-model="currentField.elementType">
                       <Option v-for="(comp, index) in componentsList" :key="index" :value="comp.type" :label="comp.label"></Option>
                     </Select>
                   </FormItem>
                   <FormItem label="默认值">
-                    <Input v-model="currentField.defaultValue"></Input>
+                    <Input :disabled="currentFieldKeysLen < 2" v-model="currentField.defaultValue"></Input>
                   </FormItem>
                   <FormItem label="宽度">
-                    <Input v-model="currentField.width"></Input>
+                    <Input :disabled="currentFieldKeysLen < 2" v-model="currentField.width"></Input>
                   </FormItem>
                 </Form>
               </div>
@@ -254,7 +260,7 @@
               <div slot="content">
                 <Form :model="currentField" :label-width="100">
                   <FormItem label="校验规则">
-                    <Input placeholder="仅支持正则" v-model="currentField.regular"></Input>
+                    <Input :disabled="currentFieldKeysLen < 2" placeholder="仅支持正则" v-model="currentField.regular"></Input>
                   </FormItem>
                 </Form>
               </div>
@@ -265,13 +271,13 @@
                 <p  v-if="currentField.elementType !== 'PluginSelect'">当前表单项没有数据项</p>
                 <Form v-if="currentField.elementType === 'PluginSelect'" :model="currentField" :label-width="100">
                   <FormItem label="数据类型">
-                    <Select v-model="currentField.attrDefDataType">
+                    <Select :disabled="currentFieldKeysLen < 2" v-model="currentField.attrDefDataType">
                       <Option value="ref" label="引用类型"></Option>
                       <Option value="str" label="自定义"></Option>
                     </Select>
                   </FormItem>
                   <FormItem v-if="currentField.attrDefDataType === 'ref'" label="目标对象">
-                    <Select v-model="currentField.refEntity">
+                    <Select :disabled="currentFieldKeysLen < 2" v-model="currentField.refEntity">
                       <Option v-for="(comp, index) in allEntityList" :key="index" :value="comp.name" :label="comp.displayName"></Option>
                     </Select>
                   </FormItem>
@@ -285,7 +291,7 @@
                     ></FilterRule>
                   </FormItem> -->
                 </Form>
-                <div v-if="currentField.elementType === 'PluginSelect' && currentField.attrDefDataType === 'str'">
+                <div v-if="currentField.elementType === 'PluginSelect' && currentField.attrDefDataType === 'str' && currentFieldKeysLen === 0">
                   <Row>
                     <Col span="11">Label</Col>
                     <Col span="10">Value</Col>
@@ -533,6 +539,11 @@ export default {
       taskTemplates: []
     }
   },
+  computed: {
+    currentFieldKeysLen () {
+      return Object.keys(this.currentField).length
+    }
+  },
   methods: {
     async releaseTemplate () {
       const process = this.allProcessDefinitionKeys.find(key => key.procDefId === this.templateForm.procDefId)
@@ -628,8 +639,19 @@ export default {
     taskNodeChanged (v) {
       this.currentTaskNode = v
       const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
-      const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
-      this.getFormTemplateDetail(1,id)
+      const found = this.taskTemplates.find(task => task.nodeDefId === nodeDefId)
+      const id = found ? found.id : undefined
+      if (id) {
+        this.getFormTemplateDetail(1,id)
+      } else {
+        this.taskForm.name = ''
+        this.taskForm.inputAttrDef = []
+        this.taskForm.description = ''
+        this.taskForm.useRoles = []
+        this.taskForm.outputAttrDef = []
+        this.taskForm.manageRoles = []
+        this.formFields = []
+      }
       this.currentField = {}
     },
     goBackQuery () {
@@ -718,21 +740,21 @@ export default {
           outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef),
           nodeDefId: this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId,
           nodeName: this.currentTaskNode,
-          manageRoles:this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
+          manageRoles:this.taskForm.manageRoles && this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
               const found = this.allRolesList.find(r => r.name === role)
               return {
                 roleName: found.name,
                 displayName: found.displayName
               }
             }):[],
-            useRoles:this.taskForm.useRoles.length > 0 ? this.taskForm.useRoles.map(role => {
-              const found = this.allRolesList.find(r => r.name === role)
-              return {
-                roleName: found.name,
-                displayName: found.displayName
-              }
-            }):[],
-          useRoles:this.taskForm.useRoles.length>0? this.taskForm.useRoles.map(role => {
+          useRoles:this.taskForm.useRoles && this.taskForm.useRoles.length > 0 ? this.taskForm.useRoles.map(role => {
+            const found = this.allRolesList.find(r => r.name === role)
+            return {
+              roleName: found.name,
+              displayName: found.displayName
+            }
+          }):[],
+          useRoles:this.taskForm.useRoles && this.taskForm.useRoles.length>0? this.taskForm.useRoles.map(role => {
               const found = this.allRolesList.find(r => r.name === role)
               return {
                 roleName: found.name,
@@ -742,7 +764,7 @@ export default {
           form: {
             ...this.taskForm,
             targetEntitys: JSON.stringify(this.entityList),
-            manageRoles:this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
+            manageRoles: this.taskForm.manageRoles && this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
               const found = this.allRolesList.find(r => r.name === role)
               return {
                 roleName: found.name,
@@ -788,12 +810,14 @@ export default {
           this.currentFieldList = []
           this.currentField = {}
           this.currentTaskNode = this.procTaskNodes[0].nodeName
+          const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+          const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
+          this.getFormTemplateDetail(1,id)
         }
       }
     },
     requestFormFieldChanged (val,type) {
       //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
-      console.log(val)
       const isAttrs = this.formFields.filter(field => !field.isCustom)
       isAttrs.forEach(attr => {
         const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name)
@@ -809,21 +833,21 @@ export default {
           const attr = selections.find(a => a.name === item.name)
           this.formFields.push({
             ...attr,
-            entity: attr.entity,
-            packageName: attr.packageName,
-            elementType: attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'PluginSelect' : 'Input',
+            entity: attr ? attr.entity : '',
+            packageName: attr ? attr.packageName : '',
+            elementType: attr ? (attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'PluginSelect' : 'Input') : item.type,
             width: 24,
-            title: attr.name,
+            title: attr ? attr.name : '',
             defaultValue: "",
             isHover: false,
             isActive: false,
-            isCustom: attr.isCustom ? true : false,
+            isCustom: attr && attr.isCustom ? true : false,
             dataOptions: [],
             entityFilters:'',
             refEntity:'',
             regular:'',
             attrDefDataType: 'str',
-            attrDefId: attr.id,
+            attrDefId: attr ? attr.id : '',
             formTemplateId: this.currentTemplateId
           })
         }

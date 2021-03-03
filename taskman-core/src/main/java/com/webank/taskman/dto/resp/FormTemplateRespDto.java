@@ -26,7 +26,7 @@ public class FormTemplateRespDto {
 
     private List<FormItemTemplateRespDto> items;
 
-    private List<TaskTemplateResp> taskTemplates;
+    private List<TaskTemplateRespDto> taskTemplates;
 
     public String getId() {
         return id;
@@ -135,11 +135,11 @@ public class FormTemplateRespDto {
                 + items + '}';
     }
 
-    public List<TaskTemplateResp> getTaskTemplates() {
+    public List<TaskTemplateRespDto> getTaskTemplates() {
         return taskTemplates;
     }
 
-    public void setTaskTemplates(List<TaskTemplateResp> taskTemplates) {
+    public void setTaskTemplates(List<TaskTemplateRespDto> taskTemplates) {
         this.taskTemplates = taskTemplates;
     }
 }

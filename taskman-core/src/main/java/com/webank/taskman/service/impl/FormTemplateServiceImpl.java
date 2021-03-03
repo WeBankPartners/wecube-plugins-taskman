@@ -27,7 +27,7 @@ import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
 import com.webank.taskman.dto.resp.FormTemplateRespDto;
-import com.webank.taskman.dto.resp.TaskTemplateResp;
+import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
@@ -106,7 +106,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             LambdaQueryWrapper<TaskTemplate> taskTemplateQueryWrapper = new TaskTemplate()
                     .setRequestTemplateId(req.getTempId()).getLambdaQueryWrapper();
             List<TaskTemplate> taskTemplateEntities = taskTemplateService.list(taskTemplateQueryWrapper);
-            List<TaskTemplateResp> taskTemplateDtos = taskTemplateConverter.toDto(taskTemplateEntities);
+            List<TaskTemplateRespDto> taskTemplateDtos = taskTemplateConverter.toDto(taskTemplateEntities);
             if (taskTemplateDtos != null) {
                 formTemplateRespDto.setTaskTemplates(taskTemplateDtos);
             }

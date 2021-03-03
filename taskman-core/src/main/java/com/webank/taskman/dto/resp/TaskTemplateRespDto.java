@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.webank.taskman.dto.RoleDto;
 
-public class TaskTemplateResp {
+public class TaskTemplateRespDto {
     private String id;
 
     private String procDefId;

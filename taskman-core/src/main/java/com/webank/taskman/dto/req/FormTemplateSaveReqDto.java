@@ -11,7 +11,7 @@ public class FormTemplateSaveReqDto {
 
     private String tempId;
 
-    // @ApiModelProperty(value = "模板类型(0.请求模板 1.任务模板)",required = true,dataType
+    // 模板类型: 0.请求模板 1.任务模板
     // = "int",position = 3)
     private String tempType = "0";
 

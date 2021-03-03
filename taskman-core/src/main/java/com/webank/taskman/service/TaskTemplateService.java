@@ -7,13 +7,13 @@ import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleRespDto;
-import com.webank.taskman.dto.resp.TaskTemplateResp;
+import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 
 public interface TaskTemplateService extends IService<TaskTemplate> {
 
-    TaskTemplateResp saveTaskTemplateByReq(TaskTemplateSaveReqDto taskTemplateReq);
+    TaskTemplateRespDto saveTaskTemplateByReq(TaskTemplateSaveReqDto taskTemplateReq);
 
-    TaskTemplateResp taskTemplateDetail(String id);
+    TaskTemplateRespDto taskTemplateDetail(String id);
 
     QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize, TemplateQueryReqDto req);
 }

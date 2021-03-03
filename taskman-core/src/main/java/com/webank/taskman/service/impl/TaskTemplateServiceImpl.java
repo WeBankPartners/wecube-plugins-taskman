@@ -1,6 +1,5 @@
 package com.webank.taskman.service.impl;
 
-
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +25,7 @@ import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleRespDto;
-import com.webank.taskman.dto.resp.TaskTemplateResp;
+import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.mapper.TaskTemplateMapper;
 import com.webank.taskman.service.FormTemplateService;
 import com.webank.taskman.service.RequestTemplateService;
@@ -34,8 +33,8 @@ import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.service.TaskTemplateService;
 
 @Service
-public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, TaskTemplate> implements TaskTemplateService {
-
+public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, TaskTemplate>
+        implements TaskTemplateService {
 
     @Autowired
     private RoleRelationService roleRelationService;
@@ -52,13 +51,12 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Autowired
     private RequestTemplateService requestTemplateService;
 
-
     @Override
     @Transactional
-    public TaskTemplateResp saveTaskTemplateByReq(TaskTemplateSaveReqDto req) throws TaskmanRuntimeException {
+    public TaskTemplateRespDto saveTaskTemplateByReq(TaskTemplateSaveReqDto req) {
         RequestTemplate requestTemplate = requestTemplateService.getById(req.getTempId());
-        if(requestTemplate == null){
-            throw  new TaskmanRuntimeException("The RequestTemplate is not exists! id:"+req.getTempId());
+        if (requestTemplate == null) {
+            throw new TaskmanRuntimeException("The Request Template does not exist! ID:" + req.getTempId());
         }
         TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
         taskTemplate.setRequestTemplateId(req.getTempId());
@@ -68,23 +66,23 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 
+        // Bad smells
         FormTemplateSaveReqDto formTemplateReq = req.getForm();
         formTemplateReq.setTempId(taskTemplateId);
         formTemplateReq.setTempType(TemplateTypeEnum.TASK.getType());
-        formTemplateService.saveFormTemplateByReq(req.getForm());
+        formTemplateService.saveFormTemplateByReq(formTemplateReq);
 
-        TaskTemplateResp taskTemplateResp = new TaskTemplateResp();
+        TaskTemplateRespDto taskTemplateResp = new TaskTemplateRespDto();
         taskTemplateResp.setId(taskTemplateId);
         return taskTemplateResp;
     }
 
     @Override
-    public TaskTemplateResp taskTemplateDetail(String id) {
+    public TaskTemplateRespDto taskTemplateDetail(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
-        TaskTemplateResp taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
-        List<RoleRelation> relations = roleRelationService.list(
-                new RoleRelation().setRecordId(id).getLambdaQueryWrapper()
-        );
+        TaskTemplateRespDto taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
+        List<RoleRelation> relations = roleRelationService
+                .list(new RoleRelation().setRecordId(id).getLambdaQueryWrapper());
         relations.stream().forEach(roleRelation -> {
             RoleDto roleDTO = new RoleDto();
             roleDTO.setRoleName(roleRelation.getRoleName());
@@ -99,15 +97,16 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize, TemplateQueryReqDto req) {
+    public QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
+            TemplateQueryReqDto req) {
         String inSql = TemplateQueryReqDto.getEqUseRole();
         LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
-                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql),TaskTemplate::getId,inSql);
-        IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize),queryWrapper);
+                .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskTemplate::getId, inSql);
+        IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize), queryWrapper);
         List<TaskTemplateByRoleRespDto> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
-        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = new QueryResponse<>(iPage.getTotal(), iPage.getCurrent(), iPage.getSize(),list);
+        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = new QueryResponse<>(iPage.getTotal(),
+                iPage.getCurrent(), iPage.getSize(), list);
         return queryResponse;
     }
-
 
 }

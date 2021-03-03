@@ -22,7 +22,7 @@ import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
 import com.webank.taskman.dto.resp.TaskTemplateByRoleRespDto;
-import com.webank.taskman.dto.resp.TaskTemplateResp;
+import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
 
@@ -40,7 +40,7 @@ public class TaskmanTaskController {
     @PostMapping("/template/save")
     public JsonResponse taskTemplateSave(@Valid @RequestBody TaskTemplateSaveReqDto taskTemplateReq){
 
-        TaskTemplateResp taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
+        TaskTemplateRespDto taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReq);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
@@ -55,7 +55,7 @@ public class TaskmanTaskController {
 
     @GetMapping("/template/detail/{id}")
     public JsonResponse taskTemplateDetail(@PathVariable("id") String id){
-        TaskTemplateResp taskTemplateResp = taskTemplateService.taskTemplateDetail(id);
+        TaskTemplateRespDto taskTemplateResp = taskTemplateService.taskTemplateDetail(id);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 

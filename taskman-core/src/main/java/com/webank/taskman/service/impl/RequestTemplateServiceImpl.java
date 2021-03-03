@@ -1,5 +1,7 @@
 package com.webank.taskman.service.impl;
 
+import static com.webank.taskman.base.JsonResponse.okayWithData;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
@@ -78,25 +81,25 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     public RequestTemplateDto saveRequestTemplate(RequestTemplateSaveReqDto req) {
         List<RoleDto> roles = roleRelationConverter
                 .rolesDataResponseToDtoList(coreServiceStub.getAllAuthRolesOfCurrentUser());
-        
+
         Set<String> toAddUseRoles = new HashSet<String>();
-        if(roles != null){
-            for(RoleDto roleDto : roles){
-                if(StringUtils.isNoneBlank(roleDto.getRoleName())){
+        if (roles != null) {
+            for (RoleDto roleDto : roles) {
+                if (StringUtils.isNoneBlank(roleDto.getRoleName())) {
                     toAddUseRoles.add(roleDto.getRoleName());
                 }
             }
         }
-        
+
         List<RoleDto> inputRoleDtos = req.getUseRoles();
-        if(inputRoleDtos != null){
-            for(RoleDto roleDto : inputRoleDtos){
-                if(StringUtils.isNoneBlank(roleDto.getRoleName())){
+        if (inputRoleDtos != null) {
+            for (RoleDto roleDto : inputRoleDtos) {
+                if (StringUtils.isNoneBlank(roleDto.getRoleName())) {
                     toAddUseRoles.add(roleDto.getRoleName());
                 }
             }
         }
-        
+
         req.setUseRoles(new ArrayList<>(inputRoleDtos));
         RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
@@ -159,6 +162,30 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(items));
         requestTemplateResp.setFormTemplateResp(formTemplateResp);
         return requestTemplateResp;
+    }
+
+    /**
+     * 
+     */
+    @Override
+    public RequestTemplateDto releaseRequestTemplate(RequestTemplateSaveReqDto req) {
+        if (StringUtils.isBlank(req.getId())) {
+            throw new TaskmanRuntimeException("Request template ID should provide.");
+        }
+        RequestTemplate requestTemplate = this.getOne(new RequestTemplate().setId(req.getId()).getLambdaQueryWrapper());
+        if (requestTemplate == null) {
+            throw new TaskmanRuntimeException("Request template does not exist.");
+        }
+        String status = RequestTemplate.STATUS_UNRELEASED.equals(requestTemplate.getStatus())
+                ? RequestTemplate.STATUS_RELEASED : RequestTemplate.STATUS_UNRELEASED;
+        requestTemplate.setStatus(status);
+        requestTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestTemplate.setUpdatedTime(new Date());
+        this.updateById(requestTemplate);
+
+        RequestTemplateDto respDto = new RequestTemplateDto().setId(requestTemplate.getId())
+                .setStatus(requestTemplate.getStatus());
+        return respDto;
     }
 
 }

@@ -13,6 +13,9 @@ import java.util.StringJoiner;
 public class RequestTemplate extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    public static final String STATUS_UNRELEASED = "UNRELEASED";
+    public static final String STATUS_RELEASED = "RELEASED";
 
 
     @TableId(value = "id", type = IdType.ASSIGN_ID)

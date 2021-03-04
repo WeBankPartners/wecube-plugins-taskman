@@ -1,5 +1,7 @@
 package com.webank.taskman.service;
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.domain.RequestTemplate;
@@ -20,5 +22,7 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
     RequestTemplateRespDto detailRequestTemplate(String id);
     
     RequestTemplateDto releaseRequestTemplate(RequestTemplateSaveReqDto req);
+    
+    List<RequestTemplateDto> fetchAvailableRequestTemplates();
 
 }

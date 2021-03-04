@@ -58,11 +58,13 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         if (requestTemplate == null) {
             throw new TaskmanRuntimeException("The Request Template does not exist! ID:" + req.getTempId());
         }
+        
         TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
-        taskTemplate.setRequestTemplateId(req.getTempId());
+        taskTemplate.setRequestTemplateId(requestTemplate.getId());
         taskTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         saveOrUpdate(taskTemplate);
+        
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 

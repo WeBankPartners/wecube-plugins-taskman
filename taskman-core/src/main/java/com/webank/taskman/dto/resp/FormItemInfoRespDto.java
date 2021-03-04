@@ -1,5 +1,8 @@
 package com.webank.taskman.dto.resp;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormItemInfoRespDto {
     private String id;
 

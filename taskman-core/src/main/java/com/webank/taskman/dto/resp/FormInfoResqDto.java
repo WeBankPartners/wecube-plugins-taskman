@@ -2,6 +2,9 @@ package com.webank.taskman.dto.resp;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormInfoResqDto {
 
     private String id;

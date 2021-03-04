@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RequestInfoInstanceResqDto {
     private String id;
     private String requestTempId;

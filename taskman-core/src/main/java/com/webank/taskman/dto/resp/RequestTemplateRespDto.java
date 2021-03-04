@@ -3,8 +3,10 @@ package com.webank.taskman.dto.resp;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.webank.taskman.dto.RoleDto;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RequestTemplateRespDto  {
 
     private String id;

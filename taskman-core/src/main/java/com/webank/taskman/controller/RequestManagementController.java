@@ -20,7 +20,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.CreateTaskDto;
@@ -51,9 +50,6 @@ public class RequestManagementController {
 
     @Autowired
     private RequestInfoService requestInfoService;
-
-    @Autowired
-    private RequestTemplateConverter requestTemplateConverter;
 
     @PostMapping("/template/group/save")
     public JsonResponse requestGroupTemplateSave(@Valid @RequestBody RequestTemplateGroupSaveReqDto req) {

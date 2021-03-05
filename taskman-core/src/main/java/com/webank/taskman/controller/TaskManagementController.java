@@ -44,9 +44,9 @@ public class TaskManagementController {
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
-    @PostMapping("/template/search/{page}/{pageSize}")
+    @PostMapping("/template/search/{page}/{page-size}")
     public JsonResponse taskTemplateSearch( @PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize,
+            @PathVariable("page-size") Integer pageSize,
             @RequestBody TemplateQueryReqDto req) {
         QueryResponse<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page, pageSize,
                 req);
@@ -59,9 +59,9 @@ public class TaskManagementController {
         return JsonResponse.okayWithData(taskTemplateResp);
     }
 
-    @PostMapping("/search/{page}/{pageSize}")
+    @PostMapping("/search/{page}/{page-size}")
     public JsonResponse taskInfoSearch( @PathVariable("page") Integer page,
-             @PathVariable("pageSize") Integer pageSize,
+             @PathVariable("page-size") Integer pageSize,
             @RequestBody(required = false) TaskInfoQueryReqDto req) {
         if (!StringUtils.isEmpty(req.getIsMy())) {
             req.setReporter(AuthenticationContextHolder.getCurrentUsername());

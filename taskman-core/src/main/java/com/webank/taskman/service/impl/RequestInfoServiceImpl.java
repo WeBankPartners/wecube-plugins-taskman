@@ -100,7 +100,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     public void saveRequestFormInfo(CreateTaskDto req) {
         List<FormItemInfo> items = new ArrayList<>();
-        req.getEntitys().stream().forEach(e -> {
+        req.getEntities().stream().forEach(e -> {
             items.addAll(formItemInfoConverter.toEntityByAttrValue(e.getAttrValues()));
         });
         formInfoService.saveFormInfoAndItems(items, req.getRequestTempId(), req.getId());
@@ -167,7 +167,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
                     guid, guid);
             addBondEntityByNodeDto(maps, nodeDefId, entityValueDto);
         });
-        req.getEntitys().stream().forEach(e -> {
+        req.getEntities().stream().forEach(e -> {
             String nodeDefId = e.getNodeDefId();
             String dataId = e.getDataId();
             DynamicEntityValueDto entityValueDto = new DynamicEntityValueDto(dataId, e.getPackageName(),

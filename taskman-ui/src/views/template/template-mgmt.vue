@@ -94,11 +94,11 @@
     <Row v-show="isEdit && (currentStep === 2 || currentStep === 3)">
       <Row>
         <Row v-show="isEdit && currentStep === 3">
-          <Col style="margin-bottom:20px;font-size:14px;font-weight:600" span="1">
+          <Col style="margin-bottom:20px;font-size:18px;font-weight:600" span="2">
             任务节点:
           </Col>
           <Col span="20">
-            <RadioGroup @on-change="taskNodeChanged" v-model="currentTaskNode" type="button" size="small">
+            <RadioGroup @on-change="taskNodeChanged" v-model="currentTaskNode" type="button">
               <Radio v-for="node in procTaskNodes" :key="node.nodeId" :label="node.nodeName"></Radio>
             </RadioGroup>
           </Col>
@@ -559,27 +559,32 @@ export default {
         })
       }
     },
-    async getFormTemplateDetail (type, id, isEdit) {
+    async getFormTemplateDetail (type, id, isEdit, getTaskTemplates) {
       const {status, message, data} = await getFormTemplateDetail(type, id)
       if (status === 'OK') {
         this.isAdd = false
-        this.formTemplateId = data.id ? data.id : undefined
-        this.formFields = data.items ? data.items.map( _ => {
-            return {
-              ..._,
-              dataOptions: _.dataOptions.length > 0 ? JSON.parse(_.dataOptions) : [],
-              isCustom: !(_.packageName.length > 0),
-              isActive:false,
-              isHover: false
-            }
-          }) : []
-          this.currentFieldList = this.formFields
+        if (!getTaskTemplates) {
+          this.formTemplateId = data && data.id ? data.id : undefined
+          this.formFields = data && data.items ? data.items.map( _ => {
+              return {
+                ..._,
+                dataOptions: _.dataOptions.length > 0 ? JSON.parse(_.dataOptions) : [],
+                isCustom: !(_.packageName.length > 0),
+                isActive:false,
+                isHover: false
+              }
+            }) : []
+            this.currentFieldList = this.formFields
+        }
         if (type === 0) {
           this.attrsSelections = data.otherAttrDef && data.otherAttrDef.length > 0 ? JSON.parse(data.otherAttrDef) : []
           this.taskAttrsSelections = this.attrsSelections.concat([{
             title: '自定义',
             expand: true,
-            children:this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}})
+            children:this.formFields.filter(_ => _.isCustom).map(f => {
+              delete f.nodeKey
+              return {...f, displayName: f.displayName ? f.displayName : f.title}
+            })
           }])
           this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
           this.list = this.entityList
@@ -590,7 +595,7 @@ export default {
           this.attrsTreeData.forEach(i => {
             i.children.forEach(child => {
               this.attrsSelections.forEach(j => {
-                j.children.forEach(d => {
+                j.children && j.children.forEach(d => {
                   if (d.name === child.name) {
                     child.checked = true
                   }
@@ -605,12 +610,12 @@ export default {
           this.requestForm.description = data.description
         }
         if (type === 1) {
-          this.taskForm.name = data.name
+          this.taskForm.name = data.name || []
           this.taskForm.inputAttrDef = data.inputAttrDef ? JSON.parse(data.inputAttrDef) : []
-          this.taskForm.description = data.description
-          this.taskForm.useRoles = data.useRoles
+          this.taskForm.description = data.description || ''
+          this.taskForm.useRoles = data.useRoles || []
           this.taskForm.outputAttrDef = data.outputAttrDef ? JSON.parse(data.outputAttrDef) : []
-          this.taskForm.manageRoles = data.manageRoles
+          this.taskForm.manageRoles = data.manageRoles || []
         }
         this.formFieldSortHandler(this.currentEntityList)
       }
@@ -651,6 +656,7 @@ export default {
         this.taskForm.outputAttrDef = []
         this.taskForm.manageRoles = []
         this.formFields = []
+        this.currentFieldList = this.formFields
       }
       this.currentField = {}
     },
@@ -731,10 +737,13 @@ export default {
       }
       if (this.currentStep === 3) {
         const process = this.allProcessDefinitionKeys.find(key => key.procDefId === this.templateForm.procDefId)
+        const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
+        const found = this.taskTemplates.find(task => task.nodeDefId === nodeDefId)
+        const taskId = found ? found.id : ''
         payload = {
           ...process,
           ...this.taskForm,
-          id: this.formTemplateId,
+          id: taskId,
           inputAttrDef: JSON.stringify(this.taskForm.inputAttrDef),
           otherAttrDef: JSON.stringify(this.taskAttrsSelections),
           outputAttrDef: JSON.stringify(this.taskForm.outputAttrDef),
@@ -763,6 +772,7 @@ export default {
             }):[],
           form: {
             ...this.taskForm,
+            id: this.formTemplateId,
             targetEntitys: JSON.stringify(this.entityList),
             manageRoles: this.taskForm.manageRoles && this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
               const found = this.allRolesList.find(r => r.name === role)
@@ -799,11 +809,17 @@ export default {
           title: 'Success',
           desc: 'Success'
         })
+        if (this.currentStep === 3) {
+          this.getFormTemplateDetail(0,this.currentTemplateId,true,true)
+        }
         if (this.currentStep === 2) {
           this.taskAttrsSelections = this.attrsSelections.concat([{
-            title: '自定义',
+            title: '自定义表单项',
             expand: true,
-            children:this.formFields.filter(_ => _.isCustom).map(f => {return {...f, displayName: f.displayName ? f.displayName : f.title}})
+            children:this.formFields.filter(_ => _.isCustom).map(f => {
+              delete f.nodeKey
+              return {...f, displayName: f.displayName ? f.displayName : f.title}
+            })
           }])
           this.currentStep++
           this.formFields = []
@@ -811,15 +827,17 @@ export default {
           this.currentField = {}
           this.currentTaskNode = this.procTaskNodes[0].nodeName
           const nodeDefId = this.procTaskNodes.find(node => node.nodeName === this.currentTaskNode).nodeDefId
-          const id = this.taskTemplates.find(task => task.nodeDefId === nodeDefId).id
-          this.getFormTemplateDetail(1,id)
+          const node = this.taskTemplates.find(task => task.nodeDefId === nodeDefId)
+          if (node) {
+            this.getFormTemplateDetail(1,node.id)
+          }
         }
       }
     },
     requestFormFieldChanged (val,type) {
       //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
-      const isAttrs = this.formFields.filter(field => !field.isCustom)
-      isAttrs.forEach(attr => {
+      // const isAttrs = this.formFields.filter(field => !field.isCustom)
+      this.formFields.forEach(attr => {
         const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name)
         if (!found) {
           const index = this.formFields.indexOf(attr)
@@ -1107,8 +1125,8 @@ export default {
     },
     async getTaskNodesEntitys (id) {
       const nodes = await getTaskNodesEntitys(id)
-      // this.procTaskNodes = nodes.data ? nodes.data.filter(node => node.taskCategory === 'SUTN') : []
-      this.procTaskNodes = nodes.data
+      this.procTaskNodes = nodes.data ? nodes.data.filter(node => node.taskCategory === 'SUTN') : []
+      // this.procTaskNodes = nodes.data
       let entitys = new Set()
       const entityData = nodes.data ? nodes.data : []
       // entityData.filter(f=>f.boundEntity).forEach(node => {
@@ -1131,7 +1149,7 @@ export default {
         })
       }))
       this.attrsTreeData = []
-      this.procTaskNodes.filter(f=>f.boundEntity && f.boundEntity.attributes).forEach(node => {
+      entityData.filter(f=>f.boundEntity && f.boundEntity.attributes).forEach(node => {
         const entity = node.boundEntity
         entitys.add(entity.name)
         const found = this.attrsTreeData.find(e => e.title === entity.name)
@@ -1285,7 +1303,8 @@ export default {
               packageName: '',
               isCustom: true,
               entity: '',
-              sort: e.newIndex
+              sort: e.newIndex,
+              id: ''
             }
             this.formFields.splice(e.newIndex, 0, item)
             this.currentFieldList = this.formFields

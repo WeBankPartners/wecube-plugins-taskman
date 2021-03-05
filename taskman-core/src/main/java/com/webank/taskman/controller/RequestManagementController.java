@@ -116,7 +116,7 @@ public class RequestManagementController {
         return okayWithData(detailRequestTemplateResq);
     }
 
-    @GetMapping(value = "/template/available")
+    @GetMapping("/template/available")
     public JsonResponse requestTemplateAvailable() {
         List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateService.fetchAvailableRequestTemplates();
         return okayWithData(retRequestTemplateDtos);

@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `form_template` (
   `temp_type` varchar(32)  NOT NULL,
   `name` varchar(255)  NOT NULL,
   `description` varchar(512)  DEFAULT NULL,
-  `target_entitys` varchar(255)  NOT NULL,
+  `target_entities` varchar(255)  NOT NULL,
   `input_attr_def` text ,
   `output_attr_def` text ,
   `other_attr_def` text ,

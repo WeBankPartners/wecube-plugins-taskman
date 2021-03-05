@@ -125,7 +125,7 @@ public class TaskManagementController {
      * @return
      */
     @GetMapping("/instance")
-    public JsonResponse taskInfoInstance(@RequestParam("requestId") String requestId,
+    public JsonResponse getTaskInfoInstance(@RequestParam("requestId") String requestId,
             @RequestParam("taskId") String taskId) {
         RequestInfoInstanceResqDto requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(requestId,
                 taskId);

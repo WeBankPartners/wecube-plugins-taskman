@@ -22,10 +22,7 @@ public class FormTemplateSaveReqDto {
     private String description;
 
     private String style;
-
-    // TODO
-    // FIXME misspelling
-    private String targetEntitys;
+    private String targetEntities;
 
     private String inputAttrDef;
     private String outputAttrDef;
@@ -100,12 +97,12 @@ public class FormTemplateSaveReqDto {
         this.style = style;
     }
 
-    public String getTargetEntitys() {
-        return targetEntitys;
+    public String getTargetEntities() {
+        return targetEntities;
     }
 
-    public void setTargetEntitys(String targetEntitys) {
-        this.targetEntitys = targetEntitys;
+    public void setTargetEntities(String targetEntities) {
+        this.targetEntities = targetEntities;
     }
 
     public String getInputAttrDef() {

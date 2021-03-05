@@ -56,9 +56,9 @@ public class RequestManagementController {
         return okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
-    @PostMapping("/template/group/search/{page}/{pageSize}")
+    @PostMapping("/template/group/search/{page}/{page-size}")
     public JsonResponse requestGroupTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDto req)
+            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDto req)
             throws TaskmanRuntimeException {
         return okayWithData(requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req));
     }
@@ -96,9 +96,9 @@ public class RequestManagementController {
         return okayWithData(respDto);
     }
 
-    @PostMapping("/template/search/{page}/{pageSize}")
+    @PostMapping("/template/search/{page}/{page-size}")
     public JsonResponse requestTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestTemplateQueryReqDto req) {
+            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestTemplateQueryReqDto req) {
         QueryResponse<RequestTemplateDto> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
                 pageSize, req);
         return okayWithData(queryResponse);
@@ -127,9 +127,9 @@ public class RequestManagementController {
         return okayWithData(requestInfoService.saveRequestInfoByDto(req));
     }
 
-    @PostMapping("/search/{page}/{pageSize}")
+    @PostMapping("/search/{page}/{page-size}")
     public JsonResponse requestInfoSearch(@PathVariable("page") Integer page,
-            @PathVariable("pageSize") Integer pageSize, @RequestBody(required = false) RequestInfoQueryReqDto req) {
+            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestInfoQueryReqDto req) {
         QueryResponse<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         return okayWithData(list);
     }

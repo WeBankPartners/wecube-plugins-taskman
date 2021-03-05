@@ -11,6 +11,6 @@ import org.apache.ibatis.annotations.Param;
 
 public interface RequestInfoMapper extends BaseMapper<RequestInfo> {
 
-    IPage<RequestInfoResqDto> selectRequestInfo(Page page, @Param("param") RequestInfoQueryReqDto req);
+    IPage<RequestInfoResqDto> selectRequestInfo(Page<?> page, @Param("param") RequestInfoQueryReqDto req);
 
 }

@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,9 +20,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.converter.RequestTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
-import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
@@ -32,7 +29,6 @@ import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
-import com.webank.taskman.dto.req.RoleRelationBaseQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.service.RequestInfoService;
@@ -54,9 +50,6 @@ public class RequestManagementController {
 
     @Autowired
     private RequestInfoService requestInfoService;
-
-    @Autowired
-    private RequestTemplateConverter requestTemplateConverter;
 
     @PostMapping("/template/group/save")
     public JsonResponse requestGroupTemplateSave(@Valid @RequestBody RequestTemplateGroupSaveReqDto req) {
@@ -125,11 +118,8 @@ public class RequestManagementController {
 
     @GetMapping(value = "/template/available")
     public JsonResponse requestTemplateAvailable() {
-        RequestTemplate requestTemplate = new RequestTemplate().setStatus(RequestTemplate.STATUS_RELEASED);
-        String inSql = RoleRelationBaseQueryReqDto.getEqUseRole();
-        LambdaQueryWrapper<RequestTemplate> queryWrapper = requestTemplate.getLambdaQueryWrapper()
-                .inSql(!StringUtils.isEmpty(inSql), RequestTemplate::getId, RoleRelationBaseQueryReqDto.getEqUseRole());
-        return okayWithData(requestTemplateConverter.toDto(requestTemplateService.list(queryWrapper)));
+        List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateService.fetchAvailableRequestTemplates();
+        return okayWithData(retRequestTemplateDtos);
     }
 
     @PostMapping("/save")

@@ -1,8 +1,7 @@
 package com.webank.taskman.service.impl;
 
-import static com.webank.taskman.base.JsonResponse.okayWithData;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -13,11 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
@@ -31,16 +30,19 @@ import com.webank.taskman.converter.RoleRelationConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestTemplate;
+import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
+import com.webank.taskman.dto.req.RoleRelationBaseQueryReqDto;
 import com.webank.taskman.dto.resp.FormTemplateRespDto;
 import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
+import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
@@ -75,6 +77,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Autowired
     private FormItemTemplateConverter formItemTemplateConverter;
+    
+    @Autowired
+    private RequestTemplateGroupService requestTemplateGroupService;
 
     @Override
     @Transactional
@@ -186,6 +191,32 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         RequestTemplateDto respDto = new RequestTemplateDto().setId(requestTemplate.getId())
                 .setStatus(requestTemplate.getStatus());
         return respDto;
+    }
+
+    @Override
+    public List<RequestTemplateDto> fetchAvailableRequestTemplates() {
+        RequestTemplate requestTemplate = new RequestTemplate().setStatus(RequestTemplate.STATUS_RELEASED);
+        String inSql = RoleRelationBaseQueryReqDto.getEqUseRole();
+        LambdaQueryWrapper<RequestTemplate> queryWrapper = requestTemplate.getLambdaQueryWrapper()
+                .inSql(!StringUtils.isEmpty(inSql), RequestTemplate::getId, RoleRelationBaseQueryReqDto.getEqUseRole());
+        
+        List<RequestTemplate> requestTemplateEntities = this.list(queryWrapper);
+        
+        if(requestTemplateEntities == null ) {
+            return Collections.emptyList();
+        }
+        
+        List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateConverter.toDto(requestTemplateEntities);
+        
+        for(RequestTemplateDto retDto : retRequestTemplateDtos) {
+            if(StringUtils.isNotBlank(retDto.getRequestTempGroup())) {
+                RequestTemplateGroup rtGroupEntity = requestTemplateGroupService.getById(retDto.getRequestTempGroup());
+                if(rtGroupEntity != null) {
+                    retDto.setRequestTempGroupName(rtGroupEntity.getName());
+                }
+            }
+        }
+        return retRequestTemplateDtos;
     }
 
 }

@@ -40,42 +40,78 @@ public class PlatformResourceController {
     @Autowired
     private AttachFileService attachFileService;
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("/roles")
     public JsonResponse getAllPlatformAuthRoles() {
         return okayWithData(platformCoreServiceRestClient.getAllPlatformAuthRoles());
     }
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("/users/current-user/roles")
     public JsonResponse getAllAuthRolesOfCurrentUser() {
         return okayWithData(platformCoreServiceRestClient.getAllAuthRolesOfCurrentUser());
     }
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("/platform/process-definitions")
     public JsonResponse getAllLatestPlatformProcesses() {
         return okayWithData(platformCoreServiceRestClient.getAllLatestPlatformProcesses());
     }
 
+    /**
+     * 
+     * @param procDefId
+     * @return
+     */
     @GetMapping("/platform/process-definitions/{proc-def-id}/nodes")
     public JsonResponse getPlatformProcessDefinitionNodes(@PathVariable("proc-def-id") String procDefId) {
         return okayWithData(platformCoreServiceRestClient.getPlatformProcessDefinitionNodes(procDefId));
     }
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("/platform/models")
     public JsonResponse getAllPlatformProcessModels() {
         return okayWithData(platformCoreServiceRestClient.getAllPlatformProcessModels(null));
     }
 
+    /**
+     * 
+     * @param packageName
+     * @return
+     */
     @GetMapping("/platform/models/{package-name}")
     public JsonResponse getAllPlatformProcessModelsOfPackage(@PathVariable("package-name") String packageName) {
         return okayWithData(platformCoreServiceRestClient.getAllPlatformProcessModels(packageName));
     }
 
-    /**/
+    /**
+     * 
+     * @param procDefId
+     * @return
+     */
     @GetMapping("/platform/process/{proc-def-id}/root-entities")
     public JsonResponse getPlatformProcessRootEntities(@PathVariable("proc-def-id") String procDefId) {
         return okayWithData(platformCoreServiceRestClient.getPlatformProcessRootEntities(procDefId));
     }
 
+    /**
+     * 
+     * @param packageName
+     * @param entityName
+     * @return
+     */
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}")
     public JsonResponse platformProcessEntityInfo(@PathVariable(value = "package-name") String packageName,
             @PathVariable(value = "entity-name") String entityName) {
@@ -84,18 +120,37 @@ public class PlatformResourceController {
         return okayWithData(result);
     }
 
+    /**
+     * 
+     * @param packageName
+     * @param entity
+     * @return
+     */
     @GetMapping("/platform/models/package/{package-name}/entity/{entity-name}/attributes")
     public JsonResponse platformProcessEntityAttributes(@PathVariable("package-name") String packageName,
             @PathVariable("entity-name") String entity) {
         return okayWithData(platformCoreServiceRestClient.platformProcessEntityAttributes(packageName, entity));
     }
 
+    /**
+     * 
+     * @param packageName
+     * @param entity
+     * @param filters
+     * @return
+     */
     @GetMapping("/platform/packages/{package-name}/entities/{entity-name}/retrieve")
     public JsonResponse platformProcessEntityRetrieve(@PathVariable("package-name") String packageName,
             @PathVariable("entity-name") String entity, @RequestParam(required = false) String filters) {
         return okayWithData(platformCoreServiceRestClient.platformProcessEntityRetrieve(packageName, entity, filters));
     }
 
+    /**
+     * 
+     * @param procDefId
+     * @param entityDataId
+     * @return
+     */
     @GetMapping("/platform/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}")
     public JsonResponse platformProcessDataPreview(@PathVariable("proc-def-id") String procDefId,
             @PathVariable("entity-data-id") String entityDataId) {
@@ -105,6 +160,11 @@ public class PlatformResourceController {
         return okayWithData(processDataPreviewDto);
     }
 
+    /**
+     * 
+     * @param processSessionId
+     * @return
+     */
     @GetMapping("/platform/process/tasknodes/session/{process-session-id}/tasknode-bindings")
     public JsonResponse platformProcessTasknodeBindings(
             @PathVariable(name = "process-session-id") String processSessionId) {
@@ -112,24 +172,40 @@ public class PlatformResourceController {
 
     }
 
+    /**
+     * 
+     * @param creationInfoDto
+     * @return
+     */
     @PostMapping("/platform/create")
     public JsonResponse platformProcessCreate(@RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto) {
 
         return okayWithData(platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto));
     }
 
+    /**
+     * 
+     * @param attachFile
+     * @return
+     */
     @PostMapping("/attach-file")
-    public JsonResponse uploadS3File(@RequestParam(value = "file") MultipartFile attachFile) throws Exception {
+    public JsonResponse uploadS3File(@RequestParam(value = "file") MultipartFile attachFile){
         String attachFileId = attachFileService.uploadServiceRequestAttachFile(attachFile);
 
         return okayWithData(attachFileId);
     }
 
+    /**
+     * 
+     * @param serviceRequestId
+     * @param response
+     */
     @GetMapping("/{attach-id}/attach-file")
-    public void downloadS3File(@PathVariable(value = "attach-id") String serviceRequestId, HttpServletResponse response)
-            throws Exception {
-        if (serviceRequestId == null || serviceRequestId.isEmpty())
-            throw new Exception("Invalid service-request-id: " + serviceRequestId);
+    public void downloadS3File(@PathVariable(value = "attach-id") String serviceRequestId,
+            HttpServletResponse response) {
+        if (serviceRequestId == null || serviceRequestId.isEmpty()) {
+            throw new TaskmanRuntimeException("Invalid service-request-id: " + serviceRequestId);
+        }
         try {
             ServletOutputStream out = response.getOutputStream();
             DownloadAttachFileResponse attachFileInfo = attachFileService

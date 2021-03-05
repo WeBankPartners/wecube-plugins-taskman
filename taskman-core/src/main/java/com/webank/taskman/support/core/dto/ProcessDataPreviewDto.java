@@ -1,7 +1,5 @@
 package com.webank.taskman.support.core.dto;
 
-import io.swagger.annotations.ApiModel;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -9,7 +7,6 @@ import java.util.StringJoiner;
 public class ProcessDataPreviewDto {
 
     private String processSessionId;
-
 
     private List<GraphNodeDto> entityTreeNodes = new ArrayList<>();
 
@@ -23,13 +20,10 @@ public class ProcessDataPreviewDto {
 
     public static class GraphNodeDto {
         /**
-         * packageName : wecmdb
-         * entityName : deploy_package
-         * dataId : 0045_0000000100
-         * displayName : aDEMO_CORE_APP_mix01.zip
-         * id : wecmdb:deploy_package:0045_0000000100
-         * previousIds : []
-         * succeedingIds : ["wecmdb:deploy_package:0045_0000000117"]
+         * packageName : wecmdb entityName : deploy_package dataId :
+         * 0045_0000000100 displayName : aDEMO_CORE_APP_mix01.zip id :
+         * wecmdb:deploy_package:0045_0000000100 previousIds : [] succeedingIds
+         * : ["wecmdb:deploy_package:0045_0000000117"]
          */
 
         private String packageName;
@@ -37,6 +31,7 @@ public class ProcessDataPreviewDto {
         private String dataId;
         private String displayName;
         private String id;
+        private Object entityData;
         private List<String> previousIds;
         private List<String> succeedingIds;
 
@@ -99,14 +94,17 @@ public class ProcessDataPreviewDto {
         @Override
         public String toString() {
             return new StringJoiner(", ", GraphNodeDto.class.getSimpleName() + "[", "]")
-                    .add("packageName='" + packageName + "'")
-                    .add("entityName='" + entityName + "'")
-                    .add("dataId='" + dataId + "'")
-                    .add("displayName='" + displayName + "'")
-                    .add("id='" + id + "'")
-                    .add("previousIds=" + previousIds)
-                    .add("succeedingIds=" + succeedingIds)
-                    .toString();
+                    .add("packageName='" + packageName + "'").add("entityName='" + entityName + "'")
+                    .add("dataId='" + dataId + "'").add("displayName='" + displayName + "'").add("id='" + id + "'")
+                    .add("previousIds=" + previousIds).add("succeedingIds=" + succeedingIds).toString();
+        }
+
+        public Object getEntityData() {
+            return entityData;
+        }
+
+        public void setEntityData(Object entityData) {
+            this.entityData = entityData;
         }
     }
 
@@ -120,11 +118,8 @@ public class ProcessDataPreviewDto {
 
     @Override
     public String toString() {
-        return "ProcessDataPreviewDto{" +
-                "processSessionId='" + processSessionId + '\'' +
-                ", entityTreeNodes=" + entityTreeNodes +
-                '}';
+        return "ProcessDataPreviewDto{" + "processSessionId='" + processSessionId + '\'' + ", entityTreeNodes="
+                + entityTreeNodes + '}';
     }
-
 
 }

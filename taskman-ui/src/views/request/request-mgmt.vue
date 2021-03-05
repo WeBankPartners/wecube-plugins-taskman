@@ -10,6 +10,77 @@
       @pageChange="requestPageChange"
       @pageSizeChange="requestPageSizeChange"
     />
+    <Button style="margin-top: 10px" type="primary">查看已提交请求</Button>
+    <div style="padding:20px">
+      <Form ref="requestForm" :rules="ruleValidate" :model="requestForm" :label-width="110">
+        <Row>
+          <Col span="12">
+        <FormItem :label="$t('template')">
+          <Select filterable @on-open-change="getTemplates" @on-change="templateChanged" v-model="requestForm.requestTempId">
+            <Option v-for="tem in allTemplates" :key="tem.id" :value="tem.id">{{tem.name}}</Option>
+          </Select>
+        </FormItem>
+        </Col>
+        <Col span="12">
+        <FormItem :label="$t('target_object')">
+          <Select filterable @on-open-change="getEntityDataByTemplateId" @on-change="workflowProcessPrevieEntities" v-model="requestForm.rootEntity">
+            <Option v-for="tem in entityData" :key="tem.guid" :value="tem.guid">{{tem.displayName}}</Option>
+          </Select>
+        </FormItem>
+        </Col>
+        <Col span="12">
+        <FormItem :label="$t('service_request_name')" prop="name">
+          <Input v-model="requestForm.name" :placeholder="$t('service_request_name')"></Input>
+        </FormItem>
+        </Col>
+        <Col span="12">
+        <!-- <FormItem :label="$t('service_request_role')">
+          <Select @on-open-change="getRolesByCurrentUser" v-model="requestForm.roleName">
+            <Option
+              v-for="role in currentUserRoles"
+              :key="role.name"
+              :value="role.name"
+            >{{role.displayName}}</Option>
+          </Select>
+        </FormItem> -->
+        <FormItem :label="$t('emergency_level')">
+          <Select v-model="requestForm.emergency">
+            <Option value="normal">{{$t('not_urgent')}}</Option>
+            <Option value="urgent">{{$t('emergency')}}</Option>
+          </Select>
+        </FormItem>
+        </Col>
+        <Col span="12">
+        <!-- <FormItem :label="$t('reqest_attachment')">
+          <Upload
+            :on-success="uploadSuccess"
+            ref="upload"
+            action="/service-mgmt/v1/service-requests/attach-file"
+          >
+            <Button icon="ios-cloud-upload-outline">{{$t('upload_attachment')}}</Button>
+          </Upload>
+        </FormItem> -->
+        </Col>
+        <Col span="12">
+        <FormItem :label="$t('describe')">
+          <Input type="textarea" v-model="requestForm.description" :placeholder="$t('describe')"></Input>
+        </FormItem>
+        </Col>
+        </Row>
+        <hr style="margin-bottom:10px"/>
+        <Row>
+          <Form ref="form" :label-width="110">
+            <Row v-for="(fields, i) in Object.values(currentFields)" :key="i">
+              <TaskFormItem v-for="(item, index) in fields" :index="index" v-model="currentForm[item.name]" :item="item" :key="index"></TaskFormItem>
+            </Row>
+          </Form>
+        </Row>
+        <div style="text-align:center;width:95%">
+          <Button type="primary" :loading="requestLoading" @click="requestSubmit">{{$t('submit')}}</Button>
+          <Button style="margin-left: 15px" @click="requestCancel">{{$t('cancle')}}</Button>
+        </div>
+      </Form>
+    </div>
     <Modal
       v-model="requestModalVisible"
       :title="$t('request_to_report')"
@@ -183,6 +254,7 @@ export default {
       entityData: [],
       detailEntityData: [],
       allTemplates: [],
+      allTemplatesTree: {},
        requestPagination: {
         currentPage: 1,
         pageSize: 10,
@@ -218,7 +290,7 @@ export default {
       currentForm: {},
       tableOuterActions: [
         {
-          label: this.$t("add"),
+          label: '发起请求上报',
           props: {
             type: "success",
             icon: "md-add",
@@ -418,6 +490,30 @@ export default {
     async getTemplates() {
       const { data } = await requestTemplateAvailable();
       this.allTemplates = data;
+      // this.allTemplatesTree
+      let treeData = []
+      data.forEach(_ => {
+        const found = treeData.find(t => t.requestTempGroup === _.requestTempGroup)
+        if (found) {
+          const foundTag = found.children.find(f => f.tag === _.tags)
+          if (foundTag) {
+            foundTag.children.push(_)
+          } else {
+            found.children.push({tag: _.tags, children:[{..._}]})
+          }
+        } else {
+          treeData.push({
+            requestTempGroup: _.requestTempGroup,
+            requestTempGroupName: _.requestTempGroupName,
+            children:[{
+              tag: _.tags,
+              children: [{..._}]
+            }]
+          })
+        }
+      })
+      this.allTemplatesTree = treeData
+      console.log(this.allTemplatesTree)
     },
     compare (a, b) {
         if (a.sort < b.sort) {

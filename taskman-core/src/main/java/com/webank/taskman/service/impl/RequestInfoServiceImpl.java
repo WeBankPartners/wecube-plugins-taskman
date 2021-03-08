@@ -154,6 +154,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     private List<DynamicTaskNodeBindInfoDto> createTaskNodeBindInfos(String processSessionId, CreateTaskDto req) {
         List<DynamicTaskNodeBindInfoDto> dtoList = new ArrayList<>();
         Map<String, DynamicTaskNodeBindInfoDto> maps = new HashMap<>();
+        //TODO
         FormTemplate formTemplate = formTemplateService
                 .getOne(new FormTemplate().setTempId(req.getRequestTempId()).getLambdaQueryWrapper());
 
@@ -192,7 +193,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
                 .collect(Collectors.collectingAndThen(
                         Collectors.toCollection(
                                 () -> new TreeSet<>(Comparator.comparing(DynamicEntityValueDto::getDataId))),
-                        ArrayList::new)));
+                        ArrayList<DynamicEntityValueDto>::new)));
         maps.put(nodeDefId, nodeDto);
     }
 }

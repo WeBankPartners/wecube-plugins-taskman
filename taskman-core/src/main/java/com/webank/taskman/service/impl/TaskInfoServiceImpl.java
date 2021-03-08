@@ -83,8 +83,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req).getLambdaQueryWrapper()
                 .inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, inSql);
         PageHelper.startPage(page, pageSize);
-        PageInfo<TaskInfoDto> pages = new PageInfo(taskInfoConverter.toDto(getBaseMapper().selectList(queryWrapper)));
-        QueryResponse<TaskInfoDto> queryResponse = new QueryResponse(pages.getTotal(), page.longValue(),
+        PageInfo<TaskInfoDto> pages = new PageInfo<>(taskInfoConverter.toDto(getBaseMapper().selectList(queryWrapper)));
+        QueryResponse<TaskInfoDto> queryResponse = new QueryResponse<>(pages.getTotal(), page.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }

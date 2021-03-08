@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.QueryResponse.PageInfo;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
@@ -56,7 +57,11 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
             RequestTemplateGroupDto req) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
                 requestTemplateGroupConverter.toEntity(req).getLambdaQueryWrapper());
-        return new QueryResponse(iPage, requestTemplateGroupConverter.toDto(iPage.getRecords()));
+
+        //TODO to test start index here
+        PageInfo pageInfo = new PageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(), iPage.getSize());
+        return new QueryResponse<RequestTemplateGroupDto>(pageInfo,
+                requestTemplateGroupConverter.toDto(iPage.getRecords()));
     }
 
     @Override

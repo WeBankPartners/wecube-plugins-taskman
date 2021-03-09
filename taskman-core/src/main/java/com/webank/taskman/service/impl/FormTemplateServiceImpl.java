@@ -110,7 +110,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         
         
         RoleRelation useRoleCriteria = new RoleRelation();
-        useRoleCriteria.setRecordId(formTemplateEntity.getId());
+        useRoleCriteria.setRecordId(formTemplateEntity.getTempId());
         useRoleCriteria.setRoleType(RoleTypeEnum.USE_ROLE.getType());
         
         LambdaQueryWrapper<RoleRelation> useRoleQueryWrapper = useRoleCriteria.getLambdaQueryWrapper();
@@ -128,7 +128,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         
         
         RoleRelation mgmtRoleCriteria = new RoleRelation();
-        mgmtRoleCriteria.setRecordId(formTemplateEntity.getId());
+        mgmtRoleCriteria.setRecordId(formTemplateEntity.getTempId());
         mgmtRoleCriteria.setRoleType(RoleTypeEnum.MANAGE_ROLE.getType());
         
         LambdaQueryWrapper<RoleRelation> mgmtRoleQueryWrapper = mgmtRoleCriteria.getLambdaQueryWrapper();

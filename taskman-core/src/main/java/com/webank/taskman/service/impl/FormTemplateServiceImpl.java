@@ -17,13 +17,16 @@ import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RecordDeleteFlagEnum;
+import com.webank.taskman.constant.RoleTypeEnum;
 import com.webank.taskman.constant.TemplateTypeEnum;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.FormItemTemplate;
 import com.webank.taskman.domain.FormTemplate;
+import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
+import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
 import com.webank.taskman.dto.resp.FormTemplateRespDto;
@@ -31,6 +34,7 @@ import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.FormTemplateService;
+import com.webank.taskman.service.RoleRelationService;
 import com.webank.taskman.service.TaskTemplateService;
 
 @Service
@@ -53,7 +57,10 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Autowired
     private TaskTemplateConverter taskTemplateConverter;
-
+    
+    @Autowired
+    private RoleRelationService roleRelationService;
+    
     @Override
     public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
             FormTemplateSaveReqDto req) {
@@ -100,6 +107,42 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         List<FormItemTemplateRespDto> formItemTemplateDtos = formItemTemplateConverter
                 .toRespByEntity(formItemTemplateEntities);
         formTemplateRespDto.setItems(formItemTemplateDtos);
+        
+        
+        RoleRelation useRoleCriteria = new RoleRelation();
+        useRoleCriteria.setRecordId(formTemplateEntity.getId());
+        useRoleCriteria.setRoleType(RoleTypeEnum.USE_ROLE.getType());
+        
+        LambdaQueryWrapper<RoleRelation> useRoleQueryWrapper = useRoleCriteria.getLambdaQueryWrapper();
+        List<RoleRelation> useRoleRelations = roleRelationService.list(useRoleQueryWrapper);
+        
+        if(useRoleRelations != null){
+            for(RoleRelation useRole : useRoleRelations){
+                RoleDto roleDto = new RoleDto();
+                roleDto.setRoleName(useRole.getRoleName());
+                roleDto.setDisplayName(useRole.getDisplayName());
+                
+                formTemplateRespDto.getUseRoles().add(roleDto);
+            }
+        }
+        
+        
+        RoleRelation mgmtRoleCriteria = new RoleRelation();
+        mgmtRoleCriteria.setRecordId(formTemplateEntity.getId());
+        mgmtRoleCriteria.setRoleType(RoleTypeEnum.MANAGE_ROLE.getType());
+        
+        LambdaQueryWrapper<RoleRelation> mgmtRoleQueryWrapper = mgmtRoleCriteria.getLambdaQueryWrapper();
+        List<RoleRelation> mgmtRoleRelations = roleRelationService.list(mgmtRoleQueryWrapper);
+        
+        if(mgmtRoleRelations != null){
+            for(RoleRelation mgmtRole : mgmtRoleRelations){
+                RoleDto roleDto = new RoleDto();
+                roleDto.setRoleName(mgmtRole.getRoleName());
+                roleDto.setDisplayName(mgmtRole.getDisplayName());
+                
+                formTemplateRespDto.getManageRoles().add(roleDto);
+            }
+        }
 
         if (TemplateTypeEnum.REQUEST.getType().equals(req.getTempType())) {
 

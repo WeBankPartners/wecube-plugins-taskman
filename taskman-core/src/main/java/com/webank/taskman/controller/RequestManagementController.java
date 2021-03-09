@@ -123,7 +123,7 @@ public class RequestManagementController {
     }
 
     /**
-     * Submit new requestss
+     * Submit new request
      * @param req
      * @return
      */

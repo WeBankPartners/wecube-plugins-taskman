@@ -73,21 +73,27 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         return requestInfoResq;
     }
 
+    /**
+     * Submit new request
+     */
     @Override
     @Transactional
-    public RequestInfoResqDto saveRequestInfoByDto(CreateTaskDto req) {
+    public RequestInfoResqDto createNewRequestInfo(CreateTaskDto req) {
         RequestInfo requestInfo = requestInfoConverter.createDtoToDomain(req);
-        // requestInfo.setCurrenUserName(requestInfo, requestInfo.getId());
         requestInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
         requestInfo.setReportTime(new Date());
         requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
+        
         saveOrUpdate(requestInfo);
+        
         req.setId(requestInfo.getId());
         saveRequestFormInfo(req);
-        DynamicWorkflowInstInfoDto response = createNewWorkflowInstance(req);
-        if (null == response) {
+        
+        DynamicWorkflowInstInfoDto response = createNewRemoteWorkflowInstance(req);
+        
+        if (response == null) {
             throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
         }
         if (StatusEnum.InProgress.name().equals(response.getStatus())) {
@@ -107,7 +113,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     }
 
     @Override
-    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(CreateTaskDto req) {
+    public DynamicWorkflowInstInfoDto createNewRemoteWorkflowInstance(CreateTaskDto req) {
         RequestTemplate requestTemplate = requestTemplateService.getById(req.getRequestTempId());
         String rootEntity = req.getRootEntity();
         ProcessDataPreviewDto processDataPreviewDto = coreServiceStub

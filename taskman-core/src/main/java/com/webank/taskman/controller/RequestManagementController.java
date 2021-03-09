@@ -122,9 +122,14 @@ public class RequestManagementController {
         return okayWithData(retRequestTemplateDtos);
     }
 
+    /**
+     * Submit new requestss
+     * @param req
+     * @return
+     */
     @PostMapping("/save")
-    public JsonResponse requestInfoSave(@RequestBody CreateTaskDto req) {
-        return okayWithData(requestInfoService.saveRequestInfoByDto(req));
+    public JsonResponse createNewRequestInfo(@RequestBody CreateTaskDto req) {
+        return okayWithData(requestInfoService.createNewRequestInfo(req));
     }
 
     @PostMapping("/search/{page}/{page-size}")

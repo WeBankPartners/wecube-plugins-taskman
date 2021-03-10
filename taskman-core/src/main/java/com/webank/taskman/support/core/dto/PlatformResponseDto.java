@@ -3,7 +3,7 @@ package com.webank.taskman.support.core.dto;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class CoreResponse<DATATYPE> {
+public class PlatformResponseDto<DATATYPE> {
 
     private String status;
     private String message;
@@ -35,22 +35,28 @@ public class CoreResponse<DATATYPE> {
         this.data = (DATATYPE) data;
     }
 
-    @Override
-    public String toString() {
-        return "CoreResponse{" + "status='" + status + '\'' + ", message='" + message + '\'' + ", data="
-                + (null != data ? data.getClass() : "[]") +
-                // ", data=" + data.toString() +
-                '}';
-    }
 
-    public static class DefaultCoreResponse extends CoreResponse<Object> {
+    public static class DefaultCoreResponse extends PlatformResponseDto<Object> {
     }
 
     @SuppressWarnings("rawtypes")
-    public static class LinkedHashMapResponse extends CoreResponse<LinkedHashMap> {
+    public static class LinkedHashMapResponse extends PlatformResponseDto<LinkedHashMap> {
     }
 
-    public static class ListDataResponse extends CoreResponse<List<Object>> {
+    public static class ListDataResponse extends PlatformResponseDto<List<Object>> {
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("PlatformResponseDto [status=");
+        builder.append(status);
+        builder.append(", message=");
+        builder.append(message);
+        builder.append(", data=");
+        builder.append(data);
+        builder.append("]");
+        return builder.toString();
     }
 
 }

@@ -2,28 +2,28 @@ package com.webank.taskman.support.core;
 
 
 import com.webank.taskman.support.RemoteCallException;
-import com.webank.taskman.support.core.dto.CoreResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto;
 
 public class CoreRemoteCallException extends RemoteCallException {
 
     private static final long serialVersionUID = 1L;
-    private transient CoreResponse<?> jsonResponse;
+    private transient PlatformResponseDto<?> jsonResponse;
 
     public CoreRemoteCallException(String message) {
         super(message);
     }
 
-    public CoreRemoteCallException(String message, CoreResponse<?> cmdbResponse) {
+    public CoreRemoteCallException(String message, PlatformResponseDto<?> cmdbResponse) {
         super(message);
         this.jsonResponse = cmdbResponse;
     }
 
-    public CoreRemoteCallException(String message, CoreResponse<?> cmdbResponse, Throwable cause) {
+    public CoreRemoteCallException(String message, PlatformResponseDto<?> cmdbResponse, Throwable cause) {
         super(message, cause);
         this.jsonResponse = cmdbResponse;
     }
 
-    public CoreResponse<?> getCmdbResponse() {
+    public PlatformResponseDto<?> getCmdbResponse() {
         return jsonResponse;
     }
 
@@ -37,7 +37,7 @@ public class CoreRemoteCallException extends RemoteCallException {
         return jsonResponse == null ? null : jsonResponse.getData();
     }
 
-    private String getStatusCode(CoreResponse<?> jsonResponse) {
+    private String getStatusCode(PlatformResponseDto<?> jsonResponse) {
         return jsonResponse == null ? null : jsonResponse.getStatus();
     }
 }

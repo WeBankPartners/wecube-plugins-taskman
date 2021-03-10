@@ -36,7 +36,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Autowired
     private FormInfoService formInfoService;
     @Autowired
-    private PlatformCoreServiceRestClient coreServiceStub;
+    private PlatformCoreServiceRestClient platformCoreServiceRestClient;
     @Autowired
     private FormItemInfoService formItemInfoService;
     @Autowired
@@ -78,30 +78,29 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
      */
     @Override
     @Transactional
-    public RequestInfoResqDto createNewRequestInfo(CreateTaskDto req) {
-        RequestInfo requestInfo = requestInfoConverter.createDtoToDomain(req);
-        requestInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
-        requestInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
-        requestInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
-        requestInfo.setReportTime(new Date());
-        requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
+    public RequestInfoResqDto createNewRequestInfo(CreateTaskDto reqDto) {
+        RequestInfo requestInfoEntity = buildRequestInfoEntity(reqDto);
         
-        saveOrUpdate(requestInfo);
+        saveOrUpdate(requestInfoEntity);
         
-        req.setId(requestInfo.getId());
-        saveRequestFormInfo(req);
+        reqDto.setId(requestInfoEntity.getId());
+        saveRequestFormInfo(reqDto);
         
-        DynamicWorkflowInstInfoDto response = createNewRemoteWorkflowInstance(req);
+        //remotely invoke platform service to create new process instance.
+        DynamicWorkflowInstInfoDto dynamicWorkflowInstInfoDto = createNewRemoteWorkflowInstance(reqDto);
         
-        if (response == null) {
-            throw new TaskmanRuntimeException("Core interface:[createNewWorkflowInstance] call failed!");
+        if (dynamicWorkflowInstInfoDto == null) {
+            log.error("Remotely create new process instance failed due to null response.");
+            throw new TaskmanRuntimeException("Remotely create new process instance failed!");
         }
-        if (StatusEnum.InProgress.name().equals(response.getStatus())) {
-            requestInfo.setProcInstId(response.getProcInstKey());
-            requestInfo.setStatus(response.getStatus());
-            updateById(requestInfo);
+        
+        if (StatusEnum.InProgress.name().equals(dynamicWorkflowInstInfoDto.getStatus())) {
+            requestInfoEntity.setProcInstId(dynamicWorkflowInstInfoDto.getProcInstKey());
+            requestInfoEntity.setStatus(dynamicWorkflowInstInfoDto.getStatus());
+            requestInfoEntity.setUpdatedTime(new Date());
+            updateById(requestInfoEntity);
         }
-        return requestInfoConverter.toResp(requestInfo);
+        return requestInfoConverter.toResp(requestInfoEntity);
     }
 
     public void saveRequestFormInfo(CreateTaskDto req) {
@@ -116,8 +115,10 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     public DynamicWorkflowInstInfoDto createNewRemoteWorkflowInstance(CreateTaskDto req) {
         RequestTemplate requestTemplate = requestTemplateService.getById(req.getRequestTempId());
         String rootEntity = req.getRootEntity();
-        ProcessDataPreviewDto processDataPreviewDto = coreServiceStub
+        
+        ProcessDataPreviewDto processDataPreviewDto = platformCoreServiceRestClient
                 .platformProcessDataPreview(requestTemplate.getProcDefId(), rootEntity);
+        
         DynamicWorkflowInstCreationInfoDto creationInfoDto = new DynamicWorkflowInstCreationInfoDto();
         creationInfoDto.setProcDefId(requestTemplate.getProcDefId());
         creationInfoDto.setProcDefKey(requestTemplate.getProcDefKey());
@@ -127,8 +128,28 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         List<DynamicTaskNodeBindInfoDto> taskNodeBindInfos = createTaskNodeBindInfos(
                 processDataPreviewDto.getProcessSessionId(), req);
         creationInfoDto.setTaskNodeBindInfos(taskNodeBindInfos);
-        DynamicWorkflowInstInfoDto dto = coreServiceStub.createNewWorkflowInstance(creationInfoDto);
+        
+        DynamicWorkflowInstInfoDto dto = platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto);
         return dto;
+    }
+    
+    private RequestInfo buildRequestInfoEntity(CreateTaskDto reqDto){
+        RequestInfo requestInfo = new RequestInfo();
+        requestInfo.setEmergency(reqDto.getEmergency());
+        requestInfo.setDescription(reqDto.getDescription());
+        requestInfo.setName(reqDto.getName());
+        requestInfo.setRootEntity(reqDto.getRootEntity());
+        requestInfo.setId(reqDto.getId());
+        requestInfo.setRequestTempId(reqDto.getRequestTempId());
+        
+        
+        requestInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
+        requestInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
+        requestInfo.setReportTime(new Date());
+        requestInfo.setReportRole(AuthenticationContextHolder.getCurrentUserRolesToString());
+        
+        return requestInfo;
     }
 
     private DynamicEntityValueDto createDynamicEntityValues(ProcessDataPreviewDto processDataPreviewDto, String guid) {
@@ -164,7 +185,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         FormTemplate formTemplate = formTemplateService
                 .getOne(new FormTemplate().setTempId(req.getRequestTempId()).getLambdaQueryWrapper());
 
-        List<TaskNodeDefObjectBindInfoDto> taskNodebindInfos = coreServiceStub
+        List<TaskNodeDefObjectBindInfoDto> taskNodebindInfos = platformCoreServiceRestClient
                 .platformProcessTasknodeBindings(processSessionId);
         taskNodebindInfos.stream().forEach(taskNode -> {
             String nodeDefId = taskNode.getNodeDefId();
@@ -190,7 +211,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     private void addBondEntityByNodeDto(Map<String, DynamicTaskNodeBindInfoDto> maps, String nodeDefId,
             DynamicEntityValueDto entityValueDto) {
         DynamicTaskNodeBindInfoDto nodeDto = maps.get(nodeDefId);
-        if (null == nodeDto) {
+        if (nodeDto == null) {
             nodeDto = new DynamicTaskNodeBindInfoDto(nodeDefId, nodeDefId);
         }
         List<DynamicEntityValueDto> boundEntityValues = nodeDto.getBoundEntityValues();

@@ -11,8 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
-import com.webank.taskman.support.core.dto.CoreResponse;
-import com.webank.taskman.support.core.dto.CoreResponse.DefaultCoreResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.DefaultCoreResponse;
 import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.JsonUtils;
 
@@ -39,7 +39,7 @@ public class CoreRestTemplate {
     }
 
     @SuppressWarnings("unchecked")
-    public <D, R extends CoreResponse<?>> D get(String targetUrl, Class<R> responseType)
+    public <D, R extends PlatformResponseDto<?>> D get(String targetUrl, Class<R> responseType)
             throws CoreRemoteCallException {
         log.info("{} About to call {} ", taskmanProperties.getVersion(), targetUrl);
         try {
@@ -53,7 +53,7 @@ public class CoreRestTemplate {
     }
 
     @SuppressWarnings("unchecked")
-    public <D, R extends CoreResponse<?>> D get(String targetUrl, Class<R> responseType, String paramJsonStr)
+    public <D, R extends PlatformResponseDto<?>> D get(String targetUrl, Class<R> responseType, String paramJsonStr)
             throws CoreRemoteCallException {
         log.info("{} About to call {} ", taskmanProperties.getVersion(), targetUrl);
         Object uriVariable = paramJsonStr;
@@ -70,7 +70,7 @@ public class CoreRestTemplate {
     }
 
     @SuppressWarnings("unchecked")
-    public <D, R extends CoreResponse<?>> D postForResponse(String targetUrl, Object postObject, Class<R> responseType)
+    public <D, R extends PlatformResponseDto<?>> D postForResponse(String targetUrl, Object postObject, Class<R> responseType)
             throws CoreRemoteCallException {
         log.info("{}About to POST {} with postObject {}", taskmanProperties.getVersion(), targetUrl,
                 postObject.toString());
@@ -80,11 +80,11 @@ public class CoreRestTemplate {
         return (D) jsonResponse.getData();
     }
 
-    private void validateJsonResponse(CoreResponse<?> jsonResponse) throws CoreRemoteCallException {
+    private void validateJsonResponse(PlatformResponseDto<?> jsonResponse) throws CoreRemoteCallException {
         validateJsonResponse(jsonResponse, true);
     }
 
-    private void validateJsonResponse(CoreResponse<?> jsonResponse, boolean dataRequired)
+    private void validateJsonResponse(PlatformResponseDto<?> jsonResponse, boolean dataRequired)
             throws CoreRemoteCallException {
         if (null == jsonResponse) {
             throw new CoreRemoteCallException("Call WeCube-Core failed due to no response.");

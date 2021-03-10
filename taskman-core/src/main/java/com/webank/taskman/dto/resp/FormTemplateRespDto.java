@@ -1,8 +1,10 @@
 package com.webank.taskman.dto.resp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.webank.taskman.dto.RoleDto;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FormTemplateRespDto {
@@ -30,6 +32,10 @@ public class FormTemplateRespDto {
     private List<FormItemTemplateRespDto> items;
 
     private List<TaskTemplateRespDto> taskTemplates;
+    
+    private List<RoleDto> useRoles = new ArrayList<>();
+
+    private List<RoleDto> manageRoles = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -145,4 +151,22 @@ public class FormTemplateRespDto {
     public void setTaskTemplates(List<TaskTemplateRespDto> taskTemplates) {
         this.taskTemplates = taskTemplates;
     }
+
+    public List<RoleDto> getUseRoles() {
+        return useRoles;
+    }
+
+    public void setUseRoles(List<RoleDto> useRoles) {
+        this.useRoles = useRoles;
+    }
+
+    public List<RoleDto> getManageRoles() {
+        return manageRoles;
+    }
+
+    public void setManageRoles(List<RoleDto> manageRoles) {
+        this.manageRoles = manageRoles;
+    }
+    
+    
 }

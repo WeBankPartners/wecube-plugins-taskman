@@ -10,7 +10,7 @@ public class CreateTaskDto {
     private String name;
     private String description;
     private String rootEntity;
-    private List<EntityValueDto> entitys = new ArrayList<>();
+    private List<EntityValueDto> entities = new ArrayList<>();
 
 
     public String getId() {
@@ -67,12 +67,12 @@ public class CreateTaskDto {
         return this;
     }
 
-    public List<EntityValueDto> getEntitys() {
-        return entitys;
+    public List<EntityValueDto> getEntities() {
+        return entities;
     }
 
-    public CreateTaskDto setEntitys(List<EntityValueDto> entitys) {
-        this.entitys = entitys;
+    public CreateTaskDto setEntities(List<EntityValueDto> entities) {
+        this.entities = entities;
         return this;
     }
 

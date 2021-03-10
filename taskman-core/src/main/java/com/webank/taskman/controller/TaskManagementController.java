@@ -26,7 +26,6 @@ import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskTemplateService;
 
-
 @RestController
 @RequestMapping("/v1/task")
 public class TaskManagementController {
@@ -43,7 +42,7 @@ public class TaskManagementController {
      * @return
      */
     @PostMapping("/template/save")
-    public JsonResponse taskTemplateSave(@Valid @RequestBody TaskTemplateSaveReqDto taskTemplateReqDto){
+    public JsonResponse taskTemplateSave(@Valid @RequestBody TaskTemplateSaveReqDto taskTemplateReqDto) {
 
         TaskTemplateRespDto taskTemplateResp = taskTemplateService.saveTaskTemplateByReq(taskTemplateReqDto);
         return JsonResponse.okayWithData(taskTemplateResp);
@@ -57,11 +56,10 @@ public class TaskManagementController {
      * @return
      */
     @PostMapping("/template/search/{page}/{page-size}")
-    public JsonResponse taskTemplateSearch( @PathVariable("page") Integer page,
-            @PathVariable("page-size") Integer pageSize,
-            @RequestBody TemplateQueryReqDto req) {
-        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page, pageSize,
-                req);
+    public JsonResponse taskTemplateSearch(@PathVariable("page") Integer page,
+            @PathVariable("page-size") Integer pageSize, @RequestBody TemplateQueryReqDto req) {
+        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page,
+                pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -71,7 +69,7 @@ public class TaskManagementController {
      * @return
      */
     @GetMapping("/template/detail/{id}")
-    public JsonResponse taskTemplateDetail(@PathVariable("id") String id){
+    public JsonResponse taskTemplateDetail(@PathVariable("id") String id) {
         TaskTemplateRespDto taskTemplateResp = taskTemplateService.taskTemplateDetail(id);
         return JsonResponse.okayWithData(taskTemplateResp);
     }
@@ -84,8 +82,7 @@ public class TaskManagementController {
      * @return
      */
     @PostMapping("/search/{page}/{page-size}")
-    public JsonResponse taskInfoSearch( @PathVariable("page") Integer page,
-             @PathVariable("page-size") Integer pageSize,
+    public JsonResponse taskInfoSearch(@PathVariable("page") Integer page, @PathVariable("page-size") Integer pageSize,
             @RequestBody(required = false) TaskInfoQueryReqDto req) {
         if (!StringUtils.isEmpty(req.getIsMy())) {
             req.setReporter(AuthenticationContextHolder.getCurrentUsername());
@@ -112,7 +109,7 @@ public class TaskManagementController {
     @PostMapping("/receive")
     public JsonResponse taskInfoReceive(@RequestBody TaskInfoDto req) {
         TaskInfoDto taskDTO = taskInfoService.taskInfoReceive(req.getId());
-        if (null == taskDTO.getId()) {
+        if (taskDTO.getId() == null) {
             return JsonResponse.error("The task is not in an unclaimed state");
         }
         return JsonResponse.okayWithData(taskDTO);
@@ -125,7 +122,7 @@ public class TaskManagementController {
      * @return
      */
     @GetMapping("/instance")
-    public JsonResponse taskInfoInstance(@RequestParam("requestId") String requestId,
+    public JsonResponse getTaskInfoInstance(@RequestParam("requestId") String requestId,
             @RequestParam("taskId") String taskId) {
         RequestInfoInstanceResqDto requestInfoInstanceResq = taskInfoService.selectTaskInfoInstanceService(requestId,
                 taskId);

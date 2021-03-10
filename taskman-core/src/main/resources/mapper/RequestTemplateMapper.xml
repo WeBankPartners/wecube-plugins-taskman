@@ -21,7 +21,8 @@
         SELECT
         rt.id,
         rt.request_temp_group,
-        rtg.`name` request_temp_group_name,
+        rtg.`name`
+        request_temp_group_name,
         rt.proc_def_id,
         rt.proc_def_key,
         rt.proc_def_name,
@@ -58,7 +59,7 @@
                 AND rt.status = #{status}
             </if>
             <if test="conditionSql!=null and conditionSql !=''">
-                AND rt. id IN(${conditionSql})
+                AND rt.id IN(${conditionSql})
             </if>
         </where>
     </select>

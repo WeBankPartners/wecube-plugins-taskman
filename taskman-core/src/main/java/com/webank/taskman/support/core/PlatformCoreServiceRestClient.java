@@ -18,9 +18,9 @@ import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.support.core.dto.CallbackRequestDto;
-import com.webank.taskman.support.core.dto.CoreResponse.DefaultCoreResponse;
-import com.webank.taskman.support.core.dto.CoreResponse.LinkedHashMapResponse;
-import com.webank.taskman.support.core.dto.CoreResponse.ListDataResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.DefaultCoreResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.LinkedHashMapResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.ListDataResponse;
 import com.webank.taskman.support.core.dto.DataModelEntityDto;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
@@ -172,6 +172,7 @@ public class PlatformCoreServiceRestClient {
     }
 
     public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+        //TODO
         LinkedHashMap result = template.postForResponse(asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE), creationInfoDto,
                 LinkedHashMapResponse.class);
         return GsonUtil.toObject(GsonUtil.GsonString(result), new TypeToken<DynamicWorkflowInstInfoDto>() {

@@ -136,7 +136,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             RequestTemplateQueryReqDto req) {
         req.queryCurrentUserRoles();
         PageHelper.startPage(pageNum, pageSize);
-        PageInfo<RequestTemplateDto> pages = new PageInfo(requestTemplateMapper.selectDTOListByParam(req));
+        PageInfo<RequestTemplateDto> pages = new PageInfo<>(requestTemplateMapper.selectDTOListByParam(req));
 
         for (RequestTemplateDto resp : pages.getList()) {
             List<RoleRelation> roles = roleRelationService
@@ -150,7 +150,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
             });
         }
-        QueryResponse<RequestTemplateDto> queryResponse = new QueryResponse(pages.getTotal(), pageNum.longValue(),
+        QueryResponse<RequestTemplateDto> queryResponse = new QueryResponse<>(pages.getTotal(), pageNum.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }

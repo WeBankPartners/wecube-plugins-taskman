@@ -23,7 +23,7 @@ public class FormTemplate extends BaseEntity implements Serializable {
     private String name;
     private String description;
     private String style;
-    private String targetEntitys;
+    private String targetEntities;
     private String inputAttrDef;
     private String outputAttrDef;
     private String otherAttrDef;
@@ -59,14 +59,14 @@ public class FormTemplate extends BaseEntity implements Serializable {
         this.style = style;
     }
 
-    public FormTemplate(String id, String tempId, String tempType, String name, String description, String style, String targetEntitys, String inputAttrDef, String outputAttrDef, String otherAttrDef) {
+    public FormTemplate(String id, String tempId, String tempType, String name, String description, String style, String targetEntities, String inputAttrDef, String outputAttrDef, String otherAttrDef) {
         this.id = id;
         this.tempId = tempId;
         this.tempType = tempType;
         this.name = name;
         this.description = description;
         this.style = style;
-        this.targetEntitys = targetEntitys;
+        this.targetEntities = targetEntities;
         this.inputAttrDef = inputAttrDef;
         this.outputAttrDef = outputAttrDef;
         this.otherAttrDef = otherAttrDef;
@@ -81,7 +81,7 @@ public class FormTemplate extends BaseEntity implements Serializable {
                 .like(!StringUtils.isEmpty(name), FormTemplate::getName, name)
                 .like(!StringUtils.isEmpty(description), FormTemplate::getDescription, description)
                 .like(!StringUtils.isEmpty(style), FormTemplate::getStyle, style)
-                .eq(!StringUtils.isEmpty(targetEntitys), FormTemplate::getTargetEntitys, targetEntitys)
+                .eq(!StringUtils.isEmpty(targetEntities), FormTemplate::getTargetEntities, targetEntities)
                 .eq(!StringUtils.isEmpty(inputAttrDef), FormTemplate::getInputAttrDef, inputAttrDef)
                 .eq(!StringUtils.isEmpty(outputAttrDef), FormTemplate::getOutputAttrDef, outputAttrDef)
                 .eq(!StringUtils.isEmpty(otherAttrDef), FormTemplate::getOtherAttrDef, otherAttrDef)
@@ -151,12 +151,12 @@ public class FormTemplate extends BaseEntity implements Serializable {
         return this;
     }
 
-    public String getTargetEntitys() {
-        return targetEntitys;
+    public String getTargetEntities() {
+        return targetEntities;
     }
 
-    public FormTemplate setTargetEntitys(String targetEntitys) {
-        this.targetEntitys = targetEntitys;
+    public FormTemplate setTargetEntities(String targetEntities) {
+        this.targetEntities = targetEntities;
         return this;
     }
 
@@ -196,7 +196,7 @@ public class FormTemplate extends BaseEntity implements Serializable {
                 .add("name='" + name + "'")
                 .add("description='" + description + "'")
                 .add("style='" + style + "'")
-                .add("targetEntitys='" + targetEntitys + "'")
+                .add("targetEntities='" + targetEntities + "'")
                 .add("inputAttrDef='" + inputAttrDef + "'")
                 .add("outputAttrDef='" + outputAttrDef + "'")
                 .add("otherAttrDef='" + otherAttrDef + "'")

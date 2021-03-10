@@ -102,12 +102,16 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     public QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
             TemplateQueryReqDto req) {
         String inSql = TemplateQueryReqDto.getEqUseRole();
+        
         LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
                 .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskTemplate::getId, inSql);
+        
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize), queryWrapper);
         List<TaskTemplateByRoleRespDto> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
+        
         QueryResponse<TaskTemplateByRoleRespDto> queryResponse = new QueryResponse<>(iPage.getTotal(),
                 iPage.getCurrent(), iPage.getSize(), list);
+        
         return queryResponse;
     }
 

@@ -11,16 +11,27 @@
       @pageSizeChange="requestPageSizeChange"
     />
     <Button style="margin-top: 10px" type="primary">查看已提交请求</Button>
+    <div class="template-container">
+      <Card style="margin-bottom: 10px" v-for="group in allTemplatesTree" :key="group.requestTempGroupName">
+        <p slot="title">{{group.requestTempGroupName}}</p>
+        <div style="padding-left:20px" v-for="tag in group.children">
+          <p style="font-size: 17px;font-weight: 500;background-color: #f8f8f9;border-radius: 5px;">{{tag.tag}}</p>
+          <div style="padding-left:20px;padding-top: 10px;padding-bottom:10px">
+            <Tag v-for="tem in tag.children" @on-change="templateChanged($event,tem.id)" checkable style="cursor: pointer;border-color: #adc6ff;background: #f0f5ff;border: 1px solid #e8eaec;" color="geekblue" :key="tem.id" size="medium">{{tem.name}}</Tag>
+          </div>
+        </div>
+      </Card>
+    </div>
     <div style="padding:20px">
       <Form ref="requestForm" :rules="ruleValidate" :model="requestForm" :label-width="110">
         <Row>
-          <Col span="12">
+          <!-- <Col span="12">
         <FormItem :label="$t('template')">
           <Select filterable @on-open-change="getTemplates" @on-change="templateChanged" v-model="requestForm.requestTempId">
             <Option v-for="tem in allTemplates" :key="tem.id" :value="tem.id">{{tem.name}}</Option>
           </Select>
         </FormItem>
-        </Col>
+        </Col> -->
         <Col span="12">
         <FormItem :label="$t('target_object')">
           <Select filterable @on-open-change="getEntityDataByTemplateId" @on-change="workflowProcessPrevieEntities" v-model="requestForm.rootEntity">
@@ -70,9 +81,16 @@
         <hr style="margin-bottom:10px"/>
         <Row>
           <Form ref="form" :label-width="110">
-            <Row v-for="(fields, i) in Object.values(currentFields)" :key="i">
-              <TaskFormItem v-for="(item, index) in fields" :index="index" v-model="currentForm[item.name]" :item="item" :key="index"></TaskFormItem>
-            </Row>
+            <div v-for="(key, i) in targetEntityList" :key="i">
+              <Row v-for="(row, d) in currentFields[key]" :key="d" >
+                <Col span="24">
+                  <TaskFormItem v-for="(item, index) in row.fields" :index="index" v-model="item.value" :item="item.attribute" :key="index"></TaskFormItem>
+                </Col>
+              </Row>
+              <div>
+                <Button @click="addRowData(key)">新增数据</Button>
+              </div>
+            </div>
           </Form>
         </Row>
         <div style="text-align:center;width:95%">
@@ -81,84 +99,6 @@
         </div>
       </Form>
     </div>
-    <Modal
-      v-model="requestModalVisible"
-      :title="$t('request_to_report')"
-      footer-hide
-      fullscreen
-      @on-cancel="requestModalHide"
-    >
-      <div style="padding:20px">
-        <Form ref="requestForm" :rules="ruleValidate" :model="requestForm" :label-width="110">
-          <Row>
-            <Col span="12">
-          <FormItem :label="$t('template')">
-            <Select filterable @on-open-change="getTemplates" @on-change="templateChanged" v-model="requestForm.requestTempId">
-              <Option v-for="tem in allTemplates" :key="tem.id" :value="tem.id">{{tem.name}}</Option>
-            </Select>
-          </FormItem>
-          </Col>
-          <Col span="12">
-          <FormItem :label="$t('target_object')">
-            <Select filterable @on-open-change="getEntityDataByTemplateId" @on-change="workflowProcessPrevieEntities" v-model="requestForm.rootEntity">
-              <Option v-for="tem in entityData" :key="tem.guid" :value="tem.guid">{{tem.displayName}}</Option>
-            </Select>
-          </FormItem>
-          </Col>
-          <Col span="12">
-          <FormItem :label="$t('service_request_name')" prop="name">
-            <Input v-model="requestForm.name" :placeholder="$t('service_request_name')"></Input>
-          </FormItem>
-          </Col>
-          <Col span="12">
-          <!-- <FormItem :label="$t('service_request_role')">
-            <Select @on-open-change="getRolesByCurrentUser" v-model="requestForm.roleName">
-              <Option
-                v-for="role in currentUserRoles"
-                :key="role.name"
-                :value="role.name"
-              >{{role.displayName}}</Option>
-            </Select>
-          </FormItem> -->
-          <FormItem :label="$t('emergency_level')">
-            <Select v-model="requestForm.emergency">
-              <Option value="normal">{{$t('not_urgent')}}</Option>
-              <Option value="urgent">{{$t('emergency')}}</Option>
-            </Select>
-          </FormItem>
-          </Col>
-          <Col span="12">
-          <!-- <FormItem :label="$t('reqest_attachment')">
-            <Upload
-              :on-success="uploadSuccess"
-              ref="upload"
-              action="/service-mgmt/v1/service-requests/attach-file"
-            >
-              <Button icon="ios-cloud-upload-outline">{{$t('upload_attachment')}}</Button>
-            </Upload>
-          </FormItem> -->
-          </Col>
-          <Col span="12">
-          <FormItem :label="$t('describe')">
-            <Input type="textarea" v-model="requestForm.description" :placeholder="$t('describe')"></Input>
-          </FormItem>
-          </Col>
-          </Row>
-          <hr style="margin-bottom:10px"/>
-          <Row>
-            <Form ref="form" :label-width="110">
-              <Row v-for="(fields, i) in Object.values(currentFields)" :key="i">
-                <TaskFormItem v-for="(item, index) in fields" :index="index" v-model="currentForm[item.name]" :item="item" :key="index"></TaskFormItem>
-              </Row>
-            </Form>
-          </Row>
-          <div style="position:absolute; bottom:10px;text-align:center;width:95%">
-            <Button type="primary" :loading="requestLoading" @click="requestSubmit">{{$t('submit')}}</Button>
-            <Button style="margin-left: 15px" @click="requestCancel">{{$t('cancle')}}</Button>
-          </div>
-        </Form>
-      </div>
-    </Modal>
     <Modal
       v-model="detailModalVisible"
       title="详情"
@@ -412,7 +352,10 @@ export default {
     }
   },
   methods: {
-
+    addRowData (key) {
+      console.log(key)
+      this.currentFields[key].push(this.currentFields[key][0])
+    },
     async details (row) {
       const {status, message, data} = await getRequestInfoDetails(row.id)
       if (status === 'OK') {
@@ -454,21 +397,42 @@ export default {
         // const processKey = 'sjqH9YVJ2DP'
         const {status, message, data} = await workflowProcessPrevieEntities(processKey, v)
         if (status === 'OK') {
-          this.currentFields.entitys.filter(en => en.entity && en.entity.length > 0).forEach(entity => entity.options = [])
           Object.keys(this.currentForm).forEach(field => {
             this.currentForm[field] = []
           })
+          let formatData = {}
           data.entityTreeNodes.forEach(node => {
-            const found = this.currentFields.entitys.find(entity => entity.name === node.entityName)
-            if (found && !found.options) {
-              found.options = [{...node,label:node.displayName,value:node.dataId}]
-            } 
-            if (found && found.options) {
-              found.options.push({...node,label:node.displayName,value:node.dataId})
+            const found = this.currentFields[node.entityName]
+            if (found) {
+              const foundData = formatData[node.entityName]
+              if (foundData) {
+                formatData[node.entityName].push({
+                  entity: node.entityName,
+                  fields: this.currentFields[node.entityName][0].fields.map(field => {
+                    return {
+                      ...field,
+                      entityData: {...node.entityData},
+                      value: node.entityData[field.attribute.name]
+                    }
+                  })
+                })
+              } else {
+                formatData[node.entityName]=[{
+                  entity: node.entityName,
+                  fields: this.currentFields[node.entityName][0].fields.map(field => {
+                    return {
+                      ...field,
+                      entityData: {...node.entityData},
+                      value: node.entityData[field.attribute.name]
+                    }
+                  })
+                }]
+              }
             }
             if (this.currentForm[node.entityName]) {this.currentForm[node.entityName].push(node.dataId)}
           })
-          this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
+          formatData.customize = this.currentFields.customize
+          this.currentFieldsBackUp = JSON.parse(JSON.stringify(formatData))
           this.$nextTick(() => {
             this.currentFields = {}
             this.currentFields = JSON.parse(JSON.stringify(this.currentFieldsBackUp))
@@ -513,7 +477,6 @@ export default {
         }
       })
       this.allTemplatesTree = treeData
-      console.log(this.allTemplatesTree)
     },
     compare (a, b) {
         if (a.sort < b.sort) {
@@ -524,37 +487,62 @@ export default {
         }
         return 0
       },
-    async templateChanged (v) {
+    async templateChanged (checked,v) {
       if (v) {
+        this.requestForm.requestTempId = v
         this.entityData = []
         this.requestForm.rootEntity = ""
         this.currentFields = {}
+        this.currentFields.customize = [{
+          entity: 'customize',
+          fields: []
+        }]
         const {status, message, data} = await getFormTemplateDetail(0, v)
         if (status === 'OK') {
           //currentFields
-          this.targetEntityList = JSON.parse(data.targetEntitys)
-          // data.items.forEach(item => {
-          //   if (this.currentFields[item.entity]) {
-          //     this.currentFields[item.entity].push({
-          //       ...item,
-          //       options: item.dataOptions.length > 0 ? JSON.parse(item.dataOptions) : []
-          //     })
-          //   } else {
-          //     this.currentFields[item.entity] = [{
-          //       ...item,
-          //       options: item.dataOptions.length > 0 ? JSON.parse(item.dataOptions) : []
-          //     }]
-          //   }
-          // })
+          this.targetEntityList = []
+          let entity = new Set()
+          data.items.forEach(item => {
+            item.entity && item.entity.length > 0 && entity.add(item.entity) // 按对象排序
+            if (this.currentFields[item.entity]) {
+              this.currentFields[item.entity][0].fields.push({
+                attribute: {
+                  ...item,
+                  options: item.dataOptions > 0 ? JSON.parse(item.dataOptions) : []
+                },
+                // isMultiple: true,
+                value: ''
+              })
+            } else {
+              if (item.entity && item.entity.length > 0) {
+                this.currentFields[item.entity] = [{
+                  entity: item.entity,
+                  fields: [{
+                    attribute: {
+                      ...item,
+                      options: item.dataOptions > 0 ? JSON.parse(item.dataOptions) : []
+                    },
+                    // isMultiple: true,
+                    value: ''
+                  }]
+                }]
+                
+              } else {
+                this.currentFields['customize'][0].fields.push({
+                  attribute: {
+                    ...item,
+                    options: item.dataOptions > 0 ? JSON.parse(item.dataOptions) : []
+                  },
+                  // isMultiple: true,
+                  value: ''
+                })
+              }
+            }
+          })
+          this.targetEntityList = Array.from(entity)
+          this.targetEntityList.push('customize')
           data.items.forEach(_ => {
             this.currentForm[_.name] = []
-          })
-          this.currentFields['entitys'] = data.items.sort(this.compare).map(i => {
-            return {
-              ...i,
-              isMultiple: true,
-              options: i.dataOptions.length > 0 ? JSON.parse(i.dataOptions) : []
-            }
           })
           this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
           this.$nextTick(() => {

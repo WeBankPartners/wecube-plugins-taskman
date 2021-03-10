@@ -1,10 +1,25 @@
 package com.webank.taskman.service.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse.PageInfo;
 import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.QueryResponse.PageInfo;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
@@ -16,19 +31,23 @@ import com.webank.taskman.domain.FormTemplate;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.CreateTaskDto;
+import com.webank.taskman.dto.CreateTaskDto.EntityAttrValueDto;
+import com.webank.taskman.dto.CreateTaskDto.EntityValueDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.mapper.RequestInfoMapper;
-import com.webank.taskman.service.*;
+import com.webank.taskman.service.FormInfoService;
+import com.webank.taskman.service.FormItemInfoService;
+import com.webank.taskman.service.FormTemplateService;
+import com.webank.taskman.service.RequestInfoService;
+import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
-import com.webank.taskman.support.core.dto.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.webank.taskman.support.core.dto.DynamicEntityValueDto;
+import com.webank.taskman.support.core.dto.DynamicTaskNodeBindInfoDto;
+import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
+import com.webank.taskman.support.core.dto.TaskNodeDefObjectBindInfoDto;
 
 @Service
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {
@@ -84,7 +103,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         saveOrUpdate(requestInfoEntity);
         
         reqDto.setId(requestInfoEntity.getId());
-        saveRequestFormInfo(reqDto);
+        doSaveRequestFormInfo(reqDto);
         
         //remotely invoke platform service to create new process instance.
         DynamicWorkflowInstInfoDto dynamicWorkflowInstInfoDto = createNewRemoteWorkflowInstance(reqDto);
@@ -101,6 +120,27 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             updateById(requestInfoEntity);
         }
         return requestInfoConverter.toResp(requestInfoEntity);
+    }
+    
+    private void doSaveRequestFormInfo(CreateTaskDto reqDto){
+        List<FormItemInfo> items = new ArrayList<>();
+        if(reqDto.getEntities() != null){
+            for(EntityValueDto entityDto : reqDto.getEntities()){
+                List<EntityAttrValueDto> attrValues = entityDto.getAttrValues();
+                for(EntityAttrValueDto attrValueDto : attrValues){
+                    FormItemInfo fi = new FormItemInfo();
+                    fi.setItemTempId(attrValueDto.getItemTempId());
+                    fi.setName(attrValueDto.getName());
+                    //TODO
+                }
+            }
+        }
+        
+        
+        reqDto.getEntities().forEach(e -> {
+            items.addAll(formItemInfoConverter.toEntityByAttrValue(e.getAttrValues()));
+        });
+        formInfoService.saveFormInfoAndItems(items, reqDto.getRequestTempId(), reqDto.getId());
     }
 
     public void saveRequestFormInfo(CreateTaskDto req) {

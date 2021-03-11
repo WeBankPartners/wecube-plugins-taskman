@@ -184,6 +184,33 @@ public class CreateTaskDto {
             this.oid = oid;
         }
 
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("EntityValueDto [nodeId=");
+            builder.append(nodeId);
+            builder.append(", nodeDefId=");
+            builder.append(nodeDefId);
+            builder.append(", oid=");
+            builder.append(oid);
+            builder.append(", dataId=");
+            builder.append(dataId);
+            builder.append(", packageName=");
+            builder.append(packageName);
+            builder.append(", entityName=");
+            builder.append(entityName);
+            builder.append(", previousOids=");
+            builder.append(previousOids);
+            builder.append(", succeedingOids=");
+            builder.append(succeedingOids);
+            builder.append(", attrValues=");
+            builder.append(attrValues);
+            builder.append("]");
+            return builder.toString();
+        }
+        
+        
+
     }
 
     public static class EntityAttrValueDto {
@@ -238,6 +265,25 @@ public class CreateTaskDto {
             this.dataValue = dataValue;
             return this;
         }
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("EntityAttrValueDto [itemTempId=");
+            builder.append(itemTempId);
+            builder.append(", attrDefId=");
+            builder.append(attrDefId);
+            builder.append(", dataType=");
+            builder.append(dataType);
+            builder.append(", name=");
+            builder.append(name);
+            builder.append(", dataValue=");
+            builder.append(dataValue);
+            builder.append("]");
+            return builder.toString();
+        }
+        
+        
     }
 
 }

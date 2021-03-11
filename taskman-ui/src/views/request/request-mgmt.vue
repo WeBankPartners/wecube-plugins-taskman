@@ -93,11 +93,33 @@
             </div>
           </Form>
         </Row>
-        <div style="text-align:center;width:95%">
-          <Button type="primary" :loading="requestLoading" @click="requestSubmit">{{$t('submit')}}</Button>
+        <div style="text-align:center;">
+          <!-- <Button type="primary" :loading="requestLoading" @click="requestSubmit">下一步</Button> -->
+          <Button type="primary" @click="goNextStep">下一步</Button>
           <Button style="margin-left: 15px" @click="requestCancel">{{$t('cancle')}}</Button>
         </div>
       </Form>
+    </div>
+    <div style="padding:20px">
+      <Row>
+        <Col style="margin-bottom:20px;font-size:18px;font-weight:600" span="2">
+          任务节点:
+        </Col>
+        <Col span="20">
+          <RadioGroup @on-change="taskNodeChanged" v-model="currentTaskNode" type="button">
+            <Radio v-for="node in procTaskNodes" :key="node.nodeId" :label="node.nodeName"></Radio>
+          </RadioGroup>
+        </Col>
+      </Row>
+      <Row>
+        <div style="text-align:center;padding-left:100px;padding-right:100px">
+          <Table border @on-selection-change="selectionChanged" :data="nodeData" :columns="targetModelColums"></Table>
+        </div>
+        <div style="text-align:center;margin-top: 10px">
+          <Button type="primary" :loading="requestLoading" @click="requestSubmit">提交</Button>
+          <Button style="margin-left: 15px" @click="requestCancel">{{$t('cancle')}}</Button>
+        </div>
+      </Row>
     </div>
     <Modal
       v-model="detailModalVisible"
@@ -167,6 +189,7 @@ import {
   getTargetOptions,
   requestTemplateAvailable,
   getEntityDataByTemplateId,
+  getTaskNodesEntitys,
   workflowProcessPrevieEntities,
   getRequestInfoDetails
 } from "../../api/server.js"
@@ -176,6 +199,30 @@ export default {
   },
   data () {
     return {
+      requestDataObj: {},
+      currentTaskNode: '',
+      oldTaskNode: '',
+      procTaskNodes: [],
+      nodeData: [],
+      targetModelColums: [
+        {
+          type: 'selection',
+          width: 60,
+          align: 'center'
+        },
+        {
+          title: 'PackageName',
+          key: 'packageName'
+        },
+        {
+          title: 'EntityName',
+          key: 'entityName'
+        },
+        {
+          title: 'DisplayName',
+          key: 'displayName'
+        }
+      ],
       currentFields: {},
       currentFieldsBackUp: {},
       targetEntityList: [],
@@ -352,8 +399,26 @@ export default {
     }
   },
   methods: {
+    async getTaskNodesEntitys (id) {
+      const nodes = await getTaskNodesEntitys(id)
+      this.procTaskNodes = nodes.data.filter(_ => _.taskCategory)
+    },
+    taskNodeChanged (v) {
+      this.requestDataObj[this.oldTaskNode] = JSON.parse(JSON.stringify(this.nodeData))
+      this.nodeData = this.requestDataObj[this.currentTaskNode]
+      this.oldTaskNode = v
+    },
+    selectionChanged (selection) {
+      this.nodeData.forEach(_ => {
+        _._checked = false
+        selection.forEach(d => {
+          if (d.dataId === _.dataId) {
+            _._checked = true
+          }
+        })
+      })
+    },
     addRowData (key) {
-      console.log(key)
       this.currentFields[key].push(this.currentFields[key][0])
     },
     async details (row) {
@@ -408,10 +473,10 @@ export default {
               if (foundData) {
                 formatData[node.entityName].push({
                   entity: node.entityName,
+                  entityData: {...node},
                   fields: this.currentFields[node.entityName][0].fields.map(field => {
                     return {
                       ...field,
-                      entityData: {...node.entityData},
                       value: node.entityData[field.attribute.name]
                     }
                   })
@@ -419,10 +484,10 @@ export default {
               } else {
                 formatData[node.entityName]=[{
                   entity: node.entityName,
+                  entityData: {...node},
                   fields: this.currentFields[node.entityName][0].fields.map(field => {
                     return {
                       ...field,
-                      entityData: {...node.entityData},
                       value: node.entityData[field.attribute.name]
                     }
                   })
@@ -497,6 +562,8 @@ export default {
           entity: 'customize',
           fields: []
         }]
+        const procDefId = this.allTemplates.find(_ => _.id === this.requestForm.requestTempId).procDefId
+        this.getTaskNodesEntitys(procDefId)
         const {status, message, data} = await getFormTemplateDetail(0, v)
         if (status === 'OK') {
           //currentFields
@@ -569,6 +636,43 @@ export default {
     detailCancel () {
       this.detailModalVisible = false;
     },
+    goNextStep () {
+      // requestDataObj
+      this.procTaskNodes.forEach(node => {
+        this.currentFields[node.boundEntity.name].forEach(row => {
+          const data = {
+            nodeId: node.nodeId,
+            nodeDefId: node.nodeDefId,
+            nodeName: node.nodeName,
+            ...row.entityData,
+            oid: row.entityData.dataId,
+            _checked: true
+          }
+          delete data.entityData
+          const attrValues = []
+          row.fields.forEach(field => {
+            const obj = {
+              attrDefId: field.attribute.attrDefId,
+              dataType: field.attribute.dataType,
+              dataValue: field.value,
+              itemTempId: field.attribute.tempId,
+              name: field.attribute.name
+            }
+            attrValues.push(obj)
+          })
+          data.attrValues = attrValues
+          if (this.requestDataObj[node.nodeName]) {
+            this.requestDataObj[node.nodeName].push(data)
+          } else {
+            this.requestDataObj[node.nodeName] = [data]
+          }
+        })
+      })
+      this.currentTaskNode = this.procTaskNodes[0].nodeName
+      this.oldTaskNode = this.currentTaskNode
+      this.nodeData = this.requestDataObj[this.currentTaskNode]
+      console.log(this.nodeData, this.requestDataObj,)
+    },
     requestCancel() {
       this.requestModalVisible = false;
       this.requestForm.name = "";
@@ -579,18 +683,10 @@ export default {
       this.requestForm.rootEntity = "";
     },
     requestSubmit() {
-      let formItems = []
-      Object.keys(this.currentForm).forEach(_ => {
-        const found = this.currentFields.entitys.find(field => field.name === _)
-        formItems.push({
-          itemTempId: found.id,
-          name: _,
-          value: JSON.stringify(this.currentForm[_])
-        })
-      })
+      let formItems = [].concat(...Object.values(this.requestDataObj))
       const payload = {
         ...this.requestForm,
-        formItems: formItems
+        entitys: formItems
       }
       this.$refs.requestForm.validate(async valid => {
         if (valid) {

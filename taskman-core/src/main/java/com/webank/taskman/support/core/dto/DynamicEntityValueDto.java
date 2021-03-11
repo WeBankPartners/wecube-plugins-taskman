@@ -2,31 +2,36 @@ package com.webank.taskman.support.core.dto;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class DynamicEntityValueDto {
 
     @Nullable
-    private String entityDefId;//Entity definition id from platform.
+    private String entityDefId;// Entity definition id from platform.
     @Nonnull
     private String packageName;
     @Nonnull
     private String entityName;
     @Nullable
-    private String dataId;//Existing data id,such as guid in cmdb.
+    private String dataId;// Existing data id,such as guid in cmdb.
     @Nonnull
-    private String oid;//Equals to dataId once dataId presents,or a temporary assigned.
+    private String oid;// Equals to dataId once dataId presents,or a temporary
+                       // assigned.
 
     private List<String> previousOids = new ArrayList<>();
     private List<String> succeedingOids = new ArrayList<>();
-    
+
     private List<DynamicEntityAttrValueDto> attrValues = new ArrayList<>();
 
     public DynamicEntityValueDto() {
     }
 
-    public DynamicEntityValueDto(@Nullable String entityDefId, @Nonnull String packageName, @Nonnull String entityName, @Nullable String dataId, @Nonnull String oid) {
+    public DynamicEntityValueDto(@Nullable String entityDefId, @Nonnull String packageName, @Nonnull String entityName,
+            @Nullable String dataId, @Nonnull String oid) {
         this.entityDefId = entityDefId;
         this.packageName = packageName;
         this.entityName = entityName;
@@ -98,18 +103,62 @@ public class DynamicEntityValueDto {
         this.attrValues = attrValues;
     }
 
+    public void addPreviousOid(String previousOid) {
+        if (StringUtils.isBlank(previousOid)) {
+            return;
+        }
+
+        if (this.previousOids == null) {
+            this.previousOids = new ArrayList<>();
+        }
+
+        if (!this.previousOids.contains(previousOid)) {
+            this.previousOids.add(previousOid);
+        }
+    }
+
+    public void addSucceedingOid(String succeedingOid) {
+        if (StringUtils.isBlank(succeedingOid)) {
+            return;
+        }
+
+        if (this.succeedingOids == null) {
+            this.succeedingOids = new ArrayList<>();
+        }
+
+        if (!this.succeedingOids.contains(succeedingOid)) {
+            this.succeedingOids.add(succeedingOid);
+        }
+    }
+
+    public void addAttrValue(DynamicEntityAttrValueDto attrValue) {
+        if (attrValue == null) {
+            return;
+        }
+
+        if (this.attrValues == null) {
+            this.attrValues = new ArrayList<>();
+        }
+
+        DynamicEntityAttrValueDto existAttrValueDto = null;
+        for (DynamicEntityAttrValueDto a : this.attrValues) {
+            if (a.getAttrName().equals(attrValue.getAttrName())) {
+                existAttrValueDto = a;
+                break;
+            }
+        }
+
+        if (existAttrValueDto == null) {
+            this.attrValues.add(attrValue);
+        }
+    }
+
     @Override
     public String toString() {
-        return "DynamicEntityValueDto{" +
-                "entityDefId='" + entityDefId + '\'' +
-                ", packageName='" + packageName + '\'' +
-                ", entityName='" + entityName + '\'' +
-                ", dataId='" + dataId + '\'' +
-                ", oid='" + oid + '\'' +
-                ", previousOids=" + previousOids +
-                ", succeedingOids=" + succeedingOids +
-                ", attrValues=" + attrValues +
-                '}';
+        return "DynamicEntityValueDto{" + "entityDefId='" + entityDefId + '\'' + ", packageName='" + packageName + '\''
+                + ", entityName='" + entityName + '\'' + ", dataId='" + dataId + '\'' + ", oid='" + oid + '\''
+                + ", previousOids=" + previousOids + ", succeedingOids=" + succeedingOids + ", attrValues=" + attrValues
+                + '}';
     }
 
     public static class DynamicEntityAttrValueDto {
@@ -150,15 +199,10 @@ public class DynamicEntityValueDto {
             this.dataValue = dataValue;
         }
 
-
         @Override
         public String toString() {
-            return "DynamicEntityAttrValueDto{" +
-                    "attrDefId='" + attrDefId + '\'' +
-                    ", attrName='" + attrName + '\'' +
-                    ", dataType='" + dataType + '\'' +
-                    ", dataValue=" + dataValue +
-                    '}';
+            return "DynamicEntityAttrValueDto{" + "attrDefId='" + attrDefId + '\'' + ", attrName='" + attrName + '\''
+                    + ", dataType='" + dataType + '\'' + ", dataValue=" + dataValue + '}';
         }
     }
 }

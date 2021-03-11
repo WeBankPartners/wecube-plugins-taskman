@@ -230,7 +230,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
             taskInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
             save(taskInfo);
             List<FormItemInfo> items = formItemInfoConverter.toEntityByBean(task.getFormItems());
-            formInfoService.saveFormInfoAndItems(items, taskInfo.getTaskTempId(), taskInfo.getId());
+            formInfoService.saveFormInfoAndFormItems(items, taskInfo.getTaskTempId(), taskInfo.getId());
         });
         return CommonResponseDto.okay();
     }

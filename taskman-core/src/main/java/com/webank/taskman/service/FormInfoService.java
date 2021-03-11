@@ -14,6 +14,6 @@ public interface FormInfoService extends IService<FormInfo> {
 
     FormInfo saveFormInfoByExists(String requestTempId, String recordId) throws TaskmanRuntimeException;
 
-    void saveFormInfoAndItems(List<FormItemInfo> formItems, String templateId, String recordId);
+    void saveFormInfoAndFormItems(List<FormItemInfo> formItems, String templateId, String recordId);
 
 }

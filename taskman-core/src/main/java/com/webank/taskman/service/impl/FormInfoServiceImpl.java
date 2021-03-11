@@ -56,7 +56,7 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
     }
 
     @Override
-    public void saveFormInfoAndItems(List<FormItemInfo> formItems, String requestTempId, String recordId) {
+    public void saveFormInfoAndFormItems(List<FormItemInfo> formItems, String requestTempId, String recordId) {
         if (formItems == null || formItems.isEmpty()) {
             log.info("The formItems is null.");
             return;

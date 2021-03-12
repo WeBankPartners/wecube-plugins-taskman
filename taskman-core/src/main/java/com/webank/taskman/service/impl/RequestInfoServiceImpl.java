@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +46,8 @@ import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
 
 @Service
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private FormInfoService formInfoService;
@@ -175,6 +179,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
         List<EntityValueDto> entityValueDtos = reqDto.getEntities();
         if (entityValueDtos == null || entityValueDtos.isEmpty()) {
+            log.info("entity values is empty for {}", reqDto.getName());
             return taskNodeBindInfos;
         }
 
@@ -182,6 +187,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         Map<String, DynamicEntityValueDto> oidAndEntityValueMap = new HashMap<>();
         
         for(EntityValueDto inputEntityDto : entityValueDtos){
+            log.info("process entity value {}", inputEntityDto);
             DynamicTaskNodeBindInfoDto taskNodeBindInfoDto = nodeIdAndTaskNodeBindMap.get(inputEntityDto.getNodeId());
             if(taskNodeBindInfoDto == null){
                 taskNodeBindInfoDto = new DynamicTaskNodeBindInfoDto();
@@ -231,6 +237,8 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         }
         
         taskNodeBindInfos.addAll(nodeIdAndTaskNodeBindMap.values());
+        
+        log.info("total {} task node bind infos calculated.", taskNodeBindInfos.size());
 
         return taskNodeBindInfos;
     }

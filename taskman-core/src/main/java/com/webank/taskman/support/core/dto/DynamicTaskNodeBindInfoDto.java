@@ -42,6 +42,18 @@ public class DynamicTaskNodeBindInfoDto {
     public void setBoundEntityValues(List<DynamicEntityValueDto> boundEntityValues) {
         this.boundEntityValues = boundEntityValues;
     }
+    
+    public void addBoundEntityValue(DynamicEntityValueDto boundEntityValue){
+        if(boundEntityValue == null){
+            return;
+        }
+        
+        if(this.boundEntityValues == null){
+            this.boundEntityValues = new ArrayList<>();
+        }
+        
+        this.boundEntityValues.add(boundEntityValue);
+    }
 
     @Override
     public String toString() {

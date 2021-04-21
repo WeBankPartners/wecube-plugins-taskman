@@ -1,6 +1,7 @@
 <template>
   <div>
     <PluginTable
+      v-if="isQuery"
       :tableColumns="requestColumns"
       :tableData="requestTableData"
       :tableOuterActions="tableOuterActions"
@@ -10,8 +11,8 @@
       @pageChange="requestPageChange"
       @pageSizeChange="requestPageSizeChange"
     />
-    <Button style="margin-top: 10px" type="primary">查看已提交请求</Button>
-    <div class="template-container">
+    <Button v-show="!isQuery" style="margin-top: 10px;margin-bottom: 10px" @click="queryRequest" type="primary">查看已提交请求</Button>
+    <div v-if="!isQuery && requestStep === 1" class="template-container">
       <Card style="margin-bottom: 10px" v-for="group in allTemplatesTree" :key="group.requestTempGroupName">
         <p slot="title">{{group.requestTempGroupName}}</p>
         <div style="padding-left:20px" v-for="tag in group.children">
@@ -22,7 +23,7 @@
         </div>
       </Card>
     </div>
-    <div style="padding:20px">
+    <div v-show="!isQuery && requestStep === 2" style="padding:20px">
       <Form ref="requestForm" :rules="ruleValidate" :model="requestForm" :label-width="110">
         <Row>
           <!-- <Col span="12">
@@ -78,29 +79,32 @@
         </FormItem>
         </Col>
         </Row>
-        <hr style="margin-bottom:10px"/>
+        <Divider>申请数据</Divider>
+        <!-- <hr style="margin-bottom:10px"/> -->
         <Row>
           <Form ref="form" :label-width="110">
-            <div v-for="(key, i) in targetEntityList" :key="i">
+            <div style="border: 1px solid #808695;border-radius: 5px;margin-bottom:5px;padding:10px" v-for="(key, i) in targetEntityList" :key="i">
               <Row v-for="(row, d) in currentFields[key]" :key="d" >
                 <Col span="24">
                   <TaskFormItem v-for="(item, index) in row.fields" :index="index" v-model="item.value" :item="item.attribute" :key="index"></TaskFormItem>
+                  <hr v-if="d > 0" style="margin-bottom:10px"/>
                 </Col>
               </Row>
-              <div>
+                <hr style="margin-bottom:10px"/>
+              <div style="text-align:right;">
                 <Button @click="addRowData(key)">新增数据</Button>
               </div>
             </div>
           </Form>
         </Row>
-        <div style="text-align:center;">
+        <div style="text-align:center;margin-top: 20px">
           <!-- <Button type="primary" :loading="requestLoading" @click="requestSubmit">下一步</Button> -->
           <Button type="primary" @click="goNextStep">下一步</Button>
           <Button style="margin-left: 15px" @click="requestCancel">{{$t('cancle')}}</Button>
         </div>
       </Form>
     </div>
-    <div style="padding:20px">
+    <div v-show="!isQuery && requestStep === 3" style="padding:20px">
       <Row>
         <Col style="margin-bottom:20px;font-size:18px;font-weight:600" span="2">
           任务节点:
@@ -117,7 +121,7 @@
         </div>
         <div style="text-align:center;margin-top: 10px">
           <Button type="primary" :loading="requestLoading" @click="requestSubmit">提交</Button>
-          <Button style="margin-left: 15px" @click="requestCancel">{{$t('cancle')}}</Button>
+          <Button style="margin-left: 15px" @click="goBack">上一步</Button>
         </div>
       </Row>
     </div>
@@ -199,6 +203,8 @@ export default {
   },
   data () {
     return {
+      isQuery: true,
+      requestStep: 1,
       requestDataObj: {},
       currentTaskNode: '',
       oldTaskNode: '',
@@ -399,6 +405,13 @@ export default {
     }
   },
   methods: {
+    queryRequest () {
+      this.isQuery = true;
+      this.requestStep = 1
+    },
+    goBack () {
+      this.requestStep--
+    },
     async getTaskNodesEntitys (id) {
       const nodes = await getTaskNodesEntitys(id)
       this.procTaskNodes = nodes.data.filter(_ => _.taskCategory)
@@ -508,7 +521,8 @@ export default {
     actionFun(type, data) {
       switch (type) {
         case "add":
-          this.requestModalVisible = true;
+          // this.requestModalVisible = true;
+          this.isQuery = false;
           this.currentFields = {}
           break;
       }
@@ -615,6 +629,7 @@ export default {
           this.$nextTick(() => {
             this.currentFields = {}
             this.currentFields = JSON.parse(JSON.stringify(this.currentFieldsBackUp))
+            this.requestStep++
           })
         }
       }
@@ -638,6 +653,7 @@ export default {
     },
     goNextStep () {
       // requestDataObj
+      this.requestDataObj = {}
       this.procTaskNodes.forEach(node => {
         this.currentFields[node.boundEntity.name].forEach(row => {
           const data = {
@@ -671,9 +687,10 @@ export default {
       this.currentTaskNode = this.procTaskNodes[0].nodeName
       this.oldTaskNode = this.currentTaskNode
       this.nodeData = this.requestDataObj[this.currentTaskNode]
-      console.log(this.nodeData, this.requestDataObj,)
+      this.requestStep++
     },
     requestCancel() {
+      this.requestStep = 1
       this.requestModalVisible = false;
       this.requestForm.name = "";
       this.requestForm.emergency = "";
@@ -686,7 +703,7 @@ export default {
       let formItems = [].concat(...Object.values(this.requestDataObj))
       const payload = {
         ...this.requestForm,
-        entitys: formItems
+        entities: formItems
       }
       this.$refs.requestForm.validate(async valid => {
         if (valid) {
@@ -696,6 +713,8 @@ export default {
           if (status === "OK") {
             this.requestCancel();
             this.getData();
+            this.requestStep = 1
+            this.isQuery = true
             this.requestForm.attachFileId = null;
             // this.$refs.upload.clearFiles();
             this.$Notice.success({

@@ -1,5 +1,6 @@
 package com.webank.taskman.commons;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,7 +37,7 @@ public final class AuthenticationContextHolder {
             return u.getUsername();
         }
 
-        return "admin";
+        return null;
     }
 
     public static Set<String> getCurrentUserRoles() {
@@ -44,15 +45,16 @@ public final class AuthenticationContextHolder {
         if (u != null) {
             return u.getAuthorities();
         }
-        Set<String> sets = new HashSet<>();
-        sets.add("SUPER_ADMIN");
-        return sets;
+        
+        return Collections.emptySet();
     }
 
     public static String getCurrentUserRolesToString() {
         AuthenticatedUser u = currentUser.get();
         Set<String> roleSet = new HashSet<>();
-        String roles = "SUPER_ADMIN";
+        
+        //TODO ??
+        String roles = "";
         if (u != null && roleSet.size() > 0) {
             roleSet =  u.getAuthorities();
             roles = roleSet.stream().collect(Collectors.joining(","));
@@ -68,6 +70,19 @@ public final class AuthenticationContextHolder {
         public AuthenticatedUser(String username) {
             super();
             this.username = username;
+        }
+        
+        public AuthenticatedUser(String username, String token, Collection<String> authorities) {
+            super();
+            this.username = username;
+            this.token = token;
+            if (authorities != null) {
+                for (String a : authorities) {
+                    if (a != null) {
+                        this.grantedAuthorities.add(a);
+                    }
+                }
+            }
         }
 
         public String getUsername() {

@@ -111,7 +111,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         }
 
         if (StatusEnum.InProgress.name().equals(dynamicWorkflowInstInfoDto.getStatus())) {
-            requestInfoEntity.setProcInstId(dynamicWorkflowInstInfoDto.getProcInstKey());
+            requestInfoEntity.setProcInstId(dynamicWorkflowInstInfoDto.getId());
             requestInfoEntity.setStatus(dynamicWorkflowInstInfoDto.getStatus());
             requestInfoEntity.setUpdatedTime(new Date());
             updateById(requestInfoEntity);

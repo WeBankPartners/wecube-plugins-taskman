@@ -53,7 +53,7 @@ public class PlatformCoreServiceRestClient {
     public static final String GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL = "/platform/v1/models/package/{plugin-package-name}/entity/{entity-name}/attributes";
     public static final String GET_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/retrieve";
     public static final String QUERY_ENTITY_RETRIEVE_URL = "/platform/v1/packages/{package-name}/entities/{entity-name}/query";
-    public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/v1/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
+    public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/v1/public/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
     public static final String GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL = "/platform/v1/process/instances/tasknodes/session/{process-session-id}/tasknode-bindings";
 
     @Autowired

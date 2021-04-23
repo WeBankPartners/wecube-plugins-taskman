@@ -23,7 +23,7 @@ public class FormTemplateRespDto {
 
     private String style;
 
-    private String targetEntitys;
+    private String targetEntities;
 
     private String inputAttrDef;
     private String outputAttrDef;
@@ -95,12 +95,12 @@ public class FormTemplateRespDto {
         this.style = style;
     }
 
-    public String getTargetEntitys() {
-        return targetEntitys;
+    public String getTargetEntities() {
+        return targetEntities;
     }
 
-    public void setTargetEntitys(String targetEntitys) {
-        this.targetEntitys = targetEntitys;
+    public void setTargetEntities(String targetEntities) {
+        this.targetEntities = targetEntities;
     }
 
     public String getInputAttrDef() {
@@ -139,7 +139,7 @@ public class FormTemplateRespDto {
     public String toString() {
         return "FormTemplateResp{" + "id='" + id + '\'' + ", tempId='" + tempId + '\'' + ", tempType='" + tempType
                 + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", style='" + style + '\''
-                + ", targetEntitys='" + targetEntitys + '\'' + ", inputAttrDef='" + inputAttrDef + '\''
+                + ", targetEntities='" + targetEntities + '\'' + ", inputAttrDef='" + inputAttrDef + '\''
                 + ", outputAttrDef='" + outputAttrDef + '\'' + ", otherAttrDef='" + otherAttrDef + '\'' + ", items="
                 + items + '}';
     }

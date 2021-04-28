@@ -29,7 +29,7 @@ import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.EntityAttrValueDto;
 import com.webank.taskman.dto.EntityValueDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
-import com.webank.taskman.dto.resp.RequestInfoResqDto;
+import com.webank.taskman.dto.resp.RequestInfoQueryResultDto;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
@@ -67,21 +67,27 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     @Autowired
     private FormTemplateService formTemplateService;
 
+    /**
+     * 
+     */
     @Override
-    public LocalPageableQueryResult<RequestInfoResqDto> selectRequestInfoPage(Integer current, Integer limit,
+    public LocalPageableQueryResult<RequestInfoQueryResultDto> searchRequestInfos(Integer current, Integer limit,
             RequestInfoQueryReqDto req) {
         req.queryCurrentUserRoles();
-        IPage<RequestInfoResqDto> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
-        LocalPageableQueryResult<RequestInfoResqDto> queryResponse = new LocalPageableQueryResult<>();
+        IPage<RequestInfoQueryResultDto> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
+        LocalPageableQueryResult<RequestInfoQueryResultDto> queryResponse = new LocalPageableQueryResult<>();
         queryResponse.setPageInfo(new LocalPageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(iPage.getRecords());
         return queryResponse;
     }
 
+    /**
+     * 
+     */
     @Override
-    public RequestInfoResqDto selectDetail(String id) {
+    public RequestInfoQueryResultDto fetchRequestInfoDetail(String id) {
         RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setId(id).getLambdaQueryWrapper());
-        RequestInfoResqDto requestInfoResq = requestInfoConverter.toResp(requestInfo);
+        RequestInfoQueryResultDto requestInfoResq = requestInfoConverter.toResp(requestInfo);
         requestInfoResq.setFormItemInfos(formItemInfoService.returnDetail(id));
         return requestInfoResq;
     }
@@ -91,7 +97,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
      */
     @Override
     @Transactional
-    public RequestInfoResqDto createNewRequestInfo(CreateTaskDto reqDto) {
+    public RequestInfoQueryResultDto createNewRequestInfo(CreateTaskDto reqDto) {
         RequestInfo requestInfoEntity = buildRequestInfoEntity(reqDto);
 
         saveOrUpdate(requestInfoEntity);

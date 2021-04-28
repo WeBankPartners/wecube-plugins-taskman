@@ -12,7 +12,7 @@ import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestInfoDto;
 import com.webank.taskman.dto.req.RequestInfoSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
-import com.webank.taskman.dto.resp.RequestInfoResqDto;
+import com.webank.taskman.dto.resp.RequestInfoQueryResultDto;
 
 @Service
 public class RequestInfoConverter implements BaseConverter<RequestInfoDto, RequestInfo> {
@@ -29,8 +29,8 @@ public class RequestInfoConverter implements BaseConverter<RequestInfoDto, Reque
         return entity;
     }
 
-    public RequestInfoResqDto toResp(RequestInfo requestInfo){
-        RequestInfoResqDto dto = new RequestInfoResqDto();
+    public RequestInfoQueryResultDto toResp(RequestInfo requestInfo){
+        RequestInfoQueryResultDto dto = new RequestInfoQueryResultDto();
         BeanUtils.copyProperties(requestInfo, dto);
         return dto;
     }

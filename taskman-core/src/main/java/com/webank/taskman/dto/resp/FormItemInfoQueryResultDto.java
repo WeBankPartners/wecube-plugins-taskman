@@ -3,7 +3,7 @@ package com.webank.taskman.dto.resp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FormItemInfoRespDto {
+public class FormItemInfoQueryResultDto {
     private String id;
 
     private String value;
@@ -120,7 +120,7 @@ public class FormItemInfoRespDto {
         return routineExp;
     }
 
-    public FormItemInfoRespDto setRoutineExp(String routineExp) {
+    public FormItemInfoQueryResultDto setRoutineExp(String routineExp) {
         this.routineExp = routineExp;
         return this;
     }

@@ -25,7 +25,7 @@ public class TaskInfoRespDto {
     private String reportRole;
     private String attachFileId;
 
-    private List<FormItemInfoRespDto> formItemInfo;
+    private List<FormItemInfoQueryResultDto> formItemInfo;
 
     public String getId() {
         return id;
@@ -171,11 +171,11 @@ public class TaskInfoRespDto {
         return this;
     }
 
-    public List<FormItemInfoRespDto> getFormItemInfo() {
+    public List<FormItemInfoQueryResultDto> getFormItemInfo() {
         return formItemInfo;
     }
 
-    public TaskInfoRespDto setFormItemInfo(List<FormItemInfoRespDto> formItemInfo) {
+    public TaskInfoRespDto setFormItemInfo(List<FormItemInfoQueryResultDto> formItemInfo) {
         this.formItemInfo = formItemInfo;
         return this;
     }

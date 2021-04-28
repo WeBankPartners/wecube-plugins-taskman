@@ -8,7 +8,7 @@ import java.util.StringJoiner;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class RequestInfoResqDto  {
+public class RequestInfoQueryResultDto  {
 
     private String id;
     private String requestTempId;
@@ -26,13 +26,13 @@ public class RequestInfoResqDto  {
     private String dueDate;
     private String result;
     private String attachFileId;
-    private List<FormItemInfoRespDto> formItemInfos;
+    private List<FormItemInfoQueryResultDto> formItemInfos;
 
     public String getId() {
         return id;
     }
 
-    public RequestInfoResqDto setId(String id) {
+    public RequestInfoQueryResultDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -41,7 +41,7 @@ public class RequestInfoResqDto  {
         return requestTempId;
     }
 
-    public RequestInfoResqDto setRequestTempId(String requestTempId) {
+    public RequestInfoQueryResultDto setRequestTempId(String requestTempId) {
         this.requestTempId = requestTempId;
         return this;
     }
@@ -50,7 +50,7 @@ public class RequestInfoResqDto  {
         return requestTempName;
     }
 
-    public RequestInfoResqDto setRequestTempName(String requestTempName) {
+    public RequestInfoQueryResultDto setRequestTempName(String requestTempName) {
         this.requestTempName = requestTempName;
         return this;
     }
@@ -59,7 +59,7 @@ public class RequestInfoResqDto  {
         return procInstId;
     }
 
-    public RequestInfoResqDto setProcInstId(String procInstId) {
+    public RequestInfoQueryResultDto setProcInstId(String procInstId) {
         this.procInstId = procInstId;
         return this;
     }
@@ -68,7 +68,7 @@ public class RequestInfoResqDto  {
         return rootEntity;
     }
 
-    public RequestInfoResqDto setRootEntity(String rootEntity) {
+    public RequestInfoQueryResultDto setRootEntity(String rootEntity) {
         this.rootEntity = rootEntity;
         return this;
     }
@@ -77,7 +77,7 @@ public class RequestInfoResqDto  {
         return name;
     }
 
-    public RequestInfoResqDto setName(String name) {
+    public RequestInfoQueryResultDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -86,7 +86,7 @@ public class RequestInfoResqDto  {
         return description;
     }
 
-    public RequestInfoResqDto setDescription(String description) {
+    public RequestInfoQueryResultDto setDescription(String description) {
         this.description = description;
         return this;
     }
@@ -95,7 +95,7 @@ public class RequestInfoResqDto  {
         return reporter;
     }
 
-    public RequestInfoResqDto setReporter(String reporter) {
+    public RequestInfoQueryResultDto setReporter(String reporter) {
         this.reporter = reporter;
         return this;
     }
@@ -104,7 +104,7 @@ public class RequestInfoResqDto  {
         return reportTime;
     }
 
-    public RequestInfoResqDto setReportTime(Date reportTime) {
+    public RequestInfoQueryResultDto setReportTime(Date reportTime) {
         this.reportTime = reportTime;
         return this;
     }
@@ -113,7 +113,7 @@ public class RequestInfoResqDto  {
         return emergency;
     }
 
-    public RequestInfoResqDto setEmergency(String emergency) {
+    public RequestInfoQueryResultDto setEmergency(String emergency) {
         this.emergency = emergency;
         return this;
     }
@@ -122,7 +122,7 @@ public class RequestInfoResqDto  {
         return reportRole;
     }
 
-    public RequestInfoResqDto setReportRole(String reportRole) {
+    public RequestInfoQueryResultDto setReportRole(String reportRole) {
         this.reportRole = reportRole;
         return this;
     }
@@ -131,7 +131,7 @@ public class RequestInfoResqDto  {
         return attachFileId;
     }
 
-    public RequestInfoResqDto setAttachFileId(String attachFileId) {
+    public RequestInfoQueryResultDto setAttachFileId(String attachFileId) {
         this.attachFileId = attachFileId;
         return this;
     }
@@ -140,7 +140,7 @@ public class RequestInfoResqDto  {
         return status;
     }
 
-    public RequestInfoResqDto setStatus(String status) {
+    public RequestInfoQueryResultDto setStatus(String status) {
         this.status = status;
         return this;
     }
@@ -149,7 +149,7 @@ public class RequestInfoResqDto  {
         return dueDate;
     }
 
-    public RequestInfoResqDto setDueDate(String dueDate) {
+    public RequestInfoQueryResultDto setDueDate(String dueDate) {
         this.dueDate = dueDate;
         return this;
     }
@@ -158,23 +158,23 @@ public class RequestInfoResqDto  {
         return result;
     }
 
-    public RequestInfoResqDto setResult(String result) {
+    public RequestInfoQueryResultDto setResult(String result) {
         this.result = result;
         return this;
     }
 
-    public List<FormItemInfoRespDto> getFormItemInfos() {
+    public List<FormItemInfoQueryResultDto> getFormItemInfos() {
         return formItemInfos;
     }
 
-    public RequestInfoResqDto setFormItemInfos(List<FormItemInfoRespDto> formItemInfos) {
+    public RequestInfoQueryResultDto setFormItemInfos(List<FormItemInfoQueryResultDto> formItemInfos) {
         this.formItemInfos = formItemInfos;
         return this;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", RequestInfoResqDto.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", RequestInfoQueryResultDto.class.getSimpleName() + "[", "]")
                 .add("id='" + id + "'")
                 .add("requestTempId='" + requestTempId + "'")
                 .add("requestTempName='" + requestTempName + "'")

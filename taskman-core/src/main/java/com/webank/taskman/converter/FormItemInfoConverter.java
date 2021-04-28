@@ -10,10 +10,10 @@ import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.dto.EntityAttrValueDto;
 import com.webank.taskman.dto.req.FormItemInfoRequestDto;
-import com.webank.taskman.dto.resp.FormItemInfoRespDto;
+import com.webank.taskman.dto.resp.FormItemInfoQueryResultDto;
 
 @Service
-public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto, FormItemInfo> {
+public class FormItemInfoConverter implements BaseConverter<FormItemInfoQueryResultDto, FormItemInfo> {
 
     public FormItemInfo convertToFormItemInfoByReq(FormItemInfoRequestDto dto){
         FormItemInfo info = new FormItemInfo();
@@ -85,7 +85,7 @@ public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto,
     }
 
     @Override
-    public FormItemInfo convertToEntity(FormItemInfoRespDto dto) {
+    public FormItemInfo convertToEntity(FormItemInfoQueryResultDto dto) {
         if (dto == null) {
             return null;
         }
@@ -96,24 +96,24 @@ public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto,
     }
 
     @Override
-    public FormItemInfoRespDto convertToDto(FormItemInfo entity) {
+    public FormItemInfoQueryResultDto convertToDto(FormItemInfo entity) {
         if (entity == null) {
             return null;
         }
 
-        FormItemInfoRespDto dto = new FormItemInfoRespDto();
+        FormItemInfoQueryResultDto dto = new FormItemInfoQueryResultDto();
         BeanUtils.copyProperties(entity, dto);
         return dto;
     }
 
     @Override
-    public List<FormItemInfo> convertToEntities(List<FormItemInfoRespDto> dtos) {
+    public List<FormItemInfo> convertToEntities(List<FormItemInfoQueryResultDto> dtos) {
         if (dtos == null) {
             return null;
         }
 
         List<FormItemInfo> entities = new ArrayList<>();
-        for (FormItemInfoRespDto dto : dtos) {
+        for (FormItemInfoQueryResultDto dto : dtos) {
             FormItemInfo entity = convertToEntity(dto);
             entities.add(entity);
         }
@@ -121,14 +121,14 @@ public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto,
     }
 
     @Override
-    public List<FormItemInfoRespDto> convertToDtos(List<FormItemInfo> entities) {
+    public List<FormItemInfoQueryResultDto> convertToDtos(List<FormItemInfo> entities) {
         if (entities == null) {
             return null;
         }
 
-        List<FormItemInfoRespDto> dtos = new ArrayList<>();
+        List<FormItemInfoQueryResultDto> dtos = new ArrayList<>();
         for (FormItemInfo entity : entities) {
-            FormItemInfoRespDto dto = convertToDto(entity);
+            FormItemInfoQueryResultDto dto = convertToDto(entity);
             dtos.add(dto);
         }
         return dtos;

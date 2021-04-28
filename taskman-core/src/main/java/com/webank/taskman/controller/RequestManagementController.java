@@ -18,13 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.LocalPageableQueryResult;
-import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
-import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryDto;
-import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.dto.resp.RequestTemplateQueryResultDto;
-import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateService;
 
 @RestController
@@ -33,9 +29,6 @@ public class RequestManagementController {
 
     @Autowired
     private RequestTemplateService requestTemplateService;
-
-    @Autowired
-    private RequestInfoService requestInfoService;
 
     @PostMapping("/template/save")
     public JsonResponse saveRequestTemplate(@Valid @RequestBody RequestTemplateDto requestTemplateDto) {
@@ -101,30 +94,6 @@ public class RequestManagementController {
     public JsonResponse fetchAvailableRequestTemplates() {
         List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateService.fetchAvailableRequestTemplates();
         return okayWithData(retRequestTemplateDtos);
-    }
-
-    /**
-     * Submit new request
-     * 
-     * @param req
-     * @return
-     */
-    @PostMapping("/save")
-    public JsonResponse createNewRequestInfo(@RequestBody CreateTaskDto req) {
-        return okayWithData(requestInfoService.createNewRequestInfo(req));
-    }
-
-    @PostMapping("/search/{page}/{page-size}")
-    public JsonResponse requestInfoSearch(@PathVariable("page") Integer page,
-            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestInfoQueryReqDto req) {
-        LocalPageableQueryResult<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
-        return okayWithData(list);
-    }
-
-    @GetMapping("/details/{id}")
-    public JsonResponse requestInfoDetail(@PathVariable("id") String id) {
-        RequestInfoResqDto requestInfoResq = requestInfoService.selectDetail(id);
-        return okayWithData(requestInfoResq);
     }
 
 }

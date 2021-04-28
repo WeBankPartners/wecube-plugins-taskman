@@ -29,14 +29,18 @@ public class TaskmanOutController {
     @GetMapping("/task/create/service-meta/{proc-inst-id}/{node-def-id}")
     public CommonResponseDto taskCreateServiceMeta(@PathVariable("proc-inst-id") String procInstId,
             @PathVariable("node-def-id") String nodeDefId) {
-        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstId, nodeDefId));
+//        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstId, nodeDefId));
+        
+        return null;
     }
 
     //TODO
     @PostMapping("/task/create")
     public CommonResponseDto taskCreate(@RequestBody PlatformTaskCreationReqDto req) {
         //TODO #48
-        return taskInfoService.createTask(req);
+//        return taskInfoService.createTask(req);
+        
+        return null;
     }
 
     //TODO

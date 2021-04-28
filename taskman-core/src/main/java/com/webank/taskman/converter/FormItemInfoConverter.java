@@ -3,7 +3,6 @@ package com.webank.taskman.converter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mapstruct.Mapping;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,6 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.dto.EntityAttrValueDto;
 import com.webank.taskman.dto.req.FormItemInfoRequestDto;
 import com.webank.taskman.dto.resp.FormItemInfoRespDto;
-import com.webank.taskman.dto.resp.TaskServiceMetaRespDto.TaskServiceMetaFormItem;
 
 @Service
 public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto, FormItemInfo> {
@@ -38,20 +36,20 @@ public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto,
         return infos;
     }
 
-    @Mapping(target = "itemId", source = "id")
-    @Mapping(target = "key", source = "name")
-    @Mapping(target = "valueDef.type", source = "elementType")
-    @Mapping(target = "valueDef.expr", source = "value")
-    TaskServiceMetaFormItem respToServiceMeta(FormItemInfoRespDto resp);
+//    @Mapping(target = "itemId", source = "id")
+//    @Mapping(target = "key", source = "name")
+//    @Mapping(target = "valueDef.type", source = "elementType")
+//    @Mapping(target = "valueDef.expr", source = "value")
+//    TaskServiceMetaFormItem respToServiceMeta(FormItemInfoRespDto resp);
 
-    List<TaskServiceMetaFormItem> respToServiceMeta(List<FormItemInfoRespDto> resp);
+//    List<TaskServiceMetaFormItem> respToServiceMeta(List<FormItemInfoRespDto> resp);
 
-    @Mapping(target = "itemTempId", source = "itemId")
-    @Mapping(target = "name", source = "key")
-    @Mapping(target = "value", expression = "java(bean.getVal().stream().collect(java.util.stream.Collectors.joining(\",\")))")
-    FormItemInfo toEntityByBean(FormItemBean bean);
-
-    List<FormItemInfo> toEntityByBean(List<FormItemBean> bean);
+//    @Mapping(target = "itemTempId", source = "itemId")
+//    @Mapping(target = "name", source = "key")
+//    @Mapping(target = "value", expression = "java(bean.getVal().stream().collect(java.util.stream.Collectors.joining(\",\")))")
+//    FormItemInfo toEntityByBean(FormItemBean bean);
+//
+//    List<FormItemInfo> toEntityByBean(List<FormItemBean> bean);
 
     public FormItemInfo convertToFormItemInfo(EntityAttrValueDto dto) {
         FormItemInfo info = new FormItemInfo();

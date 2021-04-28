@@ -23,7 +23,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     TaskInfoDto taskInfoReceive(String id);
 
-    CommonResponseDto createTask(PlatformTaskCreationReqDto req);
+//    CommonResponseDto createTask(PlatformTaskCreationReqDto req);
 
     JsonResponse taskInfoProcessing(ProcessingTasksReqDto ptr) throws TaskmanRuntimeException;
 

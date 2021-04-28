@@ -20,15 +20,14 @@ import com.webank.taskman.base.QueryResponse.PageInfo;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.EntityAttrValueConverter;
 import com.webank.taskman.converter.FormItemInfoConverter;
 import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.CreateTaskDto;
-import com.webank.taskman.dto.CreateTaskDto.EntityAttrValueDto;
-import com.webank.taskman.dto.CreateTaskDto.EntityValueDto;
+import com.webank.taskman.dto.EntityAttrValueDto;
+import com.webank.taskman.dto.EntityValueDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.mapper.RequestInfoMapper;
@@ -67,8 +66,6 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Autowired
     private FormTemplateService formTemplateService;
-    @Autowired
-    private EntityAttrValueConverter entityAttrValueConverter;
 
     @Override
     public QueryResponse<RequestInfoResqDto> selectRequestInfoPage(Integer current, Integer limit,
@@ -144,7 +141,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     public void saveRequestFormInfo(CreateTaskDto req) {
         List<FormItemInfo> items = new ArrayList<>();
         req.getEntities().stream().forEach(e -> {
-            items.addAll(formItemInfoConverter.toEntityByAttrValue(e.getAttrValues()));
+            items.addAll(formItemInfoConverter.convertToFormItemInfos(e.getAttrValues()));
         });
         formInfoService.saveFormInfoAndFormItems(items, req.getRequestTempId(), req.getId());
     }

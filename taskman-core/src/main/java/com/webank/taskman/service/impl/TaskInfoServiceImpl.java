@@ -28,9 +28,9 @@ import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.TaskInfo;
-import com.webank.taskman.dto.CoreCancelTaskDto;
-import com.webank.taskman.dto.CoreCreateTaskDto;
 import com.webank.taskman.dto.TaskInfoDto;
+import com.webank.taskman.dto.platform.CoreCancelTaskDto;
+import com.webank.taskman.dto.platform.PlatformTaskCreationReqDto;
 import com.webank.taskman.dto.req.ProcessingTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.FormInfoResqDto;
@@ -83,7 +83,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.toEntityByQuery(req).getLambdaQueryWrapper()
                 .inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, inSql);
         PageHelper.startPage(page, pageSize);
-        PageInfo<TaskInfoDto> pages = new PageInfo<>(taskInfoConverter.toDto(getBaseMapper().selectList(queryWrapper)));
+        PageInfo<TaskInfoDto> pages = new PageInfo<>(taskInfoConverter.convertToDtos(getBaseMapper().selectList(queryWrapper)));
         QueryResponse<TaskInfoDto> queryResponse = new QueryResponse<>(pages.getTotal(), page.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
@@ -185,11 +185,11 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     private FormInfoResqDto getFormInfoResq(String recordId) {
         FormInfoResqDto formInfoResq = formInfoConverter
-                .toDto(formInfoService.getOne(new FormInfo().setRecordId(recordId).getLambdaQueryWrapper()));
+                .convertToDto(formInfoService.getOne(new FormInfo().setRecordId(recordId).getLambdaQueryWrapper()));
         if (null != formInfoResq) {
             List<FormItemInfo> formItemInfos = formItemInfoMapper
                     .selectList(new FormItemInfo().setRecordId(recordId).getLambdaQueryWrapper());
-            formInfoResq.setFormItemInfo(formItemInfoConverter.toDto(formItemInfos));
+            formInfoResq.setFormItemInfo(formItemInfoConverter.convertToDtos(formItemInfos));
         }
         return formInfoResq;
     }
@@ -210,7 +210,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     @Transactional
-    public CommonResponseDto createTask(CoreCreateTaskDto req) throws TaskmanRuntimeException {
+    public CommonResponseDto createTask(PlatformTaskCreationReqDto req) throws TaskmanRuntimeException {
         if (null == req.getInputs() || req.getInputs().size() == 0) {
             throw new TaskmanRuntimeException(" inputs is null");
         }

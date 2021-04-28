@@ -142,7 +142,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             List<RoleRelation> roles = roleRelationService
                     .list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
             roles.stream().forEach(role -> {
-                RoleDto roleDTO = roleRelationConverter.toDto(role);
+                RoleDto roleDTO = roleRelationConverter.convertToDto(role);
                 if (RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()) {
                     resp.getUseRoles().add(roleDTO);
                 } else {
@@ -160,7 +160,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         RequestTemplateRespDto requestTemplateResp = requestTemplateConverter
                 .toRespByEntity(requestTemplateMapper.selectById(id));
         FormTemplateRespDto formTemplateResp = formTemplateConverter
-                .toDto(formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
+                .convertToDto(formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
                         .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()));
         List<FormItemTemplate> items = formItemTemplateMapper
                 .selectList(new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper());
@@ -206,7 +206,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             return Collections.emptyList();
         }
         
-        List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateConverter.toDto(requestTemplateEntities);
+        List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateConverter.convertToDtos(requestTemplateEntities);
         
         for(RequestTemplateDto retDto : retRequestTemplateDtos) {
             if(StringUtils.isNotBlank(retDto.getRequestTempGroup())) {

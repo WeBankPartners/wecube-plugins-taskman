@@ -15,7 +15,7 @@ public class FormItemInfo  implements Serializable {
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private String id;
 
-    private String recordId;
+    private String recordId;//task info ID
 
     private String formId;
 

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.webank.taskman.dto.CoreCancelTaskDto;
-import com.webank.taskman.dto.CoreCreateTaskDto;
+import com.webank.taskman.dto.platform.CoreCancelTaskDto;
+import com.webank.taskman.dto.platform.PlatformTaskCreationReqDto;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
@@ -34,7 +34,8 @@ public class TaskmanOutController {
 
     //TODO
     @PostMapping("/task/create")
-    public CommonResponseDto taskCreate(@RequestBody CoreCreateTaskDto req) {
+    public CommonResponseDto taskCreate(@RequestBody PlatformTaskCreationReqDto req) {
+        //TODO #48
         return taskInfoService.createTask(req);
     }
 

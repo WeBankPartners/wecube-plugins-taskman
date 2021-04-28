@@ -69,8 +69,10 @@ public class FormManagementController {
     public JsonResponse formItemTemplateAvailable() {
         QueryWrapper<FormItemTemplate> wrapper = new QueryWrapper<FormItemTemplate>();
         wrapper.eq("status", 1);
+        
+        List<FormItemTemplate> formItemTemplateEntities = formItemTemplateService.list(wrapper);
         List<FormItemTemplateDto> queryResponse = formItemTemplateConverter
-                .toDto(formItemTemplateService.list(wrapper));
+                .convertToDtos(formItemTemplateEntities);
         return JsonResponse.okayWithData(queryResponse);
     }
 

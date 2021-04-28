@@ -1,23 +1,107 @@
 package com.webank.taskman.converter;
 
-import com.webank.taskman.base.BaseConverter;
-import com.webank.taskman.domain.FormItemTemplate;
-import com.webank.taskman.dto.req.FormItemTemplateSaveReqDto;
-import com.webank.taskman.dto.FormItemTemplateDto;
-import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.ReportingPolicy;
-
+import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface FormItemTemplateConverter extends BaseConverter<FormItemTemplateDto, FormItemTemplate> {
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
 
-    FormItemTemplate toEntityBySaveReq(FormItemTemplateSaveReqDto req);
+import com.webank.taskman.base.BaseConverter;
+import com.webank.taskman.domain.FormItemTemplate;
+import com.webank.taskman.dto.FormItemTemplateDto;
+import com.webank.taskman.dto.req.FormItemTemplateSaveReqDto;
+import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
 
-    FormItemTemplateRespDto toRespByEntity(FormItemTemplate formItemTemplate);
+@Service
+public class FormItemTemplateConverter implements BaseConverter<FormItemTemplateDto, FormItemTemplate> {
 
-    List<FormItemTemplateRespDto> toRespByEntity( List<FormItemTemplate> formItemTemplate);
+    
+
+    @Override
+    public FormItemTemplate convertToEntity(FormItemTemplateDto dto) {
+        if(dto == null){
+            return null;
+        }
+        
+        FormItemTemplate entity = new FormItemTemplate();
+        BeanUtils.copyProperties(dto, entity);
+        return entity;
+    }
+
+    @Override
+    public FormItemTemplateDto convertToDto(FormItemTemplate entity) {
+        if(entity == null){
+            return null;
+        }
+        
+        FormItemTemplateDto dto = new FormItemTemplateDto();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
+    }
+
+    @Override
+    public List<FormItemTemplate> convertToEntities(List<FormItemTemplateDto> dtos) {
+        if(dtos == null){
+            return null;
+        }
+        
+        List<FormItemTemplate>  entities = new ArrayList<>();
+        for(FormItemTemplateDto dto : dtos){
+            FormItemTemplate entity = convertToEntity(dto);
+            entities.add(entity);
+        }
+        return entities;
+    }
+
+    @Override
+    public List<FormItemTemplateDto> convertToDtos(List<FormItemTemplate> entities) {
+        if(entities == null){
+            return null;
+        }
+        
+        List<FormItemTemplateDto> dtos = new ArrayList<>();
+        for(FormItemTemplate entity : entities){
+            FormItemTemplateDto dto = convertToDto(entity);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+    
+    public FormItemTemplate convertToFormItemTemplate(FormItemTemplateSaveReqDto dto){
+        if(dto == null){
+            return null;
+        }
+        FormItemTemplate entity = new FormItemTemplate();
+        BeanUtils.copyProperties(dto, entity);
+        
+        return entity;
+    }
+
+    public FormItemTemplateRespDto toRespByEntity(FormItemTemplate entity){
+        if(entity == null){
+            return null;
+        }
+        
+        FormItemTemplateRespDto dto = new FormItemTemplateRespDto();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
+    }
+
+    public List<FormItemTemplateRespDto> toRespByEntity( List<FormItemTemplate> entities){
+        if(entities == null){
+            return null;
+        }
+        
+        List<FormItemTemplateRespDto> dtos = new ArrayList<>();
+        for(FormItemTemplate entity : entities){
+            FormItemTemplateRespDto dto = new FormItemTemplateRespDto();
+            BeanUtils.copyProperties(entity, dto);
+            
+            dtos.add(dto);
+        }
+        
+        return dtos;
+    }
 
 
 }

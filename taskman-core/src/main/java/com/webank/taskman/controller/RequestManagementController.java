@@ -68,7 +68,7 @@ public class RequestManagementController {
         LambdaQueryWrapper<RequestTemplateGroup> lambdaQueryWrapper = new RequestTemplateGroup()
                 .setStatus(RequestTemplateGroup.STATUS_AVAILABLE).getLambdaQueryWrapper();
         List<RequestTemplateGroupDto> dtoList = requestTemplateGroupConverter
-                .toDto(requestTemplateGroupService.list(lambdaQueryWrapper));
+                .convertToDtos(requestTemplateGroupService.list(lambdaQueryWrapper));
         return okayWithData(dtoList);
     }
 

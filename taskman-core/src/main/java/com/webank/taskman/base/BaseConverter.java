@@ -4,9 +4,12 @@ import java.util.List;
 
 public interface BaseConverter<D, E> {
 
-    E toEntity(D dto);
-    D toDto(E entity);
-    List<E> toEntity(List<D> dtoList);
-    List<D> toDto(List<E> entityList);
+    E convertToEntity(D dto);
+
+    D convertToDto(E entity);
+
+    List<E> convertToEntities(List<D> dtos);
+
+    List<D> convertToDtos(List<E> entities);
 
 }

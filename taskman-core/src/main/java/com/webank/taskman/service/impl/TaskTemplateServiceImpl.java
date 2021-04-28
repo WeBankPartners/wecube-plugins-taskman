@@ -58,13 +58,13 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         if (requestTemplate == null) {
             throw new TaskmanRuntimeException("The Request Template does not exist! ID:" + req.getTempId());
         }
-        
-        TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
+
+        TaskTemplate taskTemplate = taskTemplateConverter.convertToTaskTemplate(req);
         taskTemplate.setRequestTemplateId(requestTemplate.getId());
         taskTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         saveOrUpdate(taskTemplate);
-        
+
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 
@@ -82,7 +82,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Override
     public TaskTemplateRespDto taskTemplateDetail(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
-        TaskTemplateRespDto taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
+        TaskTemplateRespDto taskTemplateResp = taskTemplateConverter.convertToDto(taskTemplate);
         List<RoleRelation> relations = roleRelationService
                 .list(new RoleRelation().setRecordId(id).getLambdaQueryWrapper());
         relations.stream().forEach(roleRelation -> {
@@ -102,16 +102,17 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     public QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
             TemplateQueryReqDto req) {
         String inSql = TemplateQueryReqDto.getEqUseRole();
-        
-        LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
+
+        LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.convertToTaskTemplate(req)
                 .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskTemplate::getId, inSql);
-        
+
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize), queryWrapper);
-        List<TaskTemplateByRoleRespDto> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
-        
+        List<TaskTemplateByRoleRespDto> list = taskTemplateConverter
+                .convertToTaskTemplateByRoleRespDtos(iPage.getRecords());
+
         QueryResponse<TaskTemplateByRoleRespDto> queryResponse = new QueryResponse<>(iPage.getTotal(),
                 iPage.getCurrent(), iPage.getSize(), list);
-        
+
         return queryResponse;
     }
 

@@ -1,4 +1,4 @@
-package com.webank.taskman.dto;
+package com.webank.taskman.dto.platform;
 
 public class CoreCancelTaskDto {
 

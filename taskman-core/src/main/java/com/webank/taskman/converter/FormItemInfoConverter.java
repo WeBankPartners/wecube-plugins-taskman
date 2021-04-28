@@ -1,23 +1,42 @@
 package com.webank.taskman.converter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.mapstruct.Mapping;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.dto.CoreCreateTaskDto.FormItemBean;
-import com.webank.taskman.dto.CreateTaskDto.EntityAttrValueDto;
+import com.webank.taskman.dto.EntityAttrValueDto;
 import com.webank.taskman.dto.req.FormItemInfoRequestDto;
 import com.webank.taskman.dto.resp.FormItemInfoRespDto;
 import com.webank.taskman.dto.resp.TaskServiceMetaRespDto.TaskServiceMetaFormItem;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
-import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {}, unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface FormItemInfoConverter extends BaseConverter<FormItemInfoRespDto, FormItemInfo> {
+@Service
+public class FormItemInfoConverter implements BaseConverter<FormItemInfoRespDto, FormItemInfo> {
 
-    FormItemInfo toEntityByReq(FormItemInfoRequestDto req);
+    public FormItemInfo convertToFormItemInfoByReq(FormItemInfoRequestDto dto){
+        FormItemInfo info = new FormItemInfo();
+        BeanUtils.copyProperties(dto, info);
+        
+        return info;
+    }
 
-    List<FormItemInfo> toEntityByReq(List<FormItemInfoRequestDto> req);
+    public List<FormItemInfo> convertToFormItemInfosByReq(List<FormItemInfoRequestDto> dtos){
+        if(dtos == null){
+            return null;
+        }
+        
+        List<FormItemInfo> infos = new ArrayList<>();
+        for(FormItemInfoRequestDto dto : dtos ){
+            FormItemInfo info = convertToFormItemInfoByReq(dto);
+            infos.add(info);
+        }
+        
+        return infos;
+    }
 
     @Mapping(target = "itemId", source = "id")
     @Mapping(target = "key", source = "name")
@@ -34,9 +53,87 @@ public interface FormItemInfoConverter extends BaseConverter<FormItemInfoRespDto
 
     List<FormItemInfo> toEntityByBean(List<FormItemBean> bean);
 
-    @Mapping(target = "value", expression = "java(attrValueDto.getDataValue()+\"\")")
-    FormItemInfo toEntityByAttrValue(EntityAttrValueDto attrValueDto);
+    public FormItemInfo convertToFormItemInfo(EntityAttrValueDto dto) {
+        FormItemInfo info = new FormItemInfo();
+        // info.setFormId();
+        info.setItemTempId(dto.getItemTempId());
+        // info.setId()
+        info.setName(dto.getName());
+        info.setValue(String.valueOf(dto.getDataValue()));
+        // info.setRecordId(recordId)
 
-    List<FormItemInfo> toEntityByAttrValue(List<EntityAttrValueDto> attrValueDtos);
+        return info;
+    }
+
+    public List<FormItemInfo> convertToFormItemInfos(List<EntityAttrValueDto> attrValueDtos) {
+        if (attrValueDtos == null) {
+            return null;
+        }
+
+        List<FormItemInfo> itemInfos = new ArrayList<>();
+        for (EntityAttrValueDto dto : attrValueDtos) {
+            FormItemInfo info = new FormItemInfo();
+            // info.setFormId();
+            info.setItemTempId(dto.getItemTempId());
+            // info.setId()
+            info.setName(dto.getName());
+            info.setValue(String.valueOf(dto.getDataValue()));
+            // info.setRecordId(recordId)
+
+            itemInfos.add(info);
+        }
+
+        return itemInfos;
+    }
+
+    @Override
+    public FormItemInfo convertToEntity(FormItemInfoRespDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        FormItemInfo entity = new FormItemInfo();
+        BeanUtils.copyProperties(dto, entity);
+        return entity;
+    }
+
+    @Override
+    public FormItemInfoRespDto convertToDto(FormItemInfo entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        FormItemInfoRespDto dto = new FormItemInfoRespDto();
+        BeanUtils.copyProperties(entity, dto);
+        return dto;
+    }
+
+    @Override
+    public List<FormItemInfo> convertToEntities(List<FormItemInfoRespDto> dtos) {
+        if (dtos == null) {
+            return null;
+        }
+
+        List<FormItemInfo> entities = new ArrayList<>();
+        for (FormItemInfoRespDto dto : dtos) {
+            FormItemInfo entity = convertToEntity(dto);
+            entities.add(entity);
+        }
+        return entities;
+    }
+
+    @Override
+    public List<FormItemInfoRespDto> convertToDtos(List<FormItemInfo> entities) {
+        if (entities == null) {
+            return null;
+        }
+
+        List<FormItemInfoRespDto> dtos = new ArrayList<>();
+        for (FormItemInfo entity : entities) {
+            FormItemInfoRespDto dto = convertToDto(entity);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
 
 }

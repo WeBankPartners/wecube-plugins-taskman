@@ -68,7 +68,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
                 .getLambdaQueryWrapper();
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(pageInfo, formTemplateQueryWrapper);
-        List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
+        List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.convertToDtos(iPage.getRecords());
 
         QueryResponse<FormTemplateRespDto> queryResponse = new QueryResponse<>(iPage.getSize(), iPage.getCurrent(),
                 iPage.getSize(), formTemplateResps);
@@ -93,7 +93,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
                 .getLambdaQueryWrapper();
         FormTemplate formTemplateEntity = formTemplateMapper.selectOne(formTemplateQueryWrapper);
-        FormTemplateRespDto formTemplateRespDto = formTemplateConverter.toDto(formTemplateEntity);
+        FormTemplateRespDto formTemplateRespDto = formTemplateConverter.convertToDto(formTemplateEntity);
 
         if (formTemplateRespDto == null) {
             return null;
@@ -149,7 +149,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             LambdaQueryWrapper<TaskTemplate> taskTemplateQueryWrapper = new TaskTemplate()
                     .setRequestTemplateId(req.getTempId()).getLambdaQueryWrapper();
             List<TaskTemplate> taskTemplateEntities = taskTemplateService.list(taskTemplateQueryWrapper);
-            List<TaskTemplateRespDto> taskTemplateDtos = taskTemplateConverter.toDto(taskTemplateEntities);
+            List<TaskTemplateRespDto> taskTemplateDtos = taskTemplateConverter.convertToDtos(taskTemplateEntities);
             if (taskTemplateDtos != null) {
                 formTemplateRespDto.setTaskTemplates(taskTemplateDtos);
             }
@@ -172,7 +172,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         formItemTemplateService.deleteByDomain(new FormItemTemplate().setFormTemplateId(formTemplate.getId()));
 
         formTemplateReq.getFormItems().stream().forEach(item -> {
-            FormItemTemplate formItemTemplate = formItemTemplateConverter.toEntityBySaveReq(item);
+            FormItemTemplate formItemTemplate = formItemTemplateConverter.convertToFormItemTemplate(item);
             formItemTemplate.setFormTemplateId(formTemplate.getId());
             formItemTemplate.setTempId(formTemplate.getTempId());
             formItemTemplateService.save(formItemTemplate);
@@ -185,6 +185,6 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         
         FormTemplate formTemplateEntity = getOne(new FormTemplate().setTempId(tempId).setTempType(tempType + "").getLambdaQueryWrapper());
         return formTemplateConverter
-                .toDto(formTemplateEntity);
+                .convertToDto(formTemplateEntity);
     }
 }

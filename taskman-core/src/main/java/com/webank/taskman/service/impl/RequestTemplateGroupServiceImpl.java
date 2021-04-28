@@ -49,19 +49,19 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         } else {
             save(requestTemplateGroup);
         }
-        return requestTemplateGroupConverter.toDto(requestTemplateGroup);
+        return requestTemplateGroupConverter.convertToDto(requestTemplateGroup);
     }
 
     @Override
     public QueryResponse<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit,
             RequestTemplateGroupDto req) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
-                requestTemplateGroupConverter.toEntity(req).getLambdaQueryWrapper());
+                requestTemplateGroupConverter.convertToEntity(req).getLambdaQueryWrapper());
 
         //TODO to test start index here
         PageInfo pageInfo = new PageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(), iPage.getSize());
         return new QueryResponse<RequestTemplateGroupDto>(pageInfo,
-                requestTemplateGroupConverter.toDto(iPage.getRecords()));
+                requestTemplateGroupConverter.convertToDtos(iPage.getRecords()));
     }
 
     @Override

@@ -6,9 +6,9 @@ import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.QueryResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.TaskInfo;
-import com.webank.taskman.dto.CoreCancelTaskDto;
-import com.webank.taskman.dto.CoreCreateTaskDto;
 import com.webank.taskman.dto.TaskInfoDto;
+import com.webank.taskman.dto.platform.CoreCancelTaskDto;
+import com.webank.taskman.dto.platform.PlatformTaskCreationReqDto;
 import com.webank.taskman.dto.req.ProcessingTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
@@ -23,7 +23,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     TaskInfoDto taskInfoReceive(String id);
 
-    CommonResponseDto createTask(CoreCreateTaskDto req);
+    CommonResponseDto createTask(PlatformTaskCreationReqDto req);
 
     JsonResponse taskInfoProcessing(ProcessingTasksReqDto ptr) throws TaskmanRuntimeException;
 

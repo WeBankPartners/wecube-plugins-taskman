@@ -2,12 +2,10 @@
 <package name="taskman" version="{{VERSION}}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="plugin-config-v2.xsd">
 
-    <!-- 1.依赖分析 - 描述运行本插件包需要的其他插件包 -->
     <packageDependencies>
         <packageDependency name="platform" version="v2.7.1"/>
     </packageDependencies>
 
-    <!-- 2.菜单注入 - 描述运行本插件包需要注入的菜单 -->
     <menus>
         <menu code='JOBS_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
         <menu code='JOBS_TEMPLATE_MANAGEMENT' cat='JOBS' displayName="Template Management" localDisplayName="模板管理">/taskman/template-mgmt</menu>
@@ -15,16 +13,13 @@
         <menu code='JOBS_TASK_MANAGEMENT' cat='JOBS' displayName="Task Management" localDisplayName="任务管理">/taskman/task-mgmt</menu>
     </menus>
 
-    <!-- 3.数据模型 - 描述本插件包的数据模型,并且描述和Framework数据模型的关系 -->
     <dataModel>
 
     </dataModel>
     
-    <!-- 4.系统参数 - 描述运行本插件包需要的系统参数 -->
     <systemParameters>
     </systemParameters>
 
-    <!-- 5.权限设定 -->
     <authorities>
         <authority systemRoleName="SUPER_ADMIN">
             <menu code="JOBS_TEMPLATE_GROUP_MANAGEMENT"/>
@@ -34,7 +29,6 @@
         </authority>
     </authorities>
 
-    <!-- 6.运行资源 - 描述部署运行本插件包需要的基础资源(如主机、虚拟机、容器、数据库等) -->
     <resourceDependencies>
         <docker imageName="taskman:{{VERSION}}"
         containerName="taskman-{{VERSION}}"
@@ -45,7 +39,6 @@
         <s3 bucketName="taskman"/>
     </resourceDependencies>
 
-    <!-- 7.插件列表 - 描述插件包中单个插件的输入和输出 -->
     <plugins>
         <plugin name="task">
             <interface action="create" path="/taskman/v1/task/create" httpMethod="POST" isAsyncProcessing="Y" type="APPROVAL">

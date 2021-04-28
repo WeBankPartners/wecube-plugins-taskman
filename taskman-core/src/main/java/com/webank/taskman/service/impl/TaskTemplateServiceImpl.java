@@ -14,8 +14,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RoleTypeEnum;
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.RoleType;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
@@ -71,7 +71,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         // Bad smells
         FormTemplateSaveReqDto formTemplateReqDto = req.getForm();
         formTemplateReqDto.setTempId(taskTemplateId);
-        formTemplateReqDto.setTempType(TemplateTypeEnum.TASK.getType());
+        formTemplateReqDto.setTempType(TemplateType.TASK.getType());
         formTemplateService.saveOrUpdateFormTemplate(formTemplateReqDto);
 
         TaskTemplateRespDto taskTemplateRespDto = new TaskTemplateRespDto();
@@ -89,7 +89,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
             RoleDto roleDTO = new RoleDto();
             roleDTO.setRoleName(roleRelation.getRoleName());
             roleDTO.setDisplayName(roleRelation.getRoleName());
-            if (RoleTypeEnum.USE_ROLE.getType() == roleRelation.getRoleType()) {
+            if (RoleType.USE_ROLE.getType() == roleRelation.getRoleType()) {
                 taskTemplateResp.getUseRoles().add(roleDTO);
             } else {
                 taskTemplateResp.getManageRoles().add(roleDTO);

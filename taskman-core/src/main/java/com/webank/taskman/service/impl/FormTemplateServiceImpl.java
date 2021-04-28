@@ -16,9 +16,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RecordDeleteFlagEnum;
-import com.webank.taskman.constant.RoleTypeEnum;
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.RecordDeleteFlag;
+import com.webank.taskman.constant.RoleType;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
@@ -81,7 +81,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             throw new TaskmanRuntimeException("Form template parameter cannot be empty.");
         }
         UpdateWrapper<FormTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.lambda().eq(FormTemplate::getId, id).set(FormTemplate::getDelFlag, RecordDeleteFlagEnum.Deleted.ordinal())
+        wrapper.lambda().eq(FormTemplate::getId, id).set(FormTemplate::getDelFlag, RecordDeleteFlag.Deleted.ordinal())
                 .set(FormTemplate::getUpdatedTime, new Date());
         ;
         formTemplateMapper.update(null, wrapper);
@@ -111,7 +111,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         
         RoleRelation useRoleCriteria = new RoleRelation();
         useRoleCriteria.setRecordId(formTemplateEntity.getTempId());
-        useRoleCriteria.setRoleType(RoleTypeEnum.USE_ROLE.getType());
+        useRoleCriteria.setRoleType(RoleType.USE_ROLE.getType());
         
         LambdaQueryWrapper<RoleRelation> useRoleQueryWrapper = useRoleCriteria.getLambdaQueryWrapper();
         List<RoleRelation> useRoleRelations = roleRelationService.list(useRoleQueryWrapper);
@@ -129,7 +129,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         
         RoleRelation mgmtRoleCriteria = new RoleRelation();
         mgmtRoleCriteria.setRecordId(formTemplateEntity.getTempId());
-        mgmtRoleCriteria.setRoleType(RoleTypeEnum.MANAGE_ROLE.getType());
+        mgmtRoleCriteria.setRoleType(RoleType.MANAGE_ROLE.getType());
         
         LambdaQueryWrapper<RoleRelation> mgmtRoleQueryWrapper = mgmtRoleCriteria.getLambdaQueryWrapper();
         List<RoleRelation> mgmtRoleRelations = roleRelationService.list(mgmtRoleQueryWrapper);
@@ -144,7 +144,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             }
         }
 
-        if (TemplateTypeEnum.REQUEST.getType().equals(req.getTempType())) {
+        if (TemplateType.REQUEST.getType().equals(req.getTempType())) {
 
             LambdaQueryWrapper<TaskTemplate> taskTemplateQueryWrapper = new TaskTemplate()
                     .setRequestTemplateId(req.getTempId()).getLambdaQueryWrapper();

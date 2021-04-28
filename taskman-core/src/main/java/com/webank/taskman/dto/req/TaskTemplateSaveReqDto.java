@@ -2,7 +2,7 @@ package com.webank.taskman.dto.req;
 
 import java.util.List;
 
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.dto.RoleDto;
 
 public class TaskTemplateSaveReqDto {
@@ -120,7 +120,7 @@ public class TaskTemplateSaveReqDto {
     }
 
     public FormTemplateSaveReqDto getForm() {
-        this.form.setTempType(TemplateTypeEnum.TASK.getType());
+        this.form.setTempType(TemplateType.TASK.getType());
         return form;
     }
 

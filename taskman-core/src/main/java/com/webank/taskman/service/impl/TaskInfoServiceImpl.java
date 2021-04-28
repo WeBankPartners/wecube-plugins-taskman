@@ -19,7 +19,7 @@ import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.GenernalStatus;
 import com.webank.taskman.converter.FormInfoConverter;
 import com.webank.taskman.converter.FormItemInfoConverter;
 import com.webank.taskman.converter.RequestInfoConverter;
@@ -108,7 +108,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         // formItemInfoConverter.toEntityByReq(req.getFormItemInfoList());
         // formInfoService.saveFormInfoAndItems(formItemInfos,
         // taskInfo.getTaskTempId(), taskInfo.getId());
-        taskInfo.setStatus(StatusEnum.Processed.name());
+        taskInfo.setStatus(GenernalStatus.Processed.name());
         taskInfo.setResult(req.getResult());
         taskInfo.setUpdatedBy(currentUsername);
         taskInfo.setUpdatedTime(new Date());
@@ -149,7 +149,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         taskInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskInfo.setUpdatedTime(new Date());
-        taskInfo.setStatus(StatusEnum.SUSPENSION.toString());
+        taskInfo.setStatus(GenernalStatus.SUSPENSION.toString());
         getBaseMapper().updateById(taskInfo);
         return CommonResponseDto.okay();
     }
@@ -203,8 +203,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     public TaskInfoDto taskInfoReceive(String id) {
         TaskInfo taskInfo = getBaseMapper().selectById(id);
 
-        if (taskInfo.getStatus().equals(StatusEnum.UNCLAIMED.toString())) {
-            taskInfo.setStatus(StatusEnum.ALREADY_RECEIVED.toString());
+        if (taskInfo.getStatus().equals(GenernalStatus.UNCLAIMED.toString())) {
+            taskInfo.setStatus(GenernalStatus.ALREADY_RECEIVED.toString());
             taskInfo.setReporter(AuthenticationContextHolder.getCurrentUsername());
             taskInfo.setReportTime(new Date());
             taskInfo.setUpdatedTime(new Date());

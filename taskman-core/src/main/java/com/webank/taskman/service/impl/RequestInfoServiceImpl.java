@@ -19,7 +19,7 @@ import com.webank.taskman.base.LocalPageInfo;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.GenernalStatus;
 import com.webank.taskman.converter.FormItemInfoConverter;
 import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.domain.FormItemInfo;
@@ -107,7 +107,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             throw new TaskmanRuntimeException("Remotely create new process instance failed!");
         }
 
-        if (StatusEnum.InProgress.name().equals(dynamicWorkflowInstInfoDto.getStatus())) {
+        if (GenernalStatus.InProgress.name().equals(dynamicWorkflowInstInfoDto.getStatus())) {
             requestInfoEntity.setProcInstId(dynamicWorkflowInstInfoDto.getId());
             requestInfoEntity.setStatus(dynamicWorkflowInstInfoDto.getStatus());
             requestInfoEntity.setUpdatedTime(new Date());

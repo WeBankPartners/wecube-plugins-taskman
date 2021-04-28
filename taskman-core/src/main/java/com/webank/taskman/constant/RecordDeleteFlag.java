@@ -1,5 +1,5 @@
 package com.webank.taskman.constant;
 
-public enum RecordDeleteFlagEnum {
+public enum RecordDeleteFlag {
     NotDeleted, Deleted;
 }

@@ -14,7 +14,7 @@ import com.webank.taskman.base.LocalPageInfo;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.GenernalStatus;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
@@ -67,7 +67,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     public void deleteTemplateGroupByIDService(String id) {
         RequestTemplateGroup requestTemplateGroup = new RequestTemplateGroup();
         requestTemplateGroup.setId(id);
-        requestTemplateGroup.setDelFlag(StatusEnum.ENABLE.ordinal());
+        requestTemplateGroup.setDelFlag(GenernalStatus.ENABLE.ordinal());
         requestTemplateGroup.setUpdatedTime(new Date());
         templateGroupMapper.update(null, requestTemplateGroup.getUpdateWrapper());
     }

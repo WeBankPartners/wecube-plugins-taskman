@@ -20,9 +20,9 @@ import com.github.pagehelper.PageInfo;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RoleTypeEnum;
-import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.RoleType;
+import com.webank.taskman.constant.GenernalStatus;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.RequestTemplateConverter;
@@ -125,7 +125,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
         UpdateWrapper<RequestTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.lambda().eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, StatusEnum.ENABLE.ordinal())
+        wrapper.lambda().eq(RequestTemplate::getId, id).set(RequestTemplate::getDelFlag, GenernalStatus.ENABLE.ordinal())
                 .set(RequestTemplate::getUpdatedTime, new Date());
         ;
         requestTemplateMapper.update(null, wrapper);
@@ -143,7 +143,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                     .list(new RoleRelation().setRecordId(resp.getId()).getLambdaQueryWrapper());
             roles.stream().forEach(role -> {
                 RoleDto roleDTO = roleRelationConverter.convertToDto(role);
-                if (RoleTypeEnum.USE_ROLE.getType() == role.getRoleType()) {
+                if (RoleType.USE_ROLE.getType() == role.getRoleType()) {
                     resp.getUseRoles().add(roleDTO);
                 } else {
                     resp.getManageRoles().add(roleDTO);
@@ -161,7 +161,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 .toRespByEntity(requestTemplateMapper.selectById(id));
         FormTemplateRespDto formTemplateResp = formTemplateConverter
                 .convertToDto(formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
-                        .setTempType(TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper()));
+                        .setTempType(TemplateType.REQUEST.getType()).getLambdaQueryWrapper()));
         List<FormItemTemplate> items = formItemTemplateMapper
                 .selectList(new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper());
         formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(items));

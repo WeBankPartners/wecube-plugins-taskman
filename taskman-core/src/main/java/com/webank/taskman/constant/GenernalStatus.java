@@ -1,6 +1,6 @@
 package com.webank.taskman.constant;
 
-public enum  StatusEnum {
+public enum  GenernalStatus {
     //  Default state, the general value is 0 ,Examples:del_flag =0
 //    DEFAULT,
     // Available identification or Record deleted ,Examples:del_flag =1

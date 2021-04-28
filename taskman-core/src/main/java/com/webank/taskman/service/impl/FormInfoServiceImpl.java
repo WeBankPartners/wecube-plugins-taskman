@@ -12,7 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.FormTemplate;
@@ -35,7 +35,7 @@ public class FormInfoServiceImpl extends ServiceImpl<FormInfoMapper, FormInfo> i
     @Override
     public FormInfo saveFormInfoByExists(String requestTempId, String recordId) {
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = new FormTemplate(null, requestTempId,
-                TemplateTypeEnum.REQUEST.getType()).getLambdaQueryWrapper();
+                TemplateType.REQUEST.getType()).getLambdaQueryWrapper();
 
         FormTemplate formTemplate = formTemplateService.getOne(formTemplateQueryWrapper);
         if (formTemplate == null) {

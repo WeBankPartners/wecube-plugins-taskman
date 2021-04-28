@@ -75,7 +75,7 @@ public class AppProperties {
     @ConfigurationProperties(prefix = "service.taskman")
     public class ServiceTaskmanProperties {
 
-        private String version="V0.2.00";
+        private String version="V0.2.0";
         private String wecubeCoreAddress;
         private String wecubePlatformToken = "";
         private String s3AccessKey = "";

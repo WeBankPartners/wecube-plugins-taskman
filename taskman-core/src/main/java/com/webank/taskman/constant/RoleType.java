@@ -1,6 +1,6 @@
 package com.webank.taskman.constant;
 
-public enum RoleTypeEnum {
+public enum RoleType {
 
     MANAGE_ROLE(0, "MANAGE_ROLE"), USE_ROLE(1, "USE_ROLE");
     
@@ -8,7 +8,7 @@ public enum RoleTypeEnum {
 
     private String description;
 
-    RoleTypeEnum(int type, String description) {
+    RoleType(int type, String description) {
         this.type = type;
         this.description = description;
     }

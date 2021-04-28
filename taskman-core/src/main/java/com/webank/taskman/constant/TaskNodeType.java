@@ -1,13 +1,14 @@
 package com.webank.taskman.constant;
 
-public enum TemplateTypeEnum {
+public enum TaskNodeType {
 
-    REQUEST("0", "request"), TASK("1", "task");
+    SSTN("SSTN", "SSTN node "), SUTN("SUTN", "SUTN node");
+    
     private String type;
 
     private String description;
 
-    TemplateTypeEnum(String type, String description) {
+    TaskNodeType(String type, String description) {
         this.type = type;
         this.description = description;
     }
@@ -24,8 +25,8 @@ public enum TemplateTypeEnum {
         return description;
     }
 
-    public TemplateTypeEnum setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
-        return this;
     }
+
 }

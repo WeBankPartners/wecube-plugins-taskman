@@ -1,7 +1,7 @@
 package com.webank.taskman.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.constant.RoleType;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.mapper.RoleRelationMapper;
@@ -22,7 +22,7 @@ public class RoleRelationServiceImpl extends ServiceImpl<RoleRelationMapper, Rol
     }
 
     @Override
-    public void saveRoleRelation(String recordId, RoleTypeEnum roleType, List<RoleDto> roles) {
+    public void saveRoleRelation(String recordId, RoleType roleType, List<RoleDto> roles) {
         roles.stream().forEach(role -> {
             if (!StringUtils.isEmpty(role.getRoleName()) && !StringUtils.isEmpty(role.getDisplayName())) {
                 this.getBaseMapper().insert(
@@ -36,8 +36,8 @@ public class RoleRelationServiceImpl extends ServiceImpl<RoleRelationMapper, Rol
     public void saveRoleRelationByTemplate(String requestTemplateId, List<RoleDto> useRoles,
             List<RoleDto> manageRoles) {
         deleteByTemplate(requestTemplateId);
-        saveRoleRelation(requestTemplateId, RoleTypeEnum.USE_ROLE, useRoles);
-        saveRoleRelation(requestTemplateId, RoleTypeEnum.MANAGE_ROLE, manageRoles);
+        saveRoleRelation(requestTemplateId, RoleType.USE_ROLE, useRoles);
+        saveRoleRelation(requestTemplateId, RoleType.MANAGE_ROLE, manageRoles);
     }
 
 }

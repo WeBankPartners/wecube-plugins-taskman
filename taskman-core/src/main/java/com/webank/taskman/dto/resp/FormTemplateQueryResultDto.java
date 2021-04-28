@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.webank.taskman.dto.RoleDto;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FormTemplateRespDto {
+public class FormTemplateQueryResultDto {
 
     private String id;
 
@@ -29,7 +29,7 @@ public class FormTemplateRespDto {
     private String outputAttrDef;
     private String otherAttrDef;
 
-    private List<FormItemTemplateRespDto> items;
+    private List<FormItemTemplateQueryResultDto> items;
 
     private List<TaskTemplateRespDto> taskTemplates;
     
@@ -41,7 +41,7 @@ public class FormTemplateRespDto {
         return id;
     }
 
-    public FormTemplateRespDto setId(String id) {
+    public FormTemplateQueryResultDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -66,7 +66,7 @@ public class FormTemplateRespDto {
         return formType;
     }
 
-    public FormTemplateRespDto setFormType(String formType) {
+    public FormTemplateQueryResultDto setFormType(String formType) {
         this.formType = formType;
         return this;
     }
@@ -127,11 +127,11 @@ public class FormTemplateRespDto {
         this.otherAttrDef = otherAttrDef;
     }
 
-    public List<FormItemTemplateRespDto> getItems() {
+    public List<FormItemTemplateQueryResultDto> getItems() {
         return items;
     }
 
-    public void setItems(List<FormItemTemplateRespDto> items) {
+    public void setItems(List<FormItemTemplateQueryResultDto> items) {
         this.items = items;
     }
 

@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.base.LocalPageInfo;
-import com.webank.taskman.base.PageableQueryResult;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.GenernalStatus;
@@ -70,7 +70,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
      * 
      */
     @Override
-    public PageableQueryResult<RequestTemplateGroupDto> searchRequestTemplateGroups(Integer current, Integer limit,
+    public LocalPageableQueryResult<RequestTemplateGroupDto> searchRequestTemplateGroups(Integer current, Integer limit,
             RequestTemplateGroupDto requestTemplateGroupSearchCriteriaDto) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
                 requestTemplateGroupConverter.convertToEntity(requestTemplateGroupSearchCriteriaDto)
@@ -79,7 +79,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         // TODO to test start index here
         LocalPageInfo pageInfo = new LocalPageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(),
                 iPage.getSize());
-        return new PageableQueryResult<RequestTemplateGroupDto>(pageInfo,
+        return new LocalPageableQueryResult<RequestTemplateGroupDto>(pageInfo,
                 requestTemplateGroupConverter.convertToDtos(iPage.getRecords()));
     }
 

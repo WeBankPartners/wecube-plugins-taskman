@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.taskman.base.JsonResponse;
-import com.webank.taskman.base.PageableQueryResult;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
-import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
+import com.webank.taskman.dto.req.RequestTemplateQueryDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
-import com.webank.taskman.dto.resp.RequestTemplateRespDto;
+import com.webank.taskman.dto.resp.RequestTemplateQueryResultDto;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateService;
 
@@ -55,29 +55,50 @@ public class RequestManagementController {
         return okayWithData(respDto);
     }
 
+    /**
+     * 
+     * @param page
+     * @param pageSize
+     * @param requestTemplateQueryDto
+     * @return
+     */
     @PostMapping("/template/search/{page}/{page-size}")
-    public JsonResponse requestTemplateSearch(@PathVariable("page") Integer page,
+    public JsonResponse searchRequestTemplates(@PathVariable("page") Integer page,
             @PathVariable("page-size") Integer pageSize,
-            @RequestBody(required = false) RequestTemplateQueryReqDto req) {
-        PageableQueryResult<RequestTemplateDto> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
-                pageSize, req);
+            @RequestBody(required = false) RequestTemplateQueryDto requestTemplateQueryDto) {
+        LocalPageableQueryResult<RequestTemplateDto> queryResponse = requestTemplateService.searchRequestTemplates(page,
+                pageSize, requestTemplateQueryDto);
         return okayWithData(queryResponse);
     }
 
+    /**
+     * 
+     * @param id
+     * @return
+     */
     @DeleteMapping("/template/delete/{id}")
-    public JsonResponse requestTemplateDelete(@PathVariable("id") String id) {
-        requestTemplateService.deleteRequestTemplateService(id);
+    public JsonResponse deleteRequestTemplate(@PathVariable("id") String id) {
+        requestTemplateService.deleteRequestTemplate(id);
         return okay();
     }
 
+    /**
+     * 
+     * @param id
+     * @return
+     */
     @GetMapping("/template/detail/{id}")
-    public JsonResponse requestTemplateDetail(@PathVariable("id") String id) {
-        RequestTemplateRespDto detailRequestTemplateResq = requestTemplateService.detailRequestTemplate(id);
+    public JsonResponse fetchRequestTemplateDetail(@PathVariable("id") String id) {
+        RequestTemplateQueryResultDto detailRequestTemplateResq = requestTemplateService.fetchRequestTemplateDetail(id);
         return okayWithData(detailRequestTemplateResq);
     }
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("/template/available")
-    public JsonResponse requestTemplateAvailable() {
+    public JsonResponse fetchAvailableRequestTemplates() {
         List<RequestTemplateDto> retRequestTemplateDtos = requestTemplateService.fetchAvailableRequestTemplates();
         return okayWithData(retRequestTemplateDtos);
     }
@@ -96,7 +117,7 @@ public class RequestManagementController {
     @PostMapping("/search/{page}/{page-size}")
     public JsonResponse requestInfoSearch(@PathVariable("page") Integer page,
             @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestInfoQueryReqDto req) {
-        PageableQueryResult<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
+        LocalPageableQueryResult<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         return okayWithData(list);
     }
 

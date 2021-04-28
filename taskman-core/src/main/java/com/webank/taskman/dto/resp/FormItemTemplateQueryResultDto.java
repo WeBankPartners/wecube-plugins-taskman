@@ -3,7 +3,7 @@ package com.webank.taskman.dto.resp;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FormItemTemplateRespDto {
+public class FormItemTemplateQueryResultDto {
 
     private String id;
     private String tempId;
@@ -39,7 +39,7 @@ public class FormItemTemplateRespDto {
         return id;
     }
 
-    public FormItemTemplateRespDto setId(String id) {
+    public FormItemTemplateQueryResultDto setId(String id) {
         this.id = id;
         return this;
     }
@@ -48,7 +48,7 @@ public class FormItemTemplateRespDto {
         return tempId;
     }
 
-    public FormItemTemplateRespDto setTempId(String tempId) {
+    public FormItemTemplateQueryResultDto setTempId(String tempId) {
         this.tempId = tempId;
         return this;
     }
@@ -57,7 +57,7 @@ public class FormItemTemplateRespDto {
         return formType;
     }
 
-    public FormItemTemplateRespDto setFormType(String formType) {
+    public FormItemTemplateQueryResultDto setFormType(String formType) {
         this.formType = formType;
         return this;
     }
@@ -66,7 +66,7 @@ public class FormItemTemplateRespDto {
         return formTemplateId;
     }
 
-    public FormItemTemplateRespDto setFormTemplateId(String formTemplateId) {
+    public FormItemTemplateQueryResultDto setFormTemplateId(String formTemplateId) {
         this.formTemplateId = formTemplateId;
         return this;
     }
@@ -75,7 +75,7 @@ public class FormItemTemplateRespDto {
         return name;
     }
 
-    public FormItemTemplateRespDto setName(String name) {
+    public FormItemTemplateQueryResultDto setName(String name) {
         this.name = name;
         return this;
     }
@@ -84,7 +84,7 @@ public class FormItemTemplateRespDto {
         return defaultValue;
     }
 
-    public FormItemTemplateRespDto setDefaultValue(String defaultValue) {
+    public FormItemTemplateQueryResultDto setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         return this;
     }
@@ -93,7 +93,7 @@ public class FormItemTemplateRespDto {
         return isCurrency;
     }
 
-    public FormItemTemplateRespDto setIsCurrency(Integer isCurrency) {
+    public FormItemTemplateQueryResultDto setIsCurrency(Integer isCurrency) {
         this.isCurrency = isCurrency;
         return this;
     }
@@ -102,7 +102,7 @@ public class FormItemTemplateRespDto {
         return sort;
     }
 
-    public FormItemTemplateRespDto setSort(Integer sort) {
+    public FormItemTemplateQueryResultDto setSort(Integer sort) {
         this.sort = sort;
         return this;
     }
@@ -111,7 +111,7 @@ public class FormItemTemplateRespDto {
         return packageName;
     }
 
-    public FormItemTemplateRespDto setPackageName(String packageName) {
+    public FormItemTemplateQueryResultDto setPackageName(String packageName) {
         this.packageName = packageName;
         return this;
     }
@@ -120,7 +120,7 @@ public class FormItemTemplateRespDto {
         return entity;
     }
 
-    public FormItemTemplateRespDto setEntity(String entity) {
+    public FormItemTemplateQueryResultDto setEntity(String entity) {
         this.entity = entity;
         return this;
     }
@@ -129,7 +129,7 @@ public class FormItemTemplateRespDto {
         return entityId;
     }
 
-    public FormItemTemplateRespDto setEntityId(String entityId) {
+    public FormItemTemplateQueryResultDto setEntityId(String entityId) {
         this.entityId = entityId;
         return this;
     }
@@ -138,7 +138,7 @@ public class FormItemTemplateRespDto {
         return attrDefId;
     }
 
-    public FormItemTemplateRespDto setAttrDefId(String attrDefId) {
+    public FormItemTemplateQueryResultDto setAttrDefId(String attrDefId) {
         this.attrDefId = attrDefId;
         return this;
     }
@@ -147,7 +147,7 @@ public class FormItemTemplateRespDto {
         return attrDefDataType;
     }
 
-    public FormItemTemplateRespDto setAttrDefDataType(String attrDefDataType) {
+    public FormItemTemplateQueryResultDto setAttrDefDataType(String attrDefDataType) {
         this.attrDefDataType = attrDefDataType;
         return this;
     }
@@ -156,7 +156,7 @@ public class FormItemTemplateRespDto {
         return routineExp;
     }
 
-    public FormItemTemplateRespDto setRoutineExp(String routineExp) {
+    public FormItemTemplateQueryResultDto setRoutineExp(String routineExp) {
         this.routineExp = routineExp;
         return this;
     }
@@ -165,7 +165,7 @@ public class FormItemTemplateRespDto {
         return elementType;
     }
 
-    public FormItemTemplateRespDto setElementType(String elementType) {
+    public FormItemTemplateQueryResultDto setElementType(String elementType) {
         this.elementType = elementType;
         return this;
     }
@@ -174,7 +174,7 @@ public class FormItemTemplateRespDto {
         return title;
     }
 
-    public FormItemTemplateRespDto setTitle(String title) {
+    public FormItemTemplateQueryResultDto setTitle(String title) {
         this.title = title;
         return this;
     }
@@ -183,7 +183,7 @@ public class FormItemTemplateRespDto {
         return width;
     }
 
-    public FormItemTemplateRespDto setWidth(Integer width) {
+    public FormItemTemplateQueryResultDto setWidth(Integer width) {
         this.width = width;
         return this;
     }
@@ -192,7 +192,7 @@ public class FormItemTemplateRespDto {
         return refEntity;
     }
 
-    public FormItemTemplateRespDto setRefEntity(String refEntity) {
+    public FormItemTemplateQueryResultDto setRefEntity(String refEntity) {
         this.refEntity = refEntity;
         return this;
     }
@@ -201,7 +201,7 @@ public class FormItemTemplateRespDto {
         return refPackageName;
     }
 
-    public FormItemTemplateRespDto setRefPackageName(String refPackageName) {
+    public FormItemTemplateQueryResultDto setRefPackageName(String refPackageName) {
         this.refPackageName = refPackageName;
         return this;
     }
@@ -210,7 +210,7 @@ public class FormItemTemplateRespDto {
         return refFilters;
     }
 
-    public FormItemTemplateRespDto setRefFilters(String refFilters) {
+    public FormItemTemplateQueryResultDto setRefFilters(String refFilters) {
         this.refFilters = refFilters;
         return this;
     }
@@ -219,7 +219,7 @@ public class FormItemTemplateRespDto {
         return dataOptions;
     }
 
-    public FormItemTemplateRespDto setDataOptions(String dataOptions) {
+    public FormItemTemplateQueryResultDto setDataOptions(String dataOptions) {
         this.dataOptions = dataOptions;
         return this;
     }
@@ -228,7 +228,7 @@ public class FormItemTemplateRespDto {
         return required;
     }
 
-    public FormItemTemplateRespDto setRequired(Integer required) {
+    public FormItemTemplateQueryResultDto setRequired(Integer required) {
         this.required = required;
         return this;
     }
@@ -237,7 +237,7 @@ public class FormItemTemplateRespDto {
         return regular;
     }
 
-    public FormItemTemplateRespDto setRegular(String regular) {
+    public FormItemTemplateQueryResultDto setRegular(String regular) {
         this.regular = regular;
         return this;
     }
@@ -246,7 +246,7 @@ public class FormItemTemplateRespDto {
         return isEdit;
     }
 
-    public FormItemTemplateRespDto setIsEdit(Integer isEdit) {
+    public FormItemTemplateQueryResultDto setIsEdit(Integer isEdit) {
         this.isEdit = isEdit;
         return this;
     }
@@ -255,7 +255,7 @@ public class FormItemTemplateRespDto {
         return isView;
     }
 
-    public FormItemTemplateRespDto setIsView(Integer isView) {
+    public FormItemTemplateQueryResultDto setIsView(Integer isView) {
         this.isView = isView;
         return this;
     }

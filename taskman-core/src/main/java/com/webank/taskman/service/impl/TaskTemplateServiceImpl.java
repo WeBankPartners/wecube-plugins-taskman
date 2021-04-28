@@ -11,7 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.PageableQueryResult;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleType;
@@ -99,7 +99,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public PageableQueryResult<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
+    public LocalPageableQueryResult<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
             TemplateQueryReqDto req) {
         String inSql = TemplateQueryReqDto.getEqUseRole();
 
@@ -110,7 +110,7 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         List<TaskTemplateByRoleRespDto> list = taskTemplateConverter
                 .convertToTaskTemplateByRoleRespDtos(iPage.getRecords());
 
-        PageableQueryResult<TaskTemplateByRoleRespDto> queryResponse = new PageableQueryResult<>(iPage.getTotal(),
+        LocalPageableQueryResult<TaskTemplateByRoleRespDto> queryResponse = new LocalPageableQueryResult<>(iPage.getTotal(),
                 iPage.getCurrent(), iPage.getSize(), list);
 
         return queryResponse;

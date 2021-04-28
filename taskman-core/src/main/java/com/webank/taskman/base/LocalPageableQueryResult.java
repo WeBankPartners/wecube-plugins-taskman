@@ -8,23 +8,23 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class PageableQueryResult<T> {
+public class LocalPageableQueryResult<T> {
     private LocalPageInfo pageInfo = new LocalPageInfo();
     private List<T> contents = new LinkedList<>();
 
-    public PageableQueryResult() {
+    public LocalPageableQueryResult() {
     }
 
-    public PageableQueryResult(Long totalRows, Long startIndex, Long pageSize, List<T> contents) {
+    public LocalPageableQueryResult(Long totalRows, Long startIndex, Long pageSize, List<T> contents) {
         this.pageInfo = new LocalPageInfo(totalRows,startIndex,pageSize);
         this.contents = contents;
     }
-    public PageableQueryResult(LocalPageInfo pageInfo, List<T> contents) {
+    public LocalPageableQueryResult(LocalPageInfo pageInfo, List<T> contents) {
         this.pageInfo = pageInfo;
         this.contents = contents;
     }
 
-    public PageableQueryResult(IPage<T> iPage, List<T> contents) {
+    public LocalPageableQueryResult(IPage<T> iPage, List<T> contents) {
         this.pageInfo = new LocalPageInfo(iPage.getTotal(),iPage.getCurrent(),iPage.getSize());
         this.contents = contents;
     }

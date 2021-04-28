@@ -17,7 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.webank.taskman.base.PageableQueryResult;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.GenernalStatus;
@@ -34,10 +34,10 @@ import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RoleDto;
-import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
+import com.webank.taskman.dto.req.RequestTemplateQueryDto;
 import com.webank.taskman.dto.req.RoleRelationBaseQueryReqDto;
-import com.webank.taskman.dto.resp.FormTemplateRespDto;
-import com.webank.taskman.dto.resp.RequestTemplateRespDto;
+import com.webank.taskman.dto.resp.FormTemplateQueryResultDto;
+import com.webank.taskman.dto.resp.RequestTemplateQueryResultDto;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
@@ -80,6 +80,9 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     @Autowired
     private RequestTemplateGroupService requestTemplateGroupService;
 
+    /**
+     * 
+     */
     @Override
     @Transactional
     public RequestTemplateDto saveRequestTemplate(RequestTemplateDto requestTemplateDto) {
@@ -118,8 +121,11 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     }
 
+    /**
+     * 
+     */
     @Override
-    public void deleteRequestTemplateService(String id) throws TaskmanRuntimeException {
+    public void deleteRequestTemplate(String id) {
         if (StringUtils.isEmpty(id)) {
             throw new TaskmanRuntimeException("Request template parameter cannot be ID");
         }
@@ -130,12 +136,15 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
         requestTemplateMapper.update(null, wrapper);
     }
 
+    /**
+     * 
+     */
     @Override
-    public PageableQueryResult<RequestTemplateDto> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
-            RequestTemplateQueryReqDto req) {
-        req.queryCurrentUserRoles();
+    public LocalPageableQueryResult<RequestTemplateDto> searchRequestTemplates(Integer pageNum, Integer pageSize,
+            RequestTemplateQueryDto requestTemplateQueryDto) {
+        requestTemplateQueryDto.queryCurrentUserRoles();
         PageHelper.startPage(pageNum, pageSize);
-        PageInfo<RequestTemplateDto> pages = new PageInfo<>(requestTemplateMapper.selectDTOListByParam(req));
+        PageInfo<RequestTemplateDto> pages = new PageInfo<>(requestTemplateMapper.selectDTOListByParam(requestTemplateQueryDto));
 
         for (RequestTemplateDto resp : pages.getList()) {
             List<RoleRelation> roles = roleRelationService
@@ -149,21 +158,22 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
             });
         }
-        PageableQueryResult<RequestTemplateDto> queryResponse = new PageableQueryResult<>(pages.getTotal(), pageNum.longValue(),
+        LocalPageableQueryResult<RequestTemplateDto> queryResponse = new LocalPageableQueryResult<>(pages.getTotal(), pageNum.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }
 
     @Override
-    public RequestTemplateRespDto detailRequestTemplate(String id) {
-        RequestTemplateRespDto requestTemplateResp = requestTemplateConverter
-                .toRespByEntity(requestTemplateMapper.selectById(id));
-        FormTemplateRespDto formTemplateResp = formTemplateConverter
+    public RequestTemplateQueryResultDto fetchRequestTemplateDetail(String id) {
+        RequestTemplate requestTemplate = requestTemplateMapper.selectById(id);
+        RequestTemplateQueryResultDto requestTemplateResp = requestTemplateConverter
+                .convertToRequestTemplateQueryDto(requestTemplate);
+        FormTemplateQueryResultDto formTemplateResp = formTemplateConverter
                 .convertToDto(formTemplateMapper.selectOne(new FormTemplate().setTempId(requestTemplateResp.getId())
                         .setTempType(TemplateType.REQUEST.getType()).getLambdaQueryWrapper()));
         List<FormItemTemplate> items = formItemTemplateMapper
                 .selectList(new FormItemTemplate().setFormTemplateId(formTemplateResp.getId()).getLambdaQueryWrapper());
-        formTemplateResp.setItems(formItemTemplateConverter.toRespByEntity(items));
+        formTemplateResp.setItems(formItemTemplateConverter.convertToFormItemTemplateQueryResultDtos(items));
         requestTemplateResp.setFormTemplateResp(formTemplateResp);
         return requestTemplateResp;
     }

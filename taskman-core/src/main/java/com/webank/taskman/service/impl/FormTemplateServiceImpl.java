@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.PageableQueryResult;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RecordDeleteFlag;
@@ -28,8 +28,8 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
-import com.webank.taskman.dto.resp.FormTemplateRespDto;
+import com.webank.taskman.dto.resp.FormItemTemplateQueryResultDto;
+import com.webank.taskman.dto.resp.FormTemplateQueryResultDto;
 import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
@@ -62,15 +62,15 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     private RoleRelationService roleRelationService;
     
     @Override
-    public PageableQueryResult<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
+    public LocalPageableQueryResult<FormTemplateQueryResultDto> selectFormTemplate(Integer page, Integer pageSize,
             FormTemplateSaveReqDto req) {
         Page<FormTemplate> pageInfo = new Page<>(page, pageSize);
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
                 .getLambdaQueryWrapper();
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(pageInfo, formTemplateQueryWrapper);
-        List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.convertToDtos(iPage.getRecords());
+        List<FormTemplateQueryResultDto> formTemplateResps = formTemplateConverter.convertToDtos(iPage.getRecords());
 
-        PageableQueryResult<FormTemplateRespDto> queryResponse = new PageableQueryResult<>(iPage.getSize(), iPage.getCurrent(),
+        LocalPageableQueryResult<FormTemplateQueryResultDto> queryResponse = new LocalPageableQueryResult<>(iPage.getSize(), iPage.getCurrent(),
                 iPage.getSize(), formTemplateResps);
         return queryResponse;
     }
@@ -88,12 +88,12 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     }
 
     @Override
-    public FormTemplateRespDto detailFormTemplate(FormTemplateSaveReqDto req) {
+    public FormTemplateQueryResultDto detailFormTemplate(FormTemplateSaveReqDto req) {
 
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
                 .getLambdaQueryWrapper();
         FormTemplate formTemplateEntity = formTemplateMapper.selectOne(formTemplateQueryWrapper);
-        FormTemplateRespDto formTemplateRespDto = formTemplateConverter.convertToDto(formTemplateEntity);
+        FormTemplateQueryResultDto formTemplateRespDto = formTemplateConverter.convertToDto(formTemplateEntity);
 
         if (formTemplateRespDto == null) {
             return null;
@@ -104,8 +104,8 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
                 .getLambdaQueryWrapper();
 
         List<FormItemTemplate> formItemTemplateEntities = formItemTemplateService.list(formItemTemplateQueryWrapper);
-        List<FormItemTemplateRespDto> formItemTemplateDtos = formItemTemplateConverter
-                .toRespByEntity(formItemTemplateEntities);
+        List<FormItemTemplateQueryResultDto> formItemTemplateDtos = formItemTemplateConverter
+                .convertToFormItemTemplateQueryResultDtos(formItemTemplateEntities);
         formTemplateRespDto.setItems(formItemTemplateDtos);
         
         
@@ -160,7 +160,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateRespDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq) {
+    public FormTemplateQueryResultDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq) {
         FormTemplate formTemplate = formTemplateConverter.reqToDomain(formTemplateReq);
 
         formTemplate.setName(StringUtils.isEmpty(formTemplate.getName()) ? "" : formTemplate.getName());
@@ -177,11 +177,11 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             formItemTemplate.setTempId(formTemplate.getTempId());
             formItemTemplateService.save(formItemTemplate);
         });
-        return new FormTemplateRespDto().setId(formTemplate.getId());
+        return new FormTemplateQueryResultDto().setId(formTemplate.getId());
     }
 
     @Override
-    public FormTemplateRespDto queryDetailByTemplate(Integer tempType, String tempId) {
+    public FormTemplateQueryResultDto queryDetailByTemplate(Integer tempType, String tempId) {
         
         FormTemplate formTemplateEntity = getOne(new FormTemplate().setTempId(tempId).setTempType(tempType + "").getLambdaQueryWrapper());
         return formTemplateConverter

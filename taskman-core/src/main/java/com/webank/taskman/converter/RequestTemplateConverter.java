@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.RequestTemplateDto;
-import com.webank.taskman.dto.resp.RequestTemplateRespDto;
+import com.webank.taskman.dto.resp.RequestTemplateQueryResultDto;
 
 @Service
 public class RequestTemplateConverter implements BaseConverter<RequestTemplateDto, RequestTemplate> {
@@ -56,8 +56,8 @@ public class RequestTemplateConverter implements BaseConverter<RequestTemplateDt
         return dtos;
     }
 
-    public RequestTemplateRespDto toRespByEntity(RequestTemplate entity){
-        RequestTemplateRespDto dto = new RequestTemplateRespDto();
+    public RequestTemplateQueryResultDto convertToRequestTemplateQueryDto(RequestTemplate entity){
+        RequestTemplateQueryResultDto dto = new RequestTemplateQueryResultDto();
         BeanUtils.copyProperties(entity, dto);
         return dto;
     }

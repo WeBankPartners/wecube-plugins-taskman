@@ -16,22 +16,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.PageableQueryResult;
-import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.converter.RequestTemplateGroupConverter;
-import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
-import com.webank.taskman.dto.RequestTemplateGroupDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.service.RequestInfoService;
-import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
 
 @RestController
@@ -42,51 +36,7 @@ public class RequestManagementController {
     private RequestTemplateService requestTemplateService;
 
     @Autowired
-    private RequestTemplateGroupService requestTemplateGroupService;
-
-    @Autowired
-    private RequestTemplateGroupConverter requestTemplateGroupConverter;
-
-    @Autowired
     private RequestInfoService requestInfoService;
-
-    /**
-     * 
-     * @param req
-     * @return
-     */
-    @PostMapping("/template/group/save")
-    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody RequestTemplateGroupDto req) {
-        return okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
-    }
-
-    /**
-     * 
-     * @param page
-     * @param pageSize
-     * @param req
-     * @return
-     */
-    @PostMapping("/template/group/search/{page}/{page-size}")
-    public JsonResponse requestGroupTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDto req) {
-        return okayWithData(requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req));
-    }
-
-    @GetMapping("/template/group/available")
-    public JsonResponse requestGroupTemplateAvailable() {
-        LambdaQueryWrapper<RequestTemplateGroup> lambdaQueryWrapper = new RequestTemplateGroup()
-                .setStatus(RequestTemplateGroup.STATUS_AVAILABLE).getLambdaQueryWrapper();
-        List<RequestTemplateGroupDto> dtoList = requestTemplateGroupConverter
-                .convertToDtos(requestTemplateGroupService.list(lambdaQueryWrapper));
-        return okayWithData(dtoList);
-    }
-
-    @DeleteMapping("/template/group/delete/{id}")
-    public JsonResponse requestGroupTemplateDelete(@PathVariable("id") String id) {
-        requestTemplateGroupService.deleteTemplateGroupByIDService(id);
-        return okay();
-    }
 
     @PostMapping("/template/save")
     public JsonResponse requestTemplateSave(@Valid @RequestBody RequestTemplateSaveReqDto req) {

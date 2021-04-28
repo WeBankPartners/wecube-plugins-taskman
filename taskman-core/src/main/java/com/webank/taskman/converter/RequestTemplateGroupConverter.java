@@ -13,12 +13,6 @@ import com.webank.taskman.dto.RequestTemplateGroupDto;
 @Service
 public class RequestTemplateGroupConverter implements BaseConverter<RequestTemplateGroupDto, RequestTemplateGroup> {
 
-    public RequestTemplateGroup saveReqToDomain(RequestTemplateGroupDto dto){
-        RequestTemplateGroup entity = new RequestTemplateGroup();
-        BeanUtils.copyProperties(dto, entity);
-        return entity;
-    }
-
     @Override
     public RequestTemplateGroup convertToEntity(RequestTemplateGroupDto dto) {
         RequestTemplateGroup entity = new RequestTemplateGroup();

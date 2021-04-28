@@ -20,8 +20,8 @@ import com.github.pagehelper.PageInfo;
 import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RoleType;
 import com.webank.taskman.constant.GenernalStatus;
+import com.webank.taskman.constant.RoleType;
 import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
@@ -35,7 +35,6 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
-import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.req.RoleRelationBaseQueryReqDto;
 import com.webank.taskman.dto.resp.FormTemplateRespDto;
 import com.webank.taskman.dto.resp.RequestTemplateRespDto;
@@ -83,7 +82,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
 
     @Override
     @Transactional
-    public RequestTemplateDto saveRequestTemplate(RequestTemplateSaveReqDto req) {
+    public RequestTemplateDto saveRequestTemplate(RequestTemplateDto requestTemplateDto) {
         List<RoleDto> roles = roleRelationConverter
                 .rolesDataResponseToDtoList(coreServiceStub.getAllAuthRolesOfCurrentUser());
 
@@ -96,7 +95,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             }
         }
 
-        List<RoleDto> inputRoleDtos = req.getUseRoles();
+        List<RoleDto> inputRoleDtos = requestTemplateDto.getUseRoles();
         if (inputRoleDtos != null) {
             for (RoleDto roleDto : inputRoleDtos) {
                 if (StringUtils.isNoneBlank(roleDto.getRoleName())) {
@@ -105,16 +104,16 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
             }
         }
 
-        req.setUseRoles(new ArrayList<>(inputRoleDtos));
-        RequestTemplate requestTemplate = requestTemplateConverter.saveReqToEntity(req);
+        requestTemplateDto.setUseRoles(new ArrayList<>(inputRoleDtos));
+        RequestTemplate requestTemplate = requestTemplateConverter.convertToEntity(requestTemplateDto);
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         requestTemplate.setUpdatedBy(currentUsername);
         if (StringUtils.isEmpty(requestTemplate.getId())) {
             requestTemplate.setCreatedBy(currentUsername);
         }
         saveOrUpdate(requestTemplate);
-        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), req.getUseRoles(),
-                req.getManageRoles());
+        roleRelationService.saveRoleRelationByTemplate(requestTemplate.getId(), requestTemplateDto.getUseRoles(),
+                requestTemplateDto.getManageRoles());
         return new RequestTemplateDto().setId(requestTemplate.getId());
 
     }
@@ -173,11 +172,11 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
      * 
      */
     @Override
-    public RequestTemplateDto releaseRequestTemplate(RequestTemplateSaveReqDto req) {
-        if (StringUtils.isBlank(req.getId())) {
+    public RequestTemplateDto releaseRequestTemplate(RequestTemplateDto requestTemplateDto) {
+        if (StringUtils.isBlank(requestTemplateDto.getId())) {
             throw new TaskmanRuntimeException("Request template ID should provide.");
         }
-        RequestTemplate requestTemplate = this.getOne(new RequestTemplate().setId(req.getId()).getLambdaQueryWrapper());
+        RequestTemplate requestTemplate = this.getOne(new RequestTemplate().setId(requestTemplateDto.getId()).getLambdaQueryWrapper());
         if (requestTemplate == null) {
             throw new TaskmanRuntimeException("Request template does not exist.");
         }

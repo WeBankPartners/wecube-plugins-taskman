@@ -7,12 +7,11 @@ import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
-import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 
 public interface RequestTemplateService extends IService<RequestTemplate> {
 
-    RequestTemplateDto saveRequestTemplate(RequestTemplateSaveReqDto saveRequestTemplateReq);
+    RequestTemplateDto saveRequestTemplate(RequestTemplateDto requestTemplateDto);
 
     void deleteRequestTemplateService(String id);
 
@@ -21,7 +20,7 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     RequestTemplateRespDto detailRequestTemplate(String id);
     
-    RequestTemplateDto releaseRequestTemplate(RequestTemplateSaveReqDto req);
+    RequestTemplateDto releaseRequestTemplate(RequestTemplateDto requestTemplateDto);
     
     List<RequestTemplateDto> fetchAvailableRequestTemplates();
 

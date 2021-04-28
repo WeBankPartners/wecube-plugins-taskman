@@ -22,7 +22,6 @@ import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
-import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
 import com.webank.taskman.dto.resp.RequestTemplateRespDto;
 import com.webank.taskman.service.RequestInfoService;
@@ -39,8 +38,8 @@ public class RequestManagementController {
     private RequestInfoService requestInfoService;
 
     @PostMapping("/template/save")
-    public JsonResponse requestTemplateSave(@Valid @RequestBody RequestTemplateSaveReqDto req) {
-        RequestTemplateDto requestTemplateDTO = requestTemplateService.saveRequestTemplate(req);
+    public JsonResponse saveRequestTemplate(@Valid @RequestBody RequestTemplateDto requestTemplateDto) {
+        RequestTemplateDto requestTemplateDTO = requestTemplateService.saveRequestTemplate(requestTemplateDto);
         return okayWithData(requestTemplateDTO);
     }
 
@@ -51,8 +50,8 @@ public class RequestManagementController {
      * @return
      */
     @PostMapping("/template/release")
-    public JsonResponse releaseRequestTemplate(@RequestBody RequestTemplateSaveReqDto reqDto) {
-        RequestTemplateDto respDto = requestTemplateService.releaseRequestTemplate(reqDto);
+    public JsonResponse releaseRequestTemplate(@RequestBody RequestTemplateDto requestTemplateDto) {
+        RequestTemplateDto respDto = requestTemplateService.releaseRequestTemplate(requestTemplateDto);
         return okayWithData(respDto);
     }
 

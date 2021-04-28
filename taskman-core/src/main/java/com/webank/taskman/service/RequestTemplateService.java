@@ -3,7 +3,7 @@ package com.webank.taskman.service;
 import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
@@ -16,7 +16,7 @@ public interface RequestTemplateService extends IService<RequestTemplate> {
 
     void deleteRequestTemplateService(String id);
 
-    QueryResponse<RequestTemplateDto> selectRequestTemplatePage(Integer current, Integer limit,
+    PageableQueryResult<RequestTemplateDto> selectRequestTemplatePage(Integer current, Integer limit,
             RequestTemplateQueryReqDto req);
 
     RequestTemplateRespDto detailRequestTemplate(String id);

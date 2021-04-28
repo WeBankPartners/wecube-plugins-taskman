@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.taskman.base.JsonResponse;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.req.ProcessingTasksReqDto;
@@ -58,7 +58,7 @@ public class TaskManagementController {
     @PostMapping("/template/search/{page}/{page-size}")
     public JsonResponse taskTemplateSearch(@PathVariable("page") Integer page,
             @PathVariable("page-size") Integer pageSize, @RequestBody TemplateQueryReqDto req) {
-        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page,
+        PageableQueryResult<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page,
                 pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -87,7 +87,7 @@ public class TaskManagementController {
         if (!StringUtils.isEmpty(req.getIsMy())) {
             req.setReporter(AuthenticationContextHolder.getCurrentUsername());
         }
-        QueryResponse<TaskInfoDto> queryResponse = taskInfoService.selectTaskInfo(page, pageSize, req);
+        PageableQueryResult<TaskInfoDto> queryResponse = taskInfoService.selectTaskInfo(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 

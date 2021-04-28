@@ -16,7 +16,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.webank.taskman.base.JsonResponse;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
@@ -81,13 +81,13 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     private RequestInfoService requestInfoService;
 
     @Override
-    public QueryResponse<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, TaskInfoQueryReqDto req) {
+    public PageableQueryResult<TaskInfoDto> selectTaskInfo(Integer page, Integer pageSize, TaskInfoQueryReqDto req) {
         String inSql = req.getConditionSql();// req.getEqUseRole();
         LambdaQueryWrapper<TaskInfo> queryWrapper = taskInfoConverter.convertToTaskInfoByQuery(req).getLambdaQueryWrapper()
                 .inSql(!StringUtils.isEmpty(inSql), TaskInfo::getId, inSql);
         PageHelper.startPage(page, pageSize);
         PageInfo<TaskInfoDto> pages = new PageInfo<>(taskInfoConverter.convertToDtos(getBaseMapper().selectList(queryWrapper)));
-        QueryResponse<TaskInfoDto> queryResponse = new QueryResponse<>(pages.getTotal(), page.longValue(),
+        PageableQueryResult<TaskInfoDto> queryResponse = new PageableQueryResult<>(pages.getTotal(), page.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }

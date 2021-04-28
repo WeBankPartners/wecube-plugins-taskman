@@ -17,7 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RoleTypeEnum;
@@ -132,7 +132,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
     }
 
     @Override
-    public QueryResponse<RequestTemplateDto> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
+    public PageableQueryResult<RequestTemplateDto> selectRequestTemplatePage(Integer pageNum, Integer pageSize,
             RequestTemplateQueryReqDto req) {
         req.queryCurrentUserRoles();
         PageHelper.startPage(pageNum, pageSize);
@@ -150,7 +150,7 @@ public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMappe
                 }
             });
         }
-        QueryResponse<RequestTemplateDto> queryResponse = new QueryResponse<>(pages.getTotal(), pageNum.longValue(),
+        PageableQueryResult<RequestTemplateDto> queryResponse = new PageableQueryResult<>(pages.getTotal(), pageNum.longValue(),
                 pageSize.longValue(), pages.getList());
         return queryResponse;
     }

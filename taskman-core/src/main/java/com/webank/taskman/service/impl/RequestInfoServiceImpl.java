@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
-import com.webank.taskman.base.QueryResponse.PageInfo;
+import com.webank.taskman.base.LocalPageInfo;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
@@ -68,12 +68,12 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     private FormTemplateService formTemplateService;
 
     @Override
-    public QueryResponse<RequestInfoResqDto> selectRequestInfoPage(Integer current, Integer limit,
+    public PageableQueryResult<RequestInfoResqDto> selectRequestInfoPage(Integer current, Integer limit,
             RequestInfoQueryReqDto req) {
         req.queryCurrentUserRoles();
         IPage<RequestInfoResqDto> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
-        QueryResponse<RequestInfoResqDto> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
+        PageableQueryResult<RequestInfoResqDto> queryResponse = new PageableQueryResult<>();
+        queryResponse.setPageInfo(new LocalPageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(iPage.getRecords());
         return queryResponse;
     }

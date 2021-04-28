@@ -9,12 +9,11 @@ import org.springframework.stereotype.Service;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
-import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 
 @Service
 public class RequestTemplateGroupConverter implements BaseConverter<RequestTemplateGroupDto, RequestTemplateGroup> {
 
-    public RequestTemplateGroup saveReqToDomain(RequestTemplateGroupSaveReqDto dto){
+    public RequestTemplateGroup saveReqToDomain(RequestTemplateGroupDto dto){
         RequestTemplateGroup entity = new RequestTemplateGroup();
         BeanUtils.copyProperties(dto, entity);
         return entity;

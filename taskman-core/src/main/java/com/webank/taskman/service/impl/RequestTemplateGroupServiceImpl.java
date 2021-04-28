@@ -10,15 +10,14 @@ import org.springframework.util.StringUtils;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
-import com.webank.taskman.base.QueryResponse.PageInfo;
+import com.webank.taskman.base.LocalPageInfo;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.StatusEnum;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
-import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 
@@ -34,7 +33,7 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
     @Override
     @Transactional
-    public RequestTemplateGroupDto saveTemplateGroupByReq(RequestTemplateGroupSaveReqDto req) {
+    public RequestTemplateGroupDto saveTemplateGroupByReq(RequestTemplateGroupDto req) {
         RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
         requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateGroup.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
@@ -53,14 +52,14 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
     }
 
     @Override
-    public QueryResponse<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit,
+    public PageableQueryResult<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit,
             RequestTemplateGroupDto req) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
                 requestTemplateGroupConverter.convertToEntity(req).getLambdaQueryWrapper());
 
         //TODO to test start index here
-        PageInfo pageInfo = new PageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(), iPage.getSize());
-        return new QueryResponse<RequestTemplateGroupDto>(pageInfo,
+        LocalPageInfo pageInfo = new LocalPageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(), iPage.getSize());
+        return new PageableQueryResult<RequestTemplateGroupDto>(pageInfo,
                 requestTemplateGroupConverter.convertToDtos(iPage.getRecords()));
     }
 

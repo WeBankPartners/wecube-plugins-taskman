@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.constant.RecordDeleteFlagEnum;
@@ -62,7 +62,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     private RoleRelationService roleRelationService;
     
     @Override
-    public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
+    public PageableQueryResult<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
             FormTemplateSaveReqDto req) {
         Page<FormTemplate> pageInfo = new Page<>(page, pageSize);
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
@@ -70,7 +70,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(pageInfo, formTemplateQueryWrapper);
         List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.convertToDtos(iPage.getRecords());
 
-        QueryResponse<FormTemplateRespDto> queryResponse = new QueryResponse<>(iPage.getSize(), iPage.getCurrent(),
+        PageableQueryResult<FormTemplateRespDto> queryResponse = new PageableQueryResult<>(iPage.getSize(), iPage.getCurrent(),
                 iPage.getSize(), formTemplateResps);
         return queryResponse;
     }

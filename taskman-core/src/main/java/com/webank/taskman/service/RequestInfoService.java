@@ -2,7 +2,7 @@ package com.webank.taskman.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.CreateTaskDto;
@@ -12,7 +12,7 @@ import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
 
 public interface RequestInfoService extends IService<RequestInfo> {
 
-    QueryResponse<RequestInfoResqDto> selectRequestInfoPage
+    PageableQueryResult<RequestInfoResqDto> selectRequestInfoPage
             (Integer current, Integer limit, RequestInfoQueryReqDto req) throws TaskmanRuntimeException;
 
     RequestInfoResqDto createNewRequestInfo(CreateTaskDto req);

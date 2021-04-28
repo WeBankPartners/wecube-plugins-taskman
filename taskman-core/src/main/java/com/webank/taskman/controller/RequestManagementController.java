@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.webank.taskman.base.JsonResponse;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.PageableQueryResult;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
@@ -26,7 +26,6 @@ import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.RequestTemplateDto;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
-import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 import com.webank.taskman.dto.req.RequestTemplateQueryReqDto;
 import com.webank.taskman.dto.req.RequestTemplateSaveReqDto;
 import com.webank.taskman.dto.resp.RequestInfoResqDto;
@@ -51,15 +50,26 @@ public class RequestManagementController {
     @Autowired
     private RequestInfoService requestInfoService;
 
+    /**
+     * 
+     * @param req
+     * @return
+     */
     @PostMapping("/template/group/save")
-    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody RequestTemplateGroupSaveReqDto req) {
+    public JsonResponse requestGroupTemplateSave(@Valid @RequestBody RequestTemplateGroupDto req) {
         return okayWithData(requestTemplateGroupService.saveTemplateGroupByReq(req));
     }
 
+    /**
+     * 
+     * @param page
+     * @param pageSize
+     * @param req
+     * @return
+     */
     @PostMapping("/template/group/search/{page}/{page-size}")
     public JsonResponse requestGroupTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDto req)
-            throws TaskmanRuntimeException {
+            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestTemplateGroupDto req) {
         return okayWithData(requestTemplateGroupService.selectRequestTemplateGroupPage(page, pageSize, req));
     }
 
@@ -98,8 +108,9 @@ public class RequestManagementController {
 
     @PostMapping("/template/search/{page}/{page-size}")
     public JsonResponse requestTemplateSearch(@PathVariable("page") Integer page,
-            @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestTemplateQueryReqDto req) {
-        QueryResponse<RequestTemplateDto> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
+            @PathVariable("page-size") Integer pageSize,
+            @RequestBody(required = false) RequestTemplateQueryReqDto req) {
+        PageableQueryResult<RequestTemplateDto> queryResponse = requestTemplateService.selectRequestTemplatePage(page,
                 pageSize, req);
         return okayWithData(queryResponse);
     }
@@ -124,6 +135,7 @@ public class RequestManagementController {
 
     /**
      * Submit new request
+     * 
      * @param req
      * @return
      */
@@ -135,7 +147,7 @@ public class RequestManagementController {
     @PostMapping("/search/{page}/{page-size}")
     public JsonResponse requestInfoSearch(@PathVariable("page") Integer page,
             @PathVariable("page-size") Integer pageSize, @RequestBody(required = false) RequestInfoQueryReqDto req) {
-        QueryResponse<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
+        PageableQueryResult<RequestInfoResqDto> list = requestInfoService.selectRequestInfoPage(page, pageSize, req);
         return okayWithData(list);
     }
 

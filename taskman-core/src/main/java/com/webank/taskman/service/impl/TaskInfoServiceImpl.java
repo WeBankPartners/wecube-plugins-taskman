@@ -75,7 +75,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     private FormInfoService formInfoService;
 
     @Autowired
-    private PlatformCoreServiceRestClient coreServiceStub;
+    private PlatformCoreServiceRestClient platformServiceClient;
     
     @Autowired
     private RequestInfoService requestInfoService;
@@ -130,7 +130,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         callbackRequest.setResultCode(req.getResult());
 
         try {
-            coreServiceStub.callback(taskInfo.getCallbackUrl(), callbackRequest);
+            platformServiceClient.callback(taskInfo.getCallbackUrl(), callbackRequest);
         } catch (CoreRemoteCallException e) {
             String msg = String.format("Callback wecube meet error: %s", e.getMessage());
             log.error(msg);

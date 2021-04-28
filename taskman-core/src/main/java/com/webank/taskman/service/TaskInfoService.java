@@ -8,7 +8,6 @@ import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.dto.platform.PlatformTaskCreationReqDto;
 import com.webank.taskman.dto.req.ProcessingTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;

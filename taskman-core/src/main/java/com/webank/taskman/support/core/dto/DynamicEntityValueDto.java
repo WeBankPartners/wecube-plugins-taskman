@@ -1,24 +1,16 @@
 package com.webank.taskman.support.core.dto;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import net.logstash.logback.encoder.org.apache.commons.lang3.StringUtils;
+
 public class DynamicEntityValueDto {
 
-    @Nullable
     private String entityDefId;// Entity definition id from platform.
-    @Nonnull
     private String packageName;
-    @Nonnull
     private String entityName;
-    @Nullable
     private String dataId;// Existing data id,such as guid in cmdb.
-    @Nonnull
     private String oid;// Equals to dataId once dataId presents,or a temporary
                        // assigned.
 
@@ -30,8 +22,8 @@ public class DynamicEntityValueDto {
     public DynamicEntityValueDto() {
     }
 
-    public DynamicEntityValueDto(@Nullable String entityDefId, @Nonnull String packageName, @Nonnull String entityName,
-            @Nullable String dataId, @Nonnull String oid) {
+    public DynamicEntityValueDto( String entityDefId,  String packageName,  String entityName,
+             String dataId,  String oid) {
         this.entityDefId = entityDefId;
         this.packageName = packageName;
         this.entityName = entityName;

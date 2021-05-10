@@ -94,7 +94,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
     @Override
     @Transactional
-    public JsonResponse taskInfoProcessing(ProcessingTasksReqDto req) throws TaskmanRuntimeException {
+    public JsonResponse taskInfoProcessing(ProcessingTasksReqDto req) {
         TaskInfo taskInfo = getBaseMapper().selectById(req.getRecordId());
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         if (!currentUsername.equals(taskInfo.getReporter())) {

@@ -14,6 +14,7 @@ import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
 import com.webank.taskman.support.core.dto.PlatformPluginRequestDto;
 import com.webank.taskman.support.core.dto.PlatformPluginResponseDto;
+import com.webank.taskman.support.core.dto.TaskFormMetaResponseDto;
 
 @RestController
 @RequestMapping("/v1")
@@ -28,7 +29,7 @@ public class TaskmanOutController {
     
     //TODO
     @GetMapping("/task/create/meta")
-    public CommonResponseDto taskCreateServiceMeta(@RequestParam("procInstId") String procInstId,
+    public TaskFormMetaResponseDto taskCreateServiceMeta(@RequestParam("procInstId") String procInstId,
             @RequestParam("nodeDefId") String nodeDefId) {
 //        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstId, nodeDefId));
         

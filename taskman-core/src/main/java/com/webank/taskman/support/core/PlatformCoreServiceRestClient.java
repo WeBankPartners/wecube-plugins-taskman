@@ -17,13 +17,12 @@ import org.springframework.stereotype.Service;
 import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.support.core.dto.CallbackRequestDto;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.DefaultCoreResponse;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.LinkedHashMapResponse;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.ListDataResponse;
 import com.webank.taskman.support.core.dto.DataModelEntityDto;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
 import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.DefaultCoreResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.LinkedHashMapResponse;
+import com.webank.taskman.support.core.dto.PlatformResponseDto.ListDataResponse;
 import com.webank.taskman.support.core.dto.PluginPackageAttributeDto;
 import com.webank.taskman.support.core.dto.PluginPackageDataModelDto;
 import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
@@ -179,8 +178,8 @@ public class PlatformCoreServiceRestClient {
         });
     }
 
-    public Object callback(String callbackUrl, CallbackRequestDto callbackRequest) {
-        return template.postForResponse(asCoreUrl(callbackUrl), callbackRequest, DefaultCoreResponse.class);
-    }
+//    public Object callback(String callbackUrl, CallbackRequestDto callbackRequest) {
+//        return template.postForResponse(asCoreUrl(callbackUrl), callbackRequest, DefaultCoreResponse.class);
+//    }
 
 }

@@ -1,6 +1,5 @@
 package com.webank.taskman.service.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,11 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
@@ -26,16 +23,13 @@ import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.converter.TaskInfoConverter;
 import com.webank.taskman.domain.FormInfo;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.dto.platform.PlatformTaskCreationReqDto;
 import com.webank.taskman.dto.req.ProcessingTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.FormInfoResqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
-import com.webank.taskman.dto.resp.TaskInfoInstanceRespDto;
 import com.webank.taskman.dto.resp.TaskInfoRespDto;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.TaskInfoMapper;
@@ -44,11 +38,7 @@ import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.support.core.CommonResponseDto;
-import com.webank.taskman.support.core.CoreRemoteCallException;
 import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
-import com.webank.taskman.support.core.dto.CallbackRequestDto;
-import com.webank.taskman.support.core.dto.CallbackRequestDto.CallbackRequestOutputsDto;
-import com.webank.taskman.support.core.dto.CallbackRequestDto.CallbackRequestResultDataDto;
 
 @Service
 public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> implements TaskInfoService {
@@ -118,24 +108,24 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     private void callbackByTaskInfo(ProcessingTasksReqDto req, TaskInfo taskInfo) {
-        CallbackRequestDto callbackRequest = new CallbackRequestDto();
-        CallbackRequestResultDataDto callbackRequestResultDataDto = new CallbackRequestResultDataDto();
-        callbackRequestResultDataDto.setRequestId(taskInfo.getRequestId());
-        callbackRequestResultDataDto.setOutputs(
-                Lists.newArrayList(new CallbackRequestOutputsDto(CallbackRequestOutputsDto.ERROR_CODE_SUCCESSFUL,
-                        req.getResultMessage(), req.getResultMessage(), taskInfo.getCallbackParameter())));
-
-        callbackRequest.setResults(callbackRequestResultDataDto);
-        callbackRequest.setResultMessage(req.getResultMessage());
-        callbackRequest.setResultCode(req.getResult());
-
-        try {
-            platformServiceClient.callback(taskInfo.getCallbackUrl(), callbackRequest);
-        } catch (CoreRemoteCallException e) {
-            String msg = String.format("Callback wecube meet error: %s", e.getMessage());
-            log.error(msg);
-            throw new TaskmanRuntimeException("3014", msg, e.getMessage());
-        }
+//        CallbackRequestDto callbackRequest = new CallbackRequestDto();
+//        CallbackRequestResultDataDto callbackRequestResultDataDto = new CallbackRequestResultDataDto();
+//        callbackRequestResultDataDto.setRequestId(taskInfo.getRequestId());
+//        callbackRequestResultDataDto.setOutputs(
+//                Lists.newArrayList(new CallbackRequestOutputsDto(CallbackRequestOutputsDto.ERROR_CODE_SUCCESSFUL,
+//                        req.getResultMessage(), req.getResultMessage(), taskInfo.getCallbackParameter())));
+//
+//        callbackRequest.setResults(callbackRequestResultDataDto);
+//        callbackRequest.setResultMessage(req.getResultMessage());
+//        callbackRequest.setResultCode(req.getResult());
+//
+//        try {
+//            platformServiceClient.callback(taskInfo.getCallbackUrl(), callbackRequest);
+//        } catch (CoreRemoteCallException e) {
+//            String msg = String.format("Callback wecube meet error: %s", e.getMessage());
+//            log.error(msg);
+//            throw new TaskmanRuntimeException("3014", msg, e.getMessage());
+//        }
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
@@ -26,9 +27,9 @@ public class TaskmanOutController {
 
     
     //TODO
-    @GetMapping("/task/create/service-meta/{proc-inst-id}/{node-def-id}")
-    public CommonResponseDto taskCreateServiceMeta(@PathVariable("proc-inst-id") String procInstId,
-            @PathVariable("node-def-id") String nodeDefId) {
+    @GetMapping("/task/create/meta")
+    public CommonResponseDto taskCreateServiceMeta(@RequestParam("procInstId") String procInstId,
+            @RequestParam("nodeDefId") String nodeDefId) {
 //        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstId, nodeDefId));
         
         return null;

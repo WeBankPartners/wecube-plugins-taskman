@@ -1,4 +1,4 @@
-package com.webank.taskman.support.core.dto;
+package com.webank.taskman.support.platform.dto;
 
 public class RolesDataResponse {
 

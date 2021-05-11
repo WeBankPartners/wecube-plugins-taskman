@@ -1,4 +1,4 @@
-package com.webank.taskman.support.core.dto;
+package com.webank.taskman.support.platform.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

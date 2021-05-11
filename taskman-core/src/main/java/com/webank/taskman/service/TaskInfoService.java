@@ -11,7 +11,7 @@ import com.webank.taskman.dto.req.ProcessingTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
 import com.webank.taskman.dto.resp.TaskInfoRespDto;
-import com.webank.taskman.support.core.CommonResponseDto;
+import com.webank.taskman.support.platform.CommonResponseDto;
 
 public interface TaskInfoService extends IService<TaskInfo> {
 

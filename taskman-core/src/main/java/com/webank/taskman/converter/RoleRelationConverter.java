@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDto;
-import com.webank.taskman.support.core.dto.RolesDataResponse;
+import com.webank.taskman.support.platform.dto.RolesDataResponse;
 
 @Service
 public class RoleRelationConverter implements BaseConverter<RoleDto, RoleRelation> {

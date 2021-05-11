@@ -1,4 +1,4 @@
-package com.webank.taskman.support.core;
+package com.webank.taskman.support.platform;
 
 public class CommonResponseDto {
     public final static String STATUS_OK = "OK";

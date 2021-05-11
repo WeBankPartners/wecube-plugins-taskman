@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.TaskInfoService;
-import com.webank.taskman.support.core.CommonResponseDto;
-import com.webank.taskman.support.core.dto.PlatformPluginRequestDto;
-import com.webank.taskman.support.core.dto.PlatformPluginResponseDto;
-import com.webank.taskman.support.core.dto.TaskFormMetaResponseDto;
+import com.webank.taskman.support.platform.CommonResponseDto;
+import com.webank.taskman.support.platform.dto.PlatformPluginRequestDto;
+import com.webank.taskman.support.platform.dto.PlatformPluginResponseDto;
+import com.webank.taskman.support.platform.dto.TaskFormMetaResponseDto;
 
 @RestController
 @RequestMapping("/v1")

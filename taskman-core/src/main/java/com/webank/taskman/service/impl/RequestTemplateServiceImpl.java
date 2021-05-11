@@ -44,7 +44,7 @@ import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 import com.webank.taskman.service.RequestTemplateService;
 import com.webank.taskman.service.RoleRelationService;
-import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
+import com.webank.taskman.support.platform.PlatformCoreServiceRestClient;
 
 @Service
 public class RequestTemplateServiceImpl extends ServiceImpl<RequestTemplateMapper, RequestTemplate>

@@ -36,12 +36,12 @@ import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.FormTemplateService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateService;
-import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
-import com.webank.taskman.support.core.dto.DynamicEntityValueDto;
-import com.webank.taskman.support.core.dto.DynamicEntityValueDto.DynamicEntityAttrValueDto;
-import com.webank.taskman.support.core.dto.DynamicTaskNodeBindInfoDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.PlatformCoreServiceRestClient;
+import com.webank.taskman.support.platform.dto.DynamicEntityValueDto;
+import com.webank.taskman.support.platform.dto.DynamicTaskNodeBindInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicEntityValueDto.DynamicEntityAttrValueDto;
 
 @Service
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {

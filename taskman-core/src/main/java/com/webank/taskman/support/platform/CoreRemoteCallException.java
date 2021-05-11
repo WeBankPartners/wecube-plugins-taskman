@@ -1,8 +1,8 @@
-package com.webank.taskman.support.core;
+package com.webank.taskman.support.platform;
 
 
 import com.webank.taskman.support.RemoteCallException;
-import com.webank.taskman.support.core.dto.PlatformResponseDto;
+import com.webank.taskman.support.platform.dto.PlatformResponseDto;
 
 public class CoreRemoteCallException extends RemoteCallException {
 

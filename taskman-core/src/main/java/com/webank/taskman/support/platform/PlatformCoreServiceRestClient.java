@@ -1,4 +1,4 @@
-package com.webank.taskman.support.core;
+package com.webank.taskman.support.platform;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,20 +16,20 @@ import org.springframework.stereotype.Service;
 
 import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
+import com.webank.taskman.support.platform.dto.DataModelEntityDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.dto.PluginPackageAttributeDto;
+import com.webank.taskman.support.platform.dto.PluginPackageDataModelDto;
+import com.webank.taskman.support.platform.dto.ProcessDataPreviewDto;
+import com.webank.taskman.support.platform.dto.RolesDataResponse;
+import com.webank.taskman.support.platform.dto.TaskNodeDefObjectBindInfoDto;
+import com.webank.taskman.support.platform.dto.WorkflowDefInfoDto;
+import com.webank.taskman.support.platform.dto.WorkflowNodeDefInfoDto;
+import com.webank.taskman.support.platform.dto.PlatformResponseDto.DefaultCoreResponse;
+import com.webank.taskman.support.platform.dto.PlatformResponseDto.LinkedHashMapResponse;
+import com.webank.taskman.support.platform.dto.PlatformResponseDto.ListDataResponse;
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.support.core.dto.DataModelEntityDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.DefaultCoreResponse;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.LinkedHashMapResponse;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.ListDataResponse;
-import com.webank.taskman.support.core.dto.PluginPackageAttributeDto;
-import com.webank.taskman.support.core.dto.PluginPackageDataModelDto;
-import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
-import com.webank.taskman.support.core.dto.RolesDataResponse;
-import com.webank.taskman.support.core.dto.TaskNodeDefObjectBindInfoDto;
-import com.webank.taskman.support.core.dto.WorkflowDefInfoDto;
-import com.webank.taskman.support.core.dto.WorkflowNodeDefInfoDto;
 import com.webank.taskman.utils.GsonUtil;
 
 @Service

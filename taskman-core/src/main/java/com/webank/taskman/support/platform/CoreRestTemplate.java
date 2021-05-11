@@ -1,4 +1,4 @@
-package com.webank.taskman.support.core;
+package com.webank.taskman.support.platform;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,8 +11,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
-import com.webank.taskman.support.core.dto.PlatformResponseDto;
-import com.webank.taskman.support.core.dto.PlatformResponseDto.DefaultCoreResponse;
+import com.webank.taskman.support.platform.dto.PlatformResponseDto;
+import com.webank.taskman.support.platform.dto.PlatformResponseDto.DefaultCoreResponse;
 import com.webank.taskman.utils.GsonUtil;
 import com.webank.taskman.utils.JsonUtils;
 

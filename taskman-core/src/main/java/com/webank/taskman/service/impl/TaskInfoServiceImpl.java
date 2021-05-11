@@ -37,8 +37,8 @@ import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.TaskInfoService;
-import com.webank.taskman.support.core.CommonResponseDto;
-import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
+import com.webank.taskman.support.platform.CommonResponseDto;
+import com.webank.taskman.support.platform.PlatformCoreServiceRestClient;
 
 @Service
 public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> implements TaskInfoService {

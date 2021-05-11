@@ -25,6 +25,8 @@ public class CoreRestTemplate {
 
     @Autowired
     private ServiceTaskmanProperties taskmanProperties;
+    
+    //TODO to refactor
 
     public String get(String targetUrl) throws CoreRemoteCallException {
         log.info("{} About to call {} ", taskmanProperties.getVersion(), targetUrl);

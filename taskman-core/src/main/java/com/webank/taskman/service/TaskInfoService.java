@@ -11,7 +11,7 @@ import com.webank.taskman.dto.req.ProcessingTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
 import com.webank.taskman.dto.resp.TaskInfoRespDto;
-import com.webank.taskman.support.platform.CommonResponseDto;
+import com.webank.taskman.support.platform.dto.CommonPlatformResponseDto;
 
 public interface TaskInfoService extends IService<TaskInfo> {
 
@@ -25,7 +25,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     JsonResponse taskInfoProcessing(ProcessingTasksReqDto ptr);
 
-    CommonResponseDto cancelTask(CoreCancelTaskDto req);
+    CommonPlatformResponseDto cancelTask(CoreCancelTaskDto req);
 
     TaskInfoRespDto taskInfoDetail(String id);
 }

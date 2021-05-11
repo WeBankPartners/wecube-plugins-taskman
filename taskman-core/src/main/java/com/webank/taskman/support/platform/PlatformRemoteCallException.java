@@ -4,21 +4,21 @@ package com.webank.taskman.support.platform;
 import com.webank.taskman.support.RemoteCallException;
 import com.webank.taskman.support.platform.dto.PlatformResponseDto;
 
-public class CoreRemoteCallException extends RemoteCallException {
+public class PlatformRemoteCallException extends RemoteCallException {
 
     private static final long serialVersionUID = 1L;
     private transient PlatformResponseDto<?> jsonResponse;
 
-    public CoreRemoteCallException(String message) {
+    public PlatformRemoteCallException(String message) {
         super(message);
     }
 
-    public CoreRemoteCallException(String message, PlatformResponseDto<?> cmdbResponse) {
+    public PlatformRemoteCallException(String message, PlatformResponseDto<?> cmdbResponse) {
         super(message);
         this.jsonResponse = cmdbResponse;
     }
 
-    public CoreRemoteCallException(String message, PlatformResponseDto<?> cmdbResponse, Throwable cause) {
+    public PlatformRemoteCallException(String message, PlatformResponseDto<?> cmdbResponse, Throwable cause) {
         super(message, cause);
         this.jsonResponse = cmdbResponse;
     }

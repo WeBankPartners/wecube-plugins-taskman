@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.TaskInfoService;
-import com.webank.taskman.support.platform.CommonResponseDto;
+import com.webank.taskman.support.platform.dto.CommonPlatformResponseDto;
 import com.webank.taskman.support.platform.dto.PlatformPluginRequestDto;
 import com.webank.taskman.support.platform.dto.PlatformPluginResponseDto;
 import com.webank.taskman.support.platform.dto.TaskFormMetaResponseDto;
@@ -47,7 +47,7 @@ public class TaskmanOutController {
 
     //TODO
     @PostMapping("/task/cancel")
-    public CommonResponseDto taskCancel(@RequestBody CoreCancelTaskDto req) {
+    public CommonPlatformResponseDto taskCancel(@RequestBody CoreCancelTaskDto req) {
         return taskInfoService.cancelTask(req);
     }
 

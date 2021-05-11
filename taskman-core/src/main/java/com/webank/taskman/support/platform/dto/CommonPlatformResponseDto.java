@@ -1,6 +1,6 @@
-package com.webank.taskman.support.platform;
+package com.webank.taskman.support.platform.dto;
 
-public class CommonResponseDto {
+public class CommonPlatformResponseDto {
     public final static String STATUS_OK = "OK";
     public final static String STATUS_ERROR = "ERROR";
 
@@ -32,24 +32,24 @@ public class CommonResponseDto {
         this.data = data;
     }
 
-    public CommonResponseDto withData(Object data){
+    public CommonPlatformResponseDto withData(Object data){
         this.data = data;
         return this;
     }
 
-    public static CommonResponseDto okay() {
-        CommonResponseDto result = new CommonResponseDto();
+    public static CommonPlatformResponseDto okay() {
+        CommonPlatformResponseDto result = new CommonPlatformResponseDto();
         result.setStatus(STATUS_OK);
         result.setMessage("Success");
         return result;
     }
 
-    public static CommonResponseDto okayWithData(Object data) {
+    public static CommonPlatformResponseDto okayWithData(Object data) {
         return okay().withData(data);
     }
 
-    public static CommonResponseDto error(String errorMessage) {
-        CommonResponseDto result = new CommonResponseDto();
+    public static CommonPlatformResponseDto error(String errorMessage) {
+        CommonPlatformResponseDto result = new CommonPlatformResponseDto();
         result.setStatus(STATUS_ERROR);
         result.setMessage(errorMessage);
         return result;

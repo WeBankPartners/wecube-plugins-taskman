@@ -28,7 +28,7 @@ public class CoreRestTemplate {
     
     //TODO to refactor
 
-    public String get(String targetUrl) throws CoreRemoteCallException {
+    public String get(String targetUrl) throws PlatformRemoteCallException {
         log.info("{} About to call {} ", taskmanProperties.getVersion(), targetUrl);
         try {
             DefaultCoreResponse jsonResponse = restTemplate.getForObject(targetUrl, DefaultCoreResponse.class);
@@ -42,7 +42,7 @@ public class CoreRestTemplate {
 
     @SuppressWarnings("unchecked")
     public <D, R extends PlatformResponseDto<?>> D get(String targetUrl, Class<R> responseType)
-            throws CoreRemoteCallException {
+            throws PlatformRemoteCallException {
         log.info("{} About to call {} ", taskmanProperties.getVersion(), targetUrl);
         try {
             R jsonResponse = restTemplate.getForObject(targetUrl, responseType);
@@ -56,7 +56,7 @@ public class CoreRestTemplate {
 
     @SuppressWarnings("unchecked")
     public <D, R extends PlatformResponseDto<?>> D get(String targetUrl, Class<R> responseType, String paramJsonStr)
-            throws CoreRemoteCallException {
+            throws PlatformRemoteCallException {
         log.info("{} About to call {} ", taskmanProperties.getVersion(), targetUrl);
         Object uriVariable = paramJsonStr;
         try {
@@ -73,7 +73,7 @@ public class CoreRestTemplate {
 
     @SuppressWarnings("unchecked")
     public <D, R extends PlatformResponseDto<?>> D postForResponse(String targetUrl, Object postObject, Class<R> responseType)
-            throws CoreRemoteCallException {
+            throws PlatformRemoteCallException {
         log.info("{}About to POST {} with postObject {}", taskmanProperties.getVersion(), targetUrl,
                 postObject.toString());
         R jsonResponse = restTemplate.postForObject(targetUrl, postObject, responseType);
@@ -82,20 +82,20 @@ public class CoreRestTemplate {
         return (D) jsonResponse.getData();
     }
 
-    private void validateJsonResponse(PlatformResponseDto<?> jsonResponse) throws CoreRemoteCallException {
+    private void validateJsonResponse(PlatformResponseDto<?> jsonResponse) throws PlatformRemoteCallException {
         validateJsonResponse(jsonResponse, true);
     }
 
     private void validateJsonResponse(PlatformResponseDto<?> jsonResponse, boolean dataRequired)
-            throws CoreRemoteCallException {
+            throws PlatformRemoteCallException {
         if (null == jsonResponse) {
-            throw new CoreRemoteCallException("Call WeCube-Core failed due to no response.");
+            throw new PlatformRemoteCallException("Call WeCube-Core failed due to no response.");
         }
         if (!JsonResponse.STATUS_OK.equalsIgnoreCase(jsonResponse.getStatus())) {
-            throw new CoreRemoteCallException("Core Error: " + jsonResponse.getMessage(), jsonResponse);
+            throw new PlatformRemoteCallException("Core Error: " + jsonResponse.getMessage(), jsonResponse);
         }
         if (dataRequired && null == jsonResponse.getData()) {
-            throw new CoreRemoteCallException("Call WeCube-Core failed due to unexpected empty response.",
+            throw new PlatformRemoteCallException("Call WeCube-Core failed due to unexpected empty response.",
                     jsonResponse);
         }
     }

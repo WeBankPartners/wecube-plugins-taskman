@@ -2,7 +2,6 @@ package com.webank.taskman.support.platform;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -14,23 +13,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.reflect.TypeToken;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
+import com.webank.taskman.commons.AuthenticationContextHolder;
+import com.webank.taskman.support.platform.dto.AuthRoleResponseDto;
 import com.webank.taskman.support.platform.dto.DataModelEntityDto;
-import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
-import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.dto.GenericPlatformResponseDto;
 import com.webank.taskman.support.platform.dto.PluginPackageAttributeDto;
 import com.webank.taskman.support.platform.dto.PluginPackageDataModelDto;
+import com.webank.taskman.support.platform.dto.PluginPackageDataModelListResponseDto;
+import com.webank.taskman.support.platform.dto.PluginPackageDataModelResponseDto;
 import com.webank.taskman.support.platform.dto.ProcessDataPreviewDto;
-import com.webank.taskman.support.platform.dto.RolesDataResponse;
+import com.webank.taskman.support.platform.dto.SimpleLocalRoleDto;
 import com.webank.taskman.support.platform.dto.TaskNodeDefObjectBindInfoDto;
 import com.webank.taskman.support.platform.dto.WorkflowDefInfoDto;
+import com.webank.taskman.support.platform.dto.WorkflowDefInfoResponseDto;
 import com.webank.taskman.support.platform.dto.WorkflowNodeDefInfoDto;
-import com.webank.taskman.support.platform.dto.PlatformResponseDto.DefaultCoreResponse;
-import com.webank.taskman.support.platform.dto.PlatformResponseDto.LinkedHashMapResponse;
-import com.webank.taskman.support.platform.dto.PlatformResponseDto.ListDataResponse;
-import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.utils.GsonUtil;
+import com.webank.taskman.support.platform.dto.WorkflowNodeDefInfoResponseDto;
 
 @Service
 public class PlatformCoreServiceRestClient {
@@ -55,8 +53,7 @@ public class PlatformCoreServiceRestClient {
     public static final String GET_PROCESS_DATA_PREVIEW_URL = "/platform/v1/public/process/definitions/{proc-def-id}/preview/entities/{entity-data-id}";
     public static final String GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL = "/platform/v1/process/instances/tasknodes/session/{process-session-id}/tasknode-bindings";
 
-    @Autowired
-    private CoreRestTemplate template;
+    private UserJwtSsoTokenRestTemplate restTemplate = new UserJwtSsoTokenRestTemplate();
 
     @Autowired
     private ServiceTaskmanProperties smProperties;
@@ -75,111 +72,140 @@ public class PlatformCoreServiceRestClient {
             }
         }
         log.info("URL after formatting:{}", path);
-        return null != smProperties ? smProperties.getWecubeCoreAddress() + path : path;
+        return smProperties != null ? smProperties.getWecubeCoreAddress() + path : path;
     }
 
-    public List<RolesDataResponse> getAllPlatformAuthRoles() {
-        String json = template.get(asCoreUrl(GET_ALL_ROLES));
-        List<RolesDataResponse> list = GsonUtil.toObject(json, new TypeToken<List<RolesDataResponse>>() {
-        });
-        return list;
+    public List<SimpleLocalRoleDto> getAllPlatformAuthRoles() {
+        String url = asCoreUrl(GET_ALL_ROLES);
+
+        AuthRoleResponseDto responseDto = restTemplate.getForObject(url, AuthRoleResponseDto.class);
+        List<SimpleLocalRoleDto> roleDtos = responseDto.getData();
+        return roleDtos;
     }
 
-    public List<RolesDataResponse> getAllAuthRolesOfCurrentUser() {
+    public List<SimpleLocalRoleDto> getAllAuthRolesOfCurrentUser() {
         String currentUserName = AuthenticationContextHolder.getCurrentUsername();
-        if(StringUtils.isBlank(currentUserName)){
+        if (StringUtils.isBlank(currentUserName)) {
             return Collections.emptyList();
         }
-        
-        String json = template.get(asCoreUrl(GET_ROLES_BY_USER_NAME, currentUserName));
-        List<RolesDataResponse> list = GsonUtil.toObject(json, new TypeToken<List<RolesDataResponse>>() {
-        });
-        return list;
+
+        String url = asCoreUrl(GET_ROLES_BY_USER_NAME, currentUserName);
+
+        AuthRoleResponseDto responseDto = restTemplate.getForObject(url, AuthRoleResponseDto.class);
+        List<SimpleLocalRoleDto> roleDtos = responseDto.getData();
+        return roleDtos;
     }
 
     public List<WorkflowDefInfoDto> getAllLatestPlatformProcesses() {
-        String json = template.get(asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS));
-        List<WorkflowDefInfoDto> list = GsonUtil.toObject(json, new TypeToken<List<WorkflowDefInfoDto>>() {
-        });
-        return list;
+        String url = asCoreUrl(FETCH_LATEST_RELEASED_WORKFLOW_DEFS);
+        WorkflowDefInfoResponseDto responseDto = restTemplate.getForObject(url, WorkflowDefInfoResponseDto.class);
+        return responseDto.getData();
     }
 
     public List<WorkflowNodeDefInfoDto> getPlatformProcessDefinitionNodes(String procDefId) {
-        String json = template.get(asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId));
-        List<WorkflowNodeDefInfoDto> list = GsonUtil.toObject(json, new TypeToken<List<WorkflowNodeDefInfoDto>>() {
-        });
-        return list;
+        String url = asCoreUrl(FETCH_WORKFLOW_TASKNODE_INFOS, procDefId);
+        WorkflowNodeDefInfoResponseDto responseDto = restTemplate.getForObject(url,
+                WorkflowNodeDefInfoResponseDto.class);
+        return responseDto.getData();
+    }
+
+    public List<PluginPackageDataModelDto> getAllPlatformProcessModels() {
+        String url = GET_MODELS_ALL_URL;
+
+        PluginPackageDataModelListResponseDto respDto = restTemplate.getForObject(url,
+                PluginPackageDataModelListResponseDto.class);
+
+        return respDto.getData();
     }
 
     public List<PluginPackageDataModelDto> getAllPlatformProcessModels(String packageName) {
         List<PluginPackageDataModelDto> list = new ArrayList<>();
-        String url = StringUtils.isEmpty(packageName) ? GET_MODELS_ALL_URL : GET_MODELS_BY_PACKAGE_URL;
-        String json = template.get(asCoreUrl(url, packageName));
-        if (!StringUtils.isEmpty(packageName)) {
-            PluginPackageDataModelDto dataModelDto = GsonUtil.toObject(json,
-                    new TypeToken<PluginPackageDataModelDto>() {
-                    });
-            list.add(dataModelDto);
-        } else {
-            list = GsonUtil.toObject(json, new TypeToken<List<PluginPackageDataModelDto>>() {
-            });
-        }
+        String url = asCoreUrl(GET_MODELS_BY_PACKAGE_URL, packageName);
+
+        PluginPackageDataModelResponseDto responseDto = restTemplate.getForObject(url,
+                PluginPackageDataModelResponseDto.class);
+        list.add(responseDto.getData());
         return list;
     }
 
-    public List<Map<String, Object>> getPlatformProcessRootEntities(String procDefKey) {
-        String json = template.get(asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL, procDefKey));
-        List<Map<String, Object>> list = GsonUtil.toObject(json, new TypeToken<List<Map<String, Object>>>() {
-        });
-        return list;
+    public List<Map<String, Object>> getPlatformProcessRootEntities(String procDefId) {
+
+        String url = asCoreUrl(GET_ROOT_ENTITIES_BY_PROC_URL, procDefId);
+        ProcDefRootEntitiesResponseDto respDto = restTemplate.getForObject(url, ProcDefRootEntitiesResponseDto.class);
+        return respDto.getData();
     }
 
     public DataModelEntityDto getEntityByPackageNameAndName(String packageName, String entity) {
-        String json = template.get(asCoreUrl(GET_ENTITY_BY_PACKAGE_NAME_AND_ENTITY_NAME_URL, packageName, entity));
-        DataModelEntityDto dto = GsonUtil.toObject(json, new TypeToken<DataModelEntityDto>() {
-        });
-        return dto;
+
+        String url = asCoreUrl(GET_ENTITY_BY_PACKAGE_NAME_AND_ENTITY_NAME_URL, packageName, entity);
+        DataModelEntityResponseDto respDto = restTemplate.getForObject(url, DataModelEntityResponseDto.class);
+        return respDto.getData();
     }
 
     public List<PluginPackageAttributeDto> platformProcessEntityAttributes(String packageName, String entity) {
-        String json = template.get(asCoreUrl(GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL, packageName, entity));
-        List<PluginPackageAttributeDto> list = GsonUtil.toObject(json,
-                new TypeToken<List<PluginPackageAttributeDto>>() {
-                });
-        return list;
+
+        String url = asCoreUrl(GET_ATTRIBUTES_BY_PACKAGE_ENTITY_URL, packageName, entity);
+        PluginPackageAttributeListResponseDto respDto = restTemplate.getForObject(url,
+                PluginPackageAttributeListResponseDto.class);
+        return respDto.getData();
     }
 
     public List<Object> platformProcessEntityRetrieve(String packageName, String entity, String filters) {
-        List list = template.get(asCoreUrl(GET_ENTITY_RETRIEVE_URL, packageName, entity), ListDataResponse.class,
-                filters);
-        return list;
+        String url = asCoreUrl(GET_ENTITY_RETRIEVE_URL, packageName, entity);
+        ObjectListResponseDto respDto = restTemplate.getForObject(url, ObjectListResponseDto.class);
+        return respDto.getData();
     }
 
     public ProcessDataPreviewDto platformProcessDataPreview(String procDefId, String guid) {
-        String json = template.get(asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId, guid));
-        ProcessDataPreviewDto result = GsonUtil.toObject(json, new TypeToken<ProcessDataPreviewDto>() {
-        });
-        return result;
+
+        String url = asCoreUrl(GET_PROCESS_DATA_PREVIEW_URL, procDefId, guid);
+        ProcessDataPreviewResponseDto respDto = restTemplate.getForObject(url, ProcessDataPreviewResponseDto.class);
+        return respDto.getData();
     }
 
     public List<TaskNodeDefObjectBindInfoDto> platformProcessTasknodeBindings(String processSessionId) {
-        String json = template.get(asCoreUrl(GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL, processSessionId));
-        List<TaskNodeDefObjectBindInfoDto> list = GsonUtil.toObject(json,
-                new TypeToken<List<TaskNodeDefObjectBindInfoDto>>() {
-                });
-        return list;
+        String url = asCoreUrl(GET_PROCESS_INSTANCES_TASKNODE_BINDINGS_URL, processSessionId);
+
+        TaskNodeDefObjectBindInfoListResponseDto respDto = restTemplate.getForObject(url,
+                TaskNodeDefObjectBindInfoListResponseDto.class);
+        return respDto.getData();
     }
 
-    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
-        //TODO
-        LinkedHashMap result = template.postForResponse(asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE), creationInfoDto,
-                LinkedHashMapResponse.class);
-        return GsonUtil.toObject(GsonUtil.GsonString(result), new TypeToken<DynamicWorkflowInstInfoDto>() {
-        });
-    }
-
-//    public Object callback(String callbackUrl, CallbackRequestDto callbackRequest) {
-//        return template.postForResponse(asCoreUrl(callbackUrl), callbackRequest, DefaultCoreResponse.class);
+//    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+//        // TODO
+//        LinkedHashMap result = template.postForResponse(asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE), creationInfoDto,
+//                LinkedHashMapResponse.class);
+//        return GsonUtil.toObject(GsonUtil.GsonString(result), new TypeToken<DynamicWorkflowInstInfoDto>() {
+//        });
 //    }
 
+    // public Object callback(String callbackUrl, CallbackRequestDto
+    // callbackRequest) {
+    // return template.postForResponse(asCoreUrl(callbackUrl), callbackRequest,
+    // DefaultCoreResponse.class);
+    // }
+
+    public static class ProcDefRootEntitiesResponseDto extends GenericPlatformResponseDto<List<Map<String, Object>>> {
+
+    }
+
+    public static class DataModelEntityResponseDto extends GenericPlatformResponseDto<DataModelEntityDto> {
+
+    }
+
+    public static class PluginPackageAttributeListResponseDto
+            extends GenericPlatformResponseDto<List<PluginPackageAttributeDto>> {
+
+    }
+
+    public static class ObjectListResponseDto extends GenericPlatformResponseDto<List<Object>> {
+
+    }
+
+    public static class ProcessDataPreviewResponseDto extends GenericPlatformResponseDto<ProcessDataPreviewDto> {
+    }
+
+    public static class TaskNodeDefObjectBindInfoListResponseDto
+            extends GenericPlatformResponseDto<List<TaskNodeDefObjectBindInfoDto>> {
+    }
 }

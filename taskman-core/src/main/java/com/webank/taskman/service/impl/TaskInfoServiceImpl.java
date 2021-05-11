@@ -37,8 +37,8 @@ import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.TaskInfoService;
-import com.webank.taskman.support.platform.CommonResponseDto;
 import com.webank.taskman.support.platform.PlatformCoreServiceRestClient;
+import com.webank.taskman.support.platform.dto.CommonPlatformResponseDto;
 
 @Service
 public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> implements TaskInfoService {
@@ -129,7 +129,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public CommonResponseDto cancelTask(CoreCancelTaskDto req) {
+    public CommonPlatformResponseDto cancelTask(CoreCancelTaskDto req) {
         TaskInfo taskInfo = getBaseMapper().selectOne(new TaskInfo().setProcInstId(req.getProcInstId())
                 .setNodeDefId(req.getTaskNodeId()).getLambdaQueryWrapper());
         if (null == taskInfo) {
@@ -141,7 +141,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         taskInfo.setUpdatedTime(new Date());
         taskInfo.setStatus(GenernalStatus.SUSPENSION.toString());
         getBaseMapper().updateById(taskInfo);
-        return CommonResponseDto.okay();
+        return CommonPlatformResponseDto.okay();
     }
 
     @Override

@@ -180,7 +180,9 @@ public class PlatformResourceController {
     @PostMapping("/platform/create")
     public JsonResponse platformProcessCreate(@RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto) {
 
-        return okayWithData(platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto));
+        //TODO
+        return null;
+//        return okayWithData(platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto));
     }
 
     /**

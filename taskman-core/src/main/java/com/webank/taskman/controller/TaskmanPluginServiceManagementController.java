@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.TaskInfoService;
 import com.webank.taskman.service.TaskmanPluginServiceManagementService;
 import com.webank.taskman.support.platform.dto.CommonPlatformResponseDto;
@@ -23,11 +22,9 @@ import com.webank.taskman.support.platform.dto.TaskFormMetaResponseDto;
 public class TaskmanPluginServiceManagementController {
 
     @Autowired
-    private FormItemTemplateService formItemTemplateService;
-
-    @Autowired
     private TaskInfoService taskInfoService;
     
+    @Autowired
     private TaskmanPluginServiceManagementService taskmanPluginService;
 
     
@@ -42,16 +39,18 @@ public class TaskmanPluginServiceManagementController {
         return respDto;
     }
 
-    //TODO
     @PostMapping("/task/create")
-    public PlatformPluginResponseDto taskCreate(@RequestBody PlatformPluginRequestDto platformPluginRequestDto) {
-        //TODO #48
-//        return taskInfoService.createTask(req);
+    public PlatformPluginResponseDto createTask(@RequestBody PlatformPluginRequestDto platformPluginRequestDto) {
         
-        return null;
+        taskmanPluginService.createTask(platformPluginRequestDto);
+        
+        PlatformPluginResponseDto respDto = new PlatformPluginResponseDto();
+        respDto.setResultCode(PlatformPluginResponseDto.RESULT_CODE_OK);
+        
+        return respDto;
     }
 
-    //TODO
+    //TODO 
     @PostMapping("/task/cancel")
     public CommonPlatformResponseDto taskCancel(@RequestBody CoreCancelTaskDto req) {
         return taskInfoService.cancelTask(req);

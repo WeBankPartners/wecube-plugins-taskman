@@ -173,11 +173,10 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
         creationInfoDto.setTaskNodeBindInfos(taskNodeBindInfos);
 
         // TODO
-//        DynamicWorkflowInstInfoDto dto = platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto);
-//        return dto;
+        DynamicWorkflowInstInfoDto dto = platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto);
         
-        //TODO
-        return null;
+        
+        return dto;
     }
 
     private List<DynamicTaskNodeBindInfoDto> buildTaskNodeBindings(CreateTaskDto reqDto) {

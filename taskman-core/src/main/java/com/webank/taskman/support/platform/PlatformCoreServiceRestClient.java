@@ -17,6 +17,8 @@ import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.support.platform.dto.AuthRoleResponseDto;
 import com.webank.taskman.support.platform.dto.DataModelEntityDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
 import com.webank.taskman.support.platform.dto.GenericPlatformResponseDto;
 import com.webank.taskman.support.platform.dto.PluginPackageAttributeDto;
 import com.webank.taskman.support.platform.dto.PluginPackageDataModelDto;
@@ -171,13 +173,13 @@ public class PlatformCoreServiceRestClient {
         return respDto.getData();
     }
 
-//    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
-//        // TODO
-//        LinkedHashMap result = template.postForResponse(asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE), creationInfoDto,
-//                LinkedHashMapResponse.class);
-//        return GsonUtil.toObject(GsonUtil.GsonString(result), new TypeToken<DynamicWorkflowInstInfoDto>() {
-//        });
-//    }
+    public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
+        String url = asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE);
+        
+        
+        DynamicWorkflowInstInfoResponseDto respDto = restTemplate.postForObject(url, creationInfoDto, DynamicWorkflowInstInfoResponseDto.class);
+        return respDto.getData();
+    }
 
     // public Object callback(String callbackUrl, CallbackRequestDto
     // callbackRequest) {
@@ -208,4 +210,6 @@ public class PlatformCoreServiceRestClient {
     public static class TaskNodeDefObjectBindInfoListResponseDto
             extends GenericPlatformResponseDto<List<TaskNodeDefObjectBindInfoDto>> {
     }
+    
+    public static class DynamicWorkflowInstInfoResponseDto extends GenericPlatformResponseDto<DynamicWorkflowInstInfoDto>{}
 }

@@ -18,7 +18,7 @@ import com.webank.taskman.support.platform.dto.TaskFormMetaResponseDto;
 
 @RestController
 @RequestMapping("/v1")
-public class TaskmanOutController {
+public class TaskmanServiceController {
 
     @Autowired
     private FormItemTemplateService formItemTemplateService;

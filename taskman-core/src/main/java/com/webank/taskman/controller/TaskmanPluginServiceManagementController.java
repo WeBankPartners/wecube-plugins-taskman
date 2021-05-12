@@ -11,29 +11,35 @@ import org.springframework.web.bind.annotation.RestController;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
 import com.webank.taskman.service.FormItemTemplateService;
 import com.webank.taskman.service.TaskInfoService;
+import com.webank.taskman.service.TaskmanPluginServiceManagementService;
 import com.webank.taskman.support.platform.dto.CommonPlatformResponseDto;
 import com.webank.taskman.support.platform.dto.PlatformPluginRequestDto;
 import com.webank.taskman.support.platform.dto.PlatformPluginResponseDto;
+import com.webank.taskman.support.platform.dto.TaskFormMetaDto;
 import com.webank.taskman.support.platform.dto.TaskFormMetaResponseDto;
 
 @RestController
 @RequestMapping("/v1")
-public class TaskmanServiceController {
+public class TaskmanPluginServiceManagementController {
 
     @Autowired
     private FormItemTemplateService formItemTemplateService;
 
     @Autowired
     private TaskInfoService taskInfoService;
+    
+    private TaskmanPluginServiceManagementService taskmanPluginService;
 
     
-    //TODO
     @GetMapping("/task/create/meta")
-    public TaskFormMetaResponseDto taskCreateServiceMeta(@RequestParam("procInstId") String procInstId,
+    public TaskFormMetaResponseDto fetchTaskCreationMeta(@RequestParam("procInstId") String procInstId,
             @RequestParam("nodeDefId") String nodeDefId) {
-//        return CommonResponseDto.okayWithData(formItemTemplateService.getTaskCreateServiceMeta(procInstId, nodeDefId));
+        TaskFormMetaDto taskFormMetaDto = taskmanPluginService.fetchTaskCreationMeta(procInstId, nodeDefId);
         
-        return null;
+        TaskFormMetaResponseDto respDto = new TaskFormMetaResponseDto();
+        respDto.setData(taskFormMetaDto);
+        respDto.setStatus(TaskFormMetaResponseDto.STATUS_OK);
+        return respDto;
     }
 
     //TODO

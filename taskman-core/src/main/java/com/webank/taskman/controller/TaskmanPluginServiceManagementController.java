@@ -23,16 +23,15 @@ public class TaskmanPluginServiceManagementController {
 
     @Autowired
     private TaskInfoService taskInfoService;
-    
+
     @Autowired
     private TaskmanPluginServiceManagementService taskmanPluginService;
 
-    
     @GetMapping("/task/create/meta")
     public TaskFormMetaResponseDto fetchTaskCreationMeta(@RequestParam("procInstId") String procInstId,
             @RequestParam("nodeDefId") String nodeDefId) {
         TaskFormMetaDto taskFormMetaDto = taskmanPluginService.fetchTaskCreationMeta(procInstId, nodeDefId);
-        
+
         TaskFormMetaResponseDto respDto = new TaskFormMetaResponseDto();
         respDto.setData(taskFormMetaDto);
         respDto.setStatus(TaskFormMetaResponseDto.STATUS_OK);
@@ -41,16 +40,23 @@ public class TaskmanPluginServiceManagementController {
 
     @PostMapping("/task/create")
     public PlatformPluginResponseDto createTask(@RequestBody PlatformPluginRequestDto platformPluginRequestDto) {
-        
-        taskmanPluginService.createTask(platformPluginRequestDto);
-        
-        PlatformPluginResponseDto respDto = new PlatformPluginResponseDto();
-        respDto.setResultCode(PlatformPluginResponseDto.RESULT_CODE_OK);
-        
-        return respDto;
+        try {
+            taskmanPluginService.createTask(platformPluginRequestDto);
+
+            PlatformPluginResponseDto respDto = new PlatformPluginResponseDto();
+            respDto.setResultCode(PlatformPluginResponseDto.RESULT_CODE_OK);
+
+            return respDto;
+        } catch (Exception e) {
+            PlatformPluginResponseDto respDto = new PlatformPluginResponseDto();
+            respDto.setResultCode(PlatformPluginResponseDto.RESULT_CODE_FAIL);
+            respDto.setResultMessage(e.getMessage());
+
+            return respDto;
+        }
     }
 
-    //TODO 
+    // TODO
     @PostMapping("/task/cancel")
     public CommonPlatformResponseDto taskCancel(@RequestBody CoreCancelTaskDto req) {
         return taskInfoService.cancelTask(req);

@@ -10,9 +10,9 @@ public class PlatformPluginRequestDto {
     private String requestId;
     private String dueDate;
     private List<String> allowedOptions;
-    private List<Object> inputs;
+    private List<CreateTaskRequestInputDto> inputs;
 
-    public PlatformPluginRequestDto withInputs(List<Object> inputs) {
+    public PlatformPluginRequestDto withInputs(List<CreateTaskRequestInputDto> inputs) {
         this.inputs = inputs;
         return this;
     }
@@ -43,11 +43,11 @@ public class PlatformPluginRequestDto {
         this.requestId = requestId;
     }
 
-    public List<Object> getInputs() {
+    public List<CreateTaskRequestInputDto> getInputs() {
         return inputs;
     }
 
-    public void setInputs(List<Object> inputs) {
+    public void setInputs(List<CreateTaskRequestInputDto> inputs) {
         this.inputs = inputs;
     }
 

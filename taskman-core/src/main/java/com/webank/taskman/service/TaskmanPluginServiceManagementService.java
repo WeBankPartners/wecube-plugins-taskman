@@ -1,7 +1,10 @@
 package com.webank.taskman.service;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +25,7 @@ import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.mapper.RequestTemplateMapper;
 import com.webank.taskman.mapper.TaskTemplateMapper;
+import com.webank.taskman.support.platform.dto.CreateTaskRequestInputDto;
 import com.webank.taskman.support.platform.dto.PlatformPluginRequestDto;
 import com.webank.taskman.support.platform.dto.TaskFormMetaDto;
 
@@ -46,6 +50,10 @@ public class TaskmanPluginServiceManagementService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * 
+     * @param requestDto
+     */
     public void createTask(PlatformPluginRequestDto requestDto) {
         // TODO
         log.info("About to create task with request:{}", requestDto);
@@ -56,15 +64,28 @@ public class TaskmanPluginServiceManagementService {
         if (requestDto.getAllowedOptions() != null && !requestDto.getAllowedOptions().isEmpty()) {
             String allowedOptions = convertObjectToJson(requestDto.getAllowedOptions());
             taskInfo.setAllowedOptions(allowedOptions);
+        }else{
+            String allowedOptions = "[\"deny\",\"approval\"]";
+            taskInfo.setAllowedOptions(allowedOptions);
         }
         
         taskInfo.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskInfo.setUpdatedTime(new Date());
         taskInfo.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskInfo.setCreatedTime(new Date());
+        
+        CreateTaskRequestInputDto createTaskRequestInputDto = tryPickoutPlatformRequestObject(requestDto);
+        
+        
         taskInfoService.save(taskInfo);
     }
 
+    /**
+     * 
+     * @param procInstId
+     * @param nodeDefId
+     * @return
+     */
     public TaskFormMetaDto fetchTaskCreationMeta(String procInstId, String nodeDefId) {
         log.info("try to fetch task creation meta for process intance:{} and node:{}", procInstId, nodeDefId);
         RequestInfo requestInfoCriteria = new RequestInfo();
@@ -102,9 +123,19 @@ public class TaskmanPluginServiceManagementService {
         formTemplateCriteria.setDelFlag(RecordDeleteFlag.NotDeleted.ordinal());
         formTemplateCriteria.setTempId(taskTemplate.getId());
         // TODO
-
+        
+       
         TaskFormMetaDto taskFormMetaDto = buildTaskFormMetaDto();
         return taskFormMetaDto;
+    }
+    
+    private CreateTaskRequestInputDto tryPickoutPlatformRequestObject(PlatformPluginRequestDto requestDto){
+        List<CreateTaskRequestInputDto> inputs = requestDto.getInputs();
+        if(inputs == null || inputs.isEmpty()){
+            return null;
+        }
+        
+       return inputs.get(0);
     }
 
     private TaskFormMetaDto buildTaskFormMetaDto() {

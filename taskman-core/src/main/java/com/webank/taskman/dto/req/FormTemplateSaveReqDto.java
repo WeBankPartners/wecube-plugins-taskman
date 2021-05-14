@@ -6,30 +6,19 @@ import java.util.List;
 import com.webank.taskman.dto.RoleDto;
 
 public class FormTemplateSaveReqDto {
-
     private String id;
-
     private String tempId;
-
-    // 模板类型: 0.请求模板 1.任务模板
-    // = "int",position = 3)
-    private String tempType = "0";
-
+    private String tempType = "0";// 0 request, 1 task
     private String formType;
-
     private String name;
-
     private String description;
-
     private String style;
     private String targetEntities;
-
     private String inputAttrDef;
     private String outputAttrDef;
     private String otherAttrDef;
 
     private List<RoleDto> useRole;
-
     private List<FormItemTemplateSaveReqDto> formItems = new LinkedList<>();
 
     public FormTemplateSaveReqDto() {

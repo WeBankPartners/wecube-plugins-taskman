@@ -13,6 +13,10 @@ import java.util.Date;
 public class TaskInfo extends BaseEntity implements Serializable {
     public static final String PARAM_NAME_TASK_FORM_INPUT = "taskFormInput";
     public static final String PARAM_NAME_TASK_FORM_OUTPUT = "taskFormOutput";
+    
+    public static final String STATUS_NEW = "New";
+    public final static String STATUS_PENDING = "Pending";
+    public final static String STATUS_PROCESSING = "Processing";
 
     private static final long serialVersionUID = 1L;
 

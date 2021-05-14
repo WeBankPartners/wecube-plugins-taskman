@@ -16,10 +16,12 @@ import org.springframework.stereotype.Service;
 import com.webank.taskman.commons.AppProperties.ServiceTaskmanProperties;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.support.platform.dto.AuthRoleResponseDto;
+import com.webank.taskman.support.platform.dto.CommonPlatformResponseDto;
 import com.webank.taskman.support.platform.dto.DataModelEntityDto;
 import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
 import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
 import com.webank.taskman.support.platform.dto.GenericPlatformResponseDto;
+import com.webank.taskman.support.platform.dto.PlatformPluginResponseDto;
 import com.webank.taskman.support.platform.dto.PluginPackageAttributeDto;
 import com.webank.taskman.support.platform.dto.PluginPackageDataModelDto;
 import com.webank.taskman.support.platform.dto.PluginPackageDataModelListResponseDto;
@@ -62,7 +64,7 @@ public class PlatformCoreServiceRestClient {
 
     private String asCoreUrl(String path, Object... pathVariables) {
         log.info("URL before formatting:{}", path);
-        if (null != pathVariables && pathVariables.length > 0) {
+        if ((pathVariables != null) && (pathVariables.length > 0)) {
             String pattern = "\\{(.*?)}";
             Matcher m = Pattern.compile(pattern).matcher(path);
             if (m.find()) {
@@ -175,17 +177,20 @@ public class PlatformCoreServiceRestClient {
 
     public DynamicWorkflowInstInfoDto createNewWorkflowInstance(DynamicWorkflowInstCreationInfoDto creationInfoDto) {
         String url = asCoreUrl(CREATE_NEW_WORKFLOW_INSTANCE);
-        
-        
-        DynamicWorkflowInstInfoResponseDto respDto = restTemplate.postForObject(url, creationInfoDto, DynamicWorkflowInstInfoResponseDto.class);
+
+        DynamicWorkflowInstInfoResponseDto respDto = restTemplate.postForObject(url, creationInfoDto,
+                DynamicWorkflowInstInfoResponseDto.class);
         return respDto.getData();
     }
 
-    // public Object callback(String callbackUrl, CallbackRequestDto
-    // callbackRequest) {
-    // return template.postForResponse(asCoreUrl(callbackUrl), callbackRequest,
-    // DefaultCoreResponse.class);
-    // }
+    public void asyncProceedUserTask(String callbackUrl, PlatformPluginResponseDto platformPluginResponseDto) {
+        String url = asCoreUrl(callbackUrl);
+
+        log.info("try to process user task.{} {}", url, platformPluginResponseDto);
+        CommonPlatformResponseDto respDto = restTemplate.postForObject(callbackUrl, platformPluginResponseDto,
+                CommonPlatformResponseDto.class);
+        log.info("finished process user task.{} {}, {}", callbackUrl, respDto.getStatus(), respDto.getMessage());
+    }
 
     public static class ProcDefRootEntitiesResponseDto extends GenericPlatformResponseDto<List<Map<String, Object>>> {
 
@@ -210,6 +215,8 @@ public class PlatformCoreServiceRestClient {
     public static class TaskNodeDefObjectBindInfoListResponseDto
             extends GenericPlatformResponseDto<List<TaskNodeDefObjectBindInfoDto>> {
     }
-    
-    public static class DynamicWorkflowInstInfoResponseDto extends GenericPlatformResponseDto<DynamicWorkflowInstInfoDto>{}
+
+    public static class DynamicWorkflowInstInfoResponseDto
+            extends GenericPlatformResponseDto<DynamicWorkflowInstInfoDto> {
+    }
 }

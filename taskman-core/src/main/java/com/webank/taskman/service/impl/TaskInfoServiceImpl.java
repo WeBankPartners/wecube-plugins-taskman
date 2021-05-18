@@ -30,7 +30,7 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.ProceedTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.FormInfoResqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
@@ -96,8 +96,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    @Transactional
-    public JsonResponse taskInfoProcessing(ProcessingTasksReqDto req) {
+    public JsonResponse proceedUserTask(ProceedTasksReqDto req) {
         TaskInfo taskInfo = getBaseMapper().selectById(req.getRecordId());
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         if (!currentUsername.equals(taskInfo.getReporter())) {
@@ -106,7 +105,10 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         if (!"already_received".equals(taskInfo.getStatus())) {
             throw new TaskmanRuntimeException("Processing failed. The current task is not claimed");
         }
-        callbackByTaskInfo(req, taskInfo);
+        
+        //TODO
+        asyncProceedUserTask();
+//        callbackByTaskInfo(req, taskInfo);
         // List<FormItemInfo> formItemInfos =
         // formItemInfoConverter.toEntityByReq(req.getFormItemInfoList());
         // formInfoService.saveFormInfoAndItems(formItemInfos,
@@ -151,7 +153,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
     }
 
-    private void callbackByTaskInfo(ProcessingTasksReqDto req, TaskInfo taskInfo) {
+    private void callbackByTaskInfo(ProceedTasksReqDto req, TaskInfo taskInfo) {
         // CallbackRequestDto callbackRequest = new CallbackRequestDto();
         // CallbackRequestResultDataDto callbackRequestResultDataDto = new
         // CallbackRequestResultDataDto();

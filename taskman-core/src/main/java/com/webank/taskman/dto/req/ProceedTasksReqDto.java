@@ -3,7 +3,7 @@ package com.webank.taskman.dto.req;
 
 import java.util.List;
 
-public class ProcessingTasksReqDto {
+public class ProceedTasksReqDto {
 
     public static final String RESULT_SUCCESSFUL="Successful/Approved";
     public static final String RESULT_FAILED="Failed/Rejected";
@@ -35,7 +35,7 @@ public class ProcessingTasksReqDto {
         return resultMessage;
     }
 
-    public ProcessingTasksReqDto setResultMessage(String resultMessage) {
+    public ProceedTasksReqDto setResultMessage(String resultMessage) {
         this.resultMessage = resultMessage;
         return this;
     }

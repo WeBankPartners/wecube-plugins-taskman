@@ -7,7 +7,7 @@ import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.ProceedTasksReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
 import com.webank.taskman.dto.resp.TaskInfoRespDto;
@@ -23,7 +23,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
 //    CommonResponseDto createTask(PlatformTaskCreationReqDto req);
 
-    JsonResponse taskInfoProcessing(ProcessingTasksReqDto ptr);
+    JsonResponse proceedUserTask(ProceedTasksReqDto ptr);
 
     CommonPlatformResponseDto cancelTask(CoreCancelTaskDto req);
 

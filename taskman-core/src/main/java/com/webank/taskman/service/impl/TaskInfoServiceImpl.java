@@ -15,7 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
@@ -29,7 +28,7 @@ import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.dto.req.ProceedTasksReqDto;
+import com.webank.taskman.dto.req.ProceedUserTaskReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.FormInfoResqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
@@ -95,7 +94,8 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
     }
 
     @Override
-    public JsonResponse proceedUserTask(ProceedTasksReqDto req) {
+    public void proceedUserTask(ProceedUserTaskReqDto req) {
+        log.info("try to proceed user task:{}", req);
         TaskInfo taskInfo = getBaseMapper().selectById(req.getRecordId());
         String currentUsername = AuthenticationContextHolder.getCurrentUsername();
         if (!currentUsername.equals(taskInfo.getReporter())) {
@@ -118,7 +118,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         taskInfo.setUpdatedTime(new Date());
         updateById(taskInfo);
 
-        return JsonResponse.okay();
+        return;
     }
 
     private void asyncProceedUserTask() {
@@ -152,7 +152,7 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
         }
     }
 
-    private void callbackByTaskInfo(ProceedTasksReqDto req, TaskInfo taskInfo) {
+    private void callbackByTaskInfo(ProceedUserTaskReqDto req, TaskInfo taskInfo) {
         // CallbackRequestDto callbackRequest = new CallbackRequestDto();
         // CallbackRequestResultDataDto callbackRequestResultDataDto = new
         // CallbackRequestResultDataDto();

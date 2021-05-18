@@ -2,12 +2,11 @@ package com.webank.taskman.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.domain.TaskInfo;
 import com.webank.taskman.dto.TaskInfoDto;
 import com.webank.taskman.dto.platform.CoreCancelTaskDto;
-import com.webank.taskman.dto.req.ProceedTasksReqDto;
+import com.webank.taskman.dto.req.ProceedUserTaskReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoInstanceResqDto;
 import com.webank.taskman.dto.resp.TaskInfoRespDto;
@@ -21,7 +20,7 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     TaskInfoDto taskInfoReceive(String id);
 
-    JsonResponse proceedUserTask(ProceedTasksReqDto ptr);
+    void proceedUserTask(ProceedUserTaskReqDto ptr);
 
     CommonPlatformResponseDto cancelTask(CoreCancelTaskDto req);
 

@@ -21,8 +21,6 @@ public interface TaskInfoService extends IService<TaskInfo> {
 
     TaskInfoDto taskInfoReceive(String id);
 
-//    CommonResponseDto createTask(PlatformTaskCreationReqDto req);
-
     JsonResponse proceedUserTask(ProceedTasksReqDto ptr);
 
     CommonPlatformResponseDto cancelTask(CoreCancelTaskDto req);

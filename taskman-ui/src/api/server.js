@@ -1,6 +1,7 @@
 import {req} from "./base";
 const request = window.request ? window.request : req
 
+export const getCmdbDate = id => request.post(`/wecmdb/ui/v2/ci-types/${id}/ci-data/query`, {dialect:{showCiHistory: false},filters:[],paging:false});
 export const addRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/save`, data);
 export const deleteRequestTemplateGroup = id => request.delete(`/taskman/v1/request/template/group/delete/${id}`);
 export const editRequestTemplateGroup = data => request.post(`/taskman/v1/request/template/group/edit`, data);

@@ -432,7 +432,8 @@ export default {
       })
     },
     addRowData (key) {
-      this.currentFields[key].push(this.currentFields[key][0])
+      const obj = JSON.parse(JSON.stringify(this.currentFields[key][0]))
+      this.currentFields[key].push(obj)
     },
     async details (row) {
       const {status, message, data} = await getRequestInfoDetails(row.id)
@@ -651,6 +652,18 @@ export default {
     detailCancel () {
       this.detailModalVisible = false;
     },
+    generateUUID() {
+    let d = new Date().getTime();
+      if (window.performance && typeof window.performance.now === "function") {
+          d += performance.now(); //use high-precision timer if available
+      }
+      let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          let r = (d + Math.random() * 16) % 16 | 0;
+          d = Math.floor(d / 16);
+          return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+      return uuid;
+    },
     goNextStep () {
       // requestDataObj
       this.requestDataObj = {}
@@ -661,7 +674,7 @@ export default {
             nodeDefId: node.nodeDefId,
             nodeName: node.nodeName,
             ...row.entityData,
-            oid: row.entityData.dataId,
+            oid: row.entityData? row.entityData.dataId : this.generateUUID(),
             _checked: true
           }
           delete data.entityData

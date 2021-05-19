@@ -217,7 +217,7 @@
         ></TreeSelect>
         <Divider>自定义表单项</Divider>
         <Row ref="fields">
-          <Col span="6" v-for="(comp, index) in componentsList" :id="index" :key="index">
+          <Col span="6" v-for="(comp, index) in componentsList.filter(_ => _.type != 'CmdbData')" :id="index" :key="index">
             <div class="components-box">
               {{comp.label}}
             </div>
@@ -242,7 +242,7 @@
                     <Input :disabled="currentFieldKeysLen < 2" v-model="currentField.title"></Input>
                   </FormItem>
                   <FormItem label="组件类型">
-                    <Select :disabled="currentFieldKeysLen < 2" v-model="currentField.elementType">
+                    <Select :disabled="currentFieldKeysLen < 2 || currentField.elementType === 'CmdbData'" v-model="currentField.elementType">
                       <Option v-for="(comp, index) in componentsList" :key="index" :value="comp.type" :label="comp.label"></Option>
                     </Select>
                   </FormItem>
@@ -465,6 +465,11 @@ export default {
       currentField: {},
       componentsList: [
         {
+          label: "引用类型",
+          type: "CmdbData",
+          disabled: true
+        },
+        {
           label: "选择框",
           type: "PluginSelect",
         },
@@ -586,7 +591,7 @@ export default {
               return {...f, displayName: f.displayName ? f.displayName : f.title}
             })
           }])
-          this.entityList = data.targetEntitys ? JSON.parse(data.targetEntitys) : []
+          this.entityList = data.targetEntities ? JSON.parse(data.targetEntities) : []
           this.list = this.entityList
           this.currentEntityList = this.entityList
           this.taskTemplates = data.taskTemplates ? data.taskTemplates : []
@@ -723,7 +728,7 @@ export default {
           ...this.requestForm,
           inputAttrDef: JSON.stringify(this.requestForm.inputAttrDef),
           otherAttrDef: JSON.stringify(this.attrsSelections),
-          targetEntitys: JSON.stringify(this.entityList),
+          targetEntities: JSON.stringify(this.entityList),
           tempId: this.currentTemplateId,
           id: this.formTemplateId,
           formItems: this.formFields.map((i,index) => {
@@ -773,7 +778,7 @@ export default {
           form: {
             ...this.taskForm,
             id: this.formTemplateId,
-            targetEntitys: JSON.stringify(this.entityList),
+            targetEntities: JSON.stringify(this.entityList),
             manageRoles: this.taskForm.manageRoles && this.taskForm.manageRoles.length>0? this.taskForm.manageRoles.map(role => {
               const found = this.allRolesList.find(r => r.name === role)
               return {
@@ -838,7 +843,7 @@ export default {
       //this.attrsSelections val  this.formFields  isCustom taskAttrsSelections
       // const isAttrs = this.formFields.filter(field => !field.isCustom)
       this.formFields.forEach(attr => {
-        const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name)
+        const found = val.filter(e => !e.isEntity).find(v => attr.name === v.name && attr.id === v.id)
         if (!found) {
           const index = this.formFields.indexOf(attr)
           this.formFields.splice(index, 1)
@@ -846,14 +851,14 @@ export default {
       })
       const selections = type === 0 ? [].concat(...this.attrsSelections.map(_ => _.children)) : [].concat(...this.taskAttrsSelections.map(_ => _.children))
       val.filter(e => !e.isEntity).forEach(item => {
-        const field = this.formFields.find(f => f.name === item.name)
+        const field = this.formFields.find(f => f.name === item.name && f.id === item.id)
         if (!field) {
-          const attr = selections.find(a => a.name === item.name)
+          const attr = selections.find(a => a.name === item.name && a.id === item.id)
           this.formFields.push({
             ...attr,
             entity: attr ? attr.entity : '',
             packageName: attr ? attr.packageName : '',
-            elementType: attr ? (attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'PluginSelect' : 'Input') : item.type,
+            elementType: attr ? (attr.dataType === 'ref' || attr.dataType === 'multiRef' ? 'CmdbData' : 'Input') : item.type,
             width: 24,
             title: attr && !attr.isCustom ? attr.name : item.title,
             defaultValue: "",
@@ -862,17 +867,17 @@ export default {
             isCustom: attr && attr.isCustom ? true : false,
             dataOptions: [],
             entityFilters:'',
-            refEntity:'',
+            refEntity: attr.refEntityName || '',
             regular:'',
             attrDefDataType: 'str',
             attrDefId: attr ? attr.id : '',
-            formTemplateId: this.currentTemplateId
+            formTemplateId: this.formTemplateId
           })
         }
       })
       const tem = []
       this.formFields.concat(this.currentFieldList.filter(field => field.isCustom)).forEach(_ => {
-        const field = tem.find(i => i.name === _.name)
+        const field = tem.find(i => i.name === _.name && i.id === _.id)
         if (!field) {
           tem.push(_)
         }
@@ -902,7 +907,8 @@ export default {
           found.children.push({
             ...sel,
             checked: false,
-            nodeKey: null
+            nodeKey: null,
+            title: sel.name +'-----'+ sel.id
           })
         } else {
           data.push({
@@ -913,7 +919,8 @@ export default {
             children: [{
               ...sel,
               checked: false,
-              nodeKey: null
+              nodeKey: null,
+              title: sel.name +'-'+ sel.id
             }]
           })
         }
@@ -1209,6 +1216,7 @@ export default {
       })
       this.$nextTick(() => {
         this.formFields = fields.concat(this.currentFieldList.filter(field => field.isCustom))
+        console.log(this.formFields)
         this.currentFieldList = this.formFields
       })
     },
@@ -1299,7 +1307,7 @@ export default {
               regular:'',
               attrDataType: '',
               attrDefId: '',
-              formTemplateId: this.currentTemplateId,
+              formTemplateId: this.formTemplateId,
               packageName: '',
               isCustom: true,
               entity: '',

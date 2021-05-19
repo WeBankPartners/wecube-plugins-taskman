@@ -19,10 +19,20 @@
     >
       <div style="padding:20px">
           <Row>
-            <Form ref="form" :label-width="110">
+            <!-- <Form ref="form" :label-width="110">
               <Row>
                 <TaskFormItem v-for="(item, index) in currentFields" :index="index" v-model="currentForm[item.name]" :item="item" :key="index"></TaskFormItem>
               </Row>
+            </Form> -->
+            <Form ref="form" :label-width="110">
+              <div style="border: 1px solid #808695;border-radius: 5px;margin-bottom:5px;padding:10px" v-for="(key, i) in targetEntityList" :key="i">
+                <Row v-for="(row, d) in currentFields[key]" :key="d" >
+                  <Col span="24">
+                    <TaskFormItem v-for="(item, index) in row.fields" :index="index" v-model="item.value" :item="item.attribute" :key="index"></TaskFormItem>
+                    <hr v-if="d > 0" style="margin-bottom:10px"/>
+                  </Col>
+                </Row>
+              </div>
             </Form>
           </Row>
           <div style="position:absolute; bottom:10px;text-align:center;width:95%">
@@ -49,7 +59,8 @@ export default {
   },
   data () {
     return {
-      currentFields: [],
+      targetEntityList: [],
+      currentFields: {},
       currentTaskId: '',
       currentFieldsBackUp: {},
       requestModalVisible: false,
@@ -202,10 +213,56 @@ export default {
       if (status === "OK") {
         this.requestModalVisible = true;
         this.currentTaskId = row.id;
-        this.currentFields = data.formItemInfo   //currentForm
-        this.currentFields.forEach(field => {
-          this.currentForm[field.name] = ''
+        this.targetEntityList = []
+        let entity = new Set()
+          data.formItemInfo.forEach(item => {
+            item.entity && item.entity.length > 0 && entity.add(item.entity) // 按对象排序
+            if (this.currentFields[item.entity]) {
+              this.currentFields[item.entity][0].fields.push({
+                attribute: {
+                  ...item,
+                  options: item.dataOptions > 0 ? JSON.parse(item.dataOptions) : []
+                },
+                // isMultiple: true,
+                value: ''
+              })
+            } else {
+              if (item.entity && item.entity.length > 0) {
+                this.currentFields[item.entity] = [{
+                  entity: item.entity,
+                  fields: [{
+                    attribute: {
+                      ...item,
+                      options: item.dataOptions > 0 ? JSON.parse(item.dataOptions) : []
+                    },
+                    // isMultiple: true,
+                    value: ''
+                  }]
+                }]
+                
+              } else {
+                this.currentFields['customize'][0].fields.push({
+                  attribute: {
+                    ...item,
+                    options: item.dataOptions > 0 ? JSON.parse(item.dataOptions) : []
+                  },
+                  // isMultiple: true,
+                  value: ''
+                })
+              }
+            }
+          })
+          this.targetEntityList = Array.from(entity)
+          this.targetEntityList.push('customize')
+        // this.currentFields = data.formItemInfo   //currentForm
+        data.formItemInfo.forEach(field => {
+          this.currentForm[field.name] = []
         })
+        this.currentFieldsBackUp = JSON.parse(JSON.stringify(this.currentFields))
+          this.$nextTick(() => {
+            this.currentFields = {}
+            this.currentFields = JSON.parse(JSON.stringify(this.currentFieldsBackUp))
+          })
       }
     },
     actionFun(type, data) {

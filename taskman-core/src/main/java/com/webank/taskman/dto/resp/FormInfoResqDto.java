@@ -13,7 +13,7 @@ public class FormInfoResqDto {
     private String name;
     private Integer type;
     private String formType;
-    private List<FormItemInfoRespDto> formItemInfo;
+    private List<FormItemInfoQueryResultDto> formItemInfo;
 
     public String getId() {
         return id;
@@ -64,11 +64,11 @@ public class FormInfoResqDto {
         return this;
     }
 
-    public List<FormItemInfoRespDto> getFormItemInfo() {
+    public List<FormItemInfoQueryResultDto> getFormItemInfo() {
         return formItemInfo;
     }
 
-    public void setFormItemInfo(List<FormItemInfoRespDto> formItemInfo) {
+    public void setFormItemInfo(List<FormItemInfoQueryResultDto> formItemInfo) {
         this.formItemInfo = formItemInfo;
     }
 }

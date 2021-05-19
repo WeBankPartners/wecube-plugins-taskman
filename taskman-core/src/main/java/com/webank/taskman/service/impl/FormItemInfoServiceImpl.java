@@ -2,7 +2,7 @@ package com.webank.taskman.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.webank.taskman.domain.FormItemInfo;
-import com.webank.taskman.dto.resp.FormItemInfoRespDto;
+import com.webank.taskman.dto.resp.FormItemInfoQueryResultDto;
 import com.webank.taskman.mapper.FormItemInfoMapper;
 import com.webank.taskman.mapper.FormItemTemplateMapper;
 import com.webank.taskman.service.FormItemInfoService;
@@ -19,8 +19,8 @@ public class FormItemInfoServiceImpl extends ServiceImpl<FormItemInfoMapper, For
     private FormItemTemplateMapper formItemTemplateMapper;
 
     @Override
-    public List<FormItemInfoRespDto> returnDetail(String id) {
-        List<FormItemInfoRespDto> formItemInfoResps = formItemTemplateMapper.selectDetail(id);
+    public List<FormItemInfoQueryResultDto> returnDetail(String id) {
+        List<FormItemInfoQueryResultDto> formItemInfoResps = formItemTemplateMapper.selectDetail(id);
         return formItemInfoResps;
     }
 

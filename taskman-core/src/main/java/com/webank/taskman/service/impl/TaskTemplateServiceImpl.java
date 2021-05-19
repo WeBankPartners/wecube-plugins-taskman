@@ -11,11 +11,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RoleTypeEnum;
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.RoleType;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.converter.TaskTemplateConverter;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.domain.RoleRelation;
@@ -58,20 +58,20 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
         if (requestTemplate == null) {
             throw new TaskmanRuntimeException("The Request Template does not exist! ID:" + req.getTempId());
         }
-        
-        TaskTemplate taskTemplate = taskTemplateConverter.toEntityBySaveReq(req);
+
+        TaskTemplate taskTemplate = taskTemplateConverter.convertToTaskTemplate(req);
         taskTemplate.setRequestTemplateId(requestTemplate.getId());
         taskTemplate.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         taskTemplate.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         saveOrUpdate(taskTemplate);
-        
+
         String taskTemplateId = taskTemplate.getId();
         roleRelationService.saveRoleRelationByTemplate(taskTemplateId, req.getUseRoles(), req.getManageRoles());
 
         // Bad smells
         FormTemplateSaveReqDto formTemplateReqDto = req.getForm();
         formTemplateReqDto.setTempId(taskTemplateId);
-        formTemplateReqDto.setTempType(TemplateTypeEnum.TASK.getType());
+        formTemplateReqDto.setTempType(TemplateType.TASK.getType());
         formTemplateService.saveOrUpdateFormTemplate(formTemplateReqDto);
 
         TaskTemplateRespDto taskTemplateRespDto = new TaskTemplateRespDto();
@@ -82,14 +82,14 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     @Override
     public TaskTemplateRespDto taskTemplateDetail(String id) {
         TaskTemplate taskTemplate = taskTemplateMapper.selectById(id);
-        TaskTemplateRespDto taskTemplateResp = taskTemplateConverter.toDto(taskTemplate);
+        TaskTemplateRespDto taskTemplateResp = taskTemplateConverter.convertToDto(taskTemplate);
         List<RoleRelation> relations = roleRelationService
                 .list(new RoleRelation().setRecordId(id).getLambdaQueryWrapper());
         relations.stream().forEach(roleRelation -> {
             RoleDto roleDTO = new RoleDto();
             roleDTO.setRoleName(roleRelation.getRoleName());
             roleDTO.setDisplayName(roleRelation.getRoleName());
-            if (RoleTypeEnum.USE_ROLE.getType() == roleRelation.getRoleType()) {
+            if (RoleType.USE_ROLE.getType() == roleRelation.getRoleType()) {
                 taskTemplateResp.getUseRoles().add(roleDTO);
             } else {
                 taskTemplateResp.getManageRoles().add(roleDTO);
@@ -99,19 +99,20 @@ public class TaskTemplateServiceImpl extends ServiceImpl<TaskTemplateMapper, Tas
     }
 
     @Override
-    public QueryResponse<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
+    public LocalPageableQueryResult<TaskTemplateByRoleRespDto> selectTaskTemplatePage(Integer page, Integer pageSize,
             TemplateQueryReqDto req) {
         String inSql = TemplateQueryReqDto.getEqUseRole();
-        
-        LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.toEntityByQueryReq(req)
+
+        LambdaQueryWrapper<TaskTemplate> queryWrapper = taskTemplateConverter.convertToTaskTemplate(req)
                 .getLambdaQueryWrapper().inSql(!StringUtils.isEmpty(inSql), TaskTemplate::getId, inSql);
-        
+
         IPage<TaskTemplate> iPage = taskTemplateMapper.selectPage(new Page<>(page, pageSize), queryWrapper);
-        List<TaskTemplateByRoleRespDto> list = taskTemplateConverter.toRoleRespList(iPage.getRecords());
-        
-        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = new QueryResponse<>(iPage.getTotal(),
+        List<TaskTemplateByRoleRespDto> list = taskTemplateConverter
+                .convertToTaskTemplateByRoleRespDtos(iPage.getRecords());
+
+        LocalPageableQueryResult<TaskTemplateByRoleRespDto> queryResponse = new LocalPageableQueryResult<>(iPage.getTotal(),
                 iPage.getCurrent(), iPage.getSize(), list);
-        
+
         return queryResponse;
     }
 

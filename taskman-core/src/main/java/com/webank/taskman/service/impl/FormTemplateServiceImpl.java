@@ -13,12 +13,12 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.RecordDeleteFlagEnum;
-import com.webank.taskman.constant.RoleTypeEnum;
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.RecordDeleteFlag;
+import com.webank.taskman.constant.RoleType;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.converter.FormItemTemplateConverter;
 import com.webank.taskman.converter.FormTemplateConverter;
 import com.webank.taskman.converter.TaskTemplateConverter;
@@ -28,8 +28,8 @@ import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.domain.TaskTemplate;
 import com.webank.taskman.dto.RoleDto;
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.FormItemTemplateRespDto;
-import com.webank.taskman.dto.resp.FormTemplateRespDto;
+import com.webank.taskman.dto.resp.FormItemTemplateQueryResultDto;
+import com.webank.taskman.dto.resp.FormTemplateQueryResultDto;
 import com.webank.taskman.dto.resp.TaskTemplateRespDto;
 import com.webank.taskman.mapper.FormTemplateMapper;
 import com.webank.taskman.service.FormItemTemplateService;
@@ -62,15 +62,15 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
     private RoleRelationService roleRelationService;
     
     @Override
-    public QueryResponse<FormTemplateRespDto> selectFormTemplate(Integer page, Integer pageSize,
+    public LocalPageableQueryResult<FormTemplateQueryResultDto> selectFormTemplate(Integer page, Integer pageSize,
             FormTemplateSaveReqDto req) {
         Page<FormTemplate> pageInfo = new Page<>(page, pageSize);
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
                 .getLambdaQueryWrapper();
         IPage<FormTemplate> iPage = formTemplateMapper.selectPage(pageInfo, formTemplateQueryWrapper);
-        List<FormTemplateRespDto> formTemplateResps = formTemplateConverter.toDto(iPage.getRecords());
+        List<FormTemplateQueryResultDto> formTemplateResps = formTemplateConverter.convertToDtos(iPage.getRecords());
 
-        QueryResponse<FormTemplateRespDto> queryResponse = new QueryResponse<>(iPage.getSize(), iPage.getCurrent(),
+        LocalPageableQueryResult<FormTemplateQueryResultDto> queryResponse = new LocalPageableQueryResult<>(iPage.getSize(), iPage.getCurrent(),
                 iPage.getSize(), formTemplateResps);
         return queryResponse;
     }
@@ -81,19 +81,19 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             throw new TaskmanRuntimeException("Form template parameter cannot be empty.");
         }
         UpdateWrapper<FormTemplate> wrapper = new UpdateWrapper<>();
-        wrapper.lambda().eq(FormTemplate::getId, id).set(FormTemplate::getDelFlag, RecordDeleteFlagEnum.Deleted.ordinal())
+        wrapper.lambda().eq(FormTemplate::getId, id).set(FormTemplate::getDelFlag, RecordDeleteFlag.Deleted.ordinal())
                 .set(FormTemplate::getUpdatedTime, new Date());
         ;
         formTemplateMapper.update(null, wrapper);
     }
 
     @Override
-    public FormTemplateRespDto detailFormTemplate(FormTemplateSaveReqDto req) {
+    public FormTemplateQueryResultDto detailFormTemplate(FormTemplateSaveReqDto req) {
 
         LambdaQueryWrapper<FormTemplate> formTemplateQueryWrapper = formTemplateConverter.reqToDomain(req)
                 .getLambdaQueryWrapper();
         FormTemplate formTemplateEntity = formTemplateMapper.selectOne(formTemplateQueryWrapper);
-        FormTemplateRespDto formTemplateRespDto = formTemplateConverter.toDto(formTemplateEntity);
+        FormTemplateQueryResultDto formTemplateRespDto = formTemplateConverter.convertToDto(formTemplateEntity);
 
         if (formTemplateRespDto == null) {
             return null;
@@ -104,14 +104,14 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
                 .getLambdaQueryWrapper();
 
         List<FormItemTemplate> formItemTemplateEntities = formItemTemplateService.list(formItemTemplateQueryWrapper);
-        List<FormItemTemplateRespDto> formItemTemplateDtos = formItemTemplateConverter
-                .toRespByEntity(formItemTemplateEntities);
+        List<FormItemTemplateQueryResultDto> formItemTemplateDtos = formItemTemplateConverter
+                .convertToFormItemTemplateQueryResultDtos(formItemTemplateEntities);
         formTemplateRespDto.setItems(formItemTemplateDtos);
         
         
         RoleRelation useRoleCriteria = new RoleRelation();
         useRoleCriteria.setRecordId(formTemplateEntity.getTempId());
-        useRoleCriteria.setRoleType(RoleTypeEnum.USE_ROLE.getType());
+        useRoleCriteria.setRoleType(RoleType.USE_ROLE.getType());
         
         LambdaQueryWrapper<RoleRelation> useRoleQueryWrapper = useRoleCriteria.getLambdaQueryWrapper();
         List<RoleRelation> useRoleRelations = roleRelationService.list(useRoleQueryWrapper);
@@ -129,7 +129,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         
         RoleRelation mgmtRoleCriteria = new RoleRelation();
         mgmtRoleCriteria.setRecordId(formTemplateEntity.getTempId());
-        mgmtRoleCriteria.setRoleType(RoleTypeEnum.MANAGE_ROLE.getType());
+        mgmtRoleCriteria.setRoleType(RoleType.MANAGE_ROLE.getType());
         
         LambdaQueryWrapper<RoleRelation> mgmtRoleQueryWrapper = mgmtRoleCriteria.getLambdaQueryWrapper();
         List<RoleRelation> mgmtRoleRelations = roleRelationService.list(mgmtRoleQueryWrapper);
@@ -144,12 +144,12 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
             }
         }
 
-        if (TemplateTypeEnum.REQUEST.getType().equals(req.getTempType())) {
+        if (TemplateType.REQUEST.getType().equals(req.getTempType())) {
 
             LambdaQueryWrapper<TaskTemplate> taskTemplateQueryWrapper = new TaskTemplate()
                     .setRequestTemplateId(req.getTempId()).getLambdaQueryWrapper();
             List<TaskTemplate> taskTemplateEntities = taskTemplateService.list(taskTemplateQueryWrapper);
-            List<TaskTemplateRespDto> taskTemplateDtos = taskTemplateConverter.toDto(taskTemplateEntities);
+            List<TaskTemplateRespDto> taskTemplateDtos = taskTemplateConverter.convertToDtos(taskTemplateEntities);
             if (taskTemplateDtos != null) {
                 formTemplateRespDto.setTaskTemplates(taskTemplateDtos);
             }
@@ -160,7 +160,7 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
 
     @Override
     @Transactional
-    public FormTemplateRespDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq) {
+    public FormTemplateQueryResultDto saveOrUpdateFormTemplate(FormTemplateSaveReqDto formTemplateReq) {
         FormTemplate formTemplate = formTemplateConverter.reqToDomain(formTemplateReq);
 
         formTemplate.setName(StringUtils.isEmpty(formTemplate.getName()) ? "" : formTemplate.getName());
@@ -172,19 +172,19 @@ public class FormTemplateServiceImpl extends ServiceImpl<FormTemplateMapper, For
         formItemTemplateService.deleteByDomain(new FormItemTemplate().setFormTemplateId(formTemplate.getId()));
 
         formTemplateReq.getFormItems().stream().forEach(item -> {
-            FormItemTemplate formItemTemplate = formItemTemplateConverter.toEntityBySaveReq(item);
+            FormItemTemplate formItemTemplate = formItemTemplateConverter.convertToFormItemTemplate(item);
             formItemTemplate.setFormTemplateId(formTemplate.getId());
             formItemTemplate.setTempId(formTemplate.getTempId());
             formItemTemplateService.save(formItemTemplate);
         });
-        return new FormTemplateRespDto().setId(formTemplate.getId());
+        return new FormTemplateQueryResultDto().setId(formTemplate.getId());
     }
 
     @Override
-    public FormTemplateRespDto queryDetailByTemplate(Integer tempType, String tempId) {
+    public FormTemplateQueryResultDto queryDetailByTemplate(Integer tempType, String tempId) {
         
         FormTemplate formTemplateEntity = getOne(new FormTemplate().setTempId(tempId).setTempType(tempType + "").getLambdaQueryWrapper());
         return formTemplateConverter
-                .toDto(formTemplateEntity);
+                .convertToDto(formTemplateEntity);
     }
 }

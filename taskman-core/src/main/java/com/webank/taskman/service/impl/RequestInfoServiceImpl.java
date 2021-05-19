@@ -15,34 +15,33 @@ import org.springframework.transaction.annotation.Transactional;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
-import com.webank.taskman.base.QueryResponse.PageInfo;
+import com.webank.taskman.base.LocalPageInfo;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusEnum;
-import com.webank.taskman.converter.EntityAttrValueConverter;
+import com.webank.taskman.constant.GenernalStatus;
 import com.webank.taskman.converter.FormItemInfoConverter;
 import com.webank.taskman.converter.RequestInfoConverter;
 import com.webank.taskman.domain.FormItemInfo;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.domain.RequestTemplate;
 import com.webank.taskman.dto.CreateTaskDto;
-import com.webank.taskman.dto.CreateTaskDto.EntityAttrValueDto;
-import com.webank.taskman.dto.CreateTaskDto.EntityValueDto;
+import com.webank.taskman.dto.EntityAttrValueDto;
+import com.webank.taskman.dto.EntityValueDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
-import com.webank.taskman.dto.resp.RequestInfoResqDto;
+import com.webank.taskman.dto.resp.RequestInfoQueryResultDto;
 import com.webank.taskman.mapper.RequestInfoMapper;
 import com.webank.taskman.service.FormInfoService;
 import com.webank.taskman.service.FormItemInfoService;
 import com.webank.taskman.service.FormTemplateService;
 import com.webank.taskman.service.RequestInfoService;
 import com.webank.taskman.service.RequestTemplateService;
-import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
-import com.webank.taskman.support.core.dto.DynamicEntityValueDto;
-import com.webank.taskman.support.core.dto.DynamicEntityValueDto.DynamicEntityAttrValueDto;
-import com.webank.taskman.support.core.dto.DynamicTaskNodeBindInfoDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.PlatformCoreServiceRestClient;
+import com.webank.taskman.support.platform.dto.DynamicEntityValueDto;
+import com.webank.taskman.support.platform.dto.DynamicTaskNodeBindInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicEntityValueDto.DynamicEntityAttrValueDto;
 
 @Service
 public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, RequestInfo> implements RequestInfoService {
@@ -67,24 +66,28 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
     @Autowired
     private FormTemplateService formTemplateService;
-    @Autowired
-    private EntityAttrValueConverter entityAttrValueConverter;
 
+    /**
+     * 
+     */
     @Override
-    public QueryResponse<RequestInfoResqDto> selectRequestInfoPage(Integer current, Integer limit,
+    public LocalPageableQueryResult<RequestInfoQueryResultDto> searchRequestInfos(Integer current, Integer limit,
             RequestInfoQueryReqDto req) {
         req.queryCurrentUserRoles();
-        IPage<RequestInfoResqDto> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
-        QueryResponse<RequestInfoResqDto> queryResponse = new QueryResponse<>();
-        queryResponse.setPageInfo(new PageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
+        IPage<RequestInfoQueryResultDto> iPage = requestInfoMapper.selectRequestInfo(new Page<>(current, limit), req);
+        LocalPageableQueryResult<RequestInfoQueryResultDto> queryResponse = new LocalPageableQueryResult<>();
+        queryResponse.setPageInfo(new LocalPageInfo(iPage.getTotal(), iPage.getCurrent(), iPage.getSize()));
         queryResponse.setContents(iPage.getRecords());
         return queryResponse;
     }
 
+    /**
+     * 
+     */
     @Override
-    public RequestInfoResqDto selectDetail(String id) {
+    public RequestInfoQueryResultDto fetchRequestInfoDetail(String id) {
         RequestInfo requestInfo = requestInfoMapper.selectOne(new RequestInfo().setId(id).getLambdaQueryWrapper());
-        RequestInfoResqDto requestInfoResq = requestInfoConverter.toResp(requestInfo);
+        RequestInfoQueryResultDto requestInfoResq = requestInfoConverter.toResp(requestInfo);
         requestInfoResq.setFormItemInfos(formItemInfoService.returnDetail(id));
         return requestInfoResq;
     }
@@ -94,7 +97,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
      */
     @Override
     @Transactional
-    public RequestInfoResqDto createNewRequestInfo(CreateTaskDto reqDto) {
+    public RequestInfoQueryResultDto createNewRequestInfo(CreateTaskDto reqDto) {
         RequestInfo requestInfoEntity = buildRequestInfoEntity(reqDto);
 
         saveOrUpdate(requestInfoEntity);
@@ -110,8 +113,8 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
             throw new TaskmanRuntimeException("Remotely create new process instance failed!");
         }
 
-        if (StatusEnum.InProgress.name().equals(dynamicWorkflowInstInfoDto.getStatus())) {
-            requestInfoEntity.setProcInstId(dynamicWorkflowInstInfoDto.getProcInstKey());
+        if (GenernalStatus.InProgress.name().equals(dynamicWorkflowInstInfoDto.getStatus())) {
+            requestInfoEntity.setProcInstId(dynamicWorkflowInstInfoDto.getId());
             requestInfoEntity.setStatus(dynamicWorkflowInstInfoDto.getStatus());
             requestInfoEntity.setUpdatedTime(new Date());
             updateById(requestInfoEntity);
@@ -144,7 +147,7 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
     public void saveRequestFormInfo(CreateTaskDto req) {
         List<FormItemInfo> items = new ArrayList<>();
         req.getEntities().stream().forEach(e -> {
-            items.addAll(formItemInfoConverter.toEntityByAttrValue(e.getAttrValues()));
+            items.addAll(formItemInfoConverter.convertToFormItemInfos(e.getAttrValues()));
         });
         formInfoService.saveFormInfoAndFormItems(items, req.getRequestTempId(), req.getId());
     }
@@ -171,6 +174,8 @@ public class RequestInfoServiceImpl extends ServiceImpl<RequestInfoMapper, Reque
 
         // TODO
         DynamicWorkflowInstInfoDto dto = platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto);
+        
+        
         return dto;
     }
 

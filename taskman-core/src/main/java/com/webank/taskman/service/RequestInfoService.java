@@ -2,23 +2,23 @@ package com.webank.taskman.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
-import com.webank.taskman.dto.resp.RequestInfoResqDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.dto.resp.RequestInfoQueryResultDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
 
 public interface RequestInfoService extends IService<RequestInfo> {
 
-    QueryResponse<RequestInfoResqDto> selectRequestInfoPage
+    LocalPageableQueryResult<RequestInfoQueryResultDto> searchRequestInfos
             (Integer current, Integer limit, RequestInfoQueryReqDto req) throws TaskmanRuntimeException;
 
-    RequestInfoResqDto createNewRequestInfo(CreateTaskDto req);
+    RequestInfoQueryResultDto createNewRequestInfo(CreateTaskDto req);
 
     DynamicWorkflowInstInfoDto createNewRemoteWorkflowInstance(CreateTaskDto req);
 
 
-    RequestInfoResqDto selectDetail(String id);
+    RequestInfoQueryResultDto fetchRequestInfoDetail(String id);
 }

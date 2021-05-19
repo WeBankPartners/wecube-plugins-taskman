@@ -12,8 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.webank.taskman.dto.CreateTaskDto;
-import com.webank.taskman.dto.CreateTaskDto.EntityValueDto;
-import com.webank.taskman.dto.resp.RequestInfoResqDto;
+import com.webank.taskman.dto.EntityValueDto;
+import com.webank.taskman.dto.resp.RequestInfoQueryResultDto;
 import com.webank.taskman.service.RequestInfoService;
 
 @RunWith(SpringRunner.class)
@@ -30,7 +30,7 @@ public class RequestInfoServiceImplTest {
         CreateTaskDto reqDto = mockCreateTaskDto();
         
         
-        RequestInfoResqDto respDto = requestInfoService.createNewRequestInfo(reqDto);
+        RequestInfoQueryResultDto respDto = requestInfoService.createNewRequestInfo(reqDto);
         
         
         Assert.assertNotNull(respDto);

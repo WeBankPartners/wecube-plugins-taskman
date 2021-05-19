@@ -1,18 +1,20 @@
 package com.webank.taskman.service;
 
 
+import java.util.List;
+
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
-import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 
 public interface RequestTemplateGroupService extends IService<RequestTemplateGroup> {
 
+    List<RequestTemplateGroupDto> fetchAvailableGroupTemplates();
 
-    RequestTemplateGroupDto saveTemplateGroupByReq(RequestTemplateGroupSaveReqDto gropReq);
+    RequestTemplateGroupDto saveOrUpdateTemplateGroup(RequestTemplateGroupDto requestTemplateGroupDto);
 
-    QueryResponse<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit, RequestTemplateGroupDto req);
+    LocalPageableQueryResult<RequestTemplateGroupDto> searchRequestTemplateGroups(Integer current, Integer limit, RequestTemplateGroupDto req);
 
-    void deleteTemplateGroupByIDService(String id);
+    void deleteRequestTemplateGroup(String id);
 }

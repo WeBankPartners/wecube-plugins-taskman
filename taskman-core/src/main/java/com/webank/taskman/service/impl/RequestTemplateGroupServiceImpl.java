@@ -1,24 +1,25 @@
 package com.webank.taskman.service.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.webank.taskman.base.QueryResponse;
-import com.webank.taskman.base.QueryResponse.PageInfo;
+import com.webank.taskman.base.LocalPageInfo;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.commons.TaskmanRuntimeException;
-import com.webank.taskman.constant.StatusEnum;
+import com.webank.taskman.constant.GenernalStatus;
 import com.webank.taskman.converter.RequestTemplateGroupConverter;
 import com.webank.taskman.domain.RequestTemplateGroup;
 import com.webank.taskman.dto.RequestTemplateGroupDto;
-import com.webank.taskman.dto.req.RequestTemplateGroupSaveReqDto;
 import com.webank.taskman.mapper.RequestTemplateGroupMapper;
 import com.webank.taskman.service.RequestTemplateGroupService;
 
@@ -31,11 +32,24 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
 
     @Autowired
     private RequestTemplateGroupConverter requestTemplateGroupConverter;
+    
+    public List<RequestTemplateGroupDto> fetchAvailableGroupTemplates(){
+        LambdaQueryWrapper<RequestTemplateGroup> lambdaQueryWrapper = new RequestTemplateGroup()
+                .setStatus(RequestTemplateGroup.STATUS_AVAILABLE).getLambdaQueryWrapper();
+        List<RequestTemplateGroupDto> requestTemplateGroupDtos = requestTemplateGroupConverter
+                .convertToDtos(this.list(lambdaQueryWrapper));
+        
+        return requestTemplateGroupDtos;
+    }
 
+    /**
+     * 
+     */
     @Override
     @Transactional
-    public RequestTemplateGroupDto saveTemplateGroupByReq(RequestTemplateGroupSaveReqDto req) {
-        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter.saveReqToDomain(req);
+    public RequestTemplateGroupDto saveOrUpdateTemplateGroup(RequestTemplateGroupDto requestTemplateGroupDto) {
+        RequestTemplateGroup requestTemplateGroup = requestTemplateGroupConverter
+                .convertToEntity(requestTemplateGroupDto);
         requestTemplateGroup.setCreatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateGroup.setUpdatedBy(AuthenticationContextHolder.getCurrentUsername());
         requestTemplateGroup.setStatus(RequestTemplateGroup.STATUS_AVAILABLE);
@@ -49,26 +63,31 @@ public class RequestTemplateGroupServiceImpl extends ServiceImpl<RequestTemplate
         } else {
             save(requestTemplateGroup);
         }
-        return requestTemplateGroupConverter.toDto(requestTemplateGroup);
+        return requestTemplateGroupConverter.convertToDto(requestTemplateGroup);
     }
 
+    /**
+     * 
+     */
     @Override
-    public QueryResponse<RequestTemplateGroupDto> selectRequestTemplateGroupPage(Integer current, Integer limit,
-            RequestTemplateGroupDto req) {
+    public LocalPageableQueryResult<RequestTemplateGroupDto> searchRequestTemplateGroups(Integer current, Integer limit,
+            RequestTemplateGroupDto requestTemplateGroupSearchCriteriaDto) {
         IPage<RequestTemplateGroup> iPage = templateGroupMapper.selectPage(new Page<>(current, limit),
-                requestTemplateGroupConverter.toEntity(req).getLambdaQueryWrapper());
+                requestTemplateGroupConverter.convertToEntity(requestTemplateGroupSearchCriteriaDto)
+                        .getLambdaQueryWrapper());
 
-        //TODO to test start index here
-        PageInfo pageInfo = new PageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(), iPage.getSize());
-        return new QueryResponse<RequestTemplateGroupDto>(pageInfo,
-                requestTemplateGroupConverter.toDto(iPage.getRecords()));
+        // TODO to test start index here
+        LocalPageInfo pageInfo = new LocalPageInfo(iPage.getTotal(), iPage.getCurrent() * iPage.getSize(),
+                iPage.getSize());
+        return new LocalPageableQueryResult<RequestTemplateGroupDto>(pageInfo,
+                requestTemplateGroupConverter.convertToDtos(iPage.getRecords()));
     }
 
     @Override
-    public void deleteTemplateGroupByIDService(String id) {
+    public void deleteRequestTemplateGroup(String id) {
         RequestTemplateGroup requestTemplateGroup = new RequestTemplateGroup();
         requestTemplateGroup.setId(id);
-        requestTemplateGroup.setDelFlag(StatusEnum.ENABLE.ordinal());
+        requestTemplateGroup.setDelFlag(GenernalStatus.ENABLE.ordinal());
         requestTemplateGroup.setUpdatedTime(new Date());
         templateGroupMapper.update(null, requestTemplateGroup.getUpdateWrapper());
     }

@@ -2,7 +2,7 @@ package com.webank.taskman.dto.req;
 
 import java.util.List;
 
-import com.webank.taskman.constant.TemplateTypeEnum;
+import com.webank.taskman.constant.TemplateType;
 import com.webank.taskman.dto.RoleDto;
 
 public class TaskTemplateSaveReqDto {
@@ -24,13 +24,10 @@ public class TaskTemplateSaveReqDto {
 
     private String description;
 
-    //使用角色集
     private List<RoleDto> useRoles;
 
-    //管理角色集
     private List<RoleDto> manageRoles;
 
-    //任务表单模板
     private FormTemplateSaveReqDto form;
 
     public String getId() {
@@ -123,9 +120,8 @@ public class TaskTemplateSaveReqDto {
     }
 
     public FormTemplateSaveReqDto getForm() {
-        this.form.setTempType(TemplateTypeEnum.TASK.getType());
+        this.form.setTempType(TemplateType.TASK.getType());
         return form;
-
     }
 
     public void setForm(FormTemplateSaveReqDto form) {

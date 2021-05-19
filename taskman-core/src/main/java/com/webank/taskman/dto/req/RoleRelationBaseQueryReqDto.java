@@ -1,7 +1,7 @@
 package com.webank.taskman.dto.req;
 
 import com.webank.taskman.commons.AuthenticationContextHolder;
-import com.webank.taskman.constant.RoleTypeEnum;
+import com.webank.taskman.constant.RoleType;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
@@ -98,7 +98,7 @@ public class RoleRelationBaseQueryReqDto {
     public static String getEqUseRole() {
         String roles = String.join("','", AuthenticationContextHolder.getCurrentUserRoles());
         return StringUtils.isEmpty(roles) ? null
-                : String.format(RoleRelationBaseQueryReqDto.QUERY_BY_ROLE_SQL, RoleTypeEnum.USE_ROLE.getType(), roles);
+                : String.format(RoleRelationBaseQueryReqDto.QUERY_BY_ROLE_SQL, RoleType.USE_ROLE.getType(), roles);
     }
 
     public void queryCurrentUserRoles() {

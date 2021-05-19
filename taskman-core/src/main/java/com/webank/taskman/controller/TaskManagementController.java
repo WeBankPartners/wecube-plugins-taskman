@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.webank.taskman.base.JsonResponse;
-import com.webank.taskman.base.QueryResponse;
+import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.ProceedUserTaskReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
@@ -58,7 +58,7 @@ public class TaskManagementController {
     @PostMapping("/template/search/{page}/{page-size}")
     public JsonResponse taskTemplateSearch(@PathVariable("page") Integer page,
             @PathVariable("page-size") Integer pageSize, @RequestBody TemplateQueryReqDto req) {
-        QueryResponse<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page,
+        LocalPageableQueryResult<TaskTemplateByRoleRespDto> queryResponse = taskTemplateService.selectTaskTemplatePage(page,
                 pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
@@ -87,7 +87,7 @@ public class TaskManagementController {
         if (!StringUtils.isEmpty(req.getIsMy())) {
             req.setReporter(AuthenticationContextHolder.getCurrentUsername());
         }
-        QueryResponse<TaskInfoDto> queryResponse = taskInfoService.selectTaskInfo(page, pageSize, req);
+        LocalPageableQueryResult<TaskInfoDto> queryResponse = taskInfoService.selectTaskInfo(page, pageSize, req);
         return JsonResponse.okayWithData(queryResponse);
     }
 
@@ -134,9 +134,11 @@ public class TaskManagementController {
      * @param req
      * @return
      */
-    @PostMapping("/processing")
-    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProcessingTasksReqDto req) {
-        return taskInfoService.taskInfoProcessing(req);
+    @PostMapping("/proceed")
+    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProceedUserTaskReqDto req) {
+         taskInfoService.proceedUserTask(req);
+         
+         return JsonResponse.okay();
     }
 
 }

@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.webank.taskman.dto.req.FormTemplateSaveReqDto;
-import com.webank.taskman.dto.resp.FormTemplateRespDto;
+import com.webank.taskman.dto.resp.FormTemplateQueryResultDto;
 import com.webank.taskman.service.FormTemplateService;
 
 
@@ -27,7 +27,7 @@ public class FormTemplateServiceImplTest {
         req.setTempId("1339560042995204098");
         req.setTempType("0");
         
-        FormTemplateRespDto respDto = formTemplateService.detailFormTemplate(req);
+        FormTemplateQueryResultDto respDto = formTemplateService.detailFormTemplate(req);
         
         System.out.println(respDto);
     }

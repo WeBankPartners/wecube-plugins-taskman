@@ -22,10 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.commons.TaskmanRuntimeException;
 import com.webank.taskman.service.AttachFileService;
-import com.webank.taskman.support.core.PlatformCoreServiceRestClient;
-import com.webank.taskman.support.core.dto.DataModelEntityDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstCreationInfoDto;
-import com.webank.taskman.support.core.dto.ProcessDataPreviewDto;
+import com.webank.taskman.support.platform.PlatformCoreServiceRestClient;
+import com.webank.taskman.support.platform.dto.DataModelEntityDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstCreationInfoDto;
+import com.webank.taskman.support.platform.dto.ProcessDataPreviewDto;
 import com.webank.taskman.support.s3.dto.DownloadAttachFileResponse;
 
 @RestController
@@ -180,7 +180,9 @@ public class PlatformResourceController {
     @PostMapping("/platform/create")
     public JsonResponse platformProcessCreate(@RequestBody DynamicWorkflowInstCreationInfoDto creationInfoDto) {
 
-        return okayWithData(platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto));
+        //TODO
+        return null;
+//        return okayWithData(platformCoreServiceRestClient.createNewWorkflowInstance(creationInfoDto));
     }
 
     /**

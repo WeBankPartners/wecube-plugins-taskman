@@ -134,6 +134,9 @@ public class TaskInfoServiceImpl extends ServiceImpl<TaskInfoMapper, TaskInfo> i
 
         TaskFormValueDto taskFormValueDto = buildTaskFormValueDto();
         String taskFormOutput = convertTaskFormValueDtoToJson(taskFormValueDto);
+        
+        
+        platformServiceClient.asyncProceedUserTask(callbackUrl, platformPluginResponseDto);
     }
 
     private TaskFormValueDto buildTaskFormValueDto() {

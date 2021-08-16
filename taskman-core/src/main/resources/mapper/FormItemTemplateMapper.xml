@@ -15,7 +15,7 @@
         </where>
     </delete>
 
-    <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.FormItemInfoRespDto">
+    <select id="getCreateTaskServiceMeta" resultType="com.webank.taskman.dto.resp.FormItemInfoQueryResultDto">
         SELECT
             fit.id,
             fit.`name`,
@@ -29,7 +29,7 @@
         )
     </select>
 
-    <resultMap id="selectDetailMap" type="com.webank.taskman.dto.resp.FormItemInfoRespDto">
+    <resultMap id="selectDetailMap" type="com.webank.taskman.dto.resp.FormItemInfoQueryResultDto">
         <id property="id" column="id"/>
         <result property="value" column="value"/>
 

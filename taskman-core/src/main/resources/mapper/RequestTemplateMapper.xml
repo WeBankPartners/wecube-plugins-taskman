@@ -17,7 +17,7 @@
     </resultMap>
 
     <select id="selectDTOListByParam" resultMap="DTOResultMap"
-        parameterType="com.webank.taskman.dto.req.RequestTemplateQueryReqDto">
+        parameterType="com.webank.taskman.dto.req.RequestTemplateQueryDto">
         SELECT
         rt.id,
         rt.request_temp_group,

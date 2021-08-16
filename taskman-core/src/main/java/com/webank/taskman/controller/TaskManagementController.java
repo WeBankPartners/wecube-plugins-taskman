@@ -16,7 +16,7 @@ import com.webank.taskman.base.JsonResponse;
 import com.webank.taskman.base.LocalPageableQueryResult;
 import com.webank.taskman.commons.AuthenticationContextHolder;
 import com.webank.taskman.dto.TaskInfoDto;
-import com.webank.taskman.dto.req.ProcessingTasksReqDto;
+import com.webank.taskman.dto.req.ProceedUserTaskReqDto;
 import com.webank.taskman.dto.req.TaskInfoQueryReqDto;
 import com.webank.taskman.dto.req.TemplateQueryReqDto;
 import com.webank.taskman.dto.req.TaskTemplateSaveReqDto;
@@ -134,9 +134,11 @@ public class TaskManagementController {
      * @param req
      * @return
      */
-    @PostMapping("/processing")
-    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProcessingTasksReqDto req) {
-        return taskInfoService.taskInfoProcessing(req);
+    @PostMapping("/proceed")
+    public JsonResponse taskInfoProcessing(@Valid @RequestBody ProceedUserTaskReqDto req) {
+         taskInfoService.proceedUserTask(req);
+         
+         return JsonResponse.okay();
     }
 
 }

@@ -11,6 +11,12 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class TaskInfo extends BaseEntity implements Serializable {
+    public static final String PARAM_NAME_TASK_FORM_INPUT = "taskFormInput";
+    public static final String PARAM_NAME_TASK_FORM_OUTPUT = "taskFormOutput";
+    
+    public static final String STATUS_NEW = "New";
+    public final static String STATUS_PENDING = "Pending";
+    public final static String STATUS_PROCESSING = "Processing";
 
     private static final long serialVersionUID = 1L;
 
@@ -38,6 +44,14 @@ public class TaskInfo extends BaseEntity implements Serializable {
     private String version;
 
     private String overTime;
+
+    private String taskFormInput;
+    private String taskFormOutput;
+    
+    private String allowedOptions;
+    private String dueDate;
+    private String nodeRequestId;
+    private String resultMsg;
 
     public TaskInfo() {
     }
@@ -271,6 +285,54 @@ public class TaskInfo extends BaseEntity implements Serializable {
         return this;
     }
 
+    public String getTaskFormInput() {
+        return taskFormInput;
+    }
+
+    public void setTaskFormInput(String taskFormInput) {
+        this.taskFormInput = taskFormInput;
+    }
+
+    public String getTaskFormOutput() {
+        return taskFormOutput;
+    }
+
+    public void setTaskFormOutput(String taskFormOutput) {
+        this.taskFormOutput = taskFormOutput;
+    }
+    
+    public String getAllowedOptions() {
+        return allowedOptions;
+    }
+
+    public void setAllowedOptions(String allowedOptions) {
+        this.allowedOptions = allowedOptions;
+    }
+
+    public String getDueDate() {
+        return dueDate;
+    }
+
+    public void setDueDate(String dueDate) {
+        this.dueDate = dueDate;
+    }
+
+    public String getNodeRequestId() {
+        return nodeRequestId;
+    }
+
+    public void setNodeRequestId(String nodeRequestId) {
+        this.nodeRequestId = nodeRequestId;
+    }
+    
+    public String getResultMsg() {
+        return resultMsg;
+    }
+
+    public void setResultMsg(String resultMsg) {
+        this.resultMsg = resultMsg;
+    }
+
     @Override
     public String toString() {
         return "TaskInfo{" + "id='" + id + '\'' + ", parentId='" + parentId + '\'' + ", taskTempId='" + taskTempId
@@ -281,4 +343,6 @@ public class TaskInfo extends BaseEntity implements Serializable {
                 + '\'' + ", attachFileId='" + attachFileId + '\'' + ", status=" + status + ", version='" + version
                 + '\'' + '}';
     }
+
+    
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.webank.taskman.base.BaseConverter;
 import com.webank.taskman.domain.RoleRelation;
 import com.webank.taskman.dto.RoleDto;
-import com.webank.taskman.support.core.dto.RolesDataResponse;
+import com.webank.taskman.support.platform.dto.SimpleLocalRoleDto;
 
 @Service
 public class RoleRelationConverter implements BaseConverter<RoleDto, RoleRelation> {
@@ -18,7 +18,7 @@ public class RoleRelationConverter implements BaseConverter<RoleDto, RoleRelatio
 //    @Mappings({
 //            @Mapping(target = "roleName",source ="name" ),
 //    })
-    public RoleDto rolesDataResponseToDto(RolesDataResponse rolesDataResponse){
+    public RoleDto rolesDataResponseToDto(SimpleLocalRoleDto rolesDataResponse){
         RoleDto dto = new RoleDto();
         dto.setRoleName(rolesDataResponse.getName());
         dto.setDisplayName(rolesDataResponse.getDisplayName());
@@ -26,9 +26,9 @@ public class RoleRelationConverter implements BaseConverter<RoleDto, RoleRelatio
         return dto;
     }
 
-    public List<RoleDto> rolesDataResponseToDtoList(List<RolesDataResponse> rolesDataResponseList){
+    public List<RoleDto> rolesDataResponseToDtoList(List<SimpleLocalRoleDto> rolesDataResponseList){
         List<RoleDto> dtos = new ArrayList<>();
-        for(RolesDataResponse entity : rolesDataResponseList){
+        for(SimpleLocalRoleDto entity : rolesDataResponseList){
             RoleDto dto = new RoleDto();
             dto.setRoleName(entity.getName());
             dto.setDisplayName(entity.getDisplayName());

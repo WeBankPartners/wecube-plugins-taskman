@@ -8,7 +8,7 @@ import com.webank.taskman.domain.RequestInfo;
 import com.webank.taskman.dto.CreateTaskDto;
 import com.webank.taskman.dto.req.RequestInfoQueryReqDto;
 import com.webank.taskman.dto.resp.RequestInfoQueryResultDto;
-import com.webank.taskman.support.core.dto.DynamicWorkflowInstInfoDto;
+import com.webank.taskman.support.platform.dto.DynamicWorkflowInstInfoDto;
 
 public interface RequestInfoService extends IService<RequestInfo> {
 

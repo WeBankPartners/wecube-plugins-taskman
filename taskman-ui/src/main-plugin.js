@@ -6,6 +6,7 @@ import PluginSelect from "./components/select.vue";
 import { quillEditor } from 'vue-quill-editor'
 import TaskManQuillEditor from "./components/quillEditor"
 import TaskFormItem from "./components/formItem"
+import CmdbData from "./components/CmdbData"
 import HomePage from "./components/homepage"
 import ZH from "./i18n/zh-CN.json";
 import EN from "./i18n/en-US.json";
@@ -18,6 +19,7 @@ window.component && window.component("PluginSelect", PluginSelect)
 window.component && window.component("quillEditor", quillEditor)
 window.component && window.component("TaskManQuillEditor", TaskManQuillEditor)
 window.component && window.component("TaskFormItem", TaskFormItem)
+window.component && window.component("CmdbData", CmdbData)
 // window.addHomepageComponent && window.addHomepageComponent({name:()=>{return window.vm.$t('same_group_processing')},component:HomePage})
 window.addRoutes && window.addRoutes(router, "itsm");
 window.locale("zh-CN", ZH);

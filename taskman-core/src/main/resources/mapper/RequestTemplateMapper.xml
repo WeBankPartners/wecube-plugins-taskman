@@ -21,16 +21,16 @@
         SELECT
         rt.id,
         rt.request_temp_group,
-        rtg.`name`
+        rtg.name
         request_temp_group_name,
         rt.proc_def_id,
         rt.proc_def_key,
         rt.proc_def_name,
-        rt.`name`,
+        rt.name,
         rt.description,
-        rt.`name`,
+        rt.name,
         rt.tags,
-        rt.`status`
+        rt.status
         FROM request_template rt,request_template_group rtg
         <where>
             AND rt.request_temp_group = rtg.id

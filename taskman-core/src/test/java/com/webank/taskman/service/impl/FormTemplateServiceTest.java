@@ -21,6 +21,7 @@ public class FormTemplateServiceTest {
     @Test
     public void testSaveOrUpdateFormTemplate() {
         //fail("Not yet implemented");
+    	int i;
     }
 
 }

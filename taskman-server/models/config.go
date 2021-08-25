@@ -91,6 +91,6 @@ func InitConfig(configFile string) (errMessage string) {
 	tmpCoreToken.SubSystemKey = Config.Wecube.SubSystemKey
 	tmpCoreToken.InitCoreToken()
 	CoreToken = &tmpCoreToken
-	ProcessFetchTabs = os.Getenv("WECMDB_PROCESS_TAGS")
+	ProcessFetchTabs = os.Getenv("TASKMAN_PROCESS_TAGS")
 	return
 }

@@ -2,7 +2,6 @@ package api
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -24,7 +23,6 @@ var (
 )
 
 func init() {
-	// baseKey
 
 }
 
@@ -35,7 +33,6 @@ func InitHttpServer() {
 	if models.Config.HttpServer.Cross {
 		crossHandler(r)
 	}
-	r.Static(fmt.Sprintf("%s/fonts", urlPrefix), fmt.Sprintf("public%s/fonts", urlPrefix))
 	// access log
 	if models.Config.Log.AccessLogEnable {
 		r.Use(httpLogHandle())

@@ -320,3 +320,15 @@ func transactionWithoutForeignCheck(actions []*execAction) error {
 	session.Close()
 	return err
 }
+
+func createListParams(inputList []string, prefix string) (specSql string, paramList []interface{}) {
+	if len(inputList) > 0 {
+		var specList []string
+		for _, v := range inputList {
+			specList = append(specList, "?")
+			paramList = append(paramList, prefix+v)
+		}
+		specSql = strings.Join(specList, ",")
+	}
+	return
+}

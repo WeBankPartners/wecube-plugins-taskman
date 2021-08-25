@@ -11,7 +11,7 @@ import (
 
 // @title Taskman Server New
 // @version 1.0
-// @description 配置管理系统后台服务
+// @description 任务服务管理后台
 func main() {
 	configFile := flag.String("c", "conf/default.json", "config file path")
 	flag.Parse()

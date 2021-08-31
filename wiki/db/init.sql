@@ -2,11 +2,11 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `attach_file`;
 CREATE TABLE IF NOT EXISTS `attach_file` (
-  `id` varchar(32)  NOT NULL,
-  `attach_file_name` varchar(255)  NOT NULL,
+  `id` varchar(64)  NOT NULL,
+  `name` varchar(255)  NOT NULL,
   `s3_url` varchar(255)  NOT NULL COMMENT 's3url',
-  `s3_bucket_name` varchar(50)  DEFAULT NULL COMMENT 's3_bucket',
-  `s3_key_name` varchar(50)  DEFAULT NULL COMMENT 's3_key',
+  `s3_bucket_name` varchar(255)  DEFAULT NULL COMMENT 's3_bucket',
+  `s3_key_name` varchar(255)  DEFAULT NULL COMMENT 's3_key',
   `created_by` varchar(255)  NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)  NULL,
@@ -43,12 +43,13 @@ CREATE TABLE IF NOT EXISTS `form_item_info` (
 
 DROP TABLE IF EXISTS `form_item_template`;
 CREATE TABLE IF NOT EXISTS `form_item_template` (
-  `id` varchar(32) NOT NULL,
-  `form_template_id` varchar(32) NOT NULL,
-  `name` varchar(50) NOT NULL,
+  `id` varchar(64) NOT NULL,
+  `form_template_id` varchar(64) NOT NULL,
+  `input_type` varchar(64) default 'text',
+  `name` varchar(64) NOT NULL,
+  `description` varchar(255)  DEFAULT NULL,
   `default_value` varchar(255) DEFAULT NULL,
-  `is_currency` tinyint(2) NOT NULL DEFAULT '0',
-  `sort` tinyint(2) NOT NULL DEFAULT '0',
+  `sort` int NOT NULL DEFAULT '0',
   `package_name` varchar(255) DEFAULT '0',
   `entity` varchar(255) DEFAULT '0',
   `attr_def_id` varchar(255) DEFAULT NULL,
@@ -64,8 +65,7 @@ CREATE TABLE IF NOT EXISTS `form_item_template` (
   `regular` varchar(50) DEFAULT NULL,
   `is_edit` tinyint(2) NOT NULL DEFAULT '0',
   `is_view` tinyint(2) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `form_template_id` (`form_template_id`,`name`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -82,21 +82,14 @@ INSERT INTO `form_item_template`
 DROP TABLE IF EXISTS `form_template`;
 CREATE TABLE IF NOT EXISTS `form_template` (
   `id` varchar(32)  NOT NULL,
-  `temp_id` varchar(32)  NOT NULL,
-  `temp_type` varchar(32)  NOT NULL,
   `name` varchar(255)  NOT NULL,
   `description` varchar(512)  DEFAULT NULL,
-  `target_entities` varchar(255)  NOT NULL,
-  `input_attr_def` text ,
-  `output_attr_def` text ,
-  `other_attr_def` text ,
-  `style` varchar(50)  DEFAULT NULL,
+  `role` varchar(64)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,
   `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
-  `form_type` varchar(45) NULL,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
@@ -123,22 +116,23 @@ CREATE TABLE IF NOT EXISTS `request_info` (
 
 DROP TABLE IF EXISTS `request_template`;
 CREATE TABLE IF NOT EXISTS `request_template` (
-  `id` varchar(32)  NOT NULL,
-  `request_temp_group` varchar(32)  NOT NULL,
+  `id` varchar(64)  NOT NULL,
+  `group` varchar(64)  NOT NULL,
+  `name` varchar(255)  NOT NULL,
+  `description` varchar(512)  DEFAULT NULL,
+  `form_template` varchar(64) DEFAULT NULL,
+  `tags` varchar(512)  DEFAULT NULL,
+  `status` varchar(32) NOT NULL DEFAULT 'created',
+  `package_name` varchar(255)  NULL,
+  `entity_name` varchar(255)  NULL,
   `proc_def_key` varchar(255)  NOT NULL COMMENT 'key',
   `proc_def_id` varchar(255)  NOT NULL,
   `proc_def_name` varchar(255)  NOT NULL,
-  `name` varchar(255)  NOT NULL,
-  `description` varchar(512)  DEFAULT NULL,
-  `version` varchar(50)   DEFAULT NULL,
-  `tags` varchar(512)  DEFAULT NULL,
-  `status` tinyint(2) NOT NULL DEFAULT '0',
-  `package_name` varchar(255)  NULL,
-  `entity_name` varchar(255)  NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,
   `updated_time` datetime NULL,
+  `entity_attrs` text DEFAULT NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
@@ -146,12 +140,9 @@ CREATE TABLE IF NOT EXISTS `request_template` (
 DROP TABLE IF EXISTS `request_template_group`;
 CREATE TABLE IF NOT EXISTS `request_template_group` (
   `id` varchar(32)  NOT NULL,
-  `manage_role_id` varchar(32)  DEFAULT NULL,
-  `manage_role_name` varchar(255)  NOT NULL,
   `name` varchar(255)  NOT NULL,
-  `description` varchar(512)  DEFAULT NULL,
-  `version` varchar(50)  NOT NULL DEFAULT '1',
-  `status` tinyint(2) NOT NULL DEFAULT '0',
+  `description` varchar(255)  DEFAULT NULL,
+  `manage_role` varchar(64)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,
@@ -160,16 +151,12 @@ CREATE TABLE IF NOT EXISTS `request_template_group` (
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 
-DROP TABLE IF EXISTS `role_relation`;
-CREATE TABLE IF NOT EXISTS `role_relation` (
-  `id` varchar(32)  NOT NULL,
-  `record_id` varchar(32)  NOT NULL,
-  `role_type` tinyint(2) NOT NULL DEFAULT '0',
-  `role_name` varchar(50)  DEFAULT '0',
-  `display_name` varchar(50)  DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `ft_index_role_type` (`role_type`),
-  FULLTEXT KEY `ft_index_role_name` (`role_name`)
+DROP TABLE IF EXISTS `role`;
+CREATE TABLE IF NOT EXISTS `role` (
+  `id` varchar(64)  NOT NULL,
+  `display_name` varchar(64) NOT NULL,
+  `update_time` datetime,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
 DROP TABLE IF EXISTS `task_info`;
@@ -204,19 +191,20 @@ CREATE TABLE IF NOT EXISTS `task_info` (
 DROP TABLE IF EXISTS `task_template`;
 CREATE TABLE IF NOT EXISTS `task_template` (
   `id` varchar(32)  NOT NULL,
+  `name` varchar(255)  NOT NULL,
+  `description` varchar(512)  DEFAULT NULL,
+  `form_template` varchar(64) DEFAULT NULL,
+  `request_template_id` varchar(64) DEFAULT NULL,
   `proc_def_id` varchar(255)  NOT NULL,
-  `proc_def_key` varchar(255)  NOT NULL COMMENT 'key',
+  `proc_def_key` varchar(255)  NOT NULL,
   `proc_def_name` varchar(255)  NOT NULL,
   `node_def_id` varchar(255)  NOT NULL,
   `node_name` varchar(255)  NOT NULL,
-  `name` varchar(255)  NOT NULL,
-  `description` varchar(512)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,
   `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
-  `request_template_id` varchar(32) NULL,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 ;
 

@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
 	"io/ioutil"
 	"time"
 
@@ -23,7 +24,19 @@ var (
 )
 
 func init() {
-
+	httpHandlerFuncList = append(httpHandlerFuncList,
+		&handlerFuncObj{Url: "/request-template-group/query", Method: "POST", HandlerFunc: request.QueryRequestTemplateGroup},
+		&handlerFuncObj{Url: "/request-template-group", Method: "POST", HandlerFunc: request.CreateRequestTemplateGroup},
+		&handlerFuncObj{Url: "/request-template-group", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateGroup},
+		&handlerFuncObj{Url: "/request-template-group", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplateGroup},
+		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: request.GetCoreProcessList},
+		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: request.GetRoleList},
+		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: request.GetUserRoles},
+		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: request.QueryRequestTemplate},
+		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: request.CreateRequestTemplate},
+		&handlerFuncObj{Url: "/request-template", Method: "PUT", HandlerFunc: request.UpdateRequestTemplate},
+		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplate},
+	)
 }
 
 func InitHttpServer() {

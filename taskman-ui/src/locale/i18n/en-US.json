@@ -1,1 +1,15 @@
-{}
+{
+  "add": "Add",
+  "search": "Search",
+  "edit": "Edit",
+  "save": "Save",
+  "delete": "Delete",
+  "confirm_delete": "Delete Confirm ？",
+  "successful": "Successful",
+  "action": "Action",
+  "tm_name": "Name",
+  "tm_role": "Role",
+  "tm_description": "Description",
+  "tm_updated_time": "Updated Time",
+  "tm_template_group": "Template Group"
+}

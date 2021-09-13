@@ -11,7 +11,9 @@ if (window.request) {
   }
 }
 
-export const getPluginList = () => req.get('/taskman/api/v1/plugins')
-export const getProviderList = () => req.get('/taskman/api/v1/providers')
-export const createTemplate = data => req.post('/taskman/api/v1/templates', data)
-export const getTemplate = data => req.get('/taskman/api/v1/templates')
+export const getTempGroupList = data => req.post('/taskman/api/v1/request-template-group/query', data)
+export const createTempGroup = data => req.post('/taskman/api/v1/request-template-group', data)
+export const updateTempGroup = data => req.put('/taskman/api/v1/request-template-group', data)
+export const deleteTempGroup = data => req.delete('/taskman/api/v1/request-template-group', data)
+
+export const getManagementRoles = () => req.get('/taskman/api/v1/role/list')

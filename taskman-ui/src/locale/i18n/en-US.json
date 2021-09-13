@@ -3,13 +3,14 @@
   "search": "Search",
   "edit": "Edit",
   "save": "Save",
+  "cancel": "Cancel",
   "delete": "Delete",
   "confirm_delete": "Delete Confirm ？",
   "successful": "Successful",
   "action": "Action",
-  "tm_name": "Name",
-  "tm_role": "Role",
-  "tm_description": "Description",
+  "name": "Name",
+  "manageRole": "Role",
+  "description": "Description",
   "tm_updated_time": "Updated Time",
   "tm_template_group": "Template Group"
 }

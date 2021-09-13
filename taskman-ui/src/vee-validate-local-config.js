@@ -3,7 +3,8 @@ import { extend, localize } from 'vee-validate'
 import { required, email, min } from 'vee-validate/dist/rules'
 import zh from 'vee-validate/dist/locale/zh_CN.json'
 import en from 'vee-validate/dist/locale/en.json'
-
+import zhcn from '@/locale/i18n/zh-CN.json'
+import enus from '@/locale/i18n/en-US.json'
 // Install required rule.
 extend('required', required)
 
@@ -16,11 +17,12 @@ extend('min', min)
 // Install English and Arabic localizations.
 localize({
   zh_CN: {
-    messages: zh.messages
-    // names: {
-    //   email: '邮箱地址',
-    //   password: '密码'
-    // },
+    messages: zh.messages,
+    names: {
+      ...zhcn
+      // name: '邮箱地址',
+      // password: '密码'
+    }
     // fields: {
     //   password: {
     //     min: '{_field_} 太短'
@@ -28,11 +30,12 @@ localize({
     // }
   },
   en: {
-    messages: en.messages
-    // names: {
-    //   email: 'E-mail Address',
-    //   password: 'Password'
-    // },
+    messages: en.messages,
+    names: {
+      ...enus
+      // email: 'name',
+      // password: 'Password'
+    }
     // fields: {
     //   password: {
     //     min: '{_field_} is too short, you want to get hacked?'

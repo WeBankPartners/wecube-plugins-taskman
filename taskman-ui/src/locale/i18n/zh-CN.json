@@ -3,13 +3,14 @@
   "search": "搜索",
   "edit": "编辑",
   "save": "保存",
+  "cancel": "取消",
   "delete": "删除",
   "confirm_delete": "确定删除？",
   "successful": "成功",
   "action": "操作",
-  "tm_name": "名称",
-  "tm_role": "角色",
-  "tm_description": "描述",
+  "name": "名称",
+  "manageRole": "角色",
+  "description": "描述",
   "tm_updated_time": "更新时间",
   "tm_template_group": "模板组"
 }

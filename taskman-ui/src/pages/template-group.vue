@@ -3,7 +3,7 @@
     <div>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('tm_name')"> </Input>
+          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
           <Select
@@ -61,9 +61,9 @@ export default {
         isAdd: true,
         title: 'Demo',
         itemConfigs: [
-          { label: 'tm_name', value: 'name', rules: 'required', type: 'text' },
+          { label: 'name', value: 'name', rules: 'required', type: 'text' },
           {
-            label: 'tm_role',
+            label: 'manageRole',
             value: 'manageRole',
             rules: 'required',
             options: 'roleOptions',
@@ -73,7 +73,7 @@ export default {
             type: 'select',
             placeholder: ''
           },
-          { label: 'tm_description', value: 'description', rows: 2, type: 'textarea' }
+          { label: 'description', value: 'description', rows: 2, type: 'textarea' }
         ],
         values: {
           name: '',
@@ -101,11 +101,11 @@ export default {
       },
       tableColumns: [
         {
-          title: this.$t('tm_name'),
+          title: this.$t('name'),
           key: 'name'
         },
         {
-          title: this.$t('tm_role'),
+          title: this.$t('manageRole'),
           key: 'manageRole',
           render: (h, params) => {
             const displayName = params.row.manageRoleObj.displayName
@@ -113,7 +113,7 @@ export default {
           }
         },
         {
-          title: this.$t('tm_description'),
+          title: this.$t('description'),
           key: 'description'
         },
         {

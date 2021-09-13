@@ -1,6 +1,11 @@
 <template>
   <div>
-    <Modal v-model="modalConfig.isShow" :mask-closable="false" :title="modalConfig.title">
+    <Modal
+      v-model="modalConfig.isShow"
+      :mask-closable="false"
+      @on-visible-change="visibleChange"
+      :title="modalConfig.title"
+    >
       <ValidationObserver ref="observer">
         <Form :label-width="100">
           <template v-for="item in modalConfig.itemConfigs">
@@ -68,8 +73,8 @@
         </Form>
       </ValidationObserver>
       <div slot="footer">
-        <Button @click="cancel">取消</Button>
-        <Button @click="ok" type="primary">保存</Button>
+        <Button @click="cancel">{{ $t('cancel') }}</Button>
+        <Button @click="ok" type="primary">{{ $t('save') }}</Button>
       </div>
     </Modal>
   </div>
@@ -100,19 +105,20 @@ export default {
   }),
   mounted () {},
   methods: {
-    ok () {
-      if (this.$refs.observer.flags.valid) {
-        this.$emit('saveModel', JSON.parse(JSON.stringify(this.modalConfig.values)))
+    visibleChange (isHide) {
+      if (!isHide) {
         this.resetValues()
         this.$refs.observer.reset()
       }
+    },
+    ok () {
+      if (this.$refs.observer.flags.valid) {
+        this.$emit('saveModel', JSON.parse(JSON.stringify(this.modalConfig.values)))
+      }
       // console.log(this.$refs.observer.flags.valid)
       // console.log(this.modalConfig.values)
-      this.cancel()
     },
     cancel () {
-      this.resetValues()
-      this.$refs.observer.reset()
       this.modalConfig.isShow = false
     },
     resetValues () {

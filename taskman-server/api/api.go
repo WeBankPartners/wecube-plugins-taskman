@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
 	"io/ioutil"
 	"time"
@@ -30,12 +31,21 @@ func init() {
 		&handlerFuncObj{Url: "/request-template-group", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateGroup},
 		&handlerFuncObj{Url: "/request-template-group", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplateGroup},
 		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: request.GetCoreProcessList},
+		&handlerFuncObj{Url: "/process-nodes/:procId", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
 		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: request.GetRoleList},
 		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: request.GetUserRoles},
 		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: request.QueryRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: request.CreateRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "PUT", HandlerFunc: request.UpdateRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/:id/attrs/update", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateEntityAttrs},
+		&handlerFuncObj{Url: "/request-template/:id/attrs/get", Method: "GET", HandlerFunc: request.GetRequestTemplateEntityAttrs},
+
+		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template", Method: "POST", HandlerFunc: form.CreateRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template", Method: "PUT", HandlerFunc: form.UpdateRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template/:id", Method: "DELETE", HandlerFunc: form.DeleteRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
 	)
 }
 

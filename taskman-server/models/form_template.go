@@ -1,39 +1,70 @@
 package models
 
-import "time"
-
 type FormTemplateTable struct {
-	Id          string    `json:"id" xorm:"id"`
-	Name        string    `json:"name" xorm:"name"`
-	Description string    `json:"description" xorm:"description"`
-	Role        string    `json:"role" xorm:"role"`
-	CreatedBy   string    `json:"created_by" xorm:"created_by"`
-	CreatedTime time.Time `json:"created_time" xorm:"created_time"`
-	UpdatedBy   string    `json:"updated_by" xorm:"updated_by"`
-	UpdatedTime time.Time `json:"updated_time" xorm:"updated_time"`
-	DelFlag     int       `json:"del_flags" xorm:"del_flags"`
+	Id          string `json:"id" xorm:"id"`
+	Name        string `json:"name" xorm:"name"`
+	Description string `json:"description" xorm:"description"`
+	Version     string `json:"version" xorm:"version"`
+	ConfirmTime string `json:"confirmTime" xorm:"confirm_time"`
+	CreatedBy   string `json:"createdBy" xorm:"created_by"`
+	CreatedTime string `json:"createdTime" xorm:"created_time"`
+	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
+	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
+}
+
+type FormTable struct {
+	Id           string `json:"id" xorm:"id"`
+	Name         string `json:"name" xorm:"name"`
+	Description  string `json:"description" xorm:"description"`
+	FormTemplate string `json:"formTemplate" xorm:"form_template"`
+	FormVersion  string `json:"formVersion" xorm:"form_version"`
+	CreatedBy    string `json:"createdBy" xorm:"created_by"`
+	CreatedTime  string `json:"createdTime" xorm:"created_time"`
+	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
+	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
 }
 
 type FormItemTemplateTable struct {
 	Id              string `json:"id" xorm:"id"`
+	RecordId        string `json:"record_id" xorm:"record_id"`
+	Version         string `json:"version" xorm:"version"`
 	Name            string `json:"name" xorm:"name"`
 	Description     string `json:"description" xorm:"description"`
-	FormTemplateId  string `json:"form_template_id" json:"form_template_id"`
-	DefaultValue    string `json:"default_value" json:"default_value"`
-	Sort            int    `json:"sort" json:"sort"`
-	PackageName     string `json:"package_name" json:"package_name"`
-	Entity          string `json:"entity" json:"entity"`
-	AttrDefId       string `json:"attr_def_id" json:"attr_def_id"`
-	AttrDefDataType string `json:"attr_def_data_type" json:"attr_def_data_type"`
-	ElementType     string `json:"element_type" json:"element_type"`
-	Title           string `json:"title" json:"title"`
-	Width           int    `json:"width" json:"width"`
-	RefPackageName  string `json:"ref_package_name" json:"ref_package_name"`
-	RefEntity       string `json:"ref_entity" json:"ref_entity"`
-	RefFilters      string `json:"ref_filters" json:"ref_filters"`
-	DataOptions     string `json:"data_options" json:"data_options"`
-	Required        int    `json:"required" json:"required"`
-	Regular         string `json:"regular" json:"regular"`
-	IsEdit          int    `json:"is_edit" json:"is_edit"`
-	IsView          int    `json:"is_view" json:"is_view"`
+	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
+	DefaultValue    string `json:"defaultValue" xorm:"default_value"`
+	Sort            int    `json:"sort" xorm:"sort"`
+	PackageName     string `json:"packageName" xorm:"package_name"`
+	Entity          string `json:"entity" xorm:"entity"`
+	AttrDefId       string `json:"attrDefId" xorm:"attr_def_id"`
+	AttrDefName     string `json:"attrDefName" xorm:"attr_def_name"`
+	AttrDefDataType string `json:"attrDefDataType" xorm:"attr_def_data_type"`
+	ElementType     string `json:"elementType" xorm:"element_type"`
+	Title           string `json:"title" xorm:"title"`
+	Width           int    `json:"width" xorm:"width"`
+	RefPackageName  string `json:"refPackageName" xorm:"ref_package_name"`
+	RefEntity       string `json:"refEntity" xorm:"ref_entity"`
+	DataOptions     string `json:"dataOptions" xorm:"data_options"`
+	Required        string `json:"required" xorm:"required"`
+	Regular         string `json:"regular" xorm:"regular"`
+	IsEdit          string `json:"isEdit" xorm:"is_edit"`
+	IsView          string `json:"isView" xorm:"is_view"`
+	IsOutput        string `json:"isOutput" xorm:"is_output"`
+}
+
+type FormItemTable struct {
+	Id               string `json:"id" xorm:"id"`
+	Form             string `json:"form" xorm:"form"`
+	FormItemTemplate string `json:"formItemTemplate" xorm:"form_item_template"`
+	Name             string `json:"name" xorm:"name"`
+	Value            string `json:"value" xorm:"value"`
+}
+
+type RequestFormTemplateDto struct {
+	Id          string                   `json:"id"`
+	Name        string                   `json:"name"`
+	Description string                   `json:"description"`
+	UpdatedTime string                   `json:"updatedTime"`
+	Items       []*FormItemTemplateTable `json:"items"`
 }

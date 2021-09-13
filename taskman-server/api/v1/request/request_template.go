@@ -69,7 +69,17 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 }
 
 func GetCoreProcessList(c *gin.Context) {
-	result, err := db.GetCoreProcessList(c.GetHeader("Authorization"))
+	result, err := db.GetCoreProcessListNew(c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
+func GetCoreProcNodes(c *gin.Context) {
+	procId := c.Param("procId")
+	result, err := db.GetProcessNodesByProc(procId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -173,6 +183,39 @@ func DeleteRequestTemplate(c *gin.Context) {
 		return
 	}
 	err := db.DeleteRequestTemplate(id)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func GetRequestTemplateEntityAttrs(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	result, err := db.GetRequestTemplateEntityAttrs(id)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
+func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	var param []*models.ProcEntityAttributeObj
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.UpdateRequestTemplateEntityAttrs(id, param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

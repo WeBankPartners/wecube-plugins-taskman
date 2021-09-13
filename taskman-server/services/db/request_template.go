@@ -57,6 +57,68 @@ func DeleteRequestTemplateGroup(id string) error {
 	return err
 }
 
+func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, err error) {
+	processList = []*models.ProcDefObj{}
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions", nil)
+	if reqErr != nil {
+		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	http.DefaultClient.CloseIdleConnections()
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do request to core fail,%s ", respErr.Error())
+		return
+	}
+	var respObj models.ProcQueryResponse
+	respBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	err = json.Unmarshal(respBytes, &respObj)
+	log.Logger.Debug("Get core process list", log.String("body", string(respBytes)))
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if respObj.Status != "OK" {
+		err = fmt.Errorf(respObj.Message)
+		return
+	}
+	processList = respObj.Data
+	return
+}
+
+func GetProcessNodesByProc(procId, userToken string) (nodeList []*models.ProcNodeObj, err error) {
+	nodeList = []*models.ProcNodeObj{}
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions/"+procId+"/tasknodes", nil)
+	if reqErr != nil {
+		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	http.DefaultClient.CloseIdleConnections()
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do request to core fail,%s ", respErr.Error())
+		return
+	}
+	var respObj models.ProcNodeQueryResponse
+	respBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	err = json.Unmarshal(respBytes, &respObj)
+	log.Logger.Debug("Get process node list", log.String("body", string(respBytes)))
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if respObj.Status != "OK" {
+		err = fmt.Errorf(respObj.Message)
+		return
+	}
+	nodeList = respObj.Data
+	return
+}
+
 func GetCoreProcessList(userToken string) (processList []*models.CodeProcessQueryObj, err error) {
 	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/process/definitions?includeDraft=0&permission=USE&tags="+models.ProcessFetchTabs, nil)
 	if reqErr != nil {
@@ -344,5 +406,29 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 
 func DeleteRequestTemplate(id string) error {
 	_, err := x.Exec("update request_template set del_flag=1 where id=?", id)
+	return err
+}
+
+func GetRequestTemplateEntityAttrs(id string) (result []*models.ProcEntityAttributeObj, err error) {
+	result = []*models.ProcEntityAttributeObj{}
+	var requestTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select entity_attrs from request_template where id=?", id).Find(&requestTemplateTable)
+	if err != nil {
+		return
+	}
+	if len(requestTemplateTable) == 0 {
+		err = fmt.Errorf("Can not find request template wit id:%s ", id)
+		return
+	}
+	err = json.Unmarshal([]byte(requestTemplateTable[0].EntityAttrs), &result)
+	if err != nil {
+		err = fmt.Errorf("json unmarshal data fail:%s ", err.Error())
+	}
+	return
+}
+
+func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttributeObj) error {
+	b, _ := json.Marshal(attrs)
+	_, err := x.Exec("update request_template set entity_attrs=? where id=?", string(b), id)
 	return err
 }

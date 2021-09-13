@@ -248,7 +248,7 @@ func SyncCoreRole() {
 
 func GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 	result = []*models.RoleTable{}
-	if len(ids) > 0 {
+	if len(ids) == 0 {
 		err = x.SQL("select * from role").Find(&result)
 	} else {
 		err = x.SQL("select * from role where id in ('" + strings.Join(ids, "','") + "')").Find(&result)

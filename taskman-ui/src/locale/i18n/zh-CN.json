@@ -19,5 +19,6 @@
   "procDefId": "流程",
   "mgmtRoles": "管理角色",
   "useRoles": "用户角色",
-  "tags": "标签"
+  "tags": "标签",
+  "attributes": "属性"
 }

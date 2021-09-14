@@ -26,3 +26,6 @@ export const deleteTemp = data => req.delete('/taskman/api/v1/request-template',
 
 export const getFromList = requestTemplateId =>
   req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/list`)
+
+export const saveAttrs = (requestTemplateId, data) =>
+  req.put(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/update`, data)

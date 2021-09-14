@@ -1,17 +1,20 @@
 <template>
-  <div class=" ">
+  <div style="width:40%;margin: 0 auto;">
     <Form :label-width="100">
-      <FormItem>
-        <Select v-model="attrData" :label="$t(item.label)">
+      <FormItem :label="$t('attributes')">
+        <Select v-model="attrData" multiple filterable>
           <Option v-for="item in attrOptions" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
+      </FormItem>
+      <FormItem>
+        <Button @click="saveAttrs" :disabled="attrData.length === 0" type="primary">{{ $t('next') }}</Button>
       </FormItem>
     </Form>
   </div>
 </template>
 
 <script>
-import { getFromList } from '@/api/server.js'
+import { getFromList, saveAttrs } from '@/api/server.js'
 export default {
   name: 'form-select',
   data () {
@@ -26,6 +29,17 @@ export default {
     this.getFromList()
   },
   methods: {
+    async saveAttrs () {
+      const params = this.attrOptions.filter(item => this.attrData.includes(item.id))
+      const { statusCode } = await saveAttrs(this.requestTemplateId, params)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.$emit('formSelectNextStep')
+      }
+    },
     async getFromList () {
       const { statusCode, data } = await getFromList(this.requestTemplateId)
       if (statusCode === 'OK') {

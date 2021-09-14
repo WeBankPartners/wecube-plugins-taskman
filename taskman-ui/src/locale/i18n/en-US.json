@@ -19,5 +19,6 @@
   "procDefId": "Process",
   "mgmtRoles": "MGMT Roles",
   "useRoles": "User Roles",
-  "tags": "Tags"
+  "tags": "Tags",
+  "attributes": "Attributes"
 }

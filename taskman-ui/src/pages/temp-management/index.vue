@@ -6,9 +6,13 @@
       <Step title="请求表单设置" icon="md-cog"></Step>
       <Step title="任务表单设置" icon="ios-settings"></Step>
     </Steps>
-    <div style="width:40%;margin: 0 auto;margin-top:48px;">
+    <div style="margin-top:48px;">
       <BasicInfo @basicInfoNextStep="basicInfoNextStep" v-if="currentStep === 0"></BasicInfo>
-      <FormSelect :requestTemplateId="requestTemplateId" v-if="currentStep === 1"></FormSelect>
+      <FormSelect
+        @formSelectNextStep="formSelectNextStep"
+        :requestTemplateId="requestTemplateId"
+        v-if="currentStep === 1"
+      ></FormSelect>
       <RequestForm v-if="currentStep === 2"></RequestForm>
       <TaskForm v-if="currentStep === 3"></TaskForm>
     </div>
@@ -31,8 +35,10 @@ export default {
   mounted () {},
   methods: {
     basicInfoNextStep (data) {
-      console.log(data)
       this.requestTemplateId = data.id
+      this.currentStep++
+    },
+    formSelectNextStep () {
       this.currentStep++
     }
   },

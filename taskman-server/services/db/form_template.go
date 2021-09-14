@@ -8,9 +8,14 @@ import (
 	"time"
 )
 
-func GetRequestFormTemplate(id string) (result models.RequestFormTemplateDto, err error) {
+func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error) {
+	requestTemplate, getErr := getSimpleRequestTemplate(id)
+	if getErr != nil {
+		err = getErr
+		return
+	}
 	var formTemplateTable []*models.FormTemplateTable
-	err = x.SQL("select * from form_template where id=?", id).Find(&formTemplateTable)
+	err = x.SQL("select * from form_template where id=?", requestTemplate.FormTemplate).Find(&formTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
 		return
@@ -23,46 +28,61 @@ func GetRequestFormTemplate(id string) (result models.RequestFormTemplateDto, er
 	result.Name = formTemplateTable[0].Name
 	result.Description = formTemplateTable[0].Description
 	result.UpdatedTime = formTemplateTable[0].UpdatedTime
+	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where form_template=? and version is null", id).Find(&formItemTemplate)
+	x.SQL("select * from form_item_template where form_template=? and version is null", requestTemplate.FormTemplate).Find(&formItemTemplate)
 	result.Items = formItemTemplate
 	return
 }
 
-func CreateRequestFormTemplate(param models.RequestFormTemplateDto, operator string) (id string, err error) {
+func CreateRequestFormTemplate(param models.FormTemplateDto, requestTemplateId string) error {
+	param.NowTime = time.Now().Format(models.DateTimeFormat)
+	insertFormActions, formId := getFormTemplateCreateActions(param)
+	insertFormActions = append(insertFormActions, &execAction{Sql: "update request_template set form_template=? where id=?", Param: []interface{}{formId, requestTemplateId}})
+	return transactionWithoutForeignCheck(insertFormActions)
+}
+
+func getFormTemplateCreateActions(param models.FormTemplateDto) (actions []*execAction, id string) {
 	param.Id = guid.CreateGuid()
 	id = param.Id
 	itemIds := guid.CreateGuidList(len(param.Items))
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	var actions []*execAction
 	insertAction := execAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)"}
-	insertAction.Param = []interface{}{param.Id, param.Name, param.Description, operator, nowTime, operator, nowTime}
+	insertAction.Param = []interface{}{param.Id, param.Name, param.Description, param.UpdatedBy, param.NowTime, param.UpdatedBy, param.NowTime}
 	actions = append(actions, &insertAction)
 	for i, item := range param.Items {
-		tmpAction := execAction{Sql: "insert into form_item_template(id,record_id,version,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{itemIds[i], item.RecordId, item.Version, item.FormTemplate, item.Name, item.Description, item.DefaultValue, item.Sort, item.PackageName, item.Entity, item.AttrDefId, item.AttrDefName, item.AttrDefDataType, item.ElementType, item.Title, item.Width, item.RefPackageName, item.RefEntity, item.DataOptions, item.Required, item.Required, item.Regular, item.IsEdit, item.IsView}
+		tmpAction := execAction{Sql: "insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		tmpAction.Param = []interface{}{itemIds[i], id, item.Name, item.Description, item.DefaultValue, item.Sort, item.PackageName, item.Entity, item.AttrDefId, item.AttrDefName, item.AttrDefDataType, item.ElementType, item.Title, item.Width, item.RefPackageName, item.RefEntity, item.DataOptions, item.Required, item.Regular, item.IsEdit, item.IsView}
 		actions = append(actions, &tmpAction)
 	}
-	err = transactionWithoutForeignCheck(actions)
 	return
 }
 
-func UpdateRequestFormTemplate(param models.RequestFormTemplateDto, operator string) error {
-	var formTemplateTable []*models.FormTemplateTable
-	err := x.SQL("select id,version,updated_time from form_template where id=?", param.Id).Find(&formTemplateTable)
+func UpdateRequestFormTemplate(param models.FormTemplateDto) error {
+	param.NowTime = time.Now().Format(models.DateTimeFormat)
+	updateActions, err := getFormTemplateUpdateActions(param)
 	if err != nil {
-		return fmt.Errorf("Try to query form template table fail,%s ", err.Error())
+		return err
+	}
+	return transaction(updateActions)
+}
+
+func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*execAction, err error) {
+	var formTemplateTable []*models.FormTemplateTable
+	err = x.SQL("select id,version,updated_time from form_template where id=?", param.Id).Find(&formTemplateTable)
+	if err != nil {
+		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
+		return
 	}
 	if len(formTemplateTable) == 0 {
-		return fmt.Errorf("Can not find any form template with id=%s ", param.Id)
+		err = fmt.Errorf("Can not find any form template with id=%s ", param.Id)
+		return
 	}
 	if param.UpdatedTime != formTemplateTable[0].UpdatedTime {
-		return fmt.Errorf("Update time validate fail,please refersh data ")
+		err = fmt.Errorf("Update time validate fail,please refersh data ")
+		return
 	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	var actions []*execAction
 	updateAction := execAction{Sql: "update form_template set name=?,description=?,updated_by=?,updated_time=? where id=?"}
-	updateAction.Param = []interface{}{param.Name, param.Description, operator, nowTime, param.Id}
+	updateAction.Param = []interface{}{param.Name, param.Description, param.UpdatedBy, param.NowTime, param.Id}
 	actions = append(actions, &updateAction)
 	newItemGuidList := guid.CreateGuidList(len(param.Items))
 	var formItemTemplate []*models.FormItemTemplateTable
@@ -72,10 +92,10 @@ func UpdateRequestFormTemplate(param models.RequestFormTemplateDto, operator str
 		if inputItem.Id == "" {
 			inputItem.Id = newItemGuidList[i]
 			tmpAction.Sql = "insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-			tmpAction.Param = []interface{}{inputItem.Id, inputItem.FormTemplate, inputItem.Name, inputItem.Description, inputItem.DefaultValue, inputItem.Sort, inputItem.PackageName, inputItem.Entity, inputItem.AttrDefId, inputItem.AttrDefName, inputItem.AttrDefDataType, inputItem.ElementType, inputItem.Title, inputItem.Width, inputItem.RefPackageName, inputItem.RefEntity, inputItem.DataOptions, inputItem.Required, inputItem.Required, inputItem.Regular, inputItem.IsEdit, inputItem.IsView}
+			tmpAction.Param = []interface{}{inputItem.Id, param.Id, inputItem.Name, inputItem.Description, inputItem.DefaultValue, inputItem.Sort, inputItem.PackageName, inputItem.Entity, inputItem.AttrDefId, inputItem.AttrDefName, inputItem.AttrDefDataType, inputItem.ElementType, inputItem.Title, inputItem.Width, inputItem.RefPackageName, inputItem.RefEntity, inputItem.DataOptions, inputItem.Required, inputItem.Regular, inputItem.IsEdit, inputItem.IsView}
 		} else {
 			tmpAction.Sql = "update form_item_template set name=?,description=?,default_value=?,sort=?,package_name=?,entity=?,attr_def_id=?,attr_def_name=?,attr_def_data_type=?,element_type=?,title=?,width=?,ref_package_name=?,ref_entity=?,data_options=?,required=?,regular=?,is_edit=?,is_view=? where id=?"
-			tmpAction.Param = []interface{}{inputItem.Name, inputItem.Description, inputItem.DefaultValue, inputItem.Sort, inputItem.PackageName, inputItem.Entity, inputItem.AttrDefId, inputItem.AttrDefName, inputItem.AttrDefDataType, inputItem.ElementType, inputItem.Title, inputItem.Width, inputItem.RefPackageName, inputItem.RefEntity, inputItem.DataOptions, inputItem.Required, inputItem.Required, inputItem.Regular, inputItem.IsEdit, inputItem.IsView, inputItem.Id}
+			tmpAction.Param = []interface{}{inputItem.Name, inputItem.Description, inputItem.DefaultValue, inputItem.Sort, inputItem.PackageName, inputItem.Entity, inputItem.AttrDefId, inputItem.AttrDefName, inputItem.AttrDefDataType, inputItem.ElementType, inputItem.Title, inputItem.Width, inputItem.RefPackageName, inputItem.RefEntity, inputItem.DataOptions, inputItem.Required, inputItem.Regular, inputItem.IsEdit, inputItem.IsView, inputItem.Id}
 		}
 		actions = append(actions, &tmpAction)
 	}
@@ -91,7 +111,7 @@ func UpdateRequestFormTemplate(param models.RequestFormTemplateDto, operator str
 			actions = append(actions, &execAction{Sql: "delete from form_item_template where id=?", Param: []interface{}{existItem.Id}})
 		}
 	}
-	return transaction(actions)
+	return
 }
 
 func ConfirmRequestFormTemplate(id, operator string) error {

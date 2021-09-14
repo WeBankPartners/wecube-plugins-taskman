@@ -61,10 +61,12 @@ type FormItemTable struct {
 	Value            string `json:"value" xorm:"value"`
 }
 
-type RequestFormTemplateDto struct {
+type FormTemplateDto struct {
 	Id          string                   `json:"id"`
 	Name        string                   `json:"name"`
 	Description string                   `json:"description"`
+	UpdatedBy   string                   `json:"updatedBy"`
 	UpdatedTime string                   `json:"updatedTime"`
+	NowTime     string                   `json:"-"`
 	Items       []*FormItemTemplateTable `json:"items"`
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
 	"io/ioutil"
 	"time"
 
@@ -40,12 +41,14 @@ func init() {
 		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/:id/attrs/update", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateEntityAttrs},
 		&handlerFuncObj{Url: "/request-template/:id/attrs/get", Method: "GET", HandlerFunc: request.GetRequestTemplateEntityAttrs},
+		&handlerFuncObj{Url: "/request-template/:id/attrs/list", Method: "GET", HandlerFunc: request.ListRequestTemplateEntityAttrs},
+		&handlerFuncObj{Url: "/request-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
 
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
-		&handlerFuncObj{Url: "/request-form-template", Method: "POST", HandlerFunc: form.CreateRequestFormTemplate},
-		&handlerFuncObj{Url: "/request-form-template", Method: "PUT", HandlerFunc: form.UpdateRequestFormTemplate},
-		&handlerFuncObj{Url: "/request-form-template/:id", Method: "DELETE", HandlerFunc: form.DeleteRequestFormTemplate},
-		&handlerFuncObj{Url: "/request-form-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
+
+		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
 	)
 }
 

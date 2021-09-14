@@ -130,6 +130,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	param.CreatedBy = middleware.GetRequestUser(c)
 	result, err := db.CreateRequestTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -152,6 +153,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
+	param.UpdatedBy = middleware.GetRequestUser(c)
 	result, err := db.UpdateRequestTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -187,6 +189,16 @@ func DeleteRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnSuccess(c)
+	}
+}
+
+func ListRequestTemplateEntityAttrs(c *gin.Context) {
+	id := c.Param("id")
+	result, err := db.ListRequestTemplateEntityAttrs(id, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
 	}
 }
 

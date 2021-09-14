@@ -25,6 +25,14 @@ func QueryRequestTemplateGroup(param *models.QueryRequestParam) (pageInfo models
 		queryParam = append(queryParam, pageParam...)
 	}
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
+	if len(rowData) > 0 {
+		roleMap, _ := getRoleMap()
+		for _, row := range rowData {
+			if row.ManageRole != "" {
+				row.ManageRoleObj = models.RoleTable{Id: row.ManageRole, DisplayName: roleMap[row.ManageRole].DisplayName}
+			}
+		}
+	}
 	return
 }
 
@@ -74,6 +82,9 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	var respObj models.ProcQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	if models.Config.Log.Level == "debug" {
+		respBytes, _ = ioutil.ReadFile("/tmp/pro-def.json")
+	}
 	err = json.Unmarshal(respBytes, &respObj)
 	log.Logger.Debug("Get core process list", log.String("body", string(respBytes)))
 	if err != nil {
@@ -105,6 +116,9 @@ func GetProcessNodesByProc(procId, userToken string) (nodeList []*models.ProcNod
 	var respObj models.ProcNodeQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	if models.Config.Log.Level == "debug" {
+		respBytes, _ = ioutil.ReadFile("/tmp/pro-node.json")
+	}
 	err = json.Unmarshal(respBytes, &respObj)
 	log.Logger.Debug("Get process node list", log.String("body", string(respBytes)))
 	if err != nil {
@@ -258,6 +272,7 @@ func GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 
 func QueryRequestTemplate(param *models.QueryRequestParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	extFilterSql := ""
+	result = []*models.RequestTemplateQueryObj{}
 	if len(param.Filters) > 0 {
 		newFilters := []*models.QueryRequestFilterObj{}
 		for _, v := range param.Filters {
@@ -409,6 +424,34 @@ func DeleteRequestTemplate(id string) error {
 	return err
 }
 
+func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.ProcEntityAttributeObj, err error) {
+	result = []*models.ProcEntityAttributeObj{}
+	processList, queryProErr := GetCoreProcessListNew(userToken)
+	if queryProErr != nil {
+		err = fmt.Errorf("Try to get process list fail,%s ", queryProErr.Error())
+		return
+	}
+	queryRows, queryDbErr := x.QueryString("select proc_def_id from request_template where id=?", id)
+	if queryDbErr != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", queryDbErr.Error())
+		return
+	}
+	if len(queryRows) == 0 {
+		err = fmt.Errorf("Can not find request template width id:%s ", id)
+		return
+	}
+	proDefId := queryRows[0]["proc_def_id"]
+	for _, v := range processList {
+		if v.ProcDefId == proDefId {
+			if len(v.RootEntity.Attributes) > 0 {
+				result = v.RootEntity.Attributes
+				break
+			}
+		}
+	}
+	return
+}
+
 func GetRequestTemplateEntityAttrs(id string) (result []*models.ProcEntityAttributeObj, err error) {
 	result = []*models.ProcEntityAttributeObj{}
 	var requestTemplateTable []*models.RequestTemplateTable
@@ -418,6 +461,9 @@ func GetRequestTemplateEntityAttrs(id string) (result []*models.ProcEntityAttrib
 	}
 	if len(requestTemplateTable) == 0 {
 		err = fmt.Errorf("Can not find request template wit id:%s ", id)
+		return
+	}
+	if requestTemplateTable[0].EntityAttrs == "" {
 		return
 	}
 	err = json.Unmarshal([]byte(requestTemplateTable[0].EntityAttrs), &result)
@@ -431,4 +477,20 @@ func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttri
 	b, _ := json.Marshal(attrs)
 	_, err := x.Exec("update request_template set entity_attrs=? where id=?", string(b), id)
 	return err
+}
+
+func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
+	var requestTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select * from request_template where id=?", id).Find(&requestTemplateTable)
+	if err != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		return
+	}
+	if len(requestTemplateTable) == 0 {
+		err = fmt.Errorf("Can not find request template with id:%s ", id)
+		result = models.RequestTemplateTable{}
+		return
+	}
+	result = *requestTemplateTable[0]
+	return
 }

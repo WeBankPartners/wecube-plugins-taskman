@@ -17,27 +17,20 @@ func GetRequestFormTemplate(c *gin.Context) {
 	}
 }
 
-func CreateRequestFormTemplate(c *gin.Context) {
-	var param models.RequestFormTemplateDto
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	id, err := db.CreateRequestFormTemplate(param, middleware.GetRequestUser(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, id)
-	}
-}
-
 func UpdateRequestFormTemplate(c *gin.Context) {
-	var param models.RequestFormTemplateDto
+	id := c.Param("id")
+	var param models.FormTemplateDto
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.UpdateRequestFormTemplate(param, middleware.GetRequestUser(c))
+	var err error
+	param.UpdatedBy = middleware.GetRequestUser(c)
+	if param.Id != "" {
+		err = db.UpdateRequestFormTemplate(param)
+	} else {
+		err = db.CreateRequestFormTemplate(param, id)
+	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

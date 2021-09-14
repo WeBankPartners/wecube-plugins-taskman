@@ -22,15 +22,16 @@ type RequestTemplateTable struct {
 }
 
 type RequestTemplateGroupTable struct {
-	Id          string `json:"id" xorm:"id"`
-	Name        string `json:"name" xorm:"name" binding:"required"`
-	Description string `json:"description" xorm:"description"`
-	ManageRole  string `json:"manageRole" xorm:"manage_role" binding:"required"`
-	CreatedBy   string `json:"createdBy" xorm:"created_by"`
-	CreatedTime string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
+	Id            string    `json:"id" xorm:"id"`
+	Name          string    `json:"name" xorm:"name" binding:"required"`
+	Description   string    `json:"description" xorm:"description"`
+	ManageRole    string    `json:"manageRole" xorm:"manage_role" binding:"required"`
+	ManageRoleObj RoleTable `json:"manageRoleObj" xorm:"-"`
+	CreatedBy     string    `json:"createdBy" xorm:"created_by"`
+	CreatedTime   string    `json:"createdTime" xorm:"created_time"`
+	UpdatedBy     string    `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime   string    `json:"updatedTime" xorm:"updated_time"`
+	DelFlag       int       `json:"delFlag" xorm:"del_flag"`
 }
 
 type RoleTable struct {

@@ -52,14 +52,16 @@ type TaskTemplateRoleTable struct {
 }
 
 type TaskTemplateDto struct {
-	Id              string                   `json:"id"`
-	NodeDefId       string                   `json:"node_def_id"`
-	NodeDefName     string                   `json:"node_def_name"`
-	Name            string                   `json:"name"`
-	Description     string                   `json:"description"`
-	RequestTemplate string                   `json:"requestTemplate"`
-	UpdatedTime     string                   `json:"updatedTime"`
-	MGMTRoles       []string                 `json:"mgmtRoles"`
-	USERoles        []string                 `json:"useRoles"`
-	Items           []*FormItemTemplateTable `json:"items"`
+	Id           string                   `json:"id"`
+	NodeDefId    string                   `json:"nodeDefId"`
+	NodeDefName  string                   `json:"nodeDefName"`
+	Name         string                   `json:"name"`
+	Description  string                   `json:"description"`
+	UpdatedTime  string                   `json:"updatedTime"`
+	UpdatedBy    string                   `json:"updatedBy"`
+	MGMTRoles    []string                 `json:"mgmtRoles"`
+	USERoles     []string                 `json:"useRoles"`
+	MGMTRoleObjs []*RoleTable             `json:"mgmtRoleObjs"`
+	USERoleObjs  []*RoleTable             `json:"useRoleObjs"`
+	Items        []*FormItemTemplateTable `json:"items"`
 }

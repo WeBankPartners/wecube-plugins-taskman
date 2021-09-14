@@ -5,6 +5,8 @@
   "save": "保存",
   "cancel": "取消",
   "delete": "删除",
+  "reset": "重置",
+  "next": "下一步",
   "confirm_delete": "确定删除？",
   "successful": "成功",
   "action": "操作",
@@ -12,5 +14,10 @@
   "manageRole": "角色",
   "description": "描述",
   "tm_updated_time": "更新时间",
-  "tm_template_group": "模板组"
+  "tm_template_group": "模板组",
+  "group": "模板组",
+  "procDefId": "流程",
+  "mgmtRoles": "管理角色",
+  "useRoles": "用户角色",
+  "tags": "标签"
 }

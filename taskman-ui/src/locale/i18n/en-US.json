@@ -5,6 +5,8 @@
   "save": "Save",
   "cancel": "Cancel",
   "delete": "Delete",
+  "reset": "Reset",
+  "next": "next",
   "confirm_delete": "Delete Confirm ？",
   "successful": "Successful",
   "action": "Action",
@@ -12,5 +14,10 @@
   "manageRole": "Role",
   "description": "Description",
   "tm_updated_time": "Updated Time",
-  "tm_template_group": "Template Group"
+  "tm_template_group": "Template Group",
+  "group": "Template Group",
+  "procDefId": "Process",
+  "mgmtRoles": "MGMT Roles",
+  "useRoles": "User Roles",
+  "tags": "Tags"
 }

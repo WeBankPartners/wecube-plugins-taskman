@@ -17,3 +17,12 @@ export const updateTempGroup = data => req.put('/taskman/api/v1/request-template
 export const deleteTempGroup = data => req.delete('/taskman/api/v1/request-template-group', data)
 
 export const getManagementRoles = () => req.get('/taskman/api/v1/role/list')
+export const getUserRoles = () => req.get('/taskman/api/v1/user/roles')
+export const getProcess = () => req.get('/taskman/api/v1/process/list')
+
+export const createTemp = data => req.post('/taskman/api/v1/request-template', data)
+export const updateTemp = data => req.put('/taskman/api/v1/request-template', data)
+export const deleteTemp = data => req.delete('/taskman/api/v1/request-template', data)
+
+export const getFromList = requestTemplateId =>
+  req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/list`)

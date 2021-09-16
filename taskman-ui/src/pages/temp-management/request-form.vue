@@ -75,8 +75,8 @@
       <Col span="6" style="border-left: 1px solid #dcdee2;">
         <Collapse>
           <Panel name="1">
-            <!-- 通用属性
-            <p slot="content">
+            通用属性
+            <div slot="content">
               <Form :label-width="80">
                 <FormItem label="字段名">
                   <Input v-model="editElement.name" placeholder="Enter something..."></Input>
@@ -98,23 +98,23 @@
                   <Input v-model="editElement.width" placeholder="Enter something..."></Input>
                 </FormItem>
               </Form>
-            </p> -->
+            </div>
           </Panel>
           <Panel name="2">
             扩展属性
-            <!-- <p slot="content">
+            <div slot="content">
               <Form :label-width="80">
                 <FormItem label="校验规则">
                   <Input v-model="editElement.regular" placeholder="仅支持正则"></Input>
                 </FormItem>
               </Form>
-            </p> -->
+            </div>
           </Panel>
           <Panel name="3">
             数据项
-            <p slot="content">
+            <div slot="content">
               当前表单项没有数据项
-            </p>
+            </div>
           </Panel>
         </Collapse>
       </Col>

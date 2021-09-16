@@ -24,8 +24,14 @@ export const createTemp = data => req.post('/taskman/api/v1/request-template', d
 export const updateTemp = data => req.put('/taskman/api/v1/request-template', data)
 export const deleteTemp = data => req.delete('/taskman/api/v1/request-template', data)
 
-export const getFromList = requestTemplateId =>
+export const getFormList = requestTemplateId =>
   req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/list`)
 
 export const saveAttrs = (requestTemplateId, data) =>
   req.put(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/update`, data)
+
+export const getSelectedForm = requestTemplateId =>
+  req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/get`)
+
+export const saveRequsetForm = (requestTemplateId, data) =>
+  req.post(`/taskman/api/v1/request-form-template/${requestTemplateId}`, data)

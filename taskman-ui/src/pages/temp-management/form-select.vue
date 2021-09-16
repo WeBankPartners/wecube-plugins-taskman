@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { getFromList, saveAttrs } from '@/api/server.js'
+import { getFormList, saveAttrs } from '@/api/server.js'
 export default {
   name: 'form-select',
   data () {
@@ -26,7 +26,7 @@ export default {
   },
   // props: ['requestTemplateId'],
   mounted () {
-    this.getFromList()
+    this.getFormList()
   },
   methods: {
     async saveAttrs () {
@@ -40,8 +40,8 @@ export default {
         this.$emit('formSelectNextStep')
       }
     },
-    async getFromList () {
-      const { statusCode, data } = await getFromList(this.requestTemplateId)
+    async getFormList () {
+      const { statusCode, data } = await getFormList(this.requestTemplateId)
       if (statusCode === 'OK') {
         this.attrOptions = data
       }

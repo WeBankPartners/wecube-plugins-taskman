@@ -75,8 +75,8 @@
       <Col span="6" style="border-left: 1px solid #dcdee2;">
         <Collapse>
           <Panel name="1">
-            通用属性
-            <!-- <p slot="content">
+            <!-- 通用属性
+            <p slot="content">
               <Form :label-width="80">
                 <FormItem label="字段名">
                   <Input v-model="editElement.name" placeholder="Enter something..."></Input>
@@ -114,11 +114,6 @@
             数据项
             <p slot="content">
               当前表单项没有数据项
-              <!-- <Form :label-width="80">
-                <FormItem label="校验规则">
-                  <Input v-model="editElement.regular" placeholder="仅支持正则"></Input>
-                </FormItem>
-              </Form> -->
             </p>
           </Panel>
         </Collapse>
@@ -237,7 +232,6 @@ export default {
       let tmp = JSON.parse(JSON.stringify(this.list2))
       tmp.forEach((l, index) => {
         l.sort = index
-        console.log(l.id)
         if (!isNaN(l.id)) {
           l.id = ''
         }
@@ -246,34 +240,26 @@ export default {
         ...this.formData,
         items: tmp
       }
-      console.log(res)
       const { statusCode, data } = await saveRequsetForm(this.requestTemplateId, res)
       if (statusCode === 'OK') {
-        console.log(data)
         this.formData = { ...data }
       }
     },
     changeSelectedForm () {
       let remove = []
-      console.log(this.selectedFormItem)
       const test1 = this.list2.filter(l => l.isCustom === false).map(m => m.id)
-      console.log(test1)
       test1.forEach(t => {
         if (!this.selectedFormItem.includes(t)) {
           remove.push(t)
         }
       })
-      console.log(remove)
       remove.forEach(r => {
         const findIndex = this.list2.findIndex(l => l.id === r)
         this.list2.splice(findIndex, 1)
       })
-      console.log(this.list2)
-      // let removeIndex = []
       this.selectedFormItem.forEach(item => {
         let find = this.list2.find(d => d.id === item)
         if (find) {
-          console.log(2323)
         } else {
           const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
           this.list2.push({
@@ -310,7 +296,6 @@ export default {
       this.selectElement(this.list2.length - 1)
     },
     cloneDog (val) {
-      console.log(val)
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = idGlobal++
       newItem.title = newItem.title + idGlobal

@@ -35,3 +35,8 @@ export const getSelectedForm = requestTemplateId =>
 
 export const saveRequsetForm = (requestTemplateId, data) =>
   req.post(`/taskman/api/v1/request-form-template/${requestTemplateId}`, data)
+
+export const getTemplateNodes = requestTemplateId => req.get(`/taskman/api/v1/process-nodes/${requestTemplateId}`)
+
+export const saveTaskForm = (requestTemplateId, data) =>
+  req.post(`/taskman/api/v1/task-template/${requestTemplateId}`, data)

@@ -32,7 +32,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template-group", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateGroup},
 		&handlerFuncObj{Url: "/request-template-group", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplateGroup},
 		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: request.GetCoreProcessList},
-		&handlerFuncObj{Url: "/process-nodes/:procId", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
+		&handlerFuncObj{Url: "/process-nodes/:id", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
 		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: request.GetRoleList},
 		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: request.GetUserRoles},
 		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: request.QueryRequestTemplate},
@@ -49,6 +49,9 @@ func init() {
 
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
+
+		&handlerFuncObj{Url: "/entity/data", Method: "POST", HandlerFunc: request.GetEntityData},
+		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
 	)
 }
 

@@ -4,8 +4,6 @@ type FormTemplateTable struct {
 	Id          string `json:"id" xorm:"id"`
 	Name        string `json:"name" xorm:"name"`
 	Description string `json:"description" xorm:"description"`
-	Version     string `json:"version" xorm:"version"`
-	ConfirmTime string `json:"confirmTime" xorm:"confirm_time"`
 	CreatedBy   string `json:"createdBy" xorm:"created_by"`
 	CreatedTime string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
@@ -18,7 +16,6 @@ type FormTable struct {
 	Name         string `json:"name" xorm:"name"`
 	Description  string `json:"description" xorm:"description"`
 	FormTemplate string `json:"formTemplate" xorm:"form_template"`
-	FormVersion  string `json:"formVersion" xorm:"form_version"`
 	CreatedBy    string `json:"createdBy" xorm:"created_by"`
 	CreatedTime  string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
@@ -28,10 +25,9 @@ type FormTable struct {
 
 type FormItemTemplateTable struct {
 	Id              string `json:"id" xorm:"id"`
-	RecordId        string `json:"record_id" xorm:"record_id"`
-	Version         string `json:"version" xorm:"version"`
 	Name            string `json:"name" xorm:"name"`
 	Description     string `json:"description" xorm:"description"`
+	Tag             string `json:"tag" xorm:"tag"`
 	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
 	DefaultValue    string `json:"defaultValue" xorm:"default_value"`
 	Sort            int    `json:"sort" xorm:"sort"`

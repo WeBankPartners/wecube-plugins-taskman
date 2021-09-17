@@ -34,13 +34,15 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+		result, _ := db.GetRequestFormTemplate(id)
+		middleware.ReturnData(c, result)
 	}
 }
 
 func ConfirmRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
-	err := db.ConfirmRequestFormTemplate(id, middleware.GetRequestUser(c))
+	err := db.ConfirmRequestTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

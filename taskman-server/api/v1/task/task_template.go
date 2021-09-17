@@ -35,6 +35,8 @@ func UpdateTaskTemplate(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+		result, _ := db.GetTaskTemplate(id, param.NodeDefId)
+		middleware.ReturnData(c, result)
 	}
 }

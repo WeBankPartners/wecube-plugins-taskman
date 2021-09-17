@@ -78,8 +78,8 @@ func GetCoreProcessList(c *gin.Context) {
 }
 
 func GetCoreProcNodes(c *gin.Context) {
-	procId := c.Param("procId")
-	result, err := db.GetProcessNodesByProc(procId, c.GetHeader("Authorization"))
+	requestTemplateId := c.Param("id")
+	result, err := db.GetProcessNodesByProc(requestTemplateId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -231,6 +231,7 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
 		middleware.ReturnSuccess(c)
 	}
 }

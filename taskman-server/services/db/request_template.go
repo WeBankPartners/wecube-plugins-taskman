@@ -99,9 +99,18 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
-func GetProcessNodesByProc(procId, userToken string) (nodeList []*models.ProcNodeObj, err error) {
+func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList []*models.ProcNodeObj, err error) {
+	requestTemplateObj, tmpErr := getSimpleRequestTemplate(requestTemplateId)
+	if tmpErr != nil {
+		err = tmpErr
+		return
+	}
+	if requestTemplateObj.ProcDefId == "" {
+		err = fmt.Errorf("Request template proDefId illegal ")
+		return
+	}
 	nodeList = []*models.ProcNodeObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions/"+procId+"/tasknodes", nil)
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions/"+requestTemplateObj.ProcDefId+"/tasknodes", nil)
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
 		return
@@ -403,7 +412,7 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
-	updateAction := execAction{Sql: "update request_template set `group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,updated_by=?,updated_time=? where id=?"}
+	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,updated_by=?,updated_time=? where id=?"}
 	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.UpdatedBy, nowTime, param.Id}
 	actions = append(actions, &updateAction)
 	actions = append(actions, &execAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{param.Id}})
@@ -424,29 +433,35 @@ func DeleteRequestTemplate(id string) error {
 	return err
 }
 
-func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.ProcEntityAttributeObj, err error) {
-	result = []*models.ProcEntityAttributeObj{}
-	processList, queryProErr := GetCoreProcessListNew(userToken)
-	if queryProErr != nil {
-		err = fmt.Errorf("Try to get process list fail,%s ", queryProErr.Error())
+func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.ProcEntity, err error) {
+	result = []*models.ProcEntity{}
+	nodes, getNodesErr := GetProcessNodesByProc(id, userToken)
+	if getNodesErr != nil {
+		err = getNodesErr
 		return
 	}
-	queryRows, queryDbErr := x.QueryString("select proc_def_id from request_template where id=?", id)
-	if queryDbErr != nil {
-		err = fmt.Errorf("Try to query database fail,%s ", queryDbErr.Error())
-		return
+	entityMap := make(map[string]int)
+	existAttrMap := make(map[string]int)
+	existAttrs, _ := GetRequestTemplateEntityAttrs(id)
+	for _, attr := range existAttrs {
+		existAttrMap[attr.Id] = 1
 	}
-	if len(queryRows) == 0 {
-		err = fmt.Errorf("Can not find request template width id:%s ", id)
-		return
-	}
-	proDefId := queryRows[0]["proc_def_id"]
-	for _, v := range processList {
-		if v.ProcDefId == proDefId {
-			if len(v.RootEntity.Attributes) > 0 {
-				result = v.RootEntity.Attributes
-				break
+	for _, node := range nodes {
+		for _, entity := range node.BoundEntities {
+			if _, b := entityMap[entity.Id]; b {
+				continue
 			}
+			entityMap[entity.Id] = 1
+			for _, attribute := range entity.Attributes {
+				attribute.EntityId = entity.Id
+				attribute.EntityName = entity.Name
+				attribute.EntityDisplayName = entity.DisplayName
+				attribute.EntityPackage = entity.PackageName
+				if _, b := existAttrMap[attribute.Id]; b {
+					attribute.Active = true
+				}
+			}
+			result = append(result, entity)
 		}
 	}
 	return
@@ -493,4 +508,103 @@ func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, er
 	}
 	result = *requestTemplateTable[0]
 	return
+}
+
+func ConfirmRequestTemplate(requestTemplateId string) error {
+	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	if requestTemplateObj.FormTemplate == "" {
+		return fmt.Errorf("Please config request template form ")
+	}
+	err = validateConfirm(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	version := buildVersionNum(requestTemplateObj.Version)
+	newRequestTemplateId := guid.CreateGuid()
+	newRequestFormTemplateId := guid.CreateGuid()
+	var actions []*execAction
+	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2 where id=?", Param: []interface{}{version, nowTime, requestTemplateObj.Id}})
+	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'confirm' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'%s' as confirm_time from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, requestTemplateObj.Id, version, nowTime, requestTemplateObj.Id)})
+	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
+	if tmpErr != nil {
+		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
+	}
+	actions = append(actions, newRequestFormActions...)
+	var requestTemplateRoles []*models.RequestTemplateRoleTable
+	x.SQL("select * from request_template_role where request_template=?", requestTemplateObj.Id).Find(&requestTemplateRoles)
+	for _, v := range requestTemplateRoles {
+		tmpId := newRequestTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
+		actions = append(actions, &execAction{Sql: "insert into request_template_role(id,request_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newRequestTemplateId, v.Role, v.RoleType}})
+	}
+	var taskTemplates []*models.TaskTemplateTable
+	x.SQL("select id,form_template from task_template where request_template=?", requestTemplateObj.Id).Find(&taskTemplates)
+	newTaskGuids := guid.CreateGuidList(len(taskTemplates))
+	newTaskFormGuids := guid.CreateGuidList(len(taskTemplates))
+	for i, task := range taskTemplates {
+		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into task_template(id,name,description,form_template,request_template,node_def_id,node_name,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,'%s' as form_template,'%s' as request_template,node_def_id,node_name,created_by,created_time,updated_by,updated_time from task_template where id='%s'", newTaskGuids[i], newTaskFormGuids[i], newRequestTemplateId, task.Id)})
+		tmpTaskFormActions, tmpErr := getFormCopyActions(task.FormTemplate, newTaskFormGuids[i])
+		if tmpErr != nil {
+			err = fmt.Errorf("Try to copy task form fail,%s ", tmpErr.Error())
+			break
+		}
+		actions = append(actions, tmpTaskFormActions...)
+		tmpTaskRoleActions, tmpErr := getTaskTemplateRoleActions(task.Id, newTaskGuids[i])
+		if tmpErr != nil {
+			err = fmt.Errorf("Try to copy task role releation fail,%s ", tmpErr.Error())
+			break
+		}
+		actions = append(actions, tmpTaskRoleActions...)
+	}
+	if err != nil {
+		return err
+	}
+	return transactionWithoutForeignCheck(actions)
+}
+
+func getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []*execAction, err error) {
+	var itemRows []*models.FormItemTemplateTable
+	err = x.SQL("select id from form_item_template where form_template=?", oldFormTemplateId).Find(&itemRows)
+	if err != nil {
+		return
+	}
+	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,created_by,created_time,updated_by,updated_time from form_template where id='%s'", newFormTemplateId, oldFormTemplateId)})
+	newGuidList := guid.CreateGuidList(len(itemRows))
+	for i, item := range itemRows {
+		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,tag) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,tag from form_item_template where id='%s'", newGuidList[i], newFormTemplateId, item.Id)})
+	}
+	return
+}
+
+func getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (actions []*execAction, err error) {
+	var taskTemplateRoles []*models.TaskTemplateRoleTable
+	err = x.SQL("select * from task_template_role where task_template=?", oldTaskTemplateId).Find(&taskTemplateRoles)
+	if err != nil {
+		return
+	}
+	for _, v := range taskTemplateRoles {
+		tmpId := newTaskTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
+		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newTaskTemplateId, v.Role, v.RoleType}})
+	}
+	return
+}
+
+func validateConfirm(requestTemplateId string) error {
+	var taskTemplateTable []*models.TaskTemplateTable
+	x.SQL("select id from task_template where request_template=? and form_template IS NOT NULL", requestTemplateId).Find(&taskTemplateTable)
+	if len(requestTemplateId) == 0 {
+		return fmt.Errorf("Please config task template ")
+	}
+	return nil
+}
+
+func SetRequestTemplateToCreated(id, operator string) {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err := x.Exec("update request_template set status='created',updated_by=?,updated_time=? where id=?", operator, nowTime, id)
+	if err != nil {
+		log.Logger.Error("Update request template to created status fail", log.Error(err), log.String("operator", operator), log.String("requestTemplateId", id))
+	}
 }

@@ -8,6 +8,9 @@ type RequestTemplateTable struct {
 	FormTemplate string `json:"formTemplate" xorm:"form_template"`
 	Tags         string `json:"tags" xorm:"tags"`
 	Status       string `json:"status" xorm:"status"`
+	RecordId     string `json:"recordId" xorm:"record_id"`
+	Version      string `json:"version" xorm:"version"`
+	ConfirmTime  string `json:"confirmTime" xorm:"confirm_time"`
 	PackageName  string `json:"packageName" xorm:"package_name"`
 	EntityName   string `json:"entityName" xorm:"entity_name"`
 	ProcDefKey   string `json:"procDefKey" xorm:"proc_def_key"`
@@ -79,16 +82,20 @@ type RequestTemplateUpdateParam struct {
 }
 
 type ProcEntityAttributeObj struct {
-	Id             string `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	DataType       string `json:"dataType"`
-	Mandatory      bool   `json:"mandatory"`
-	RefPackageName string `json:"refPackageName"`
-	RefEntityName  string `json:"refEntityName"`
-	RefAttrName    string `json:"refAttrName"`
-	ReferenceId    string `json:"referenceId"`
-	Active         bool   `json:"active"`
+	Id                string `json:"id"`
+	Name              string `json:"name"`
+	Description       string `json:"description"`
+	DataType          string `json:"dataType"`
+	Mandatory         bool   `json:"mandatory"`
+	RefPackageName    string `json:"refPackageName"`
+	RefEntityName     string `json:"refEntityName"`
+	RefAttrName       string `json:"refAttrName"`
+	ReferenceId       string `json:"referenceId"`
+	Active            bool   `json:"active"`
+	EntityId          string `json:"entityId"`
+	EntityName        string `json:"entityName"`
+	EntityDisplayName string `json:"entityDisplayName"`
+	EntityPackage     string `json:"entityPackage"`
 }
 
 type ProcEntity struct {

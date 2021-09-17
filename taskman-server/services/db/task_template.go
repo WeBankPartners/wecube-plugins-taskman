@@ -55,6 +55,10 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 }
 
 func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) error {
+	_, checkExistErr := getSimpleTaskTemplate("", requestTemplateId, param.NodeDefId)
+	if checkExistErr == nil {
+		return fmt.Errorf("RequestTemplate:%s nodeDefId:%s already have task form,please reload ", requestTemplateId, param.NodeDefId)
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formCreateParam := models.FormTemplateDto{Name: param.Name, Description: param.Description, UpdatedBy: param.UpdatedBy, Items: param.Items, NowTime: nowTime}
 	actions, formId := getFormTemplateCreateActions(formCreateParam)

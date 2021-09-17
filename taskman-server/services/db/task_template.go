@@ -37,7 +37,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 	result.UpdatedTime = formTemplateTable[0].UpdatedTime
 	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where form_template=? and version is null", taskTemplate.FormTemplate).Find(&formItemTemplate)
+	x.SQL("select * from form_item_template where form_template=?", taskTemplate.FormTemplate).Find(&formItemTemplate)
 	result.Items = formItemTemplate
 	roleMap, _ := getRoleMap()
 	var taskRoleTable []*models.TaskTemplateRoleTable
@@ -45,8 +45,10 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 	for _, role := range taskRoleTable {
 		if role.RoleType == "MGMT" {
 			result.MGMTRoleObjs = append(result.MGMTRoleObjs, roleMap[role.Role])
+			result.MGMTRoles = append(result.MGMTRoles, role.Role)
 		} else {
 			result.USERoleObjs = append(result.USERoleObjs, roleMap[role.Role])
+			result.USERoles = append(result.USERoles, role.Role)
 		}
 	}
 	return

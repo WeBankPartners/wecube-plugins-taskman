@@ -40,3 +40,6 @@ export const getTemplateNodes = requestTemplateId => req.get(`/taskman/api/v1/pr
 
 export const saveTaskForm = (requestTemplateId, data) =>
   req.post(`/taskman/api/v1/task-template/${requestTemplateId}`, data)
+
+export const confirmTemplate = requestTemplateId =>
+  req.post(`/taskman/api/v1/request-template/confirm/${requestTemplateId}`)

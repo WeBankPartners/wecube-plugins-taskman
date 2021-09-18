@@ -1,5 +1,8 @@
 <template>
-  <div class=" ">
+  <div class="">
+    <div style="text-align:end">
+      <Button @click="confirmTemplate" type="primary">模板发布</Button>
+    </div>
     <Tabs @on-click="changeNode" :value="currentNode">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
@@ -12,12 +15,12 @@
 
 <script>
 import FormComponent from './task-form-component'
-import { getTemplateNodes } from '@/api/server.js'
+import { getTemplateNodes, confirmTemplate } from '@/api/server.js'
 export default {
   name: '',
   data () {
     return {
-      requestTemplateId: '614043ac9379fb1e',
+      requestTemplateId: '614479d70dd9be04',
       currentNode: '',
       nodes: []
     }
@@ -26,6 +29,15 @@ export default {
     this.getTemplateNodes()
   },
   methods: {
+    async confirmTemplate () {
+      const { statusCode } = await confirmTemplate(this.requestTemplateId)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+      }
+    },
     async getTemplateNodes () {
       const { statusCode, data } = await getTemplateNodes(this.requestTemplateId)
       if (statusCode === 'OK') {
@@ -42,6 +54,9 @@ export default {
     },
     initTab (currentNode, data) {
       this.$refs[this.currentNode][0].initData(data)
+    },
+    publishTemplate () {
+      console.log('发布模板！')
     }
   },
   components: {

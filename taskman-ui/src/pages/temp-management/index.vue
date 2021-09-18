@@ -28,7 +28,7 @@ export default {
   name: '',
   data () {
     return {
-      currentStep: 1,
+      currentStep: 0,
       requestTemplateId: ''
     }
   },

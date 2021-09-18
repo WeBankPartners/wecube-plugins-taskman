@@ -3,7 +3,9 @@
     <Form :label-width="100">
       <FormItem :label="$t('attributes')">
         <Select v-model="attrData" multiple filterable>
-          <Option v-for="item in attrOptions" :value="item.id" :key="item.id">{{ item.description }}</Option>
+          <OptionGroup v-for="item in attrOptions" :label="item.description" :key="item.id">
+            <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
+          </OptionGroup>
         </Select>
       </FormItem>
       <FormItem>
@@ -19,7 +21,7 @@ export default {
   name: 'form-select',
   data () {
     return {
-      requestTemplateId: '614043ac9379fb1e',
+      requestTemplateId: '614479d70dd9be04',
       attrData: [],
       attrOptions: []
     }
@@ -30,7 +32,8 @@ export default {
   },
   methods: {
     async saveAttrs () {
-      const params = this.attrOptions.filter(item => this.attrData.includes(item.id))
+      const attrs = [].concat(...this.attrOptions.map(attr => attr.attributes))
+      const params = attrs.filter(item => this.attrData.includes(item.id))
       const { statusCode } = await saveAttrs(this.requestTemplateId, params)
       if (statusCode === 'OK') {
         this.$Notice.success({

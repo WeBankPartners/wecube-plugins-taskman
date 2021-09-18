@@ -34,15 +34,27 @@
       <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
         <Divider plain>输入项</Divider>
         <Select v-model="selectedInputFormItem" @on-change="changeInputSelectedForm" multiple filterable>
-          <Option v-for="item in selectedFormItemOptions" :value="item.id" :key="item.id">{{
-            item.description
-          }}</Option>
+          <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
+            <Option
+              v-for="attr in item.attributes"
+              :value="attr.id"
+              :disabled="selectedOutputFormItem.includes(attr.id)"
+              :key="attr.id"
+              >{{ attr.description }}</Option
+            >
+          </OptionGroup>
         </Select>
         <Divider plain>输出项</Divider>
         <Select v-model="selectedOutputFormItem" @on-change="changeOutputSelectedForm" multiple filterable>
-          <Option v-for="item in selectedFormItemOptions" :value="item.id" :key="item.id">{{
-            item.description
-          }}</Option>
+          <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
+            <Option
+              v-for="attr in item.attributes"
+              :value="attr.id"
+              :disabled="selectedInputFormItem.includes(attr.id)"
+              :key="attr.id"
+              >{{ attr.description }}</Option
+            >
+          </OptionGroup>
         </Select>
         <Divider plain>自定义表单</Divider>
         <draggable
@@ -64,37 +76,53 @@
         </draggable>
       </Col>
       <Col span="12" style="padding: 16px">
-        <draggable class="dragArea list-group" :list="list2" group="people">
-          <div
-            @click="selectElement(eleIndex)"
-            class="list-group-item"
-            v-for="(element, eleIndex) in list2"
-            :key="element.id"
-          >
-            <div style="width:10%;display:inline-block;text-align:right;padding-right:10px">{{ element.title }}:</div>
-            <Input
-              v-if="element.elementType === 'input'"
-              disabled
-              v-model="element.defaultValue"
-              placeholder=""
-              style="width:86%"
-            />
-            <Input
-              v-if="element.elementType === 'textarea'"
-              disabled
-              v-model="element.defaultValue"
-              type="textarea"
-              style="width:86%"
-            />
-            <Select
-              v-if="element.elementType === 'select'"
-              disabled
-              v-model="element.defaultValue"
-              style="width:86%"
-            ></Select>
-            <Button @click="removeForm(eleIndex)" type="primary" size="small" ghost icon="ios-close"></Button>
-          </div>
-        </draggable>
+        <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
+          <template v-for="(item, itemIndex) in list2">
+            <div :key="item.tag" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+              {{ item.tag }}
+              <draggable class="dragArea list-group" :list="item.attrs" group="people">
+                <!-- {{item.attrs}} -->
+                <div
+                  @click="selectElement(itemIndex, eleIndex)"
+                  class="list-group-item"
+                  v-for="(element, eleIndex) in item.attrs"
+                  :key="element.id"
+                >
+                  <div style="width:20%;display:inline-block;text-align:right;padding-right:10px">
+                    {{ element.title }}:
+                  </div>
+                  <Input
+                    v-if="element.elementType === 'input'"
+                    disabled
+                    v-model="element.defaultValue"
+                    placeholder=""
+                    style="width:66%"
+                  />
+                  <Input
+                    v-if="element.elementType === 'textarea'"
+                    disabled
+                    v-model="element.defaultValue"
+                    type="textarea"
+                    style="width:66%"
+                  />
+                  <Select
+                    v-if="element.elementType === 'select'"
+                    disabled
+                    v-model="element.defaultValue"
+                    style="width:66%"
+                  ></Select>
+                  <Button
+                    @click.stop="removeForm(element, itemIndex, eleIndex)"
+                    type="primary"
+                    size="small"
+                    ghost
+                    icon="ios-close"
+                  ></Button>
+                </div>
+              </draggable>
+            </div>
+          </template>
+        </div>
       </Col>
       <Col span="6" style="border-left: 1px solid #dcdee2;">
         <Collapse>
@@ -118,6 +146,9 @@
                 <FormItem label="默认值">
                   <Input v-model="editElement.defaultValue" placeholder="Enter something..."></Input>
                 </FormItem>
+                <!-- <FormItem label="标签">
+                  <Input v-model="editElement.tag" placeholder="Enter something..."></Input>
+                </FormItem> -->
                 <FormItem label="宽度">
                   <Input v-model="editElement.width" placeholder="Enter something..."></Input>
                 </FormItem>
@@ -148,7 +179,9 @@
         </Collapse>
       </Col>
     </Row>
-    <Button type="primary" @click="saveForm">保存当前表单</Button>
+    <div style="text-align:center">
+      <Button type="primary" @click="saveForm">保存当前表单</Button>
+    </div>
   </div>
 </template>
 
@@ -160,9 +193,10 @@ export default {
   name: '',
   data () {
     return {
+      MODALHEIGHT: 500,
       nodeId: '',
       nodeData: null,
-      requestTemplateId: '614043ac9379fb1e',
+      requestTemplateId: '614479d70dd9be04',
       formData: {
         id: '',
         nodeDefId: '',
@@ -176,6 +210,7 @@ export default {
       },
       selectedInputFormItem: [],
       selectedOutputFormItem: [],
+      formItemOptions: [], // 树形数据
       selectedFormItemOptions: [],
       mgmtRolesOptions: [],
       useRolesOptions: [],
@@ -188,6 +223,7 @@ export default {
           title: 'Input',
           elementType: 'input',
           defaultValue: '',
+          tag: '',
           width: 70,
           regular: '',
           isEdit: 'yes',
@@ -205,6 +241,7 @@ export default {
           title: 'Select',
           elementType: 'select',
           defaultValue: '',
+          tag: '',
           width: 70,
           regular: '',
           isEdit: 'yes',
@@ -222,6 +259,7 @@ export default {
           title: 'Textarea',
           elementType: 'textarea',
           defaultValue: '',
+          tag: '',
           width: 70,
           regular: '',
           isEdit: 'yes',
@@ -240,6 +278,7 @@ export default {
         attrDefId: '',
         attrDefName: '',
         defaultValue: '',
+        tag: '',
         elementType: 'input',
         id: 0,
         isEdit: 'yes',
@@ -255,6 +294,7 @@ export default {
   },
   props: ['currentNode', 'node'],
   mounted () {
+    this.MODALHEIGHT = document.body.scrollHeight - 300
     this.nodeId = this.currentNode
     this.nodeData = this.node
     this.initPage()
@@ -276,6 +316,7 @@ export default {
       }
     },
     async saveForm () {
+      console.log(this.list2)
       if (this.formData.name === '') {
         this.$Notice.warning({
           title: '警告',
@@ -283,106 +324,141 @@ export default {
         })
         return
       }
-      let tmp = JSON.parse(JSON.stringify(this.list2))
+      let tmp = [].concat(...JSON.parse(JSON.stringify(this.list2)).map(l => l.attrs))
       tmp.forEach((l, index) => {
         l.sort = index
-        if (!isNaN(l.id)) {
+        if (!isNaN(l.id) || l.id.startsWith('c_')) {
           l.id = ''
         }
       })
+      console.log(tmp)
       let res = {
         ...this.formData,
         items: tmp
       }
       const { statusCode, data } = await saveTaskForm(this.requestTemplateId, res)
       if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
         this.formData = { ...data }
+        data.items.forEach(item => {
+          let findAttrs = this.list2.find(l => l.tag === item.tag)
+          let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
+          findAttr.id = item.id
+        })
       }
     },
     changeInputSelectedForm () {
-      this.selectedInputFormItem.forEach((item, itemIndex) => {
-        if (this.selectedOutputFormItem.includes(item)) {
-          this.$Notice.warning({
-            title: '警告',
-            desc: '输入项与输出项不能选择相同数据'
-          })
-          this.selectedInputFormItem.splice(itemIndex, 1)
-        }
-      })
       let remove = []
-      const test1 = this.list2.filter(l => l.isCustom === false).map(m => m.id)
+      const test1 = []
+        .concat(...this.list2.map(l => l.attrs))
+        .filter(l => l.isCustom === false)
+        .map(m => m.id)
+      const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
-        if (!this.selectedInputFormItem.includes(t) && !this.selectedOutputFormItem.includes(t)) {
-          remove.push(t)
+        let tmp = t.substring(2)
+        if (!allSelectedFormItem.includes(tmp)) {
+          remove.push(tmp)
         }
       })
       remove.forEach(r => {
-        const findIndex = this.list2.findIndex(l => l.id === r)
-        this.list2.splice(findIndex, 1)
+        let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
+        let findAttr = this.list2.find(l => l.tag === findTag.entityPackage + '.' + findTag.entityName).attrs
+        const findIndex = findAttr.findIndex(l => l.id === r)
+        findAttr.splice(findIndex, 1)
       })
+
       this.selectedInputFormItem.forEach(item => {
-        let find = this.list2.find(d => d.id === item)
-        if (find) {
+        const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
+        let tag = seleted.entityPackage + '.' + seleted.entityName
+        const attr = {
+          attrDefDataType: seleted.dataType,
+          attrDefId: seleted.id,
+          attrDefName: seleted.name,
+          defaultValue: '',
+          tag: tag,
+          elementType: seleted.dataType === 'str' ? 'input' : '',
+          id: 'c_' + seleted.id,
+          isCustom: false,
+          isEdit: 'yes',
+          isOutput: 'no',
+          isView: 'yes',
+          name: seleted.name,
+          regular: '',
+          sort: 0,
+          title: seleted.description,
+          width: 70,
+          entityName: seleted.entityName,
+          entityPackage: seleted.entityPackage
+        }
+        const tagExist = this.list2.find(l => l.tag === tag)
+        if (tagExist) {
+          const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
+          if (!find) {
+            tagExist.attrs.push(attr)
+          }
         } else {
-          const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
           this.list2.push({
-            attrDefDataType: seleted.dataType,
-            attrDefId: seleted.id,
-            attrDefName: seleted.name,
-            defaultValue: '',
-            elementType: seleted.dataType === 'str' ? 'input' : '',
-            id: seleted.id,
-            isCustom: false,
-            isEdit: 'yes',
-            isOutput: 'no',
-            isView: 'yes',
-            name: seleted.name,
-            regular: '',
-            sort: 0,
-            title: seleted.description,
-            width: 70
+            tag: tag,
+            attrs: [attr]
           })
         }
       })
     },
     changeOutputSelectedForm () {
-      this.selectedOutputFormItem.forEach((item, itemIndex) => {
-        if (this.selectedInputFormItem.includes(item)) {
-          this.selectedOutputFormItem.splice(itemIndex, 1)
-        }
-      })
       let remove = []
-      const test1 = this.list2.filter(l => l.isCustom === false).map(m => m.id)
+      const test1 = []
+        .concat(...this.list2.map(l => l.attrs))
+        .filter(l => l.isCustom === false)
+        .map(m => m.id)
+      const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
-        if (!this.selectedInputFormItem.includes(t) && !this.selectedOutputFormItem.includes(t)) {
-          remove.push(t)
+        let tmp = t.substring(2)
+        if (!allSelectedFormItem.includes(tmp)) {
+          remove.push(tmp)
         }
       })
       remove.forEach(r => {
-        const findIndex = this.list2.findIndex(l => l.id === r)
-        this.list2.splice(findIndex, 1)
+        let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
+        let findAttr = this.list2.find(l => l.tag === findTag.entityPackage + '.' + findTag.entityName).attrs
+        const findIndex = findAttr.findIndex(l => l.id === r)
+        findAttr.splice(findIndex, 1)
       })
       this.selectedOutputFormItem.forEach(item => {
-        let find = this.list2.find(d => d.id === item)
-        if (find) {
+        const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
+        let tag = seleted.entityPackage + '.' + seleted.entityName
+        const attr = {
+          attrDefDataType: seleted.dataType,
+          attrDefId: seleted.id,
+          attrDefName: seleted.name,
+          defaultValue: '',
+          tag: tag,
+          elementType: seleted.dataType === 'str' ? 'input' : '',
+          id: 'c_' + seleted.id,
+          isCustom: false,
+          isEdit: 'yes',
+          isOutput: 'no',
+          isView: 'yes',
+          name: seleted.name,
+          regular: '',
+          sort: 0,
+          title: seleted.description,
+          width: 70,
+          entityName: seleted.entityName,
+          entityPackage: seleted.entityPackage
+        }
+        const tagExist = this.list2.find(l => l.tag === tag)
+        if (tagExist) {
+          const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
+          if (!find) {
+            tagExist.attrs.push(attr)
+          }
         } else {
-          const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
           this.list2.push({
-            attrDefDataType: seleted.dataType,
-            attrDefId: seleted.id,
-            attrDefName: seleted.name,
-            defaultValue: '',
-            elementType: seleted.dataType === 'str' ? 'input' : '',
-            id: seleted.id,
-            isCustom: false,
-            isEdit: 'yes',
-            isOutput: 'yes',
-            isView: 'yes',
-            name: seleted.name,
-            regular: '',
-            sort: 0,
-            title: seleted.description,
-            width: 70
+            tag: tag,
+            attrs: [attr]
           })
         }
       })
@@ -390,16 +466,57 @@ export default {
     cloneDog (val) {
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = idGlobal++
+      newItem.tag = 'Custom'
       newItem.title = newItem.title + idGlobal
-      this.list2.push(newItem)
-      this.selectElement(this.list2.length - 1)
+      const find = this.list2.find(l => l.tag === 'Custom')
+      if (find) {
+        find.attrs.push(newItem)
+      } else {
+        this.list2.push({
+          tag: 'Custom',
+          attrs: [newItem]
+        })
+      }
     },
-    selectElement (eleIndex) {
-      this.editElement = this.list2[eleIndex]
+    selectElement (itemIndex, eleIndex) {
+      console.log(234)
+      this.editElement = this.list2[itemIndex].attrs[eleIndex]
+    },
+    removeForm (element, itemIndex, eleIndex) {
+      this.list2[itemIndex].attrs.splice(eleIndex, 1)
+      const outputIndex = this.selectedOutputFormItem.findIndex(i => i === element.id.substring(2))
+      if (outputIndex > -1) {
+        this.selectedOutputFormItem.splice(outputIndex, 1)
+        return
+      }
+      const inputIndex = this.selectedInputFormItem.findIndex(i => i === element.id.substring(2))
+      if (inputIndex > -1) {
+        this.selectedInputFormItem.splice(inputIndex, 1)
+      }
     },
     async getSelectedForm () {
       const { statusCode, data } = await getSelectedForm(this.requestTemplateId)
       if (statusCode === 'OK') {
+        let entitySet = new Set()
+        let formItemOptions = []
+        data.forEach(d => {
+          const tag = d.entityPackage + '.' + d.entityName
+          if (entitySet.has(tag)) {
+            let find = formItemOptions.find(f => f.packageName + '.' + f.name === tag)
+            find.attributes.push(d)
+          } else {
+            entitySet.add(tag)
+            formItemOptions.push({
+              description: d.entityDisplayName,
+              displayName: d.entityDisplayName,
+              id: d.entityId,
+              name: d.entityName,
+              packageName: d.entityPackage,
+              attributes: [d]
+            })
+          }
+        })
+        this.formItemOptions = formItemOptions
         this.selectedFormItemOptions = data
       }
     },
@@ -423,8 +540,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.ivu-form-item {
+  margin-bottom: 8px;
+}
 .list-group-item {
   width: 90%;
-  margin: 16px 0;
+  margin: 8px 0;
 }
 </style>

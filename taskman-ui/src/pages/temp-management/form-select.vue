@@ -16,21 +16,30 @@
 </template>
 
 <script>
-import { getFormList, saveAttrs } from '@/api/server.js'
+import { getFormList, saveAttrs, getRequestTemplateAttrs } from '@/api/server.js'
 export default {
   name: 'form-select',
   data () {
     return {
-      requestTemplateId: '614479d70dd9be04',
       attrData: [],
       attrOptions: []
     }
   },
-  // props: ['requestTemplateId'],
+  props: ['requestTemplateId'],
   mounted () {
     this.getFormList()
+    this.getInitData()
   },
   methods: {
+    async getInitData () {
+      if (!!this.$parent.requestTemplateId === false) {
+        return
+      }
+      const { statusCode, data } = await getRequestTemplateAttrs(this.$parent.requestTemplateId)
+      if (statusCode === 'OK') {
+        this.attrData = data.map(d => d.id)
+      }
+    },
     async saveAttrs () {
       const attrs = [].concat(...this.attrOptions.map(attr => attr.attributes))
       const params = attrs.filter(item => this.attrData.includes(item.id))

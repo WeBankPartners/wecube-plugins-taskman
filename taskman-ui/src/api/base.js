@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 // import exportFile from '@/const/export-file'
-import { setCookie, getCookie } from '../pages/util/cookie'
+import { getCookie } from '../pages/util/cookie'
 
 export const baseURL = ''
 export const req = axios.create({
@@ -52,18 +52,6 @@ req.interceptors.response.use(
           duration: 0
         })
       }
-      // if (
-      //   res.headers['content-type'] === 'application/octet-stream' &&
-      //   res.request.responseURL.includes('/platform/')
-      // ) {
-      //   exportFile(res)
-      //   Vue.prototype.$Notice.info({
-      //     title: 'Success',
-      //     desc: '',
-      //     duration: 10
-      //   })
-      //   return
-      // }
       return {
         ...res.data,
         user: res.headers['username'] || ' - '
@@ -75,83 +63,7 @@ req.interceptors.response.use(
     }
   },
   err => {
-    const { response } = err
-    if (response.status === 401 && err.config.url !== '/wecmdb/api/v1/login') {
-      let refreshToken = getCookie('refreshToken')
-      if (refreshToken.length > 0) {
-        let refreshRequest = axios.get('/wecmdb/api/v1/refresh-token', {
-          headers: {
-            Authorization: 'Bearer ' + refreshToken
-          }
-        })
-        return refreshRequest.then(resRefresh => {
-          setCookie(resRefresh.data.data)
-          // replace token with new one and replay request
-          err.config.headers.Authorization = 'Bearer ' + getCookie('accessToken')
-          err.config.url = err.config.url.replace('/wecmdb/api/v1', '')
-          let retryRequest = axios(err.config)
-          return retryRequest.then(
-            res => {
-              if (res.status === 200) {
-                // do request success again
-                if (res.data.status === 'ERROR') {
-                  const errorMes = Array.isArray(res.data.data)
-                    ? res.data.data.map(_ => _.message || _.errorMessage).join('<br/>')
-                    : res.data.message
-                  Vue.prototype.$Notice.warning({
-                    title: 'Error',
-                    desc: errorMes,
-                    duration: 10
-                  })
-                }
-                // if (
-                //   res.headers['content-type'] === 'application/octet-stream' &&
-                //   res.request.responseURL.includes('/platform/')
-                // ) {
-                //   exportFile(res)
-                //   Vue.prototype.$Notice.info({
-                //     title: 'Success',
-                //     desc: '',
-                //     duration: 10
-                //   })
-                //   return
-                // }
-                return res.data instanceof Array ? res.data : { ...res.data }
-              } else {
-                return {
-                  data: throwError(res)
-                }
-              }
-            },
-            err => {
-              const { response } = err
-              return new Promise((resolve, reject) => {
-                resolve({
-                  data: throwError(response)
-                })
-              })
-            }
-          )
-        })
-      } else {
-        window.location.href = window.location.origin + window.location.pathname + '#/login'
-        // if (response.config.url === '/auth/v1/api/login') {
-        //   Vue.prototype.$Notice.warning({
-        //     title: 'Error',
-        //     desc: response.data.message || '401',
-        //     duration: 10
-        //   })
-        // }
-        // throwInfo(response)
-        // return response
-      }
-    }
-
-    return new Promise((resolve, reject) => {
-      resolve({
-        data: throwError(response)
-      })
-    })
+    console.log(err)
   }
 )
 

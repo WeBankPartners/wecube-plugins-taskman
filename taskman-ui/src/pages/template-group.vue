@@ -11,7 +11,7 @@
             @on-open-change="getInitRole"
             clearable
             filterable
-            :placeholder="$t('tm_role')"
+            :placeholder="$t('manageRole')"
             style="width:90%"
           >
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>

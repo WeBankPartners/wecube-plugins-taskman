@@ -66,7 +66,15 @@
 
 <script>
 import { ValidationObserver } from 'vee-validate'
-import { getTempGroupList, getManagementRoles, getUserRoles, getProcess, createTemp, updateTemp } from '@/api/server'
+import {
+  getTempGroupList,
+  getManagementRoles,
+  getUserRoles,
+  getProcess,
+  createTemp,
+  updateTemp,
+  getTemplateList
+} from '@/api/server'
 export default {
   name: 'BasicInfo',
   data () {
@@ -148,8 +156,31 @@ export default {
     this.getManagementRoles()
     this.getProcess()
     this.getUserRoles()
+    this.getInitData()
   },
   methods: {
+    async getInitData () {
+      if (!!this.$parent.requestTemplateId === false) {
+        return
+      }
+      const params = {
+        filters: [
+          {
+            name: 'id',
+            operator: 'eq',
+            value: this.$parent.requestTemplateId
+          }
+        ],
+        paging: false
+      }
+      const { statusCode, data } = await getTemplateList(params)
+      if (statusCode === 'OK') {
+        this.formConfig.isAdd = false
+        this.formConfig.values = { ...data.contents[0] }
+        this.formConfig.values.mgmtRoles = data.contents[0].mgmtRoles.map(role => role.id)
+        this.formConfig.values.useRoles = data.contents[0].useRoles.map(role => role.id)
+      }
+    },
     async createTemp () {
       if (!this.$refs.observer.flags.valid) {
         return
@@ -209,10 +240,7 @@ export default {
       if (statusCode === 'OK') {
         this.formConfig.groupOptions = data.contents
       }
-    },
-    getProcOptions () {},
-    getMgmtRoles () {},
-    getUseRoles () {}
+    }
   },
   components: {
     ValidationObserver

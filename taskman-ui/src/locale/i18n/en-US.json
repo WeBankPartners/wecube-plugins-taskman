@@ -20,5 +20,10 @@
   "mgmtRoles": "MGMT Roles",
   "useRoles": "User Roles",
   "tags": "Tags",
-  "attributes": "Attributes"
+  "attributes": "Attributes",
+  "version": "Version",
+  "status": "Status",
+  "status_confirm": "Confirm",
+  "status_created": "Created",
+  "back_to_template": "Back To Template List"
 }

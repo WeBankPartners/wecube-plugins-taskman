@@ -186,7 +186,13 @@
 </template>
 
 <script>
-import { getSelectedForm, getManagementRoles, getUserRoles, saveTaskForm } from '@/api/server.js'
+import {
+  getSelectedForm,
+  getManagementRoles,
+  getUserRoles,
+  saveTaskForm,
+  getTaskFormDataByNodeId
+} from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 8
 export default {
@@ -196,7 +202,6 @@ export default {
       MODALHEIGHT: 500,
       nodeId: '',
       nodeData: null,
-      requestTemplateId: '614479d70dd9be04',
       formData: {
         id: '',
         nodeDefId: '',
@@ -292,31 +297,65 @@ export default {
       }
     }
   },
-  props: ['currentNode', 'node'],
+  props: ['currentNode', 'node', 'requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 300
     this.nodeId = this.currentNode
     this.nodeData = this.node
+    console.log(100)
     this.initPage()
   },
   methods: {
-    initData (currentNode, node) {
+    initData (currentNode, node, requestTemplateId) {
+      console.log(0)
       this.nodeId = currentNode
       this.nodeData = node
       this.initPage()
     },
     initPage () {
+      console.log(1, this.nodeId)
       if (this.nodeData.nodeId === this.nodeId) {
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
-        console.log('请求数据')
         this.getSelectedForm()
         this.getManagementRoles()
         this.getUserRoles()
+        this.getTaskFormDataByNodeId()
+      }
+    },
+    async getTaskFormDataByNodeId () {
+      if (!!this.requestTemplateId === false) {
+        return
+      }
+      this.list2 = []
+      const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
+      if (statusCode === 'OK') {
+        console.log(data)
+        this.formData = { ...data }
+        if (data.items && data.items.length > 0) {
+          this.selectedFormItem = data.items.filter(item => item.attrDefId !== '')
+          this.selectedInputFormItem = this.selectedFormItem
+            .filter(item => item.isOutput === 'no')
+            .map(attr => attr.attrDefId)
+          this.selectedOutputFormItem = this.selectedFormItem
+            .filter(item => item.isOutput === 'yes')
+            .map(attr => attr.attrDefId)
+          console.log(this.selectedFormItem)
+          let customItem = data.items.filter(item => item.attrDefId === '')
+          if (customItem.length > 0) {
+            customItem = customItem.map(custom => {
+              custom.isCustom = true
+              return custom
+            })
+            this.list2.unshift({
+              tag: 'Custom',
+              attrs: customItem
+            })
+          }
+        }
       }
     },
     async saveForm () {
-      console.log(this.list2)
       if (this.formData.name === '') {
         this.$Notice.warning({
           title: '警告',
@@ -331,7 +370,6 @@ export default {
           l.id = ''
         }
       })
-      console.log(tmp)
       let res = {
         ...this.formData,
         items: tmp
@@ -393,6 +431,7 @@ export default {
           entityName: seleted.entityName,
           entityPackage: seleted.entityPackage
         }
+        console.log(attr)
         const tagExist = this.list2.find(l => l.tag === tag)
         if (tagExist) {
           const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
@@ -406,6 +445,7 @@ export default {
           })
         }
       })
+      console.log(this.list2)
     },
     changeOutputSelectedForm () {
       let remove = []
@@ -439,7 +479,7 @@ export default {
           id: 'c_' + seleted.id,
           isCustom: false,
           isEdit: 'yes',
-          isOutput: 'no',
+          isOutput: 'yes',
           isView: 'yes',
           name: seleted.name,
           regular: '',
@@ -449,6 +489,7 @@ export default {
           entityName: seleted.entityName,
           entityPackage: seleted.entityPackage
         }
+        console.log(attr)
         const tagExist = this.list2.find(l => l.tag === tag)
         if (tagExist) {
           const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
@@ -462,6 +503,7 @@ export default {
           })
         }
       })
+      console.log(this.list2)
     },
     cloneDog (val) {
       let newItem = JSON.parse(JSON.stringify(val))
@@ -479,7 +521,6 @@ export default {
       }
     },
     selectElement (itemIndex, eleIndex) {
-      console.log(234)
       this.editElement = this.list2[itemIndex].attrs[eleIndex]
     },
     removeForm (element, itemIndex, eleIndex) {

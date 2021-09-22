@@ -6,7 +6,12 @@
     <Tabs @on-click="changeNode" :value="currentNode">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
-          <FormComponent :ref="node.nodeId" :currentNode="currentNode" :node="node"></FormComponent>
+          <FormComponent
+            :ref="node.nodeId"
+            :currentNode="currentNode"
+            :node="node"
+            :requestTemplateId="requestTemplateId"
+          ></FormComponent>
         </TabPane>
       </template>
     </Tabs>
@@ -20,12 +25,13 @@ export default {
   name: '',
   data () {
     return {
-      requestTemplateId: '614479d70dd9be04',
+      requestTemplateId: '',
       currentNode: '',
       nodes: []
     }
   },
   mounted () {
+    this.requestTemplateId = this.$parent.requestTemplateId
     this.getTemplateNodes()
   },
   methods: {
@@ -50,13 +56,10 @@ export default {
     changeNode (nodeId) {
       this.currentNode = nodeId
       const find = this.nodes.find(n => n.nodeId === this.currentNode)
-      this.$refs[this.currentNode][0].initData(this.currentNode, find)
+      this.$refs[this.currentNode][0].initData(this.currentNode, find, this.requestTemplateId)
     },
     initTab (currentNode, data) {
       this.$refs[this.currentNode][0].initData(data)
-    },
-    publishTemplate () {
-      console.log('发布模板！')
     }
   },
   components: {

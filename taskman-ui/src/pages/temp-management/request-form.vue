@@ -140,12 +140,13 @@
     </Row>
     <div style="text-align:center">
       <Button type="primary" @click="saveForm">保存当前表单</Button>
+      <Button @click="next">{{ $t('next') }}</Button>
     </div>
   </div>
 </template>
 
 <script>
-import { getSelectedForm, saveRequsetForm } from '@/api/server.js'
+import { getSelectedForm, saveRequsetForm, getRequestFormTemplateData } from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 8
 export default {
@@ -153,7 +154,6 @@ export default {
   data () {
     return {
       MODALHEIGHT: 200,
-      requestTemplateId: '614479d70dd9be04',
       formData: {
         id: '',
         name: '',
@@ -243,12 +243,37 @@ export default {
       }
     }
   },
-  // props: ['requestTemplateId'],
+  // // props: ['requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 300
     this.getSelectedForm()
+    this.getInitData()
   },
   methods: {
+    async getInitData () {
+      if (!!this.$parent.requestTemplateId === false) {
+        return
+      }
+      const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)
+      if (statusCode === 'OK') {
+        this.formData = { ...data }
+        console.log(data.items !== null)
+        if (data.items !== null && data.items.length > 0) {
+          this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
+          let customItem = data.items.filter(item => item.attrDefId === '')
+          if (customItem.length > 0) {
+            customItem = customItem.map(custom => {
+              custom.isCustom = true
+              return custom
+            })
+            this.list2.unshift({
+              tag: 'Custom',
+              attrs: customItem
+            })
+          }
+        }
+      }
+    },
     async saveForm () {
       if (this.formData.name === '') {
         this.$Notice.warning({
@@ -268,7 +293,7 @@ export default {
         ...this.formData,
         items: tmp
       }
-      const { statusCode, data } = await saveRequsetForm(this.requestTemplateId, res)
+      const { statusCode, data } = await saveRequsetForm(this.$parent.requestTemplateId, res)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -287,9 +312,9 @@ export default {
       const test1 = []
         .concat(...this.list2.map(l => l.attrs))
         .filter(l => l.isCustom === false)
-        .map(m => m.id)
+        .map(m => m.attrDefId)
       test1.forEach(t => {
-        let tmp = t.substring(2)
+        let tmp = t
         if (!this.selectedFormItem.includes(t.substring(tmp))) {
           remove.push(tmp)
         }
@@ -325,7 +350,7 @@ export default {
         }
         const tagExist = this.list2.find(l => l.tag === tag)
         if (tagExist) {
-          const find = tagExist.attrs.find(attr => attr.id === item)
+          const find = tagExist.attrs.find(attr => attr.attrDefId === item)
           if (!find) {
             tagExist.attrs.push(attr)
           }
@@ -343,7 +368,7 @@ export default {
     async getSelectedForm () {
       this.formItemOptions = []
       this.selectedFormItemOptions = []
-      const { statusCode, data } = await getSelectedForm(this.requestTemplateId)
+      const { statusCode, data } = await getSelectedForm(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {
         let entitySet = new Set()
         let formItemOptions = []
@@ -386,6 +411,9 @@ export default {
           attrs: [newItem]
         })
       }
+    },
+    next () {
+      this.$emit('formSelectNextStep')
     }
   },
   components: {

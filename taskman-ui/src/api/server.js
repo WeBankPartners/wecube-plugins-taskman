@@ -43,3 +43,13 @@ export const saveTaskForm = (requestTemplateId, data) =>
 
 export const confirmTemplate = requestTemplateId =>
   req.post(`/taskman/api/v1/request-template/confirm/${requestTemplateId}`)
+
+export const getTemplateList = data => req.post('/taskman/api/v1/request-template/query', data)
+export const deleteTemplate = data => req.delete('/taskman/api/v1/request-template', data)
+export const getRequestTemplateAttrs = requestTemplateId =>
+  req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/get`)
+
+export const getRequestFormTemplateData = requestTemplateId =>
+  req.get(`/taskman/api/v1/request-form-template/${requestTemplateId}`)
+export const getTaskFormDataByNodeId = (requestTemplateId, nodeId) =>
+  req.get(`/taskman/api/v1/task-template/${requestTemplateId}/${nodeId}`)

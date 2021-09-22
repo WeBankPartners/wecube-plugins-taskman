@@ -20,5 +20,10 @@
   "mgmtRoles": "管理角色",
   "useRoles": "用户角色",
   "tags": "标签",
-  "attributes": "属性"
+  "attributes": "属性",
+  "version": "版本",
+  "status": "状态",
+  "status_confirm": "已发布",
+  "status_created": "未发布",
+  "back_to_template": "返回模板列表"
 }

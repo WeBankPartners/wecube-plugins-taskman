@@ -4,10 +4,10 @@
       $t('back_to_template')
     }}</Button>
     <Steps :current="currentStep">
-      <Step title="基础信息设置" icon="ios-add-circle"></Step>
-      <Step title="表单项选择" icon="md-apps"></Step>
-      <Step title="请求表单设置" icon="md-cog"></Step>
-      <Step title="任务表单设置" icon="ios-settings"></Step>
+      <Step :title="$t('basic_information_settings')" icon="ios-add-circle"></Step>
+      <Step :title="$t('form_item_selection')" icon="md-apps"></Step>
+      <Step :title="$t('request_form_settings')" icon="md-cog"></Step>
+      <Step :title="$t('task_form_settings')" icon="ios-settings"></Step>
     </Steps>
     <div v-if="currentStep !== -1" style="margin-top:48px;">
       <BasicInfo

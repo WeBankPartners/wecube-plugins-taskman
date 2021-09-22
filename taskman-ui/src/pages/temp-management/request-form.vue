@@ -11,16 +11,16 @@
         </FormItem>
       </Form>
     </div>
-    <Divider plain>表单设置</Divider>
+    <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
       <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
-        <Divider plain>输入项</Divider>
+        <Divider plain>{{ $t('input_items') }}</Divider>
         <Select v-model="selectedFormItem" @on-change="changeSelectedForm" multiple filterable>
           <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
             <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
           </OptionGroup>
         </Select>
-        <Divider plain>自定义表单</Divider>
+        <Divider plain>{{ $t('custom_form') }}</Divider>
         <draggable
           class="dragArea list-group"
           :list="list1"
@@ -28,14 +28,9 @@
           :clone="cloneDog"
         >
           <div class="list-group-item" v-for="element in list1" :key="element.id">
-            <Input v-if="element.elementType === 'input'" placeholder="输入框" style="width:84%" />
-            <Input
-              v-if="element.elementType === 'textarea'"
-              type="textarea"
-              placeholder="多行文本框"
-              style="width:84%"
-            />
-            <Select v-if="element.elementType === 'select'" placeholder="选择框" style="width:84%"> </Select>
+            <Input v-if="element.elementType === 'input'" placeholder="" style="width:84%" />
+            <Input v-if="element.elementType === 'textarea'" type="textarea" placeholder="" style="width:84%" />
+            <Select v-if="element.elementType === 'select'" placeholder="" style="width:84%"> </Select>
           </div>
         </draggable>
       </Col>
@@ -91,55 +86,55 @@
       <Col span="6" style="border-left: 1px solid #dcdee2;">
         <Collapse>
           <Panel name="1">
-            通用属性
+            {{ $t('general_attributes') }}
             <div slot="content">
               <Form :label-width="80">
-                <FormItem label="字段名">
-                  <Input v-model="editElement.name" placeholder="Enter something..."></Input>
+                <FormItem :label="$t('field_name')">
+                  <Input v-model="editElement.name" placeholder=""></Input>
                 </FormItem>
-                <FormItem label="显示名">
-                  <Input v-model="editElement.title" placeholder="Enter something..."></Input>
+                <FormItem :label="$t('display_name')">
+                  <Input v-model="editElement.title" placeholder=""></Input>
                 </FormItem>
-                <FormItem label="数据类型">
+                <FormItem :label="$t('data_type')">
                   <Select v-model="editElement.elementType" @on-change="editElement.defaultValue = ''">
                     <Option value="input">Input</Option>
                     <Option value="select">Select</Option>
                     <Option value="textarea">Textarea</Option>
                   </Select>
                 </FormItem>
-                <FormItem label="默认值">
-                  <Input v-model="editElement.defaultValue" placeholder="Enter something..."></Input>
+                <FormItem :label="$t('defaults')">
+                  <Input v-model="editElement.defaultValue" placeholder=""></Input>
                 </FormItem>
-                <FormItem label="标签">
-                  <Input v-model="editElement.tag" placeholder="Enter something..."></Input>
+                <FormItem :label="$t('tags')">
+                  <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem>
-                <FormItem label="宽度">
-                  <Input v-model="editElement.width" placeholder="Enter something..."></Input>
+                <FormItem :label="$t('width')">
+                  <Input v-model="editElement.width" placeholder=""></Input>
                 </FormItem>
               </Form>
             </div>
           </Panel>
           <Panel name="2">
-            扩展属性
+            {{ $t('extended_attributes') }}
             <div slot="content">
               <Form :label-width="80">
-                <FormItem label="校验规则">
-                  <Input v-model="editElement.regular" placeholder="仅支持正则"></Input>
+                <FormItem :label="$t('validation_rules')">
+                  <Input v-model="editElement.regular" :placeholder="$t('only_supports_regular')"></Input>
                 </FormItem>
               </Form>
             </div>
           </Panel>
           <Panel name="3">
-            数据项
+            {{ $t('data_item') }}
             <div slot="content">
-              当前表单项没有数据项
+              {{ $t('no_data_item') }}
             </div>
           </Panel>
         </Collapse>
       </Col>
     </Row>
     <div style="text-align:center">
-      <Button type="primary" @click="saveForm">保存当前表单</Button>
+      <Button type="primary" @click="saveForm">{{ $t('save') }}{{ $t('data_item') }}</Button>
       <Button @click="next">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -257,7 +252,6 @@ export default {
       const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {
         this.formData = { ...data }
-        console.log(data.items !== null)
         if (data.items !== null && data.items.length > 0) {
           this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
           let customItem = data.items.filter(item => item.attrDefId === '')
@@ -277,8 +271,8 @@ export default {
     async saveForm () {
       if (this.formData.name === '') {
         this.$Notice.warning({
-          title: '警告',
-          desc: '名称不能为空'
+          title: this.$t('warning'),
+          desc: this.$t('name') + ' ' + this.$t('can_not_be_empty')
         })
         return
       }

@@ -1,8 +1,5 @@
 <template>
   <div class="">
-    <div style="text-align:end">
-      <Button @click="confirmTemplate" type="primary">{{ $t('publish_template') }}</Button>
-    </div>
     <Tabs @on-click="changeNode" :value="currentNode">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">

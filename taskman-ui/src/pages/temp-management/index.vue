@@ -4,10 +4,18 @@
       $t('back_to_template')
     }}</Button>
     <Steps :current="currentStep">
-      <Step :title="$t('basic_information_settings')" icon="ios-add-circle"></Step>
-      <Step :title="$t('form_item_selection')" icon="md-apps"></Step>
-      <Step :title="$t('request_form_settings')" icon="md-cog"></Step>
-      <Step :title="$t('task_form_settings')" icon="ios-settings"></Step>
+      <Step icon="ios-add-circle">
+        <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
+      </Step>
+      <Step icon="md-apps">
+        <span slot="title" @click="changeStep(1)">{{ $t('form_item_selection') }}</span>
+      </Step>
+      <Step icon="md-cog">
+        <span slot="title" @click="changeStep(2)">{{ $t('request_form_settings') }}</span>
+      </Step>
+      <Step icon="ios-settings">
+        <span slot="title" @click="changeStep(3)">{{ $t('task_form_settings') }}</span>
+      </Step>
     </Steps>
     <div v-if="currentStep !== -1" style="margin-top:48px;">
       <BasicInfo
@@ -50,6 +58,9 @@ export default {
     this.currentStep = 0
   },
   methods: {
+    changeStep (val) {
+      this.currentStep = val
+    },
     backToTemplate () {
       this.$router.push({ path: '/' })
     },

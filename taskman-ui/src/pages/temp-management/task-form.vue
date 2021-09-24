@@ -47,7 +47,7 @@ export default {
     async getTemplateNodes () {
       const { statusCode, data } = await getTemplateNodes(this.requestTemplateId)
       if (statusCode === 'OK') {
-        this.nodes = data
+        this.nodes = data.filter(item => item.taskCategory === 'SUTN')
         this.currentNode = data[0].nodeId
         // this.initTab(this.currentNode, data[0])
         // this.$refs[this.currentNode].initData(data[0])

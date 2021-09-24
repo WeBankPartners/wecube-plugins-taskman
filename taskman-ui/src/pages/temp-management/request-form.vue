@@ -241,14 +241,13 @@ export default {
   // // props: ['requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 300
-    this.getSelectedForm()
-    this.getInitData()
+    if (!!this.$parent.requestTemplateId !== false) {
+      this.getSelectedForm()
+      this.getInitData()
+    }
   },
   methods: {
     async getInitData () {
-      if (!!this.$parent.requestTemplateId === false) {
-        return
-      }
       const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {
         this.formData = { ...data }

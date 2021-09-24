@@ -27,14 +27,13 @@ export default {
   },
   props: ['requestTemplateId'],
   mounted () {
-    this.getFormList()
-    this.getInitData()
+    if (!!this.$parent.requestTemplateId !== false) {
+      this.getFormList()
+      this.getInitData()
+    }
   },
   methods: {
     async getInitData () {
-      if (!!this.$parent.requestTemplateId === false) {
-        return
-      }
       const { statusCode, data } = await getRequestTemplateAttrs(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {
         this.attrData = data.map(d => d.id)
@@ -43,7 +42,7 @@ export default {
     async saveAttrs () {
       const attrs = [].concat(...this.attrOptions.map(attr => attr.attributes))
       const params = attrs.filter(item => this.attrData.includes(item.id))
-      const { statusCode } = await saveAttrs(this.requestTemplateId, params)
+      const { statusCode } = await saveAttrs(this.$parent.requestTemplateId, params)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -53,7 +52,7 @@ export default {
       }
     },
     async getFormList () {
-      const { statusCode, data } = await getFormList(this.requestTemplateId)
+      const { statusCode, data } = await getFormList(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {
         this.attrOptions = data
       }

@@ -27,7 +27,7 @@
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
         >
-          <div class="list-group-item" v-for="element in list1" :key="element.id">
+          <div class="list-group-item" style="width:100%" v-for="element in list1" :key="element.id">
             <Input v-if="element.elementType === 'input'" placeholder="" style="width:84%" />
             <Input v-if="element.elementType === 'textarea'" type="textarea" placeholder="" style="width:84%" />
             <Select v-if="element.elementType === 'select'" placeholder="" style="width:84%"> </Select>
@@ -40,10 +40,10 @@
             <div :key="item.tag" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.tag }}
               <draggable class="dragArea list-group" :list="item.attrs" group="people">
-                <!-- {{item.attrs}} -->
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
+                  :style="{ width: element.width === 12 ? '50%' : '100%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
@@ -72,7 +72,7 @@
                   ></Select>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex)"
-                    type="primary"
+                    type="error"
                     size="small"
                     ghost
                     icon="ios-close"
@@ -109,7 +109,10 @@
                   <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem>
                 <FormItem :label="$t('width')">
-                  <Input v-model="editElement.width" placeholder=""></Input>
+                  <Select v-model="editElement.width">
+                    <Option :value="12">12</Option>
+                    <Option :value="24">24</Option>
+                  </Select>
                 </FormItem>
               </Form>
             </div>
@@ -170,7 +173,7 @@ export default {
           elementType: 'input',
           defaultValue: '',
           tag: '',
-          width: 70,
+          width: 24,
           regular: '',
           isEdit: 'yes',
           isView: 'yes',
@@ -188,7 +191,7 @@ export default {
           elementType: 'select',
           defaultValue: '',
           tag: '',
-          width: 70,
+          width: 24,
           regular: '',
           isEdit: 'yes',
           isView: 'yes',
@@ -206,7 +209,7 @@ export default {
           elementType: 'textarea',
           defaultValue: '',
           tag: '',
-          width: 70,
+          width: 24,
           regular: '',
           isEdit: 'yes',
           isView: 'yes',
@@ -234,7 +237,7 @@ export default {
         regular: '',
         sort: 0,
         title: '',
-        width: 70
+        width: 24
       }
     }
   },
@@ -337,7 +340,7 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70,
+          width: 24,
           entityName: seleted.entityName,
           entityPackage: seleted.entityPackage
         }
@@ -420,7 +423,7 @@ export default {
   margin-bottom: 8px;
 }
 .list-group-item {
-  width: 90%;
+  display: inline-block;
   margin: 8px 0;
 }
 </style>

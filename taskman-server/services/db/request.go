@@ -117,3 +117,32 @@ func UpdateRequest(param *models.RequestTable) error {
 func SaveRequestCache(requestId string) {
 
 }
+
+func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStruct, err error) {
+	result = models.RequestTemplateFormStruct{}
+	var requestTable []*models.RequestTable
+	err = x.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("Can not find request with id:%s ", requestId)
+		return
+	}
+	requestTemplateObj, _ := getSimpleRequestTemplate(requestTable[0].RequestTemplate)
+	result.Id = requestTemplateObj.Id
+	result.Name = requestTemplateObj.Name
+	result.PackageName = requestTemplateObj.PackageName
+	result.EntityName = requestTemplateObj.EntityName
+	result.ProcDefName = requestTemplateObj.ProcDefName
+	result.ProcDefId = requestTemplateObj.ProcDefId
+	result.ProcDefKey = requestTemplateObj.ProcDefKey
+	var items []*models.FormItemTemplateTable
+	x.SQL("select * from form_item_template where form_template=?", requestTemplateObj.FormTemplate).Find(&items)
+	result.FormItems = items
+	return
+}
+
+func GetRequestPreDataStruct(requestId string) {
+
+}

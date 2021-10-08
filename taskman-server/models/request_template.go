@@ -146,3 +146,23 @@ type UserRequestTemplateQueryObj struct {
 	GroupDescription string                  `json:"groupDescription"`
 	Templates        []*RequestTemplateTable `json:"templates"`
 }
+
+type RequestTemplateFormStruct struct {
+	Id            string                    `json:"id"`
+	Name          string                    `json:"name"`
+	PackageName   string                    `json:"packageName"`
+	EntityName    string                    `json:"entityName"`
+	ProcDefKey    string                    `json:"procDefKey"`
+	ProcDefId     string                    `json:"procDefId"`
+	ProcDefName   string                    `json:"procDefName"`
+	FormItems     []*FormItemTemplateTable  `json:"formItems"`
+	TaskTemplates []*TaskTemplateFormStruct `json:"taskTemplates"`
+}
+
+type TaskTemplateFormStruct struct {
+	Id          string                   `json:"id"`
+	Name        string                   `json:"name"`
+	NodeDefId   string                   `json:"nodeDefId"`
+	NodeDefName string                   `json:"nodeDefName"`
+	FormItems   []*FormItemTemplateTable `json:"formItems"`
+}

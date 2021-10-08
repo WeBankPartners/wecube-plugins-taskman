@@ -98,3 +98,11 @@ type RequestCacheEntityAttrValue struct {
 	DataType  string      `json:"dataType"`
 	DataValue interface{} `json:"dataValue"`
 }
+
+type RequestPreDataTableObj struct {
+	Entity string                         `json:"entity"`
+	Title  []*RequestPreDataTableTitleObj `json:"title"`
+}
+
+type RequestPreDataTableTitleObj struct {
+}

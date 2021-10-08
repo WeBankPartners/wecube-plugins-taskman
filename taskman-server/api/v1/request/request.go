@@ -56,6 +56,16 @@ func GetRequest(c *gin.Context) {
 	}
 }
 
+func GetRequestRootForm(c *gin.Context) {
+	requestId := c.Param("requestId")
+	result, err := db.GetRequestRootForm(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
 func CreateRequest(c *gin.Context) {
 	var param models.RequestTable
 	if err := c.ShouldBindJSON(&param); err != nil {

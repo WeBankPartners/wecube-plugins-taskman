@@ -82,9 +82,6 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	var respObj models.ProcQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
-	if models.Config.Log.Level == "debug" {
-		respBytes, _ = ioutil.ReadFile("/tmp/pro-def.json")
-	}
 	err = json.Unmarshal(respBytes, &respObj)
 	log.Logger.Debug("Get core process list", log.String("body", string(respBytes)))
 	if err != nil {
@@ -125,9 +122,6 @@ func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList []*mod
 	var respObj models.ProcNodeQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
-	if models.Config.Log.Level == "debug" {
-		respBytes, _ = ioutil.ReadFile("/tmp/pro-node.json")
-	}
 	err = json.Unmarshal(respBytes, &respObj)
 	log.Logger.Debug("Get process node list", log.String("body", string(respBytes)))
 	if err != nil {

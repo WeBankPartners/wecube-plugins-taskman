@@ -158,7 +158,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `reporter` varchar(64)  DEFAULT NULL,
   `report_time` datetime DEFAULT NULL,
   `emergency` varchar(16)  DEFAULT 'no',
-  `report_role` varchar(64)  DEFAULT NULL,
+  `report_role` text  DEFAULT NULL,
   `attach_file` varchar(64)  DEFAULT NULL,
   `status` varchar(64)  NOT NULL DEFAULT 'created',
   `cache` mediumtext ,
@@ -171,7 +171,6 @@ CREATE TABLE IF NOT EXISTS `request` (
   PRIMARY KEY (`id`),
   CONSTRAINT `fore_request_form` FOREIGN KEY (`form`) REFERENCES `form` (`id`),
   CONSTRAINT `fore_request_ref_template` FOREIGN KEY (`request_template`) REFERENCES `request_template` (`id`),
-  CONSTRAINT `fore_request_report_role` FOREIGN KEY (`report_role`) REFERENCES `role` (`id`),
   CONSTRAINT `fore_request_attach_file` FOREIGN KEY (`attach_file`) REFERENCES `attach_file` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 

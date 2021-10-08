@@ -139,3 +139,10 @@ type ProcNodeQueryResponse struct {
 	Message string         `json:"message"`
 	Data    []*ProcNodeObj `json:"data"`
 }
+
+type UserRequestTemplateQueryObj struct {
+	GroupId          string                  `json:"groupId"`
+	GroupName        string                  `json:"groupName"`
+	GroupDescription string                  `json:"groupDescription"`
+	Templates        []*RequestTemplateTable `json:"templates"`
+}

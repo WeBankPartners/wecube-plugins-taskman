@@ -69,7 +69,28 @@ func ProcessDataPreview(requestTemplateId, entityDataId string) (result models.E
 	return
 }
 
-func CreateRequest(param *models.RequestTable, operator string, operatorRoles []string) error {
+func ListUserRequest(user string) (result []*models.RequestTable, err error) {
+	result = []*models.RequestTable{}
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,reporter,report_time,emergency,status from request where reporter=?", user).Find(&result)
+	return
+}
+
+func GetRequest(requestId string) (result models.RequestTable, err error) {
+	result = models.RequestTable{}
+	var requestTable []*models.RequestTable
+	err = x.SQL("select * from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		return
+	}
+	result = *requestTable[0]
+	return
+}
+
+func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
 	requestTemplateObj, err := getSimpleRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
@@ -79,10 +100,20 @@ func CreateRequest(param *models.RequestTable, operator string, operatorRoles []
 	param.Id = guid.CreateGuid()
 	var actions []*execAction
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
-	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, operator, nowTime, operator}
+	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
 	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, operator, param.Emergency, strings.Join(operatorRoles, ","), "created", operator, nowTime, operator, nowTime}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "created", param.CreatedBy, nowTime, param.CreatedBy, nowTime}
 	actions = append(actions, &requestInsertAction)
 	return transactionWithoutForeignCheck(actions)
+}
+
+func UpdateRequest(param *models.RequestTable) error {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err := x.Exec("update request set name=?,emergency=?,updated_by=?,updated_time=? where id=?", param.Name, param.Emergency, param.UpdatedBy, nowTime)
+	return err
+}
+
+func SaveRequestCache(requestId string) {
+
 }

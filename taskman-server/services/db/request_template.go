@@ -602,3 +602,36 @@ func SetRequestTemplateToCreated(id, operator string) {
 		log.Logger.Error("Update request template to created status fail", log.Error(err), log.String("operator", operator), log.String("requestTemplateId", id))
 	}
 }
+
+func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
+	result = []*models.UserRequestTemplateQueryObj{}
+	var requestTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select * from request_template where id in (select request_template from request_template_role where `role` in ('" + strings.Join(userRoles, "','") + "')) order by `group`,id").Find(&requestTemplateTable)
+	if err != nil {
+		return
+	}
+	if len(requestTemplateTable) == 0 {
+		return
+	}
+	var groupTable []*models.RequestTemplateGroupTable
+	x.SQL("select id,name,description from request_template_group").Find(&groupTable)
+	groupMap := make(map[string]*models.RequestTemplateGroupTable)
+	for _, v := range groupTable {
+		groupMap[v.Id] = v
+	}
+	tmpGroup := requestTemplateTable[0].Group
+	tmpTemplateList := []*models.RequestTemplateTable{}
+	for _, v := range requestTemplateTable {
+		if v.Group != tmpGroup {
+			result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[tmpGroup].Id, GroupName: groupMap[tmpGroup].Name, GroupDescription: groupMap[tmpGroup].Description, Templates: tmpTemplateList})
+			tmpTemplateList = []*models.RequestTemplateTable{}
+			tmpGroup = v.Group
+		}
+		tmpTemplateList = append(tmpTemplateList, v)
+	}
+	if len(tmpTemplateList) > 0 {
+		lastGroup := requestTemplateTable[len(requestTemplateTable)-1].Group
+		result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[lastGroup].Id, GroupName: groupMap[lastGroup].Name, GroupDescription: groupMap[lastGroup].Description, Templates: tmpTemplateList})
+	}
+	return
+}

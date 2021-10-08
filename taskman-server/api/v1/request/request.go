@@ -37,6 +37,25 @@ func ProcessDataPreview(c *gin.Context) {
 	}
 }
 
+func ListUserRequest(c *gin.Context) {
+	result, err := db.ListUserRequest(middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
+func GetRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	result, err := db.GetRequest(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
 func CreateRequest(c *gin.Context) {
 	var param models.RequestTable
 	if err := c.ShouldBindJSON(&param); err != nil {
@@ -47,7 +66,27 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param name and requestTemplate can not empty "))
 		return
 	}
-	err := db.CreateRequest(&param, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	param.CreatedBy = middleware.GetRequestUser(c)
+	err := db.CreateRequest(&param, middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, param)
+	}
+}
+
+func UpdateRequest(c *gin.Context) {
+	var param models.RequestTable
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.Id == "" || param.Name == "" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("Param id and name can not empty "))
+		return
+	}
+	param.UpdatedBy = middleware.GetRequestUser(c)
+	err := db.UpdateRequest(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

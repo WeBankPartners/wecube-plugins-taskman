@@ -235,3 +235,12 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnSuccess(c)
 	}
 }
+
+func GetRequestTemplateByUser(c *gin.Context) {
+	result, err := db.GetRequestTemplateByUser(middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}

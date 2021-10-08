@@ -27,7 +27,8 @@ type FormItemTemplateTable struct {
 	Id              string `json:"id" xorm:"id"`
 	Name            string `json:"name" xorm:"name"`
 	Description     string `json:"description" xorm:"description"`
-	Tag             string `json:"tag" xorm:"tag"`
+	ItemGroup       string `json:"itemGroup" xorm:"item_group"`
+	ItemGroupName   string `json:"itemGroupName" xorm:"item_group_name"`
 	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
 	DefaultValue    string `json:"defaultValue" xorm:"default_value"`
 	Sort            int    `json:"sort" xorm:"sort"`
@@ -55,6 +56,7 @@ type FormItemTable struct {
 	FormItemTemplate string `json:"formItemTemplate" xorm:"form_item_template"`
 	Name             string `json:"name" xorm:"name"`
 	Value            string `json:"value" xorm:"value"`
+	ItemGroup        string `json:"itemGroup" xorm:"item_group"`
 }
 
 type FormTemplateDto struct {

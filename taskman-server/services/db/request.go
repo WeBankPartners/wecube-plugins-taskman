@@ -3,10 +3,12 @@ package db
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func GetEntityData(requestTemplateId string) (result models.EntityQueryResult, err error) {
@@ -65,4 +67,22 @@ func ProcessDataPreview(requestTemplateId, entityDataId string) (result models.E
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
 	}
 	return
+}
+
+func CreateRequest(param *models.RequestTable, operator string, operatorRoles []string) error {
+	requestTemplateObj, err := getSimpleRequestTemplate(param.RequestTemplate)
+	if err != nil {
+		return err
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	formGuid := guid.CreateGuid()
+	param.Id = guid.CreateGuid()
+	var actions []*execAction
+	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
+	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, operator, nowTime, operator}
+	actions = append(actions, &formInsertAction)
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, operator, param.Emergency, strings.Join(operatorRoles, ","), "created", operator, nowTime, operator, nowTime}
+	actions = append(actions, &requestInsertAction)
+	return transactionWithoutForeignCheck(actions)
 }

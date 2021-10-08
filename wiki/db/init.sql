@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS `form_item_template` (
   `form_template` varchar(64) DEFAULT NULL,
   `name` varchar(64) NOT NULL,
   `description` varchar(255)  DEFAULT NULL,
-  `tag` varchar(64)  DEFAULT NULL,
+  `item_group` varchar(255)  DEFAULT NULL,
+  `item_group_name` varchar(255)  DEFAULT NULL,
   `default_value` varchar(255) DEFAULT NULL,
   `sort` int NOT NULL DEFAULT '0',
   `package_name` varchar(255) DEFAULT NULL,
@@ -67,14 +68,14 @@ CREATE TABLE IF NOT EXISTS `form_item_template` (
 
 
 INSERT INTO `form_item_template`
-(`id`, `form_template`, `name`, `default_value`, `sort`, `package_name`, `entity`, `attr_def_id`, `attr_def_data_type`, `element_type`, `title`, `width`, `ref_package_name`, `ref_entity`, `data_options`)
+(`id`, `form_template`, `item_group`, `item_group_name`, `name`, `default_value`, `sort`, `package_name`, `entity`, `attr_def_id`, `attr_def_data_type`, `element_type`, `title`, `width`, `ref_package_name`, `ref_entity`, `data_options`)
  VALUES
-    ('1333228970392473601', NULL, 'reporter', NULL, 0, NULL, NULL, NULL, NULL, 'text', '上报人', 80, NULL, NULL, NULL),
-    ('1333303089673617409', NULL, 'emergency', NULL, 0, NULL, NULL, NULL, NULL, 'select', '紧急程度', 80, NULL, NULL, NULL),
-    ('1333304415006547970', NULL, 'attach_file_id', NULL, 0, NULL, NULL, NULL, NULL, 'file', '附件', 80, NULL, NULL, NULL),
-    ('1333319171714420738', NULL, 'result', NULL, 0, NULL, NULL, NULL, NULL, 'text', '处理结果', 80, NULL, NULL, NULL),
-    ('1333324857626169346', NULL, 'report_time', NULL, 0, NULL, NULL, NULL, NULL, 'date', '上报时间', 80, NULL, NULL, NULL),
-    ('1333324857626169347', NULL, 'due_data', NULL, 0, NULL, NULL, NULL, NULL, 'date', '过期时间', 80, NULL, NULL, NULL);
+    ('1333228970392473601', NULL, 'default', 'default', 'reporter', NULL, 0, NULL, NULL, NULL, NULL, 'text', '上报人', 80, NULL, NULL, NULL),
+    ('1333303089673617409', NULL, 'default', 'default', 'emergency', NULL, 0, NULL, NULL, NULL, NULL, 'select', '紧急程度', 80, NULL, NULL, NULL),
+    ('1333304415006547970', NULL, 'default', 'default', 'attach_file_id', NULL, 0, NULL, NULL, NULL, NULL, 'file', '附件', 80, NULL, NULL, NULL),
+    ('1333319171714420738', NULL, 'default', 'default', 'result', NULL, 0, NULL, NULL, NULL, NULL, 'text', '处理结果', 80, NULL, NULL, NULL),
+    ('1333324857626169346', NULL, 'default', 'default', 'report_time', NULL, 0, NULL, NULL, NULL, NULL, 'date', '上报时间', 80, NULL, NULL, NULL),
+    ('1333324857626169347', NULL, 'default', 'default', 'due_data', NULL, 0, NULL, NULL, NULL, NULL, 'date', '过期时间', 80, NULL, NULL, NULL);
 
 DROP TABLE IF EXISTS `form`;
 CREATE TABLE IF NOT EXISTS `form` (
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `form_item` (
   `form_item_template` varchar(64)  NOT NULL,
   `name` varchar(255)  NOT NULL,
   `value` varchar(255)  DEFAULT NULL,
+  `item_group` varchar(255)  DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fore_form_item_form` FOREIGN KEY (`form`) REFERENCES `form` (`id`),
   CONSTRAINT `fore_form_item_ref_template` FOREIGN KEY (`form_item_template`) REFERENCES `form_item_template` (`id`)
@@ -159,6 +161,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `report_role` varchar(64)  DEFAULT NULL,
   `attach_file` varchar(64)  DEFAULT NULL,
   `status` varchar(64)  NOT NULL DEFAULT 'created',
+  `cache` mediumtext ,
   `result` mediumtext ,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,

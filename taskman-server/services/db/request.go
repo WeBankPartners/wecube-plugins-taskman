@@ -55,7 +55,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 		err = fmt.Errorf("RequestTemplate proDefId illegal ")
 		return
 	}
-	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/public/process/definitions/%s/preview/entities/%s", requestTemplateObj.ProcDefId, entityDataId), nil)
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/public/process/definitions/%s/preview/entities/%s", models.Config.Wecube.BaseUrl, requestTemplateObj.ProcDefId, entityDataId), nil)
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
 		return

@@ -182,9 +182,16 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	}
 	tmpEntity := items[0].Entity
 	tmpItems := []*models.FormItemTemplateTable{}
+	existItemMap := make(map[string]int)
 	for _, v := range items {
 		if v.Entity == "" {
 			continue
+		}
+		tmpKey := fmt.Sprintf("%s__%s__%s", v.PackageName, v.Entity, v.Name)
+		if _, b := existItemMap[tmpKey]; b {
+			continue
+		} else {
+			existItemMap[tmpKey] = 1
 		}
 		if v.Entity != tmpEntity {
 			if tmpEntity != "" {

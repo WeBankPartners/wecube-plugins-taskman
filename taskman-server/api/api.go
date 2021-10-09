@@ -62,6 +62,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/save/:requestId", Method: "POST", HandlerFunc: request.SaveRequest},
 		&handlerFuncObj{Url: "/user/request", Method: "GET", HandlerFunc: request.ListUserRequest},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
+		// For core 1:get task form template  2:create task
 	)
 }
 

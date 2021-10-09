@@ -14,7 +14,7 @@ func GetEntityData(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestId can not empty "))
 		return
 	}
-	result, err := db.GetEntityData(id)
+	result, err := db.GetEntityData(id, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -29,7 +29,7 @@ func ProcessDataPreview(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestTemplateId or entityDataId can not empty "))
 		return
 	}
-	result, err := db.ProcessDataPreview(requestTemplateId, entityDataId)
+	result, err := db.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

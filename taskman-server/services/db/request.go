@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func GetEntityData(requestId string) (result models.EntityQueryResult, err error) {
+func GetEntityData(requestId, userToken string) (result models.EntityQueryResult, err error) {
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {
 		return result, tmpErr
@@ -30,6 +30,7 @@ func GetEntityData(requestId string) (result models.EntityQueryResult, err error
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
+	req.Header.Set("Authorization", userToken)
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
 		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
@@ -44,7 +45,7 @@ func GetEntityData(requestId string) (result models.EntityQueryResult, err error
 	return
 }
 
-func ProcessDataPreview(requestTemplateId, entityDataId string) (result models.EntityTreeResult, err error) {
+func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (result models.EntityTreeResult, err error) {
 	requestTemplateObj, getTemplateErr := getSimpleRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
@@ -59,6 +60,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId string) (result models.E
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
+	req.Header.Set("Authorization", userToken)
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
 		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())

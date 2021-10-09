@@ -9,9 +9,9 @@ import (
 )
 
 func GetEntityData(c *gin.Context) {
-	id := c.Query("requestTemplateId")
+	id := c.Query("requestId")
 	if id == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestTemplateId can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestId can not empty "))
 		return
 	}
 	result, err := db.GetEntityData(id)

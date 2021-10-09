@@ -125,7 +125,7 @@ func buildVersionNum(version string) string {
 	if version == "" {
 		return "v1"
 	}
-	tmpV, err := strconv.Atoi(version[:1])
+	tmpV, err := strconv.Atoi(version[1:])
 	if err != nil {
 		return fmt.Sprintf("v%d", time.Now().Unix())
 	}

@@ -51,7 +51,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
 
 		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: request.GetRequestTemplateByUser},
-		&handlerFuncObj{Url: "/entity/data", Method: "POST", HandlerFunc: request.GetEntityData},
+		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: request.GetEntityData},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
 
 		&handlerFuncObj{Url: "/request/:requestId", Method: "GET", HandlerFunc: request.GetRequest},

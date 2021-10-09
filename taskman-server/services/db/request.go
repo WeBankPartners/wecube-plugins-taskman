@@ -11,7 +11,11 @@ import (
 	"time"
 )
 
-func GetEntityData(requestTemplateId string) (result models.EntityQueryResult, err error) {
+func GetEntityData(requestId string) (result models.EntityQueryResult, err error) {
+	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
+	if tmpErr != nil {
+		return result, tmpErr
+	}
 	requestTemplateObj, getTemplateErr := getSimpleRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
@@ -118,8 +122,7 @@ func SaveRequestCache(requestId string) {
 
 }
 
-func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStruct, err error) {
-	result = models.RequestTemplateFormStruct{}
+func getRequestTemplateByRequest(requestId string) (templateId string, err error) {
 	var requestTable []*models.RequestTable
 	err = x.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
@@ -129,7 +132,17 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 		err = fmt.Errorf("Can not find request with id:%s ", requestId)
 		return
 	}
-	requestTemplateObj, _ := getSimpleRequestTemplate(requestTable[0].RequestTemplate)
+	templateId = requestTable[0].RequestTemplate
+	return
+}
+
+func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStruct, err error) {
+	result = models.RequestTemplateFormStruct{}
+	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
+	if tmpErr != nil {
+		return result, tmpErr
+	}
+	requestTemplateObj, _ := getSimpleRequestTemplate(requestTemplateId)
 	result.Id = requestTemplateObj.Id
 	result.Name = requestTemplateObj.Name
 	result.PackageName = requestTemplateObj.PackageName
@@ -143,6 +156,34 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	return
 }
 
-func GetRequestPreDataStruct(requestId string) {
-
+func GetRequestPreData(requestId, entityDataId string) (result []*models.RequestPreDataTableObj, err error) {
+	result = []*models.RequestPreDataTableObj{}
+	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
+	if tmpErr != nil {
+		return result, tmpErr
+	}
+	var items []*models.FormItemTemplateTable
+	err = x.SQL("select * from form_item_template where form_template in (select id from form_template where id in (select form_template from task_template where request_template=?)) order by entity,sort", requestTemplateId).Find(&items)
+	if err != nil {
+		return
+	}
+	if len(items) == 0 {
+		return result, fmt.Errorf("RequestTemplate:%s have no task form items ", requestTemplateId)
+	}
+	//tmpEntity := items[0].Entity
+	//tmpItems := []*models.FormItemTemplateTable{}
+	//for _,v := range items {
+	//	if v.Entity == "" {
+	//		continue
+	//	}
+	//	if v.Entity != tmpEntity {
+	//		if tmpEntity == "" {
+	//			tmpItems = []*models.FormItemTemplateTable{}
+	//			tmpEntity = v.Entity
+	//			continue
+	//		}
+	//
+	//	}
+	//}
+	return
 }

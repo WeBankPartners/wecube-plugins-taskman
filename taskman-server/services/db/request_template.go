@@ -606,7 +606,7 @@ func SetRequestTemplateToCreated(id, operator string) {
 func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
 	result = []*models.UserRequestTemplateQueryObj{}
 	var requestTemplateTable []*models.RequestTemplateTable
-	err = x.SQL("select * from request_template where id in (select request_template from request_template_role where `role` in ('" + strings.Join(userRoles, "','") + "')) order by `group`,id").Find(&requestTemplateTable)
+	err = x.SQL("select * from request_template where del_flag=0 and id in (select request_template from request_template_role where `role` in ('" + strings.Join(userRoles, "','") + "')) order by `group`,id").Find(&requestTemplateTable)
 	if err != nil {
 		return
 	}

@@ -1,12 +1,14 @@
 package db
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -120,8 +122,14 @@ func UpdateRequest(param *models.RequestTable) error {
 	return err
 }
 
-func SaveRequestCache(requestId string) {
-
+func SaveRequestCache(requestId, operator string, cacheData models.RequestCacheData) error {
+	cacheBytes, err := json.Marshal(cacheData)
+	if err != nil {
+		return fmt.Errorf("Try to json marshal cache data fail,%s ", err.Error())
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err = x.Exec("update request set cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
+	return err
 }
 
 func getRequestTemplateByRequest(requestId string) (templateId string, err error) {
@@ -212,5 +220,40 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 			}
 		}
 	}
+	return
+}
+
+func StartRequest(requestId, operator, userToken string, cacheData models.RequestCacheData) (result models.StartInstanceResultData, err error) {
+	cacheBytes, tmpErr := json.Marshal(cacheData)
+	if tmpErr != nil {
+		err = fmt.Errorf("Json marshal cache data fail,%s ", tmpErr.Error())
+		return
+	}
+	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances", models.Config.Wecube.BaseUrl), bytes.NewReader(cacheBytes))
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	var respResult models.StartInstanceResult
+	b, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	err = json.Unmarshal(b, &respResult)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if respResult.Status != "OK" {
+		err = fmt.Errorf("Start instance fail,%s ", respResult.Message)
+		return
+	}
+	result = respResult.Data
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err = x.Exec("update request set proc_instance_id=?,report_time=?,status=?,cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }

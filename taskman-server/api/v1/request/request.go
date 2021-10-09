@@ -116,11 +116,31 @@ func UpdateRequest(c *gin.Context) {
 }
 
 func SaveRequest(c *gin.Context) {
-	//requestId := c.Param("requestId")
-	//var param models.RequestCacheData
-	//if err := c.ShouldBindJSON(&param);err != nil {
-	//	middleware.ReturnParamValidateError(c, err)
-	//	return
-	//}
+	requestId := c.Param("requestId")
+	var param models.RequestCacheData
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.SaveRequestCache(requestId, middleware.GetRequestUser(c), param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
 
+func StartRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	var param models.RequestCacheData
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	instanceId, err := db.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, instanceId)
+	}
 }

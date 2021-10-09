@@ -104,3 +104,17 @@ type RequestPreDataTableObj struct {
 	Title  []*FormItemTemplateTable `json:"title"`
 	Value  []*EntityTreeObj         `json:"value"`
 }
+
+type StartInstanceResult struct {
+	Status  string                  `json:"status"`
+	Message string                  `json:"message"`
+	Data    StartInstanceResultData `json:"data"`
+}
+
+type StartInstanceResultData struct {
+	Id          int    `json:"id"`
+	ProcInstKey string `json:"procInstKey"`
+	ProcDefId   string `json:"procDefId"`
+	ProcDefKey  string `json:"procDefKey"`
+	Status      string `json:"status"`
+}

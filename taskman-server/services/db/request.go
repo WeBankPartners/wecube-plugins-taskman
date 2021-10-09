@@ -158,34 +158,59 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	return
 }
 
-func GetRequestPreData(requestId, entityDataId string) (result []*models.RequestPreDataTableObj, err error) {
+func GetRequestPreData(requestId, entityDataId, userToken string) (result []*models.RequestPreDataTableObj, err error) {
 	result = []*models.RequestPreDataTableObj{}
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {
 		return result, tmpErr
 	}
 	var items []*models.FormItemTemplateTable
-	err = x.SQL("select * from form_item_template where form_template in (select id from form_template where id in (select form_template from task_template where request_template=?)) order by entity,sort", requestTemplateId).Find(&items)
+	err = x.SQL("select * from form_item_template where form_template in (select id from form_template where id in (select form_template from task_template where request_template=? union select form_template from request_template where id=?)) order by entity,sort", requestTemplateId, requestTemplateId).Find(&items)
 	if err != nil {
 		return
 	}
 	if len(items) == 0 {
 		return result, fmt.Errorf("RequestTemplate:%s have no task form items ", requestTemplateId)
 	}
-	//tmpEntity := items[0].Entity
-	//tmpItems := []*models.FormItemTemplateTable{}
-	//for _,v := range items {
-	//	if v.Entity == "" {
-	//		continue
-	//	}
-	//	if v.Entity != tmpEntity {
-	//		if tmpEntity == "" {
-	//			tmpItems = []*models.FormItemTemplateTable{}
-	//			tmpEntity = v.Entity
-	//			continue
-	//		}
-	//
-	//	}
-	//}
+	tmpEntity := items[0].Entity
+	tmpItems := []*models.FormItemTemplateTable{}
+	for _, v := range items {
+		if v.Entity == "" {
+			continue
+		}
+		if v.Entity != tmpEntity {
+			if tmpEntity != "" {
+				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []map[string]interface{}{}})
+			}
+			tmpItems = []*models.FormItemTemplateTable{}
+			tmpEntity = v.Entity
+		}
+		tmpItems = append(tmpItems, v)
+	}
+	if len(tmpItems) > 0 {
+		tmpEntity = items[len(items)-1].Entity
+		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []map[string]interface{}{}})
+	}
+	if entityDataId == "" {
+		return
+	}
+	previewData, previewErr := ProcessDataPreview(requestTemplateId, entityDataId, userToken)
+	if previewErr != nil {
+		return result, previewErr
+	}
+	if len(previewData.Data.EntityTreeNodes) == 0 {
+		return
+	}
+	for _, entity := range result {
+		for _, tmpData := range previewData.Data.EntityTreeNodes {
+			if tmpData.EntityName == entity.Entity {
+				tmpValueData := make(map[string]interface{})
+				for _, title := range entity.Title {
+					tmpValueData[title.Name] = tmpData.EntityData[title.Name]
+				}
+				entity.Value = append(entity.Value, tmpValueData)
+			}
+		}
+	}
 	return
 }

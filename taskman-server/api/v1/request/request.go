@@ -37,6 +37,17 @@ func ProcessDataPreview(c *gin.Context) {
 	}
 }
 
+func GetRequestPreviewData(c *gin.Context) {
+	requestId := c.Query("requestId")
+	entityDataId := c.Query("entityDataId")
+	result, err := db.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
 func ListUserRequest(c *gin.Context) {
 	result, err := db.ListUserRequest(middleware.GetRequestUser(c))
 	if err != nil {

@@ -45,6 +45,7 @@ export default {
       const { statusCode, data } = await getTemplateNodes(this.requestTemplateId)
       if (statusCode === 'OK') {
         this.nodes = data.filter(item => item.taskCategory === 'SUTN')
+        // this.nodes = data
         this.currentNode = data[0].nodeId
         // this.initTab(this.currentNode, data[0])
         // this.$refs[this.currentNode].initData(data[0])
@@ -53,6 +54,7 @@ export default {
     changeNode (nodeId) {
       this.currentNode = nodeId
       const find = this.nodes.find(n => n.nodeId === this.currentNode)
+      console.log(this.$refs[this.currentNode][0].initData)
       this.$refs[this.currentNode][0].initData(this.currentNode, find, this.requestTemplateId)
     },
     initTab (currentNode, data) {

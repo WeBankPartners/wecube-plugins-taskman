@@ -73,8 +73,8 @@
       <Col span="12" style="padding: 16px">
         <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
           <template v-for="(item, itemIndex) in list2">
-            <div :key="item.tag" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
-              {{ item.tag }}
+            <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+              {{ item.itemGroupName }}
               <draggable class="dragArea list-group" :list="item.attrs" group="people">
                 <!-- {{item.attrs}} -->
                 <div
@@ -218,7 +218,11 @@ export default {
           title: 'Input',
           elementType: 'input',
           defaultValue: '',
-          tag: '',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
           width: 70,
           regular: '',
           isEdit: 'yes',
@@ -236,7 +240,11 @@ export default {
           title: 'Select',
           elementType: 'select',
           defaultValue: '',
-          tag: '',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
           width: 70,
           regular: '',
           isEdit: 'yes',
@@ -254,7 +262,11 @@ export default {
           title: 'Textarea',
           elementType: 'textarea',
           defaultValue: '',
-          tag: '',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
           width: 70,
           regular: '',
           isEdit: 'yes',
@@ -273,7 +285,11 @@ export default {
         attrDefId: '',
         attrDefName: '',
         defaultValue: '',
-        tag: '',
+        // tag: '',
+        itemGroup: '',
+        itemGroupName: '',
+        packageName: '',
+        entity: '',
         elementType: 'input',
         id: 0,
         isEdit: 'yes',
@@ -301,9 +317,13 @@ export default {
       this.initPage()
     },
     initPage () {
+      console.log(this.nodeId, this.nodeData)
       if (this.nodeData.nodeId === this.nodeId) {
+        console.log(this.nodeId, this.nodeData.nodeId)
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
+        console.log(this.formData)
+        debugger
         this.getSelectedForm()
         this.getManagementRoles()
         this.getUserRoles()
@@ -311,13 +331,17 @@ export default {
       }
     },
     async getTaskFormDataByNodeId () {
+      console.log(this.requestTemplateId)
       if (!!this.requestTemplateId === false) {
         return
       }
       this.list2 = []
       const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
       if (statusCode === 'OK') {
+        console.log(data)
         this.formData = { ...data }
+        this.formData.nodeDefId = this.nodeData.nodeDefId
+        this.formData.nodeDefName = this.nodeData.nodeName
         if (data.items && data.items.length > 0) {
           this.selectedFormItem = data.items.filter(item => item.attrDefId !== '')
           this.selectedInputFormItem = this.selectedFormItem
@@ -333,7 +357,9 @@ export default {
               return custom
             })
             this.list2.unshift({
-              tag: 'Custom',
+              // tag: 'Custom',
+              itemGroup: '',
+              itemGroupName: '',
               attrs: customItem
             })
           }
@@ -355,6 +381,7 @@ export default {
           l.id = ''
         }
       })
+      console.log(this.formData)
       let res = {
         ...this.formData,
         items: tmp
@@ -367,7 +394,7 @@ export default {
         })
         this.formData = { ...data }
         data.items.forEach(item => {
-          let findAttrs = this.list2.find(l => l.tag === item.tag)
+          let findAttrs = this.list2.find(l => l.itemGroup === item.itemGroup)
           let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
           findAttr.id = item.id
         })
@@ -388,20 +415,24 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.list2.find(l => l.tag === findTag.entityPackage + '.' + findTag.entityName).attrs
+        let findAttr = this.list2.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName).attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })
 
       this.selectedInputFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
-        let tag = seleted.entityPackage + '.' + seleted.entityName
+        let itemGroup = seleted.entityPackage + '.' + seleted.entityName
         const attr = {
           attrDefDataType: seleted.dataType,
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
-          tag: tag,
+          // tag: tag,
+          itemGroup: itemGroup,
+          itemGroupName: itemGroup,
+          packageName: seleted.entityPackage,
+          entity: seleted.entityName,
           elementType: seleted.dataType === 'str' ? 'input' : '',
           id: 'c_' + seleted.id,
           isCustom: false,
@@ -412,11 +443,9 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70,
-          entityName: seleted.entityName,
-          entityPackage: seleted.entityPackage
+          width: 70
         }
-        const tagExist = this.list2.find(l => l.tag === tag)
+        const tagExist = this.list2.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
           const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
           if (!find) {
@@ -424,7 +453,9 @@ export default {
           }
         } else {
           this.list2.push({
-            tag: tag,
+            // tag: tag,
+            itemGroup: itemGroup,
+            itemGroupName: itemGroup,
             attrs: [attr]
           })
         }
@@ -445,19 +476,23 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.list2.find(l => l.tag === findTag.entityPackage + '.' + findTag.entityName).attrs
+        let findAttr = this.list2.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName).attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })
       this.selectedOutputFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
-        let tag = seleted.entityPackage + '.' + seleted.entityName
+        let itemGroup = seleted.entityPackage + '.' + seleted.entityName
         const attr = {
           attrDefDataType: seleted.dataType,
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
-          tag: tag,
+          // tag: tag,
+          itemGroup: itemGroup,
+          itemGroupName: itemGroup,
+          packageName: seleted.entityPackage,
+          entity: seleted.entityName,
           elementType: seleted.dataType === 'str' ? 'input' : '',
           id: 'c_' + seleted.id,
           isCustom: false,
@@ -468,11 +503,9 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70,
-          entityName: seleted.entityName,
-          entityPackage: seleted.entityPackage
+          width: 70
         }
-        const tagExist = this.list2.find(l => l.tag === tag)
+        const tagExist = this.list2.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
           const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
           if (!find) {
@@ -480,7 +513,9 @@ export default {
           }
         } else {
           this.list2.push({
-            tag: tag,
+            // tag: tag,
+            itemGroup: itemGroup,
+            itemGroupName: itemGroup,
             attrs: [attr]
           })
         }
@@ -489,14 +524,18 @@ export default {
     cloneDog (val) {
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = idGlobal++
-      newItem.tag = 'Custom'
+      // newItem.tag = 'Custom'
+      newItem.itemGroup = 'Custom'
+      newItem.itemGroupName = 'Custom'
       newItem.title = newItem.title + idGlobal
-      const find = this.list2.find(l => l.tag === 'Custom')
+      const find = this.list2.find(l => l.itemGroup === 'Custom')
       if (find) {
         find.attrs.push(newItem)
       } else {
         this.list2.push({
           tag: 'Custom',
+          itemGroup: 'Custom',
+          itemGroupName: 'Custom',
           attrs: [newItem]
         })
       }
@@ -522,12 +561,12 @@ export default {
         let entitySet = new Set()
         let formItemOptions = []
         data.forEach(d => {
-          const tag = d.entityPackage + '.' + d.entityName
-          if (entitySet.has(tag)) {
-            let find = formItemOptions.find(f => f.packageName + '.' + f.name === tag)
+          const itemGroup = d.entityPackage + '.' + d.entityName
+          if (entitySet.has(itemGroup)) {
+            let find = formItemOptions.find(f => f.packageName + '.' + f.name === itemGroup)
             find.attributes.push(d)
           } else {
-            entitySet.add(tag)
+            entitySet.add(itemGroup)
             formItemOptions.push({
               description: d.entityDisplayName,
               displayName: d.entityDisplayName,

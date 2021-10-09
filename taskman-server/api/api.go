@@ -59,7 +59,8 @@ func init() {
 		&handlerFuncObj{Url: "/request", Method: "PUT", HandlerFunc: request.UpdateRequest},
 		&handlerFuncObj{Url: "/request-root/:requestId", Method: "GET", HandlerFunc: request.GetRequestRootForm},
 		&handlerFuncObj{Url: "/request-data/preview", Method: "GET", HandlerFunc: request.GetRequestPreviewData},
-		&handlerFuncObj{Url: "/request-data/save/:requestId", Method: "POST", HandlerFunc: request.SaveRequest},
+		&handlerFuncObj{Url: "/request-data/save/:requestId", Method: "POST", HandlerFunc: request.SaveRequestCache},
+		&handlerFuncObj{Url: "/request-data/get/:requestId", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/user/request", Method: "GET", HandlerFunc: request.ListUserRequest},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
 		// For core 1:get task form template  2:create task

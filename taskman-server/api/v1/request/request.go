@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func GetEntityData(c *gin.Context) {
@@ -115,18 +116,24 @@ func UpdateRequest(c *gin.Context) {
 	}
 }
 
-func SaveRequest(c *gin.Context) {
+func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
-	var param models.RequestCacheData
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	err := db.SaveRequestCache(requestId, middleware.GetRequestUser(c), param)
+	requestBody := c.GetString("requestBody")
+	err := db.SaveRequestCache(requestId, middleware.GetRequestUser(c), requestBody)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnSuccess(c)
+	}
+}
+
+func GetRequestCache(c *gin.Context) {
+	requestId := c.Param("requestId")
+	result, err := db.GetRequestCache(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		c.JSON(http.StatusOK, result)
 	}
 }
 

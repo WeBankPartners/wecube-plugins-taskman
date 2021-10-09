@@ -86,7 +86,7 @@ func ListUserRequest(user string) (result []*models.RequestTable, err error) {
 func GetRequest(requestId string) (result models.RequestTable, err error) {
 	result = models.RequestTable{}
 	var requestTable []*models.RequestTable
-	err = x.SQL("select * from request where id=?", requestId).Find(&requestTable)
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,reporter,report_time,emergency,status from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
 	}
@@ -122,14 +122,24 @@ func UpdateRequest(param *models.RequestTable) error {
 	return err
 }
 
-func SaveRequestCache(requestId, operator string, cacheData models.RequestCacheData) error {
-	cacheBytes, err := json.Marshal(cacheData)
-	if err != nil {
-		return fmt.Errorf("Try to json marshal cache data fail,%s ", err.Error())
-	}
+func SaveRequestCache(requestId, operator string, cacheData string) error {
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update request set cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
+	_, err := x.Exec("update request set cache=?,updated_by=?,updated_time=? where id=?", cacheData, operator, nowTime, requestId)
 	return err
+}
+
+func GetRequestCache(requestId string) (result []byte, err error) {
+	var requestTable []*models.RequestTable
+	err = x.SQL("select cache from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		return
+	}
+	result = []byte(requestTable[0].Cache)
+	return
 }
 
 func getRequestTemplateByRequest(requestId string) (templateId string, err error) {

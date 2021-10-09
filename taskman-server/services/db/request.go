@@ -180,7 +180,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		}
 		if v.Entity != tmpEntity {
 			if tmpEntity != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []map[string]interface{}{}})
+				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []*models.EntityTreeObj{}})
 			}
 			tmpItems = []*models.FormItemTemplateTable{}
 			tmpEntity = v.Entity
@@ -189,7 +189,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	}
 	if len(tmpItems) > 0 {
 		tmpEntity = items[len(items)-1].Entity
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []map[string]interface{}{}})
+		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []*models.EntityTreeObj{}})
 	}
 	if entityDataId == "" {
 		return
@@ -208,7 +208,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 				for _, title := range entity.Title {
 					tmpValueData[title.Name] = tmpData.EntityData[title.Name]
 				}
-				entity.Value = append(entity.Value, tmpValueData)
+				entity.Value = append(entity.Value, &models.EntityTreeObj{Id: tmpData.Id, PackageName: tmpData.PackageName, EntityName: tmpData.EntityName, DataId: tmpData.DataId, PreviousIds: tmpData.PreviousIds, SucceedingIds: tmpData.SucceedingIds, DisplayName: tmpData.DisplayName, EntityData: tmpValueData})
 			}
 		}
 	}

@@ -102,5 +102,5 @@ type RequestCacheEntityAttrValue struct {
 type RequestPreDataTableObj struct {
 	Entity string                   `json:"entity"`
 	Title  []*FormItemTemplateTable `json:"title"`
-	Value  []map[string]interface{} `json:"value"`
+	Value  []*EntityTreeObj         `json:"value"`
 }

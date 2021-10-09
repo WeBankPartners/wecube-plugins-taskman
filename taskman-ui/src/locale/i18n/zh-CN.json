@@ -47,5 +47,6 @@
   "no_data_item": "没有数据项",
   "warning": "警告",
   "can_not_be_empty": "不能为空",
-  "publish_template": "发布模板"
+  "publish_template": "发布模板",
+  "initiate_request": "发起请求上报"
 }

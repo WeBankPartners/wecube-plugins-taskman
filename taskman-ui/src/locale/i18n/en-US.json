@@ -47,5 +47,6 @@
   "no_data_item": "No Data Item",
   "warning": "Warning",
   "can_not_be_empty": "Can Not Be Empty",
-  "publish_template": "Publish Template"
+  "publish_template": "Publish Template",
+  "initiate_request": "Initiate Request"
 }

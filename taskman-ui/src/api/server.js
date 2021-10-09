@@ -53,3 +53,8 @@ export const getRequestFormTemplateData = requestTemplateId =>
   req.get(`/taskman/api/v1/request-form-template/${requestTemplateId}`)
 export const getTaskFormDataByNodeId = (requestTemplateId, nodeId) =>
   req.get(`/taskman/api/v1/task-template/${requestTemplateId}/${nodeId}`)
+
+export const getTemplateByUser = () => req.get('/taskman/api/v1/user/request-template')
+export const createRequest = data => req.post('/taskman/api/v1/request', data)
+export const getRootEntity = params => req.get('/taskman/api/v1/entity/data', params)
+export const getEntityData = params => req.get('/taskman/api/v1/request-data/preview', params)

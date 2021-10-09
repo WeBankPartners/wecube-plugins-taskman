@@ -5,7 +5,7 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/',
+      path: '/template',
       name: 'template',
       component: () => import('@/pages/template')
     },
@@ -18,6 +18,16 @@ export default new Router({
       path: '/templateManagementIndex',
       name: 'templateManagementIndex',
       component: () => import('@/pages/temp-management/index')
+    },
+    {
+      path: '/',
+      name: 'request',
+      component: () => import('@/pages/request')
+    },
+    {
+      path: '/requestManagementIndex',
+      name: 'requestManagementIndex',
+      component: () => import('@/pages/request-management/index')
     }
   ]
 })

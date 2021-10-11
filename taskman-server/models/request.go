@@ -85,7 +85,7 @@ type RequestCacheEntityValue struct {
 	EntityDataState  string                         `json:"entityDataState"`
 	EntityDefId      string                         `json:"entityDefId"`
 	EntityName       string                         `json:"entityName"`
-	FullEntityDataId string                         `json:"fullEntityDataId"`
+	FullEntityDataId interface{}                    `json:"fullEntityDataId"`
 	Oid              string                         `json:"oid"`
 	PackageName      string                         `json:"packageName"`
 	PreviousOids     []string                       `json:"previousOids"`

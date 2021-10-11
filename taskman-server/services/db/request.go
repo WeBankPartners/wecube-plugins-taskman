@@ -8,6 +8,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -183,7 +184,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		return result, tmpErr
 	}
 	var items []*models.FormItemTemplateTable
-	err = x.SQL("select * from form_item_template where form_template in (select id from form_template where id in (select form_template from task_template where request_template=? union select form_template from request_template where id=?)) order by entity,sort", requestTemplateId, requestTemplateId).Find(&items)
+	err = x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by entity,sort", requestTemplateId).Find(&items)
 	if err != nil {
 		return
 	}
@@ -192,6 +193,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	}
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
+	tmpRefEntity := []string{}
 	tmpItems := []*models.FormItemTemplateTable{}
 	existItemMap := make(map[string]int)
 	for _, v := range items {
@@ -206,19 +208,34 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		}
 		if v.Entity != tmpEntity {
 			if tmpEntity != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, Value: []*models.EntityTreeObj{}})
+				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 			}
 			tmpItems = []*models.FormItemTemplateTable{}
 			tmpEntity = v.Entity
 			tmpPackageName = v.PackageName
+			tmpRefEntity = []string{}
 		}
 		tmpItems = append(tmpItems, v)
+		if v.RefEntity != "" {
+			existFlag := false
+			for _, vv := range tmpRefEntity {
+				if vv == v.RefEntity {
+					existFlag = true
+					break
+				}
+			}
+			if !existFlag {
+				tmpRefEntity = append(tmpRefEntity, v.RefEntity)
+			}
+		}
 	}
 	if len(tmpItems) > 0 {
 		tmpEntity = items[len(items)-1].Entity
 		tmpPackageName = items[len(items)-1].PackageName
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, Value: []*models.EntityTreeObj{}})
+		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 	}
+	// sort result by dependence
+	result = sortRequestEntity(result)
 	if entityDataId == "" {
 		return
 	}
@@ -241,6 +258,65 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		}
 	}
 	return
+}
+
+func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPreDataSort {
+	var result models.RequestPreDataSort
+	entityMap := make(map[string][]string)
+	entityNumMap := make(map[string]int)
+	for _, v := range param {
+		for _, vv := range v.RefEntity {
+			if vv == v.Entity {
+				continue
+			}
+			if _, b := entityMap[vv]; b {
+				entityMap[vv] = append(entityMap[vv], v.Entity)
+			} else {
+				entityMap[vv] = []string{v.Entity}
+			}
+		}
+	}
+	countNum := 0
+	levelNum := 1
+	for _, v := range param {
+		if _, b := entityMap[v.Entity]; !b {
+			v.SortLevel = levelNum
+			entityNumMap[v.Entity] = v.SortLevel
+			countNum = countNum + 1
+		}
+	}
+	for countNum < len(param) {
+		levelNum = levelNum + 1
+		for k, v := range entityMap {
+			ready := true
+			for _, vv := range v {
+				if _, b := entityNumMap[vv]; !b {
+					ready = false
+					break
+				} else {
+					if entityNumMap[vv] == levelNum {
+						ready = false
+						break
+					}
+				}
+			}
+			if ready {
+				for _, vv := range param {
+					if vv.Entity == k {
+						vv.SortLevel = levelNum
+						entityNumMap[vv.Entity] = vv.SortLevel
+						countNum = countNum + 1
+					}
+				}
+				delete(entityMap, k)
+			}
+		}
+	}
+	for _, v := range param {
+		result = append(result, v)
+	}
+	sort.Sort(result)
+	return result
 }
 
 func StartRequest(requestId, operator, userToken string, cacheData models.RequestCacheData) (result models.StartInstanceResultData, err error) {

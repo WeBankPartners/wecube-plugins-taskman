@@ -103,6 +103,8 @@ type RequestCacheEntityAttrValue struct {
 type RequestPreDataTableObj struct {
 	PackageName string                   `json:"packageName"`
 	Entity      string                   `json:"entity"`
+	RefEntity   []string                 `json:"-"`
+	SortLevel   int                      `json:"-"`
 	Title       []*FormItemTemplateTable `json:"title"`
 	Value       []*EntityTreeObj         `json:"value"`
 }
@@ -119,4 +121,21 @@ type StartInstanceResultData struct {
 	ProcDefId   string `json:"procDefId"`
 	ProcDefKey  string `json:"procDefKey"`
 	Status      string `json:"status"`
+}
+
+type RequestPreDataSort []*RequestPreDataTableObj
+
+func (s RequestPreDataSort) Len() int {
+	return len(s)
+}
+
+func (s RequestPreDataSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s RequestPreDataSort) Less(i, j int) bool {
+	if s[i].SortLevel == s[j].SortLevel {
+		return s[i].Entity < s[j].Entity
+	}
+	return s[i].SortLevel < s[j].SortLevel
 }

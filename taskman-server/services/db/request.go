@@ -123,13 +123,28 @@ func UpdateRequest(param *models.RequestTable) error {
 	return err
 }
 
-func SaveRequestCache(requestId, operator string, cacheData string) error {
+func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDataDto) error {
+	for _, v := range param.Data {
+		for _, value := range v.Value {
+			if value.Id == "" {
+				value.PackageName = v.PackageName
+				value.EntityName = v.Entity
+				value.EntityDataOp = "created"
+				value.Id = fmt.Sprintf("%s:%s:tmp%s%s", v.PackageName, v.Entity, models.SysTableIdConnector, guid.CreateGuid())
+				value.DataId = value.Id
+			}
+		}
+	}
+	paramBytes, err := json.Marshal(param)
+	if err != nil {
+		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set cache=?,updated_by=?,updated_time=? where id=?", cacheData, operator, nowTime, requestId)
+	_, err = x.Exec("update request set cache=?,updated_by=?,updated_time=? where id=?", string(paramBytes), operator, nowTime, requestId)
 	return err
 }
 
-func GetRequestCache(requestId string) (result []byte, err error) {
+func GetRequestCache(requestId string) (result models.RequestPreDataDto, err error) {
 	var requestTable []*models.RequestTable
 	err = x.SQL("select cache from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
@@ -139,7 +154,7 @@ func GetRequestCache(requestId string) (result []byte, err error) {
 		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
 		return
 	}
-	result = []byte(requestTable[0].Cache)
+	err = json.Unmarshal([]byte(requestTable[0].Cache), &result)
 	return
 }
 
@@ -350,6 +365,6 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	result = respResult.Data
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update request set proc_instance_id=?,report_time=?,status=?,cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
+	_, err = x.Exec("update request set proc_instance_id=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }

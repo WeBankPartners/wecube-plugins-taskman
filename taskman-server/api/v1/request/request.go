@@ -6,7 +6,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func GetEntityData(c *gin.Context) {
@@ -45,7 +44,7 @@ func GetRequestPreviewData(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnData(c, result)
+		middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
 	}
 }
 
@@ -118,12 +117,16 @@ func UpdateRequest(c *gin.Context) {
 
 func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
-	requestBody := c.GetString("requestBody")
-	err := db.SaveRequestCache(requestId, middleware.GetRequestUser(c), requestBody)
+	var param models.RequestPreDataDto
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), &param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		middleware.ReturnData(c, param)
 	}
 }
 
@@ -133,7 +136,7 @@ func GetRequestCache(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, result)
+		middleware.ReturnData(c, result)
 	}
 }
 

@@ -32,6 +32,7 @@ type EntityTreeObj struct {
 	EntityData    map[string]interface{} `json:"entityData"`
 	PreviousIds   []string               `json:"previousIds"`
 	SucceedingIds []string               `json:"succeedingIds"`
+	EntityDataOp  string                 `json:"entityDataOp"`
 }
 
 type RequestTable struct {
@@ -47,6 +48,7 @@ type RequestTable struct {
 	AttachFile      string `json:"attachFile" xorm:"attach_file"`
 	Status          string `json:"status" xorm:"status"`
 	Cache           string `json:"cache" xorm:"cache"`
+	BindCache       string `json:"bindCache" xorm:"bind_cache"`
 	Result          string `json:"result" xorm:"result"`
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
@@ -138,4 +140,9 @@ func (s RequestPreDataSort) Less(i, j int) bool {
 		return s[i].Entity < s[j].Entity
 	}
 	return s[i].SortLevel < s[j].SortLevel
+}
+
+type RequestPreDataDto struct {
+	RootEntityId string                    `json:"rootEntityId"`
+	Data         []*RequestPreDataTableObj `json:"data"`
 }

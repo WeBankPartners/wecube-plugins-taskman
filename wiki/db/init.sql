@@ -162,6 +162,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `attach_file` varchar(64)  DEFAULT NULL,
   `status` varchar(64)  NOT NULL DEFAULT 'created',
   `cache` mediumtext ,
+  `bind_cache` mediumtext ,
   `result` mediumtext ,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,

@@ -101,9 +101,10 @@ type RequestCacheEntityAttrValue struct {
 }
 
 type RequestPreDataTableObj struct {
-	Entity string                   `json:"entity"`
-	Title  []*FormItemTemplateTable `json:"title"`
-	Value  []*EntityTreeObj         `json:"value"`
+	PackageName string                   `json:"packageName"`
+	Entity      string                   `json:"entity"`
+	Title       []*FormItemTemplateTable `json:"title"`
+	Value       []*EntityTreeObj         `json:"value"`
 }
 
 type StartInstanceResult struct {

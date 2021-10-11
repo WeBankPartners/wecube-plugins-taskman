@@ -190,6 +190,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	if len(items) == 0 {
 		return result, fmt.Errorf("RequestTemplate:%s have no task form items ", requestTemplateId)
 	}
+	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItems := []*models.FormItemTemplateTable{}
 	existItemMap := make(map[string]int)
@@ -205,16 +206,18 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		}
 		if v.Entity != tmpEntity {
 			if tmpEntity != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []*models.EntityTreeObj{}})
+				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, Value: []*models.EntityTreeObj{}})
 			}
 			tmpItems = []*models.FormItemTemplateTable{}
 			tmpEntity = v.Entity
+			tmpPackageName = v.PackageName
 		}
 		tmpItems = append(tmpItems, v)
 	}
 	if len(tmpItems) > 0 {
 		tmpEntity = items[len(items)-1].Entity
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, Title: tmpItems, Value: []*models.EntityTreeObj{}})
+		tmpPackageName = items[len(items)-1].PackageName
+		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, Value: []*models.EntityTreeObj{}})
 	}
 	if entityDataId == "" {
 		return

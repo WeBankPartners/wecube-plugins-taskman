@@ -27,6 +27,7 @@ type EntityTreeObj struct {
 	EntityName    string                 `json:"entityName"`
 	DataId        string                 `json:"dataId"`
 	DisplayName   string                 `json:"displayName"`
+	FullDataId    interface{}            `json:"fullDataId"`
 	Id            string                 `json:"id"`
 	EntityData    map[string]interface{} `json:"entityData"`
 	PreviousIds   []string               `json:"previousIds"`

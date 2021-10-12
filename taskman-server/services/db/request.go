@@ -130,7 +130,7 @@ func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDat
 				value.PackageName = v.PackageName
 				value.EntityName = v.Entity
 				value.EntityDataOp = "create"
-				value.Id = fmt.Sprintf("%s:%s:tmp%s%s", v.PackageName, v.Entity, models.SysTableIdConnector, guid.CreateGuid())
+				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
 				value.DataId = value.Id
 			}
 		}
@@ -354,6 +354,7 @@ func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPre
 }
 
 func StartRequest(requestId, operator, userToken string, cacheData models.RequestCacheData) (result models.StartInstanceResultData, err error) {
+	fillBindingWithRequestData(requestId, &cacheData)
 	cacheBytes, tmpErr := json.Marshal(cacheData)
 	if tmpErr != nil {
 		err = fmt.Errorf("Json marshal cache data fail,%s ", tmpErr.Error())
@@ -389,29 +390,6 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 }
 
 func fillBindingWithRequestData(requestId string, cacheData *models.RequestCacheData) {
-	oidMap := make(map[string]int)
-	entityOidMap := make(map[string][]*models.RequestCacheEntityValue)
-	addFlag := false
-	for _, taskNode := range cacheData.TaskNodeBindInfos {
-		for _, entityValue := range taskNode.BoundEntityValues {
-			if entityValue.EntityDataOp == "create" {
-				addFlag = true
-			}
-			if _, b := oidMap[entityValue.Oid]; b {
-				continue
-			}
-			oidMap[entityValue.Oid] = 1
-			tmpValue := models.RequestCacheEntityValue{Oid: entityValue.Oid, EntityName: entityValue.EntityName, PreviousOids: entityValue.PreviousOids, SucceedingOids: entityValue.SucceedingOids}
-			if _, b := entityOidMap[entityValue.EntityName]; b {
-				entityOidMap[entityValue.EntityName] = append(entityOidMap[entityValue.EntityName], &tmpValue)
-			} else {
-				entityOidMap[entityValue.EntityName] = []*models.RequestCacheEntityValue{&tmpValue}
-			}
-		}
-	}
-	if !addFlag {
-		return
-	}
 	var items []*models.FormItemTemplateTable
 	x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
@@ -425,5 +403,72 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 			itemMap[item.Entity] = append(itemMap[item.Entity], item.Name)
 		}
 	}
+	entityNewMap := make(map[string][]string)
+	for _, taskNode := range cacheData.TaskNodeBindInfos {
+		for _, entityValue := range taskNode.BoundEntityValues {
+			if _, b := entityNewMap[entityValue.Oid]; b {
+				continue
+			}
+			if entityRefs, b := itemMap[entityValue.EntityName]; b {
+				if entityValue.EntityDataOp == "create" {
+					tmpRefOidList := []string{}
+					for _, attrValueObj := range entityValue.AttrValues {
+						for _, entityRef := range entityRefs {
+							if attrValueObj.AttrName == entityRef {
+								tmpRefOidList = append(tmpRefOidList, fmt.Sprintf("%s", attrValueObj.DataValue))
+							}
+						}
+					}
+					entityNewMap[entityValue.Oid] = tmpRefOidList
+				} else {
+					tmpRefOidList := []string{}
+					for _, attrValueObj := range entityValue.AttrValues {
+						for _, entityRef := range entityRefs {
+							if attrValueObj.AttrName == entityRef {
+								valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
+								if strings.HasPrefix(valueString, "tmp") {
+									tmpRefOidList = append(tmpRefOidList, valueString)
+								}
+							}
+						}
+					}
+					entityNewMap[entityValue.Oid] = tmpRefOidList
+				}
+			}
+		}
+	}
+	if len(entityNewMap) > 0 {
+		for _, taskNode := range cacheData.TaskNodeBindInfos {
+			for _, entityValue := range taskNode.BoundEntityValues {
+				if refOids, b := entityNewMap[entityValue.Oid]; b {
+					entityValue.PreviousOids = append(entityValue.PreviousOids, refOids...)
+				}
+				for tmpOid, refOids := range entityNewMap {
+					inRefFlag := false
+					for _, refOid := range refOids {
+						if entityValue.Oid == refOid {
+							inRefFlag = true
+						}
+					}
+					if inRefFlag {
+						entityValue.SucceedingOids = append(entityValue.SucceedingOids, tmpOid)
+					}
+				}
+				entityValue.PreviousOids = listToSet(entityValue.PreviousOids)
+				entityValue.SucceedingOids = listToSet(entityValue.SucceedingOids)
+			}
+		}
+	}
+}
 
+func listToSet(input []string) []string {
+	result := []string{}
+	tmpMap := make(map[string]int)
+	for _, v := range input {
+		if _, b := tmpMap[v]; !b {
+			result = append(result, v)
+			tmpMap[v] = 1
+		}
+	}
+	return result
 }

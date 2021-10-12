@@ -139,7 +139,7 @@ func (s RequestPreDataSort) Less(i, j int) bool {
 	if s[i].SortLevel == s[j].SortLevel {
 		return s[i].Entity < s[j].Entity
 	}
-	return s[i].SortLevel < s[j].SortLevel
+	return s[i].SortLevel > s[j].SortLevel
 }
 
 type RequestPreDataDto struct {

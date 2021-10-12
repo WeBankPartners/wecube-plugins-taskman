@@ -387,3 +387,43 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	_, err = x.Exec("update request set proc_instance_id=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
+
+func fillBindingWithRequestData(requestId string, cacheData *models.RequestCacheData) {
+	oidMap := make(map[string]int)
+	entityOidMap := make(map[string][]*models.RequestCacheEntityValue)
+	addFlag := false
+	for _, taskNode := range cacheData.TaskNodeBindInfos {
+		for _, entityValue := range taskNode.BoundEntityValues {
+			if entityValue.EntityDataOp == "create" {
+				addFlag = true
+			}
+			if _, b := oidMap[entityValue.Oid]; b {
+				continue
+			}
+			oidMap[entityValue.Oid] = 1
+			tmpValue := models.RequestCacheEntityValue{Oid: entityValue.Oid, EntityName: entityValue.EntityName, PreviousOids: entityValue.PreviousOids, SucceedingOids: entityValue.SucceedingOids}
+			if _, b := entityOidMap[entityValue.EntityName]; b {
+				entityOidMap[entityValue.EntityName] = append(entityOidMap[entityValue.EntityName], &tmpValue)
+			} else {
+				entityOidMap[entityValue.EntityName] = []*models.RequestCacheEntityValue{&tmpValue}
+			}
+		}
+	}
+	if !addFlag {
+		return
+	}
+	var items []*models.FormItemTemplateTable
+	x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by entity,sort", requestId).Find(&items)
+	itemMap := make(map[string][]string)
+	for _, item := range items {
+		if item.Entity == "" || item.RefEntity == "" {
+			continue
+		}
+		if _, b := itemMap[item.Entity]; !b {
+			itemMap[item.Entity] = []string{item.Name}
+		} else {
+			itemMap[item.Entity] = append(itemMap[item.Entity], item.Name)
+		}
+	}
+
+}

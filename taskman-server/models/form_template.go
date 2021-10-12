@@ -48,6 +48,7 @@ type FormItemTemplateTable struct {
 	IsEdit          string `json:"isEdit" xorm:"is_edit"`
 	IsView          string `json:"isView" xorm:"is_view"`
 	IsOutput        string `json:"isOutput" xorm:"is_output"`
+	InDisplayName   string `json:"inDisplayName" xorm:"in_display_name"`
 }
 
 type FormItemTable struct {

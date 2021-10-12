@@ -193,6 +193,25 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 }
 
 func GetRequestPreData(requestId, entityDataId, userToken string) (result []*models.RequestPreDataTableObj, err error) {
+	var requestTables []*models.RequestTable
+	err = x.SQL("select cache from request where id=?", requestId).Find(&requestTables)
+	if err != nil {
+		return
+	}
+	if len(requestTables) == 0 {
+		return result, fmt.Errorf("Can not find requestId:%s ", requestId)
+	}
+	if requestTables[0].Cache != "" {
+		var cacheObj models.RequestPreDataDto
+		err = json.Unmarshal([]byte(requestTables[0].Cache), &cacheObj)
+		if err != nil {
+			return result, fmt.Errorf("Try to json unmarshal cache data fail,%s ", err.Error())
+		}
+		if cacheObj.RootEntityId == entityDataId {
+			result = cacheObj.Data
+			return
+		}
+	}
 	result = []*models.RequestPreDataTableObj{}
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {

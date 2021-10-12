@@ -366,6 +366,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 		return
 	}
 	req.Header.Set("Authorization", userToken)
+	req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
 		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
@@ -406,6 +407,19 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	entityNewMap := make(map[string][]string)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
+			if entityValue.Oid == cacheData.RootEntityValue.Oid {
+				cacheData.RootEntityValue.EntityName = entityValue.EntityName
+				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp
+				cacheData.RootEntityValue.AttrValues = entityValue.AttrValues
+				cacheData.RootEntityValue.PackageName = entityValue.PackageName
+				cacheData.RootEntityValue.BindFlag = entityValue.BindFlag
+				cacheData.RootEntityValue.EntityDataId = entityValue.EntityDataId
+				cacheData.RootEntityValue.EntityDataState = entityValue.EntityDataState
+				cacheData.RootEntityValue.EntityDefId = entityValue.EntityDefId
+				cacheData.RootEntityValue.FullEntityDataId = entityValue.FullEntityDataId
+				cacheData.RootEntityValue.PreviousOids = entityValue.PreviousOids
+				cacheData.RootEntityValue.SucceedingOids = entityValue.SucceedingOids
+			}
 			if _, b := entityNewMap[entityValue.Oid]; b {
 				continue
 			}

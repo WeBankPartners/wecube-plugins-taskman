@@ -129,7 +129,7 @@ func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDat
 			if value.Id == "" {
 				value.PackageName = v.PackageName
 				value.EntityName = v.Entity
-				value.EntityDataOp = "created"
+				value.EntityDataOp = "create"
 				value.Id = fmt.Sprintf("%s:%s:tmp%s%s", v.PackageName, v.Entity, models.SysTableIdConnector, guid.CreateGuid())
 				value.DataId = value.Id
 			}

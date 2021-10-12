@@ -407,7 +407,8 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	entityNewMap := make(map[string][]string)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
-			if entityValue.Oid == cacheData.RootEntityValue.Oid {
+			if entityValue.Oid == cacheData.RootEntityValue.EntityDataId {
+				cacheData.RootEntityValue.Oid = entityValue.Oid
 				cacheData.RootEntityValue.EntityName = entityValue.EntityName
 				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp
 				cacheData.RootEntityValue.AttrValues = entityValue.AttrValues

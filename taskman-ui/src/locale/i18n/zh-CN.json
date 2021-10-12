@@ -48,5 +48,8 @@
   "warning": "警告",
   "can_not_be_empty": "不能为空",
   "publish_template": "发布模板",
-  "initiate_request": "发起请求上报"
+  "initiate_request": "发起请求上报",
+  "root_entity": "目标对象",
+  "data_management": "数据管理",
+  "confirm_to_delete": "确认删除"
 }

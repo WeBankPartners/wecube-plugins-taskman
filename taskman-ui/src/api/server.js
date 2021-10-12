@@ -58,3 +58,4 @@ export const getTemplateByUser = () => req.get('/taskman/api/v1/user/request-tem
 export const createRequest = data => req.post('/taskman/api/v1/request', data)
 export const getRootEntity = params => req.get('/taskman/api/v1/entity/data', params)
 export const getEntityData = params => req.get('/taskman/api/v1/request-data/preview', params)
+export const saveEntityData = (requestId, params) => req.post(`/taskman/api/v1/request-data/save/${requestId}`, params)

@@ -48,5 +48,8 @@
   "warning": "Warning",
   "can_not_be_empty": "Can Not Be Empty",
   "publish_template": "Publish Template",
-  "initiate_request": "Initiate Request"
+  "initiate_request": "Initiate Request",
+  "root_entity": "Root Entity",
+  "data_management": "Data Management",
+  "confirm_to_delete": "Confirm To Delete"
 }

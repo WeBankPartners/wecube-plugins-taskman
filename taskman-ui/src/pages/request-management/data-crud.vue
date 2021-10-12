@@ -1,17 +1,17 @@
 <template>
   <div class=" ">
     <Form :label-width="100">
-      <FormItem label="目标对象">
-        <Select v-model="entityDataId" style="width:200px">
+      <FormItem :label="$t('root_entity')">
+        <Select v-model="rootEntityId" style="width:300px">
           <Option v-for="item in rootEntityOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
         </Select>
-        <Button @click="getEntityData" type="primary">{{ $t('next') }}</Button>
+        <Button @click="getEntityData" type="primary">{{ $t('search') }}</Button>
       </FormItem>
     </Form>
     <Tabs :value="activeTab" @on-click="changeTab">
       <template v-for="entity in requestData">
         <TabPane :label="entity.entity" :name="entity.entity" :key="entity.entity">
-          <DataMgmt ref="dataMgmt"></DataMgmt>
+          <DataMgmt ref="dataMgmt" @getEntityData="getEntityData"></DataMgmt>
         </TabPane>
       </template>
     </Tabs>
@@ -25,7 +25,8 @@ export default {
   name: '',
   data () {
     return {
-      entityDataId: '',
+      requestId: '',
+      rootEntityId: '',
       rootEntityOptions: [],
       activeTab: '',
       requestData: []
@@ -35,13 +36,15 @@ export default {
     DataMgmt
   },
   mounted () {
+    this.requestId = this.$parent.requestId
     this.getEntity()
+    this.getEntityData()
   },
   methods: {
     async getEntity () {
       let params = {
         params: {
-          requestId: this.$parent.requestId
+          requestId: this.requestId
         }
       }
       const { statusCode, data } = await getRootEntity(params)
@@ -53,15 +56,17 @@ export default {
       let params = {
         params: {
           requestId: this.$parent.requestId,
-          entityDataId: this.entityDataId
+          rootEntityId: this.rootEntityId
         }
       }
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
-        this.activeTab = data[0].entity
-        this.requestData = data
+        console.log(data)
+        this.activeTab = this.activeTab || data.data[0].entity
+        this.requestData = data.data
         this.$nextTick(() => {
-          this.initTable(0)
+          const index = this.requestData.findIndex(r => r.entity === this.activeTab)
+          this.initTable(index)
         })
       }
     },
@@ -72,7 +77,7 @@ export default {
     },
     initTable (index) {
       const find = this.requestData.find(r => r.entity === this.activeTab)
-      this.$refs.dataMgmt[index].initData(find)
+      this.$refs.dataMgmt[index].initData(this.rootEntityId, this.requestData, find, this.requestId)
     }
   }
 }

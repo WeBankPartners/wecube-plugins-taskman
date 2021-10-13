@@ -6,9 +6,6 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
-          <Input v-model="tags" style="width:90%" type="text" :placeholder="$t('tags')"> </Input>
-        </Col>
-        <Col span="4">
           <Button @click="requestList" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTemplate">{{ $t('initiate_request') }}</Button>
         </Col>
@@ -36,7 +33,7 @@
 </template>
 
 <script>
-import { requestList } from '@/api/server'
+import { requestList, deleteRequest, terminateRequest } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -85,47 +82,39 @@ export default {
         {
           title: this.$t('action'),
           key: 'action',
-          width: 160,
+          width: 200,
           align: 'center',
           render: (h, params) => {
-            return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-left': '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.editTemplate(params.row)
-                    }
-                  }
-                },
-                this.$t('edit')
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'error',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-left': '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.deleteTemplate(params.row)
-                    }
-                  }
-                },
-                this.$t('delete')
-              )
-            ])
+            return (
+              <div style="text-align: left">
+                <Button
+                  onClick={() => this.editTemplate(params.row)}
+                  style="margin-left: 8px"
+                  type="primary"
+                  size="small"
+                >
+                  {this.$t('edit')}
+                </Button>
+                <Button
+                  onClick={() => this.deleteRequest(params.row)}
+                  style="margin-left: 8px"
+                  type="error"
+                  size="small"
+                >
+                  {this.$t('delete')}
+                </Button>
+                {params.row.status === 'InProgress' && (
+                  <Button
+                    onClick={() => this.terminateRequest(params.row)}
+                    style="margin-left: 8px"
+                    type="info"
+                    size="small"
+                  >
+                    {this.$t('暂停')}
+                  </Button>
+                )}
+              </div>
+            )
           }
         }
       ],
@@ -143,21 +132,25 @@ export default {
         desc: this.$t('successful')
       })
     },
-    deleteTemplate (row) {
+    async terminateRequest (row) {
+      let res = await terminateRequest(row.id)
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.requestList()
+      }
+    },
+    deleteRequest (row) {
       this.$Modal.confirm({
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
-          // const params = {
-          //   params: { id: row.id }
-          // }
-          // let res = await deleteTemplate(params)
-          // this.$Modal.remove()
-          // if (res.statusCode === 'OK') {
-          //   this.success()
-          //   this.requestList()
-          // }
+          let res = await deleteRequest(row.id)
+          this.$Modal.remove()
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.requestList()
+          }
         },
         onCancel: () => {}
       })
@@ -185,21 +178,12 @@ export default {
           value: this.name
         })
       }
-      if (this.tags) {
-        this.payload.filters.push({
-          name: 'tags',
-          operator: 'contains',
-          value: this.tags
-        })
-      }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      const { statusCode, data } = await requestList()
+      const { statusCode, data } = await requestList(this.payload)
       if (statusCode === 'OK') {
-        console.log(data)
-        this.tableData = data
-        // this.tableData = data.contents
-        // this.pagination.total = data.pageInfo.totalRows
+        this.tableData = data.contents
+        this.pagination.total = data.pageInfo.totalRows
       }
     }
   },

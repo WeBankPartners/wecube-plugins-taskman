@@ -1,5 +1,5 @@
 <template>
-  <div style="width:50%;margin: 0 auto;text-align: end;">
+  <div style="width:50%;margin: 0 auto;">
     <Form :label-width="200">
       <template v-for="node in nodes">
         <FormItem :label="node.nodeName" :key="node.nodeId">
@@ -9,7 +9,7 @@
         </FormItem>
       </template>
     </Form>
-    <Button @click="request" type="primary">{{ $t('initiate_request') }}</Button>
+    <Button @click="request" style="float:right" type="primary">{{ $t('initiate_request') }}</Button>
   </div>
 </template>
 
@@ -59,13 +59,12 @@ export default {
         tmpData.push(params)
       })
       this.finalData.taskNodeBindInfos = tmpData
-      console.log(this.finalData)
       this.startRequest()
     },
     async startRequest () {
-      const { statusCode, data } = await startRequest(this.$parent.requestId, this.finalData)
+      const { statusCode } = await startRequest(this.$parent.requestId, this.finalData)
       if (statusCode === 'OK') {
-        console.log(data)
+        this.$router.push('/')
       }
     },
     async getTemplateNodes () {
@@ -78,7 +77,6 @@ export default {
             n.bindData = []
             return n
           })
-        console.log(this.nodes)
       }
     },
     async getBindData () {
@@ -136,7 +134,6 @@ export default {
             this.bindData.push(v)
           })
         })
-        console.log(this.bindData)
       }
     }
   },

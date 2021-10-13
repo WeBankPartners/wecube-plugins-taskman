@@ -1,5 +1,6 @@
 <template>
   <div class="">
+    {{ currentNode }}
     <Tabs @on-click="changeNode" :value="currentNode">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
@@ -46,8 +47,10 @@ export default {
       if (statusCode === 'OK') {
         this.nodes = data.filter(item => item.taskCategory === 'SUTN')
         // this.nodes = data
-        this.currentNode = data[0].nodeId
-        // this.initTab(this.currentNode, data[0])
+        this.$nextTick(() => {
+          this.currentNode = this.nodes[0].nodeId
+          this.initTab(this.currentNode, this.nodes[0])
+        })
         // this.$refs[this.currentNode].initData(data[0])
       }
     },
@@ -58,7 +61,7 @@ export default {
       this.$refs[this.currentNode][0].initData(this.currentNode, find, this.requestTemplateId)
     },
     initTab (currentNode, data) {
-      this.$refs[this.currentNode][0].initData(data)
+      this.$refs[this.currentNode][0].initData(currentNode, data, this.requestTemplateId)
     }
   },
   components: {

@@ -1,12 +1,23 @@
 <template>
   <div id="app">
+    <Button @click="jump('/template')">模板设置</Button>
+    <Button @click="jump('/templateGroup')">模板组设置</Button>
+    <Button @click="jump('/')">发起请求</Button>
     <div class="app-content-container">
       <BackTop :height="100" :bottom="100" />
       <router-view :key="$route.path" />
     </div>
   </div>
 </template>
-
+<script>
+export default {
+  methods: {
+    jump (path) {
+      this.$router.push({ path: path })
+    }
+  }
+}
+</script>
 <style lang="scss">
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

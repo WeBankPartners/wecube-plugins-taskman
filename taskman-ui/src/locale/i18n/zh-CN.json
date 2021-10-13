@@ -51,5 +51,7 @@
   "initiate_request": "发起请求上报",
   "root_entity": "目标对象",
   "data_management": "数据管理",
-  "confirm_to_delete": "确认删除"
+  "confirm_to_delete": "确认删除",
+  "emergency": "优先级",
+  "template": "模板"
 }

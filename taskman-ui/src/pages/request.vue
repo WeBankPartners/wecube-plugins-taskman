@@ -9,7 +9,7 @@
           <Input v-model="tags" style="width:90%" type="text" :placeholder="$t('tags')"> </Input>
         </Col>
         <Col span="4">
-          <Button @click="getTemplateList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="requestList" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTemplate">{{ $t('initiate_request') }}</Button>
         </Col>
       </Row>
@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { getTemplateList, deleteTemplate } from '@/api/server'
+import { requestList } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -67,43 +67,16 @@ export default {
           key: 'name'
         },
         {
-          title: this.$t('version'),
-          key: 'version'
+          title: this.$t('emergency'),
+          key: 'emergency'
         },
         {
-          title: this.$t('tags'),
-          key: 'tags'
+          title: this.$t('template'),
+          key: 'requestTemplate'
         },
         {
           title: this.$t('status'),
-          key: 'status',
-          render: (h, params) => {
-            const statusArray = {
-              confirm: this.$t('status_confirm'),
-              created: this.$t('status_created')
-            }
-            return <span>{statusArray[params.row.status]}</span>
-          }
-        },
-        {
-          title: this.$t('description'),
-          key: 'description'
-        },
-        {
-          title: this.$t('mgmtRoles'),
-          key: 'mgmtRoles',
-          render: (h, params) => {
-            const displayName = params.row.mgmtRoles.map(role => role.displayName).join(',')
-            return <span>{displayName}</span>
-          }
-        },
-        {
-          title: this.$t('useRoles'),
-          key: 'mgmtRoles',
-          render: (h, params) => {
-            const displayName = params.row.useRoles.map(role => role.displayName).join(',')
-            return <span>{displayName}</span>
-          }
+          key: 'status'
         },
         {
           title: this.$t('tm_updated_time'),
@@ -161,7 +134,7 @@ export default {
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 200
-    // this.getTemplateList()
+    this.requestList()
   },
   methods: {
     success () {
@@ -176,15 +149,15 @@ export default {
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
-          const params = {
-            params: { id: row.id }
-          }
-          let res = await deleteTemplate(params)
-          this.$Modal.remove()
-          if (res.statusCode === 'OK') {
-            this.success()
-            this.getTemplateList()
-          }
+          // const params = {
+          //   params: { id: row.id }
+          // }
+          // let res = await deleteTemplate(params)
+          // this.$Modal.remove()
+          // if (res.statusCode === 'OK') {
+          //   this.success()
+          //   this.requestList()
+          // }
         },
         onCancel: () => {}
       })
@@ -197,13 +170,13 @@ export default {
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize
-      this.getTemplateList()
+      this.requestList()
     },
     changPage (current) {
       this.pagination.currentPage = current
-      this.getTemplateList()
+      this.requestList()
     },
-    async getTemplateList () {
+    async requestList () {
       this.payload.filters = []
       if (this.name) {
         this.payload.filters.push({
@@ -221,10 +194,12 @@ export default {
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      const { statusCode, data } = await getTemplateList(this.payload)
+      const { statusCode, data } = await requestList()
       if (statusCode === 'OK') {
-        this.tableData = data.contents
-        this.pagination.total = data.pageInfo.totalRows
+        console.log(data)
+        this.tableData = data
+        // this.tableData = data.contents
+        // this.pagination.total = data.pageInfo.totalRows
       }
     }
   },

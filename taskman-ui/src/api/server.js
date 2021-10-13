@@ -61,3 +61,4 @@ export const getEntityData = params => req.get('/taskman/api/v1/request-data/pre
 export const saveEntityData = (requestId, params) => req.post(`/taskman/api/v1/request-data/save/${requestId}`, params)
 export const getBindData = requestId => req.get(`/taskman/api/v1/request-data/get/${requestId}`)
 export const startRequest = (requestId, data) => req.post(`/taskman/api/v1/request/start/${requestId}`, data)
+export const requestList = () => req.get(`/taskman/api/v1/user/request`)

@@ -51,5 +51,7 @@
   "initiate_request": "Initiate Request",
   "root_entity": "Root Entity",
   "data_management": "Data Management",
-  "confirm_to_delete": "Confirm To Delete"
+  "confirm_to_delete": "Confirm To Delete",
+  "emergency": "Emergency",
+  "template": "Template"
 }

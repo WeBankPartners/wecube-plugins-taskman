@@ -51,17 +51,7 @@ export default {
   methods: {
     cancel () {
       this.formConfig.isShow = false
-      this.formConfig.data = {
-        dataId: '',
-        displayName: '',
-        entityData: {},
-        entityName: '',
-        fullDataId: '',
-        id: '',
-        packageName: '',
-        previousIds: [],
-        succeedingIds: []
-      }
+      console.log(this.formConfig.data)
     },
     async ok () {
       this.formConfig.data.entityName = this.oriData.entity
@@ -117,6 +107,17 @@ export default {
       })
     },
     addRow () {
+      this.formConfig.data = {
+        dataId: '',
+        displayName: '',
+        entityData: {},
+        entityName: '',
+        fullDataId: '',
+        id: '',
+        packageName: '',
+        previousIds: [],
+        succeedingIds: []
+      }
       this.formConfig.isShow = true
       this.formConfig.isAdd = true
     },

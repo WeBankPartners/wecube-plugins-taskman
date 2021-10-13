@@ -50,3 +50,15 @@ func CreateTask(c *gin.Context) {
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}
 }
+
+func ListTask(c *gin.Context) {
+
+}
+
+func SaveTaskForm(c *gin.Context) {
+
+}
+
+func ApproveTask(c *gin.Context) {
+
+}

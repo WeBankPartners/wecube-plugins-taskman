@@ -167,8 +167,24 @@ func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDat
 		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update request set cache=?,updated_by=?,updated_time=? where id=?", string(paramBytes), operator, nowTime, requestId)
-	return err
+	actions := UpdateRequestFormItem(requestId, param)
+	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, requestId}})
+	return transaction(actions)
+}
+
+func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []*execAction {
+	var actions []*execAction
+	requestObj, _ := GetRequest(requestId)
+	actions = append(actions, &execAction{Sql: "delete from form_item where form in (select form from request where id=?)", Param: []interface{}{requestId}})
+	for _, v := range param.Data {
+		for _, valueObj := range v.Value {
+			tmpGuidList := guid.CreateGuidList(len(v.Title))
+			for i, title := range v.Title {
+				actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.DataId}})
+			}
+		}
+	}
+	return actions
 }
 
 func GetRequestCache(requestId string) (result models.RequestPreDataDto, err error) {

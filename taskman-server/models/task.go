@@ -31,6 +31,7 @@ type PluginTaskCreateRequestObj struct {
 	RoleName          string `json:"roleName"`
 	TaskName          string `json:"taskName"`
 	TaskDescription   string `json:"taskDescription"`
+	TaskFormInput     string `json:"taskFormInput"`
 }
 
 type PluginTaskCreateResp struct {
@@ -49,4 +50,39 @@ type PluginTaskCreateOutputObj struct {
 	ErrorCode         string `json:"errorCode"`
 	ErrorMessage      string `json:"errorMessage"`
 	ErrorDetail       string `json:"errorDetail,omitempty"`
+}
+
+type PluginTaskFormDto struct {
+	FormMateId       string                  `json:"formMateId"`
+	ProcDefId        string                  `json:"procDefId"`
+	ProcDefKey       string                  `json:"procDefKey"`
+	ProcInstId       int                     `json:"procInstId"`
+	ProcInstKey      string                  `json:"procInstKey"`
+	TaskNodeDefId    string                  `json:"taskNodeDefId"`
+	TaskNodeInstId   int                     `json:"taskNodeInstId"`
+	FormDataEntities []*PluginTaskFormEntity `json:"formDataEntities"`
+}
+
+type PluginTaskFormEntity struct {
+	FormMateId       string                 `json:"formMateId"`
+	PackageName      string                 `json:"packageName"`
+	EntityName       string                 `json:"entityName"`
+	Oid              string                 `json:"oid"`
+	EntityDataId     string                 `json:"entityDataId"`
+	FullEntityDataId string                 `json:"fullEntityDataId"`
+	EntityDataState  string                 `json:"entityDataState"`
+	EntityDataOp     string                 `json:"entityDataOp"`
+	BindFlag         string                 `json:"bindFlag"`
+	FormItemValues   []*PluginTaskFormValue `json:"formItemValues"`
+}
+
+type PluginTaskFormValue struct {
+	FormItemMateId   string      `json:"formItemMateId"`
+	PackageName      string      `json:"packageName"`
+	EntityName       string      `json:"entityName"`
+	AttrName         string      `json:"attrName"`
+	Oid              string      `json:"oid"`
+	EntityDataId     string      `json:"entityDataId"`
+	FullEntityDataId string      `json:"fullEntityDataId"`
+	AttrValue        interface{} `json:"attrValue"`
 }

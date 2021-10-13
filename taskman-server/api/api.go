@@ -68,6 +68,9 @@ func init() {
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},
 		&handlerFuncObj{Url: "/plugin/task/create", Method: "POST", HandlerFunc: task.CreateTask},
+		&handlerFuncObj{Url: "/task/list", Method: "POST", HandlerFunc: task.ListTask},
+		&handlerFuncObj{Url: "/task/save", Method: "POST", HandlerFunc: task.SaveTaskForm},
+		&handlerFuncObj{Url: "/task/approve", Method: "POST", HandlerFunc: task.ApproveTask},
 	)
 }
 

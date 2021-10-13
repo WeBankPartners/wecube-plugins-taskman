@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS `form_item` (
   `name` varchar(255)  NOT NULL,
   `value` varchar(255)  DEFAULT NULL,
   `item_group` varchar(255)  DEFAULT NULL,
+  `row_data_id` varchar(255)  DEFAULT NULL,
   PRIMARY KEY (`id`),
   CONSTRAINT `fore_form_item_form` FOREIGN KEY (`form`) REFERENCES `form` (`id`),
   CONSTRAINT `fore_form_item_ref_template` FOREIGN KEY (`form_item_template`) REFERENCES `form_item_template` (`id`)
@@ -223,6 +224,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `id` varchar(64)  NOT NULL,
   `name` varchar(255)  NOT NULL,
   `description` varchar(255)  DEFAULT NULL,
+  `form` varchar(64) DEFAULT NULL,
   `attach_file` varchar(64)  DEFAULT NULL,
   `status` varchar(64) DEFAULT 'created',
   `version` varchar(64)  DEFAULT NULL,
@@ -249,6 +251,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `updated_time` datetime NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
+  CONSTRAINT `fore_task_form` FOREIGN KEY (`form`) REFERENCES `form` (`id`),
   CONSTRAINT `fore_task_ref_request` FOREIGN KEY (`request`) REFERENCES `request` (`id`),
   CONSTRAINT `fore_task_attach_file` FOREIGN KEY (`attach_file`) REFERENCES `attach_file` (`id`),
   CONSTRAINT `fore_task_ref_template` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)

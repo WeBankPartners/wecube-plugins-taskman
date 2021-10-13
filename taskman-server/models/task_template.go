@@ -19,6 +19,7 @@ type TaskTable struct {
 	Id                string `json:"id" xorm:"id"`
 	Name              string `json:"name" xorm:"name"`
 	Description       string `json:"description" xorm:"description"`
+	Form              string `json:"form" xorm:"form"`
 	AttachFile        string `json:"attachFile" xorm:"attach_file"`
 	Status            string `json:"status" xorm:"status"`
 	Version           string `json:"version" xorm:"version"`

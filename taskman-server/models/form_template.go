@@ -58,6 +58,7 @@ type FormItemTable struct {
 	Name             string `json:"name" xorm:"name"`
 	Value            string `json:"value" xorm:"value"`
 	ItemGroup        string `json:"itemGroup" xorm:"item_group"`
+	RowDataId        string `json:"rowDataId" xorm:"row_data_id"`
 }
 
 type FormTemplateDto struct {

@@ -108,6 +108,12 @@
                 <!-- <FormItem :label="$t('tags')">
                   <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem> -->
+                <FormItem :label="$t('显示')">
+                  <Select v-model="editElement.inDisplayName">
+                    <Option value="yes">yes</Option>
+                    <Option value="no">no</Option>
+                  </Select>
+                </FormItem>
                 <FormItem :label="$t('width')">
                   <Select v-model="editElement.width">
                     <Option :value="12">12</Option>
@@ -179,6 +185,7 @@ export default {
           entity: '',
           width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -201,6 +208,7 @@ export default {
           entity: '',
           width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -223,6 +231,7 @@ export default {
           entity: '',
           width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -246,6 +255,7 @@ export default {
         entity: '',
         elementType: 'input',
         id: 0,
+        inDisplayName: 'no',
         isEdit: 'yes',
         isOutput: 'no',
         isView: 'yes',
@@ -355,6 +365,7 @@ export default {
           elementType: seleted.dataType === 'str' ? 'input' : '',
           id: 'c_' + seleted.id,
           isCustom: false,
+          inDisplayName: 'no',
           isEdit: 'yes',
           isOutput: 'no',
           isView: 'yes',

@@ -21,11 +21,6 @@
           </Step>
         </Steps>
       </Col>
-      <Col span="4">
-        <Button @click="confirmTemplate" :disabled="currentStep !== 3" size="small" type="primary">{{
-          $t('publish_template')
-        }}</Button>
-      </Col>
     </Row>
     <div v-if="currentStep !== -1" style="margin-top:48px;">
       <TemplateSelect @choiceTemp="choiceTemp" v-if="currentStep === 0"></TemplateSelect>
@@ -47,19 +42,21 @@ export default {
   data () {
     return {
       currentStep: -1,
-      requestTemplate: '',
-      requestId: '616143095a56e7b0'
+      requestTemplate: '6166464841f44a4c',
+      procDefId: 'sLEt3Ysu4bTO',
+      procDefKey: 'wecube1623330533321',
+      requestId: '6166468d2da5a447'
     }
   },
   mounted () {
-    if (this.$route.query.requestTemplateId !== '') {
-      this.requestTemplateId = this.$route.query.requestTemplateId
+    if (this.$route.query.requestTemplate !== '') {
+      this.requestTemplate = this.$route.query.requestTemplate
     }
     this.currentStep = 0
   },
   methods: {
     async confirmTemplate () {
-      const { statusCode } = await confirmTemplate(this.requestTemplateId)
+      const { statusCode } = await confirmTemplate(this.requestTemplate)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -74,6 +71,8 @@ export default {
       this.$router.push({ path: '/' })
     },
     choiceTemp (data) {
+      this.procDefId = data.procDefId
+      this.procDefKey = data.procDefKey
       this.requestTemplate = data.id
       this.formSelectNextStep()
     },

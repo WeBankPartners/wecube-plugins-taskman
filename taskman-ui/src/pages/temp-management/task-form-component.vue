@@ -317,13 +317,9 @@ export default {
       this.initPage()
     },
     initPage () {
-      console.log(this.nodeId, this.nodeData)
       if (this.nodeData.nodeId === this.nodeId) {
-        console.log(this.nodeId, this.nodeData.nodeId)
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
-        console.log(this.formData)
-        debugger
         this.getSelectedForm()
         this.getManagementRoles()
         this.getUserRoles()
@@ -331,14 +327,12 @@ export default {
       }
     },
     async getTaskFormDataByNodeId () {
-      console.log(this.requestTemplateId)
       if (!!this.requestTemplateId === false) {
         return
       }
       this.list2 = []
       const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
       if (statusCode === 'OK') {
-        console.log(data)
         this.formData = { ...data }
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
@@ -381,7 +375,6 @@ export default {
           l.id = ''
         }
       })
-      console.log(this.formData)
       let res = {
         ...this.formData,
         items: tmp

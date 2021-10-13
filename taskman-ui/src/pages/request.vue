@@ -1,6 +1,5 @@
 <template>
   <div style="margin: 24px">
-    raetdsg
     <div>
       <Row>
         <Col span="4">

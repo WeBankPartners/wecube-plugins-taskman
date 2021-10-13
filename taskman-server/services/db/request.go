@@ -78,16 +78,37 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 	return
 }
 
-func ListUserRequest(user string) (result []*models.RequestTable, err error) {
-	result = []*models.RequestTable{}
-	err = x.SQL("select id,name,form,request_template,proc_instance_id,reporter,report_time,emergency,status from request where reporter=?", user).Find(&result)
+func ListRequest(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
+	rowData = []*models.RequestTable{}
+	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
+	if param.Paging {
+		pageInfo.StartIndex = param.Pageable.StartIndex
+		pageInfo.PageSize = param.Pageable.PageSize
+		pageInfo.TotalRows = queryCount(baseSql, queryParam...)
+		pageSql, pageParam := transPageInfoToSQL(*param.Pageable)
+		baseSql += pageSql
+		queryParam = append(queryParam, pageParam...)
+	}
+	err = x.SQL(baseSql, queryParam...).Find(&rowData)
+	if len(rowData) > 0 {
+		var requestTemplateTable []*models.RequestTemplateTable
+		x.SQL("select id,name from request_template").Find(&requestTemplateTable)
+		rtMap := make(map[string]string)
+		for _, v := range requestTemplateTable {
+			rtMap[v.Id] = v.Name
+		}
+		for _, v := range rowData {
+			v.RequestTemplate = rtMap[v.RequestTemplate]
+		}
+	}
 	return
 }
 
 func GetRequest(requestId string) (result models.RequestTable, err error) {
 	result = models.RequestTable{}
 	var requestTable []*models.RequestTable
-	err = x.SQL("select id,name,form,request_template,proc_instance_id,reporter,report_time,emergency,status from request where id=?", requestId).Find(&requestTable)
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
 	}
@@ -119,7 +140,13 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
 
 func UpdateRequest(param *models.RequestTable) error {
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set name=?,emergency=?,updated_by=?,updated_time=? where id=?", param.Name, param.Emergency, param.UpdatedBy, nowTime)
+	_, err := x.Exec("update request set name=?,emergency=?,updated_by=?,updated_time=? where id=?", param.Name, param.Emergency, param.UpdatedBy, nowTime, param.Id)
+	return err
+}
+
+func DeleteRequest(requestId, operator string) error {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err := x.Exec("update request set del_flag=1,updated_by=?,updated_time=? where id=?", operator, nowTime, requestId)
 	return err
 }
 
@@ -386,7 +413,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	result = respResult.Data
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update request set proc_instance_id=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
+	_, err = x.Exec("update request set proc_instance_id=?,proc_instance_key=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), result.ProcInstKey, nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
 
@@ -407,6 +434,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	entityNewMap := make(map[string][]string)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
+			entityValue.Processed = true
 			if entityValue.Oid == cacheData.RootEntityValue.EntityDataId {
 				cacheData.RootEntityValue.Oid = entityValue.Oid
 				cacheData.RootEntityValue.EntityName = entityValue.EntityName
@@ -486,4 +514,39 @@ func listToSet(input []string) []string {
 		}
 	}
 	return result
+}
+
+func RequestTermination(requestId, operator, userToken string) error {
+	requestObj, err := GetRequest(requestId)
+	if err != nil {
+		return err
+	}
+	param := models.TerminateInstanceParam{ProcInstId: requestObj.ProcInstanceId, ProcInstKey: requestObj.ProcInstanceKey}
+	paramBytes, tmpErr := json.Marshal(param)
+	if tmpErr != nil {
+		return fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
+	}
+	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances/%s/terminations", models.Config.Wecube.BaseUrl, requestObj.ProcInstanceId), bytes.NewReader(paramBytes))
+	if newReqErr != nil {
+		return fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+	}
+	req.Header.Set("Authorization", userToken)
+	req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		return fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+	}
+	var respResult models.StartInstanceResult
+	b, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	err = json.Unmarshal(b, &respResult)
+	if err != nil {
+		return fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+	}
+	if respResult.Status != "OK" {
+		return fmt.Errorf("Terminate instance fail,%s ", respResult.Message)
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err = x.Exec("update request set status='Termination',updated_by=?,updated_time=? where id=?", operator, nowTime, requestId)
+	return err
 }

@@ -635,3 +635,13 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	}
 	return
 }
+
+func getRequestTemplateRoles(requestTemplateId, roleType string) []string {
+	result := []string{}
+	var rtRoles []*models.RequestTemplateRoleTable
+	x.SQL("select `role` from request_template_role where request_template=? and role_type=?", requestTemplateId, roleType).Find(&rtRoles)
+	for _, v := range rtRoles {
+		result = append(result, v.Role)
+	}
+	return result
+}

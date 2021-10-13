@@ -48,12 +48,17 @@ func GetRequestPreviewData(c *gin.Context) {
 	}
 }
 
-func ListUserRequest(c *gin.Context) {
-	result, err := db.ListUserRequest(middleware.GetRequestUser(c))
+func ListRequest(c *gin.Context) {
+	var param models.QueryRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnData(c, result)
+		middleware.ReturnPageData(c, pageInfo, rowData)
 	}
 }
 
@@ -115,6 +120,16 @@ func UpdateRequest(c *gin.Context) {
 	}
 }
 
+func DeleteRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	err := db.DeleteRequest(requestId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
 func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
 	var param models.RequestPreDataDto
@@ -152,5 +167,15 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, instanceId)
+	}
+}
+
+func TerminateRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	err := db.RequestTermination(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
 	}
 }

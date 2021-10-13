@@ -41,6 +41,7 @@ type RequestTable struct {
 	Form            string `json:"form" xorm:"form"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
 	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`
+	ProcInstanceKey string `json:"procInstanceKey" xorm:"proc_instance_key"`
 	Reporter        string `json:"reporter" xorm:"reporter"`
 	ReportTime      string `json:"reportTime" xorm:"report_time"`
 	Emergency       string `json:"emergency" xorm:"emergency"`
@@ -145,4 +146,9 @@ func (s RequestPreDataSort) Less(i, j int) bool {
 type RequestPreDataDto struct {
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
+}
+
+type TerminateInstanceParam struct {
+	ProcInstId  string `json:"procInstId"`
+	ProcInstKey string `json:"procInstKey"`
 }

@@ -156,6 +156,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `form` varchar(64) DEFAULT NULL,
   `request_template` varchar(64)  NOT NULL,
   `proc_instance_id` varchar(64)  DEFAULT NULL,
+  `proc_instance_key` varchar(64)  DEFAULT NULL,
   `reporter` varchar(64)  DEFAULT NULL,
   `report_time` datetime DEFAULT NULL,
   `emergency` varchar(16)  DEFAULT 'no',

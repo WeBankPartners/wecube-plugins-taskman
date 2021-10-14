@@ -43,7 +43,7 @@
                 :multiple="item.multiple"
                 :placeholder="item.placeholder"
               >
-                <template v-for="option in formConfig[item.options]">
+                <template v-for="option in getOptions(item.options)">
                   <Option
                     :label="item.labelKey ? option[item.labelKey] : option.label"
                     :value="item.valueKey ? option[item.valueKey] : option.value"
@@ -160,6 +160,9 @@ export default {
     this.getInitData()
   },
   methods: {
+    getOptions (options) {
+      return this.formConfig[options]
+    },
     execut (method) {
       this[method]()
     },

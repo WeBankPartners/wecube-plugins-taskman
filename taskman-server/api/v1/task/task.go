@@ -17,8 +17,7 @@ func GetTaskFormStruct(c *gin.Context) {
 		result.Status = "ERROR"
 		result.Message = err.Error()
 	}
-	bodyBytes, _ := json.Marshal(result)
-	c.Set("responseBody", string(bodyBytes))
+	log.Logger.Info("task form struct", log.JsonObj("response", result))
 	c.JSON(http.StatusOK, result)
 }
 
@@ -52,6 +51,10 @@ func CreateTask(c *gin.Context) {
 }
 
 func ListTask(c *gin.Context) {
+
+}
+
+func GetTask(c *gin.Context) {
 
 }
 

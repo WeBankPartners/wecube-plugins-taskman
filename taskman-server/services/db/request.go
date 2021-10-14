@@ -285,7 +285,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		return result, tmpErr
 	}
 	var items []*models.FormItemTemplateTable
-	err = x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by entity,sort", requestTemplateId).Find(&items)
+	err = x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", requestTemplateId).Find(&items)
 	if err != nil {
 		return
 	}
@@ -294,27 +294,33 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	}
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
+	tmpItemGroup := items[0].ItemGroup
+	tmpItemGroupName := items[0].ItemGroupName
 	tmpRefEntity := []string{}
 	tmpItems := []*models.FormItemTemplateTable{}
 	existItemMap := make(map[string]int)
 	for _, v := range items {
-		if v.Entity == "" {
-			continue
-		}
-		tmpKey := fmt.Sprintf("%s__%s__%s", v.PackageName, v.Entity, v.Name)
+		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
 		if _, b := existItemMap[tmpKey]; b {
 			continue
 		} else {
 			existItemMap[tmpKey] = 1
 		}
-		if v.Entity != tmpEntity {
-			if tmpEntity != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
+		if v.ItemGroup != tmpItemGroup {
+			if tmpItemGroup != "" {
+				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 			}
 			tmpItems = []*models.FormItemTemplateTable{}
 			tmpEntity = v.Entity
 			tmpPackageName = v.PackageName
+			tmpItemGroup = v.ItemGroup
+			tmpItemGroupName = v.ItemGroupName
 			tmpRefEntity = []string{}
+		} else {
+			if tmpEntity == "" && v.Entity != "" {
+				tmpEntity = v.Entity
+				tmpPackageName = v.PackageName
+			}
 		}
 		tmpItems = append(tmpItems, v)
 		if v.RefEntity != "" {
@@ -333,7 +339,9 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	if len(tmpItems) > 0 {
 		tmpEntity = items[len(items)-1].Entity
 		tmpPackageName = items[len(items)-1].PackageName
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
+		tmpItemGroup = items[len(items)-1].ItemGroup
+		tmpItemGroupName = items[len(items)-1].ItemGroupName
+		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 	}
 	// sort result by dependence
 	result = sortRequestEntity(result)
@@ -380,6 +388,12 @@ func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPre
 	countNum := 0
 	levelNum := 1
 	for _, v := range param {
+		if v.Entity == "" {
+			v.SortLevel = levelNum
+			entityNumMap[v.Entity] = v.SortLevel
+			countNum = countNum + 1
+			continue
+		}
 		if _, b := entityMap[v.Entity]; !b {
 			v.SortLevel = levelNum
 			entityNumMap[v.Entity] = v.SortLevel
@@ -475,7 +489,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
 			entityValue.Processed = true
-			if entityValue.Oid == cacheData.RootEntityValue.EntityDataId {
+			if entityValue.EntityDataId == cacheData.RootEntityValue.Oid {
 				cacheData.RootEntityValue.Oid = entityValue.Oid
 				cacheData.RootEntityValue.EntityName = entityValue.EntityName
 				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp

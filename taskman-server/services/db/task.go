@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"strings"
 	"time"
 )
 
@@ -102,4 +103,26 @@ func getFormItemTemplateMap(formTemplateId string) map[string]*models.FormItemTe
 		resultMap[v.Id] = v
 	}
 	return resultMap
+}
+
+func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.TaskTable, err error) {
+	rowData = []*models.TaskTable{}
+	roleFilterSql := "1=1"
+
+	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
+	baseSql := fmt.Sprintf("select * from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
+	if param.Paging {
+		pageInfo.StartIndex = param.Pageable.StartIndex
+		pageInfo.PageSize = param.Pageable.PageSize
+		pageInfo.TotalRows = queryCount(baseSql, queryParam...)
+		pageSql, pageParam := transPageInfoToSQL(*param.Pageable)
+		baseSql += pageSql
+		queryParam = append(queryParam, pageParam...)
+	}
+	err = x.SQL(baseSql, queryParam...).Find(&rowData)
+	return
+}
+
+func GetTask() {
+
 }

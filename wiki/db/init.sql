@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `callback_parameter` text  DEFAULT NULL,
   `reporter` varchar(64)  DEFAULT NULL,
   `report_time` datetime DEFAULT NULL,
-  `report_role` varchar(64)  DEFAULT NULL,
+  `report_role` varchar(255)  DEFAULT NULL,
   `emergency` varchar(16)  DEFAULT 'no',
   `result` text ,
   `created_by` varchar(255)   NULL,

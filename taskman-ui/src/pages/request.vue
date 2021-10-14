@@ -110,7 +110,7 @@ export default {
                     type="info"
                     size="small"
                   >
-                    {this.$t('暂停')}
+                    {this.$t('terminate')}
                   </Button>
                 )}
               </div>

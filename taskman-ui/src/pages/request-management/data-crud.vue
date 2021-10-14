@@ -15,12 +15,16 @@
         </TabPane>
       </template>
     </Tabs>
+    <div style="text-align: center;margin-top:48px">
+      <Button @click="saveData" type="primary">{{ $t('save') }}</Button>
+      <Button @click="nextStep">{{ $t('next') }}</Button>
+    </div>
   </div>
 </template>
 
 <script>
 import DataMgmt from './data-mgmt'
-import { getRootEntity, getEntityData } from '@/api/server'
+import { getRootEntity, getEntityData, saveEntityData, getRequestInfo } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -39,8 +43,35 @@ export default {
     this.requestId = this.$parent.requestId
     this.getEntity()
     this.getEntityData()
+    if (this.$parent.requestId) {
+      this.getRequestInfo()
+    }
   },
   methods: {
+    async getRequestInfo () {
+      const { statusCode, data } = await getRequestInfo(this.requestId)
+      if (statusCode === 'OK') {
+        this.rootEntityId = data.cache
+        this.getEntityData()
+      }
+    },
+    nextStep () {
+      this.saveData()
+      this.$emit('nextStep')
+    },
+    async saveData () {
+      const params = {
+        rootEntityId: this.rootEntityId,
+        data: this.requestData
+      }
+      const { statusCode } = await saveEntityData(this.requestId, params)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+      }
+    },
     async getEntity () {
       let params = {
         params: {
@@ -61,7 +92,6 @@ export default {
       }
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
-        console.log(data)
         this.activeTab = this.activeTab || data.data[0].entity
         this.requestData = data.data
         this.$nextTick(() => {

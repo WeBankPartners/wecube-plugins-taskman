@@ -53,5 +53,8 @@
   "data_management": "Data Management",
   "confirm_to_delete": "Confirm To Delete",
   "emergency": "Emergency",
-  "template": "Template"
+  "template": "Template",
+  "basic_information_settings ": "Basic Information Settings",
+  "data_binding": "Data Binding",
+  "terminate": "Terminate"
 }

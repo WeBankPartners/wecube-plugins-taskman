@@ -51,7 +51,6 @@ export default {
   methods: {
     cancel () {
       this.formConfig.isShow = false
-      console.log(this.formConfig.data)
     },
     async ok () {
       this.formConfig.data.entityName = this.oriData.entity
@@ -150,6 +149,10 @@ export default {
       }
       const { statusCode } = await saveEntityData(this.requestId, params)
       if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
         this.cancel()
         this.$emit('getEntityData')
       }

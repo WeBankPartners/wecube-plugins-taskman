@@ -7,27 +7,23 @@
       <TemplateSelect @choiceTemp="choiceTemp"></TemplateSelect>
     </template>
     <template v-else>
-      <Row type="flex">
-        <Col span="20">
-          <Steps :current="currentStep">
-            <!-- <Step icon="ios-add-circle">
-              <span slot="title" @click="changeStep(0)">{{ $t('选择模板') }}</span>
-            </Step> -->
-            <Step icon="md-apps">
-              <span slot="title" @click="changeStep(0)">{{ $t('基础信息设置') }}</span>
-            </Step>
-            <Step icon="md-cog">
-              <span slot="title" @click="changeStep(1)">{{ $t('数据管理') }}</span>
-            </Step>
-            <Step icon="ios-settings">
-              <span slot="title" @click="changeStep(2)">{{ $t('数据绑定') }}</span>
-            </Step>
-          </Steps>
-        </Col>
-      </Row>
+      <Steps :current="currentStep">
+        <!-- <Step icon="ios-add-circle">
+          <span slot="title" @click="changeStep(0)">{{ $t('选择模板') }}</span>
+        </Step> -->
+        <Step icon="md-apps">
+          <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
+        </Step>
+        <Step icon="md-cog">
+          <span slot="title" @click="changeStep(1)">{{ $t('data_management') }}</span>
+        </Step>
+        <Step icon="ios-settings">
+          <span slot="title" @click="changeStep(2)">{{ $t('data_binding') }}</span>
+        </Step>
+      </Steps>
       <div v-if="currentStep !== -1" style="margin-top:48px;">
         <BasicForm @basicForm="basicForm" v-if="currentStep === 0"></BasicForm>
-        <DataCrud v-if="currentStep === 1"></DataCrud>
+        <DataCrud @nextStep="nextStep" v-if="currentStep === 1"></DataCrud>
         <DataBind v-if="currentStep === 2"></DataBind>
       </div>
     </template>
@@ -45,10 +41,10 @@ export default {
   data () {
     return {
       currentStep: -1,
-      requestTemplate: '6166464841f44a4c',
-      procDefId: 'sLEt3Ysu4bTO',
-      procDefKey: 'wecube1623330533321',
-      requestId: '6166468d2da5a447'
+      requestTemplate: '',
+      procDefId: '',
+      procDefKey: '',
+      requestId: ''
     }
   },
   mounted () {
@@ -68,6 +64,9 @@ export default {
       }
     },
     changeStep (val) {
+      if (this.requestId === '') {
+        return
+      }
       this.currentStep = val
     },
     backToTemplate () {
@@ -77,13 +76,13 @@ export default {
       this.procDefId = data.procDefId
       this.procDefKey = data.procDefKey
       this.requestTemplate = data.id
-      this.formSelectNextStep()
+      this.nextStep()
     },
     basicForm (data) {
       this.requestId = data.id
-      this.formSelectNextStep()
+      this.nextStep()
     },
-    formSelectNextStep () {
+    nextStep () {
       this.currentStep++
     }
   },

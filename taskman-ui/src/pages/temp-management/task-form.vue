@@ -1,6 +1,5 @@
 <template>
   <div class="">
-    {{ currentNode }}
     <Tabs @on-click="changeNode" :value="currentNode">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">

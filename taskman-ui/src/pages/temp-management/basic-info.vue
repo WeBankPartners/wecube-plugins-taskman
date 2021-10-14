@@ -161,7 +161,6 @@ export default {
   },
   methods: {
     getOptions (options) {
-      console.log(this.formConfig[options])
       return this.formConfig[options]
     },
     execut (method) {
@@ -194,9 +193,9 @@ export default {
       }
     },
     async createTemp () {
-      if (!this.$refs.observer.flags.valid) {
-        return
-      }
+      // if (!this.$refs.observer.flags.valid) {
+      //   return
+      // }
       const method = this.formConfig.values.id === '' ? createTemp : updateTemp
       const process = this.formConfig.procOptions.find(item => item.procDefId === this.formConfig.values.procDefId)
       this.formConfig.values.packageName = process.rootEntity.packageName
@@ -248,7 +247,6 @@ export default {
         filters: [],
         paging: false
       }
-      this.formConfig.groupOptions = []
       const { statusCode, data } = await getTempGroupList(params)
       if (statusCode === 'OK') {
         this.formConfig.groupOptions = data.contents

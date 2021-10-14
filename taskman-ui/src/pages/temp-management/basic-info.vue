@@ -34,6 +34,7 @@
               <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
             </FormItem>
             <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              {{ formConfig[item.options] }}
               <Select
                 v-model="formConfig.values[item.value]"
                 clearable

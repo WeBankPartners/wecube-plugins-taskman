@@ -39,7 +39,7 @@
           <template v-for="(item, itemIndex) in list2">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea list-group" :list="item.attrs" group="people">
+              <draggable class="dragArea list-group" :list="item.attrs" group="people" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
@@ -276,6 +276,15 @@ export default {
     }
   },
   methods: {
+    log (log) {
+      console.log(log)
+      this.list2.forEach(l => {
+        l.attrs.forEach(attr => {
+          attr.itemGroup = l.itemGroup
+          attr.itemGroupName = l.itemGroupName
+        })
+      })
+    },
     async getInitData () {
       const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {

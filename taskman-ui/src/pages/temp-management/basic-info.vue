@@ -34,11 +34,11 @@
               <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
             </FormItem>
             <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
-              {{ formConfig[item.options] }}
               <Select
                 v-model="formConfig.values[item.value]"
                 clearable
                 filterable
+                @on-open-change="execut(item.onOpenChange)"
                 style="width:90%"
                 :multiple="item.multiple"
                 :placeholder="item.placeholder"
@@ -88,6 +88,7 @@ export default {
             label: 'group',
             value: 'group',
             rules: 'required',
+            onOpenChange: 'getGroupOptions',
             options: 'groupOptions',
             labelKey: 'name',
             valueKey: 'id',
@@ -99,6 +100,7 @@ export default {
             label: 'procDefId',
             value: 'procDefId',
             rules: 'required',
+            onOpenChange: 'getProcess',
             options: 'procOptions',
             labelKey: 'procDefName',
             valueKey: 'procDefId',
@@ -110,6 +112,7 @@ export default {
             label: 'mgmtRoles',
             value: 'mgmtRoles',
             rules: 'required',
+            onOpenChange: 'getManagementRoles',
             options: 'mgmtRolesOptions',
             labelKey: 'displayName',
             valueKey: 'id',
@@ -121,6 +124,7 @@ export default {
             label: 'useRoles',
             value: 'useRoles',
             rules: 'required',
+            onOpenChange: 'getUserRoles',
             options: 'useRolesOptions',
             labelKey: 'displayName',
             valueKey: 'id',
@@ -153,14 +157,17 @@ export default {
     }
   },
   mounted () {
-    this.getGroupOptions()
-    this.getManagementRoles()
-    this.getProcess()
-    this.getUserRoles()
     this.getInitData()
   },
   methods: {
+    execut (method) {
+      this[method]()
+    },
     async getInitData () {
+      this.getGroupOptions()
+      this.getManagementRoles()
+      this.getProcess()
+      this.getUserRoles()
       if (!!this.$parent.requestTemplateId === false) {
         return
       }

@@ -427,8 +427,8 @@ export default {
             })
           }
         })
-        this.formItemOptions = formItemOptions
-        this.selectedFormItemOptions = data
+        // this.formItemOptions = formItemOptions
+        // this.selectedFormItemOptions = data
       }
     },
     removeForm (itemIndex, eleIndex) {

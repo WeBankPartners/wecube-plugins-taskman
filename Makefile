@@ -1,6 +1,6 @@
 current_dir=$(shell pwd)
 version=$(PLUGIN_VERSION)
-project_dir=$(shell basename "${current_dir}")
+project_dir=wecube-plugins-taskman
 
 clean:
 	rm -rf taskman-server/taskman-server

@@ -68,8 +68,8 @@ export default {
       }
     },
     async getTemplateNodes () {
-      // const { statusCode, data } = await getTemplateNodes(this.$parent.requestTemplate)
-      const { statusCode, data } = await getTemplateNodes('6166464841f44a4c')
+      const { statusCode, data } = await getTemplateNodes(this.$parent.requestTemplate)
+      // const { statusCode, data } = await getTemplateNodes('6166464841f44a4c')
       if (statusCode === 'OK') {
         this.nodes = data
           .filter(d => !['endEvent', 'startEvent'].includes(d.nodeType))

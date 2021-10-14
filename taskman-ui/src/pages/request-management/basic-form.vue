@@ -45,7 +45,7 @@
 
 <script>
 import { ValidationObserver } from 'vee-validate'
-import { createRequest } from '@/api/server'
+import { createRequest, getRequestInfo } from '@/api/server'
 export default {
   name: 'BasicInfo',
   data () {
@@ -81,8 +81,20 @@ export default {
       }
     }
   },
-  mounted () {},
+  mounted () {
+    if (this.$parent.requestId) {
+      this.getRequestInfo()
+    }
+  },
   methods: {
+    async getRequestInfo () {
+      const { statusCode, data } = await getRequestInfo(this.$parent.requestId)
+      if (statusCode === 'OK') {
+        this.formConfig.values.name = data.name
+        this.formConfig.values.emergency = data.emergency
+        console.log(data)
+      }
+    },
     async createRequest () {
       if (!this.$refs.observer.flags.valid) {
         return

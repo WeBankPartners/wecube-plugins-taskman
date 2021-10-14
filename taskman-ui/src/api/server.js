@@ -64,3 +64,4 @@ export const startRequest = (requestId, data) => req.post(`/taskman/api/v1/reque
 export const requestList = params => req.post(`/taskman/api/v1/user/request`, params)
 export const deleteRequest = id => req.delete(`/taskman/api/v1/request/${id}`)
 export const terminateRequest = id => req.post(`/taskman/api/v1/request/terminate/${id}`)
+export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${requestId}`)

@@ -1,67 +1,67 @@
 <template>
   <div style="width:40%;margin: 0 auto;">
-    <ValidationObserver ref="observer">
-      <Form :label-width="100">
-        <template v-for="item in formConfig.itemConfigs">
-          <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value">
-            <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
-              <Input
-                v-model="formConfig.values[item.value]"
-                style="width:90%"
-                :type="item.type"
-                :placeholder="item.placeholder"
-              >
-              </Input>
-              <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
-            </FormItem>
-            <FormItem v-if="['textarea'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
-              <Input
-                v-model="formConfig.values[item.value]"
-                style="width:90%"
-                :type="item.type"
-                :rows="item.rows"
-                :placeholder="item.placeholder"
-              >
-              </Input>
-              <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
-            </FormItem>
-            <FormItem v-if="['number'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
-              <InputNumber
-                :max="item.max || 1000"
-                :min="item.min || 1"
-                v-model="formConfig.values[item.value]"
-              ></InputNumber>
-              <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
-            </FormItem>
-            <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
-              <Select
-                v-model="formConfig.values[item.value]"
-                clearable
-                filterable
-                @on-open-change="execut(item.onOpenChange)"
-                style="width:90%"
-                :multiple="item.multiple"
-                :placeholder="item.placeholder"
-              >
-                <template v-for="option in getOptions(item.options)">
-                  <Option
-                    :label="item.labelKey ? option[item.labelKey] : option.label"
-                    :value="item.valueKey ? option[item.valueKey] : option.value"
-                    :key="item.valueKey ? option[item.valueKey] : option.value"
-                  >
-                  </Option>
-                </template>
-              </Select>
-              <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
-            </FormItem>
-          </ValidationProvider>
-        </template>
-        <FormItem>
-          <Button @click="resetParams">{{ $t('reset') }}</Button>
-          <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
+    <!-- <ValidationObserver ref="observer"> -->
+    <Form :label-width="100">
+      <template v-for="item in formConfig.itemConfigs">
+        <!-- <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value"> -->
+        <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
+          <Input
+            v-model="formConfig.values[item.value]"
+            style="width:90%"
+            :type="item.type"
+            :placeholder="item.placeholder"
+          >
+          </Input>
+          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
         </FormItem>
-      </Form>
-    </ValidationObserver>
+        <FormItem v-if="['textarea'].includes(item.type)" :label="$t(item.label)" :key="item.value">
+          <Input
+            v-model="formConfig.values[item.value]"
+            style="width:90%"
+            :type="item.type"
+            :rows="item.rows"
+            :placeholder="item.placeholder"
+          >
+          </Input>
+          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+        </FormItem>
+        <FormItem v-if="['number'].includes(item.type)" :label="$t(item.label)" :key="item.value">
+          <InputNumber
+            :max="item.max || 1000"
+            :min="item.min || 1"
+            v-model="formConfig.values[item.value]"
+          ></InputNumber>
+          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+        </FormItem>
+        <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :key="item.value">
+          <Select
+            v-model="formConfig.values[item.value]"
+            clearable
+            filterable
+            @on-open-change="execut(item.onOpenChange)"
+            style="width:90%"
+            :multiple="item.multiple"
+            :placeholder="item.placeholder"
+          >
+            <template v-for="option in getOptions(item.options)">
+              <Option
+                :label="item.labelKey ? option[item.labelKey] : option.label"
+                :value="item.valueKey ? option[item.valueKey] : option.value"
+                :key="item.valueKey ? option[item.valueKey] : option.value"
+              >
+              </Option>
+            </template>
+          </Select>
+          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+        </FormItem>
+        <!-- </ValidationProvider> -->
+      </template>
+      <FormItem>
+        <Button @click="resetParams">{{ $t('reset') }}</Button>
+        <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
+      </FormItem>
+    </Form>
+    <!-- </ValidationObserver> -->
   </div>
 </template>
 
@@ -161,6 +161,7 @@ export default {
   },
   methods: {
     getOptions (options) {
+      console.log(this.formConfig[options])
       return this.formConfig[options]
     },
     execut (method) {
@@ -247,6 +248,7 @@ export default {
         filters: [],
         paging: false
       }
+      this.formConfig.groupOptions = []
       const { statusCode, data } = await getTempGroupList(params)
       if (statusCode === 'OK') {
         this.formConfig.groupOptions = data.contents

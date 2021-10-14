@@ -64,7 +64,7 @@ func ListRequest(c *gin.Context) {
 
 func GetRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := db.GetRequest(requestId)
+	result, err := db.GetRequestWithRoot(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

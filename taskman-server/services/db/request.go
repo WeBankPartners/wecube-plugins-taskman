@@ -105,6 +105,30 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string) (pageInfo 
 	return
 }
 
+func GetRequestWithRoot(requestId string) (result models.RequestTable, err error) {
+	result = models.RequestTable{}
+	var requestTable []*models.RequestTable
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		return
+	}
+	result = *requestTable[0]
+	if result.Cache != "" {
+		var cacheObj models.RequestPreDataDto
+		err = json.Unmarshal([]byte(result.Cache), &cacheObj)
+		if err != nil {
+			err = fmt.Errorf("Try to json unmarshal cache data fail,%s ", err.Error())
+			return
+		}
+		result.Cache = cacheObj.RootEntityId
+	}
+	return
+}
+
 func GetRequest(requestId string) (result models.RequestTable, err error) {
 	result = models.RequestTable{}
 	var requestTable []*models.RequestTable

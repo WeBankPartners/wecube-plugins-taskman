@@ -23,11 +23,11 @@
         <Divider plain>{{ $t('custom_form') }}</Divider>
         <draggable
           class="dragArea list-group"
-          :list="list1"
+          :list="customElement"
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
         >
-          <div class="list-group-item" style="width:100%" v-for="element in list1" :key="element.id">
+          <div class="list-group-item" style="width:100%" v-for="element in customElement" :key="element.id">
             <Input v-if="element.elementType === 'input'" placeholder="" style="width:84%" />
             <Input v-if="element.elementType === 'textarea'" type="textarea" placeholder="" style="width:84%" />
             <Select v-if="element.elementType === 'select'" placeholder="" style="width:84%"> </Select>
@@ -36,7 +36,7 @@
       </Col>
       <Col span="12" style="padding: 16px">
         <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
-          <template v-for="(item, itemIndex) in list2">
+          <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
               <draggable class="dragArea list-group" :list="item.attrs" group="people" @change="log">
@@ -170,7 +170,7 @@ export default {
       formItemOptions: [], // 树形数据
       selectedFormItemOptions: [],
 
-      list1: [
+      customElement: [
         {
           id: 1,
           isCustom: true,
@@ -241,7 +241,7 @@ export default {
           attrDefDataType: ''
         }
       ],
-      list2: [],
+      finalElement: [],
       editElement: {
         isCustom: true,
         attrDefDataType: '',
@@ -277,8 +277,7 @@ export default {
   },
   methods: {
     log (log) {
-      console.log(log)
-      this.list2.forEach(l => {
+      this.finalElement.forEach(l => {
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
@@ -297,7 +296,7 @@ export default {
               custom.isCustom = true
               return custom
             })
-            this.list2.unshift({
+            this.finalElement.unshift({
               // tag: 'Custom',
               itemGroup: 'Custom',
               itemGroupName: 'Custom',
@@ -315,7 +314,7 @@ export default {
         })
         return
       }
-      let tmp = [].concat(...JSON.parse(JSON.stringify(this.list2)).map(l => l.attrs))
+      let tmp = [].concat(...JSON.parse(JSON.stringify(this.finalElement)).map(l => l.attrs))
       tmp.forEach((l, index) => {
         l.sort = index
         if (!isNaN(l.id) || l.id.startsWith('c_')) {
@@ -334,7 +333,7 @@ export default {
         })
         this.formData = { ...data }
         data.items.forEach(item => {
-          let findAttrs = this.list2.find(l => l.itemGroup === item.itemGroup)
+          let findAttrs = this.finalElement.find(l => l.itemGroup === item.itemGroup)
           let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
           findAttr.id = item.id
         })
@@ -343,7 +342,7 @@ export default {
     changeSelectedForm () {
       let remove = []
       const test1 = []
-        .concat(...this.list2.map(l => l.attrs))
+        .concat(...this.finalElement.map(l => l.attrs))
         .filter(l => l.isCustom === false)
         .map(m => m.attrDefId)
       test1.forEach(t => {
@@ -354,13 +353,18 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.list2.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName).attrs
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName)
+          .attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })
       this.selectedFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
         let itemGroup = seleted.entityPackage + '.' + seleted.entityName
+        const elementType = {
+          str: 'input',
+          ref: 'select'
+        }
         const attr = {
           attrDefDataType: seleted.dataType,
           attrDefId: seleted.id,
@@ -371,7 +375,7 @@ export default {
           itemGroupName: itemGroup,
           packageName: seleted.entityPackage,
           entity: seleted.entityName,
-          elementType: seleted.dataType === 'str' ? 'input' : '',
+          elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
           isCustom: false,
           inDisplayName: 'no',
@@ -384,14 +388,14 @@ export default {
           title: seleted.description,
           width: 24
         }
-        const tagExist = this.list2.find(l => l.itemGroup === itemGroup)
+        const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
           const find = tagExist.attrs.find(attr => attr.attrDefId === item)
           if (!find) {
             tagExist.attrs.push(attr)
           }
         } else {
-          this.list2.push({
+          this.finalElement.push({
             // tag: tag,
             itemGroup: itemGroup,
             itemGroupName: itemGroup,
@@ -401,7 +405,7 @@ export default {
       })
     },
     selectElement (itemIndex, eleIndex) {
-      this.editElement = this.list2[itemIndex].attrs[eleIndex]
+      this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
     },
     async getSelectedForm () {
       this.formItemOptions = []
@@ -432,7 +436,7 @@ export default {
       }
     },
     removeForm (itemIndex, eleIndex) {
-      this.list2[itemIndex].attrs.splice(eleIndex, 1)
+      this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
       this.selectedFormItem.splice(eleIndex, 1)
     },
     cloneDog (val) {
@@ -442,11 +446,11 @@ export default {
       newItem.itemGroup = 'Custom'
       newItem.itemGroupName = 'Custom'
       newItem.title = newItem.title + idGlobal
-      const find = this.list2.find(l => l.itemGroup === 'Custom')
+      const find = this.finalElement.find(l => l.itemGroup === 'Custom')
       if (find) {
         find.attrs.push(newItem)
       } else {
-        this.list2.push({
+        this.finalElement.push({
           // tag: 'Custom',
           itemGroup: 'Custom',
           itemGroupName: 'Custom',

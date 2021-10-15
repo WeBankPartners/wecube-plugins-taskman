@@ -5,8 +5,15 @@
     <Modal v-model="formConfig.isShow" :title="$t('data_management')">
       <Form :label-width="100">
         <template v-for="formItem in formConfig.form">
-          <FormItem :label="formItem.title" :key="formItem.name">
+          <FormItem v-if="formItem.elementType === 'input'" :label="formItem.title" :key="formItem.name">
             <Input v-model="formConfig.data.entityData[formItem.name]"></Input>
+          </FormItem>
+          <FormItem v-if="formItem.elementType === 'select'" :label="formItem.title" :key="formItem.name">
+            <Select v-model="formConfig.data.entityData[formItem.name]" @on-open-change="getRefOptions(formItem)">
+              <Option v-for="item in formConfig[formItem.name + 'Options']" :value="item.guid" :key="item.guid">{{
+                item.key_name
+              }}</Option>
+            </Select>
           </FormItem>
         </template>
       </Form>
@@ -19,42 +26,77 @@
 </template>
 
 <script>
-import { saveEntityData } from '@/api/server'
+import { saveEntityData, getRefOptions } from '@/api/server'
 export default {
   name: '',
   data () {
     return {
+      model1: '',
+      cityList: [],
       requestId: '',
       rootEntityId: '',
       dataArray: [], // 所有数据
       oriData: null,
-      formConfig: {
-        isShow: false,
-        isAdd: false,
-        form: [],
-        data: {
-          dataId: '',
-          displayName: '',
-          entityData: {},
-          entityName: '',
-          fullDataId: '',
-          id: '',
-          packageName: '',
-          previousIds: [],
-          succeedingIds: []
-        }
-      },
+      formConfig: {},
+      // formConfig: {
+      //   isShow: false,
+      //   isAdd: false,
+      //   form: [],
+      //   data: {
+      //     dataId: '',
+      //     displayName: '',
+      //     entityData: {},
+      //     entityName: '',
+      //     fullDataId: '',
+      //     id: '',
+      //     packageName: '',
+      //     previousIds: [],
+      //     succeedingIds: []
+      //   },
+      //   unitOptions: []
+      // },
       tableColumns: [],
-      tableData: []
+      tableData: [],
+      refKeys: [] // 引用类型字段集合
     }
   },
+  mounted () {},
   methods: {
+    async getRefOptions (formItem) {
+      let cache = JSON.parse(JSON.stringify(this.formConfig.data.entityData))
+      cache[formItem.name] = ''
+      this.refKeys.forEach(k => {
+        delete cache[k + '_obj']
+      })
+      const attr = formItem.entity + '__' + formItem.name
+      const params = {
+        filters: [],
+        paging: false,
+        dialect: {
+          associatedData: {
+            ...cache
+          }
+        }
+      }
+      const { statusCode, data } = await getRefOptions(attr, params)
+      if (statusCode === 'OK') {
+        this.formConfig[formItem.name + 'Options'] = data
+      }
+    },
     cancel () {
       this.formConfig.isShow = false
     },
     async ok () {
       this.formConfig.data.entityName = this.oriData.entity
       this.formConfig.data.packageName = this.oriData.packageName
+      const keys = Object.keys(this.formConfig.data.entityData)
+      keys.forEach(k => {
+        const findIndex = this.refKeys.findIndex(x => x === k)
+        if (findIndex !== -1) {
+          const find = this.formConfig[k + 'Options'].find(f => this.formConfig.data.entityData[k] === f.guid)
+          this.formConfig.data.entityData[k + '_obj'] = find
+        }
+      })
       let find = this.dataArray.find(
         d => d.entity === this.oriData.entity && d.packageName === this.oriData.packageName
       )
@@ -68,16 +110,25 @@ export default {
       }
       this.saveData(this.dataArray)
     },
-    initData (rootEntityId, dataArray, data, requestId) {
+    initData (rootEntityId, dataArray, data, requestId, formConfig) {
+      this.formConfig = formConfig
       this.rootEntityId = rootEntityId
       this.dataArray = dataArray
       this.requestId = requestId
       this.oriData = data
       this.formConfig.form = data.title
+      this.refKeys = []
       this.tableColumns = data.title.map(t => {
-        const col = {
+        let col = {
           title: t.title,
           key: t.name
+        }
+        if (t.attrDefDataType === 'ref') {
+          this.refKeys.push(t.name)
+          col.render = (h, params) => {
+            const val = params.row[t.name + '_obj'].key_name
+            return <div>{val}</div>
+          }
         }
         this.formConfig.data.entityData[t.name] = ''
         return col
@@ -121,6 +172,12 @@ export default {
       this.formConfig.isAdd = true
     },
     editRow (rowData) {
+      this.formConfig.form.forEach(f => {
+        const findIndex = this.refKeys.findIndex(x => x === f.name)
+        if (findIndex !== -1) {
+          this.getRefOptions(this.formConfig.form[findIndex])
+        }
+      })
       const find = this.oriData.value.find(v => v.id === rowData._id)
       this.formConfig.data = { ...find }
       this.formConfig.isAdd = false
@@ -136,7 +193,6 @@ export default {
           )
           let singleDataIndex = find.value.findIndex(v => v.id === rowData._id)
           find.value.splice(singleDataIndex, 1)
-          console.log(find.value)
           this.saveData(this.dataArray)
         },
         onCancel: () => {}

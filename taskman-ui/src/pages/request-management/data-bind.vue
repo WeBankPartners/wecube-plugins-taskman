@@ -52,7 +52,6 @@ export default {
         }
         n.bindData.map(b => {
           let findData = this.bindData.find(bData => bData.id === b)
-          console.log(findData)
           findData.bindInfo.bindFlag = 'Y'
           params.boundEntityValues.push(findData.bindInfo)
         })

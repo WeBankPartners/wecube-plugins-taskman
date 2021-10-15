@@ -33,7 +33,6 @@ export default {
       }
     },
     choiceTemplate (temp) {
-      console.log(temp)
       this.$emit('choiceTemp', temp)
     }
   },

@@ -115,8 +115,6 @@ export default {
       if (this.$refs.observer.flags.valid) {
         this.$emit('saveModel', JSON.parse(JSON.stringify(this.modalConfig.values)))
       }
-      // console.log(this.$refs.observer.flags.valid)
-      // console.log(this.modalConfig.values)
     },
     cancel () {
       this.modalConfig.isShow = false

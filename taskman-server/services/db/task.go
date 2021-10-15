@@ -121,7 +121,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo mod
 	if len(userRoles) > 0 {
 		roleFilterList := []string{}
 		for _, v := range userRoles {
-			roleFilterList = append(roleFilterList, "report_role like %,"+v+",%")
+			roleFilterList = append(roleFilterList, "report_role like '%,"+v+",%'")
 		}
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}

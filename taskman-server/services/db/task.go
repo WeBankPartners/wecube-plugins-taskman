@@ -119,10 +119,11 @@ func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo mod
 	rowData = []*models.TaskTable{}
 	roleFilterSql := "1=1"
 	if len(userRoles) > 0 {
+		roleFilterList := []string{}
 		for _, v := range userRoles {
-			v = "report_role like %," + v + ",%"
+			roleFilterList = append(roleFilterList, "report_role like %,"+v+",%")
 		}
-		roleFilterSql = strings.Join(userRoles, " or ")
+		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
 	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)

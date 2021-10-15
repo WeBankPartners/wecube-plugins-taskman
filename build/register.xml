@@ -65,6 +65,7 @@
                     <parameter datatype="string" mappingType="context">errorCode</parameter>
                     <parameter datatype="string" mappingType="context">errorMessage</parameter>
                     <parameter datatype="string" mappingType="context">comment</parameter>
+                    <parameter datatype="string" mappingType="context">taskFormOutput</parameter>
                 </outputParameters>
             </interface>
         </plugin>

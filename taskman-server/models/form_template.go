@@ -70,3 +70,15 @@ type FormTemplateDto struct {
 	NowTime     string                   `json:"-"`
 	Items       []*FormItemTemplateTable `json:"items"`
 }
+
+type TaskFormItemQueryObj struct {
+	Id               string `json:"id" xorm:"id"`
+	Form             string `json:"form" xorm:"form"`
+	FormItemTemplate string `json:"formItemTemplate" xorm:"form_item_template"`
+	Name             string `json:"name" xorm:"name"`
+	Value            string `json:"value" xorm:"value"`
+	ItemGroup        string `json:"itemGroup" xorm:"item_group"`
+	RowDataId        string `json:"rowDataId" xorm:"row_data_id"`
+	AttrDefDataType  string `json:"attrDefDataType" xorm:"attr_def_data_type"`
+	ElementType      string `json:"elementType" xorm:"element_type"`
+}

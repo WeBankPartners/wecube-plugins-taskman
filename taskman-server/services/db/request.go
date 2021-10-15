@@ -488,7 +488,6 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	entityNewMap := make(map[string][]string)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
-			entityValue.Processed = true
 			if entityValue.EntityDataId == cacheData.RootEntityValue.Oid {
 				cacheData.RootEntityValue.Oid = entityValue.Oid
 				cacheData.RootEntityValue.EntityName = entityValue.EntityName

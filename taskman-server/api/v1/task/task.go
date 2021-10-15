@@ -2,6 +2,7 @@ package task
 
 import (
 	"encoding/json"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
@@ -40,7 +41,7 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 	for _, input := range param.Inputs {
-		output, tmpErr := db.PluginTaskCreate(input)
+		output, tmpErr := db.PluginTaskCreate(input, param.RequestId)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
@@ -51,7 +52,17 @@ func CreateTask(c *gin.Context) {
 }
 
 func ListTask(c *gin.Context) {
-
+	var param models.QueryRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	pageInfo, rowData, err := db.ListTask(&param, middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnPageData(c, pageInfo, rowData)
+	}
 }
 
 func GetTask(c *gin.Context) {
@@ -63,5 +74,11 @@ func SaveTaskForm(c *gin.Context) {
 }
 
 func ApproveTask(c *gin.Context) {
-
+	taskId := c.Param("taskId")
+	err := db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
 }

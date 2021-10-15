@@ -92,7 +92,6 @@ export default {
       if (statusCode === 'OK') {
         this.formConfig.values.name = data.name
         this.formConfig.values.emergency = data.emergency
-        console.log(data)
       }
     },
     async createRequest () {

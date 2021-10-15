@@ -56,19 +56,25 @@ export default {
       //   unitOptions: []
       // },
       tableColumns: [],
-      tableData: []
+      tableData: [],
+      refKeys: [] // 引用类型字段集合
     }
   },
   mounted () {},
   methods: {
     async getRefOptions (formItem) {
+      let cache = JSON.parse(JSON.stringify(this.formConfig.data.entityData))
+      cache[formItem.name] = ''
+      this.refKeys.forEach(k => {
+        delete cache[k + '_obj']
+      })
       const attr = formItem.entity + '__' + formItem.name
       const params = {
         filters: [],
         paging: false,
         dialect: {
           associatedData: {
-            ...this.formConfig.data.entityData
+            ...cache
           }
         }
       }
@@ -83,6 +89,14 @@ export default {
     async ok () {
       this.formConfig.data.entityName = this.oriData.entity
       this.formConfig.data.packageName = this.oriData.packageName
+      const keys = Object.keys(this.formConfig.data.entityData)
+      keys.forEach(k => {
+        const findIndex = this.refKeys.findIndex(x => x === k)
+        if (findIndex !== -1) {
+          const find = this.formConfig[k + 'Options'].find(f => this.formConfig.data.entityData[k] === f.guid)
+          this.formConfig.data.entityData[k + '_obj'] = find
+        }
+      })
       let find = this.dataArray.find(
         d => d.entity === this.oriData.entity && d.packageName === this.oriData.packageName
       )
@@ -103,10 +117,18 @@ export default {
       this.requestId = requestId
       this.oriData = data
       this.formConfig.form = data.title
+      this.refKeys = []
       this.tableColumns = data.title.map(t => {
-        const col = {
+        let col = {
           title: t.title,
           key: t.name
+        }
+        if (t.attrDefDataType === 'ref') {
+          this.refKeys.push(t.name)
+          col.render = (h, params) => {
+            const val = params.row[t.name + '_obj'].key_name
+            return <div>{val}</div>
+          }
         }
         this.formConfig.data.entityData[t.name] = ''
         return col
@@ -150,6 +172,12 @@ export default {
       this.formConfig.isAdd = true
     },
     editRow (rowData) {
+      this.formConfig.form.forEach(f => {
+        const findIndex = this.refKeys.findIndex(x => x === f.name)
+        if (findIndex !== -1) {
+          this.getRefOptions(this.formConfig.form[findIndex])
+        }
+      })
       const find = this.oriData.value.find(v => v.id === rowData._id)
       this.formConfig.data = { ...find }
       this.formConfig.isAdd = false
@@ -165,7 +193,6 @@ export default {
           )
           let singleDataIndex = find.value.findIndex(v => v.id === rowData._id)
           find.value.splice(singleDataIndex, 1)
-          console.log(find.value)
           this.saveData(this.dataArray)
         },
         onCancel: () => {}

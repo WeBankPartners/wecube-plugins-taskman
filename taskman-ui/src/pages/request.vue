@@ -55,7 +55,7 @@ export default {
         paging: true,
         sorting: {
           asc: true,
-          field: 'catId'
+          field: 'updatedTime'
         }
       },
       tableColumns: [

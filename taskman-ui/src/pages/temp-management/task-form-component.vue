@@ -416,6 +416,10 @@ export default {
       this.selectedInputFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
         let itemGroup = seleted.entityPackage + '.' + seleted.entityName
+        const elementType = {
+          str: 'input',
+          ref: 'select'
+        }
         const attr = {
           attrDefDataType: seleted.dataType,
           attrDefId: seleted.id,
@@ -426,7 +430,7 @@ export default {
           itemGroupName: itemGroup,
           packageName: seleted.entityPackage,
           entity: seleted.entityName,
-          elementType: seleted.dataType === 'str' ? 'input' : '',
+          elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
           isCustom: false,
           isEdit: 'yes',
@@ -476,6 +480,10 @@ export default {
       this.selectedOutputFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
         let itemGroup = seleted.entityPackage + '.' + seleted.entityName
+        const elementType = {
+          str: 'input',
+          ref: 'select'
+        }
         const attr = {
           attrDefDataType: seleted.dataType,
           attrDefId: seleted.id,
@@ -486,7 +494,7 @@ export default {
           itemGroupName: itemGroup,
           packageName: seleted.entityPackage,
           entity: seleted.entityName,
-          elementType: seleted.dataType === 'str' ? 'input' : '',
+          elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
           isCustom: false,
           isEdit: 'yes',

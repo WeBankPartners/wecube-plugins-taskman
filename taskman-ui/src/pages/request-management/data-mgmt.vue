@@ -5,8 +5,13 @@
     <Modal v-model="formConfig.isShow" :title="$t('data_management')">
       <Form :label-width="100">
         <template v-for="formItem in formConfig.form">
-          <FormItem :label="formItem.title" :key="formItem.name">
+          <FormItem v-if="formItem.elementType === 'input'" :label="formItem.title" :key="formItem.name">
             <Input v-model="formConfig.data.entityData[formItem.name]"></Input>
+          </FormItem>
+          <FormItem v-if="formItem.elementType === 'select'" :label="formItem.title" :key="formItem.name">
+            <Select v-model="formConfig.data.entityData[formItem.name]">
+              <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            </Select>
           </FormItem>
         </template>
       </Form>
@@ -24,6 +29,8 @@ export default {
   name: '',
   data () {
     return {
+      model1: '',
+      cityList: [],
       requestId: '',
       rootEntityId: '',
       dataArray: [], // 所有数据

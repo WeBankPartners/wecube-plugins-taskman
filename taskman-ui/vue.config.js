@@ -10,6 +10,9 @@ module.exports = {
     proxy: {
       '/taskman': {
         target: baseUrl
+      },
+      '/wecmdb': {
+        target: baseUrl
       }
     }
   },

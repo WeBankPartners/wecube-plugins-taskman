@@ -9,8 +9,10 @@
             <Input v-model="formConfig.data.entityData[formItem.name]"></Input>
           </FormItem>
           <FormItem v-if="formItem.elementType === 'select'" :label="formItem.title" :key="formItem.name">
-            <Select v-model="formConfig.data.entityData[formItem.name]">
-              <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            <Select v-model="formConfig.data.entityData[formItem.name]" @on-open-change="getRefOptions(formItem)">
+              <Option v-for="item in formConfig[formItem.name + 'Options']" :value="item.guid" :key="item.guid">{{
+                item.key_name
+              }}</Option>
             </Select>
           </FormItem>
         </template>
@@ -24,7 +26,7 @@
 </template>
 
 <script>
-import { saveEntityData } from '@/api/server'
+import { saveEntityData, getRefOptions } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -35,27 +37,46 @@ export default {
       rootEntityId: '',
       dataArray: [], // 所有数据
       oriData: null,
-      formConfig: {
-        isShow: false,
-        isAdd: false,
-        form: [],
-        data: {
-          dataId: '',
-          displayName: '',
-          entityData: {},
-          entityName: '',
-          fullDataId: '',
-          id: '',
-          packageName: '',
-          previousIds: [],
-          succeedingIds: []
-        }
-      },
+      formConfig: {},
+      // formConfig: {
+      //   isShow: false,
+      //   isAdd: false,
+      //   form: [],
+      //   data: {
+      //     dataId: '',
+      //     displayName: '',
+      //     entityData: {},
+      //     entityName: '',
+      //     fullDataId: '',
+      //     id: '',
+      //     packageName: '',
+      //     previousIds: [],
+      //     succeedingIds: []
+      //   },
+      //   unitOptions: []
+      // },
       tableColumns: [],
       tableData: []
     }
   },
+  mounted () {},
   methods: {
+    async getRefOptions (formItem) {
+      const attr = formItem.entity + '__' + formItem.name
+      const params = {
+        filters: [],
+        paging: false,
+        dialect: {
+          associatedData: {
+            ...this.formConfig.data.entityData
+          }
+        }
+      }
+      const { statusCode, data } = await getRefOptions(attr, params)
+      if (statusCode === 'OK') {
+        this.formConfig[formItem.name + 'Options'] = data
+      }
+    },
     cancel () {
       this.formConfig.isShow = false
     },
@@ -75,7 +96,8 @@ export default {
       }
       this.saveData(this.dataArray)
     },
-    initData (rootEntityId, dataArray, data, requestId) {
+    initData (rootEntityId, dataArray, data, requestId, formConfig) {
+      this.formConfig = formConfig
       this.rootEntityId = rootEntityId
       this.dataArray = dataArray
       this.requestId = requestId

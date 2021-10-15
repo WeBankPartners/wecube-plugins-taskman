@@ -107,7 +107,28 @@ export default {
     },
     initTable (index) {
       const find = this.requestData.find(r => r.entity === this.activeTab)
-      this.$refs.dataMgmt[index].initData(this.rootEntityId, this.requestData, find, this.requestId)
+      let formConfig = {
+        isShow: false,
+        isAdd: false,
+        form: [],
+        data: {
+          dataId: '',
+          displayName: '',
+          entityData: {},
+          entityName: '',
+          fullDataId: '',
+          id: '',
+          packageName: '',
+          previousIds: [],
+          succeedingIds: []
+        }
+      }
+      find.title.forEach(ele => {
+        if (ele.attrDefDataType === 'ref') {
+          formConfig[ele.name + 'Options'] = []
+        }
+      })
+      this.$refs.dataMgmt[index].initData(this.rootEntityId, this.requestData, find, this.requestId, formConfig)
     }
   }
 }

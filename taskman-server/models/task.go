@@ -27,6 +27,9 @@ type TaskTable struct {
 	Reporter          string `json:"reporter" xorm:"reporter"`
 	ReportTime        string `json:"reportTime" xorm:"report_time"`
 	ReportRole        string `json:"reportRole" xorm:"report_role"`
+	Owner             string `json:"owner" xorm:"owner"`
+	CreatedBy         string `json:"createdBy" xorm:"created_by"`
+	CreatedTime       string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy         string `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime       string `json:"updatedTime" xorm:"updated_time"`
 	DelFlag           string `json:"delFlag" xorm:"del_flag"`
@@ -124,4 +127,28 @@ type PluginTaskFormValue struct {
 type CallbackResult struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
+}
+
+type TaskQueryResult struct {
+	TimeStep []*TaskQueryTimeStep `json:"timeStep"`
+	Data     []*TaskQueryObj      `json:"data"`
+}
+
+type TaskQueryTimeStep struct {
+	RequestTemplateId string `json:"requestTemplateId"`
+	TaskTemplateId    string `json:"taskTemplateId"`
+	Name              string `json:"name"`
+	Active            bool   `json:"active"`
+}
+
+type TaskQueryObj struct {
+	RequestId   string                    `json:"requestId"`
+	TaskId      string                    `json:"taskId"`
+	Reporter    string                    `json:"reporter"`
+	ReportTime  string                    `json:"reportTime"`
+	Comment     string                    `json:"comment"`
+	AttachFiles []string                  `json:"attachFiles"`
+	Editable    bool                      `json:"editable"`
+	Status      string                    `json:"status"`
+	FormData    []*RequestPreDataTableObj `json:"formData"`
 }

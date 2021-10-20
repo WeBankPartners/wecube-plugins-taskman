@@ -139,8 +139,143 @@ func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo mod
 	return
 }
 
-func GetTask() {
+func GetTask(taskId string) (result models.TaskQueryResult, err error) {
+	taskObj, tmpErr := getSimpleTask(taskId)
+	if tmpErr != nil {
+		return result, tmpErr
+	}
+	if taskObj.Request == "" {
+		taskForm, tmpErr := queryTaskForm(&taskObj)
+		if tmpErr != nil {
+			return result, tmpErr
+		}
+		result.Data = []*models.TaskQueryObj{&taskForm}
+		return
+	}
+	// get request
+	var requests []*models.RequestTable
+	x.SQL("select * from request where id=?", taskObj.Request).Find(&requests)
+	if len(requests) == 0 {
+		return result, fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
+	}
+	var requestCache models.RequestPreDataDto
+	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
+	if err != nil {
+		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
+	}
+	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery.FormData = requestCache.Data
+	result.Data = []*models.TaskQueryObj{&requestQuery}
+	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
+	if err != nil {
+		return result, err
+	}
+	// get task list
+	var taskList []*models.TaskTable
+	x.SQL("select * from task where request=? order by created_time").Find(&taskList)
+	for _, v := range taskList {
+		tmpTaskForm, tmpErr := queryTaskForm(v)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+		result.Data = append(result.Data, &tmpTaskForm)
+	}
+	if err != nil {
+		return
+	}
+	for _, v := range result.TimeStep {
+		for _, vv := range taskList {
+			if vv.TaskTemplate == v.TaskTemplateId || vv.Id == taskId {
+				v.Active = true
+				break
+			}
+		}
+	}
+	return
+}
 
+func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}}
+	if taskObj.Status == "created" {
+		taskForm.Editable = true
+	}
+	if taskObj.Request == "" {
+		return
+	}
+	if taskObj.AttachFile != "" {
+		taskForm.AttachFiles = []string{taskObj.AttachFile}
+	}
+	var itemTemplates []*models.FormItemTemplateTable
+	err = x.SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
+	if err != nil {
+		return
+	}
+	if len(itemTemplates) == 0 {
+		return taskForm, fmt.Errorf("Can not find any form item template with task:%s ", taskObj.Id)
+	}
+	formResult := getItemTemplateTitle(itemTemplates)
+	taskForm.FormData = formResult
+	var items []*models.FormItemTable
+	x.SQL("select * from form_item where form=? order by item_group,row_data_id", taskObj.Form).Find(&items)
+	if len(items) == 0 {
+		return
+	}
+	itemRowMap := make(map[string][]string)
+	rowItemMap := make(map[string][]*models.FormItemTable)
+	for _, item := range items {
+		if tmpRows, b := itemRowMap[item.ItemGroup]; b {
+			existFlag := false
+			for _, v := range tmpRows {
+				if item.RowDataId == v {
+					existFlag = true
+					break
+				}
+			}
+			if !existFlag {
+				itemRowMap[item.ItemGroup] = append(itemRowMap[item.ItemGroup], item.RowDataId)
+			}
+		} else {
+			itemRowMap[item.ItemGroup] = []string{item.RowDataId}
+		}
+		if _, b := rowItemMap[item.RowDataId]; b {
+			rowItemMap[item.RowDataId] = append(rowItemMap[item.RowDataId], item)
+		} else {
+			rowItemMap[item.RowDataId] = []*models.FormItemTable{item}
+		}
+	}
+	for _, formTable := range formResult {
+		if rows, b := itemRowMap[formTable.ItemGroup]; b {
+			for _, row := range rows {
+				tmpRowObj := models.EntityTreeObj{Id: row, DataId: row, PackageName: formTable.PackageName, EntityName: formTable.Entity}
+				tmpRowObj.EntityData = make(map[string]interface{})
+				for _, rowItem := range rowItemMap[row] {
+					tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
+				}
+				formTable.Value = append(formTable.Value, &tmpRowObj)
+			}
+		}
+	}
+	taskForm.FormData = formResult
+	return
+}
+
+func getRequestTimeStep(requestTemplateId string) (result []*models.TaskQueryTimeStep, err error) {
+	var requestTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select id,name from request_template where id=?", requestTemplateId).Find(&requestTemplateTable)
+	if err != nil {
+		return
+	}
+	if len(requestTemplateTable) == 0 {
+		return result, fmt.Errorf("Can not find requestTemplate with id:%s ", requestTemplateId)
+	}
+	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: requestTemplateTable[0].Name, Active: true})
+	var taskTemplateTable []*models.TaskTemplateTable
+	x.SQL("select id,name from task_template where request_template=?", requestTemplateId).Find(&taskTemplateTable)
+	for _, v := range taskTemplateTable {
+		result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateId, TaskTemplateId: v.Id, Name: v.Name, Active: false})
+	}
+	return
 }
 
 func getSimpleTask(taskId string) (result models.TaskTable, err error) {

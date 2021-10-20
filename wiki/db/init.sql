@@ -247,6 +247,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `result` text ,
   `cache` mediumtext ,
   `callback_request_id` varchar(255) DEFAULT NULL,
+  `owner` varchar(64)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,

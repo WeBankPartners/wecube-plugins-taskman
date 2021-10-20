@@ -292,6 +292,33 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	if len(items) == 0 {
 		return result, fmt.Errorf("RequestTemplate:%s have no task form items ", requestTemplateId)
 	}
+	result = getItemTemplateTitle(items)
+	if entityDataId == "" {
+		return
+	}
+	previewData, previewErr := ProcessDataPreview(requestTemplateId, entityDataId, userToken)
+	if previewErr != nil {
+		return result, previewErr
+	}
+	if len(previewData.Data.EntityTreeNodes) == 0 {
+		return
+	}
+	for _, entity := range result {
+		for _, tmpData := range previewData.Data.EntityTreeNodes {
+			if tmpData.EntityName == entity.Entity {
+				tmpValueData := make(map[string]interface{})
+				for _, title := range entity.Title {
+					tmpValueData[title.Name] = tmpData.EntityData[title.Name]
+				}
+				entity.Value = append(entity.Value, &models.EntityTreeObj{Id: tmpData.Id, PackageName: tmpData.PackageName, EntityName: tmpData.EntityName, DataId: tmpData.DataId, PreviousIds: tmpData.PreviousIds, SucceedingIds: tmpData.SucceedingIds, DisplayName: tmpData.DisplayName, FullDataId: tmpData.FullDataId, EntityData: tmpValueData})
+			}
+		}
+	}
+	return
+}
+
+func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
+	result := []*models.RequestPreDataTableObj{}
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
@@ -345,28 +372,7 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	}
 	// sort result by dependence
 	result = sortRequestEntity(result)
-	if entityDataId == "" {
-		return
-	}
-	previewData, previewErr := ProcessDataPreview(requestTemplateId, entityDataId, userToken)
-	if previewErr != nil {
-		return result, previewErr
-	}
-	if len(previewData.Data.EntityTreeNodes) == 0 {
-		return
-	}
-	for _, entity := range result {
-		for _, tmpData := range previewData.Data.EntityTreeNodes {
-			if tmpData.EntityName == entity.Entity {
-				tmpValueData := make(map[string]interface{})
-				for _, title := range entity.Title {
-					tmpValueData[title.Name] = tmpData.EntityData[title.Name]
-				}
-				entity.Value = append(entity.Value, &models.EntityTreeObj{Id: tmpData.Id, PackageName: tmpData.PackageName, EntityName: tmpData.EntityName, DataId: tmpData.DataId, PreviousIds: tmpData.PreviousIds, SucceedingIds: tmpData.SucceedingIds, DisplayName: tmpData.DisplayName, FullDataId: tmpData.FullDataId, EntityData: tmpValueData})
-			}
-		}
-	}
-	return
+	return result
 }
 
 func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPreDataSort {

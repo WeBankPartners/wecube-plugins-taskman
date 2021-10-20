@@ -66,7 +66,13 @@ func ListTask(c *gin.Context) {
 }
 
 func GetTask(c *gin.Context) {
-
+	taskId := c.Param("taskId")
+	result, err := db.GetTask(taskId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
 }
 
 func SaveTaskForm(c *gin.Context) {

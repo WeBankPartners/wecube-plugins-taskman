@@ -172,7 +172,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	}
 	// get task list
 	var taskList []*models.TaskTable
-	x.SQL("select * from task where request=? order by created_time").Find(&taskList)
+	x.SQL("select * from task where request=? order by created_time", taskObj.Request).Find(&taskList)
 	for _, v := range taskList {
 		tmpTaskForm, tmpErr := queryTaskForm(v)
 		if tmpErr != nil {
@@ -269,7 +269,7 @@ func getRequestTimeStep(requestTemplateId string) (result []*models.TaskQueryTim
 	if len(requestTemplateTable) == 0 {
 		return result, fmt.Errorf("Can not find requestTemplate with id:%s ", requestTemplateId)
 	}
-	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: requestTemplateTable[0].Name, Active: true})
+	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: "Start", Active: true})
 	var taskTemplateTable []*models.TaskTemplateTable
 	x.SQL("select id,name from task_template where request_template=?", requestTemplateId).Find(&taskTemplateTable)
 	for _, v := range taskTemplateTable {

@@ -43,32 +43,30 @@
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
-                  :style="{ width: element.width === 12 ? '50%' : '100%' }"
+                  :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div style="width:20%;display:inline-block;text-align:right;padding-right:10px">
-                    {{ element.title }}:
-                  </div>
+                  <div>{{ element.title }}:</div>
                   <Input
                     v-if="element.elementType === 'input'"
                     disabled
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     disabled
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     disabled
                     v-model="element.defaultValue"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex)"
@@ -122,9 +120,9 @@
                 </FormItem>
                 <FormItem :label="$t('width')">
                   <Select v-model="editElement.width">
-                    <Option :value="6">12</Option>
+                    <Option :value="6">6</Option>
                     <Option :value="12">12</Option>
-                    <Option :value="18">12</Option>
+                    <Option :value="18">18</Option>
                     <Option :value="24">24</Option>
                   </Select>
                 </FormItem>

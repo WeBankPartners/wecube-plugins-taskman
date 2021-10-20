@@ -57,5 +57,8 @@
   "template": "模板",
   "basic_information_settings ": "基础信息设置",
   "data_binding": "数据绑定",
-  "terminate": "暂停"
+  "terminate": "暂停",
+  "node_name": "节点名称",
+  "reporter": "上报人",
+  "report_time": "上报时间"
 }

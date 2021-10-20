@@ -39,7 +39,7 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea list-group" :list="item.attrs" group="people" @change="log">
+              <draggable class="dragArea list-group" :list="item.attrs" group="people" :move="onMove" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
@@ -284,13 +284,23 @@ export default {
     }
   },
   methods: {
+    onMove (e, originalEvent) {
+      console.log(e)
+      console.log(originalEvent)
+      // 不允许停靠
+      if (e.relatedContext.element.id === 1) return false
+      // // 不允许拖拽
+      // if (e.draggedContext.element.id === 4) return false
+      return true
+    },
     log (log) {
-      this.finalElement.forEach(l => {
-        l.attrs.forEach(attr => {
-          attr.itemGroup = l.itemGroup
-          attr.itemGroupName = l.itemGroupName
-        })
-      })
+      // console.log(log)
+      // this.finalElement.forEach(l => {
+      //   l.attrs.forEach(attr => {
+      //     attr.itemGroup = l.itemGroup
+      //     attr.itemGroupName = l.itemGroupName
+      //   })
+      // })
     },
     async getInitData () {
       const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)

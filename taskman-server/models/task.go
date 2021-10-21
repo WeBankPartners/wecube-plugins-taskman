@@ -1,38 +1,40 @@
 package models
 
 type TaskTable struct {
-	Id                string `json:"id" xorm:"id"`
-	Name              string `json:"name" xorm:"name"`
-	Description       string `json:"description" xorm:"description"`
-	Form              string `json:"form" xorm:"form"`
-	AttachFile        string `json:"attachFile" xorm:"attach_file"`
-	Status            string `json:"status" xorm:"status"`
-	Version           string `json:"version" xorm:"version"`
-	Request           string `json:"request" xorm:"request"`
-	Parent            string `json:"parent" xorm:"parent"`
-	TaskTemplate      string `json:"taskTemplate" xorm:"task_template"`
-	PackageName       string `json:"packageName" xorm:"package_name"`
-	EntityName        string `json:"entityName" xorm:"entity_name"`
-	ProcDefId         string `json:"procDefId" xorm:"proc_def_id"`
-	ProcDefKey        string `json:"procDefKey" xorm:"proc_def_key"`
-	ProcDefName       string `json:"procDefName" xorm:"proc_def_name"`
-	NodeDefId         string `json:"nodeDefId" xorm:"node_def_id"`
-	NodeName          string `json:"nodeName" xorm:"node_name"`
-	CallbackUrl       string `json:"callbackUrl" xorm:"callback_url"`
-	CallbackParameter string `json:"callbackParameter" xorm:"callback_parameter"`
-	Emergency         string `json:"emergency" xorm:"emergency"`
-	Result            string `json:"result" xorm:"result"`
-	Cache             string `json:"cache" xorm:"cache"`
-	CallbackRequestId string `json:"callbackRequestId" xorm:"callback_request_id"`
-	Reporter          string `json:"reporter" xorm:"reporter"`
-	ReportTime        string `json:"reportTime" xorm:"report_time"`
-	ReportRole        string `json:"reportRole" xorm:"report_role"`
-	Owner             string `json:"owner" xorm:"owner"`
-	CreatedBy         string `json:"createdBy" xorm:"created_by"`
-	CreatedTime       string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy         string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime       string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag           string `json:"delFlag" xorm:"del_flag"`
+	Id                string   `json:"id" xorm:"id"`
+	Name              string   `json:"name" xorm:"name"`
+	Description       string   `json:"description" xorm:"description"`
+	Form              string   `json:"form" xorm:"form"`
+	AttachFile        string   `json:"attachFile" xorm:"attach_file"`
+	Status            string   `json:"status" xorm:"status"`
+	Version           string   `json:"version" xorm:"version"`
+	Request           string   `json:"request" xorm:"request"`
+	Parent            string   `json:"parent" xorm:"parent"`
+	TaskTemplate      string   `json:"taskTemplate" xorm:"task_template"`
+	PackageName       string   `json:"packageName" xorm:"package_name"`
+	EntityName        string   `json:"entityName" xorm:"entity_name"`
+	ProcDefId         string   `json:"procDefId" xorm:"proc_def_id"`
+	ProcDefKey        string   `json:"procDefKey" xorm:"proc_def_key"`
+	ProcDefName       string   `json:"procDefName" xorm:"proc_def_name"`
+	NodeDefId         string   `json:"nodeDefId" xorm:"node_def_id"`
+	NodeName          string   `json:"nodeName" xorm:"node_name"`
+	CallbackUrl       string   `json:"callbackUrl" xorm:"callback_url"`
+	CallbackParameter string   `json:"callbackParameter" xorm:"callback_parameter"`
+	Emergency         string   `json:"emergency" xorm:"emergency"`
+	Result            string   `json:"result" xorm:"result"`
+	Cache             string   `json:"cache" xorm:"cache"`
+	CallbackRequestId string   `json:"callbackRequestId" xorm:"callback_request_id"`
+	Reporter          string   `json:"reporter" xorm:"reporter"`
+	ReportTime        string   `json:"reportTime" xorm:"report_time"`
+	ReportRole        string   `json:"reportRole" xorm:"report_role"`
+	Owner             string   `json:"owner" xorm:"owner"`
+	NextOption        string   `json:"nextOption" xorm:"next_option"`
+	CreatedBy         string   `json:"createdBy" xorm:"created_by"`
+	CreatedTime       string   `json:"createdTime" xorm:"created_time"`
+	UpdatedBy         string   `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`
+	DelFlag           string   `json:"delFlag" xorm:"del_flag"`
+	OperationOptions  []string `json:"operationOptions" xorm:"-"`
 }
 
 type TaskMetaResult struct {
@@ -54,8 +56,9 @@ type TaskMetaResultItem struct {
 }
 
 type PluginTaskCreateRequest struct {
-	RequestId string                        `json:"requestId"`
-	Inputs    []*PluginTaskCreateRequestObj `json:"inputs"`
+	RequestId      string                        `json:"requestId"`
+	AllowedOptions []string                      `json:"allowedOptions"`
+	Inputs         []*PluginTaskCreateRequestObj `json:"inputs"`
 }
 
 type PluginTaskCreateRequestObj struct {
@@ -76,8 +79,9 @@ type PluginTaskCreateResp struct {
 }
 
 type PluginTaskCreateOutput struct {
-	RequestId string                       `json:"requestId"`
-	Outputs   []*PluginTaskCreateOutputObj `json:"outputs"`
+	RequestId      string                       `json:"requestId"`
+	AllowedOptions []string                     `json:"allowedOptions,omitempty"`
+	Outputs        []*PluginTaskCreateOutputObj `json:"outputs"`
 }
 
 type PluginTaskCreateOutputObj struct {
@@ -139,11 +143,14 @@ type TaskQueryTimeStep struct {
 	TaskTemplateId    string `json:"taskTemplateId"`
 	Name              string `json:"name"`
 	Active            bool   `json:"active"`
+	Done              bool   `json:"done"`
 }
 
 type TaskQueryObj struct {
 	RequestId   string                    `json:"requestId"`
+	RequestName string                    `json:"requestName"`
 	TaskId      string                    `json:"taskId"`
+	TaskName    string                    `json:"taskName"`
 	Reporter    string                    `json:"reporter"`
 	ReportTime  string                    `json:"reportTime"`
 	Comment     string                    `json:"comment"`
@@ -151,4 +158,17 @@ type TaskQueryObj struct {
 	Editable    bool                      `json:"editable"`
 	Status      string                    `json:"status"`
 	FormData    []*RequestPreDataTableObj `json:"formData"`
+}
+
+type TaskApproveParam struct {
+	Comment    string `json:"comment"`
+	NextOption string `json:"nextOption"`
+}
+
+type TaskOperationLogTable struct {
+	Id        string `json:"id" xorm:"id"`
+	Task      string `json:"task" xorm:"task"`
+	Operation string `json:"operation" xorm:"operation"`
+	Operator  string `json:"operator" xorm:"operator"`
+	OpTime    string `json:"opTime" xorm:"op_time"`
 }

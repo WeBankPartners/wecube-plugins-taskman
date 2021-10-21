@@ -115,7 +115,7 @@ func remakeTaskReportRole(reportRoles string) string {
 	return ""
 }
 
-func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.TaskTable, err error) {
+func ListTask(param *models.QueryRequestParam, userRoles []string, operator string) (pageInfo models.PageInfo, rowData []*models.TaskTable, err error) {
 	rowData = []*models.TaskTable{}
 	roleFilterSql := "1=1"
 	if len(userRoles) > 0 {
@@ -126,7 +126,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo mod
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
+	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.owner from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -136,6 +136,19 @@ func ListTask(param *models.QueryRequestParam, userRoles []string) (pageInfo mod
 		queryParam = append(queryParam, pageParam...)
 	}
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
+	for _, v := range rowData {
+		if v.Status == "created" {
+			v.OperationOptions = []string{"mark"}
+		} else if v.Status == "marked" || v.Status == "doing" {
+			if v.Owner == operator {
+				v.OperationOptions = []string{"start"}
+			} else {
+				v.OperationOptions = []string{"mark"}
+			}
+		} else {
+			v.OperationOptions = []string{}
+		}
+	}
 	return
 }
 
@@ -163,7 +176,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	if err != nil {
 		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
 	}
-	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
 	requestQuery.FormData = requestCache.Data
 	result.Data = []*models.TaskQueryObj{&requestQuery}
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
@@ -186,7 +199,12 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	}
 	for _, v := range result.TimeStep {
 		for _, vv := range taskList {
-			if vv.TaskTemplate == v.TaskTemplateId || vv.Id == taskId {
+			if vv.TaskTemplate == v.TaskTemplateId {
+				if vv.Status != "created" {
+					v.Done = true
+				}
+			}
+			if vv.Id == taskId && vv.Status == "created" {
 				v.Active = true
 				break
 			}
@@ -196,7 +214,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 }
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}}
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}}
 	if taskObj.Status == "created" {
 		taskForm.Editable = true
 	}
@@ -269,7 +287,7 @@ func getRequestTimeStep(requestTemplateId string) (result []*models.TaskQueryTim
 	if len(requestTemplateTable) == 0 {
 		return result, fmt.Errorf("Can not find requestTemplate with id:%s ", requestTemplateId)
 	}
-	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: "Start", Active: true})
+	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: "Start", Active: false})
 	var taskTemplateTable []*models.TaskTemplateTable
 	x.SQL("select id,name from task_template where request_template=?", requestTemplateId).Find(&taskTemplateTable)
 	for _, v := range taskTemplateTable {
@@ -291,10 +309,16 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 	return
 }
 
-func ApproveTask(taskId, operator, userToken string) error {
+func ApproveTask(taskId, operator, userToken string, param models.TaskApproveParam) error {
 	requestParam, callbackUrl, err := getApproveCallbackParam(taskId)
 	if err != nil {
 		return err
+	}
+	if param.NextOption != "" {
+		requestParam.Results.AllowedOptions = []string{param.NextOption}
+	}
+	for _, v := range requestParam.Results.Outputs {
+		v.Comment = param.Comment
 	}
 	requestBytes, _ := json.Marshal(requestParam)
 	req, newReqErr := http.NewRequest(http.MethodPost, models.Config.Wecube.BaseUrl+callbackUrl, bytes.NewReader(requestBytes))
@@ -319,7 +343,7 @@ func ApproveTask(taskId, operator, userToken string) error {
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update task set callback_parameter=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set callback_parameter=?,result=?,next_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.NextOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}
@@ -363,4 +387,52 @@ func getApproveCallbackParam(taskId string) (result models.PluginTaskCreateResp,
 	resultObj.Outputs = []*models.PluginTaskCreateOutputObj{{Comment: taskObj.Result, ErrorCode: "0", TaskFormOutput: string(formBytes)}}
 	result.Results = resultObj
 	return
+}
+
+func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableObj) error {
+	var actions []*execAction
+	taskObj, err := getSimpleTask(taskId)
+	if err != nil {
+		return err
+	}
+	for _, tableForm := range param {
+		for _, valueObj := range tableForm.Value {
+			for k, v := range valueObj.EntityData {
+				actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+			}
+		}
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &execAction{Sql: "update task set updated_by=?,updated_time=? where id=?", Param: []interface{}{operator, nowTime, taskId}})
+	return transaction(actions)
+}
+
+func ChangeTaskStatus(taskId, operator, operation string) error {
+	taskObj, err := getSimpleTask(taskId)
+	if err != nil {
+		return err
+	}
+	if taskObj.Status == "done" {
+		return fmt.Errorf("Task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+	}
+	var actions []*execAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	if operation == "mark" {
+		if taskObj.Status == "doing" {
+			return fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+		}
+		actions = append(actions, &execAction{Sql: "update task set status=?,owner=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
+	} else if operation == "start" {
+		if operator != taskObj.Owner {
+			return fmt.Errorf("Task owner is %s ", taskObj.Owner)
+		}
+		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"doing", operator, nowTime, taskId}})
+	} else if operation == "quit" {
+		if operator != taskObj.Owner {
+			return fmt.Errorf("Task owner is %s ", taskObj.Owner)
+		}
+		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
+	}
+	actions = append(actions, &execAction{Sql: "insert into task_operation_log(id,task,operation,operator,op_time) value (?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskId, operation, operator, nowTime}})
+	return transaction(actions)
 }

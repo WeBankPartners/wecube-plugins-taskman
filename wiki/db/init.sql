@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `cache` mediumtext ,
   `callback_request_id` varchar(255) DEFAULT NULL,
   `owner` varchar(64)  DEFAULT NULL,
+  `next_option` varchar(64)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,
@@ -258,6 +259,17 @@ CREATE TABLE IF NOT EXISTS `task` (
   CONSTRAINT `fore_task_ref_request` FOREIGN KEY (`request`) REFERENCES `request` (`id`),
   CONSTRAINT `fore_task_attach_file` FOREIGN KEY (`attach_file`) REFERENCES `attach_file` (`id`),
   CONSTRAINT `fore_task_ref_template` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
+
+DROP TABLE IF EXISTS `task_operation_log`;
+CREATE TABLE IF NOT EXISTS `task_operation_log` (
+  `id` varchar(64)  NOT NULL,
+  `task` varchar(64) NOT NULL,
+  `operation` varchar(64) NOT NULL,
+  `operator` varchar(64) NOT NULL,
+  `op_time` varchar(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fore_task_log` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
 SET FOREIGN_KEY_CHECKS = 1;

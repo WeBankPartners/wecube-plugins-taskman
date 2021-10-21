@@ -2,6 +2,7 @@ package task
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -57,7 +58,7 @@ func ListTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.ListTask(&param, middleware.GetRequestRoles(c))
+	pageInfo, rowData, err := db.ListTask(&param, middleware.GetRequestRoles(c), middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -76,12 +77,43 @@ func GetTask(c *gin.Context) {
 }
 
 func SaveTaskForm(c *gin.Context) {
-
+	taskId := c.Param("taskId")
+	var param []*models.RequestPreDataTableObj
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.SaveTaskForm(taskId, middleware.GetRequestUser(c), param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
 }
 
 func ApproveTask(c *gin.Context) {
 	taskId := c.Param("taskId")
-	err := db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	var param models.TaskApproveParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func ChangeTaskStatus(c *gin.Context) {
+	taskId := c.Param("taskId")
+	operation := c.Param("operation")
+	if operation != "mark" && operation != "start" && operation != "quit" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("operation illegal"))
+		return
+	}
+	err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

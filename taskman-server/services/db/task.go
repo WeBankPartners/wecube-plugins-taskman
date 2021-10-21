@@ -54,6 +54,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 			return result, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
 		}
 	} else {
+		// Custom task create
 		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,callback_request_id,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, callRequestId, "system", nowTime, "system", nowTime}
 		actions = append(actions, &taskInsertAction)
@@ -72,9 +73,15 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 		if len(taskTemplateTable) > 0 {
 			newTaskObj.TaskTemplate = taskTemplateTable[0].Id
 			newTaskObj.NodeName = taskTemplateTable[0].NodeName
+			newTaskObj.Name = taskTemplateTable[0].Name
+			newTaskObj.Description = taskTemplateTable[0].Description
+			newTaskObj.Reporter = requestTable[0].Reporter
+			newTaskObj.ReportTime = nowTime
 			newTaskFormObj.FormTemplate = taskTemplateTable[0].FormTemplate
 		} else {
 			log.Logger.Warn("Can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
+			err = fmt.Errorf("Can not find any taskTemplate in request:%s with nodeDefId:%s ", newTaskObj.Request, taskFormInput.TaskNodeDefId)
+			return
 		}
 	}
 	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}

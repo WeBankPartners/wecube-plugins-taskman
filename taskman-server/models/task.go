@@ -20,6 +20,7 @@ type TaskTable struct {
 	NodeName          string   `json:"nodeName" xorm:"node_name"`
 	CallbackUrl       string   `json:"callbackUrl" xorm:"callback_url"`
 	CallbackParameter string   `json:"callbackParameter" xorm:"callback_parameter"`
+	CallbackData      string   `json:"callbackData" xorm:"callback_data"`
 	Emergency         string   `json:"emergency" xorm:"emergency"`
 	Result            string   `json:"result" xorm:"result"`
 	Cache             string   `json:"cache" xorm:"cache"`

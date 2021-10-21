@@ -113,10 +113,10 @@ func ChangeTaskStatus(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("operation illegal"))
 		return
 	}
-	err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation)
+	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		middleware.ReturnData(c, taskObj)
 	}
 }

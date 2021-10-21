@@ -1,17 +1,22 @@
 <template>
-  <div style="width:40%;margin: 0 auto;">
-    <Form :label-width="100">
-      <FormItem :label="$t('attributes')">
-        <Select v-model="attrData" multiple filterable>
-          <OptionGroup v-for="item in attrOptions" :label="item.description" :key="item.id">
-            <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
-          </OptionGroup>
-        </Select>
-      </FormItem>
-      <FormItem>
-        <Button @click="saveAttrs" :disabled="attrData.length === 0" type="primary">{{ $t('next') }}</Button>
-      </FormItem>
-    </Form>
+  <div style="width:55%;margin: 0 auto;">
+    <CheckboxGroup v-model="attrData">
+      <template v-for="item in attrOptions">
+        <Card :key="item.id">
+          <p slot="title">
+            {{ item.description }}
+          </p>
+          <ul>
+            <li v-for="attr in item.attributes" :key="attr.id" style="width: 46%;display: inline-block;margin: 2px">
+              <Checkbox :label="attr.id">
+                <span>{{ attr.description }}({{ attr.name }})</span>
+              </Checkbox>
+            </li>
+          </ul>
+        </Card>
+      </template>
+    </CheckboxGroup>
+    <Button @click="saveAttrs" :disabled="attrData.length === 0" type="primary">{{ $t('next') }}</Button>
   </div>
 </template>
 

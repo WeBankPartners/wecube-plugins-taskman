@@ -14,7 +14,7 @@
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
       <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
-        <Divider plain>{{ $t('input_items') }}</Divider>
+        <Divider plain>{{ $t('form_item') }}</Divider>
         <Select v-model="selectedFormItem" @on-change="changeSelectedForm" multiple filterable>
           <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
             <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
@@ -114,9 +114,17 @@
                     <Option value="no">no</Option>
                   </Select>
                 </FormItem>
+                <FormItem :label="$t('可编辑')">
+                  <Select v-model="editElement.isEdit">
+                    <Option value="yes">yes</Option>
+                    <Option value="no">no</Option>
+                  </Select>
+                </FormItem>
                 <FormItem :label="$t('width')">
                   <Select v-model="editElement.width">
+                    <Option :value="6">12</Option>
                     <Option :value="12">12</Option>
+                    <Option :value="18">12</Option>
                     <Option :value="24">24</Option>
                   </Select>
                 </FormItem>
@@ -289,20 +297,34 @@ export default {
       if (statusCode === 'OK') {
         this.formData = { ...data }
         if (data.items !== null && data.items.length > 0) {
+          let itemGroupSet = new Set()
+          data.items.forEach(item => {
+            if (itemGroupSet.has(item.itemGroup)) {
+              let exitEle = this.finalElement.find(ele => ele.itemGroup === item.itemGroup)
+              exitEle.attrs.push(item)
+            } else {
+              itemGroupSet.add(item.itemGroup)
+              this.finalElement.unshift({
+                itemGroup: item.itemGroup,
+                itemGroupName: item.itemGroupName,
+                attrs: [item]
+              })
+            }
+          })
           this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
-          let customItem = data.items.filter(item => item.attrDefId === '')
-          if (customItem.length > 0) {
-            customItem = customItem.map(custom => {
-              custom.isCustom = true
-              return custom
-            })
-            this.finalElement.unshift({
-              // tag: 'Custom',
-              itemGroup: 'Custom',
-              itemGroupName: 'Custom',
-              attrs: customItem
-            })
-          }
+          // let customItem = data.items.filter(item => item.attrDefId === '')
+          // if (customItem.length > 0) {
+          //   customItem = customItem.map(custom => {
+          //     custom.isCustom = true
+          //     return custom
+          //   })
+          //   this.finalElement.unshift({
+          //     // tag: 'Custom',
+          //     itemGroup: 'Custom',
+          //     itemGroupName: 'Custom',
+          //     attrs: customItem
+          //   })
+          // }
         }
       }
     },
@@ -353,14 +375,14 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName)
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
           .attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })
       this.selectedFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
-        let itemGroup = seleted.entityPackage + '.' + seleted.entityName
+        let itemGroup = seleted.entityPackage + ':' + seleted.entityName
         const elementType = {
           str: 'input',
           ref: 'select'
@@ -415,9 +437,9 @@ export default {
         let entitySet = new Set()
         let formItemOptions = []
         data.forEach(d => {
-          const itemGroup = d.entityPackage + '.' + d.entityName
+          const itemGroup = d.entityPackage + ':' + d.entityName
           if (entitySet.has(itemGroup)) {
-            let find = formItemOptions.find(f => f.packageName + '.' + f.name === itemGroup)
+            let find = formItemOptions.find(f => f.packageName + ':' + f.name === itemGroup)
             find.attributes.push(d)
           } else {
             entitySet.add(itemGroup)

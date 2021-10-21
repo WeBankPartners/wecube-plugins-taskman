@@ -137,17 +137,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 	}
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
 	for _, v := range rowData {
-		if v.Status == "created" {
-			v.OperationOptions = []string{"mark"}
-		} else if v.Status == "marked" || v.Status == "doing" {
-			if v.Owner == operator {
-				v.OperationOptions = []string{"start"}
-			} else {
-				v.OperationOptions = []string{"mark"}
-			}
-		} else {
-			v.OperationOptions = []string{}
-		}
+		buildTaskOperation(v, operator)
 	}
 	return
 }
@@ -407,32 +397,52 @@ func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableOb
 	return transaction(actions)
 }
 
-func ChangeTaskStatus(taskId, operator, operation string) error {
-	taskObj, err := getSimpleTask(taskId)
+func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTable, err error) {
+	taskObj, err = getSimpleTask(taskId)
 	if err != nil {
-		return err
+		return
 	}
 	if taskObj.Status == "done" {
-		return fmt.Errorf("Task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+		return taskObj, fmt.Errorf("Task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
 	}
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if operation == "mark" {
 		if taskObj.Status == "doing" {
-			return fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+			return taskObj, fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,owner=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
 		if operator != taskObj.Owner {
-			return fmt.Errorf("Task owner is %s ", taskObj.Owner)
+			return taskObj, fmt.Errorf("Task owner is %s ", taskObj.Owner)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"doing", operator, nowTime, taskId}})
 	} else if operation == "quit" {
 		if operator != taskObj.Owner {
-			return fmt.Errorf("Task owner is %s ", taskObj.Owner)
+			return taskObj, fmt.Errorf("Task owner is %s ", taskObj.Owner)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
 	}
 	actions = append(actions, &execAction{Sql: "insert into task_operation_log(id,task,operation,operator,op_time) value (?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskId, operation, operator, nowTime}})
-	return transaction(actions)
+	err = transaction(actions)
+	if err != nil {
+		return taskObj, err
+	}
+	taskObj, _ = getSimpleTask(taskId)
+	buildTaskOperation(&taskObj, operator)
+	return taskObj, nil
+}
+
+func buildTaskOperation(taskObj *models.TaskTable, operator string) {
+	if taskObj.Status == "created" {
+		taskObj.OperationOptions = []string{"mark"}
+	} else if taskObj.Status == "marked" || taskObj.Status == "doing" {
+		if taskObj.Owner == operator {
+			taskObj.OperationOptions = []string{"start"}
+		} else {
+			taskObj.OperationOptions = []string{"mark"}
+		}
+	} else {
+		taskObj.OperationOptions = []string{}
+	}
 }

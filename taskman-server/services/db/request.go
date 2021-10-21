@@ -609,3 +609,27 @@ func RequestTermination(requestId, operator, userToken string) error {
 	_, err = x.Exec("update request set status='Termination',updated_by=?,updated_time=? where id=?", operator, nowTime, requestId)
 	return err
 }
+
+func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestParam) (result []byte, statusCode int, err error) {
+	paramBytes, tmpErr := json.Marshal(param)
+	if tmpErr != nil {
+		err = fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
+		return
+	}
+	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/wecmdb/api/v1/ci-data/reference-data/query/%s", models.Config.Wecube.BaseUrl, attrId), bytes.NewReader(paramBytes))
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	statusCode = resp.StatusCode
+	result, _ = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	return
+}

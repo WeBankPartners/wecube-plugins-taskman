@@ -179,3 +179,18 @@ func TerminateRequest(c *gin.Context) {
 		middleware.ReturnSuccess(c)
 	}
 }
+
+func GetCmdbReferenceData(c *gin.Context) {
+	attrId := c.Param("attrId")
+	var param models.QueryRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	resultBytes, statusCode, err := db.GetCmdbReferenceData(attrId, c.GetHeader("Authorization"), param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		c.Data(statusCode, "application/json", resultBytes)
+	}
+}

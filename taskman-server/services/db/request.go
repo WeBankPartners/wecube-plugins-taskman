@@ -175,14 +175,21 @@ func DeleteRequest(requestId, operator string) error {
 }
 
 func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDataDto) error {
+	var formItemNameQuery []*models.FormItemTemplateTable
+	err := x.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	itemGroupNameMap := make(map[string][]string)
+	for _, v := range formItemNameQuery {
+		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
+	}
 	for _, v := range param.Data {
+		nameList := itemGroupNameMap[v.ItemGroup]
 		for _, value := range v.Value {
 			if value.Id == "" {
 				value.PackageName = v.PackageName
 				value.EntityName = v.Entity
 				value.EntityDataOp = "create"
 				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
-				value.DataId = value.Id
+				value.DisplayName = concatItemDisplayName(value.EntityData, nameList)
 			}
 		}
 	}
@@ -194,6 +201,14 @@ func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDat
 	actions := UpdateRequestFormItem(requestId, param)
 	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, requestId}})
 	return transaction(actions)
+}
+
+func concatItemDisplayName(rowData map[string]interface{}, nameList []string) string {
+	displayNameList := []string{}
+	for _, v := range nameList {
+		displayNameList = append(displayNameList, fmt.Sprintf("%s", rowData[v]))
+	}
+	return strings.Join(displayNameList, "__")
 }
 
 func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []*execAction {

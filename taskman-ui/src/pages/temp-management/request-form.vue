@@ -39,36 +39,34 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea list-group" :list="item.attrs" group="people" @change="log">
+              <draggable class="dragArea list-group" :list="item.attrs" group="people" :move="onMove" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
-                  :style="{ width: element.width === 12 ? '50%' : '100%' }"
+                  :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div style="width:20%;display:inline-block;text-align:right;padding-right:10px">
-                    {{ element.title }}:
-                  </div>
+                  <div>{{ element.title }}:</div>
                   <Input
                     v-if="element.elementType === 'input'"
                     disabled
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     disabled
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     disabled
                     v-model="element.defaultValue"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex)"
@@ -122,9 +120,9 @@
                 </FormItem>
                 <FormItem :label="$t('width')">
                   <Select v-model="editElement.width">
-                    <Option :value="6">12</Option>
+                    <Option :value="6">6</Option>
                     <Option :value="12">12</Option>
-                    <Option :value="18">12</Option>
+                    <Option :value="18">18</Option>
                     <Option :value="24">24</Option>
                   </Select>
                 </FormItem>
@@ -284,13 +282,23 @@ export default {
     }
   },
   methods: {
+    onMove (e, originalEvent) {
+      console.log(e)
+      console.log(originalEvent)
+      // 不允许停靠
+      if (e.relatedContext.element.id === 1) return false
+      // // 不允许拖拽
+      // if (e.draggedContext.element.id === 4) return false
+      return true
+    },
     log (log) {
-      this.finalElement.forEach(l => {
-        l.attrs.forEach(attr => {
-          attr.itemGroup = l.itemGroup
-          attr.itemGroupName = l.itemGroupName
-        })
-      })
+      // console.log(log)
+      // this.finalElement.forEach(l => {
+      //   l.attrs.forEach(attr => {
+      //     attr.itemGroup = l.itemGroup
+      //     attr.itemGroupName = l.itemGroupName
+      //   })
+      // })
     },
     async getInitData () {
       const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)

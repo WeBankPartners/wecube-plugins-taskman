@@ -57,5 +57,8 @@
   "template": "Template",
   "basic_information_settings ": "Basic Information Settings",
   "data_binding": "Data Binding",
-  "terminate": "Terminate"
+  "terminate": "Terminate",
+  "node_name": "Node Name",
+  "reporter": "Reporter",
+  "report_time": "Report Time"
 }

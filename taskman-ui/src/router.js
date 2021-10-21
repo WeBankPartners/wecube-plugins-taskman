@@ -25,6 +25,16 @@ export default new Router({
       component: () => import('@/pages/request')
     },
     {
+      path: '/task',
+      name: 'task',
+      component: () => import('@/pages/task')
+    },
+    {
+      path: '/taskMgmtIndex',
+      name: 'taskMgmtIndex',
+      component: () => import('@/pages/task-mgmt/index')
+    },
+    {
       path: '/requestManagementIndex',
       name: 'requestManagementIndex',
       component: () => import('@/pages/request-management/index')

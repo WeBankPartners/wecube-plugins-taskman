@@ -3,6 +3,7 @@
     <Button @click="jump('/template')">模板设置</Button>
     <Button @click="jump('/templateGroup')">模板组设置</Button>
     <Button @click="jump('/')">发起请求</Button>
+    <Button @click="jump('/task')">任务</Button>
     <div class="app-content-container">
       <BackTop :height="100" :bottom="100" />
       <router-view :key="$route.path" />

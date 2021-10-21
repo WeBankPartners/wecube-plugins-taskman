@@ -1,22 +1,23 @@
 <template>
   <div style="width:55%;margin: 0 auto;">
     <CheckboxGroup v-model="attrData">
-      <template v-for="item in attrOptions">
-        <Card :key="item.id">
-          <p slot="title">
-            {{ item.description }}
-          </p>
-          <ul>
-            <li v-for="attr in item.attributes" :key="attr.id" style="width: 46%;display: inline-block;margin: 2px">
-              <Checkbox :label="attr.id">
-                <span>{{ attr.description }}({{ attr.name }})</span>
-              </Checkbox>
-            </li>
-          </ul>
-        </Card>
-      </template>
+      <Tabs :value="activeTab">
+        <template v-for="item in attrOptions">
+          <TabPane :label="item.description" :name="item.id" :key="item.id">
+            <ul>
+              <li v-for="attr in item.attributes" :key="attr.id" style="width: 46%;display: inline-block;margin: 4px">
+                <Checkbox :label="attr.id">
+                  <span>{{ attr.description }}({{ attr.name }})</span>
+                </Checkbox>
+              </li>
+            </ul>
+          </TabPane>
+        </template>
+      </Tabs>
     </CheckboxGroup>
-    <Button @click="saveAttrs" :disabled="attrData.length === 0" type="primary">{{ $t('next') }}</Button>
+    <div style="margin-top:16px;">
+      <Button @click="saveAttrs" :disabled="attrData.length === 0" type="primary">{{ $t('next') }}</Button>
+    </div>
   </div>
 </template>
 
@@ -26,6 +27,7 @@ export default {
   name: 'form-select',
   data () {
     return {
+      activeTab: '',
       attrData: [],
       attrOptions: []
     }
@@ -60,6 +62,9 @@ export default {
       const { statusCode, data } = await getFormList(this.$parent.requestTemplateId)
       if (statusCode === 'OK') {
         this.attrOptions = data
+        if (this.attrOptions.length > 0) {
+          this.activeTab = this.attrOptions[0].id
+        }
       }
     }
   },

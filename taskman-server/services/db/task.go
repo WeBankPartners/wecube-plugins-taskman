@@ -190,11 +190,11 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	for _, v := range result.TimeStep {
 		for _, vv := range taskList {
 			if vv.TaskTemplate == v.TaskTemplateId {
-				if vv.Status != "created" {
+				if vv.Status == "done" {
 					v.Done = true
 				}
 			}
-			if vv.Id == taskId && vv.Status == "created" {
+			if vv.Id == taskId && vv.Status != "done" {
 				v.Active = true
 				break
 			}
@@ -205,7 +205,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
 	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}}
-	if taskObj.Status == "created" {
+	if taskObj.Status != "done" {
 		taskForm.Editable = true
 	}
 	if taskObj.Request == "" {

@@ -180,5 +180,5 @@ func (s ProcNodeObjList) Swap(i, j int) {
 }
 
 func (s ProcNodeObjList) Less(i, j int) bool {
-	return s[i].OrderedNum > s[j].OrderedNum
+	return s[i].OrderedNum < s[j].OrderedNum
 }

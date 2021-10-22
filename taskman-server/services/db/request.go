@@ -598,6 +598,9 @@ func listToSet(input []string) []string {
 	result := []string{}
 	tmpMap := make(map[string]int)
 	for _, v := range input {
+		if v == "" {
+			continue
+		}
 		if _, b := tmpMap[v]; !b {
 			result = append(result, v)
 			tmpMap[v] = 1

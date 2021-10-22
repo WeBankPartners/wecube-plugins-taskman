@@ -315,8 +315,8 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 	if err != nil {
 		return err
 	}
-	if param.NextOption != "" {
-		requestParam.ResultCode = param.NextOption
+	if param.ChoseOption != "" {
+		requestParam.ResultCode = param.ChoseOption
 	}
 	for _, v := range requestParam.Results.Outputs {
 		v.Comment = param.Comment
@@ -344,7 +344,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.NextOption, "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}

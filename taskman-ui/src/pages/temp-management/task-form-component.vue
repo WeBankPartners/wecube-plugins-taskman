@@ -306,7 +306,6 @@ export default {
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
         this.getSelectedForm()
-        this.getManagementRoles()
         this.getUserRoles()
         this.getTaskFormDataByNodeId()
       }

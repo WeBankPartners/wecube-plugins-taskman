@@ -198,7 +198,9 @@ export default {
           sort: 0,
           attrDefId: '',
           attrDefName: '',
-          attrDefDataType: ''
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
         },
         {
           id: 2,
@@ -221,7 +223,9 @@ export default {
           sort: 0,
           attrDefId: '',
           attrDefName: '',
-          attrDefDataType: ''
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
         },
         {
           id: 3,
@@ -244,7 +248,9 @@ export default {
           sort: 0,
           attrDefId: '',
           attrDefName: '',
-          attrDefDataType: ''
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
         }
       ],
       finalElement: [],
@@ -269,7 +275,9 @@ export default {
         regular: '',
         sort: 0,
         title: '',
-        width: 24
+        width: 24,
+        refEntity: '',
+        refPackageName: ''
       }
     }
   },
@@ -416,7 +424,9 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 24
+          width: 24,
+          refEntity: seleted.refEntityName,
+          refPackageName: seleted.refPackageName
         }
         const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {

@@ -396,9 +396,15 @@ func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableOb
 		return err
 	}
 	for _, tableForm := range param {
+		tmpColumnMap := make(map[string]int)
+		for _, title := range tableForm.Title {
+			tmpColumnMap[title.Name] = 1
+		}
 		for _, valueObj := range tableForm.Value {
 			for k, v := range valueObj.EntityData {
-				actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+				if _, b := tmpColumnMap[k]; b {
+					actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+				}
 			}
 		}
 	}

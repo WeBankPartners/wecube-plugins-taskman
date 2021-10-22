@@ -217,6 +217,7 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 	}
 	if taskObj.NextOption != "" {
 		taskForm.NextOption = strings.Split(taskObj.NextOption, ",")
+		taskForm.ChoseOption = taskObj.ChoseOption
 	}
 	if taskObj.Request == "" {
 		return

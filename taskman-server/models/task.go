@@ -160,6 +160,7 @@ type TaskQueryObj struct {
 	Editable    bool                      `json:"editable"`
 	Status      string                    `json:"status"`
 	NextOption  []string                  `json:"nextOption"`
+	ChoseOption string                    `json:"choseOption"`
 	FormData    []*RequestPreDataTableObj `json:"formData"`
 }
 

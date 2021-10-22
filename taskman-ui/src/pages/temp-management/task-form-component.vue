@@ -2,25 +2,18 @@
   <div class=" ">
     <Row>
       <Form :label-width="100">
-        <Col :span="4">
+        <Col :span="6">
           <FormItem :label="$t('name')">
             <Input v-model="formData.name" style="width:90%" type="text"> </Input>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
-        <Col :span="4">
+        <Col :span="6">
           <FormItem :label="$t('description')">
             <Input v-model="formData.description" style="width:90%" type="text"> </Input>
           </FormItem>
         </Col>
-        <Col :span="4">
-          <FormItem :label="$t('mgmtRoles')">
-            <Select v-model="formData.mgmtRoles" multiple filterable>
-              <Option v-for="item in mgmtRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
-            </Select>
-          </FormItem>
-        </Col>
-        <Col :span="4">
+        <Col :span="6">
           <FormItem :label="$t('useRoles')">
             <Select v-model="formData.useRoles" multiple filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
@@ -176,13 +169,7 @@
 </template>
 
 <script>
-import {
-  getSelectedForm,
-  getManagementRoles,
-  getUserRoles,
-  saveTaskForm,
-  getTaskFormDataByNodeId
-} from '@/api/server.js'
+import { getSelectedForm, getUserRoles, saveTaskForm, getTaskFormDataByNodeId } from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 8
 export default {
@@ -198,7 +185,6 @@ export default {
         nodeDefName: '',
         name: '',
         description: '',
-        mgmtRoles: [],
         useRoles: [],
         items: [],
         updatedTime: ''
@@ -207,7 +193,6 @@ export default {
       selectedOutputFormItem: [],
       formItemOptions: [], // 树形数据
       selectedFormItemOptions: [],
-      mgmtRolesOptions: [],
       useRolesOptions: [],
 
       customElement: [
@@ -408,7 +393,7 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName)
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
           .attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
@@ -416,7 +401,7 @@ export default {
 
       this.selectedInputFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
-        let itemGroup = seleted.entityPackage + '.' + seleted.entityName
+        let itemGroup = seleted.entityPackage + ':' + seleted.entityName
         const elementType = {
           str: 'input',
           ref: 'select'
@@ -434,7 +419,7 @@ export default {
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
           isCustom: false,
-          isEdit: 'yes',
+          isEdit: 'no',
           isOutput: 'no',
           isView: 'yes',
           name: seleted.name,
@@ -474,14 +459,14 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + '.' + findTag.entityName)
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
           .attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })
       this.selectedOutputFormItem.forEach(item => {
         const seleted = this.selectedFormItemOptions.find(xItem => xItem.id === item)
-        let itemGroup = seleted.entityPackage + '.' + seleted.entityName
+        let itemGroup = seleted.entityPackage + ':' + seleted.entityName
         const elementType = {
           str: 'input',
           ref: 'select'
@@ -564,9 +549,9 @@ export default {
         let entitySet = new Set()
         let formItemOptions = []
         data.forEach(d => {
-          const itemGroup = d.entityPackage + '.' + d.entityName
+          const itemGroup = d.entityPackage + ':' + d.entityName
           if (entitySet.has(itemGroup)) {
-            let find = formItemOptions.find(f => f.packageName + '.' + f.name === itemGroup)
+            let find = formItemOptions.find(f => f.packageName + ':' + f.name === itemGroup)
             find.attributes.push(d)
           } else {
             entitySet.add(itemGroup)
@@ -582,12 +567,6 @@ export default {
         })
         this.formItemOptions = formItemOptions
         this.selectedFormItemOptions = data
-      }
-    },
-    async getManagementRoles () {
-      const { statusCode, data } = await getManagementRoles()
-      if (statusCode === 'OK') {
-        this.mgmtRolesOptions = data
       }
     },
     async getUserRoles () {

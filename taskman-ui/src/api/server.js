@@ -67,3 +67,6 @@ export const terminateRequest = id => req.post(`/taskman/api/v1/request/terminat
 export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${requestId}`)
 
 export const getRefOptions = (attr, params) => req.post(`/wecmdb/api/v1/ci-data/reference-data/query/${attr}`, params)
+
+export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
+export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)

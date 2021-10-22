@@ -6,8 +6,7 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
-          <Button @click="requestList" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTemplate">{{ $t('initiate_request') }}</Button>
+          <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -33,7 +32,7 @@
 </template>
 
 <script>
-import { requestList, deleteRequest, terminateRequest } from '@/api/server'
+import { taskList } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -68,8 +67,12 @@ export default {
           key: 'emergency'
         },
         {
-          title: this.$t('template'),
-          key: 'requestTemplate'
+          title: this.$t('node_name'),
+          key: 'nodeName'
+        },
+        {
+          title: this.$t('description'),
+          key: 'description'
         },
         {
           title: this.$t('status'),
@@ -95,24 +98,6 @@ export default {
                 >
                   {this.$t('edit')}
                 </Button>
-                <Button
-                  onClick={() => this.deleteRequest(params.row)}
-                  style="margin-left: 8px"
-                  type="error"
-                  size="small"
-                >
-                  {this.$t('delete')}
-                </Button>
-                {params.row.status === 'InProgress' && (
-                  <Button
-                    onClick={() => this.terminateRequest(params.row)}
-                    style="margin-left: 8px"
-                    type="info"
-                    size="small"
-                  >
-                    {this.$t('terminate')}
-                  </Button>
-                )}
               </div>
             )
           }
@@ -123,7 +108,7 @@ export default {
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 200
-    this.requestList()
+    this.taskList()
   },
   methods: {
     success () {
@@ -132,44 +117,18 @@ export default {
         desc: this.$t('successful')
       })
     },
-    async terminateRequest (row) {
-      let res = await terminateRequest(row.id)
-      if (res.statusCode === 'OK') {
-        this.success()
-        this.requestList()
-      }
-    },
-    deleteRequest (row) {
-      this.$Modal.confirm({
-        title: this.$t('confirm_delete'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          let res = await deleteRequest(row.id)
-          this.$Modal.remove()
-          if (res.statusCode === 'OK') {
-            this.success()
-            this.requestList()
-          }
-        },
-        onCancel: () => {}
-      })
-    },
     editTemplate (row) {
-      this.$router.push({ path: '/requestManagementIndex', query: { requestTemplateId: row.id } })
-    },
-    addTemplate () {
-      this.$router.push({ path: '/requestManagementIndex', params: { requestTemplateId: '' } })
+      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id } })
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize
-      this.requestList()
+      this.taskList()
     },
     changPage (current) {
       this.pagination.currentPage = current
-      this.requestList()
+      this.taskList()
     },
-    async requestList () {
+    async taskList () {
       this.payload.filters = []
       if (this.name) {
         this.payload.filters.push({
@@ -180,7 +139,7 @@ export default {
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      const { statusCode, data } = await requestList(this.payload)
+      const { statusCode, data } = await taskList(this.payload)
       if (statusCode === 'OK') {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows

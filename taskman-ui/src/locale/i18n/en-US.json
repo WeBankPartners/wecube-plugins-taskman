@@ -28,6 +28,7 @@
   "back_to_template": "Back To Template List",
   "basic_information_settings": "Basic Information Settings",
   "form_item_selection": "Form Item Selection",
+  "form_item": "Form Item",
   "request_form_settings": "Request Form Settings",
   "task_form_settings": "Task Form Settings",
   "form_settings": "Form Settings",
@@ -56,5 +57,8 @@
   "template": "Template",
   "basic_information_settings ": "Basic Information Settings",
   "data_binding": "Data Binding",
-  "terminate": "Terminate"
+  "terminate": "Terminate",
+  "node_name": "Node Name",
+  "reporter": "Reporter",
+  "report_time": "Report Time"
 }

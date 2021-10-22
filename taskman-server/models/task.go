@@ -30,6 +30,7 @@ type TaskTable struct {
 	ReportRole        string   `json:"reportRole" xorm:"report_role"`
 	Owner             string   `json:"owner" xorm:"owner"`
 	NextOption        string   `json:"nextOption" xorm:"next_option"`
+	ChoseOption       string   `json:"choseOption" xorm:"chose_option"`
 	CreatedBy         string   `json:"createdBy" xorm:"created_by"`
 	CreatedTime       string   `json:"createdTime" xorm:"created_time"`
 	UpdatedBy         string   `json:"updatedBy" xorm:"updated_by"`
@@ -158,6 +159,7 @@ type TaskQueryObj struct {
 	AttachFiles []string                  `json:"attachFiles"`
 	Editable    bool                      `json:"editable"`
 	Status      string                    `json:"status"`
+	NextOption  []string                  `json:"nextOption"`
 	FormData    []*RequestPreDataTableObj `json:"formData"`
 }
 

@@ -35,7 +35,7 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 	return
 }
 
-func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId string) (result *models.PluginTaskCreateOutputObj, err error) {
+func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, err error) {
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
 	err = x.SQL("select id,form,request_template,emergency from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
@@ -46,7 +46,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newTaskFormObj := models.FormTable{Id: guid.CreateGuid(), Name: "form_" + input.TaskName}
 	input.RoleName = remakeTaskReportRole(input.RoleName)
-	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter}
+	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ",")}
 	var taskFormInput models.PluginTaskFormDto
 	if input.TaskFormInput != "" {
 		err = json.Unmarshal([]byte(input.TaskFormInput), &taskFormInput)
@@ -55,8 +55,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 		}
 	} else {
 		// Custom task create
-		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,callback_request_id,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, callRequestId, "system", nowTime, "system", nowTime}
+		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
 		actions = append(actions, &taskInsertAction)
 		err = transaction(actions)
 		return
@@ -84,8 +84,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 			return
 		}
 	}
-	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, "system", nowTime, "system", nowTime}
+	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
 	actions = append(actions, &taskInsertAction)
 	actions = append(actions, &execAction{Sql: "insert into form(id,name,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.Name, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {
@@ -211,9 +211,12 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 }
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}}
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}}
 	if taskObj.Status != "done" {
 		taskForm.Editable = true
+	}
+	if taskObj.NextOption != "" {
+		taskForm.NextOption = strings.Split(taskObj.NextOption, ",")
 	}
 	if taskObj.Request == "" {
 		return
@@ -340,7 +343,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update task set callback_data=?,result=?,next_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.NextOption, "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.NextOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}

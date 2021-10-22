@@ -42,7 +42,7 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 	for _, input := range param.Inputs {
-		output, tmpErr := db.PluginTaskCreate(input, param.RequestId)
+		output, tmpErr := db.PluginTaskCreate(input, param.RequestId, param.AllowedOptions)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()

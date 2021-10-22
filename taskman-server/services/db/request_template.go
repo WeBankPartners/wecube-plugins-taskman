@@ -8,6 +8,8 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -96,7 +98,7 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
-func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList []*models.ProcNodeObj, err error) {
+func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList models.ProcNodeObjList, err error) {
 	requestTemplateObj, tmpErr := getSimpleRequestTemplate(requestTemplateId)
 	if tmpErr != nil {
 		err = tmpErr
@@ -133,6 +135,14 @@ func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList []*mod
 		return
 	}
 	nodeList = respObj.Data
+	for _, v := range nodeList {
+		if v.OrderedNo == "" {
+			v.OrderedNum = 0
+			continue
+		}
+		v.OrderedNum, _ = strconv.Atoi(v.OrderedNo)
+	}
+	sort.Sort(nodeList)
 	return
 }
 

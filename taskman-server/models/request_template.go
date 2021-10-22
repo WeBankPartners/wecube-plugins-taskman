@@ -131,6 +131,8 @@ type ProcNodeObj struct {
 	RoutineExp    string        `json:"routineExp"`
 	ServiceId     string        `json:"serviceId"`
 	ServiceName   string        `json:"serviceName"`
+	OrderedNo     string        `json:"orderedNo"`
+	OrderedNum    int           `json:"-"`
 	BoundEntities []*ProcEntity `json:"boundEntities"`
 }
 
@@ -165,4 +167,18 @@ type TaskTemplateFormStruct struct {
 	NodeDefId   string                   `json:"nodeDefId"`
 	NodeDefName string                   `json:"nodeDefName"`
 	FormItems   []*FormItemTemplateTable `json:"formItems"`
+}
+
+type ProcNodeObjList []*ProcNodeObj
+
+func (s ProcNodeObjList) Len() int {
+	return len(s)
+}
+
+func (s ProcNodeObjList) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ProcNodeObjList) Less(i, j int) bool {
+	return s[i].OrderedNum > s[j].OrderedNum
 }

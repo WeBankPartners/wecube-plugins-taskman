@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
@@ -515,6 +516,9 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 			itemMap[item.Entity] = append(itemMap[item.Entity], item.Name)
 		}
 	}
+	for k, v := range itemMap {
+		log.Logger.Info("itemMap", log.String("key", k), log.StringList("value", v))
+	}
 	entityNewMap := make(map[string][]string)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
@@ -562,6 +566,9 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 				}
 			}
 		}
+	}
+	for k, v := range entityNewMap {
+		log.Logger.Info("entityNewMap", log.String("key", k), log.StringList("value", v))
 	}
 	if len(entityNewMap) > 0 {
 		for _, taskNode := range cacheData.TaskNodeBindInfos {

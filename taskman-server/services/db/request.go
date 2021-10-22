@@ -503,7 +503,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 
 func fillBindingWithRequestData(requestId string, cacheData *models.RequestCacheData) {
 	var items []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by entity,sort", requestId).Find(&items)
+	x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
 	for _, item := range items {
 		if item.Entity == "" || item.RefEntity == "" {

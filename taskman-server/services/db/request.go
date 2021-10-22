@@ -206,7 +206,13 @@ func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDat
 func concatItemDisplayName(rowData map[string]interface{}, nameList []string) string {
 	displayNameList := []string{}
 	for _, v := range nameList {
-		displayNameList = append(displayNameList, fmt.Sprintf("%s", rowData[v]))
+		if _, b := rowData[v]; b {
+			tmpValue := fmt.Sprintf("%s", rowData[v])
+			if rowData[v] == nil {
+				tmpValue = ""
+			}
+			displayNameList = append(displayNameList, tmpValue)
+		}
 	}
 	return strings.Join(displayNameList, "__")
 }

@@ -315,7 +315,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		return err
 	}
 	if param.NextOption != "" {
-		requestParam.Results.AllowedOptions = []string{param.NextOption}
+		requestParam.ResultCode = param.NextOption
 	}
 	for _, v := range requestParam.Results.Outputs {
 		v.Comment = param.Comment

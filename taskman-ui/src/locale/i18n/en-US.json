@@ -3,6 +3,7 @@
   "search": "Search",
   "edit": "Edit",
   "save": "Save",
+  "commit": "Commit",
   "cancel": "Cancel",
   "delete": "Delete",
   "reset": "Reset",
@@ -60,5 +61,9 @@
   "terminate": "Terminate",
   "node_name": "Node Name",
   "reporter": "Reporter",
-  "report_time": "Report Time"
+  "report_time": "Report Time",
+  "handler": "Handler",
+  "handle_time": "Handler Time",
+  "approval_result": "Approval Result",
+  "approval_comments": "Approval Comments"
 }

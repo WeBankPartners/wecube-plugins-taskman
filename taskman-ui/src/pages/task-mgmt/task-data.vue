@@ -1,11 +1,9 @@
 <template>
   <div class="table-c">
-    <Button @click="addRow" type="primary">{{ $t('add') }}</Button>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td width="5%" class="padding-style" style="text-align: center">序号</td>
-        <td width="85%" class="padding-style" style="text-align: center">表单</td>
-        <td width="10%" class="padding-style" style="text-align: center">操作</td>
+        <td width="95%" class="padding-style" style="text-align: center">表单</td>
       </tr>
       <template v-for="(data, dataIndex) in tableData">
         <tr :key="data.id">
@@ -22,30 +20,25 @@
                 v-if="element.elementType === 'input'"
                 v-model="data[element.name]"
                 placeholder=""
-                style="width: calc(100% - 30px);"
+                :disabled="isDisabled || enforceDisable"
               />
               <Input
                 v-if="element.elementType === 'textarea'"
                 v-model="data[element.name]"
                 type="textarea"
-                style="width: calc(100% - 30px);"
+                :disabled="isDisabled || enforceDisable"
               />
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
+                :disabled="isDisabled || enforceDisable"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
-                style="width: calc(100% - 30px);"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
               </Select>
             </div>
-          </td>
-          <td class="padding-style" style="text-align: center">
-            <Button style="margin-left: 4px" @click="deleteRow(dataIndex)" size="small" type="error">
-              {{ $t('delete') }}
-            </Button>
           </td>
         </tr>
       </template>
@@ -54,53 +47,22 @@
 </template>
 
 <script>
-import { saveEntityData, getRefOptions } from '@/api/server'
+import { getRefOptions } from '@/api/server'
 export default {
   name: '',
   data () {
     return {
-      requestId: '',
-      rootEntityId: 'host_resource_6152f8039c58e6b0',
-      dataArray: [], // 所有数据
       oriData: null,
       form: {},
       tableData: [],
       refKeys: [] // 引用类型字段集合
     }
   },
-  mounted () {},
+  props: ['data', 'isDisabled', 'enforceDisable'],
+  mounted () {
+    this.initData(this.data)
+  },
   methods: {
-    addRow () {
-      let entityData = {}
-      this.tableColumns.forEach(item => {
-        entityData[item.name] = ''
-        this.refKeys.forEach(async rfk => {
-          entityData[rfk + 'Options'] = []
-        })
-      })
-      let data = {
-        dataId: '',
-        displayName: '',
-        entityData: entityData,
-        entityName: this.oriData.entity,
-        entityDataOp: 'create',
-        fullDataId: '',
-        id: '',
-        packageName: this.oriData.packageName,
-        previousIds: [],
-        succeedingIds: []
-      }
-      console.log(data)
-      let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
-      find.value.push(data)
-      this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
-    },
-    deleteRow (index) {
-      let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
-      find.value.splice(index, 1)
-      console.log(this.dataArray)
-      this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
-    },
     async getRefOptions (formItem, formData, index) {
       let cache = JSON.parse(JSON.stringify(formData))
       cache[formItem.name] = ''
@@ -123,11 +85,7 @@ export default {
         this.$set(this.tableData, index, formData)
       }
     },
-    async initData (rootEntityId, dataArray, data, requestId) {
-      console.log(dataArray, data)
-      this.rootEntityId = rootEntityId
-      this.dataArray = dataArray
-      this.requestId = requestId
+    async initData (data) {
       this.oriData = data
       this.form = data.title
       this.refKeys = []
@@ -172,21 +130,6 @@ export default {
       if (statusCode === 'OK') {
         formData[key + 'Options'] = data
         return formData
-      }
-    },
-    async saveData (data) {
-      const params = {
-        rootEntityId: this.rootEntityId,
-        data: data
-      }
-      const { statusCode } = await saveEntityData(this.requestId, params)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.cancel()
-        this.$emit('getEntityData')
       }
     }
   },

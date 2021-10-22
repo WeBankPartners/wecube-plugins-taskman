@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div style="width:50%;margin: 0 auto;">
+  <div style="width:60%;margin: 0 auto;">
+    <div>
       <Steps :current="1">
         <template v-for="(step, stepIndex) in timeStep">
           <Step :title="step.name" :key="stepIndex"></Step>
@@ -8,53 +8,117 @@
       </Steps>
     </div>
     <div>
-      <template v-for="(data, dataIndex) in dataInfo">
-        <div :key="dataIndex">
-          <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
-          <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
-        </div>
-        <Tabs :key="dataIndex" :value="data.activeTab" @on-click="changeTab">
-          <template v-for="entity in requestData">
-            <TabPane :label="entity.entity" :name="entity.entity" :key="entity.entity">
-              <DataMgmt ref="dataMgmt" @getEntityData="getEntityData"></DataMgmt>
-            </TabPane>
-          </template>
-        </Tabs>
-      </template>
+      <Collapse simple v-model="openPanel">
+        <template v-for="(data, dataIndex) in dataInfo">
+          <Panel :name="dataIndex + ''" :key="dataIndex">
+            <template v-if="dataIndex === 0">
+              <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
+              <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
+            </template>
+            <template v-else>
+              <Tag>{{ $t('handler') }}:{{ data.requestName }}</Tag>
+              <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
+            </template>
+            <p slot="content">
+              <Tabs :value="data.activeTab">
+                <template v-for="form in data.formData">
+                  <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
+                    <TaskData :data="form" :isDisabled="!data.editable" :enforceDisable="enforceDisable"></TaskData>
+                  </TabPane>
+                </template>
+              </Tabs>
+              <span>
+                <div v-if="dataIndex !== 0">
+                  <Form :label-width="80" style="margin: 16px 0">
+                    <FormItem :label="$t('approval_result')" v-if="data.nextOption.length !== 0">
+                      <Select v-model="data.choseOption" :disabled="!data.editable">
+                        <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem :label="$t('approval_comments')">
+                      <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
+                    </FormItem>
+                  </Form>
+                  <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                    $t('save')
+                  }}</Button>
+                  <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
+                    $t('commit')
+                  }}</Button>
+                </div>
+              </span>
+            </p>
+          </Panel>
+        </template>
+      </Collapse>
     </div>
   </div>
 </template>
 
 <script>
-import { getTaskDetail } from '@/api/server.js'
+import { getTaskDetail, saveTaskData, commitTaskData } from '@/api/server.js'
+import TaskData from './task-data'
 export default {
   name: '',
   data () {
     return {
       taskId: '',
+      enforceDisable: false,
       timeStep: [],
+      openPanel: '',
       dataInfo: []
     }
   },
   mounted () {
-    if (this.$route.query.taskId !== '') {
-      this.taskId = this.$route.query.taskId
-      this.getTaskDetail()
-    }
+    this.taskId = this.$route.query.taskId
+    this.enforceDisable = this.$route.query.enforceDisable
+    this.getTaskDetail()
   },
   methods: {
+    success () {
+      this.$Notice.success({
+        title: this.$t('successful'),
+        desc: this.$t('successful')
+      })
+    },
     async getTaskDetail () {
-      const { statusCode, data } = await getTaskDetail('61692c6fd4d6f603')
+      const { statusCode, data } = await getTaskDetail(this.taskId)
       if (statusCode === 'OK') {
         this.timeStep = data.timeStep
         this.dataInfo = data.data.map(d => {
-          d.activeTab = d.formData[0]
+          d.activeTab = ''
+          if (d.formData.length > 0) {
+            d.activeTab = d.formData[0].itemGroup
+          }
+          return d
         })
-        console.log(data)
+
+        this.openPanel = data.data.length - 1 + ''
+      }
+    },
+    async saveTaskData () {
+      const taskData = this.dataInfo.find(d => d.editable === true).formData
+      const { statusCode } = await saveTaskData(this.taskId, taskData)
+      if (statusCode === 'OK') {
+        this.success()
+      }
+    },
+    async commitTaskData () {
+      const taskData = this.dataInfo.find(d => d.editable === true)
+      const commitData = {
+        comment: taskData.comment,
+        choseOption: taskData.choseOption
+      }
+      const { statusCode } = await commitTaskData(this.taskId, commitData)
+      if (statusCode === 'OK') {
+        this.success()
+        this.$router.push({ path: 'task' })
       }
     }
   },
-  components: {}
+  components: {
+    TaskData
+  }
 }
 </script>
 

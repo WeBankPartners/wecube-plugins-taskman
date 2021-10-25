@@ -19,7 +19,8 @@
   "group": "Template Group",
   "procDefId": "Process",
   "mgmtRoles": "MGMT Roles",
-  "useRoles": "User Roles",
+  "processing_role": "Processing Role",
+  "useRoles": "Use Roles",
   "tags": "Tags",
   "attributes": "Attributes",
   "version": "Version",
@@ -65,5 +66,10 @@
   "handler": "Handler",
   "handle_time": "Handler Time",
   "approval_result": "Approval Result",
-  "approval_comments": "Approval Comments"
+  "approval_comments": "Approval Comments",
+  "input": "Input",
+  "textare": "Textare",
+  "select": "Select",
+  "editable": "Editable",
+  "display": "Display"
 }

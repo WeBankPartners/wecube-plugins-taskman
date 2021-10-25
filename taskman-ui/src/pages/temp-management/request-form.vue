@@ -28,9 +28,9 @@
           :clone="cloneDog"
         >
           <div class="list-group-item" style="width:100%" v-for="element in customElement" :key="element.id">
-            <Input v-if="element.elementType === 'input'" placeholder="" style="width:84%" />
-            <Input v-if="element.elementType === 'textarea'" type="textarea" placeholder="" style="width:84%" />
-            <Select v-if="element.elementType === 'select'" placeholder="" style="width:84%"> </Select>
+            <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
+            <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
+            <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
           </div>
         </draggable>
       </Col>
@@ -106,13 +106,13 @@
                 <!-- <FormItem :label="$t('tags')">
                   <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem> -->
-                <FormItem :label="$t('显示')">
+                <FormItem :label="$t('display')">
                   <Select v-model="editElement.inDisplayName">
                     <Option value="yes">yes</Option>
                     <Option value="no">no</Option>
                   </Select>
                 </FormItem>
-                <FormItem :label="$t('可编辑')">
+                <FormItem :label="$t('editable')">
                   <Select v-model="editElement.isEdit">
                     <Option value="yes">yes</Option>
                     <Option value="no">no</Option>
@@ -179,7 +179,6 @@ export default {
       customElement: [
         {
           id: 1,
-          isCustom: true,
           name: 'input',
           title: 'Input',
           elementType: 'input',
@@ -204,7 +203,6 @@ export default {
         },
         {
           id: 2,
-          isCustom: true,
           name: 'select',
           title: 'Select',
           elementType: 'select',
@@ -229,7 +227,6 @@ export default {
         },
         {
           id: 3,
-          isCustom: true,
           name: 'textarea',
           title: 'Textarea',
           elementType: 'textarea',
@@ -255,7 +252,6 @@ export default {
       ],
       finalElement: [],
       editElement: {
-        isCustom: true,
         attrDefDataType: '',
         attrDefId: '',
         attrDefName: '',
@@ -328,19 +324,6 @@ export default {
             }
           })
           this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
-          // let customItem = data.items.filter(item => item.attrDefId === '')
-          // if (customItem.length > 0) {
-          //   customItem = customItem.map(custom => {
-          //     custom.isCustom = true
-          //     return custom
-          //   })
-          //   this.finalElement.unshift({
-          //     // tag: 'Custom',
-          //     itemGroup: 'Custom',
-          //     itemGroupName: 'Custom',
-          //     attrs: customItem
-          //   })
-          // }
         }
       }
     },
@@ -381,7 +364,7 @@ export default {
       let remove = []
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
-        .filter(l => l.isCustom === false)
+        .filter(l => l.entity !== '')
         .map(m => m.attrDefId)
       test1.forEach(t => {
         let tmp = t
@@ -415,7 +398,6 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          isCustom: false,
           inDisplayName: 'no',
           isEdit: 'yes',
           isOutput: 'no',

@@ -19,7 +19,8 @@
   "group": "模板组",
   "procDefId": "流程",
   "mgmtRoles": "管理角色",
-  "useRoles": "处理角色",
+  "processing_role": "处理角色",
+  "useRoles": "使用角色",
   "tags": "标签",
   "attributes": "属性",
   "version": "版本",
@@ -65,5 +66,10 @@
   "handler": "处理人",
   "handle_time": "处理时间",
   "approval_result": "审批结果",
-  "approval_comments": "审批意见"
+  "approval_comments": "审批意见",
+  "input": "输入框",
+  "textare": "多行文本框",
+  "select": "选择框",
+  "editable": "可编辑",
+  "display": "显示"
 }

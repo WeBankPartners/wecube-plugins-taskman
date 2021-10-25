@@ -83,7 +83,7 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div>{{ element.title }}:-{{ element.width }}</div>
+                  <div>{{ element.title }}:</div>
                   <Input
                     v-if="element.elementType === 'input'"
                     disabled

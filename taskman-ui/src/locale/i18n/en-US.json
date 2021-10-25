@@ -73,5 +73,10 @@
   "editable": "Editable",
   "display": "Display",
   "expire_day": "Expire Time",
-  "day": "Day"
+  "day": "Day",
+  "request_name": "Request Name",
+  "claim": "Claim",
+  "handle": "Handle",
+  "check": "Check",
+  "select_template": "Select Template"
 }

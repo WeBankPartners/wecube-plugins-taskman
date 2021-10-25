@@ -98,16 +98,16 @@ export default {
                     type="primary"
                     size="small"
                   >
-                    {this.$t('认领')}
+                    {this.$t('claim')}
                   </Button>
                 )}
                 {operationOptions.includes('start') && (
                   <Button onClick={() => this.startTask(params.row)} style="margin-left: 8px" type="info" size="small">
-                    {this.$t('处理')}
+                    {this.$t('handle')}
                   </Button>
                 )}
                 <Button onClick={() => this.checkTask(params.row)} style="margin-left: 8px" type="success" size="small">
-                  {this.$t('查看')}
+                  {this.$t('check')}
                 </Button>
               </div>
             )

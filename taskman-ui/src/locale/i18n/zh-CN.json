@@ -73,5 +73,10 @@
   "editable": "可编辑",
   "display": "显示",
   "expire_day": "超时时间",
-  "day": "天"
+  "day": "天",
+  "request_name": "请求名称",
+  "claim": "认领",
+  "handle": "处理",
+  "check": "查看",
+  "select_template": "选择模板"
 }

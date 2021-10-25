@@ -9,7 +9,7 @@
     <template v-else>
       <Steps :current="currentStep">
         <!-- <Step icon="ios-add-circle">
-          <span slot="title" @click="changeStep(0)">{{ $t('选择模板') }}</span>
+          <span slot="title" @click="changeStep(0)">{{ $t('select_template') }}</span>
         </Step> -->
         <Step icon="md-apps">
           <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>

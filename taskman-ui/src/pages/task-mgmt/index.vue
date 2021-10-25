@@ -7,11 +7,12 @@
         </template>
       </Steps>
     </div>
-    <div>
+    <div class="task-form">
       <Collapse simple v-model="openPanel">
         <template v-for="(data, dataIndex) in dataInfo">
           <Panel :name="dataIndex + ''" :key="dataIndex">
             <template v-if="dataIndex === 0">
+              <Tag>{{ $t('request_name') }}:{{ data.requestName }}</Tag>
               <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
               <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
             </template>
@@ -112,7 +113,7 @@ export default {
       const { statusCode } = await commitTaskData(this.taskId, commitData)
       if (statusCode === 'OK') {
         this.success()
-        this.$router.push({ path: 'task' })
+        this.$router.push({ path: '/task' })
       }
     }
   },
@@ -122,4 +123,9 @@ export default {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.task-form {
+  height: calc(100vh - 100px);
+  overflow: auto;
+}
+</style>

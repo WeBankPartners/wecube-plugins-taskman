@@ -37,26 +37,27 @@ type EntityTreeObj struct {
 }
 
 type RequestTable struct {
-	Id              string `json:"id" xorm:"id"`
-	Name            string `json:"name" xorm:"name"`
-	Form            string `json:"form" xorm:"form"`
-	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
-	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`
-	ProcInstanceKey string `json:"procInstanceKey" xorm:"proc_instance_key"`
-	Reporter        string `json:"reporter" xorm:"reporter"`
-	ReportTime      string `json:"reportTime" xorm:"report_time"`
-	Emergency       string `json:"emergency" xorm:"emergency"`
-	ReportRole      string `json:"reportRole" xorm:"report_role"`
-	AttachFile      string `json:"attachFile" xorm:"attach_file"`
-	Status          string `json:"status" xorm:"status"`
-	Cache           string `json:"cache" xorm:"cache"`
-	BindCache       string `json:"bindCache" xorm:"bind_cache"`
-	Result          string `json:"result" xorm:"result"`
-	CreatedBy       string `json:"createdBy" xorm:"created_by"`
-	CreatedTime     string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
+	Id                  string `json:"id" xorm:"id"`
+	Name                string `json:"name" xorm:"name"`
+	Form                string `json:"form" xorm:"form"`
+	RequestTemplate     string `json:"requestTemplate" xorm:"request_template"`
+	RequestTemplateName string `json:"requestTemplateName" xorm:"-"`
+	ProcInstanceId      string `json:"procInstanceId" xorm:"proc_instance_id"`
+	ProcInstanceKey     string `json:"procInstanceKey" xorm:"proc_instance_key"`
+	Reporter            string `json:"reporter" xorm:"reporter"`
+	ReportTime          string `json:"reportTime" xorm:"report_time"`
+	Emergency           string `json:"emergency" xorm:"emergency"`
+	ReportRole          string `json:"reportRole" xorm:"report_role"`
+	AttachFile          string `json:"attachFile" xorm:"attach_file"`
+	Status              string `json:"status" xorm:"status"`
+	Cache               string `json:"cache" xorm:"cache"`
+	BindCache           string `json:"bindCache" xorm:"bind_cache"`
+	Result              string `json:"result" xorm:"result"`
+	CreatedBy           string `json:"createdBy" xorm:"created_by"`
+	CreatedTime         string `json:"createdTime" xorm:"created_time"`
+	UpdatedBy           string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime         string `json:"updatedTime" xorm:"updated_time"`
+	DelFlag             int    `json:"delFlag" xorm:"del_flag"`
 }
 
 type AttachFileTable struct {

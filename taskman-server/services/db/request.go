@@ -100,7 +100,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string) (pageInfo 
 			rtMap[v.Id] = v.Name
 		}
 		for _, v := range rowData {
-			v.RequestTemplate = rtMap[v.RequestTemplate]
+			v.RequestTemplateName = rtMap[v.RequestTemplate]
 		}
 	}
 	return

@@ -107,6 +107,7 @@ func UpdateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	param.Id = c.Param("requestId")
 	if param.Id == "" || param.Name == "" {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param id and name can not empty "))
 		return

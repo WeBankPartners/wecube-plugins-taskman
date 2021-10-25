@@ -56,7 +56,7 @@ func init() {
 
 		&handlerFuncObj{Url: "/request/:requestId", Method: "GET", HandlerFunc: request.GetRequest},
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: request.CreateRequest},
-		&handlerFuncObj{Url: "/request", Method: "PUT", HandlerFunc: request.UpdateRequest},
+		&handlerFuncObj{Url: "/request/:requestId", Method: "PUT", HandlerFunc: request.UpdateRequest},
 		&handlerFuncObj{Url: "/request/:requestId", Method: "DELETE", HandlerFunc: request.DeleteRequest},
 		&handlerFuncObj{Url: "/request-root/:requestId", Method: "GET", HandlerFunc: request.GetRequestRootForm},
 		&handlerFuncObj{Url: "/request-data/preview", Method: "GET", HandlerFunc: request.GetRequestPreviewData},

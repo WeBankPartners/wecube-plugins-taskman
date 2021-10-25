@@ -9,6 +9,7 @@ type EntityQueryResult struct {
 type EntityDataObj struct {
 	Id          string `json:"id"`
 	DisplayName string `json:"displayName"`
+	IsNew       bool   `json:"isNew"`
 }
 
 type EntityTreeResult struct {

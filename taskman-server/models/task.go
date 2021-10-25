@@ -37,6 +37,7 @@ type TaskTable struct {
 	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`
 	DelFlag           string   `json:"delFlag" xorm:"del_flag"`
 	OperationOptions  []string `json:"operationOptions" xorm:"-"`
+	ExpireDay         int      `json:"expireDay" xorm:"expire_day"`
 }
 
 type TaskMetaResult struct {

@@ -8,6 +8,7 @@ type TaskTemplateTable struct {
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
 	NodeDefId       string `json:"nodeDefId" xorm:"node_def_id"`
 	NodeName        string `json:"nodeName" xorm:"node_name"`
+	ExpireDay       int    `json:"expireDay" xorm:"expire_day"`
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
@@ -28,6 +29,7 @@ type TaskTemplateDto struct {
 	NodeDefName  string                   `json:"nodeDefName"`
 	Name         string                   `json:"name"`
 	Description  string                   `json:"description"`
+	ExpireDay    int                      `json:"expireDay"`
 	UpdatedTime  string                   `json:"updatedTime"`
 	UpdatedBy    string                   `json:"updatedBy"`
 	MGMTRoles    []string                 `json:"mgmtRoles"`

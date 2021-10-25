@@ -73,6 +73,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 		if len(taskTemplateTable) > 0 {
 			newTaskObj.TaskTemplate = taskTemplateTable[0].Id
 			newTaskObj.NodeName = taskTemplateTable[0].NodeName
+			newTaskObj.ExpireDay = taskTemplateTable[0].ExpireDay
 			newTaskObj.Name = taskTemplateTable[0].Name
 			newTaskObj.Description = taskTemplateTable[0].Description
 			newTaskObj.Reporter = requestTable[0].Reporter
@@ -84,8 +85,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 			return
 		}
 	}
-	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
+	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_day,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireDay, "system", nowTime, "system", nowTime}
 	actions = append(actions, &taskInsertAction)
 	actions = append(actions, &execAction{Sql: "insert into form(id,name,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.Name, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {

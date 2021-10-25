@@ -18,6 +18,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 	result.Id = taskTemplate.Id
 	result.NodeDefId = taskTemplate.NodeDefId
 	result.NodeDefName = taskTemplate.NodeName
+	result.ExpireDay = taskTemplate.ExpireDay
 	result.MGMTRoleObjs = []*models.RoleTable{}
 	result.MGMTRoles = []string{}
 	result.USERoleObjs = []*models.RoleTable{}
@@ -63,7 +64,7 @@ func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) 
 	formCreateParam := models.FormTemplateDto{Name: param.Name, Description: param.Description, UpdatedBy: param.UpdatedBy, Items: param.Items, NowTime: nowTime}
 	actions, formId := getFormTemplateCreateActions(formCreateParam)
 	taskTemplateId := guid.CreateGuid()
-	actions = append(actions, &execAction{Sql: "insert into task_template(id,name,description,form_template,request_template,node_def_id,node_name) value (?,?,?,?,?,?,?)", Param: []interface{}{taskTemplateId, param.NodeDefName, param.Description, formId, requestTemplateId, param.NodeDefId, param.NodeDefName}})
+	actions = append(actions, &execAction{Sql: "insert into task_template(id,name,description,form_template,request_template,node_def_id,node_name,expire_day) value (?,?,?,?,?,?,?,?)", Param: []interface{}{taskTemplateId, param.NodeDefName, param.Description, formId, requestTemplateId, param.NodeDefId, param.NodeDefName, param.ExpireDay}})
 	for _, v := range param.MGMTRoles {
 		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{taskTemplateId + models.SysTableIdConnector + v + models.SysTableIdConnector + "MGMT", taskTemplateId, v, "MGMT"}})
 	}
@@ -91,6 +92,7 @@ func UpdateTaskTemplate(param models.TaskTemplateDto) error {
 	for _, v := range param.USERoles {
 		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", param.Id, v, "USE"}})
 	}
+	actions = append(actions, &execAction{Sql: "update task_template set name=?,description=?,expire_day=? where id=?", Param: []interface{}{param.Name, param.Description, param.ExpireDay, param.Id}})
 	return transaction(actions)
 }
 

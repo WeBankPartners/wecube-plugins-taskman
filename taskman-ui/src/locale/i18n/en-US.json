@@ -71,5 +71,7 @@
   "textare": "Textare",
   "select": "Select",
   "editable": "Editable",
-  "display": "Display"
+  "display": "Display",
+  "expire_day": "Expire Time",
+  "day": "Day"
 }

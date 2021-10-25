@@ -1,14 +1,18 @@
 <template>
   <div>
-    <div style="width:40%;margin: 0 auto;">
+    <div>
       <Form :label-width="100">
-        <FormItem :label="$t('name')">
-          <Input v-model="formData.name" style="width:90%" type="text"> </Input>
-          <Icon size="10" style="color:#ed4014" type="ios-medical" />
-        </FormItem>
-        <FormItem :label="$t('description')">
-          <Input v-model="formData.description" style="width:90%" type="text"> </Input>
-        </FormItem>
+        <Col :span="6">
+          <FormItem :label="$t('name')">
+            <Input v-model="formData.name" style="width:90%" type="text"> </Input>
+            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+          </FormItem>
+        </Col>
+        <Col :span="6">
+          <FormItem :label="$t('description')">
+            <Input v-model="formData.description" style="width:90%" type="text"> </Input>
+          </FormItem>
+        </Col>
       </Form>
     </div>
     <Divider plain>{{ $t('form_settings') }}</Divider>

@@ -14,9 +14,16 @@
           </FormItem>
         </Col>
         <Col :span="6">
-          <FormItem :label="$t('useRoles')">
+          <FormItem :label="$t('processing_role')">
             <Select v-model="formData.useRoles" multiple filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
+            </Select>
+          </FormItem>
+        </Col>
+        <Col :span="6">
+          <FormItem :label="$t('expire_day')">
+            <Select v-model="formData.expireDay" filterable>
+              <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
           </FormItem>
         </Col>
@@ -135,6 +142,18 @@
                 <!-- <FormItem label="标签">
                   <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem> -->
+                <FormItem :label="$t('display')">
+                  <Select v-model="editElement.inDisplayName">
+                    <Option value="yes">yes</Option>
+                    <Option value="no">no</Option>
+                  </Select>
+                </FormItem>
+                <FormItem :label="$t('editable')">
+                  <Select v-model="editElement.isEdit">
+                    <Option value="yes">yes</Option>
+                    <Option value="no">no</Option>
+                  </Select>
+                </FormItem>
                 <FormItem :label="$t('width')">
                   <Select v-model="editElement.width">
                     <Option :value="6">6</Option>
@@ -190,8 +209,10 @@ export default {
         description: '',
         useRoles: [],
         items: [],
+        expireDay: 0,
         updatedTime: ''
       },
+      expireDayOptions: [0, 1, 2, 3, 4, 5, 6, 7],
       selectedInputFormItem: [],
       selectedOutputFormItem: [],
       formItemOptions: [], // 树形数据
@@ -212,6 +233,7 @@ export default {
           entity: '',
           width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -233,6 +255,7 @@ export default {
           entity: '',
           width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -254,6 +277,7 @@ export default {
           entity: '',
           width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -276,6 +300,7 @@ export default {
         entity: '',
         elementType: 'input',
         id: 0,
+        inDisplayName: 'no',
         isEdit: 'yes',
         isOutput: 'no',
         isView: 'yes',
@@ -327,18 +352,34 @@ export default {
           this.selectedOutputFormItem = this.selectedFormItem
             .filter(item => item.isOutput === 'yes')
             .map(attr => attr.attrDefId)
-          let customItem = data.items.filter(item => item.attrDefId === '')
-          if (customItem.length > 0) {
-            customItem = customItem.map(custom => {
-              return custom
-            })
-            this.finalElement.unshift({
-              // tag: 'Custom',
-              itemGroup: 'Custom',
-              itemGroupName: 'Custom',
-              attrs: customItem
-            })
-          }
+          // let customItem = data.items.filter(item => item.attrDefId === '')
+          // if (customItem.length > 0) {
+          //   customItem = customItem.map(custom => {
+          //     return custom
+          //   })
+          //   this.finalElement.unshift({
+          //     itemGroup: 'Custom',
+          //     itemGroupName: 'Custom',
+          //     attrs: customItem
+          //   })
+          // }
+        }
+        if (data.items !== null && data.items.length > 0) {
+          let itemGroupSet = new Set()
+          data.items.forEach(item => {
+            if (itemGroupSet.has(item.itemGroup)) {
+              let exitEle = this.finalElement.find(ele => ele.itemGroup === item.itemGroup)
+              exitEle.attrs.push(item)
+            } else {
+              itemGroupSet.add(item.itemGroup)
+              this.finalElement.unshift({
+                itemGroup: item.itemGroup,
+                itemGroupName: item.itemGroupName,
+                attrs: [item]
+              })
+            }
+          })
+          // this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
         }
       }
     },
@@ -380,10 +421,10 @@ export default {
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
         .filter(l => l.entity !== '')
-        .map(m => m.id)
+        .map(m => m.attrDefId)
       const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
-        let tmp = t.substring(2)
+        let tmp = t
         if (!allSelectedFormItem.includes(tmp)) {
           remove.push(tmp)
         }
@@ -445,10 +486,10 @@ export default {
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
         .filter(l => l.entity !== '')
-        .map(m => m.id)
+        .map(m => m.attrDefId)
       const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
-        let tmp = t.substring(2)
+        let tmp = t
         if (!allSelectedFormItem.includes(tmp)) {
           remove.push(tmp)
         }
@@ -479,6 +520,7 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
+          inDisplayName: 'no',
           isEdit: 'yes',
           isOutput: 'yes',
           isView: 'yes',

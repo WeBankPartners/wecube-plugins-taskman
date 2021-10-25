@@ -71,5 +71,7 @@
   "textare": "多行文本框",
   "select": "选择框",
   "editable": "可编辑",
-  "display": "显示"
+  "display": "显示",
+  "expire_day": "超时时间",
+  "day": "天"
 }

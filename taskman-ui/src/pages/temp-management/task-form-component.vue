@@ -56,10 +56,10 @@
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
         >
-          <div class="list-group-item" v-for="element in customElement" :key="element.id">
-            <Input v-if="element.elementType === 'input'" placeholder="" style="width:84%" />
-            <Input v-if="element.elementType === 'textarea'" type="textarea" placeholder="" style="width:84%" />
-            <Select v-if="element.elementType === 'select'" placeholder="" style="width:84%"> </Select>
+          <div class="list-group-item" style="width:100%" v-for="element in customElement" :key="element.id">
+            <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
+            <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
+            <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
           </div>
         </draggable>
       </Col>
@@ -69,39 +69,37 @@
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
               <draggable class="dragArea list-group" :list="item.attrs" group="people">
-                <!-- {{item.attrs}} -->
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
+                  :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div style="width:20%;display:inline-block;text-align:right;padding-right:10px">
-                    {{ element.title }}:
-                  </div>
+                  <div>{{ element.title }}:-{{ element.width }}</div>
                   <Input
                     v-if="element.elementType === 'input'"
                     disabled
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     disabled
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     disabled
                     v-model="element.defaultValue"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
                     @click.stop="removeForm(element, itemIndex, eleIndex)"
-                    type="primary"
+                    type="error"
                     size="small"
                     ghost
                     icon="ios-close"
@@ -138,7 +136,12 @@
                   <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem> -->
                 <FormItem :label="$t('width')">
-                  <Input v-model="editElement.width" placeholder=""></Input>
+                  <Select v-model="editElement.width">
+                    <Option :value="6">6</Option>
+                    <Option :value="12">12</Option>
+                    <Option :value="18">18</Option>
+                    <Option :value="24">24</Option>
+                  </Select>
                 </FormItem>
               </Form>
             </div>
@@ -198,7 +201,6 @@ export default {
       customElement: [
         {
           id: 1,
-          isCustom: true,
           name: 'input',
           title: 'Input',
           elementType: 'input',
@@ -208,7 +210,7 @@ export default {
           itemGroupName: '',
           packageName: '',
           entity: '',
-          width: 70,
+          width: 24,
           regular: '',
           isEdit: 'yes',
           isView: 'yes',
@@ -220,7 +222,6 @@ export default {
         },
         {
           id: 2,
-          isCustom: true,
           name: 'select',
           title: 'Select',
           elementType: 'select',
@@ -230,7 +231,7 @@ export default {
           itemGroupName: '',
           packageName: '',
           entity: '',
-          width: 70,
+          width: 24,
           regular: '',
           isEdit: 'yes',
           isView: 'yes',
@@ -242,7 +243,6 @@ export default {
         },
         {
           id: 3,
-          isCustom: true,
           name: 'textarea',
           title: 'Textarea',
           elementType: 'textarea',
@@ -252,7 +252,7 @@ export default {
           itemGroupName: '',
           packageName: '',
           entity: '',
-          width: 70,
+          width: 24,
           regular: '',
           isEdit: 'yes',
           isView: 'yes',
@@ -265,7 +265,6 @@ export default {
       ],
       finalElement: [],
       editElement: {
-        isCustom: true,
         attrDefDataType: '',
         attrDefId: '',
         attrDefName: '',
@@ -284,7 +283,7 @@ export default {
         regular: '',
         sort: 0,
         title: '',
-        width: 70
+        width: 24
       }
     }
   },
@@ -331,13 +330,12 @@ export default {
           let customItem = data.items.filter(item => item.attrDefId === '')
           if (customItem.length > 0) {
             customItem = customItem.map(custom => {
-              custom.isCustom = true
               return custom
             })
             this.finalElement.unshift({
               // tag: 'Custom',
-              itemGroup: '',
-              itemGroupName: '',
+              itemGroup: 'Custom',
+              itemGroupName: 'Custom',
               attrs: customItem
             })
           }
@@ -381,7 +379,7 @@ export default {
       let remove = []
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
-        .filter(l => l.isCustom === false)
+        .filter(l => l.entity !== '')
         .map(m => m.id)
       const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
@@ -417,7 +415,6 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          isCustom: false,
           isEdit: 'no',
           isOutput: 'no',
           isView: 'yes',
@@ -425,11 +422,11 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70
+          width: 24
         }
         const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
-          const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
+          const find = tagExist.attrs.find(attr => attr.attrDefId === item)
           if (!find) {
             tagExist.attrs.push(attr)
           }
@@ -447,7 +444,7 @@ export default {
       let remove = []
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
-        .filter(l => l.isCustom === false)
+        .filter(l => l.entity !== '')
         .map(m => m.id)
       const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
@@ -482,7 +479,6 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          isCustom: false,
           isEdit: 'yes',
           isOutput: 'yes',
           isView: 'yes',
@@ -490,11 +486,11 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70
+          width: 24
         }
         const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
-          const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
+          const find = tagExist.attrs.find(attr => attr.attrDefId === item)
           if (!find) {
             tagExist.attrs.push(attr)
           }
@@ -586,7 +582,7 @@ export default {
   margin-bottom: 8px;
 }
 .list-group-item {
-  width: 90%;
+  display: inline-block;
   margin: 8px 0;
 }
 </style>

@@ -61,7 +61,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-root/:requestId", Method: "GET", HandlerFunc: request.GetRequestRootForm},
 		&handlerFuncObj{Url: "/request-data/preview", Method: "GET", HandlerFunc: request.GetRequestPreviewData},
 		&handlerFuncObj{Url: "/request-data/save/:requestId", Method: "POST", HandlerFunc: request.SaveRequestCache},
-		&handlerFuncObj{Url: "/request-data/get/:requestId", Method: "GET", HandlerFunc: request.GetRequestCache},
+		&handlerFuncObj{Url: "/request-data/get/:requestId/:cacheType", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/request-data/reference/query/:attrId", Method: "POST", HandlerFunc: request.GetCmdbReferenceData},
 		&handlerFuncObj{Url: "/user/request", Method: "POST", HandlerFunc: request.ListRequest},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},

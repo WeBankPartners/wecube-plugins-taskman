@@ -148,7 +148,8 @@ func SaveRequestCache(c *gin.Context) {
 
 func GetRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := db.GetRequestCache(requestId)
+	cacheType := c.Param("cacheType")
+	result, err := db.GetRequestCache(requestId, cacheType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

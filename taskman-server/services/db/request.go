@@ -236,18 +236,33 @@ func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []
 	return actions
 }
 
-func GetRequestCache(requestId string) (result models.RequestPreDataDto, err error) {
+func GetRequestCache(requestId, cacheType string) (result interface{}, err error) {
 	var requestTable []*models.RequestTable
-	err = x.SQL("select cache from request where id=?", requestId).Find(&requestTable)
-	if err != nil {
-		return
+	if cacheType == "data" {
+		err = x.SQL("select cache from request where id=?", requestId).Find(&requestTable)
+		if err != nil {
+			return
+		}
+		if len(requestTable) == 0 {
+			err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+			return
+		}
+		var dataCache models.RequestPreDataDto
+		err = json.Unmarshal([]byte(requestTable[0].Cache), &dataCache)
+		return dataCache, err
+	} else {
+		err = x.SQL("select bind_cache from request where id=?", requestId).Find(&requestTable)
+		if err != nil {
+			return
+		}
+		if len(requestTable) == 0 {
+			err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+			return
+		}
+		var bindCache models.RequestCacheData
+		err = json.Unmarshal([]byte(requestTable[0].BindCache), &bindCache)
+		return bindCache, err
 	}
-	if len(requestTable) == 0 {
-		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
-		return
-	}
-	err = json.Unmarshal([]byte(requestTable[0].Cache), &result)
-	return
 }
 
 func getRequestTemplateByRequest(requestId string) (templateId string, err error) {

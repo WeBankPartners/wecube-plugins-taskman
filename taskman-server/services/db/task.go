@@ -196,16 +196,9 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 		return
 	}
 	for _, v := range result.TimeStep {
-		for _, vv := range taskList {
-			if vv.TaskTemplate == v.TaskTemplateId {
-				if vv.Status == "done" {
-					v.Done = true
-				}
-			}
-			if vv.Id == taskId && vv.Status != "done" {
-				v.Active = true
-				break
-			}
+		if v.TaskTemplateId == taskObj.TaskTemplate {
+			v.Active = true
+			break
 		}
 	}
 	return

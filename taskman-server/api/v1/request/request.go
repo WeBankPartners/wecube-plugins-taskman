@@ -222,3 +222,20 @@ func GetCmdbReferenceData(c *gin.Context) {
 		c.Data(statusCode, "application/json", resultBytes)
 	}
 }
+
+func GetReferenceData(c *gin.Context) {
+	attrId := c.Param("attrId")
+	requestId := c.Param("requestId")
+	var param models.QueryRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	input := models.RefSelectParam{AttrId: attrId, RequestId: requestId, Param: &param, UserToken: c.GetHeader("Authorization")}
+	result, err := db.GetCMDBRefSelectResult(&input)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}

@@ -14,15 +14,7 @@ import (
 func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
 	result = []*models.EntityDataObj{}
 	// if param map data have no new data -> get remote data + same entity new data
-	isContainNewMap := false
-	if input.Param.Dialect != nil {
-		for _, v := range input.Param.Dialect.AssociatedData {
-			if strings.HasPrefix(v, "tmp") {
-				isContainNewMap = true
-				break
-			}
-		}
-	}
+	isContainNewMap := checkIfNeedAnalyze(input)
 	log.Logger.Info("isContainNewMap", log.String("isContainNewMap", fmt.Sprintf("%v", isContainNewMap)))
 	if !isContainNewMap {
 		result, err = getRefDataWithoutFilter(input)
@@ -42,6 +34,30 @@ func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.Enti
 	// analyze filter with map data
 	result, err = analyzeFilterData(input)
 	return
+}
+
+func checkIfNeedAnalyze(input *models.RefSelectParam) bool {
+	isNeed := false
+	entity := strings.Split(input.AttrId, models.SysTableIdConnector)[0]
+	var formItemTemplates []*models.FormItemTemplateTable
+	x.SQL("select id,name,ref_package_name,ref_entity from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
+	refColumnMap := make(map[string]int)
+	for _, v := range formItemTemplates {
+		if v.RefEntity != "" {
+			refColumnMap[v.Name] = 1
+		}
+	}
+	if input.Param.Dialect != nil {
+		for k, v := range input.Param.Dialect.AssociatedData {
+			if _, b := refColumnMap[k]; b {
+				if strings.HasPrefix(v, "tmp") {
+					isNeed = true
+					break
+				}
+			}
+		}
+	}
+	return isNeed
 }
 
 func getCMDBRefFilter(attrId, userToken string) (filterString string, err error) {

@@ -423,11 +423,10 @@ func checkQueryParamContainNewData(param models.EntityQueryParam) []string {
 	tmpMap := make(map[string]int)
 	if param.Criteria.AttrName == "id" || param.Criteria.AttrName == "guid" {
 		if param.Criteria.Op == "in" {
-			for _, v := range param.Criteria.Condition.([]interface{}) {
-				tmpGuid := v.(string)
-				if _, b := tmpMap[tmpGuid]; !b {
-					guidList = append(guidList, tmpGuid)
-					tmpMap[tmpGuid] = 1
+			for _, v := range param.Criteria.Condition.([]string) {
+				if _, b := tmpMap[v]; !b {
+					guidList = append(guidList, v)
+					tmpMap[v] = 1
 				}
 			}
 		}
@@ -435,11 +434,10 @@ func checkQueryParamContainNewData(param models.EntityQueryParam) []string {
 	for _, filters := range param.AdditionalFilters {
 		if filters.AttrName == "id" || filters.AttrName == "guid" {
 			if filters.Op == "in" {
-				for _, v := range filters.Condition.([]interface{}) {
-					tmpGuid := v.(string)
-					if _, b := tmpMap[tmpGuid]; !b {
-						guidList = append(guidList, tmpGuid)
-						tmpMap[tmpGuid] = 1
+				for _, v := range filters.Condition.([]string) {
+					if _, b := tmpMap[v]; !b {
+						guidList = append(guidList, v)
+						tmpMap[v] = 1
 					}
 				}
 			}

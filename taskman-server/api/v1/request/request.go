@@ -133,16 +133,31 @@ func DeleteRequest(c *gin.Context) {
 
 func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
-	var param models.RequestPreDataDto
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	err := db.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), &param)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
+	cacheType := c.Param("cacheType")
+	if cacheType == "data" {
+		var param models.RequestPreDataDto
+		if err := c.ShouldBindJSON(&param); err != nil {
+			middleware.ReturnParamValidateError(c, err)
+			return
+		}
+		err := db.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), &param)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+		} else {
+			middleware.ReturnData(c, param)
+		}
 	} else {
-		middleware.ReturnData(c, param)
+		var param models.RequestCacheData
+		if err := c.ShouldBindJSON(&param); err != nil {
+			middleware.ReturnParamValidateError(c, err)
+			return
+		}
+		err := db.SaveRequestBindCache(requestId, middleware.GetRequestUser(c), &param)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+		} else {
+			middleware.ReturnData(c, param)
+		}
 	}
 }
 
@@ -169,6 +184,17 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, instanceId)
+	}
+}
+
+func UpdateRequestStatus(c *gin.Context) {
+	requestId := c.Param("requestId")
+	status := c.Param("status")
+	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
 	}
 }
 

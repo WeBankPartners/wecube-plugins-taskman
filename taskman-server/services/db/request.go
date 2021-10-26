@@ -204,6 +204,13 @@ func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDat
 	return transaction(actions)
 }
 
+func SaveRequestBindCache(requestId, operator string, param *models.RequestCacheData) error {
+	cacheBytes, _ := json.Marshal(param)
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err := x.Exec("update request set status='Draft',bind_cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
+	return err
+}
+
 func concatItemDisplayName(rowData map[string]interface{}, nameList []string) string {
 	displayNameList := []string{}
 	for _, v := range nameList {
@@ -229,7 +236,7 @@ func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []
 		for _, valueObj := range v.Value {
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
-				actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.DataId}})
+				actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
 			}
 		}
 	}
@@ -521,6 +528,12 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err = x.Exec("update request set proc_instance_id=?,proc_instance_key=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), result.ProcInstKey, nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
+}
+
+func UpdateRequestStatus(requestId, status, operator string) error {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err := x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
+	return err
 }
 
 func fillBindingWithRequestData(requestId string, cacheData *models.RequestCacheData) {

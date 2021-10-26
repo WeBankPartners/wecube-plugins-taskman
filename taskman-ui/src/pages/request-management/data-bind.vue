@@ -11,13 +11,23 @@
     </Form>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="commitRequest" v-if="$parent.isHandle" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
+      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
+      <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
+        $t('发起请求')
+      }}</Button>
     </div>
   </div>
 </template>
 
 <script>
-import { getTemplateNodes, getBindData, saveRequest, getBindRelate, updateRequestStatus } from '@/api/server.js'
+import {
+  getTemplateNodes,
+  getBindData,
+  saveRequest,
+  getBindRelate,
+  updateRequestStatus,
+  startRequest
+} from '@/api/server.js'
 export default {
   name: '',
   data () {
@@ -42,6 +52,17 @@ export default {
     this.getBindData()
   },
   methods: {
+    async startRequest () {
+      await this.saveRequest()
+      const { statusCode } = await startRequest(this.$parent.requestId, this.finalData)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.$router.push({ path: '/request' })
+      }
+    },
     async getBindRelate () {
       const { statusCode, data } = await getBindRelate(this.$parent.requestId)
       if (statusCode === 'OK') {

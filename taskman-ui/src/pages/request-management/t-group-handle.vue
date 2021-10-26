@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { requestList, terminateRequest, getTemplateList } from '@/api/server'
+import { requestList, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -119,22 +119,14 @@ export default {
                 >
                   {this.$t('look_over')}
                 </Button>
-                <Button
-                  onClick={() => this.handleRequest(params.row)}
-                  style="margin-left: 8px"
-                  type="info"
-                  size="small"
-                >
-                  {this.$t('handle')}
-                </Button>
-                {params.row.status === 'InProgress' && (
+                {params.row.status === 'Pending' && (
                   <Button
-                    onClick={() => this.terminateRequest(params.row)}
+                    onClick={() => this.handleRequest(params.row)}
                     style="margin-left: 8px"
-                    type="warning"
+                    type="info"
                     size="small"
                   >
-                    {this.$t('terminate')}
+                    {this.$t('handle')}
                   </Button>
                 )}
               </div>
@@ -166,21 +158,6 @@ export default {
       this.$Notice.success({
         title: this.$t('successful'),
         desc: this.$t('successful')
-      })
-    },
-    async terminateRequest (row) {
-      this.$Modal.confirm({
-        title: this.$t('confirm_termination'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          let res = await terminateRequest(row.id)
-          if (res.statusCode === 'OK') {
-            this.success()
-            this.requestList()
-          }
-        },
-        onCancel: () => {}
       })
     },
     checkTemplate (row) {

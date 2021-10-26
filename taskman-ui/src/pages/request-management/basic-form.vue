@@ -93,6 +93,8 @@ export default {
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.$parent.requestId)
       if (statusCode === 'OK') {
+        this.$parent.procDefId = ''
+        this.$parent.procDefKey = ''
         this.formConfig.values.name = data.name
         this.formConfig.values.emergency = data.emergency
         this.formConfig.values.id = data.id

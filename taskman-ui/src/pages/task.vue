@@ -91,6 +91,9 @@ export default {
             const operationOptions = params.row.operationOptions
             return (
               <div style="text-align: left">
+                <Button onClick={() => this.checkTask(params.row)} style="margin-left: 8px" type="success" size="small">
+                  {this.$t('look_over')}
+                </Button>
                 {operationOptions.includes('mark') && (
                   <Button
                     onClick={() => this.markTask(params.row)}
@@ -106,9 +109,6 @@ export default {
                     {this.$t('handle')}
                   </Button>
                 )}
-                <Button onClick={() => this.checkTask(params.row)} style="margin-left: 8px" type="success" size="small">
-                  {this.$t('look_over')}
-                </Button>
               </div>
             )
           }
@@ -140,10 +140,10 @@ export default {
     },
     async startTask (row) {
       await changeTaskStatus('start', row.id)
-      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: false } })
+      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: 'N' } })
     },
     async checkTask (row) {
-      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: true } })
+      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: 'Y' } })
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize

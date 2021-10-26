@@ -122,7 +122,7 @@ export default {
                   <Button
                     onClick={() => this.terminateRequest(params.row)}
                     style="margin-left: 8px"
-                    type="info"
+                    type="warning"
                     size="small"
                   >
                     {this.$t('terminate')}
@@ -159,11 +159,19 @@ export default {
       })
     },
     async terminateRequest (row) {
-      let res = await terminateRequest(row.id)
-      if (res.statusCode === 'OK') {
-        this.success()
-        this.requestList()
-      }
+      this.$Modal.confirm({
+        title: this.$t('confirm_termination'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          let res = await terminateRequest(row.id)
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.requestList()
+          }
+        },
+        onCancel: () => {}
+      })
     },
     checkTemplate (row) {
       this.$router.push({

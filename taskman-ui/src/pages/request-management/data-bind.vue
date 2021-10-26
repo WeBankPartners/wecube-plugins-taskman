@@ -3,18 +3,21 @@
     <Form :label-width="200">
       <template v-for="node in nodes">
         <FormItem :label="node.nodeName" :key="node.nodeId">
-          <Select v-model="node.bindData" multiple filterable style="width:100%">
+          <Select v-model="node.bindData" multiple filterable :disabled="$parent.formDisable" style="width:100%">
             <Option v-for="item in filterBindData(node)" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </FormItem>
       </template>
     </Form>
-    <Button @click="request" style="float:right" type="primary">{{ $t('initiate_request') }}</Button>
+    <div style="text-align: center;margin-top:48px">
+      <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
+      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
+    </div>
   </div>
 </template>
 
 <script>
-import { getTemplateNodes, getBindData, startRequest } from '@/api/server.js'
+import { getTemplateNodes, getBindData, saveRequest, getBindRelate, updateRequestStatus } from '@/api/server.js'
 export default {
   name: '',
   data () {
@@ -39,10 +42,26 @@ export default {
     this.getBindData()
   },
   methods: {
+    async getBindRelate () {
+      const { statusCode, data } = await getBindRelate(this.$parent.requestId)
+      if (statusCode === 'OK') {
+        this.nodes.forEach(node => {
+          const find = data.taskNodeBindInfos.find(d => d.nodeId === node.nodeId)
+          node.bindData = find.boundEntityValues.map(b => b.oid)
+        })
+      }
+    },
+    async commitRequest () {
+      await this.saveRequest()
+      const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
+      if (statusCode === 'OK') {
+        this.$router.push({ path: '/' })
+      }
+    },
     filterBindData (node) {
       return this.bindData
     },
-    request () {
+    async saveRequest () {
       let tmpData = []
       this.nodes.forEach(n => {
         let params = {
@@ -58,17 +77,16 @@ export default {
         tmpData.push(params)
       })
       this.finalData.taskNodeBindInfos = tmpData
-      this.startRequest()
-    },
-    async startRequest () {
-      const { statusCode } = await startRequest(this.$parent.requestId, this.finalData)
+      const { statusCode } = await saveRequest(this.$parent.requestId, this.finalData)
       if (statusCode === 'OK') {
-        this.$router.push('/')
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
       }
     },
     async getTemplateNodes () {
       const { statusCode, data } = await getTemplateNodes(this.$parent.requestTemplate)
-      // const { statusCode, data } = await getTemplateNodes('6166464841f44a4c')
       if (statusCode === 'OK') {
         this.nodes = data
           .filter(d => d.taskCategory !== '')
@@ -76,6 +94,7 @@ export default {
             n.bindData = []
             return n
           })
+        this.getBindRelate()
       }
     },
     async getBindData () {

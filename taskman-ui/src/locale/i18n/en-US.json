@@ -78,5 +78,8 @@
   "claim": "Claim",
   "handle": "Handle",
   "check": "Check",
-  "select_template": "Select Template"
+  "select_template": "Select Template",
+  "my_drafts": "My Drafts",
+  "group_initiated": "Group Initiated",
+  "group_handle": "Group Handle"
 }

@@ -84,8 +84,7 @@ func getRefDataWithoutFilter(input *models.RefSelectParam) (result []*models.Ent
 	for _, v := range remoteRefData {
 		result = append(result, &models.EntityDataObj{Id: v.Guid, DisplayName: v.KeyName, IsNew: v.IsNew})
 	}
-	entity := strings.Split(input.AttrId, models.SysTableIdConnector)[0]
-	cacheData, cacheErr := getRequestCacheNewData(input.RequestId, entity)
+	cacheData, cacheErr := getRequestCacheNewData(input.RequestId, input.AttrId)
 	if cacheErr != nil {
 		err = cacheErr
 		return
@@ -127,14 +126,20 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 	return
 }
 
-func getRequestCacheNewData(requestId, entity string) (result []*models.CiReferenceDataQueryObj, err error) {
+func getRequestCacheNewData(requestId, attrId string) (result []*models.CiReferenceDataQueryObj, err error) {
+	var formItemTemplates []*models.FormItemTemplateTable
+	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
+	x.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplates)
+	if len(formItemTemplates) == 0 {
+		return result, fmt.Errorf("Can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
+	}
 	cacheDataObj, cacheErr := GetRequestCache(requestId, "data")
 	if cacheErr != nil {
 		return result, cacheErr
 	}
 	cacheData := cacheDataObj.(models.RequestPreDataDto)
 	for _, v := range cacheData.Data {
-		if v.Entity == entity {
+		if v.Entity == formItemTemplates[0].RefEntity {
 			for _, vv := range v.Value {
 				if strings.HasPrefix(vv.Id, "tmp") {
 					result = append(result, &models.CiReferenceDataQueryObj{Guid: vv.Id, KeyName: vv.DisplayName, IsNew: true})

@@ -247,6 +247,9 @@ func GetRequestCache(requestId, cacheType string) (result interface{}, err error
 			err = fmt.Errorf("Can not find any request with id:%s ", requestId)
 			return
 		}
+		if requestTable[0].Cache == "" {
+			return models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{}}, nil
+		}
 		var dataCache models.RequestPreDataDto
 		err = json.Unmarshal([]byte(requestTable[0].Cache), &dataCache)
 		return dataCache, err
@@ -258,6 +261,9 @@ func GetRequestCache(requestId, cacheType string) (result interface{}, err error
 		if len(requestTable) == 0 {
 			err = fmt.Errorf("Can not find any request with id:%s ", requestId)
 			return
+		}
+		if requestTable[0].BindCache == "" {
+			return models.RequestCacheData{TaskNodeBindInfos: []*models.RequestCacheTaskNodeBindObj{}}, nil
 		}
 		var bindCache models.RequestCacheData
 		err = json.Unmarshal([]byte(requestTable[0].BindCache), &bindCache)

@@ -352,7 +352,7 @@ func getExpressResultList(param *models.GetExpressResultParam) (result []string,
 				tmpGuidList = append(tmpGuidList, fmt.Sprintf("%s", tmpRow["guid"]))
 			}
 			tmpParam.AdditionalFilters = []*models.EntityQueryObj{{AttrName: v.RightJoinColumn, Op: "in", Condition: tmpGuidList}}
-			tmpRows, err = getCiData(tmpParam, expressionSqlList[i+1].Table, param.UserToken, param.NewData)
+			tmpRows, err = getCiData(tmpParam, v.Table, param.UserToken, param.NewData)
 			if err != nil {
 				break
 			}

@@ -53,6 +53,8 @@ type RequestTable struct {
 	Cache               string `json:"cache" xorm:"cache"`
 	BindCache           string `json:"bindCache" xorm:"bind_cache"`
 	Result              string `json:"result" xorm:"result"`
+	ExpireDay           int    `json:"expireDay" xorm:"expire_day"`
+	ExpectTime          string `json:"expectTime" xorm:"expect_time"`
 	CreatedBy           string `json:"createdBy" xorm:"created_by"`
 	CreatedTime         string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy           string `json:"updatedBy" xorm:"updated_by"`

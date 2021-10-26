@@ -21,6 +21,7 @@ type RequestTemplateTable struct {
 	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
 	EntityAttrs  string `json:"entityAttrs" xorm:"entity_attrs"`
+	ExpireDay    int    `json:"expireDay" xorm:"expire_day"`
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
 }
 

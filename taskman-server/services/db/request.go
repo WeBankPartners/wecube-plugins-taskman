@@ -157,8 +157,8 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
-	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", requestTemplateObj.ExpireDay, fmt.Sprintf("%d", requestTemplateObj.ExpireDay+2), param.CreatedBy, nowTime, param.CreatedBy, nowTime}
 	actions = append(actions, &requestInsertAction)
 	return transactionWithoutForeignCheck(actions)
 }
@@ -494,6 +494,13 @@ func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPre
 }
 
 func StartRequest(requestId, operator, userToken string, cacheData models.RequestCacheData) (result models.StartInstanceResultData, err error) {
+	var requestTemplateTable []*models.RequestTemplateTable
+	x.SQL("select * from request_template where id in (select request_template from request where id=?)", requestId).Find(&requestTemplateTable)
+	if len(requestTemplateTable) == 0 {
+		return result, fmt.Errorf("Can not find requestTemplate with request:%s ", requestId)
+	}
+	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
+	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
 	fillBindingWithRequestData(requestId, &cacheData)
 	cacheBytes, tmpErr := json.Marshal(cacheData)
 	if tmpErr != nil {

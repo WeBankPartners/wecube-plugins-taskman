@@ -8,6 +8,7 @@
       </Steps>
     </div>
     <div class="task-form">
+      {{ requestId }}
       <Collapse simple v-model="openPanel">
         <template v-for="(data, dataIndex) in dataInfo">
           <Panel :name="dataIndex + ''" :key="dataIndex">
@@ -24,7 +25,12 @@
               <Tabs :value="data.activeTab">
                 <template v-for="form in data.formData">
                   <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
-                    <TaskData :data="form" :isDisabled="!data.editable" :enforceDisable="enforceDisable"></TaskData>
+                    <TaskData
+                      :data="form"
+                      :isDisabled="!data.editable"
+                      :requestId="requestId"
+                      :enforceDisable="enforceDisable"
+                    ></TaskData>
                   </TabPane>
                 </template>
               </Tabs>
@@ -64,6 +70,7 @@ export default {
   data () {
     return {
       taskId: '',
+      requestId: '',
       enforceDisable: false,
       timeStep: [],
       openPanel: '',
@@ -85,8 +92,10 @@ export default {
     async getTaskDetail () {
       const { statusCode, data } = await getTaskDetail(this.taskId)
       if (statusCode === 'OK') {
+        this.requestId = data.request
         this.timeStep = data.timeStep
         this.dataInfo = data.data.map(d => {
+          this.requestId = d.requestId
           d.activeTab = ''
           if (d.formData.length > 0) {
             d.activeTab = d.formData[0].itemGroup

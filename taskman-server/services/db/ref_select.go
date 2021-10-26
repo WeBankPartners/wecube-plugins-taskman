@@ -126,12 +126,20 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 	return
 }
 
-func getRequestCacheNewData(requestId, attrId string) (result []*models.CiReferenceDataQueryObj, err error) {
+func getRefSelectEntity(requestId, attrId string) (refEntity string, err error) {
 	var formItemTemplates []*models.FormItemTemplateTable
 	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
 	x.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplates)
 	if len(formItemTemplates) == 0 {
-		return result, fmt.Errorf("Can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
+		return refEntity, fmt.Errorf("Can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
+	}
+	return formItemTemplates[0].RefEntity, nil
+}
+
+func getRequestCacheNewData(requestId, attrId string) (result []*models.CiReferenceDataQueryObj, err error) {
+	refEntity, tmpErr := getRefSelectEntity(requestId, attrId)
+	if tmpErr != nil {
+		return result, tmpErr
 	}
 	cacheDataObj, cacheErr := GetRequestCache(requestId, "data")
 	if cacheErr != nil {
@@ -139,7 +147,7 @@ func getRequestCacheNewData(requestId, attrId string) (result []*models.CiRefere
 	}
 	cacheData := cacheDataObj.(models.RequestPreDataDto)
 	for _, v := range cacheData.Data {
-		if v.Entity == formItemTemplates[0].RefEntity {
+		if v.Entity == refEntity {
 			for _, vv := range v.Value {
 				if strings.HasPrefix(vv.Id, "tmp") {
 					result = append(result, &models.CiReferenceDataQueryObj{Guid: vv.Id, KeyName: vv.DisplayName, IsNew: true})
@@ -166,7 +174,10 @@ func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDat
 	if tmpErr != nil {
 		return result, fmt.Errorf("Try to get request new data fail,%s ", tmpErr.Error())
 	}
-	ciType := strings.Split(input.AttrId, models.SysTableIdConnector)[0]
+	refEntity, tmpErr := getRefSelectEntity(input.RequestId, input.AttrId)
+	if tmpErr != nil {
+		return result, tmpErr
+	}
 	attrName := strings.Split(input.AttrId, models.SysTableIdConnector)[1]
 	filterMap := input.Param.Dialect.AssociatedData
 	if _, b := filterMap[attrName]; b {
@@ -191,7 +202,7 @@ func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDat
 		return
 	}
 	// query ci data
-	queryResult, queryErr := getCiData(filterQueryParam, ciType, input.UserToken, newData)
+	queryResult, queryErr := getCiData(filterQueryParam, refEntity, input.UserToken, newData)
 	if queryErr != nil {
 		return result, queryErr
 	}

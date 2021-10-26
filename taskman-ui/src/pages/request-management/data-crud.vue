@@ -2,10 +2,10 @@
   <div class=" ">
     <Form :label-width="100">
       <FormItem :label="$t('root_entity')">
-        <Select v-model="rootEntityId" style="width:300px">
+        <Select v-model="rootEntityId" :disabled="$parent.formDisable" style="width:300px">
           <Option v-for="item in rootEntityOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
         </Select>
-        <Button @click="getEntityData" type="primary">{{ $t('search') }}</Button>
+        <Button @click="getEntityData" :disabled="$parent.formDisable" type="primary">{{ $t('search') }}</Button>
       </FormItem>
     </Form>
     <Tabs :value="activeTab" @on-click="changeTab">
@@ -16,7 +16,7 @@
       </template>
     </Tabs>
     <div style="text-align: center;margin-top:48px">
-      <Button @click="saveData" type="primary">{{ $t('save') }}</Button>
+      <Button @click="saveData" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
       <Button @click="nextStep">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -56,7 +56,9 @@ export default {
       }
     },
     nextStep () {
-      this.saveData()
+      if (!this.$parent.formDisable) {
+        this.saveData()
+      }
       this.$emit('nextStep')
     },
     async saveData () {
@@ -107,7 +109,13 @@ export default {
     },
     initTable (index) {
       const find = this.requestData.find(r => r.entity === this.activeTab)
-      this.$refs.dataMgmt[index].initData(this.rootEntityId, this.requestData, find, this.requestId)
+      this.$refs.dataMgmt[index].initData(
+        this.rootEntityId,
+        this.requestData,
+        find,
+        this.requestId,
+        this.$parent.formDisable
+      )
     }
   }
 }

@@ -79,7 +79,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(attr, params)
+      const { statusCode, data } = await getRefOptions(this.$parent.requestId, attr, params)
       if (statusCode === 'OK') {
         formData[formItem.name + 'Options'] = data
         this.$set(this.tableData, index, formData)
@@ -126,7 +126,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(attr, params)
+      const { statusCode, data } = await getRefOptions(this.$parent.requestId, attr, params)
       if (statusCode === 'OK') {
         formData[key + 'Options'] = data
         return formData

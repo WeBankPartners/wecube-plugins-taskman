@@ -1,6 +1,6 @@
 <template>
   <div class="table-c">
-    <Button @click="addRow" type="primary">{{ $t('add') }}</Button>
+    <Button @click="addRow" type="primary" :disabled="formDisable">{{ $t('add') }}</Button>
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td width="5%" class="padding-style" style="text-align: center">序号</td>
@@ -22,18 +22,21 @@
                 v-if="element.elementType === 'input'"
                 v-model="data[element.name]"
                 placeholder=""
+                :disabled="formDisable"
                 style="width: calc(100% - 30px);"
               />
               <Input
                 v-if="element.elementType === 'textarea'"
                 v-model="data[element.name]"
                 type="textarea"
+                :disabled="formDisable"
                 style="width: calc(100% - 30px);"
               />
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
+                :disabled="formDisable"
                 style="width: calc(100% - 30px);"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
@@ -43,7 +46,13 @@
             </div>
           </td>
           <td class="padding-style" style="text-align: center">
-            <Button style="margin-left: 4px" @click="deleteRow(dataIndex)" size="small" type="error">
+            <Button
+              style="margin-left: 4px"
+              @click="deleteRow(dataIndex)"
+              :disabled="formDisable"
+              size="small"
+              type="error"
+            >
               {{ $t('delete') }}
             </Button>
           </td>
@@ -59,6 +68,7 @@ export default {
   name: '',
   data () {
     return {
+      formDisable: false,
       requestId: '',
       rootEntityId: 'host_resource_6152f8039c58e6b0',
       dataArray: [], // 所有数据
@@ -90,7 +100,6 @@ export default {
         previousIds: [],
         succeedingIds: []
       }
-      console.log(data)
       let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
       find.value.push(data)
       this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
@@ -98,7 +107,6 @@ export default {
     deleteRow (index) {
       let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
       find.value.splice(index, 1)
-      console.log(this.dataArray)
       this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
     },
     async getRefOptions (formItem, formData, index) {
@@ -117,14 +125,14 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
       if (statusCode === 'OK') {
         formData[formItem.name + 'Options'] = data
         this.$set(this.tableData, index, formData)
       }
     },
-    async initData (rootEntityId, dataArray, data, requestId) {
-      console.log(dataArray, data)
+    async initData (rootEntityId, dataArray, data, requestId, formDisable) {
+      this.formDisable = formDisable
       this.rootEntityId = rootEntityId
       this.dataArray = dataArray
       this.requestId = requestId
@@ -168,7 +176,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
       if (statusCode === 'OK') {
         formData[key + 'Options'] = data
         return formData

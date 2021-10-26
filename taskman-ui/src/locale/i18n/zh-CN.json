@@ -78,5 +78,8 @@
   "claim": "认领",
   "handle": "处理",
   "check": "查看",
-  "select_template": "选择模板"
+  "select_template": "选择模板",
+  "my_drafts": "我的草稿",
+  "group_initiated": "本组发起",
+  "group_handle": "本组处理"
 }

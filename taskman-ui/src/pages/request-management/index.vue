@@ -35,12 +35,13 @@ import TemplateSelect from './template-select'
 import BasicForm from './basic-form'
 import DataCrud from './data-crud'
 import DataBind from './data-bind'
-import { confirmTemplate } from '@/api/server.js'
 export default {
   name: '',
   data () {
     return {
       currentStep: -1,
+      isAdd: true,
+      formDisable: false,
       requestTemplate: '',
       procDefId: '',
       procDefKey: '',
@@ -48,21 +49,13 @@ export default {
     }
   },
   mounted () {
-    if (this.$route.query.requestTemplate !== '') {
-      this.requestTemplate = this.$route.query.requestTemplate
-    }
-    this.currentStep = -1
+    this.requestTemplate = this.$route.query.requestTemplate
+    this.requestId = this.$route.query.requestId
+    this.isAdd = this.$route.query.isAdd
+    this.formDisable = this.$route.query.isCheck
+    this.currentStep = this.isAdd ? -1 : 0
   },
   methods: {
-    async confirmTemplate () {
-      const { statusCode } = await confirmTemplate(this.requestTemplate)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-      }
-    },
     changeStep (val) {
       if (this.requestId === '') {
         return
@@ -78,8 +71,8 @@ export default {
       this.requestTemplate = data.id
       this.nextStep()
     },
-    basicForm (data) {
-      this.requestId = data.id
+    basicForm (id) {
+      this.requestId = id
       this.nextStep()
     },
     nextStep () {

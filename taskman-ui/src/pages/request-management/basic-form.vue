@@ -1,5 +1,6 @@
 <template>
   <div style="width:40%;margin: 0 auto;">
+    {{ $parent.formDisable }}
     <ValidationObserver ref="observer">
       <Form :label-width="100">
         <template v-for="item in formConfig.itemConfigs">
@@ -9,6 +10,7 @@
                 v-model="formConfig.values[item.value]"
                 style="width:90%"
                 :type="item.type"
+                :disabled="$parent.formDisable"
                 :placeholder="item.placeholder"
               >
               </Input>
@@ -19,6 +21,7 @@
                 v-model="formConfig.values[item.value]"
                 filterable
                 style="width:90%"
+                :disabled="$parent.formDisable"
                 :multiple="item.multiple"
                 :placeholder="item.placeholder"
               >
@@ -45,7 +48,7 @@
 
 <script>
 import { ValidationObserver } from 'vee-validate'
-import { createRequest, getRequestInfo } from '@/api/server'
+import { createRequest, updateRequest, getRequestInfo } from '@/api/server'
 export default {
   name: 'BasicInfo',
   data () {
@@ -67,6 +70,7 @@ export default {
           }
         ],
         values: {
+          id: '',
           name: '',
           emergency: '3',
           requestTemplate: ''
@@ -92,17 +96,22 @@ export default {
       if (statusCode === 'OK') {
         this.formConfig.values.name = data.name
         this.formConfig.values.emergency = data.emergency
+        this.formConfig.values.id = data.id
       }
     },
     async createRequest () {
+      if (this.$parent.formDisable) {
+        this.$emit('basicForm', this.formConfig.values.id)
+        return
+      }
       if (!this.$refs.observer.flags.valid) {
         return
       }
       this.formConfig.values.requestTemplate = this.$parent.requestTemplate
-      const { statusCode, data } = await createRequest(this.formConfig.values)
+      const method = this.formConfig.values.id ? updateRequest : createRequest
+      const { statusCode, data } = await method(this.$parent.requestId, this.formConfig.values)
       if (statusCode === 'OK') {
-        // this.formConfig.values = { ...data }
-        this.$emit('basicForm', data)
+        this.$emit('basicForm', data.id)
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')

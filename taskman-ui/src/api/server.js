@@ -55,18 +55,24 @@ export const getTaskFormDataByNodeId = (requestTemplateId, nodeId) =>
   req.get(`/taskman/api/v1/task-template/${requestTemplateId}/${nodeId}`)
 
 export const getTemplateByUser = () => req.get('/taskman/api/v1/user/request-template')
-export const createRequest = data => req.post('/taskman/api/v1/request', data)
+export const createRequest = (requestId, data) => req.post('/taskman/api/v1/request', data)
+export const updateRequest = (requestId, data) => req.put(`/taskman/api/v1/request/${requestId}`, data)
 export const getRootEntity = params => req.get('/taskman/api/v1/entity/data', params)
 export const getEntityData = params => req.get('/taskman/api/v1/request-data/preview', params)
-export const saveEntityData = (requestId, params) => req.post(`/taskman/api/v1/request-data/save/${requestId}`, params)
-export const getBindData = requestId => req.get(`/taskman/api/v1/request-data/get/${requestId}`)
-export const startRequest = (requestId, data) => req.post(`/taskman/api/v1/request/start/${requestId}`, data)
+export const saveEntityData = (requestId, params) =>
+  req.post(`/taskman/api/v1/request-data/save/${requestId}/data`, params)
+export const getBindData = requestId => req.get(`/taskman/api/v1/request-data/get/${requestId}/data`)
+export const getBindRelate = requestId => req.get(`/taskman/api/v1/request-data/get/${requestId}/bing`)
+export const saveRequest = (requestId, data) => req.post(`/taskman/api/v1/request-data/save/${requestId}/bing`, data)
+export const updateRequestStatus = (requestId, status) =>
+  req.post(`/taskman/api/v1/request-status/${requestId}/${status}`)
 export const requestList = params => req.post(`/taskman/api/v1/user/request`, params)
 export const deleteRequest = id => req.delete(`/taskman/api/v1/request/${id}`)
 export const terminateRequest = id => req.post(`/taskman/api/v1/request/terminate/${id}`)
 export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${requestId}`)
 
-export const getRefOptions = (attr, params) => req.post(`/wecmdb/api/v1/ci-data/reference-data/query/${attr}`, params)
+export const getRefOptions = (requestId, attr, params) =>
+  req.post(`/taskman/api/v1/request-data/reference/query/${attr}/${requestId}`, params)
 
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)

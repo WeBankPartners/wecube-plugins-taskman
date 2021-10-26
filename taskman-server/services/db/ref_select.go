@@ -237,15 +237,15 @@ func getRefFilterParam(param *models.GetExpressResultParam) (queryParam models.E
 }
 
 type expressionSqlObj struct {
-	Table           string
-	IndexTableName  string
-	LeftJoinColumn  string
-	RightJoinColumn string
-	WhereSql        string
-	Filters         []*models.EntityQueryObj
-	ResultColumn    string
-	RefColumn       string
-	MultiRefTable   string
+	Table           string                   `json:"table"`
+	IndexTableName  string                   `json:"index_table_name"`
+	LeftJoinColumn  string                   `json:"left_join_column"`
+	RightJoinColumn string                   `json:"right_join_column"`
+	WhereSql        string                   `json:"where_sql"`
+	Filters         []*models.EntityQueryObj `json:"filters"`
+	ResultColumn    string                   `json:"result_column"`
+	RefColumn       string                   `json:"ref_column"`
+	MultiRefTable   string                   `json:"multi_ref_table"`
 }
 
 func getExpressResultList(param *models.GetExpressResultParam) (result []string, err error) {
@@ -342,6 +342,8 @@ func getExpressResultList(param *models.GetExpressResultParam) (result []string,
 	tmpRows = append(tmpRows, startRow)
 	tmpLength := len(expressionSqlList) - 1
 	for i, v := range expressionSqlList {
+		log.Logger.Info("expressionSqlList", log.Int("index", i), log.JsonObj("v", v))
+		log.Logger.Info("tmpRows", log.Int("len", len(tmpRows)), log.JsonObj("data", tmpRows))
 		tmpGuidList := []string{}
 		tmpParam := models.EntityQueryParam{}
 		if len(v.Filters) > 0 {
@@ -386,6 +388,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 		err = fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
 		return
 	}
+	log.Logger.Info("getCiData", log.String("ciType", ciType), log.String("param", string(paramBytes)))
 	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/wecmdb/entities/%s/query", models.Config.Wecube.BaseUrl, ciType), bytes.NewReader(paramBytes))
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
@@ -405,6 +408,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 	var response models.EntityResponse
 	responseBody, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	log.Logger.Info("getCiDataRemote", log.String("ciType", ciType), log.String("response", string(responseBody)))
 	json.Unmarshal(responseBody, &response)
 	result = response.Data
 	newGuidList := checkQueryParamContainNewData(param)
@@ -415,6 +419,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 			}
 		}
 	}
+	log.Logger.Info("getCiDataResult", log.StringList("newGuid", newGuidList), log.JsonObj("result", result))
 	return
 }
 

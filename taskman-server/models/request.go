@@ -7,8 +7,8 @@ type EntityQueryResult struct {
 }
 
 type EntityDataObj struct {
-	Id          string `json:"id"`
-	DisplayName string `json:"displayName"`
+	Id          string `json:"guid"`
+	DisplayName string `json:"key_name"`
 	IsNew       bool   `json:"isNew"`
 }
 

@@ -58,7 +58,7 @@ export default {
       refKeys: [] // 引用类型字段集合
     }
   },
-  props: ['data', 'isDisabled', 'enforceDisable'],
+  props: ['data', 'isDisabled', 'enforceDisable', 'requestId'],
   mounted () {
     this.initData(this.data)
   },
@@ -79,7 +79,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(this.$parent.requestId, attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
       if (statusCode === 'OK') {
         formData[formItem.name + 'Options'] = data
         this.$set(this.tableData, index, formData)
@@ -126,7 +126,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(this.$parent.requestId, attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
       if (statusCode === 'OK') {
         formData[key + 'Options'] = data
         return formData

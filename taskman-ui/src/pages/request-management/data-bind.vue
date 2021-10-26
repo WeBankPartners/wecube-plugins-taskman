@@ -140,9 +140,6 @@ export default {
           })
           ele.value.forEach(v => {
             if (displayKeyName.length > 0) {
-              displayKeyName.forEach(k => {
-                v.displayName += v.entityData[k]
-              })
               attrValues.forEach(attr => {
                 attr.dataValue = v.entityData[attr.attrName]
               })

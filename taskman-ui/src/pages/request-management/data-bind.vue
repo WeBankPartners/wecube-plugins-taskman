@@ -71,7 +71,7 @@ export default {
       // const { statusCode, data } = await getTemplateNodes('6166464841f44a4c')
       if (statusCode === 'OK') {
         this.nodes = data
-          .filter(d => !['endEvent', 'startEvent'].includes(d.nodeType))
+          .filter(d => d.taskCategory !== '')
           .map(n => {
             n.bindData = []
             return n

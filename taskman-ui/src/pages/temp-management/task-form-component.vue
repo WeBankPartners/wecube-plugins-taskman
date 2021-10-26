@@ -14,9 +14,16 @@
           </FormItem>
         </Col>
         <Col :span="6">
-          <FormItem :label="$t('useRoles')">
+          <FormItem :label="$t('processing_role')">
             <Select v-model="formData.useRoles" multiple filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
+            </Select>
+          </FormItem>
+        </Col>
+        <Col :span="6">
+          <FormItem :label="$t('expire_day')">
+            <Select v-model="formData.expireDay" filterable>
+              <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
           </FormItem>
         </Col>
@@ -56,10 +63,10 @@
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
         >
-          <div class="list-group-item" v-for="element in customElement" :key="element.id">
-            <Input v-if="element.elementType === 'input'" placeholder="" style="width:84%" />
-            <Input v-if="element.elementType === 'textarea'" type="textarea" placeholder="" style="width:84%" />
-            <Select v-if="element.elementType === 'select'" placeholder="" style="width:84%"> </Select>
+          <div class="list-group-item" style="width:100%" v-for="element in customElement" :key="element.id">
+            <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
+            <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
+            <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
           </div>
         </draggable>
       </Col>
@@ -69,39 +76,37 @@
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
               <draggable class="dragArea list-group" :list="item.attrs" group="people">
-                <!-- {{item.attrs}} -->
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   class="list-group-item"
+                  :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div style="width:20%;display:inline-block;text-align:right;padding-right:10px">
-                    {{ element.title }}:
-                  </div>
+                  <div>{{ element.title }}:</div>
                   <Input
                     v-if="element.elementType === 'input'"
                     disabled
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     disabled
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     disabled
                     v-model="element.defaultValue"
-                    style="width:66%"
+                    style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
                     @click.stop="removeForm(element, itemIndex, eleIndex)"
-                    type="primary"
+                    type="error"
                     size="small"
                     ghost
                     icon="ios-close"
@@ -137,8 +142,25 @@
                 <!-- <FormItem label="标签">
                   <Input v-model="editElement.tag" placeholder=""></Input>
                 </FormItem> -->
+                <FormItem :label="$t('display')">
+                  <Select v-model="editElement.inDisplayName">
+                    <Option value="yes">yes</Option>
+                    <Option value="no">no</Option>
+                  </Select>
+                </FormItem>
+                <FormItem :label="$t('editable')">
+                  <Select v-model="editElement.isEdit">
+                    <Option value="yes">yes</Option>
+                    <Option value="no">no</Option>
+                  </Select>
+                </FormItem>
                 <FormItem :label="$t('width')">
-                  <Input v-model="editElement.width" placeholder=""></Input>
+                  <Select v-model="editElement.width">
+                    <Option :value="6">6</Option>
+                    <Option :value="12">12</Option>
+                    <Option :value="18">18</Option>
+                    <Option :value="24">24</Option>
+                  </Select>
                 </FormItem>
               </Form>
             </div>
@@ -187,8 +209,10 @@ export default {
         description: '',
         useRoles: [],
         items: [],
+        expireDay: 0,
         updatedTime: ''
       },
+      expireDayOptions: [0, 1, 2, 3, 4, 5, 6, 7],
       selectedInputFormItem: [],
       selectedOutputFormItem: [],
       formItemOptions: [], // 树形数据
@@ -198,7 +222,6 @@ export default {
       customElement: [
         {
           id: 1,
-          isCustom: true,
           name: 'input',
           title: 'Input',
           elementType: 'input',
@@ -208,8 +231,9 @@ export default {
           itemGroupName: '',
           packageName: '',
           entity: '',
-          width: 70,
+          width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -220,7 +244,6 @@ export default {
         },
         {
           id: 2,
-          isCustom: true,
           name: 'select',
           title: 'Select',
           elementType: 'select',
@@ -230,8 +253,9 @@ export default {
           itemGroupName: '',
           packageName: '',
           entity: '',
-          width: 70,
+          width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -242,7 +266,6 @@ export default {
         },
         {
           id: 3,
-          isCustom: true,
           name: 'textarea',
           title: 'Textarea',
           elementType: 'textarea',
@@ -252,8 +275,9 @@ export default {
           itemGroupName: '',
           packageName: '',
           entity: '',
-          width: 70,
+          width: 24,
           regular: '',
+          inDisplayName: 'no',
           isEdit: 'yes',
           isView: 'yes',
           isOutput: 'no',
@@ -265,7 +289,6 @@ export default {
       ],
       finalElement: [],
       editElement: {
-        isCustom: true,
         attrDefDataType: '',
         attrDefId: '',
         attrDefName: '',
@@ -277,6 +300,7 @@ export default {
         entity: '',
         elementType: 'input',
         id: 0,
+        inDisplayName: 'no',
         isEdit: 'yes',
         isOutput: 'no',
         isView: 'yes',
@@ -284,7 +308,7 @@ export default {
         regular: '',
         sort: 0,
         title: '',
-        width: 70
+        width: 24
       }
     }
   },
@@ -328,19 +352,34 @@ export default {
           this.selectedOutputFormItem = this.selectedFormItem
             .filter(item => item.isOutput === 'yes')
             .map(attr => attr.attrDefId)
-          let customItem = data.items.filter(item => item.attrDefId === '')
-          if (customItem.length > 0) {
-            customItem = customItem.map(custom => {
-              custom.isCustom = true
-              return custom
-            })
-            this.finalElement.unshift({
-              // tag: 'Custom',
-              itemGroup: '',
-              itemGroupName: '',
-              attrs: customItem
-            })
-          }
+          // let customItem = data.items.filter(item => item.attrDefId === '')
+          // if (customItem.length > 0) {
+          //   customItem = customItem.map(custom => {
+          //     return custom
+          //   })
+          //   this.finalElement.unshift({
+          //     itemGroup: 'Custom',
+          //     itemGroupName: 'Custom',
+          //     attrs: customItem
+          //   })
+          // }
+        }
+        if (data.items !== null && data.items.length > 0) {
+          let itemGroupSet = new Set()
+          data.items.forEach(item => {
+            if (itemGroupSet.has(item.itemGroup)) {
+              let exitEle = this.finalElement.find(ele => ele.itemGroup === item.itemGroup)
+              exitEle.attrs.push(item)
+            } else {
+              itemGroupSet.add(item.itemGroup)
+              this.finalElement.unshift({
+                itemGroup: item.itemGroup,
+                itemGroupName: item.itemGroupName,
+                attrs: [item]
+              })
+            }
+          })
+          // this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
         }
       }
     },
@@ -381,11 +420,11 @@ export default {
       let remove = []
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
-        .filter(l => l.isCustom === false)
-        .map(m => m.id)
+        .filter(l => l.entity !== '')
+        .map(m => m.attrDefId)
       const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
-        let tmp = t.substring(2)
+        let tmp = t
         if (!allSelectedFormItem.includes(tmp)) {
           remove.push(tmp)
         }
@@ -417,7 +456,6 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          isCustom: false,
           isEdit: 'no',
           isOutput: 'no',
           isView: 'yes',
@@ -425,11 +463,11 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70
+          width: 24
         }
         const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
-          const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
+          const find = tagExist.attrs.find(attr => attr.attrDefId === item)
           if (!find) {
             tagExist.attrs.push(attr)
           }
@@ -447,11 +485,11 @@ export default {
       let remove = []
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
-        .filter(l => l.isCustom === false)
-        .map(m => m.id)
+        .filter(l => l.entity !== '')
+        .map(m => m.attrDefId)
       const allSelectedFormItem = this.selectedInputFormItem.concat(this.selectedOutputFormItem)
       test1.forEach(t => {
-        let tmp = t.substring(2)
+        let tmp = t
         if (!allSelectedFormItem.includes(tmp)) {
           remove.push(tmp)
         }
@@ -482,7 +520,7 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          isCustom: false,
+          inDisplayName: 'no',
           isEdit: 'yes',
           isOutput: 'yes',
           isView: 'yes',
@@ -490,11 +528,11 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 70
+          width: 24
         }
         const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
-          const find = tagExist.attrs.find(attr => attr.id.substring(2) === item)
+          const find = tagExist.attrs.find(attr => attr.attrDefId === item)
           if (!find) {
             tagExist.attrs.push(attr)
           }
@@ -586,7 +624,7 @@ export default {
   margin-bottom: 8px;
 }
 .list-group-item {
-  width: 90%;
+  display: inline-block;
   margin: 8px 0;
 }
 </style>

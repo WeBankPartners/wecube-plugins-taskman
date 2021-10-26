@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { taskList } from '@/api/server'
+import { taskList, changeTaskStatus } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -54,7 +54,7 @@ export default {
         paging: true,
         sorting: {
           asc: true,
-          field: 'updatedTime'
+          field: 'reportTime'
         }
       },
       tableColumns: [
@@ -85,18 +85,29 @@ export default {
         {
           title: this.$t('action'),
           key: 'action',
-          width: 200,
+          width: 160,
           align: 'center',
           render: (h, params) => {
+            const operationOptions = params.row.operationOptions
             return (
               <div style="text-align: left">
-                <Button
-                  onClick={() => this.editTemplate(params.row)}
-                  style="margin-left: 8px"
-                  type="primary"
-                  size="small"
-                >
-                  {this.$t('edit')}
+                {operationOptions.includes('mark') && (
+                  <Button
+                    onClick={() => this.markTask(params.row)}
+                    style="margin-left: 8px"
+                    type="primary"
+                    size="small"
+                  >
+                    {this.$t('claim')}
+                  </Button>
+                )}
+                {operationOptions.includes('start') && (
+                  <Button onClick={() => this.startTask(params.row)} style="margin-left: 8px" type="info" size="small">
+                    {this.$t('handle')}
+                  </Button>
+                )}
+                <Button onClick={() => this.checkTask(params.row)} style="margin-left: 8px" type="success" size="small">
+                  {this.$t('check')}
                 </Button>
               </div>
             )
@@ -117,8 +128,22 @@ export default {
         desc: this.$t('successful')
       })
     },
-    editTemplate (row) {
-      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id } })
+    async markTask (row) {
+      const { statusCode } = await changeTaskStatus('mark', row.id)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.taskList()
+      }
+    },
+    async startTask (row) {
+      await changeTaskStatus('start', row.id)
+      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: false } })
+    },
+    async checkTask (row) {
+      this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: true } })
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize

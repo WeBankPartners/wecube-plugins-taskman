@@ -26,7 +26,7 @@
         }}</Button>
       </Col>
     </Row>
-    <div v-if="currentStep !== -1" style="margin-top:48px;">
+    <div v-if="currentStep !== -1" style="margin-top:16px;">
       <BasicInfo
         @basicInfoNextStep="basicInfoNextStep"
         :requestTemplateId="requestTemplateId"

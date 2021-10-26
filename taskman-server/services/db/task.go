@@ -183,7 +183,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	}
 	// get task list
 	var taskList []*models.TaskTable
-	x.SQL("select * from task where request=? order by created_time", taskObj.Request).Find(&taskList)
+	x.SQL("select * from task where request=? where report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
 	for _, v := range taskList {
 		tmpTaskForm, tmpErr := queryTaskForm(v)
 		if tmpErr != nil {
@@ -345,7 +345,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set reporter=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", operator, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}

@@ -72,7 +72,7 @@ export default {
   },
   mounted () {
     this.taskId = this.$route.query.taskId
-    this.enforceDisable = this.$route.query.enforceDisable
+    this.enforceDisable = this.$route.query.enforceDisable === 'Y'
     this.getTaskDetail()
   },
   methods: {

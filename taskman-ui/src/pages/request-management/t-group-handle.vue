@@ -6,6 +6,27 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
+          <Select
+            v-model="requestTemplate"
+            @on-open-change="getTemplateList"
+            clearable
+            filterable
+            style="width:90%"
+            :placeholder="$t('procDefId')"
+          >
+            <template v-for="option in templateOptions">
+              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
+            </template>
+          </Select>
+        </Col>
+        <Col span="4">
+          <Select v-model="status" clearable filterable style="width:90%" :placeholder="$t('status')">
+            <template v-for="option in requestStatus">
+              <Option :label="option" :value="option" :key="option"> </Option>
+            </template>
+          </Select>
+        </Col>
+        <Col span="4">
           <Button @click="requestList" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
@@ -32,13 +53,15 @@
 </template>
 
 <script>
-import { requestList, deleteRequest, terminateRequest } from '@/api/server'
+import { requestList, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
+      requestTemplate: '',
+      status: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -94,24 +117,16 @@ export default {
                   type="primary"
                   size="small"
                 >
-                  {this.$t('查看')}
+                  {this.$t('look_over')}
                 </Button>
-                <Button
-                  onClick={() => this.deleteRequest(params.row)}
-                  style="margin-left: 8px"
-                  type="error"
-                  size="small"
-                >
-                  {this.$t('delete')}
-                </Button>
-                {params.row.status === 'InProgress' && (
+                {params.row.status === 'Pending' && (
                   <Button
-                    onClick={() => this.terminateRequest(params.row)}
+                    onClick={() => this.handleRequest(params.row)}
                     style="margin-left: 8px"
                     type="info"
                     size="small"
                   >
-                    {this.$t('terminate')}
+                    {this.$t('handle')}
                   </Button>
                 )}
               </div>
@@ -119,7 +134,9 @@ export default {
           }
         }
       ],
-      tableData: []
+      templateOptions: [],
+      tableData: [],
+      requestStatus: ['Pending', 'InProgress', 'Intervene', 'Termination', 'Done']
     }
   },
   mounted () {
@@ -127,39 +144,32 @@ export default {
     this.requestList()
   },
   methods: {
+    async getTemplateList () {
+      const params = {
+        filters: [],
+        paging: false
+      }
+      const { statusCode, data } = await getTemplateList(params)
+      if (statusCode === 'OK') {
+        this.templateOptions = data.contents
+      }
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
         desc: this.$t('successful')
       })
     },
-    async terminateRequest (row) {
-      let res = await terminateRequest(row.id)
-      if (res.statusCode === 'OK') {
-        this.success()
-        this.requestList()
-      }
-    },
-    deleteRequest (row) {
-      this.$Modal.confirm({
-        title: this.$t('confirm_delete'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          let res = await deleteRequest(row.id)
-          this.$Modal.remove()
-          if (res.statusCode === 'OK') {
-            this.success()
-            this.requestList()
-          }
-        },
-        onCancel: () => {}
-      })
-    },
     checkTemplate (row) {
       this.$router.push({
         path: '/requestManagementIndex',
-        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'Y' }
+        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'Y', isHandle: 'N' }
+      })
+    },
+    handleRequest (row) {
+      this.$router.push({
+        path: '/requestManagementIndex',
+        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'N', isHandle: 'Y' }
       })
     },
     changePageSize (pageSize) {
@@ -171,14 +181,26 @@ export default {
       this.requestList()
     },
     async requestList () {
-      this.payload.filters = [
-        { name: 'status', operator: 'in', value: ['Pending', 'InProgress', 'Intervene', 'Termination', 'Done'] }
-      ]
+      this.payload.filters = [{ name: 'status', operator: 'in', value: this.requestStatus }]
       if (this.name) {
         this.payload.filters.push({
           name: 'name',
           operator: 'contains',
           value: this.name
+        })
+      }
+      if (this.requestTemplate) {
+        this.payload.filters.push({
+          name: 'requestTemplate',
+          operator: 'eq',
+          value: this.requestTemplate
+        })
+      }
+      if (this.status) {
+        this.payload.filters.push({
+          name: 'status',
+          operator: 'eq',
+          value: this.status
         })
       }
       this.payload.pageable.pageSize = this.pagination.pageSize

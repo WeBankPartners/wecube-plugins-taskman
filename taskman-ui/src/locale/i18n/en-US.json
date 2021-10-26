@@ -9,6 +9,7 @@
   "reset": "Reset",
   "next": "next",
   "confirm_delete": "Delete Confirm ？",
+  "confirm_termination": "Termination Confirm ?",
   "successful": "Successful",
   "action": "Action",
   "name": "Name",
@@ -77,9 +78,9 @@
   "request_name": "Request Name",
   "claim": "Claim",
   "handle": "Handle",
-  "check": "Check",
   "select_template": "Select Template",
   "my_drafts": "My Drafts",
   "group_initiated": "Group Initiated",
-  "group_handle": "Group Handle"
+  "group_handle": "Group Handle",
+  "look_over": "Look Over"
 }

@@ -8,8 +8,8 @@ const routerP = [
     name: 'requestManagementIndex'
   },
   {
-    path: '/taskManagementIndex',
-    name: 'taskManagementIndex'
+    path: '/taskMgmtIndex',
+    name: 'taskMgmtIndex'
   }
 ]
 export default routerP

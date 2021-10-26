@@ -41,7 +41,8 @@ export default {
     return {
       currentStep: -1,
       isAdd: true,
-      formDisable: false,
+      isHandle: false, // 处理标志
+      formDisable: false, // 查看标志
       requestTemplate: '',
       procDefId: '',
       procDefKey: '',
@@ -52,6 +53,7 @@ export default {
     this.requestTemplate = this.$route.query.requestTemplate
     this.requestId = this.$route.query.requestId
     this.isAdd = this.$route.query.isAdd === 'Y'
+    this.isHandle = this.$route.query.isHandle === 'Y'
     this.formDisable = this.$route.query.isCheck === 'Y'
     this.currentStep = this.isAdd ? -1 : 0
   },

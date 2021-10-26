@@ -37,8 +37,8 @@ const router = [
     component: task
   },
   {
-    path: '/taskManagementIndex',
-    name: 'taskManagementIndex',
+    path: '/taskMgmtIndex',
+    name: 'taskMgmtIndex',
     component: taskManagementIndex
   }
 ]

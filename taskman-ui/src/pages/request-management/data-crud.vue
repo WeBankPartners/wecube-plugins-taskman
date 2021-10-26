@@ -3,7 +3,7 @@
     <Form :label-width="100">
       <FormItem :label="$t('root_entity')">
         <Select v-model="rootEntityId" :disabled="$parent.formDisable" style="width:300px">
-          <Option v-for="item in rootEntityOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
+          <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
         </Select>
         <Button @click="getEntityData" :disabled="$parent.formDisable" type="primary">{{ $t('search') }}</Button>
       </FormItem>

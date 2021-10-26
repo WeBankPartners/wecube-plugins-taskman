@@ -3,6 +3,8 @@ import templateGroup from '@/pages/template-group'
 import templateManagementIndex from '@/pages/temp-management/index'
 import request from '@/pages/request'
 import requestManagementIndex from '@/pages/request-management/index'
+import task from '@/pages/task'
+import taskManagementIndex from '@/pages/task-mgmt/index'
 const router = [
   {
     path: '/taskman/template-mgmt',
@@ -28,6 +30,16 @@ const router = [
     path: '/requestManagementIndex',
     name: 'requestManagementIndex',
     component: requestManagementIndex
+  },
+  {
+    path: '/taskman/task-mgmt',
+    name: '/taskman/task-mgmt',
+    component: task
+  },
+  {
+    path: '/taskManagementIndex',
+    name: 'taskManagementIndex',
+    component: taskManagementIndex
   }
 ]
 export default router

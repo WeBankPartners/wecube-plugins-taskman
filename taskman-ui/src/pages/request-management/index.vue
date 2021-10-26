@@ -51,8 +51,8 @@ export default {
   mounted () {
     this.requestTemplate = this.$route.query.requestTemplate
     this.requestId = this.$route.query.requestId
-    this.isAdd = this.$route.query.isAdd
-    this.formDisable = this.$route.query.isCheck
+    this.isAdd = this.$route.query.isAdd === 'Y'
+    this.formDisable = this.$route.query.isCheck === 'Y'
     this.currentStep = this.isAdd ? -1 : 0
   },
   methods: {
@@ -63,7 +63,7 @@ export default {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/' })
+      this.$router.push({ path: '/request' })
     },
     choiceTemp (data) {
       this.procDefId = data.procDefId

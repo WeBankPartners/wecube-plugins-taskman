@@ -55,7 +55,7 @@ export default {
       await this.saveRequest()
       const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
       if (statusCode === 'OK') {
-        this.$router.push({ path: '/' })
+        this.$router.push({ path: '/request' })
       }
     },
     filterBindData (node) {

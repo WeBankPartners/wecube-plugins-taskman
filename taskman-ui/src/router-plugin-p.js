@@ -6,6 +6,10 @@ const routerP = [
   {
     path: '/requestManagementIndex',
     name: 'requestManagementIndex'
+  },
+  {
+    path: '/taskManagementIndex',
+    name: 'taskManagementIndex'
   }
 ]
 export default routerP

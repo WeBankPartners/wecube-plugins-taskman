@@ -20,7 +20,7 @@ export default new Router({
       component: () => import('@/pages/temp-management/index')
     },
     {
-      path: '/',
+      path: '/request',
       name: 'request',
       component: () => import('@/pages/request')
     },

@@ -70,3 +70,6 @@ export const getRefOptions = (attr, params) => req.post(`/wecmdb/api/v1/ci-data/
 
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)
+export const saveTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/save/${taskId}`, data)
+export const changeTaskStatus = (operation, taskId) => req.post(`/taskman/api/v1/task/status/${operation}/${taskId}`)
+export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)

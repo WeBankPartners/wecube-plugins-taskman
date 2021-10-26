@@ -6,14 +6,25 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
-          <Select v-model="requestTemplate" clearable filterable style="width:90%" :placeholder="$t('procDefId')">
-            <template v-for="option in procOptions">
-              <Option :label="option.procDefName" :value="option.procDefId" :key="option.procDefName"> </Option>
+          <Select
+            v-model="requestTemplate"
+            @on-open-change="getTemplateList"
+            clearable
+            filterable
+            style="width:90%"
+            :placeholder="$t('procDefId')"
+          >
+            <template v-for="option in templateOptions">
+              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
             </template>
           </Select>
         </Col>
         <Col span="4">
-          <Input v-model="status" style="width:90%" type="text" :placeholder="$t('status')"> </Input>
+          <Select v-model="status" clearable filterable style="width:90%" :placeholder="$t('status')">
+            <template v-for="option in requestStatus">
+              <Option :label="option" :value="option" :key="option"> </Option>
+            </template>
+          </Select>
         </Col>
         <Col span="4">
           <Button @click="requestList" type="primary">{{ $t('search') }}</Button>
@@ -42,7 +53,7 @@
 </template>
 
 <script>
-import { requestList, terminateRequest, getProcess } from '@/api/server'
+import { requestList, terminateRequest, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -57,7 +68,7 @@ export default {
         currentPage: 1,
         total: 0
       },
-      procOptions: [],
+      templateOptions: [],
       payload: {
         filters: [],
         pageable: {
@@ -105,7 +116,7 @@ export default {
                   type="primary"
                   size="small"
                 >
-                  {this.$t('查看')}
+                  {this.$t('look_over')}
                 </Button>
                 {params.row.status === 'InProgress' && (
                   <Button
@@ -122,19 +133,23 @@ export default {
           }
         }
       ],
-      tableData: []
+      tableData: [],
+      requestStatus: ['Pending', 'InProgress', 'Intervene', 'Termination', 'Done']
     }
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 200
-    this.getProcess()
     this.requestList()
   },
   methods: {
-    async getProcess () {
-      const { statusCode, data } = await getProcess()
+    async getTemplateList () {
+      const params = {
+        filters: [],
+        paging: false
+      }
+      const { statusCode, data } = await getTemplateList(params)
       if (statusCode === 'OK') {
-        this.procOptions = data
+        this.templateOptions = data.contents
       }
     },
     success () {
@@ -153,7 +168,7 @@ export default {
     checkTemplate (row) {
       this.$router.push({
         path: '/requestManagementIndex',
-        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'Y' }
+        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'Y', isHandle: 'N' }
       })
     },
     changePageSize (pageSize) {
@@ -165,14 +180,26 @@ export default {
       this.requestList()
     },
     async requestList () {
-      this.payload.filters = [
-        { name: 'status', operator: 'in', value: ['Pending', 'InProgress', 'Intervene', 'Termination', 'Done'] }
-      ]
+      this.payload.filters = [{ name: 'status', operator: 'in', value: this.requestStatus }]
       if (this.name) {
         this.payload.filters.push({
           name: 'name',
           operator: 'contains',
           value: this.name
+        })
+      }
+      if (this.requestTemplate) {
+        this.payload.filters.push({
+          name: 'requestTemplate',
+          operator: 'eq',
+          value: this.requestTemplate
+        })
+      }
+      if (this.status) {
+        this.payload.filters.push({
+          name: 'status',
+          operator: 'eq',
+          value: this.status
         })
       }
       this.payload.pageable.pageSize = this.pagination.pageSize

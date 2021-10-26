@@ -36,7 +36,7 @@ export default {
     addTemplate () {
       this.$router.push({
         path: '/requestManagementIndex',
-        query: { requestId: '', requestTemplate: '', isAdd: 'Y', isCheck: 'N' }
+        query: { requestId: '', requestTemplate: '', isAdd: 'Y', isCheck: 'N', isHandle: 'N' }
       })
     }
   },

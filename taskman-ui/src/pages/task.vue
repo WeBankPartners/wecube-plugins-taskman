@@ -107,7 +107,7 @@ export default {
                   </Button>
                 )}
                 <Button onClick={() => this.checkTask(params.row)} style="margin-left: 8px" type="success" size="small">
-                  {this.$t('check')}
+                  {this.$t('look_over')}
                 </Button>
               </div>
             )

@@ -11,7 +11,7 @@
     </Form>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
+      <Button @click="commitRequest" v-if="$parent.isHandle" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
     </div>
   </div>
 </template>
@@ -45,10 +45,12 @@ export default {
     async getBindRelate () {
       const { statusCode, data } = await getBindRelate(this.$parent.requestId)
       if (statusCode === 'OK') {
-        this.nodes.forEach(node => {
-          const find = data.taskNodeBindInfos.find(d => d.nodeId === node.nodeId)
-          node.bindData = find.boundEntityValues.map(b => b.oid)
-        })
+        if (data.taskNodeBindInfos.length > 0) {
+          this.nodes.forEach(node => {
+            const find = data.taskNodeBindInfos.find(d => d.nodeId === node.nodeId)
+            node.bindData = find.boundEntityValues.map(b => b.oid)
+          })
+        }
       }
     },
     async commitRequest () {

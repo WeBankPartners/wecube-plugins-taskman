@@ -1,6 +1,5 @@
 <template>
   <div style="width:40%;margin: 0 auto;">
-    {{ $parent.formDisable }}
     <ValidationObserver ref="observer">
       <Form :label-width="100">
         <template v-for="item in formConfig.itemConfigs">

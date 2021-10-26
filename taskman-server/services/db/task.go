@@ -183,7 +183,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	}
 	// get task list
 	var taskList []*models.TaskTable
-	x.SQL("select * from task where request=? where report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
+	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
 	for _, v := range taskList {
 		tmpTaskForm, tmpErr := queryTaskForm(v)
 		if tmpErr != nil {

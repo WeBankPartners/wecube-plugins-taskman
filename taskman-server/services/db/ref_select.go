@@ -276,6 +276,7 @@ type expressionSqlObj struct {
 }
 
 func getExpressResultList(param *models.GetExpressResultParam) (result []string, err error) {
+	result = []string{}
 	express := param.Express
 	// Example expression -> "host_resource_instance.resource_set>resource_set~(resource_set)unit[{key_name eq 'hhh'},{code in ['u','v']}]:[guid]"
 	var ciList, filterParams, tmpSplitList []string

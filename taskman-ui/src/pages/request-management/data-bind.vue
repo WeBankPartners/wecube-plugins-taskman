@@ -1,17 +1,28 @@
 <template>
   <div style="width:50%;margin: 0 auto;">
-    <Form :label-width="200">
+    <Tabs>
       <template v-for="node in nodes">
-        <FormItem :label="node.nodeName" :key="node.nodeId">
-          <Select v-model="node.bindData" multiple filterable :disabled="$parent.formDisable" style="width:100%">
-            <Option v-for="item in filterBindData(node)" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
-          </Select>
-        </FormItem>
+        <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
+          <ul>
+            <CheckboxGroup v-model="node.bindData">
+              <li
+                v-for="item in filterBindData(node)"
+                :key="item.id"
+                style="width: 46%;display: inline-block;margin: 4px"
+              >
+                <Checkbox :label="item.id">
+                  <span>{{ item.displayName }}</span>
+                </Checkbox>
+              </li>
+            </CheckboxGroup>
+          </ul>
+        </TabPane>
       </template>
-    </Form>
+    </Tabs>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
       <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
+      <Button @click="rollbackRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{ $t('回退') }}</Button>
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('发起请求')
       }}</Button>
@@ -53,15 +64,23 @@ export default {
   },
   methods: {
     async startRequest () {
-      await this.saveRequest()
-      const { statusCode } = await startRequest(this.$parent.requestId, this.finalData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: '/request' })
-      }
+      this.$Modal.confirm({
+        title: this.$t('确定发起请求'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          await this.saveRequest()
+          const { statusCode } = await startRequest(this.$parent.requestId, this.finalData)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.$router.push({ path: '/request' })
+          }
+        },
+        onCancel: () => {}
+      })
     },
     async getBindRelate () {
       const { statusCode, data } = await getBindRelate(this.$parent.requestId)
@@ -75,11 +94,34 @@ export default {
       }
     },
     async commitRequest () {
-      await this.saveRequest()
-      const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
-      if (statusCode === 'OK') {
-        this.$router.push({ path: '/request' })
-      }
+      this.$Modal.confirm({
+        title: this.$t('确定提交'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          await this.saveRequest()
+          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
+          if (statusCode === 'OK') {
+            this.$router.push({ path: '/request' })
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    async rollbackRequest () {
+      this.$Modal.confirm({
+        title: this.$t('确定回退'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          await this.saveRequest()
+          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
+          if (statusCode === 'OK') {
+            this.$router.push({ path: '/request' })
+          }
+        },
+        onCancel: () => {}
+      })
     },
     filterBindData (node) {
       return this.bindData

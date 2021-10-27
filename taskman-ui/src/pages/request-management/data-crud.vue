@@ -66,8 +66,9 @@ export default {
         rootEntityId: this.rootEntityId,
         data: this.requestData
       }
-      const { statusCode } = await saveEntityData(this.requestId, params)
+      const { statusCode, data } = await saveEntityData(this.requestId, params)
       if (statusCode === 'OK') {
+        this.requestData = data.data
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')

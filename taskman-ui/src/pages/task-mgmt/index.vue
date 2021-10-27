@@ -1,14 +1,13 @@
 <template>
   <div style="width:60%;margin: 0 auto;">
     <div>
-      <Steps :current="1">
+      <Steps :current="activeStep">
         <template v-for="(step, stepIndex) in timeStep">
           <Step :title="step.name" :key="stepIndex"></Step>
         </template>
       </Steps>
     </div>
     <div class="task-form">
-      {{ requestId }}
       <Collapse simple v-model="openPanel">
         <template v-for="(data, dataIndex) in dataInfo">
           <Panel :name="dataIndex + ''" :key="dataIndex">
@@ -18,6 +17,7 @@
               <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
             </template>
             <template v-else>
+              <Tag>{{ $t('任务名称') }}:{{ data.taskName }}</Tag>
               <Tag>{{ $t('handler') }}:{{ data.requestName }}</Tag>
               <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
             </template>
@@ -69,6 +69,7 @@ export default {
   name: '',
   data () {
     return {
+      activeStep: 0,
       taskId: '',
       requestId: '',
       enforceDisable: false,
@@ -94,6 +95,7 @@ export default {
       if (statusCode === 'OK') {
         this.requestId = data.request
         this.timeStep = data.timeStep
+        this.activeStep = this.timeStep.findIndex(t => t.active === true)
         this.dataInfo = data.data.map(d => {
           this.requestId = d.requestId
           d.activeTab = ''

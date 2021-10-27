@@ -21,12 +21,11 @@
     </Tabs>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('commit') }}</Button>
       <Button @click="rollbackRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('go_back')
       }}</Button>
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
-        $t('发起请求')
+        $t('initiate_request')
       }}</Button>
     </div>
   </div>
@@ -79,7 +78,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: '/request' })
+            this.$router.push({ path: '/taskman/request-mgmt' })
           }
         },
         onCancel: () => {}
@@ -96,22 +95,6 @@ export default {
         }
       }
     },
-    async commitRequest () {
-      this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('commit'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          this.$Modal.remove()
-          await this.saveRequest()
-          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
-          if (statusCode === 'OK') {
-            this.$router.push({ path: '/request' })
-          }
-        },
-        onCancel: () => {}
-      })
-    },
     async rollbackRequest () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('go_back'),
@@ -122,7 +105,7 @@ export default {
           await this.saveRequest()
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
           if (statusCode === 'OK') {
-            this.$router.push({ path: '/request' })
+            this.$router.push({ path: '/taskman/request-mgmt' })
           }
         },
         onCancel: () => {}

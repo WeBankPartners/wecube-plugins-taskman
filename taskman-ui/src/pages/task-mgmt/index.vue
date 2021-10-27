@@ -16,10 +16,17 @@
               <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
               <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
             </template>
+            <template v-else-if="dataIndex < dataInfo.length - 1">
+              <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
+              <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
+              <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
+            </template>
             <template v-else>
               <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
-              <Tag>{{ $t('handler') }}:{{ data.requestName }}</Tag>
-              <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
+              <template v-if="data.status === 'done'">
+                <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
+                <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
+              </template>
             </template>
             <p slot="content">
               <Tabs :value="data.activeTab">
@@ -124,7 +131,7 @@ export default {
       const { statusCode } = await commitTaskData(this.taskId, commitData)
       if (statusCode === 'OK') {
         this.success()
-        this.$router.push({ path: '/task' })
+        this.$router.push({ path: '/taskman/task-mgmt' })
       }
     }
   },

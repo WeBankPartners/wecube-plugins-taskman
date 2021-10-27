@@ -5,13 +5,13 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
-      path: '/template',
-      name: 'template',
+      path: '/taskman/template-mgmt',
+      name: '/taskman/template-mgmt',
       component: () => import('@/pages/template')
     },
     {
-      path: '/templateGroup',
-      name: 'templateGroup',
+      path: '/taskman/template-group',
+      name: '/taskman/template-group',
       component: () => import('@/pages/template-group')
     },
     {
@@ -20,13 +20,13 @@ export default new Router({
       component: () => import('@/pages/temp-management/index')
     },
     {
-      path: '/request',
-      name: 'request',
+      path: '/taskman/request-mgmt',
+      name: '/taskman/request-mgmt',
       component: () => import('@/pages/request')
     },
     {
-      path: '/task',
-      name: 'task',
+      path: '/taskman/task-mgmt',
+      name: '/taskman/task-mgmt',
       component: () => import('@/pages/task')
     },
     {

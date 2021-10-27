@@ -10,7 +10,7 @@
                 :key="item.id"
                 style="width: 46%;display: inline-block;margin: 4px"
               >
-                <Checkbox :label="item.id">
+                <Checkbox :label="item.id" :disabled="$parent.formDisable">
                   <span>{{ item.displayName }}</span>
                 </Checkbox>
               </li>

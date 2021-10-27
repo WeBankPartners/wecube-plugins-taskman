@@ -85,5 +85,7 @@
   "group_handle": "Group Handle",
   "look_over": "Look Over",
   "go_back": "Go Back",
-  "task_name": "Task Name"
+  "task_name": "Task Name",
+  "index": "Index",
+  "form": "Form"
 }

@@ -2,10 +2,19 @@
   <div class=" ">
     <Form :label-width="100">
       <FormItem :label="$t('root_entity')">
-        <Select v-model="rootEntityId" :disabled="$parent.formDisable" style="width:300px">
+        <Select
+          v-model="rootEntityId"
+          :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
+          style="width:300px"
+        >
           <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
         </Select>
-        <Button @click="getEntityData" :disabled="$parent.formDisable" type="primary">{{ $t('search') }}</Button>
+        <Button
+          @click="getEntityData"
+          :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
+          type="primary"
+          >{{ $t('search') }}</Button
+        >
       </FormItem>
     </Form>
     <Tabs :value="activeTab" @on-click="changeTab">
@@ -16,8 +25,10 @@
       </template>
     </Tabs>
     <div style="text-align: center;margin-top:48px">
-      <Button @click="saveData" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="nextStep">{{ $t('next') }}</Button>
+      <Button @click="saveData" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'" type="primary">{{
+        $t('save')
+      }}</Button>
+      <Button @click="nextStep" v-if="['', 'group_handle'].includes($parent.jumpFrom)">{{ $t('next') }}</Button>
     </div>
   </div>
 </template>
@@ -56,7 +67,7 @@ export default {
       }
     },
     nextStep () {
-      if (!this.$parent.formDisable) {
+      if (!this.$parent.formDisable || this.$parent.jumpFrom === 'group_handle') {
         this.saveData()
       }
       this.$emit('nextStep')
@@ -115,7 +126,8 @@ export default {
         this.requestData,
         find,
         this.requestId,
-        this.$parent.formDisable
+        this.$parent.formDisable,
+        this.$parent.jumpFrom
       )
     }
   }

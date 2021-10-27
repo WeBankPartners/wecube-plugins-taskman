@@ -2,8 +2,8 @@
   <div class="table-c">
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
-        <td width="5%" class="padding-style" style="text-align: center">序号</td>
-        <td width="95%" class="padding-style" style="text-align: center">表单</td>
+        <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
+        <td width="95%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
       </tr>
       <template v-for="(data, dataIndex) in tableData">
         <tr :key="data.id">

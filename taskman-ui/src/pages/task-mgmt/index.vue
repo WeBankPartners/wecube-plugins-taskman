@@ -131,7 +131,7 @@ export default {
       const { statusCode } = await commitTaskData(this.taskId, commitData)
       if (statusCode === 'OK') {
         this.success()
-        this.$router.push({ path: '/task' })
+        this.$router.push({ path: '/taskman/task-mgmt' })
       }
     }
   },

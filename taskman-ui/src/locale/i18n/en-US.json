@@ -87,5 +87,7 @@
   "go_back": "Go Back",
   "task_name": "Task Name",
   "index": "Index",
-  "form": "Form"
+  "form": "Form",
+  "estimated_finish_time": "Estimated Finish Time",
+  "expected_completion_time": "Expected Completion Time"
 }

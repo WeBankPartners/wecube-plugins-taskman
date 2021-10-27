@@ -68,7 +68,7 @@ export default {
             placeholder: ''
           },
           {
-            label: this.$t('期望完成时间'),
+            label: this.$t('expected_completion_time'),
             value: 'expireDay',
             rules: 'required',
             options: 'emergencyOptions',

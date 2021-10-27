@@ -100,8 +100,16 @@ export default {
           key: 'status'
         },
         {
-          title: this.$t('tm_updated_time'),
-          key: 'updatedTime'
+          title: this.$t('estimated_finish_time'),
+          key: 'expectTime'
+        },
+        {
+          title: this.$t('expected_completion_time'),
+          key: 'expireTime'
+        },
+        {
+          title: this.$t('report_time'),
+          key: 'reportTime'
         },
         {
           title: this.$t('action'),

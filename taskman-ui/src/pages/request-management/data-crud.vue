@@ -70,7 +70,7 @@ export default {
           await this.saveData()
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
           if (statusCode === 'OK') {
-            this.$router.push({ path: '/request' })
+            this.$router.push({ path: '/taskman/request-mgmt' })
           }
         },
         onCancel: () => {}

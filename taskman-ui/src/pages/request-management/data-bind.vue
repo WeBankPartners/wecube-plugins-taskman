@@ -25,7 +25,7 @@
         $t('go_back')
       }}</Button>
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
-        $t('发起请求')
+        $t('initiate_request')
       }}</Button>
     </div>
   </div>
@@ -78,7 +78,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: '/request' })
+            this.$router.push({ path: '/taskman/request-mgmt' })
           }
         },
         onCancel: () => {}
@@ -105,7 +105,7 @@ export default {
           await this.saveRequest()
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
           if (statusCode === 'OK') {
-            this.$router.push({ path: '/request' })
+            this.$router.push({ path: '/taskman/request-mgmt' })
           }
         },
         onCancel: () => {}

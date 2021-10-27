@@ -49,12 +49,13 @@ func GetRequestPreviewData(c *gin.Context) {
 }
 
 func ListRequest(c *gin.Context) {
+	permission := c.Param("permission")
 	var param models.QueryRequestParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
+	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

@@ -45,6 +45,7 @@ type RequestTable struct {
 	ProcInstanceId      string `json:"procInstanceId" xorm:"proc_instance_id"`
 	ProcInstanceKey     string `json:"procInstanceKey" xorm:"proc_instance_key"`
 	Reporter            string `json:"reporter" xorm:"reporter"`
+	Handler             string `json:"handler" xorm:"handler"`
 	ReportTime          string `json:"reportTime" xorm:"report_time"`
 	Emergency           int    `json:"emergency" xorm:"emergency"`
 	ReportRole          string `json:"reportRole" xorm:"report_role"`

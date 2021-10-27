@@ -79,10 +79,15 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 	return
 }
 
-func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
+func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
 	rowData = []*models.RequestTable{}
+	if strings.ToLower(permission) == "mgmt" {
+		permission = "MGMT"
+	} else {
+		permission = "USE"
+	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -109,6 +114,9 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken 
 			}
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
+				if newStatus == "InternallyTerminated" {
+					newStatus = "Termination"
+				}
 				if newStatus != "" && newStatus != v.Status {
 					actions = append(actions, &execAction{Sql: "update request set status=? where id=?", Param: []interface{}{newStatus, v.Id}})
 					v.Status = newStatus
@@ -155,7 +163,7 @@ func getInstanceStatus(instanceId, userToken string) string {
 	status := "InProgress"
 	for _, v := range response.Data.TaskNodeInstances {
 		if v.Status == "Faulted" || v.Status == "Timeouted" {
-			status = "InProgress(" + v.Status + ")"
+			status = "InProgress(Faulted)"
 			break
 		}
 	}
@@ -600,7 +608,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	result = respResult.Data
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update request set proc_instance_id=?,proc_instance_key=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", strconv.Itoa(result.Id), result.ProcInstKey, nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
+	_, err = x.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
 
@@ -615,7 +623,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 		bindCache = string(bindCacheBytes)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, bindCache, operator, nowTime, requestId)
+	_, err := x.Exec("update request set status=?,reporter=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, bindCache, operator, nowTime, requestId)
 	return err
 }
 

@@ -537,9 +537,18 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	return
 }
 
-func UpdateRequestStatus(requestId, status, operator string) error {
+func UpdateRequestStatus(requestId, status, operator, userToken string) error {
+	bindCache := ""
+	if status == "Pending" {
+		bindData, bindErr := GetRequestPreBindData(requestId, userToken)
+		if bindErr != nil {
+			return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
+		}
+		bindCacheBytes, _ := json.Marshal(bindData)
+		bindCache = string(bindCacheBytes)
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
+	_, err := x.Exec("update request set status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, bindCache, operator, nowTime, requestId)
 	return err
 }
 
@@ -711,4 +720,112 @@ func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestPar
 	result, _ = ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	return
+}
+
+func GetRequestPreBindData(requestId, userToken string) (result models.RequestCacheData, err error) {
+	var requestTable []*models.RequestTable
+	err = x.SQL("select * from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return result, fmt.Errorf("Try to query request fail,%s ", err.Error())
+	}
+	if len(requestTable) == 0 {
+		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
+	}
+	if requestTable[0].Cache == "" {
+		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
+	}
+	processNodes, processErr := GetProcessNodesByProc(requestTable[0].RequestTemplate, userToken)
+	if processErr != nil {
+		return result, processErr
+	}
+	entityDefIdMap := make(map[string]string)
+	entityBindMap := make(map[string][]string)
+	for _, v := range processNodes {
+		if v.TaskCategory == "" {
+			continue
+		}
+		tmpBoundEntities := []string{}
+		for _, vv := range v.BoundEntities {
+			entityDefIdMap[fmt.Sprintf("%s:%s", vv.PackageName, vv.Name)] = vv.Id
+			tmpBoundEntities = append(tmpBoundEntities, fmt.Sprintf("%s:%s", vv.PackageName, vv.Name))
+		}
+		if v.TaskCategory != "SUTN" {
+			entityBindMap[v.NodeDefId] = tmpBoundEntities
+		}
+	}
+	var dataCache models.RequestPreDataDto
+	json.Unmarshal([]byte(requestTable[0].Cache), &dataCache)
+	entityOidMap := make(map[string][]string)
+	entityValueMap := make(map[string]*models.RequestCacheEntityValue)
+	for i, v := range dataCache.Data {
+		for ii, vv := range v.Value {
+			if vv.EntityName == "" {
+				continue
+			}
+			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
+			tmpEntityName := fmt.Sprintf("%s:%s", vv.PackageName, vv.EntityName)
+			if _, b := entityDefIdMap[tmpEntityName]; b {
+				tmpValueObj.EntityDefId = entityDefIdMap[tmpEntityName]
+			}
+			tmpValueObj.AttrValues = buildEntityValueAttrData(v.Title, vv.EntityData)
+			if dataCache.RootEntityId == "" && i == 0 && ii == 0 {
+				result.RootEntityValue = tmpValueObj
+			}
+			entityValueMap[vv.Id] = &tmpValueObj
+			if _, b := entityOidMap[v.ItemGroup]; b {
+				entityOidMap[v.ItemGroup] = append(entityOidMap[v.ItemGroup], vv.Id)
+			} else {
+				entityOidMap[v.ItemGroup] = []string{vv.Id}
+			}
+		}
+	}
+	var entityNodeBind []*models.EntityNodeBindQueryObj
+	x.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_item_template t2 on t1.form_template=t2.form_template where t1.request_template=?", requestTable[0].RequestTemplate).Find(&entityNodeBind)
+	for _, v := range entityNodeBind {
+		if _, b := entityBindMap[v.NodeDefId]; b {
+			entityBindMap[v.NodeDefId] = append(entityBindMap[v.NodeDefId], v.ItemGroup)
+		} else {
+			entityBindMap[v.NodeDefId] = []string{v.ItemGroup}
+		}
+	}
+	for _, v := range processNodes {
+		if v.TaskCategory == "" {
+			continue
+		}
+		tmpNodeBindInfo := models.RequestCacheTaskNodeBindObj{NodeId: v.NodeId, NodeDefId: v.NodeDefId, BoundEntityValues: []*models.RequestCacheEntityValue{}}
+		if entities, b := entityBindMap[v.NodeDefId]; b {
+			for _, entity := range entities {
+				if oids, entityExist := entityOidMap[entity]; entityExist {
+					for _, oid := range oids {
+						if _, oidExist := entityValueMap[oid]; oidExist {
+							tmpNodeBindInfo.BoundEntityValues = append(tmpNodeBindInfo.BoundEntityValues, entityValueMap[oid])
+						}
+					}
+				}
+			}
+		}
+		result.TaskNodeBindInfos = append(result.TaskNodeBindInfos, &tmpNodeBindInfo)
+	}
+	return
+}
+
+func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData map[string]interface{}) (result []*models.RequestCacheEntityAttrValue) {
+	result = []*models.RequestCacheEntityAttrValue{}
+	titleMap := make(map[string]*models.FormItemTemplateTable)
+	for _, v := range titles {
+		titleMap[v.Name] = v
+	}
+	for k, v := range entityData {
+		if vv, b := titleMap[k]; b {
+			result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
+		}
+	}
+	return
+}
+
+func RecordRequestLog(requestId, operator, operation string) {
+	_, err := x.Exec("insert into task_operation_log(id,request,operation,operator,op_time) value (?,?,?,?,?)", guid.CreateGuid(), requestId, operation, operator, time.Now().Format(models.DateTimeFormat))
+	if err != nil {
+		log.Logger.Error("Record request operation log fail", log.Error(err))
+	}
 }

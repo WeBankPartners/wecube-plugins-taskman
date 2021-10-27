@@ -97,6 +97,7 @@ func CreateRequest(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordRequestLog(param.Id, param.CreatedBy, "create")
 		middleware.ReturnData(c, param)
 	}
 }
@@ -117,6 +118,7 @@ func UpdateRequest(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordRequestLog(param.Id, param.UpdatedBy, "update")
 		middleware.ReturnData(c, param)
 	}
 }
@@ -127,6 +129,7 @@ func DeleteRequest(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "delete")
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -183,6 +186,7 @@ func StartRequest(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "start")
 		middleware.ReturnData(c, instanceId)
 	}
 }
@@ -190,10 +194,11 @@ func StartRequest(c *gin.Context) {
 func UpdateRequestStatus(c *gin.Context) {
 	requestId := c.Param("requestId")
 	status := c.Param("status")
-	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c))
+	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), status)
 		middleware.ReturnSuccess(c)
 	}
 }

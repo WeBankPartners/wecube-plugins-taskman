@@ -158,3 +158,8 @@ type TerminateInstanceParam struct {
 	ProcInstId  string `json:"procInstId"`
 	ProcInstKey string `json:"procInstKey"`
 }
+
+type EntityNodeBindQueryObj struct {
+	NodeDefId string `xorm:"node_def_id"`
+	ItemGroup string `xorm:"item_group"`
+}

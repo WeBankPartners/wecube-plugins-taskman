@@ -268,15 +268,17 @@ CREATE TABLE IF NOT EXISTS `task` (
   CONSTRAINT `fore_task_ref_template` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
-DROP TABLE IF EXISTS `task_operation_log`;
-CREATE TABLE IF NOT EXISTS `task_operation_log` (
+DROP TABLE IF EXISTS `operation_log`;
+CREATE TABLE IF NOT EXISTS `operation_log` (
   `id` varchar(64)  NOT NULL,
-  `task` varchar(64) NOT NULL,
+  `request` varchar(64) DEFAULT NULL,
+  `task` varchar(64) DEFAULT NULL,
   `operation` varchar(64) NOT NULL,
   `operator` varchar(64) NOT NULL,
   `op_time` varchar(64) NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fore_task_log` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
+  CONSTRAINT `fore_operation_log_request` FOREIGN KEY (`request`) REFERENCES `request` (`id`),
+  CONSTRAINT `fore_operation_log_task` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
 SET FOREIGN_KEY_CHECKS = 1;

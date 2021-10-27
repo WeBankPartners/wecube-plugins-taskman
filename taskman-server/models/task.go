@@ -170,8 +170,9 @@ type TaskApproveParam struct {
 	ChoseOption string `json:"choseOption"`
 }
 
-type TaskOperationLogTable struct {
+type OperationLogTable struct {
 	Id        string `json:"id" xorm:"id"`
+	Request   string `json:"request" xorm:"request"`
 	Task      string `json:"task" xorm:"task"`
 	Operation string `json:"operation" xorm:"operation"`
 	Operator  string `json:"operator" xorm:"operator"`

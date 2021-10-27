@@ -3,7 +3,6 @@
     <Button @click="backToTemplate" icon="ios-undo-outline" style="margin-bottom: 8px">{{
       $t('back_to_template')
     }}</Button>
-    {{ jumpFrom }}
     <template v-if="currentStep === -1">
       <TemplateSelect @choiceTemp="choiceTemp"></TemplateSelect>
     </template>
@@ -15,7 +14,7 @@
         <Step icon="md-cog">
           <span slot="title" @click="changeStep(1)">{{ $t('data_management') }}</span>
         </Step>
-        <Step icon="ios-settings" v-if="['', 'group_handle'].includes(jumpFrom)">
+        <Step icon="ios-settings" v-if="['group_handle'].includes(jumpFrom)">
           <span slot="title" @click="changeStep(2)">{{ $t('data_binding') }}</span>
         </Step>
       </Steps>
@@ -65,7 +64,7 @@ export default {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/request' })
+      this.$router.push({ path: '/taskman/request-mgmt' })
     },
     choiceTemp (data) {
       this.procDefId = data.procDefId

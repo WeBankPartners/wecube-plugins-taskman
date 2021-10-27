@@ -28,6 +28,7 @@
       <Button @click="saveData" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'" type="primary">{{
         $t('save')
       }}</Button>
+      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('commit') }}</Button>
       <Button @click="nextStep" v-if="['', 'group_handle'].includes($parent.jumpFrom)">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -35,7 +36,7 @@
 
 <script>
 import DataMgmt from './data-mgmt'
-import { getRootEntity, getEntityData, saveEntityData, getRequestInfo } from '@/api/server'
+import { getRootEntity, getEntityData, saveEntityData, getRequestInfo, updateRequestStatus } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -59,6 +60,22 @@ export default {
     }
   },
   methods: {
+    async commitRequest () {
+      this.$Modal.confirm({
+        title: this.$t('confirm') + this.$t('commit'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          await this.saveData()
+          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
+          if (statusCode === 'OK') {
+            this.$router.push({ path: '/taskman/request-mgmt' })
+          }
+        },
+        onCancel: () => {}
+      })
+    },
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.requestId)
       if (statusCode === 'OK') {

@@ -81,7 +81,7 @@ export default {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/request' })
+      this.$router.push({ path: '/taskman/request-mgmt' })
     },
     basicInfoNextStep (data) {
       this.requestTemplateId = data.id

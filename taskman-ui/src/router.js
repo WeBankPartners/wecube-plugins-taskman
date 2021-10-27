@@ -26,7 +26,7 @@ export default new Router({
     },
     {
       path: '/taskman/task-mgmt',
-      name: 'task',
+      name: '/taskman/task-mgmt',
       component: () => import('@/pages/task')
     },
     {

@@ -79,7 +79,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 	return
 }
 
-func ListRequest(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
+func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
 	rowData = []*models.RequestTable{}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
 	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
@@ -99,6 +99,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string) (pageInfo 
 		for _, v := range requestTemplateTable {
 			rtMap[v.Id] = v.Name
 		}
+		var actions []*execAction
 		for _, v := range rowData {
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
 			if v.ReportTime != "" {
@@ -106,9 +107,59 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string) (pageInfo 
 			} else {
 				v.ExpectTime = ""
 			}
+			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
+				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
+				if newStatus != "" && newStatus != v.Status {
+					actions = append(actions, &execAction{Sql: "update request set status=? where id=?", Param: []interface{}{newStatus, v.Id}})
+					v.Status = newStatus
+				}
+			}
+		}
+		if len(actions) > 0 {
+			updateStatusErr := transaction(actions)
+			if updateStatusErr != nil {
+				log.Logger.Error("Try to update request status fail", log.Error(updateStatusErr))
+			}
 		}
 	}
 	return
+}
+
+func getInstanceStatus(instanceId, userToken string) string {
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, instanceId), nil)
+	if newReqErr != nil {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "new http request fail"), log.Error(newReqErr))
+		return ""
+	}
+	req.Header.Set("Authorization", userToken)
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to do http request fail"), log.Error(respErr))
+		return ""
+	}
+	b, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	var response models.InstanceStatusQuery
+	err := json.Unmarshal(b, &response)
+	if err != nil {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to json unmarshal body fail"), log.Error(err))
+		return ""
+	}
+	if response.Status != "OK" {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", response.Message))
+		return ""
+	}
+	if response.Data.Status != "InProgress" {
+		return response.Data.Status
+	}
+	status := "InProgress"
+	for _, v := range response.Data.TaskNodeInstances {
+		if v.Status == "Faulted" || v.Status == "Timeouted" {
+			status = "InProgress(" + v.Status + ")"
+			break
+		}
+	}
+	return status
 }
 
 func calcExpireTime(reportTime, expectTime string, expireDay int) (expire, expect string) {

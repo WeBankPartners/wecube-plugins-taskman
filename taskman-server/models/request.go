@@ -164,3 +164,27 @@ type EntityNodeBindQueryObj struct {
 	NodeDefId string `xorm:"node_def_id"`
 	ItemGroup string `xorm:"item_group"`
 }
+
+type InstanceStatusQuery struct {
+	Status  string                 `json:"status"`
+	Message string                 `json:"message"`
+	Data    InstanceStatusQueryObj `json:"data"`
+}
+
+type InstanceStatusQueryObj struct {
+	Id                int                        `json:"id"`
+	ProcDefId         string                     `json:"procDefId"`
+	ProcInstKey       string                     `json:"procInstKey"`
+	ProcInstName      string                     `json:"procInstName"`
+	Status            string                     `json:"status"`
+	TaskNodeInstances []*InstanceStatusQueryNode `json:"taskNodeInstances"`
+}
+
+type InstanceStatusQueryNode struct {
+	Id        int    `json:"id"`
+	NodeId    string `json:"nodeId"`
+	NodeDefId string `json:"nodeDefId"`
+	NodeName  string `json:"nodeName"`
+	NodeType  string `json:"nodeType"`
+	Status    string `json:"status"`
+}

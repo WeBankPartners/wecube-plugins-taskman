@@ -434,7 +434,7 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
 	}
-	actions = append(actions, &execAction{Sql: "insert into task_operation_log(id,task,operation,operator,op_time) value (?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskId, operation, operator, nowTime}})
+	actions = append(actions, &execAction{Sql: "insert into operation_log(id,task,operation,operator,op_time) value (?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskId, operation, operator, nowTime}})
 	err = transaction(actions)
 	if err != nil {
 		return taskObj, err

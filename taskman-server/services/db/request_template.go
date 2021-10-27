@@ -433,6 +433,11 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string) error {
+	var requestTable []*models.RequestTable
+	x.SQL("select id,name from request where request_template=?", id).Find(&requestTable)
+	if len(requestTable) > 0 {
+		return fmt.Errorf("The template used by request:%s ", requestTable[0].Name)
+	}
 	_, err := x.Exec("update request_template set del_flag=1 where id=?", id)
 	return err
 }

@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `proc_instance_key` varchar(64)  DEFAULT NULL,
   `reporter` varchar(64)  DEFAULT NULL,
   `report_time` datetime DEFAULT NULL,
-  `emergency` varchar(16)  DEFAULT 'no',
+  `emergency` int  DEFAULT 3,
   `report_role` text  DEFAULT NULL,
   `attach_file` varchar(64)  DEFAULT NULL,
   `status` varchar(64)  NOT NULL DEFAULT 'created',

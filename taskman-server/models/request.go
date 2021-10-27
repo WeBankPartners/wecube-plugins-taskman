@@ -46,7 +46,7 @@ type RequestTable struct {
 	ProcInstanceKey     string `json:"procInstanceKey" xorm:"proc_instance_key"`
 	Reporter            string `json:"reporter" xorm:"reporter"`
 	ReportTime          string `json:"reportTime" xorm:"report_time"`
-	Emergency           string `json:"emergency" xorm:"emergency"`
+	Emergency           int    `json:"emergency" xorm:"emergency"`
 	ReportRole          string `json:"reportRole" xorm:"report_role"`
 	AttachFile          string `json:"attachFile" xorm:"attach_file"`
 	Status              string `json:"status" xorm:"status"`
@@ -60,6 +60,7 @@ type RequestTable struct {
 	UpdatedBy           string `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime         string `json:"updatedTime" xorm:"updated_time"`
 	DelFlag             int    `json:"delFlag" xorm:"del_flag"`
+	ExpireTime          string `json:"expireTime" xorm:"-"`
 }
 
 type AttachFileTable struct {

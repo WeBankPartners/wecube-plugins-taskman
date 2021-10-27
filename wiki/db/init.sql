@@ -248,7 +248,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `reporter` varchar(64)  DEFAULT NULL,
   `report_time` datetime DEFAULT NULL,
   `report_role` varchar(255)  DEFAULT NULL,
-  `emergency` varchar(16)  DEFAULT 'no',
+  `emergency` int  DEFAULT 3,
   `result` text ,
   `cache` mediumtext ,
   `callback_request_id` varchar(255) DEFAULT NULL,

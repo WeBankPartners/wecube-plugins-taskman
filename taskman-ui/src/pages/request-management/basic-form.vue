@@ -66,20 +66,32 @@ export default {
             multiple: false,
             type: 'select',
             placeholder: ''
+          },
+          {
+            label: this.$t('期望完成时间'),
+            value: 'expireDay',
+            rules: 'required',
+            options: 'emergencyOptions',
+            labelKey: 'label',
+            valueKey: 'value',
+            multiple: false,
+            type: 'select',
+            placeholder: ''
           }
         ],
         values: {
           id: '',
           name: '',
-          emergency: '3',
-          requestTemplate: ''
+          emergency: 3,
+          requestTemplate: '',
+          expireDay: 2
         },
         emergencyOptions: [
-          { label: '1', value: '1' },
-          { label: '2', value: '2' },
-          { label: '3', value: '3' },
-          { label: '4', value: '4' },
-          { label: '5', value: '5' }
+          { label: '1', value: 1 },
+          { label: '2', value: 2 },
+          { label: '3', value: 3 },
+          { label: '4', value: 4 },
+          { label: '5', value: 5 }
         ]
       }
     }

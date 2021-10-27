@@ -21,7 +21,6 @@
     </Tabs>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('commit') }}</Button>
       <Button @click="rollbackRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('go_back')
       }}</Button>
@@ -95,22 +94,6 @@ export default {
           })
         }
       }
-    },
-    async commitRequest () {
-      this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('commit'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          this.$Modal.remove()
-          await this.saveRequest()
-          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
-          if (statusCode === 'OK') {
-            this.$router.push({ path: '/request' })
-          }
-        },
-        onCancel: () => {}
-      })
     },
     async rollbackRequest () {
       this.$Modal.confirm({

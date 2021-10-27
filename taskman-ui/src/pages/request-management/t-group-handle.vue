@@ -163,13 +163,27 @@ export default {
     checkTemplate (row) {
       this.$router.push({
         path: '/requestManagementIndex',
-        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'Y', isHandle: 'N' }
+        query: {
+          requestId: row.id,
+          requestTemplate: row.requestTemplate,
+          isAdd: 'N',
+          isCheck: 'Y',
+          isHandle: 'N',
+          jumpFrom: 'group_handle'
+        }
       })
     },
     handleRequest (row) {
       this.$router.push({
         path: '/requestManagementIndex',
-        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'N', isHandle: 'Y' }
+        query: {
+          requestId: row.id,
+          requestTemplate: row.requestTemplate,
+          isAdd: 'N',
+          isCheck: 'N',
+          isHandle: 'Y',
+          jumpFrom: 'group_handle'
+        }
       })
     },
     changePageSize (pageSize) {

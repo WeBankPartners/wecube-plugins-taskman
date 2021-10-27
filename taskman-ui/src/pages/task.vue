@@ -53,7 +53,7 @@ export default {
         },
         paging: true,
         sorting: {
-          asc: true,
+          asc: false,
           field: 'reportTime'
         }
       },

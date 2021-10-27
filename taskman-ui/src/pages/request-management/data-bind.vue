@@ -10,7 +10,7 @@
                 :key="item.id"
                 style="width: 46%;display: inline-block;margin: 4px"
               >
-                <Checkbox :label="item.id">
+                <Checkbox :label="item.id" :disabled="$parent.formDisable">
                   <span>{{ item.displayName }}</span>
                 </Checkbox>
               </li>
@@ -21,8 +21,10 @@
     </Tabs>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('提交') }}</Button>
-      <Button @click="rollbackRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{ $t('回退') }}</Button>
+      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('commit') }}</Button>
+      <Button @click="rollbackRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
+        $t('go_back')
+      }}</Button>
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('发起请求')
       }}</Button>
@@ -65,10 +67,11 @@ export default {
   methods: {
     async startRequest () {
       this.$Modal.confirm({
-        title: this.$t('确定发起请求'),
+        title: this.$t('confirm') + this.$t('initiate_request'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
+          this.$Modal.remove()
           await this.saveRequest()
           const { statusCode } = await startRequest(this.$parent.requestId, this.finalData)
           if (statusCode === 'OK') {
@@ -95,10 +98,11 @@ export default {
     },
     async commitRequest () {
       this.$Modal.confirm({
-        title: this.$t('确定提交'),
+        title: this.$t('confirm') + this.$t('commit'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
+          this.$Modal.remove()
           await this.saveRequest()
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
           if (statusCode === 'OK') {
@@ -110,10 +114,11 @@ export default {
     },
     async rollbackRequest () {
       this.$Modal.confirm({
-        title: this.$t('确定回退'),
+        title: this.$t('confirm') + this.$t('go_back'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
+          this.$Modal.remove()
           await this.saveRequest()
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
           if (statusCode === 'OK') {

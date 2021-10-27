@@ -17,7 +17,7 @@
               <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
             </template>
             <template v-else>
-              <Tag>{{ $t('任务名称') }}:{{ data.taskName }}</Tag>
+              <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
               <Tag>{{ $t('handler') }}:{{ data.requestName }}</Tag>
               <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
             </template>

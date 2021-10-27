@@ -157,7 +157,14 @@ export default {
     editTemplate (row) {
       this.$router.push({
         path: '/requestManagementIndex',
-        query: { requestId: row.id, requestTemplate: row.requestTemplate, isAdd: 'N', isCheck: 'N', isHandle: 'N' }
+        query: {
+          requestId: row.id,
+          requestTemplate: row.requestTemplate,
+          isAdd: 'N',
+          isCheck: 'N',
+          isHandle: 'N',
+          jumpFrom: 'my_drafts'
+        }
       })
     },
     changePageSize (pageSize) {

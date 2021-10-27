@@ -9,7 +9,7 @@
                 v-model="formConfig.values[item.value]"
                 style="width:90%"
                 :type="item.type"
-                :disabled="$parent.formDisable"
+                :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
                 :placeholder="item.placeholder"
               >
               </Input>
@@ -20,7 +20,7 @@
                 v-model="formConfig.values[item.value]"
                 filterable
                 style="width:90%"
-                :disabled="$parent.formDisable"
+                :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
                 :multiple="item.multiple"
                 :placeholder="item.placeholder"
               >
@@ -101,7 +101,7 @@ export default {
       }
     },
     async createRequest () {
-      if (this.$parent.formDisable) {
+      if (this.$parent.formDisable || this.$parent.jumpFrom === 'group_handle') {
         this.$emit('basicForm', this.formConfig.values.id)
         return
       }

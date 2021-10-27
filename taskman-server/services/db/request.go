@@ -561,6 +561,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 		log.Logger.Info("itemMap", log.String("key", k), log.StringList("value", v))
 	}
 	entityNewMap := make(map[string][]string)
+	entityOidMap := make(map[string]int)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
 			if entityValue.EntityDataId == cacheData.RootEntityValue.Oid {
@@ -577,6 +578,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 				cacheData.RootEntityValue.PreviousOids = entityValue.PreviousOids
 				cacheData.RootEntityValue.SucceedingOids = entityValue.SucceedingOids
 			}
+			entityOidMap[entityValue.Oid] = 1
 			if _, b := entityNewMap[entityValue.Oid]; b {
 				continue
 			}
@@ -628,14 +630,14 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 						entityValue.SucceedingOids = append(entityValue.SucceedingOids, tmpOid)
 					}
 				}
-				entityValue.PreviousOids = listToSet(entityValue.PreviousOids)
-				entityValue.SucceedingOids = listToSet(entityValue.SucceedingOids)
+				entityValue.PreviousOids = listToSet(entityValue.PreviousOids, entityOidMap)
+				entityValue.SucceedingOids = listToSet(entityValue.SucceedingOids, entityOidMap)
 			}
 		}
 	}
 }
 
-func listToSet(input []string) []string {
+func listToSet(input []string, itemMap map[string]int) []string {
 	result := []string{}
 	tmpMap := make(map[string]int)
 	for _, v := range input {
@@ -643,8 +645,10 @@ func listToSet(input []string) []string {
 			continue
 		}
 		if _, b := tmpMap[v]; !b {
-			result = append(result, v)
-			tmpMap[v] = 1
+			if _, bb := itemMap[v]; bb {
+				result = append(result, v)
+				tmpMap[v] = 1
+			}
 		}
 	}
 	return result

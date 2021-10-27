@@ -9,7 +9,7 @@
       </tr>
       <template v-for="(data, dataIndex) in tableData">
         <tr :key="data.id">
-          <td class="padding-style" style="text-align: center">{{ dataIndex }}</td>
+          <td class="padding-style" style="text-align: center">{{ dataIndex + 1 }}</td>
           <td class="padding-style">
             <div
               class="list-group-item"

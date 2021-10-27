@@ -8,6 +8,7 @@
   "delete": "Delete",
   "reset": "Reset",
   "next": "next",
+  "confirm": "Confirm ",
   "confirm_delete": "Delete Confirm ？",
   "confirm_termination": "Termination Confirm ?",
   "successful": "Successful",
@@ -82,5 +83,7 @@
   "my_drafts": "My Drafts",
   "group_initiated": "Group Initiated",
   "group_handle": "Group Handle",
-  "look_over": "Look Over"
+  "look_over": "Look Over",
+  "go_back": "Go Back",
+  "task_name": "Task Name"
 }

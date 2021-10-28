@@ -159,7 +159,9 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		requestMap[v.Id] = v
 	}
 	for _, v := range rowData {
-		v.RequestObj = *requestMap[v.Request]
+		if _, b := requestMap[v.Request]; b {
+			v.RequestObj = *requestMap[v.Request]
+		}
 	}
 	return
 }

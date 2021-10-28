@@ -1,9 +1,7 @@
 <template>
-  <div style="width:40%;margin: 0 auto;">
-    <!-- <ValidationObserver ref="observer"> -->
+  <div style="width:40%;margin: 0 auto;min-width: 700px">
     <Form :label-width="100">
       <template v-for="item in formConfig.itemConfigs">
-        <!-- <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value"> -->
         <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Input
             v-model="formConfig.values[item.value]"
@@ -35,18 +33,15 @@
           </Select>
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
         </FormItem>
-        <!-- </ValidationProvider> -->
       </template>
       <FormItem>
         <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
       </FormItem>
     </Form>
-    <!-- </ValidationObserver> -->
   </div>
 </template>
 
 <script>
-import { ValidationObserver } from 'vee-validate'
 import { createRequest, updateRequest, getRequestInfo } from '@/api/server'
 export default {
   name: 'BasicInfo',
@@ -117,9 +112,6 @@ export default {
         this.$emit('basicForm', this.formConfig.values.id)
         return
       }
-      if (!this.$refs.observer.flags.valid) {
-        return
-      }
       this.formConfig.values.requestTemplate = this.$parent.requestTemplate
       const method = this.formConfig.values.id ? updateRequest : createRequest
       const { statusCode, data } = await method(this.$parent.requestId, this.formConfig.values)
@@ -132,9 +124,7 @@ export default {
       }
     }
   },
-  components: {
-    ValidationObserver
-  }
+  components: {}
 }
 </script>
 

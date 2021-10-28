@@ -1,5 +1,5 @@
 <template>
-  <div style="width:50%;margin: 0 auto;">
+  <div style="width:50%;margin: 0 auto;min-width: 700px">
     <Tabs>
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
@@ -8,10 +8,12 @@
               <li
                 v-for="item in filterBindData(node)"
                 :key="item.id"
-                style="width: 46%;display: inline-block;margin: 4px"
+                style="width: 46%;display: inline-block;margin: 6px"
               >
                 <Checkbox :label="item.id" :disabled="$parent.formDisable">
-                  <span>{{ item.displayName }}</span>
+                  <Tooltip :content="item.displayName" :delay="500" max-width="300">
+                    <div class="text-ellipsis">{{ item.displayName }}</div>
+                  </Tooltip>
                 </Checkbox>
               </li>
             </CheckboxGroup>
@@ -21,7 +23,7 @@
     </Tabs>
     <div style="text-align: center;margin-top:48px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
-      <Button @click="rollbackRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
+      <Button @click="rollbackRequest" type="error" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('go_back')
       }}</Button>
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
@@ -209,4 +211,16 @@ export default {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.ivu-tooltip {
+  width: 90%;
+}
+.text-ellipsis {
+  width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+</style>

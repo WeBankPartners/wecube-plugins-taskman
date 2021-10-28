@@ -6,6 +6,13 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
+          <Select v-model="status" clearable filterable style="width:90%" :placeholder="$t('status')">
+            <template v-for="option in ['created', 'marked', 'doing', 'done']">
+              <Option :label="option" :value="option" :key="option"> </Option>
+            </template>
+          </Select>
+        </Col>
+        <Col span="4">
           <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
@@ -39,6 +46,7 @@ export default {
     return {
       MODALHEIGHT: 500,
       name: '',
+      status: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -160,6 +168,13 @@ export default {
           name: 'name',
           operator: 'contains',
           value: this.name
+        })
+      }
+      if (this.status) {
+        this.payload.filters.push({
+          name: 'status',
+          operator: 'eq',
+          value: this.status
         })
       }
       this.payload.pageable.pageSize = this.pagination.pageSize

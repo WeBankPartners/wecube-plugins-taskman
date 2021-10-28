@@ -28,7 +28,9 @@
       <Button @click="saveData" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'" type="primary">{{
         $t('save')
       }}</Button>
-      <Button @click="commitRequest" :disabled="$parent.formDisable">{{ $t('commit') }}</Button>
+      <Button @click="commitRequest" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'">{{
+        $t('commit')
+      }}</Button>
       <Button @click="nextStep" v-if="['', 'group_handle'].includes($parent.jumpFrom)">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -84,7 +86,7 @@ export default {
       }
     },
     nextStep () {
-      if (!this.$parent.formDisable || this.$parent.jumpFrom === 'group_handle') {
+      if (!this.$parent.formDisable) {
         this.saveData()
       }
       this.$emit('nextStep')

@@ -66,7 +66,8 @@ export const getBindRelate = requestId => req.get(`/taskman/api/v1/request-data/
 export const saveRequest = (requestId, data) => req.post(`/taskman/api/v1/request-data/save/${requestId}/bing`, data)
 export const updateRequestStatus = (requestId, status) =>
   req.post(`/taskman/api/v1/request-status/${requestId}/${status}`)
-export const requestList = params => req.post(`/taskman/api/v1/user/request`, params)
+export const requestListForDraftInitiated = params => req.post(`/taskman/api/v1/user/request/use`, params)
+export const requestListForHandle = params => req.post(`/taskman/api/v1/user/request/mgmt`, params)
 export const deleteRequest = id => req.delete(`/taskman/api/v1/request/${id}`)
 export const terminateRequest = id => req.post(`/taskman/api/v1/request/terminate/${id}`)
 export const startRequest = (requestId, data) => req.post(`/taskman/api/v1/request/start/${requestId}`, data)

@@ -27,7 +27,7 @@
           </Select>
         </Col>
         <Col span="4">
-          <Button @click="requestList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { requestList, terminateRequest, getTemplateList } from '@/api/server'
+import { requestListForDraftInitiated, terminateRequest, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -142,12 +142,20 @@ export default {
         }
       ],
       tableData: [],
-      requestStatus: ['Pending', 'InProgress', 'Intervene', 'Termination', 'Done']
+      requestStatus: [
+        'Pending',
+        'InProgress',
+        'InProgress(Faulted)',
+        'Termination',
+        'Completed',
+        'Timeouted',
+        'Faulted'
+      ]
     }
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 200
-    this.requestList()
+    this.requestListForDraftInitiated()
   },
   methods: {
     async getTemplateList () {
@@ -175,7 +183,7 @@ export default {
           let res = await terminateRequest(row.id)
           if (res.statusCode === 'OK') {
             this.success()
-            this.requestList()
+            this.requestListForDraftInitiated()
           }
         },
         onCancel: () => {}
@@ -196,13 +204,13 @@ export default {
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize
-      this.requestList()
+      this.requestListForDraftInitiated()
     },
     changPage (current) {
       this.pagination.currentPage = current
-      this.requestList()
+      this.requestListForDraftInitiated()
     },
-    async requestList () {
+    async requestListForDraftInitiated () {
       this.payload.filters = [{ name: 'status', operator: 'in', value: this.requestStatus }]
       if (this.name) {
         this.payload.filters.push({
@@ -227,7 +235,7 @@ export default {
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      const { statusCode, data } = await requestList(this.payload)
+      const { statusCode, data } = await requestListForDraftInitiated(this.payload)
       if (statusCode === 'OK') {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows

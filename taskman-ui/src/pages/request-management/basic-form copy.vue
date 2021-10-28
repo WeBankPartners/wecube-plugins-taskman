@@ -1,47 +1,47 @@
 <template>
   <div style="width:40%;margin: 0 auto;">
-    <!-- <ValidationObserver ref="observer"> -->
-    <Form :label-width="100">
-      <template v-for="item in formConfig.itemConfigs">
-        <!-- <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value"> -->
-        <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
-          <Input
-            v-model="formConfig.values[item.value]"
-            style="width:90%"
-            :type="item.type"
-            :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
-            :placeholder="item.placeholder"
-          >
-          </Input>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
-        </FormItem>
-        <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :key="item.value">
-          <Select
-            v-model="formConfig.values[item.value]"
-            filterable
-            style="width:90%"
-            :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
-            :multiple="item.multiple"
-            :placeholder="item.placeholder"
-          >
-            <template v-for="option in formConfig[item.options]">
-              <Option
-                :label="item.labelKey ? option[item.labelKey] : option.label"
-                :value="item.valueKey ? option[item.valueKey] : option.value"
-                :key="item.valueKey ? option[item.valueKey] : option.value"
+    <ValidationObserver ref="observer">
+      <Form :label-width="100">
+        <template v-for="item in formConfig.itemConfigs">
+          <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value">
+            <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              <Input
+                v-model="formConfig.values[item.value]"
+                style="width:90%"
+                :type="item.type"
+                :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
+                :placeholder="item.placeholder"
               >
-              </Option>
-            </template>
-          </Select>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+              </Input>
+              <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+            </FormItem>
+            <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :error="errors[0]">
+              <Select
+                v-model="formConfig.values[item.value]"
+                filterable
+                style="width:90%"
+                :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
+                :multiple="item.multiple"
+                :placeholder="item.placeholder"
+              >
+                <template v-for="option in formConfig[item.options]">
+                  <Option
+                    :label="item.labelKey ? option[item.labelKey] : option.label"
+                    :value="item.valueKey ? option[item.valueKey] : option.value"
+                    :key="item.valueKey ? option[item.valueKey] : option.value"
+                  >
+                  </Option>
+                </template>
+              </Select>
+              <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+            </FormItem>
+          </ValidationProvider>
+        </template>
+        <FormItem>
+          <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
         </FormItem>
-        <!-- </ValidationProvider> -->
-      </template>
-      <FormItem>
-        <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
-      </FormItem>
-    </Form>
-    <!-- </ValidationObserver> -->
+      </Form>
+    </ValidationObserver>
   </div>
 </template>
 

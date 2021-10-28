@@ -153,7 +153,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		requestIdList = append(requestIdList, v.Request)
 	}
 	var requestTables []*models.RequestTable
-	x.SQL("select t1.name,t1.reporter,t1.report_time,t2.name as request_template from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id in ('" + strings.Join(requestIdList, "','") + "')").Find(&requestTables)
+	x.SQL("select t1.id,t1.name,t1.reporter,t1.report_time,t2.name as request_template from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id in ('" + strings.Join(requestIdList, "','") + "')").Find(&requestTables)
 	requestMap := make(map[string]*models.RequestTable)
 	for _, v := range requestTables {
 		requestMap[v.Id] = v

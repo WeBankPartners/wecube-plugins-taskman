@@ -26,7 +26,7 @@
         </Select>
         <Divider plain>{{ $t('custom_form') }}</Divider>
         <draggable
-          class="dragArea list-group"
+          class="dragArea"
           :list="customElement"
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
@@ -43,7 +43,7 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea list-group" :list="item.attrs" group="people" :move="onMove" @change="log">
+              <draggable class="dragArea" :list="item.attrs" group="people" :move="onMove" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   :class="['list-group-item', element.isActive ? 'active-zone' : '']"

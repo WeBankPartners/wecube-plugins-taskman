@@ -59,7 +59,7 @@ export default {
       modalConfig: {
         isShow: false,
         isAdd: true,
-        title: 'Demo',
+        title: '',
         itemConfigs: [
           { label: 'name', value: 'name', rules: 'required', type: 'text' },
           {
@@ -229,7 +229,7 @@ export default {
     },
     async editTemp (row) {
       this.modalConfig.values = { ...row }
-      this.modalConfig.title = this.$t('edit') + this.$t('tm_template_group') + ':' + row.name
+      this.modalConfig.title = this.$t('edit') + ':' + row.name
       this.modalConfig.isAdd = false
       this.getRole()
     },

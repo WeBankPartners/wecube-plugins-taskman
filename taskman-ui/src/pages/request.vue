@@ -31,7 +31,9 @@ export default {
       activeTab: 'my_drafts'
     }
   },
-  mounted () {},
+  mounted () {
+    this.activeTab = this.$route.query.activeTab || 'my_drafts'
+  },
   methods: {
     addTemplate () {
       this.$router.push({

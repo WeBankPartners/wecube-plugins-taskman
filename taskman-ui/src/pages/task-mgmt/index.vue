@@ -1,70 +1,73 @@
 <template>
-  <div style="width:60%;margin: 0 auto;">
-    <div>
-      <Steps :current="activeStep">
-        <template v-for="(step, stepIndex) in timeStep">
-          <Step :title="step.name" :key="stepIndex"></Step>
-        </template>
-      </Steps>
-    </div>
-    <div class="task-form">
-      <Collapse simple v-model="openPanel">
-        <template v-for="(data, dataIndex) in dataInfo">
-          <Panel :name="dataIndex + ''" :key="dataIndex">
-            <template v-if="dataIndex === 0">
-              <Tag>{{ $t('request_name') }}:{{ data.requestName }}</Tag>
-              <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
-              <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
-            </template>
-            <template v-else-if="dataIndex < dataInfo.length - 1">
-              <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
-              <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
-              <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
-            </template>
-            <template v-else>
-              <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
-              <template v-if="data.status === 'done'">
+  <div style="margin: 24px">
+    <Button @click="backToTask" icon="ios-undo-outline" style="margin-bottom: 8px">{{ $t('back_to_template') }}</Button>
+    <div style="width: 84%;margin: 0 auto;">
+      <div>
+        <Steps :current="activeStep">
+          <template v-for="(step, stepIndex) in timeStep">
+            <Step :title="step.name" :key="stepIndex"></Step>
+          </template>
+        </Steps>
+      </div>
+      <div class="task-form">
+        <Collapse simple v-model="openPanel">
+          <template v-for="(data, dataIndex) in dataInfo">
+            <Panel :name="dataIndex + ''" :key="dataIndex">
+              <template v-if="dataIndex === 0">
+                <Tag>{{ $t('request_name') }}:{{ data.requestName }}</Tag>
+                <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
+                <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
+              </template>
+              <template v-else-if="dataIndex < dataInfo.length - 1">
+                <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
                 <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
                 <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
               </template>
-            </template>
-            <p slot="content">
-              <Tabs :value="data.activeTab">
-                <template v-for="form in data.formData">
-                  <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
-                    <TaskData
-                      :data="form"
-                      :isDisabled="!data.editable"
-                      :requestId="requestId"
-                      :enforceDisable="enforceDisable"
-                    ></TaskData>
-                  </TabPane>
+              <template v-else>
+                <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
+                <template v-if="data.status === 'done'">
+                  <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
+                  <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
                 </template>
-              </Tabs>
-              <span>
-                <div v-if="dataIndex !== 0">
-                  <Form :label-width="80" style="margin: 16px 0">
-                    <FormItem :label="$t('approval_result')" v-if="data.nextOption.length !== 0">
-                      <Select v-model="data.choseOption" :disabled="!data.editable">
-                        <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
-                      </Select>
-                    </FormItem>
-                    <FormItem :label="$t('approval_comments')">
-                      <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
-                    </FormItem>
-                  </Form>
-                  <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
-                    $t('save')
-                  }}</Button>
-                  <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
-                    $t('commit')
-                  }}</Button>
-                </div>
-              </span>
-            </p>
-          </Panel>
-        </template>
-      </Collapse>
+              </template>
+              <p slot="content">
+                <Tabs :value="data.activeTab">
+                  <template v-for="form in data.formData">
+                    <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
+                      <TaskData
+                        :data="form"
+                        :isDisabled="!data.editable"
+                        :requestId="requestId"
+                        :enforceDisable="enforceDisable"
+                      ></TaskData>
+                    </TabPane>
+                  </template>
+                </Tabs>
+                <span>
+                  <div v-if="dataIndex !== 0">
+                    <Form :label-width="80" style="margin: 16px 0">
+                      <FormItem :label="$t('approval_result')" v-if="data.nextOption.length !== 0">
+                        <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                          <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem :label="$t('approval_comments')">
+                        <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
+                      </FormItem>
+                    </Form>
+                    <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                      $t('save')
+                    }}</Button>
+                    <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
+                      $t('commit')
+                    }}</Button>
+                  </div>
+                </span>
+              </p>
+            </Panel>
+          </template>
+        </Collapse>
+      </div>
     </div>
   </div>
 </template>
@@ -91,6 +94,9 @@ export default {
     this.getTaskDetail()
   },
   methods: {
+    backToTask () {
+      this.$router.push({ path: '/taskman/task-mgmt' })
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
@@ -144,6 +150,7 @@ export default {
 <style scoped lang="scss">
 .task-form {
   height: calc(100vh - 100px);
+  margin-top: 24px;
   overflow: auto;
 }
 </style>

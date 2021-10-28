@@ -283,7 +283,7 @@ export default {
   },
   // // props: ['requestTemplateId'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 300
+    this.MODALHEIGHT = document.body.scrollHeight - 400
     if (!!this.$parent.requestTemplateId !== false) {
       this.getSelectedForm()
       this.getInitData()

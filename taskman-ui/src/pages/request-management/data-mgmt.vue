@@ -3,64 +3,66 @@
     <Button @click="addRow" type="primary" :disabled="formDisable || jumpFrom === 'group_handle'">{{
       $t('add')
     }}</Button>
-    <table width="100%" border="0" cellspacing="0" cellpadding="0">
-      <tr>
-        <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
-        <td width="85%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
-        <td width="10%" class="padding-style" style="text-align: center">{{ $t('action') }}</td>
-      </tr>
-      <template v-for="(data, dataIndex) in tableData">
-        <tr :key="data.id">
-          <td class="padding-style" style="text-align: center">{{ dataIndex + 1 }}</td>
-          <td class="padding-style">
-            <div
-              class="list-group-item"
-              :style="{ width: (element.width / 24) * 100 + '%' }"
-              v-for="element in form"
-              :key="element.id"
-            >
-              <div>{{ element.title }}:</div>
-              <Input
-                v-if="element.elementType === 'input'"
-                v-model="data[element.name]"
-                placeholder=""
-                :disabled="formDisable || jumpFrom === 'group_handle'"
-                style="width: calc(100% - 30px);"
-              />
-              <Input
-                v-if="element.elementType === 'textarea'"
-                v-model="data[element.name]"
-                type="textarea"
-                :disabled="formDisable || jumpFrom === 'group_handle'"
-                style="width: calc(100% - 30px);"
-              />
-              <Select
-                v-if="element.elementType === 'select'"
-                v-model="data[element.name]"
-                @on-open-change="getRefOptions(element, data, dataIndex)"
-                :disabled="formDisable || jumpFrom === 'group_handle'"
-                style="width: calc(100% - 30px);"
-              >
-                <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
-                  item.key_name
-                }}</Option>
-              </Select>
-            </div>
-          </td>
-          <td class="padding-style" style="text-align: center">
-            <Button
-              style="margin-left: 4px"
-              @click="deleteRow(dataIndex)"
-              :disabled="formDisable || jumpFrom === 'group_handle'"
-              size="small"
-              type="error"
-            >
-              {{ $t('delete') }}
-            </Button>
-          </td>
+    <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto', width: '100%' }">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
+          <td width="85%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
+          <td width="10%" class="padding-style" style="text-align: center">{{ $t('action') }}</td>
         </tr>
-      </template>
-    </table>
+        <template v-for="(data, dataIndex) in tableData">
+          <tr :key="data.id">
+            <td class="padding-style" style="text-align: center">{{ dataIndex + 1 }}</td>
+            <td class="padding-style">
+              <div
+                class="list-group-item"
+                :style="{ width: (element.width / 24) * 100 + '%' }"
+                v-for="element in form"
+                :key="element.id"
+              >
+                <div>{{ element.title }}:</div>
+                <Input
+                  v-if="element.elementType === 'input'"
+                  v-model="data[element.name]"
+                  placeholder=""
+                  :disabled="formDisable || jumpFrom === 'group_handle'"
+                  style="width: calc(100% - 30px);"
+                />
+                <Input
+                  v-if="element.elementType === 'textarea'"
+                  v-model="data[element.name]"
+                  type="textarea"
+                  :disabled="formDisable || jumpFrom === 'group_handle'"
+                  style="width: calc(100% - 30px);"
+                />
+                <Select
+                  v-if="element.elementType === 'select'"
+                  v-model="data[element.name]"
+                  @on-open-change="getRefOptions(element, data, dataIndex)"
+                  :disabled="formDisable || jumpFrom === 'group_handle'"
+                  style="width: calc(100% - 30px);"
+                >
+                  <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
+                    item.key_name
+                  }}</Option>
+                </Select>
+              </div>
+            </td>
+            <td class="padding-style" style="text-align: center">
+              <Button
+                style="margin-left: 4px"
+                @click="deleteRow(dataIndex)"
+                :disabled="formDisable || jumpFrom === 'group_handle'"
+                size="small"
+                type="error"
+              >
+                {{ $t('delete') }}
+              </Button>
+            </td>
+          </tr>
+        </template>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -70,6 +72,7 @@ export default {
   name: '',
   data () {
     return {
+      MODALHEIGHT: 200,
       formDisable: false,
       jumpFrom: '',
       requestId: '',
@@ -81,7 +84,9 @@ export default {
       refKeys: [] // 引用类型字段集合
     }
   },
-  mounted () {},
+  mounted () {
+    this.MODALHEIGHT = document.body.scrollHeight - 500
+  },
   methods: {
     addRow () {
       let entityData = {}

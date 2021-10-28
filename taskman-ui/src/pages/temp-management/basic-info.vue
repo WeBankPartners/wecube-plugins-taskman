@@ -1,5 +1,5 @@
 <template>
-  <div style="width:40%;margin: 0 auto;">
+  <div style="width:40%;margin: 0 auto;min-width:700px">
     <!-- <ValidationObserver ref="observer"> -->
     <Form :label-width="100">
       <template v-for="item in formConfig.itemConfigs">

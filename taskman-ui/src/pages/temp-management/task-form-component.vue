@@ -314,7 +314,7 @@ export default {
   },
   props: ['currentNode', 'node', 'requestTemplateId'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 300
+    this.MODALHEIGHT = document.body.scrollHeight - 480
     this.nodeId = this.currentNode
     this.nodeData = this.node
     this.initPage()

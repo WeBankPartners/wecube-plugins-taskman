@@ -108,9 +108,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		for _, v := range rowData {
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
 			if v.ReportTime != "" {
-				v.ExpireTime, v.ExpectTime = calcExpireTime(v.ReportTime, v.ExpectTime, v.ExpireDay)
-			} else {
-				v.ExpectTime = ""
+				v.ExpireTime, _ = calcExpireTime(v.ReportTime, "", v.ExpireDay)
 			}
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
@@ -237,14 +235,14 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
 	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", requestTemplateObj.ExpireDay, fmt.Sprintf("%d", requestTemplateObj.ExpireDay+2), param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", requestTemplateObj.ExpireDay, param.ExpectTime, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
 	actions = append(actions, &requestInsertAction)
 	return transactionWithoutForeignCheck(actions)
 }
 
 func UpdateRequest(param *models.RequestTable) error {
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set name=?,emergency=?,updated_by=?,updated_time=? where id=?", param.Name, param.Emergency, param.UpdatedBy, nowTime, param.Id)
+	_, err := x.Exec("update request set name=?,expect_time=?,emergency=?,updated_by=?,updated_time=? where id=?", param.Name, param.ExpectTime, param.Emergency, param.UpdatedBy, nowTime, param.Id)
 	return err
 }
 

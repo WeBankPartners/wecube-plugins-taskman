@@ -89,5 +89,6 @@
   "index": "序号",
   "form": "表单",
   "estimated_finish_time": "预计完成时间",
-  "expected_completion_time": "期望完成时间"
+  "expected_completion_time": "期望完成时间",
+  "unclassified": "未分组"
 }

@@ -4,7 +4,7 @@
       $t('back_to_template')
     }}</Button>
     <Row type="flex">
-      <Col span="20">
+      <Col span="20" offset="1">
         <Steps :current="currentStep">
           <Step icon="ios-add-circle">
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
@@ -20,7 +20,7 @@
           </Step>
         </Steps>
       </Col>
-      <Col span="4">
+      <Col span="3">
         <Button @click="confirmTemplate" :disabled="currentStep !== 3" size="small" type="primary">{{
           $t('publish_template')
         }}</Button>

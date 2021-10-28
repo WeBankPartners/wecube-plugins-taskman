@@ -46,7 +46,7 @@
               <draggable class="dragArea list-group" :list="item.attrs" group="people" :move="onMove" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
-                  class="list-group-item"
+                  :class="['list-group-item', element.isActive ? 'active-zone' : '']"
                   :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
@@ -278,6 +278,10 @@ export default {
         width: 24,
         refEntity: '',
         refPackageName: ''
+      },
+      activeTag: {
+        itemGroupIndex: -1,
+        attrIndex: -1
       }
     }
   },
@@ -431,7 +435,15 @@ export default {
       })
     },
     selectElement (itemIndex, eleIndex) {
+      if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {
+        this.finalElement[this.activeTag.itemGroupIndex].attrs[this.activeTag.attrIndex].isActive = false
+      }
+      this.activeTag = {
+        itemGroupIndex: itemIndex,
+        attrIndex: eleIndex
+      }
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
+      this.editElement.isActive = true
     },
     async getSelectedForm () {
       this.formItemOptions = []
@@ -495,6 +507,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.active-zone {
+  color: red;
+}
 .ivu-form-item {
   margin-bottom: 8px;
 }

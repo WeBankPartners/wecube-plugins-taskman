@@ -3,7 +3,7 @@
     <div>
       <Row>
         <Col span="4">
-          <Button @click="addTemplate">{{ $t('initiate_request') }}</Button>
+          <Button @click="addTemplate" type="success">{{ $t('initiate_request') }}</Button>
         </Col>
       </Row>
     </div>

@@ -40,6 +40,31 @@ type TaskTable struct {
 	ExpireDay         int      `json:"expireDay" xorm:"expire_day"`
 }
 
+type TaskListObj struct {
+	Id               string       `json:"id" xorm:"id"`
+	Name             string       `json:"name" xorm:"name"`
+	Description      string       `json:"description" xorm:"description"`
+	Status           string       `json:"status" xorm:"status"`
+	Request          string       `json:"request" xorm:"request"`
+	TaskTemplate     string       `json:"taskTemplate" xorm:"task_template"`
+	NodeDefId        string       `json:"nodeDefId" xorm:"node_def_id"`
+	NodeName         string       `json:"nodeName" xorm:"node_name"`
+	Emergency        int          `json:"emergency" xorm:"emergency"`
+	Result           string       `json:"result" xorm:"result"`
+	Reporter         string       `json:"reporter" xorm:"reporter"`
+	ReportTime       string       `json:"reportTime" xorm:"report_time"`
+	Owner            string       `json:"owner" xorm:"owner"`
+	NextOption       string       `json:"nextOption" xorm:"next_option"`
+	ChoseOption      string       `json:"choseOption" xorm:"chose_option"`
+	CreatedBy        string       `json:"createdBy" xorm:"created_by"`
+	CreatedTime      string       `json:"createdTime" xorm:"created_time"`
+	UpdatedBy        string       `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime      string       `json:"updatedTime" xorm:"updated_time"`
+	OperationOptions []string     `json:"operationOptions" xorm:"-"`
+	ExpireDay        int          `json:"expireDay" xorm:"expire_day"`
+	RequestObj       RequestTable `json:"requestObj" xorm:"-"`
+}
+
 type TaskMetaResult struct {
 	Status  string             `json:"status"`
 	Message string             `json:"message"`

@@ -123,8 +123,8 @@ func remakeTaskReportRole(reportRoles string) string {
 	return ""
 }
 
-func ListTask(param *models.QueryRequestParam, userRoles []string, operator string) (pageInfo models.PageInfo, rowData []*models.TaskTable, err error) {
-	rowData = []*models.TaskTable{}
+func ListTask(param *models.QueryRequestParam, userRoles []string, operator string) (pageInfo models.PageInfo, rowData []*models.TaskListObj, err error) {
+	rowData = []*models.TaskListObj{}
 	roleFilterSql := "1=1"
 	if len(userRoles) > 0 {
 		roleFilterList := []string{}
@@ -144,8 +144,22 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		queryParam = append(queryParam, pageParam...)
 	}
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
+	if err != nil {
+		return models.PageInfo{}, nil, err
+	}
+	var requestIdList []string
 	for _, v := range rowData {
 		buildTaskOperation(v, operator)
+		requestIdList = append(requestIdList, v.Request)
+	}
+	var requestTables []*models.RequestTable
+	x.SQL("select t1.name,t1.reporter,t1.report_time,t2.name as request_template from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id in ('" + strings.Join(requestIdList, "','") + "')").Find(&requestTables)
+	requestMap := make(map[string]*models.RequestTable)
+	for _, v := range requestTables {
+		requestMap[v.Id] = v
+	}
+	for _, v := range rowData {
+		v.RequestObj = *requestMap[v.Request]
 	}
 	return
 }
@@ -440,11 +454,21 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 		return taskObj, err
 	}
 	taskObj, _ = getSimpleTask(taskId)
-	buildTaskOperation(&taskObj, operator)
+	if taskObj.Status == "created" {
+		taskObj.OperationOptions = []string{"mark"}
+	} else if taskObj.Status == "marked" || taskObj.Status == "doing" {
+		if taskObj.Owner == operator {
+			taskObj.OperationOptions = []string{"start"}
+		} else {
+			taskObj.OperationOptions = []string{"mark"}
+		}
+	} else {
+		taskObj.OperationOptions = []string{}
+	}
 	return taskObj, nil
 }
 
-func buildTaskOperation(taskObj *models.TaskTable, operator string) {
+func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	if taskObj.Status == "created" {
 		taskObj.OperationOptions = []string{"mark"}
 	} else if taskObj.Status == "marked" || taskObj.Status == "doing" {

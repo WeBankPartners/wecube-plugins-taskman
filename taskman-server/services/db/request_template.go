@@ -620,14 +620,27 @@ func SetRequestTemplateToCreated(id, operator string) {
 
 func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
 	result = []*models.UserRequestTemplateQueryObj{}
-	var requestTemplateTable []*models.RequestTemplateTable
-	err = x.SQL("select * from request_template where del_flag=0 and id in (select request_template from request_template_role where `role` in ('" + strings.Join(userRoles, "','") + "')) order by `group`,id").Find(&requestTemplateTable)
+	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select * from request_template where del_flag=2 and id in (select request_template from request_template_role where `role` in ('" + strings.Join(userRoles, "','") + "')) order by `group`,tags,id").Find(&requestTemplateTable)
 	if err != nil {
 		return
 	}
 	if len(requestTemplateTable) == 0 {
 		return
 	}
+	recordIdMap := make(map[string]int)
+	for _, v := range requestTemplateTable {
+		if v.RecordId != "" {
+			recordIdMap[v.RecordId] = 1
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if _, b := recordIdMap[v.Id]; b {
+			continue
+		}
+		tmpTemplateTable = append(tmpTemplateTable, v)
+	}
+	requestTemplateTable = tmpTemplateTable
 	var groupTable []*models.RequestTemplateGroupTable
 	x.SQL("select id,name,description from request_template_group").Find(&groupTable)
 	groupMap := make(map[string]*models.RequestTemplateGroupTable)
@@ -648,7 +661,32 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		lastGroup := requestTemplateTable[len(requestTemplateTable)-1].Group
 		result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[lastGroup].Id, GroupName: groupMap[lastGroup].Name, GroupDescription: groupMap[lastGroup].Description, Templates: tmpTemplateList})
 	}
+	for _, v := range result {
+		v.Tags = groupRequestTemplateByTags(v.Templates)
+	}
 	return
+}
+
+func groupRequestTemplateByTags(templates []*models.RequestTemplateTable) []*models.UserRequestTemplateTagObj {
+	result := []*models.UserRequestTemplateTagObj{}
+	if len(templates) == 0 {
+		return result
+	}
+	tmpTag := templates[0].Tags
+	tmpTemplateList := []*models.RequestTemplateTable{}
+	for _, v := range templates {
+		if v.Tags != tmpTag {
+			result = append(result, &models.UserRequestTemplateTagObj{Tag: tmpTag, Templates: tmpTemplateList})
+			tmpTemplateList = []*models.RequestTemplateTable{}
+			tmpTag = v.Tags
+		}
+		tmpTemplateList = append(tmpTemplateList, v)
+	}
+	if len(tmpTemplateList) > 0 {
+		lastTag := templates[len(templates)-1].Tags
+		result = append(result, &models.UserRequestTemplateTagObj{Tag: lastTag, Templates: tmpTemplateList})
+	}
+	return result
 }
 
 func getRequestTemplateRoles(requestTemplateId, roleType string) []string {

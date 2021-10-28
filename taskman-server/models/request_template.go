@@ -144,10 +144,16 @@ type ProcNodeQueryResponse struct {
 }
 
 type UserRequestTemplateQueryObj struct {
-	GroupId          string                  `json:"groupId"`
-	GroupName        string                  `json:"groupName"`
-	GroupDescription string                  `json:"groupDescription"`
-	Templates        []*RequestTemplateTable `json:"templates"`
+	GroupId          string                       `json:"groupId"`
+	GroupName        string                       `json:"groupName"`
+	GroupDescription string                       `json:"groupDescription"`
+	Templates        []*RequestTemplateTable      `json:"-"`
+	Tags             []*UserRequestTemplateTagObj `json:"tags"`
+}
+
+type UserRequestTemplateTagObj struct {
+	Tag       string                  `json:"tag"`
+	Templates []*RequestTemplateTable `json:"templates"`
 }
 
 type RequestTemplateFormStruct struct {

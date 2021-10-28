@@ -175,9 +175,13 @@ func calcExpireTime(reportTime, expectTime string, expireDay int) (expire, expec
 	if err != nil {
 		return
 	}
-	expire = t.Add(time.Duration(expireDay*24) * time.Hour).Format(models.DateTimeFormat)
-	expectF, _ := strconv.ParseFloat(expectTime, 64)
-	expect = t.Add(time.Duration(expectF*1440) * time.Minute).Format(models.DateTimeFormat)
+	if expireDay > 0 {
+		expire = t.Add(time.Duration(expireDay*24) * time.Hour).Format(models.DateTimeFormat)
+	}
+	if expectTime != "" {
+		expectF, _ := strconv.ParseFloat(expectTime, 64)
+		expect = t.Add(time.Duration(expectF*1440) * time.Minute).Format(models.DateTimeFormat)
+	}
 	return
 }
 

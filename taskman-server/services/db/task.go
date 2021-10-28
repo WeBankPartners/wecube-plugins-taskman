@@ -55,8 +55,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 		}
 	} else {
 		// Custom task create
-		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
+		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,emergency,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
 		actions = append(actions, &taskInsertAction)
 		err = transaction(actions)
 		return
@@ -134,7 +134,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.owner from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
+	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.owner,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_day from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -151,6 +151,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 	for _, v := range rowData {
 		buildTaskOperation(v, operator)
 		requestIdList = append(requestIdList, v.Request)
+		v.ExpireTime, _ = calcExpireTime(v.CreatedTime, "", v.ExpireDay)
 	}
 	var requestTables []*models.RequestTable
 	x.SQL("select t1.id,t1.name,t1.reporter,t1.report_time,t2.name as request_template from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id in ('" + strings.Join(requestIdList, "','") + "')").Find(&requestTables)
@@ -354,7 +355,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update task set reporter=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", operator, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set reporter=?,report_time=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", operator, nowTime, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}

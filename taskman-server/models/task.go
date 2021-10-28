@@ -62,6 +62,7 @@ type TaskListObj struct {
 	UpdatedTime      string       `json:"updatedTime" xorm:"updated_time"`
 	OperationOptions []string     `json:"operationOptions" xorm:"-"`
 	ExpireDay        int          `json:"expireDay" xorm:"expire_day"`
+	ExpireTime       string       `json:"expireTime" xorm:"-"`
 	RequestObj       RequestTable `json:"requestObj" xorm:"-"`
 }
 

@@ -75,7 +75,7 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea" :list="item.attrs" group="people">
+              <draggable class="dragArea" :list="item.attrs" group="people" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   :class="['list-group-item', element.isActive ? 'active-zone' : '']"
@@ -324,6 +324,14 @@ export default {
     this.initPage()
   },
   methods: {
+    log (log) {
+      this.finalElement.forEach(l => {
+        l.attrs.forEach(attr => {
+          attr.itemGroup = l.itemGroup
+          attr.itemGroupName = l.itemGroupName
+        })
+      })
+    },
     initData (currentNode, node, requestTemplateId) {
       this.nodeId = currentNode
       this.nodeData = node

@@ -304,13 +304,12 @@ export default {
       return true
     },
     log (log) {
-      // console.log(log)
-      // this.finalElement.forEach(l => {
-      //   l.attrs.forEach(attr => {
-      //     attr.itemGroup = l.itemGroup
-      //     attr.itemGroupName = l.itemGroupName
-      //   })
-      // })
+      this.finalElement.forEach(l => {
+        l.attrs.forEach(attr => {
+          attr.itemGroup = l.itemGroup
+          attr.itemGroupName = l.itemGroupName
+        })
+      })
     },
     async getInitData () {
       const { statusCode, data } = await getRequestFormTemplateData(this.$parent.requestTemplateId)

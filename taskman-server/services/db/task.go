@@ -96,7 +96,48 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 			actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], newTaskFormObj.Id, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, tmpItemGroup, formDataItem.Oid}})
 		}
 	}
+	customItems, tmpErr := getLastCustomFormItem(newTaskObj.Request, newTaskFormObj.FormTemplate, newTaskFormObj.Id)
+	if tmpErr != nil {
+		err = fmt.Errorf("Try to get custom item fail,%s ", tmpErr.Error())
+		return
+	}
+	if len(customItems) > 0 {
+		tmpGuidList := guid.CreateGuidList(len(customItems))
+		for i, customItem := range customItems {
+			actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], customItem.Form, customItem.FormItemTemplate, customItem.Name, customItem.Value, customItem.ItemGroup, customItem.RowDataId}})
+		}
+	}
 	err = transactionWithoutForeignCheck(actions)
+	return
+}
+
+func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) (result []*models.FormItemTable, err error) {
+	result = []*models.FormItemTable{}
+	if requestId == "" || taskFormTemplateId == "" {
+		return
+	}
+	var formItemTemplates []*models.FormItemTemplateTable
+	err = x.SQL("select * from form_item_template where entity='' and form_template=?", taskFormTemplateId).Find(&formItemTemplates)
+	if len(formItemTemplates) == 0 || err != nil {
+		return
+	}
+	groupNameMap := make(map[string]string)
+	for _, v := range formItemTemplates {
+		groupNameMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)] = v.Id
+	}
+	filterSql := ""
+	var taskTable []*models.TaskTable
+	err = x.SQL("select id,name,form,task_template from task where status='done' and request=? order by created_time desc").Find(&taskTable)
+	if len(taskTable) == 0 {
+		filterSql = fmt.Sprintf("select form from request where id='%s'", requestId)
+	} else {
+		filterSql = fmt.Sprintf("select form from task where id='%s'", taskTable[0].Id)
+	}
+	var formItems []*models.FormItemTable
+	err = x.SQL("select t1.* from form_item t1 left join form_item_template t2 on t1.form_item_template=t2.id where t2.entity='' and t1.form in (" + filterSql + ")").Find(&formItems)
+	for _, v := range formItems {
+		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)], Name: v.Name, ItemGroup: v.ItemGroup, Value: v.Value, RowDataId: v.RowDataId})
+	}
 	return
 }
 

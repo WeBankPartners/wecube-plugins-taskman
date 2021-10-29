@@ -416,8 +416,8 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
-	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,updated_by=?,updated_time=? where id=?"}
-	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.UpdatedBy, nowTime, param.Id}
+	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,updated_by=?,updated_time=? where id=?"}
+	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.UpdatedBy, nowTime, param.Id}
 	actions = append(actions, &updateAction)
 	actions = append(actions, &execAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{param.Id}})
 	for _, v := range param.MGMTRoles {
@@ -621,7 +621,7 @@ func SetRequestTemplateToCreated(id, operator string) {
 func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
 	result = []*models.UserRequestTemplateQueryObj{}
 	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
-	err = x.SQL("select * from request_template where del_flag=2 and id in (select request_template from request_template_role where `role` in ('" + strings.Join(userRoles, "','") + "')) order by `group`,tags,id").Find(&requestTemplateTable)
+	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ('" + strings.Join(userRoles, "','") + "'))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ('" + strings.Join(userRoles, "','") + "'))) order by `group`,tags,id").Find(&requestTemplateTable)
 	if err != nil {
 		return
 	}
@@ -632,6 +632,11 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	for _, v := range requestTemplateTable {
 		if v.RecordId != "" {
 			recordIdMap[v.RecordId] = 1
+		}
+		if v.Version != "" {
+			v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
+		} else {
+			v.Name = fmt.Sprintf("%s(beta)", v.Name)
 		}
 	}
 	for _, v := range requestTemplateTable {

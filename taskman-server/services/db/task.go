@@ -73,7 +73,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 		if len(taskTemplateTable) > 0 {
 			newTaskObj.TaskTemplate = taskTemplateTable[0].Id
 			newTaskObj.NodeName = taskTemplateTable[0].NodeName
-			newTaskObj.ExpireDay = taskTemplateTable[0].ExpireDay
+			newTaskObj.ExpireTime = calcExpireTime(nowTime, taskTemplateTable[0].ExpireDay)
 			newTaskObj.Name = taskTemplateTable[0].Name
 			newTaskObj.Description = taskTemplateTable[0].Description
 			newTaskObj.Reporter = requestTable[0].Reporter
@@ -85,8 +85,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 			return
 		}
 	}
-	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_day,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireDay, "system", nowTime, "system", nowTime}
+	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, "system", nowTime, "system", nowTime}
 	actions = append(actions, &taskInsertAction)
 	actions = append(actions, &execAction{Sql: "insert into form(id,name,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.Name, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {
@@ -175,7 +175,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.owner,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_day from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
+	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.owner,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_time from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -192,7 +192,6 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 	for _, v := range rowData {
 		buildTaskOperation(v, operator)
 		requestIdList = append(requestIdList, v.Request)
-		v.ExpireTime, _ = calcExpireTime(v.CreatedTime, "", v.ExpireDay)
 	}
 	var requestTables []*models.RequestTable
 	x.SQL("select t1.id,t1.name,t1.reporter,t1.report_time,t2.name as request_template from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id in ('" + strings.Join(requestIdList, "','") + "')").Find(&requestTables)
@@ -233,6 +232,8 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
 	}
 	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery.ExpireTime = requests[0].ExpireTime
+	requestQuery.ExpectTime = requests[0].ExpectTime
 	requestQuery.FormData = requestCache.Data
 	result.Data = []*models.TaskQueryObj{&requestQuery}
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
@@ -263,7 +264,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 }
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}}
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime}
 	if taskObj.Status != "done" {
 		taskForm.Editable = true
 	}

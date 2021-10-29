@@ -87,7 +87,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		permission = "USE"
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -107,9 +107,6 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		var actions []*execAction
 		for _, v := range rowData {
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
-			if v.ReportTime != "" {
-				v.ExpireTime, _ = calcExpireTime(v.ReportTime, "", v.ExpireDay)
-			}
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
 				if newStatus == "InternallyTerminated" {
@@ -168,25 +165,19 @@ func getInstanceStatus(instanceId, userToken string) string {
 	return status
 }
 
-func calcExpireTime(reportTime, expectTime string, expireDay int) (expire, expect string) {
+func calcExpireTime(reportTime string, expireDay int) (expire string) {
 	t, err := time.Parse(models.DateTimeFormat, reportTime)
 	if err != nil {
 		return
 	}
-	if expireDay > 0 {
-		expire = t.Add(time.Duration(expireDay*24) * time.Hour).Format(models.DateTimeFormat)
-	}
-	if expectTime != "" {
-		expectF, _ := strconv.ParseFloat(expectTime, 64)
-		expect = t.Add(time.Duration(expectF*1440) * time.Minute).Format(models.DateTimeFormat)
-	}
+	expire = t.Add(time.Duration(expireDay*24) * time.Hour).Format(models.DateTimeFormat)
 	return
 }
 
 func GetRequestWithRoot(requestId string) (result models.RequestTable, err error) {
 	result = models.RequestTable{}
 	var requestTable []*models.RequestTable
-	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache from request where id=?", requestId).Find(&requestTable)
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache,expire_time,expect_time from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
 	}
@@ -234,8 +225,8 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
-	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_day,expect_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", requestTemplateObj.ExpireDay, param.ExpectTime, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time,expect_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
 	actions = append(actions, &requestInsertAction)
 	return transactionWithoutForeignCheck(actions)
 }
@@ -610,7 +601,8 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	result = respResult.Data
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,report_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
+	expireTime := calcExpireTime(nowTime, requestTemplateTable[0].ExpireDay)
+	_, err = x.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,report_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, expireTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
 
@@ -901,8 +893,39 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData
 }
 
 func RecordRequestLog(requestId, operator, operation string) {
-	_, err := x.Exec("insert into task_operation_log(id,request,operation,operator,op_time) value (?,?,?,?,?)", guid.CreateGuid(), requestId, operation, operator, time.Now().Format(models.DateTimeFormat))
+	_, err := x.Exec("insert into operation_log(id,request,operation,operator,op_time) value (?,?,?,?,?)", guid.CreateGuid(), requestId, operation, operator, time.Now().Format(models.DateTimeFormat))
 	if err != nil {
 		log.Logger.Error("Record request operation log fail", log.Error(err))
 	}
+}
+
+func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err error) {
+	var taskTable []*models.TaskTable
+	err = x.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) > 0 {
+		result, err = GetTask(taskTable[0].Id)
+		return
+	}
+	// get request
+	var requests []*models.RequestTable
+	x.SQL("select * from request where id=?", requestId).Find(&requests)
+	if len(requests) == 0 {
+		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
+	}
+	var requestCache models.RequestPreDataDto
+	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
+	if err != nil {
+		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
+	}
+	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery.FormData = requestCache.Data
+	result.Data = []*models.TaskQueryObj{&requestQuery}
+	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
+	if len(result.TimeStep) > 0 {
+		result.TimeStep[0].Active = true
+	}
+	return
 }

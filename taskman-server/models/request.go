@@ -54,14 +54,13 @@ type RequestTable struct {
 	Cache               string `json:"cache" xorm:"cache"`
 	BindCache           string `json:"bindCache" xorm:"bind_cache"`
 	Result              string `json:"result" xorm:"result"`
-	ExpireDay           int    `json:"expireDay" xorm:"expire_day"`
+	ExpireTime          string `json:"expireTime" xorm:"expire_time"`
 	ExpectTime          string `json:"expectTime" xorm:"expect_time"`
 	CreatedBy           string `json:"createdBy" xorm:"created_by"`
 	CreatedTime         string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy           string `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime         string `json:"updatedTime" xorm:"updated_time"`
 	DelFlag             int    `json:"delFlag" xorm:"del_flag"`
-	ExpireTime          string `json:"expireTime" xorm:"-"`
 }
 
 type AttachFileTable struct {

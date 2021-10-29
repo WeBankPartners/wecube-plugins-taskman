@@ -37,7 +37,7 @@ type TaskTable struct {
 	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`
 	DelFlag           string   `json:"delFlag" xorm:"del_flag"`
 	OperationOptions  []string `json:"operationOptions" xorm:"-"`
-	ExpireDay         int      `json:"expireDay" xorm:"expire_day"`
+	ExpireTime        string   `json:"expireTime" xorm:"expire_time"`
 }
 
 type TaskListObj struct {
@@ -61,8 +61,7 @@ type TaskListObj struct {
 	UpdatedBy        string       `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime      string       `json:"updatedTime" xorm:"updated_time"`
 	OperationOptions []string     `json:"operationOptions" xorm:"-"`
-	ExpireDay        int          `json:"expireDay" xorm:"expire_day"`
-	ExpireTime       string       `json:"expireTime" xorm:"-"`
+	ExpireTime       string       `json:"expireTime" xorm:"expire_time"`
 	RequestObj       RequestTable `json:"requestObj" xorm:"-"`
 }
 
@@ -188,6 +187,8 @@ type TaskQueryObj struct {
 	Status      string                    `json:"status"`
 	NextOption  []string                  `json:"nextOption"`
 	ChoseOption string                    `json:"choseOption"`
+	ExpireTime  string                    `json:"expireTime"`
+	ExpectTime  string                    `json:"expectTime"`
 	FormData    []*RequestPreDataTableObj `json:"formData"`
 }
 

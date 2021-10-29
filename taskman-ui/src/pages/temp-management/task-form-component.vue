@@ -58,7 +58,7 @@
         </Select>
         <Divider plain>{{ $t('custom_form') }}</Divider>
         <draggable
-          class="dragArea list-group"
+          class="dragArea"
           :list="customElement"
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
@@ -75,10 +75,10 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea list-group" :list="item.attrs" group="people">
+              <draggable class="dragArea" :list="item.attrs" group="people" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
-                  class="list-group-item"
+                  :class="['list-group-item', element.isActive ? 'active-zone' : '']"
                   :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
@@ -309,6 +309,10 @@ export default {
         sort: 0,
         title: '',
         width: 24
+      },
+      activeTag: {
+        itemGroupIndex: -1,
+        attrIndex: -1
       }
     }
   },
@@ -320,6 +324,14 @@ export default {
     this.initPage()
   },
   methods: {
+    log (log) {
+      this.finalElement.forEach(l => {
+        l.attrs.forEach(attr => {
+          attr.itemGroup = l.itemGroup
+          attr.itemGroupName = l.itemGroupName
+        })
+      })
+    },
     initData (currentNode, node, requestTemplateId) {
       this.nodeId = currentNode
       this.nodeData = node
@@ -566,7 +578,15 @@ export default {
       }
     },
     selectElement (itemIndex, eleIndex) {
+      if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {
+        this.finalElement[this.activeTag.itemGroupIndex].attrs[this.activeTag.attrIndex].isActive = false
+      }
+      this.activeTag = {
+        itemGroupIndex: itemIndex,
+        attrIndex: eleIndex
+      }
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
+      this.editElement.isActive = true
     },
     removeForm (element, itemIndex, eleIndex) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
@@ -620,6 +640,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.active-zone {
+  color: red;
+}
 .ivu-form-item {
   margin-bottom: 8px;
 }

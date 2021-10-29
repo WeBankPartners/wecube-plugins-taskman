@@ -89,5 +89,6 @@
   "index": "Index",
   "form": "Form",
   "estimated_finish_time": "Estimated Finish Time",
-  "expected_completion_time": "Expected Completion Time"
+  "expected_completion_time": "Expected Completion Time",
+  "unclassified": "Unclassified"
 }

@@ -1,13 +1,20 @@
 <template>
-  <div class=" ">
+  <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
     <template v-for="tempG in templateGroup">
       <Card :key="tempG.groupId">
         <p slot="title">
           {{ tempG.groupName }}
         </p>
-        <div @click="choiceTemplate(temp)" class="diy-tag" v-for="temp in tempG.templates" :key="temp.id">
-          {{ temp.name }}
-        </div>
+        <template v-for="(tag, tagIndex) in tempG.tags">
+          <Card :key="tagIndex">
+            <p slot="title">
+              {{ tag.tag || $t('unclassified') }}
+            </p>
+            <div @click="choiceTemplate(temp)" class="diy-tag" v-for="temp in tag.templates" :key="temp.id">
+              {{ temp.name }}
+            </div>
+          </Card>
+        </template>
       </Card>
     </template>
   </div>
@@ -19,10 +26,12 @@ export default {
   name: '',
   data () {
     return {
+      MODALHEIGHT: 200,
       templateGroup: []
     }
   },
   mounted () {
+    this.MODALHEIGHT = document.body.scrollHeight - 400
     this.getTemplate()
   },
   methods: {

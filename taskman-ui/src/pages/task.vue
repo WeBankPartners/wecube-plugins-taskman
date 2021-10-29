@@ -62,7 +62,7 @@ export default {
         paging: true,
         sorting: {
           asc: false,
-          field: 'reportTime'
+          field: 'createdTime'
         }
       },
       tableColumns: [
@@ -72,7 +72,22 @@ export default {
         },
         {
           title: this.$t('emergency'),
-          key: 'emergency'
+          key: 'emergency',
+          width: 80
+        },
+        {
+          title: this.$t('request_name'),
+          key: '',
+          render: (h, params) => {
+            return <span>{params.row.requestObj.name}</span>
+          }
+        },
+        {
+          title: this.$t('template'),
+          key: '',
+          render: (h, params) => {
+            return <span>{params.row.requestObj.requestTemplate}</span>
+          }
         },
         {
           title: this.$t('node_name'),
@@ -84,7 +99,8 @@ export default {
         },
         {
           title: this.$t('status'),
-          key: 'status'
+          key: 'status',
+          width: 100
         },
         {
           title: this.$t('tm_updated_time'),

@@ -34,6 +34,15 @@
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
         </FormItem>
       </template>
+      <FormItem :label="$t('expected_completion_time')">
+        <DatePicker
+          type="date"
+          :value="formConfig.values.expectTime"
+          placeholder="Select date"
+          style="width: 200px"
+        ></DatePicker>
+      </FormItem>
+
       <FormItem>
         <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
       </FormItem>
@@ -61,25 +70,25 @@ export default {
             multiple: false,
             type: 'select',
             placeholder: ''
-          },
-          {
-            label: this.$t('expected_completion_time'),
-            value: 'expireDay',
-            rules: 'required',
-            options: 'emergencyOptions',
-            labelKey: 'label',
-            valueKey: 'value',
-            multiple: false,
-            type: 'select',
-            placeholder: ''
           }
+          // {
+          //   label: this.$t('expected_completion_time'),
+          //   value: 'expireDay',
+          //   rules: 'required',
+          //   options: 'emergencyOptions',
+          //   labelKey: 'label',
+          //   valueKey: 'value',
+          //   multiple: false,
+          //   type: 'select',
+          //   placeholder: ''
+          // }
         ],
         values: {
           id: '',
           name: '',
           emergency: 3,
           requestTemplate: '',
-          expireDay: 2
+          expectTime: ''
         },
         emergencyOptions: [
           { label: '1', value: 1 },

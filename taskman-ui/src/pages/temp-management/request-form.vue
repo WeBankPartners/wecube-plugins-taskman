@@ -18,7 +18,8 @@
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
       <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
-        <Divider plain>{{ $t('form_item') }}</Divider>
+        <Divider plain>{{ $t('preset') }}{{ $t('form_item') }}</Divider>
+        <template> </template>
         <Select v-model="selectedFormItem" @on-change="changeSelectedForm" multiple filterable>
           <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
             <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>

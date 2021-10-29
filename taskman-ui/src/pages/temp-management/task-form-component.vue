@@ -32,7 +32,7 @@
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
       <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
-        <Divider plain>{{ $t('input_items') }}</Divider>
+        <Divider plain>{{ $t('preset') }}{{ $t('input_items') }}</Divider>
         <Select v-model="selectedInputFormItem" @on-change="changeInputSelectedForm" multiple filterable>
           <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
             <Option
@@ -44,7 +44,7 @@
             >
           </OptionGroup>
         </Select>
-        <Divider plain>{{ $t('output_items') }}</Divider>
+        <Divider plain>{{ $t('preset') }}{{ $t('output_items') }}</Divider>
         <Select v-model="selectedOutputFormItem" @on-change="changeOutputSelectedForm" multiple filterable>
           <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
             <Option

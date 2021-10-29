@@ -99,13 +99,23 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
 	if len(rowData) > 0 {
 		var requestTemplateTable []*models.RequestTemplateTable
-		x.SQL("select id,name from request_template").Find(&requestTemplateTable)
+		x.SQL("select id,name,version from request_template").Find(&requestTemplateTable)
 		rtMap := make(map[string]string)
 		for _, v := range requestTemplateTable {
-			rtMap[v.Id] = v.Name
+			if v.Version != "" {
+				rtMap[v.Id] = fmt.Sprintf("%s(%s)", v.Name, v.Version)
+			} else {
+				rtMap[v.Id] = fmt.Sprintf("%s(beta)", v.Name)
+			}
 		}
 		var actions []*execAction
+		nowTime := time.Now().Format(models.DateTimeFormat)
 		for _, v := range rowData {
+			if v.ExpireTime != "" {
+				timeObj := models.RequestExpireObj{ReportTime: v.ReportTime, ExpireTime: v.ExpireTime, NowTime: nowTime}
+				calcRequestExpireObj(&timeObj)
+				v.ExpireObj = timeObj
+			}
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
@@ -125,6 +135,21 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 			}
 		}
 	}
+	return
+}
+
+func calcRequestExpireObj(param *models.RequestExpireObj) {
+	if param.ReportTime == "" || param.ExpireTime == "" {
+		return
+	}
+	reportT, _ := time.Parse(models.DateTimeFormat, param.ReportTime)
+	expireT, _ := time.Parse(models.DateTimeFormat, param.ExpireTime)
+	nowT, _ := time.Parse(models.DateTimeFormat, param.NowTime)
+	max := expireT.Sub(reportT).Seconds()
+	use := nowT.Sub(reportT).Seconds()
+	param.Percent = (use / max) * 100
+	param.TotalDay = max / 86400
+	param.LeftDay = (max - use) / 86400
 	return
 }
 

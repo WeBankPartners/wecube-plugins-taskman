@@ -49,7 +49,7 @@
     <!-- 7.插件列表 - 描述插件包中单个插件的输入和输出 -->
     <plugins>
         <plugin name="task">
-            <interface action="create-by-template" path="/taskman/api/v1/plugin/task/create" httpMethod="POST" isAsyncProcessing="Y" type="APPROVAL">
+            <interface action="create-by-template" path="/taskman/api/v1/plugin/task/create" httpMethod="POST" isAsyncProcessing="Y" type="DYNAMICFORM">
                 <inputParameters>
                     <parameter datatype="string" mappingType="system_variable" mappingSystemVariableName="CALLBACK_URL" required="Y">
                         callbackUrl
@@ -68,7 +68,7 @@
                     <parameter datatype="string" mappingType="context">taskFormOutput</parameter>
                 </outputParameters>
             </interface>
-            <interface action="create-custom" path="/taskman/api/v1/plugin/task/create" httpMethod="POST" isAsyncProcessing="Y" type="APPROVAL">
+            <interface action="create-custom" path="/taskman/api/v1/plugin/task/create" httpMethod="POST" isAsyncProcessing="Y" type="DYNAMICFORM">
                 <inputParameters>
                     <parameter datatype="string" mappingType="system_variable" mappingSystemVariableName="CALLBACK_URL" required="Y">
                         callbackUrl

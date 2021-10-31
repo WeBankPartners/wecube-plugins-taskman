@@ -5,8 +5,8 @@
         <Col span="4">
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
-        <Col span="4">
-          <Select v-model="status" clearable filterable style="width:90%" :placeholder="$t('status')">
+        <Col span="5">
+          <Select v-model="status" multiple clearable filterable style="width:90%" :placeholder="$t('status')">
             <template v-for="option in ['created', 'marked', 'doing', 'done']">
               <Option :label="option" :value="option" :key="option"> </Option>
             </template>
@@ -46,7 +46,7 @@ export default {
     return {
       MODALHEIGHT: 500,
       name: '',
-      status: '',
+      status: ['created', 'marked', 'doing'],
       tags: '',
       pagination: {
         pageSize: 10,
@@ -186,10 +186,10 @@ export default {
           value: this.name
         })
       }
-      if (this.status) {
+      if (this.status.length > 0) {
         this.payload.filters.push({
           name: 'status',
-          operator: 'eq',
+          operator: 'in',
           value: this.status
         })
       }

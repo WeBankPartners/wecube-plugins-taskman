@@ -12,7 +12,7 @@
             clearable
             filterable
             style="width:90%"
-            :placeholder="$t('procDefId')"
+            :placeholder="$t('template')"
           >
             <template v-for="option in templateOptions">
               <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
@@ -20,7 +20,7 @@
           </Select>
         </Col>
         <Col span="4">
-          <Select v-model="status" clearable filterable style="width:90%" :placeholder="$t('status')">
+          <Select v-model="status" multiple clearable filterable style="width:90%" :placeholder="$t('status')">
             <template v-for="option in requestStatus">
               <Option :label="option" :value="option" :key="option"> </Option>
             </template>
@@ -61,7 +61,7 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       requestTemplate: '',
-      status: '',
+      status: [],
       tags: '',
       pagination: {
         pageSize: 10,
@@ -205,10 +205,10 @@ export default {
           value: this.requestTemplate
         })
       }
-      if (this.status) {
+      if (this.status.length > 0) {
         this.payload.filters.push({
           name: 'status',
-          operator: 'eq',
+          operator: 'in',
           value: this.status
         })
       }

@@ -144,12 +144,19 @@ export default {
         'Completed',
         'Timeouted',
         'Faulted'
-      ]
+      ],
+      timer: null
     }
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 200
     this.requestListForDraftInitiated()
+    this.timer = window.setInterval(() => {
+      this.requestListForDraftInitiated()
+    }, 60000)
+  },
+  destroyed () {
+    window.clearInterval(this.timer)
   },
   methods: {
     async getTemplateList () {

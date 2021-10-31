@@ -170,14 +170,24 @@ export default {
         'Completed',
         'Timeouted',
         'Faulted'
-      ]
+      ],
+      timer: null
     }
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 200
     this.requestListForHandle()
+    this.timer = window.setInterval(() => {
+      this.requestListForHandle()
+    }, 10000)
+  },
+  destroyed () {
+    window.clearInterval(this.timer)
   },
   methods: {
+    test () {
+      console.log(111)
+    },
     async terminateRequest (row) {
       this.$Modal.confirm({
         title: this.$t('confirm_termination'),

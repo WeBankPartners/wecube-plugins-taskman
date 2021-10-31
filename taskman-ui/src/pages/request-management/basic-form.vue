@@ -35,12 +35,7 @@
         </FormItem>
       </template>
       <FormItem :label="$t('expected_completion_time')">
-        <DatePicker
-          type="date"
-          @on-change="changeExpectTime"
-          placeholder="Select date"
-          style="width: 200px"
-        ></DatePicker>
+        <DatePicker type="date" @on-change="changeExpectTime" placeholder="Select date" style="width: 90%"></DatePicker>
       </FormItem>
 
       <FormItem>

@@ -35,6 +35,11 @@ export default new Router({
       component: () => import('@/pages/task-mgmt/index')
     },
     {
+      path: '/requestCheck',
+      name: 'requestCheck',
+      component: () => import('@/pages/request-management/request-check')
+    },
+    {
       path: '/requestManagementIndex',
       name: 'requestManagementIndex',
       component: () => import('@/pages/request-management/index')

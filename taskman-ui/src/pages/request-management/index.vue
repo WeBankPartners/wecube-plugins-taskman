@@ -14,7 +14,7 @@
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
           </Step>
           <Step icon="md-cog">
-            <span slot="title" @click="changeStep(1)">{{ $t('data_management') }}</span>
+            <span slot="title" @click="changeStep(1)">{{ $t('form_settings') }}</span>
           </Step>
           <Step icon="ios-settings" v-if="['group_handle'].includes(jumpFrom)">
             <span slot="title" @click="changeStep(2)">{{ $t('data_binding') }}</span>

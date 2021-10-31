@@ -12,7 +12,7 @@
             clearable
             filterable
             style="width:90%"
-            :placeholder="$t('procDefId')"
+            :placeholder="$t('template')"
           >
             <template v-for="option in templateOptions">
               <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
@@ -20,7 +20,7 @@
           </Select>
         </Col>
         <Col span="4">
-          <Select v-model="status" clearable filterable style="width:90%" :placeholder="$t('status')">
+          <Select v-model="status" multiple clearable filterable style="width:90%" :placeholder="$t('status')">
             <template v-for="option in requestStatus">
               <Option :label="option" :value="option" :key="option"> </Option>
             </template>
@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { requestListForHandle, getTemplateList } from '@/api/server'
+import { requestListForHandle, getTemplateList, terminateRequest } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -61,7 +61,7 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       requestTemplate: '',
-      status: '',
+      status: ['Pending'],
       tags: '',
       pagination: {
         pageSize: 10,
@@ -98,6 +98,10 @@ export default {
         {
           title: this.$t('template'),
           key: 'requestTemplateName'
+        },
+        {
+          title: this.$t('handler'),
+          key: 'handler'
         },
         {
           title: this.$t('status'),
@@ -141,6 +145,16 @@ export default {
                     {this.$t('handle')}
                   </Button>
                 )}
+                {params.row.status === 'InProgress' && (
+                  <Button
+                    onClick={() => this.terminateRequest(params.row)}
+                    style="margin-left: 8px"
+                    type="warning"
+                    size="small"
+                  >
+                    {this.$t('terminate')}
+                  </Button>
+                )}
               </div>
             )
           }
@@ -164,6 +178,22 @@ export default {
     this.requestListForHandle()
   },
   methods: {
+    async terminateRequest (row) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_termination'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          let res = await terminateRequest(row.id)
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.requestListForHandle()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
     async getTemplateList () {
       const params = {
         filters: [],
@@ -182,7 +212,7 @@ export default {
     },
     checkTemplate (row) {
       this.$router.push({
-        path: '/requestManagementIndex',
+        path: row.status === 'Pending' ? '/requestManagementIndex' : '/requestCheck',
         query: {
           requestId: row.id,
           requestTemplate: row.requestTemplate,
@@ -230,10 +260,10 @@ export default {
           value: this.requestTemplate
         })
       }
-      if (this.status) {
+      if (this.status.length > 0) {
         this.payload.filters.push({
           name: 'status',
-          operator: 'eq',
+          operator: 'in',
           value: this.status
         })
       }

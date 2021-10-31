@@ -34,6 +34,17 @@
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
         </FormItem>
       </template>
+      <FormItem :label="$t('expected_completion_time')">
+        <DatePicker
+          :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
+          type="date"
+          :value="formConfig.values.expectTime"
+          @on-change="changeExpectTime"
+          placeholder="Select date"
+          style="width: 90%"
+        ></DatePicker>
+      </FormItem>
+
       <FormItem>
         <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
       </FormItem>
@@ -61,25 +72,25 @@ export default {
             multiple: false,
             type: 'select',
             placeholder: ''
-          },
-          {
-            label: this.$t('expected_completion_time'),
-            value: 'expireDay',
-            rules: 'required',
-            options: 'emergencyOptions',
-            labelKey: 'label',
-            valueKey: 'value',
-            multiple: false,
-            type: 'select',
-            placeholder: ''
           }
+          // {
+          //   label: this.$t('expected_completion_time'),
+          //   value: 'expireDay',
+          //   rules: 'required',
+          //   options: 'emergencyOptions',
+          //   labelKey: 'label',
+          //   valueKey: 'value',
+          //   multiple: false,
+          //   type: 'select',
+          //   placeholder: ''
+          // }
         ],
         values: {
           id: '',
           name: '',
           emergency: 3,
           requestTemplate: '',
-          expireDay: 2
+          expectTime: ''
         },
         emergencyOptions: [
           { label: '1', value: 1 },
@@ -97,6 +108,9 @@ export default {
     }
   },
   methods: {
+    changeExpectTime (date) {
+      this.formConfig.values.expectTime = date
+    },
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.$parent.requestId)
       if (statusCode === 'OK') {
@@ -105,6 +119,7 @@ export default {
         this.formConfig.values.name = data.name
         this.formConfig.values.emergency = data.emergency
         this.formConfig.values.id = data.id
+        this.formConfig.values.expectTime = data.expectTime
       }
     },
     async createRequest () {

@@ -1,6 +1,8 @@
 <template>
   <div style="margin: 24px">
-    <Button @click="backToTask" icon="ios-undo-outline" style="margin-bottom: 8px">{{ $t('back_to_template') }}</Button>
+    <Button @click="backToRequest" icon="ios-undo-outline" style="margin-bottom: 8px">{{
+      $t('back_to_template')
+    }}</Button>
     <div style="width: 84%;margin: 0 auto;">
       <div>
         <Steps :current="activeStep">
@@ -61,12 +63,12 @@
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
                     <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
-                      <TaskData
+                      <RequestCheckData
                         :data="form"
                         :isDisabled="!data.editable"
                         :requestId="requestId"
                         :enforceDisable="enforceDisable"
-                      ></TaskData>
+                      ></RequestCheckData>
                     </TabPane>
                   </template>
                 </Tabs>
@@ -82,12 +84,6 @@
                         <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>
-                    <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
-                      $t('save')
-                    }}</Button>
-                    <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
-                      $t('commit')
-                    }}</Button>
                   </div>
                 </span>
               </p>
@@ -100,8 +96,8 @@
 </template>
 
 <script>
-import { getTaskDetail, saveTaskData, commitTaskData } from '@/api/server.js'
-import TaskData from './task-data'
+import { getRequestDetail } from '@/api/server.js'
+import RequestCheckData from './request-check-data'
 export default {
   name: '',
   data () {
@@ -116,13 +112,14 @@ export default {
     }
   },
   mounted () {
-    this.taskId = this.$route.query.taskId
+    this.requestId = this.$route.query.requestId
+    this.jumpFrom = this.$route.query.jumpFrom
     this.enforceDisable = this.$route.query.enforceDisable === 'Y'
-    this.getTaskDetail()
+    this.getRequestDetail()
   },
   methods: {
-    backToTask () {
-      this.$router.push({ path: '/taskman/task-mgmt' })
+    backToRequest () {
+      this.$router.push({ path: '/taskman/request-mgmt', query: { activeTab: this.jumpFrom } })
     },
     success () {
       this.$Notice.success({
@@ -130,10 +127,10 @@ export default {
         desc: this.$t('successful')
       })
     },
-    async getTaskDetail () {
-      const { statusCode, data } = await getTaskDetail(this.taskId)
+    async getRequestDetail () {
+      const { statusCode, data } = await getRequestDetail(this.requestId)
       if (statusCode === 'OK') {
-        this.requestId = data.request
+        // this.requestId = data.request
         this.timeStep = data.timeStep
         this.activeStep = this.timeStep.findIndex(t => t.active === true)
         this.dataInfo = data.data.map(d => {
@@ -147,30 +144,10 @@ export default {
 
         this.openPanel = data.data.length - 1 + ''
       }
-    },
-    async saveTaskData () {
-      const taskData = this.dataInfo.find(d => d.editable === true).formData
-      const { statusCode } = await saveTaskData(this.taskId, taskData)
-      if (statusCode === 'OK') {
-        this.success()
-      }
-    },
-    async commitTaskData () {
-      await this.saveTaskData()
-      const taskData = this.dataInfo.find(d => d.editable === true)
-      const commitData = {
-        comment: taskData.comment,
-        choseOption: taskData.choseOption
-      }
-      const { statusCode } = await commitTaskData(this.taskId, commitData)
-      if (statusCode === 'OK') {
-        this.success()
-        this.$router.push({ path: '/taskman/task-mgmt' })
-      }
     }
   },
   components: {
-    TaskData
+    RequestCheckData
   }
 }
 </script>

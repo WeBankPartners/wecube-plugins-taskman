@@ -9,6 +9,13 @@
           </FormItem>
         </Col>
         <Col :span="6">
+          <FormItem :label="$t('request_time_limit')">
+            <Select v-model="formData.expireDay" filterable>
+              <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
+            </Select>
+          </FormItem>
+        </Col>
+        <Col :span="6">
           <FormItem :label="$t('description')">
             <Input v-model="formData.description" style="width:90%" type="text"> </Input>
           </FormItem>
@@ -18,12 +25,21 @@
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
       <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
-        <Divider plain>{{ $t('form_item') }}</Divider>
-        <Select v-model="selectedFormItem" @on-change="changeSelectedForm" multiple filterable>
-          <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
-            <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
-          </OptionGroup>
-        </Select>
+        <Divider plain>{{ $t('preset') }}{{ $t('form_item') }}</Divider>
+        <template v-for="item in formItemOptions">
+          <div :key="item.id">
+            <label>{{ item.displayName }}:</label>
+            <Select
+              v-model="item.seletedAttrs"
+              @on-change="changeSelectedForm(item.seletedAttrs, item)"
+              multiple
+              filterable
+              :key="item.id"
+            >
+              <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
+            </Select>
+          </div>
+        </template>
         <Divider plain>{{ $t('custom_form') }}</Divider>
         <draggable
           class="dragArea"
@@ -171,10 +187,12 @@ export default {
       formData: {
         id: '',
         name: '',
+        expireDay: 1,
         description: '',
         items: [],
         updatedTime: ''
       },
+      expireDayOptions: [1, 2, 3, 4, 5, 6, 7],
       selectedFormItem: [],
       selectFormItemSet: [], // 使用entity对输入、输出项分类
       formItemOptions: [], // 树形数据
@@ -330,7 +348,11 @@ export default {
               })
             }
           })
-          this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
+          this.finalElement.forEach(fEle => {
+            let formIO = this.formItemOptions.find(f => f.packageName + ':' + f.name === fEle.itemGroup)
+            formIO.seletedAttrs = []
+            formIO.seletedAttrs = fEle.attrs.map(attr => attr.attrDefId)
+          })
         }
       }
     },
@@ -367,7 +389,11 @@ export default {
         })
       }
     },
-    changeSelectedForm () {
+    changeSelectedForm (selectedAttrs, item) {
+      this.selectedFormItem = []
+      this.formItemOptions.forEach(f => {
+        this.selectedFormItem = this.selectedFormItem.concat(f.seletedAttrs)
+      })
       let remove = []
       const test1 = []
         .concat(...this.finalElement.map(l => l.attrs))
@@ -464,7 +490,8 @@ export default {
               id: d.entityId,
               name: d.entityName,
               packageName: d.entityPackage,
-              attributes: [d]
+              attributes: [d],
+              seletedAttrs: []
             })
           }
         })
@@ -507,7 +534,7 @@ export default {
 
 <style scoped lang="scss">
 .active-zone {
-  color: red;
+  color: #338cf0;
 }
 .ivu-form-item {
   margin-bottom: 8px;

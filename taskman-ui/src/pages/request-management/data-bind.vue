@@ -11,7 +11,12 @@
                 style="width: 46%;display: inline-block;margin: 6px"
               >
                 <Checkbox :label="item.id" :disabled="$parent.formDisable">
-                  <Tooltip :content="item.displayName" :delay="500" max-width="300">
+                  <Tooltip
+                    :content="item.displayName"
+                    :delay="500"
+                    max-width="300"
+                    :disabled="item.displayName.length < 30"
+                  >
                     <div class="text-ellipsis">{{ item.displayName }}</div>
                   </Tooltip>
                 </Checkbox>
@@ -22,12 +27,12 @@
       </template>
     </Tabs>
     <div style="text-align: center;margin-top:48px">
-      <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('save') }}</Button>
+      <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('go_back')
       }}</Button>
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
-        $t('initiate_request')
+        $t('final_version')
       }}</Button>
     </div>
   </div>
@@ -68,7 +73,7 @@ export default {
   methods: {
     async startRequest () {
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('initiate_request'),
+        title: this.$t('confirm') + this.$t('final_version'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
@@ -171,35 +176,21 @@ export default {
             }
           })
           ele.value.forEach(v => {
-            if (displayKeyName.length > 0) {
-              attrValues.forEach(attr => {
-                attr.dataValue = v.entityData[attr.attrName]
-              })
-              v.bindInfo = {
-                attrValues: attrValues,
-                bindFlag: 'N',
-                entityDataId: v.dataId,
-                entityDataOp: v.entityDataOp,
-                entityDataState: '',
-                entityDefId: '',
-                entityName: v.entityName,
-                fullEntityDataId: v.fullDataId,
-                oid: v.id,
-                packageName: v.packageName
-              }
-            } else {
-              v.bindInfo = {
-                attrValues: v.displayName,
-                bindFlag: 'N',
-                entityDataId: v.dataId,
-                entityDataOp: v.entityDataOp,
-                entityDataState: '',
-                entityDefId: '',
-                entityName: v.entityName,
-                fullEntityDataId: v.fullDataId,
-                oid: v.id,
-                packageName: v.packageName
-              }
+            let tmpAttrValue = JSON.parse(JSON.stringify(attrValues))
+            tmpAttrValue.forEach(attr => {
+              attr.dataValue = v.entityData[attr.attrName]
+            })
+            v.bindInfo = {
+              attrValues: tmpAttrValue,
+              bindFlag: 'N',
+              entityDataId: v.dataId,
+              entityDataOp: v.entityDataOp,
+              entityDataState: '',
+              entityDefId: '',
+              entityName: v.entityName,
+              fullEntityDataId: v.fullDataId,
+              oid: v.id,
+              packageName: v.packageName
             }
             this.bindData.push(v)
           })
@@ -212,6 +203,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.ivu-checkbox-group-item {
+  width: 100%;
+}
 .ivu-tooltip {
   width: 90%;
 }

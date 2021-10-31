@@ -109,13 +109,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 			}
 		}
 		var actions []*execAction
-		nowTime := time.Now().Format(models.DateTimeFormat)
 		for _, v := range rowData {
-			if v.ExpireTime != "" {
-				timeObj := models.RequestExpireObj{ReportTime: v.ReportTime, ExpireTime: v.ExpireTime, NowTime: nowTime}
-				calcRequestExpireObj(&timeObj)
-				v.ExpireObj = timeObj
-			}
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
@@ -138,7 +132,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	return
 }
 
-func calcRequestExpireObj(param *models.RequestExpireObj) {
+func calcExpireObj(param *models.ExpireObj) {
 	if param.ReportTime == "" || param.ExpireTime == "" {
 		return
 	}

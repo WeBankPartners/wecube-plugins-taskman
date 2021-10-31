@@ -213,7 +213,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		}
 		if v.ExpireTime != "" {
 			timeObj := models.ExpireObj{ReportTime: v.ReportTime, ExpireTime: v.ExpireTime, NowTime: nowTime}
-			calcRequestExpireObj(&timeObj)
+			calcExpireObj(&timeObj)
 			v.ExpirePercentObj = timeObj
 		}
 	}

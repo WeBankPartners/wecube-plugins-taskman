@@ -144,6 +144,9 @@ func calcExpireObj(param *models.ExpireObj) {
 	param.Percent = (use / max) * 100
 	param.TotalDay = max / 86400
 	param.LeftDay = (max - use) / 86400
+	param.Percent, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", param.Percent), 64)
+	param.TotalDay, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", param.TotalDay), 64)
+	param.LeftDay, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", param.LeftDay), 64)
 	return
 }
 

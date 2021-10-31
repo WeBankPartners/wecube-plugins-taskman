@@ -630,10 +630,10 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	}
 	recordIdMap := make(map[string]int)
 	for _, v := range requestTemplateTable {
-		if v.RecordId != "" {
-			recordIdMap[v.RecordId] = 1
-		}
-		if v.Version != "" {
+		if v.Status == "confirm" {
+			if v.RecordId != "" {
+				recordIdMap[v.RecordId] = 1
+			}
 			v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 		} else {
 			v.Name = fmt.Sprintf("%s(beta)", v.Name)

@@ -145,7 +145,7 @@ export default {
                     {this.$t('handle')}
                   </Button>
                 )}
-                {params.row.status === 'InProgress' && (
+                {params.row.status.startsWith('InProgress') && (
                   <Button
                     onClick={() => this.terminateRequest(params.row)}
                     style="margin-left: 8px"
@@ -179,7 +179,7 @@ export default {
     this.requestListForHandle()
     this.timer = window.setInterval(() => {
       this.requestListForHandle()
-    }, 10000)
+    }, 60000)
   },
   destroyed () {
     window.clearInterval(this.timer)

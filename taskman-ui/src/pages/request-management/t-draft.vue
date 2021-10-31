@@ -63,20 +63,32 @@ export default {
           key: 'name'
         },
         {
-          title: this.$t('emergency'),
-          key: 'emergency'
-        },
-        {
           title: this.$t('template'),
           key: 'requestTemplateName'
+        },
+        {
+          title: this.$t('emergency'),
+          key: 'emergency'
         },
         {
           title: this.$t('status'),
           key: 'status'
         },
         {
-          title: this.$t('tm_updated_time'),
-          key: 'updatedTime'
+          title: this.$t('handler'),
+          key: 'handler'
+        },
+        {
+          title: this.$t('report_time'),
+          key: 'report_time'
+        },
+        {
+          title: this.$t('expected_completion_time'),
+          key: 'expectTime'
+        },
+        {
+          title: this.$t('estimated_finish_time'),
+          key: 'expireTime'
         },
         {
           title: this.$t('action'),

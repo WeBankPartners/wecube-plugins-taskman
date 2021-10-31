@@ -25,13 +25,15 @@
       </template>
     </Tabs>
     <div style="text-align: center;margin-top:48px">
-      <Button @click="saveData" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'" type="primary">{{
+      <Button @click="saveData" v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')" type="primary">{{
         $t('save')
       }}</Button>
-      <Button @click="commitRequest" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'">{{
+      <Button @click="commitRequest" v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')">{{
         $t('commit')
       }}</Button>
-      <Button @click="nextStep" v-if="['', 'group_handle'].includes($parent.jumpFrom)">{{ $t('next') }}</Button>
+      <Button @click="nextStep" v-if="['', 'group_handle'].includes($parent.jumpFrom) && !$parent.isAdd">{{
+        $t('next')
+      }}</Button>
     </div>
   </div>
 </template>

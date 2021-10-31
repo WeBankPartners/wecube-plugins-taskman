@@ -2,29 +2,36 @@
   <div class=" ">
     <Row>
       <Form :label-width="100">
-        <Col :span="6">
+        <Col :span="5">
           <FormItem :label="$t('name')">
             <Input v-model="formData.name" style="width:90%" type="text"> </Input>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
-        <Col :span="6">
-          <FormItem :label="$t('description')">
-            <Input v-model="formData.description" style="width:90%" type="text"> </Input>
-          </FormItem>
-        </Col>
-        <Col :span="6">
+        <Col :span="4">
           <FormItem :label="$t('processing_role')">
             <Select v-model="formData.useRoles" filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
             </Select>
           </FormItem>
         </Col>
-        <Col :span="6">
+        <Col :span="3">
           <FormItem :label="$t('task_time_limit')">
             <Select v-model="formData.expireDay" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
+          </FormItem>
+        </Col>
+        <Col :span="5">
+          <FormItem :label="$t('Entity')">
+            <Select v-model="selectedEntities" multiple filterable>
+              <Option v-for="item in entityOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
+            </Select>
+          </FormItem>
+        </Col>
+        <Col :span="5">
+          <FormItem :label="$t('description')">
+            <Input v-model="formData.description" style="width:90%" type="text"> </Input>
           </FormItem>
         </Col>
       </Form>
@@ -212,9 +219,12 @@ export default {
         expireDay: 1,
         updatedTime: ''
       },
+      selectedEntities: [],
+      entityOptions: [],
       expireDayOptions: [1, 2, 3, 4, 5, 6, 7],
       selectedInputFormItem: [],
       selectedOutputFormItem: [],
+      cacheFormItemOptions: [], // 原始数据缓存
       formItemOptions: [], // 树形数据
       selectedFormItemOptions: [],
       useRolesOptions: [],
@@ -323,6 +333,31 @@ export default {
     this.nodeData = this.node
     this.initPage()
   },
+  watch: {
+    selectedEntities: function (val) {
+      this.formItemOptions = this.cacheFormItemOptions.filter(c => {
+        if (val.includes(c.name)) {
+          return c
+        }
+      })
+      let canSelect = []
+      this.formItemOptions.forEach(f => {
+        f.attributes.forEach(attr => {
+          canSelect.push(attr.id)
+        })
+      })
+      this.selectedInputFormItem.forEach((i, index) => {
+        if (!canSelect.includes(i)) {
+          this.selectedInputFormItem = this.selectedInputFormItem.splice(index, 1)
+        }
+      })
+      this.selectedOutputFormItem.forEach((i, index) => {
+        if (!canSelect.includes(i)) {
+          this.selectedOutputFormItem = this.selectedOutputFormItem.splice(index, 1)
+        }
+      })
+    }
+  },
   methods: {
     log (log) {
       this.finalElement.forEach(l => {
@@ -358,23 +393,17 @@ export default {
         this.formData.nodeDefName = this.nodeData.nodeName
         if (data.items && data.items.length > 0) {
           this.selectedFormItem = data.items.filter(item => item.attrDefId !== '')
+          this.selectedFormItem.forEach(sForm => {
+            if (!this.selectedEntities.includes(sForm.entity)) {
+              this.selectedEntities.push(sForm.entity)
+            }
+          })
           this.selectedInputFormItem = this.selectedFormItem
             .filter(item => item.isOutput === 'no')
             .map(attr => attr.attrDefId)
           this.selectedOutputFormItem = this.selectedFormItem
             .filter(item => item.isOutput === 'yes')
             .map(attr => attr.attrDefId)
-          // let customItem = data.items.filter(item => item.attrDefId === '')
-          // if (customItem.length > 0) {
-          //   customItem = customItem.map(custom => {
-          //     return custom
-          //   })
-          //   this.finalElement.unshift({
-          //     itemGroup: 'Custom',
-          //     itemGroupName: 'Custom',
-          //     attrs: customItem
-          //   })
-          // }
         }
         if (data.items !== null && data.items.length > 0) {
           let itemGroupSet = new Set()
@@ -410,8 +439,10 @@ export default {
           l.id = ''
         }
       })
+      let cloneFormData = JSON.parse(JSON.stringify(this.formData))
+      cloneFormData.useRoles = [cloneFormData.useRoles]
       let res = {
-        ...this.formData,
+        ...cloneFormData,
         items: tmp
       }
       const { statusCode, data } = await saveTaskForm(this.requestTemplateId, res)
@@ -421,6 +452,7 @@ export default {
           desc: this.$t('successful')
         })
         this.formData = { ...data }
+        this.formData.useRoles = data.useRoles[0]
         data.items.forEach(item => {
           let findAttrs = this.finalElement.find(l => l.itemGroup === item.itemGroup)
           let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
@@ -620,8 +652,13 @@ export default {
               packageName: d.entityPackage,
               attributes: [d]
             })
+            this.entityOptions.push({
+              label: d.entityDisplayName,
+              value: d.entityName
+            })
           }
         })
+        this.cacheFormItemOptions = JSON.parse(JSON.stringify(formItemOptions))
         this.formItemOptions = formItemOptions
         this.selectedFormItemOptions = data
       }

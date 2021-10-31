@@ -15,13 +15,13 @@
         </Col>
         <Col :span="6">
           <FormItem :label="$t('processing_role')">
-            <Select v-model="formData.useRoles" multiple filterable>
+            <Select v-model="formData.useRoles" filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
             </Select>
           </FormItem>
         </Col>
         <Col :span="6">
-          <FormItem :label="$t('expire_day')">
+          <FormItem :label="$t('task_time_limit')">
             <Select v-model="formData.expireDay" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
@@ -207,12 +207,12 @@ export default {
         nodeDefName: '',
         name: '',
         description: '',
-        useRoles: [],
+        useRoles: '',
         items: [],
-        expireDay: 0,
+        expireDay: 1,
         updatedTime: ''
       },
-      expireDayOptions: [0, 1, 2, 3, 4, 5, 6, 7],
+      expireDayOptions: [1, 2, 3, 4, 5, 6, 7],
       selectedInputFormItem: [],
       selectedOutputFormItem: [],
       formItemOptions: [], // 树形数据
@@ -641,7 +641,7 @@ export default {
 
 <style scoped lang="scss">
 .active-zone {
-  color: red;
+  color: #338cf0;
 }
 .ivu-form-item {
   margin-bottom: 8px;

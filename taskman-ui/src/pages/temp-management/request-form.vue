@@ -9,6 +9,13 @@
           </FormItem>
         </Col>
         <Col :span="6">
+          <FormItem :label="$t('request_time_limit')">
+            <Select v-model="formData.expireDay" filterable>
+              <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
+            </Select>
+          </FormItem>
+        </Col>
+        <Col :span="6">
           <FormItem :label="$t('description')">
             <Input v-model="formData.description" style="width:90%" type="text"> </Input>
           </FormItem>
@@ -172,10 +179,12 @@ export default {
       formData: {
         id: '',
         name: '',
+        expireDay: 1,
         description: '',
         items: [],
         updatedTime: ''
       },
+      expireDayOptions: [1, 2, 3, 4, 5, 6, 7],
       selectedFormItem: [],
       selectFormItemSet: [], // 使用entity对输入、输出项分类
       formItemOptions: [], // 树形数据
@@ -508,7 +517,7 @@ export default {
 
 <style scoped lang="scss">
 .active-zone {
-  color: red;
+  color: #338cf0;
 }
 .ivu-form-item {
   margin-bottom: 8px;

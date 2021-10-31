@@ -102,16 +102,6 @@ export default {
                 >
                   {this.$t('delete')}
                 </Button>
-                {params.row.status === 'InProgress' && (
-                  <Button
-                    onClick={() => this.terminateRequest(params.row)}
-                    style="margin-left: 8px"
-                    type="info"
-                    size="small"
-                  >
-                    {this.$t('terminate')}
-                  </Button>
-                )}
               </div>
             )
           }
@@ -144,8 +134,8 @@ export default {
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
-          let res = await deleteRequest(row.id)
           this.$Modal.remove()
+          let res = await deleteRequest(row.id)
           if (res.statusCode === 'OK') {
             this.success()
             this.requestListForDraftInitiated()

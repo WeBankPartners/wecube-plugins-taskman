@@ -37,7 +37,7 @@
       <FormItem :label="$t('expected_completion_time')">
         <DatePicker
           type="date"
-          :value="formConfig.values.expectTime"
+          @on-change="changeExpectTime"
           placeholder="Select date"
           style="width: 200px"
         ></DatePicker>
@@ -106,6 +106,9 @@ export default {
     }
   },
   methods: {
+    changeExpectTime (date) {
+      this.formConfig.values.expectTime = date
+    },
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.$parent.requestId)
       if (statusCode === 'OK') {

@@ -14,20 +14,38 @@
           <template v-for="(data, dataIndex) in dataInfo">
             <Panel :name="dataIndex + ''" :key="dataIndex">
               <template v-if="dataIndex === 0">
-                <Tag>{{ $t('request_name') }}:{{ data.requestName }}</Tag>
-                <Tag>{{ $t('reporter') }}:{{ data.reporter }}</Tag>
-                <Tag>{{ $t('report_time') }}:{{ data.reportTime }}</Tag>
+                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                  >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                  >{{ $t('reporter') }}:{{ data.reporter }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                >
               </template>
               <template v-else-if="dataIndex < dataInfo.length - 1">
-                <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
-                <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
-                <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
+                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                  >{{ $t('task_name') }}:{{ data.taskName }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
+                >
               </template>
               <template v-else>
-                <Tag>{{ $t('task_name') }}:{{ data.taskName }}</Tag>
+                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                  >{{ $t('task_name') }}:{{ data.taskName }}</Tag
+                >
                 <template v-if="data.status === 'done'">
-                  <Tag>{{ $t('handler') }}:{{ data.reporter }}</Tag>
-                  <Tag>{{ $t('handle_time') }}:{{ data.reportTime }}</Tag>
+                  <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                    >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                  >
+                  <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                    >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
+                  >
                 </template>
               </template>
               <p slot="content">
@@ -46,12 +64,12 @@
                 <span>
                   <div v-if="dataIndex !== 0">
                     <Form :label-width="80" style="margin: 16px 0">
-                      <FormItem :label="$t('approval_result')" v-if="data.nextOption.length !== 0">
+                      <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
                         <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>
                       </FormItem>
-                      <FormItem :label="$t('approval_comments')">
+                      <FormItem :label="$t('process_comments')">
                         <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>

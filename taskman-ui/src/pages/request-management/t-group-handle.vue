@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { requestListForHandle, getTemplateList } from '@/api/server'
+import { requestListForHandle, getTemplateList, terminateRequest } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -61,7 +61,7 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       requestTemplate: '',
-      status: '',
+      status: 'Pending',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -98,6 +98,10 @@ export default {
         {
           title: this.$t('template'),
           key: 'requestTemplateName'
+        },
+        {
+          title: this.$t('handler'),
+          key: 'handler'
         },
         {
           title: this.$t('status'),
@@ -141,6 +145,16 @@ export default {
                     {this.$t('handle')}
                   </Button>
                 )}
+                {params.row.status === 'InProgress' && (
+                  <Button
+                    onClick={() => this.terminateRequest(params.row)}
+                    style="margin-left: 8px"
+                    type="warning"
+                    size="small"
+                  >
+                    {this.$t('terminate')}
+                  </Button>
+                )}
               </div>
             )
           }
@@ -164,6 +178,22 @@ export default {
     this.requestListForHandle()
   },
   methods: {
+    async terminateRequest (row) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_termination'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          let res = await terminateRequest(row.id)
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.requestListForHandle()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
     async getTemplateList () {
       const params = {
         filters: [],

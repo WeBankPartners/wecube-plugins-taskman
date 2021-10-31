@@ -200,11 +200,11 @@ export default {
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
+          this.$Modal.remove()
           const params = {
             params: { id: row.id }
           }
           let res = await deleteTempGroup(params)
-          this.$Modal.remove()
           if (res.statusCode === 'OK') {
             this.success()
             this.getTempGroupList()

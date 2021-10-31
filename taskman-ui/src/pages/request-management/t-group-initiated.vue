@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { requestListForDraftInitiated, terminateRequest, getTemplateList } from '@/api/server'
+import { requestListForDraftInitiated, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -95,6 +95,10 @@ export default {
           key: 'requestTemplateName'
         },
         {
+          title: this.$t('handler'),
+          key: 'handler'
+        },
+        {
           title: this.$t('status'),
           key: 'status'
         },
@@ -113,7 +117,7 @@ export default {
         {
           title: this.$t('action'),
           key: 'action',
-          width: 200,
+          width: 100,
           align: 'center',
           render: (h, params) => {
             return (
@@ -126,16 +130,6 @@ export default {
                 >
                   {this.$t('look_over')}
                 </Button>
-                {params.row.status === 'InProgress' && (
-                  <Button
-                    onClick={() => this.terminateRequest(params.row)}
-                    style="margin-left: 8px"
-                    type="warning"
-                    size="small"
-                  >
-                    {this.$t('terminate')}
-                  </Button>
-                )}
               </div>
             )
           }
@@ -172,21 +166,6 @@ export default {
       this.$Notice.success({
         title: this.$t('successful'),
         desc: this.$t('successful')
-      })
-    },
-    async terminateRequest (row) {
-      this.$Modal.confirm({
-        title: this.$t('confirm_termination'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          let res = await terminateRequest(row.id)
-          if (res.statusCode === 'OK') {
-            this.success()
-            this.requestListForDraftInitiated()
-          }
-        },
-        onCancel: () => {}
       })
     },
     checkTemplate (row) {

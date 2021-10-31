@@ -85,6 +85,7 @@ type TaskMetaResultItem struct {
 
 type PluginTaskCreateRequest struct {
 	RequestId      string                        `json:"requestId"`
+	DueDate        string                        `json:"dueDate"`
 	AllowedOptions []string                      `json:"allowedOptions"`
 	Inputs         []*PluginTaskCreateRequestObj `json:"inputs"`
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -35,7 +36,7 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 	return
 }
 
-func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, err error) {
+func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, err error) {
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
 	err = x.SQL("select id,form,request_template,emergency from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
@@ -55,8 +56,13 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId st
 		}
 	} else {
 		// Custom task create
-		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,emergency,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
+		customExpireTime := ""
+		dueDay, _ := strconv.Atoi(dueDate)
+		if dueDay > 0 {
+			customExpireTime = time.Now().Add(time.Duration(dueDay) * 24 * time.Hour).Format(models.DateTimeFormat)
+		}
+		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,expire_time,emergency,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, customExpireTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
 		actions = append(actions, &taskInsertAction)
 		err = transaction(actions)
 		return
@@ -219,6 +225,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 			return result, tmpErr
 		}
 		result.Data = []*models.TaskQueryObj{&taskForm}
+		result.TimeStep = []*models.TaskQueryTimeStep{}
 		return
 	}
 	// get request
@@ -265,7 +272,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 }
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime}
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
 	if taskObj.Status != "done" {
 		taskForm.Editable = true
 	}

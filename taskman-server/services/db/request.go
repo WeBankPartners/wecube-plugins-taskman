@@ -102,7 +102,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		x.SQL("select id,name,version from request_template").Find(&requestTemplateTable)
 		rtMap := make(map[string]string)
 		for _, v := range requestTemplateTable {
-			if v.Version != "" {
+			if v.Status == "confirm" {
 				rtMap[v.Id] = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 			} else {
 				rtMap[v.Id] = fmt.Sprintf("%s(beta)", v.Name)

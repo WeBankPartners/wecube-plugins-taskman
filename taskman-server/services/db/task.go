@@ -121,22 +121,22 @@ func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) 
 	if len(formItemTemplates) == 0 || err != nil {
 		return
 	}
-	groupNameMap := make(map[string]string)
+	groupNameTemplateIdMap := make(map[string]string)
+	filterList := []string{}
 	for _, v := range formItemTemplates {
-		groupNameMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)] = v.Id
-	}
-	filterSql := ""
-	var taskTable []*models.TaskTable
-	err = x.SQL("select id,name,form,task_template from task where status='done' and request=? order by created_time desc").Find(&taskTable)
-	if len(taskTable) == 0 {
-		filterSql = fmt.Sprintf("select form from request where id='%s'", requestId)
-	} else {
-		filterSql = fmt.Sprintf("select form from task where id='%s'", taskTable[0].Id)
+		groupNameTemplateIdMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)] = v.Id
+		filterList = append(filterList, fmt.Sprintf("(item_group='%s' and name='%s')", v.ItemGroup, v.Name))
 	}
 	var formItems []*models.FormItemTable
-	err = x.SQL("select t1.* from form_item t1 left join form_item_template t2 on t1.form_item_template=t2.id where t2.entity='' and t1.form in (" + filterSql + ")").Find(&formItems)
+	err = x.SQL("select * from form_item where ("+strings.Join(filterList, " or ")+") and form in (select form from request where id=? union select form from task where request=?) order by item_group,name,id desc", requestId, requestId).Find(&formItems)
+	groupNameExistMap := make(map[string]int)
 	for _, v := range formItems {
-		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)], Name: v.Name, ItemGroup: v.ItemGroup, Value: v.Value, RowDataId: v.RowDataId})
+		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
+		if _, b := groupNameExistMap[tmpKey]; b {
+			continue
+		}
+		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: v.Value, RowDataId: v.RowDataId})
+		groupNameExistMap[tmpKey] = 1
 	}
 	return
 }
@@ -202,6 +202,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 	for _, v := range rowData {
 		if _, b := requestMap[v.Request]; b {
 			v.RequestObj = *requestMap[v.Request]
+			v.Reporter = "taskman"
 		}
 	}
 	return

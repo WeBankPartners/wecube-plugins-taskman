@@ -63,6 +63,7 @@ type TaskListObj struct {
 	OperationOptions []string     `json:"operationOptions" xorm:"-"`
 	ExpireTime       string       `json:"expireTime" xorm:"expire_time"`
 	RequestObj       RequestTable `json:"requestObj" xorm:"-"`
+	ExpirePercentObj ExpireObj    `json:"expireObj"`
 }
 
 type TaskMetaResult struct {

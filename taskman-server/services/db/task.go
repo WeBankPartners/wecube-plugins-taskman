@@ -205,10 +205,16 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 	for _, v := range requestTables {
 		requestMap[v.Id] = v
 	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
 	for _, v := range rowData {
 		if _, b := requestMap[v.Request]; b {
 			v.RequestObj = *requestMap[v.Request]
 			v.Reporter = "taskman"
+		}
+		if v.ExpireTime != "" {
+			timeObj := models.ExpireObj{ReportTime: v.ReportTime, ExpireTime: v.ExpireTime, NowTime: nowTime}
+			calcRequestExpireObj(&timeObj)
+			v.ExpirePercentObj = timeObj
 		}
 	}
 	return

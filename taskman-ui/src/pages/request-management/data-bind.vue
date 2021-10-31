@@ -171,35 +171,21 @@ export default {
             }
           })
           ele.value.forEach(v => {
-            if (displayKeyName.length > 0) {
-              attrValues.forEach(attr => {
-                attr.dataValue = v.entityData[attr.attrName]
-              })
-              v.bindInfo = {
-                attrValues: attrValues,
-                bindFlag: 'N',
-                entityDataId: v.dataId,
-                entityDataOp: v.entityDataOp,
-                entityDataState: '',
-                entityDefId: '',
-                entityName: v.entityName,
-                fullEntityDataId: v.fullDataId,
-                oid: v.id,
-                packageName: v.packageName
-              }
-            } else {
-              v.bindInfo = {
-                attrValues: v.displayName,
-                bindFlag: 'N',
-                entityDataId: v.dataId,
-                entityDataOp: v.entityDataOp,
-                entityDataState: '',
-                entityDefId: '',
-                entityName: v.entityName,
-                fullEntityDataId: v.fullDataId,
-                oid: v.id,
-                packageName: v.packageName
-              }
+            let tmpAttrValue = JSON.parse(JSON.stringify(attrValues))
+            tmpAttrValue.forEach(attr => {
+              attr.dataValue = v.entityData[attr.attrName]
+            })
+            v.bindInfo = {
+              attrValues: tmpAttrValue,
+              bindFlag: 'N',
+              entityDataId: v.dataId,
+              entityDataOp: v.entityDataOp,
+              entityDataState: '',
+              entityDefId: '',
+              entityName: v.entityName,
+              fullEntityDataId: v.fullDataId,
+              oid: v.id,
+              packageName: v.packageName
             }
             this.bindData.push(v)
           })

@@ -35,7 +35,14 @@
         </FormItem>
       </template>
       <FormItem :label="$t('expected_completion_time')">
-        <DatePicker type="date" @on-change="changeExpectTime" placeholder="Select date" style="width: 90%"></DatePicker>
+        <DatePicker
+          :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
+          type="date"
+          :value="formConfig.values.expectTime"
+          @on-change="changeExpectTime"
+          placeholder="Select date"
+          style="width: 90%"
+        ></DatePicker>
       </FormItem>
 
       <FormItem>
@@ -112,6 +119,7 @@ export default {
         this.formConfig.values.name = data.name
         this.formConfig.values.emergency = data.emergency
         this.formConfig.values.id = data.id
+        this.formConfig.values.expectTime = data.expectTime
       }
     },
     async createRequest () {

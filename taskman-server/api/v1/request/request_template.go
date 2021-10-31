@@ -227,7 +227,7 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.UpdateRequestTemplateEntityAttrs(id, param)
+	err := db.UpdateRequestTemplateEntityAttrs(id, param, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

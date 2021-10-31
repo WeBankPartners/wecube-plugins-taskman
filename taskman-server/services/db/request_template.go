@@ -497,9 +497,10 @@ func GetRequestTemplateEntityAttrs(id string) (result []*models.ProcEntityAttrib
 	return
 }
 
-func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttributeObj) error {
+func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttributeObj, operator string) error {
 	b, _ := json.Marshal(attrs)
-	_, err := x.Exec("update request_template set entity_attrs=? where id=?", string(b), id)
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	_, err := x.Exec("update request_template set entity_attrs=?,updated_time=?,updated_by=? where id=?", string(b), nowTime, operator, id)
 	return err
 }
 
@@ -636,6 +637,11 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 			}
 			v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 		} else {
+			if v.ConfirmTime != "" {
+				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
+					recordIdMap[v.Id] = 1
+				}
+			}
 			v.Name = fmt.Sprintf("%s(beta)", v.Name)
 		}
 	}
@@ -670,6 +676,17 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		v.Tags = groupRequestTemplateByTags(v.Templates)
 	}
 	return
+}
+
+func compareUpdateConfirmTime(updatedTime, confirmTime string) bool {
+	// if updatedTime > confirmTime -> true
+	result := false
+	ut, _ := time.Parse(models.DateTimeFormat, updatedTime)
+	ct, _ := time.Parse(models.DateTimeFormat, confirmTime)
+	if ut.Unix() > ct.Unix() {
+		result = true
+	}
+	return result
 }
 
 func groupRequestTemplateByTags(templates []*models.RequestTemplateTable) []*models.UserRequestTemplateTagObj {

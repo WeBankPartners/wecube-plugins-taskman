@@ -212,7 +212,7 @@ export default {
     },
     checkTemplate (row) {
       this.$router.push({
-        path: '/requestManagementIndex',
+        path: row.status === 'Pending' ? '/requestManagementIndex' : '/requestCheck',
         query: {
           requestId: row.id,
           requestTemplate: row.requestTemplate,

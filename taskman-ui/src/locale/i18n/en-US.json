@@ -3,6 +3,7 @@
   "search": "Search",
   "edit": "Edit",
   "save": "Save",
+  "temporary_storage": "Temporary Storage",
   "commit": "Commit",
   "cancel": "Cancel",
   "delete": "Delete",
@@ -54,6 +55,7 @@
   "warning": "Warning",
   "can_not_be_empty": "Can Not Be Empty",
   "publish_template": "Publish Template",
+  "final_version": "Final Version",
   "initiate_request": "Initiate Request",
   "root_entity": "Root Entity",
   "confirm_to_delete": "Confirm To Delete",
@@ -92,5 +94,6 @@
   "form": "Form",
   "estimated_finish_time": "Estimated Finish Time",
   "expected_completion_time": "Expected Completion Time",
+  "expire_time": "Expire Time",
   "unclassified": "Unclassified"
 }

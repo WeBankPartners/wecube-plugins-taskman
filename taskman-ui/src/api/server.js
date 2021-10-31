@@ -81,3 +81,4 @@ export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${ta
 export const saveTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/save/${taskId}`, data)
 export const changeTaskStatus = (operation, taskId) => req.post(`/taskman/api/v1/task/status/${operation}/${taskId}`)
 export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)
+export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/detail/${requestId}`)

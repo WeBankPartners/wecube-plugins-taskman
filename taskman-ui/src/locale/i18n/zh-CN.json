@@ -71,7 +71,7 @@
   "handle_time": "处理时间",
   "process_result": "处理结果",
   "process_comments": "处理意见",
-  "input": "输入框",
+  "t_input": "输入框",
   "textare": "多行文本框",
   "select": "选择框",
   "editable": "可编辑",

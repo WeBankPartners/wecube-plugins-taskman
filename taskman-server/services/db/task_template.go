@@ -19,6 +19,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 	result.NodeDefId = taskTemplate.NodeDefId
 	result.NodeDefName = taskTemplate.NodeName
 	result.ExpireDay = taskTemplate.ExpireDay
+	result.Handler = taskTemplate.Handler
 	result.MGMTRoleObjs = []*models.RoleTable{}
 	result.MGMTRoles = []string{}
 	result.USERoleObjs = []*models.RoleTable{}

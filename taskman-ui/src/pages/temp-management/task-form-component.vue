@@ -50,47 +50,49 @@
     </Row>
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
-      <Col span="6" style="border-right: 1px solid #dcdee2;padding: 0 16px">
-        <Divider plain>{{ $t('preset') }}{{ $t('input_items') }}</Divider>
-        <Select v-model="selectedInputFormItem" @on-change="changeInputSelectedForm" multiple filterable>
-          <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
-            <Option
-              v-for="attr in item.attributes"
-              :value="attr.id"
-              :disabled="selectedOutputFormItem.includes(attr.id)"
-              :key="attr.id"
-              >{{ attr.description }}</Option
-            >
-          </OptionGroup>
-        </Select>
-        <Divider plain>{{ $t('preset') }}{{ $t('output_items') }}</Divider>
-        <Select v-model="selectedOutputFormItem" @on-change="changeOutputSelectedForm" multiple filterable>
-          <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
-            <Option
-              v-for="attr in item.attributes"
-              :value="attr.id"
-              :disabled="selectedInputFormItem.includes(attr.id)"
-              :key="attr.id"
-              >{{ attr.description }}</Option
-            >
-          </OptionGroup>
-        </Select>
-        <Divider plain>{{ $t('custom_form') }}</Divider>
-        <draggable
-          class="dragArea"
-          :list="customElement"
-          :group="{ name: 'people', pull: 'clone', put: false }"
-          :clone="cloneDog"
-        >
-          <div class="list-group-item-" style="width:100%" v-for="element in customElement" :key="element.id">
-            <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
-            <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
-            <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-          </div>
-        </draggable>
+      <Col span="6" style="border: 1px solid #dcdee2;padding: 0 16px;">
+        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
+          <Divider plain>{{ $t('preset') }}{{ $t('input_items') }}</Divider>
+          <Select v-model="selectedInputFormItem" @on-change="changeInputSelectedForm" multiple filterable>
+            <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
+              <Option
+                v-for="attr in item.attributes"
+                :value="attr.id"
+                :disabled="selectedOutputFormItem.includes(attr.id)"
+                :key="attr.id"
+                >{{ attr.description }}</Option
+              >
+            </OptionGroup>
+          </Select>
+          <Divider plain>{{ $t('preset') }}{{ $t('output_items') }}</Divider>
+          <Select v-model="selectedOutputFormItem" @on-change="changeOutputSelectedForm" multiple filterable>
+            <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
+              <Option
+                v-for="attr in item.attributes"
+                :value="attr.id"
+                :disabled="selectedInputFormItem.includes(attr.id)"
+                :key="attr.id"
+                >{{ attr.description }}</Option
+              >
+            </OptionGroup>
+          </Select>
+          <Divider plain>{{ $t('custom_form') }}</Divider>
+          <draggable
+            class="dragArea"
+            :list="customElement"
+            :group="{ name: 'people', pull: 'clone', put: false }"
+            :clone="cloneDog"
+          >
+            <div class="list-group-item-" style="width:100%" v-for="element in customElement" :key="element.id">
+              <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
+              <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
+              <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
+            </div>
+          </draggable>
+        </div>
       </Col>
-      <Col span="12" style="padding: 16px">
-        <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
+      <Col span="12" style="border: 1px solid #dcdee2;padding: 16px;width:48%; margin: 0 4px">
+        <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', border: '1px solid #dcdee2;' }">
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
@@ -136,71 +138,73 @@
           </template>
         </div>
       </Col>
-      <Col span="6" style="border-left: 1px solid #dcdee2;">
-        <Collapse>
-          <Panel name="1">
-            {{ $t('general_attributes') }}
-            <div slot="content">
-              <Form :label-width="80">
-                <FormItem :label="$t('field_name')">
-                  <Input v-model="editElement.name" placeholder=""></Input>
-                </FormItem>
-                <FormItem :label="$t('display_name')">
-                  <Input v-model="editElement.title" placeholder=""></Input>
-                </FormItem>
-                <FormItem :label="$t('data_type')">
-                  <Select v-model="editElement.elementType" @on-change="editElement.defaultValue = ''">
-                    <Option value="input">Input</Option>
-                    <Option value="select">Select</Option>
-                    <Option value="textarea">Textarea</Option>
-                  </Select>
-                </FormItem>
-                <FormItem :label="$t('defaults')">
-                  <Input v-model="editElement.defaultValue" placeholder=""></Input>
-                </FormItem>
-                <!-- <FormItem label="标签">
-                  <Input v-model="editElement.tag" placeholder=""></Input>
-                </FormItem> -->
-                <FormItem :label="$t('display')">
-                  <Select v-model="editElement.inDisplayName">
-                    <Option value="yes">yes</Option>
-                    <Option value="no">no</Option>
-                  </Select>
-                </FormItem>
-                <FormItem :label="$t('editable')">
-                  <Select v-model="editElement.isEdit">
-                    <Option value="yes">yes</Option>
-                    <Option value="no">no</Option>
-                  </Select>
-                </FormItem>
-                <FormItem :label="$t('width')">
-                  <Select v-model="editElement.width">
-                    <Option :value="6">6</Option>
-                    <Option :value="12">12</Option>
-                    <Option :value="18">18</Option>
-                    <Option :value="24">24</Option>
-                  </Select>
-                </FormItem>
-              </Form>
-            </div>
-          </Panel>
-          <Panel name="2">
-            {{ $t('extended_attributes') }}
-            <div slot="content">
-              <Form :label-width="80">
-                <FormItem :label="$t('validation_rules')">
-                  <Input v-model="editElement.regular" :placeholder="$t('only_supports_regular')"></Input>
-                </FormItem>
-              </Form>
-            </div>
-          </Panel>
-          <Panel name="3">
-            {{ $t('data_item') }}
-            <div slot="content">
-              {{ $t('no_data_item') }}
-            </div>
-          </Panel>
-        </Collapse>
+      <Col span="6" style="border: 1px solid #dcdee2;">
+        <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
+          <Collapse>
+            <Panel name="1">
+              {{ $t('general_attributes') }}
+              <div slot="content">
+                <Form :label-width="80">
+                  <FormItem :label="$t('field_name')">
+                    <Input v-model="editElement.name" placeholder=""></Input>
+                  </FormItem>
+                  <FormItem :label="$t('display_name')">
+                    <Input v-model="editElement.title" placeholder=""></Input>
+                  </FormItem>
+                  <FormItem :label="$t('data_type')">
+                    <Select v-model="editElement.elementType" @on-change="editElement.defaultValue = ''">
+                      <Option value="input">Input</Option>
+                      <Option value="select">Select</Option>
+                      <Option value="textarea">Textarea</Option>
+                    </Select>
+                  </FormItem>
+                  <FormItem :label="$t('defaults')">
+                    <Input v-model="editElement.defaultValue" placeholder=""></Input>
+                  </FormItem>
+                  <!-- <FormItem label="标签">
+                    <Input v-model="editElement.tag" placeholder=""></Input>
+                  </FormItem> -->
+                  <FormItem :label="$t('display')">
+                    <Select v-model="editElement.inDisplayName">
+                      <Option value="yes">yes</Option>
+                      <Option value="no">no</Option>
+                    </Select>
+                  </FormItem>
+                  <FormItem :label="$t('editable')">
+                    <Select v-model="editElement.isEdit">
+                      <Option value="yes">yes</Option>
+                      <Option value="no">no</Option>
+                    </Select>
+                  </FormItem>
+                  <FormItem :label="$t('width')">
+                    <Select v-model="editElement.width">
+                      <Option :value="6">6</Option>
+                      <Option :value="12">12</Option>
+                      <Option :value="18">18</Option>
+                      <Option :value="24">24</Option>
+                    </Select>
+                  </FormItem>
+                </Form>
+              </div>
+            </Panel>
+            <Panel name="2">
+              {{ $t('extended_attributes') }}
+              <div slot="content">
+                <Form :label-width="80">
+                  <FormItem :label="$t('validation_rules')">
+                    <Input v-model="editElement.regular" :placeholder="$t('only_supports_regular')"></Input>
+                  </FormItem>
+                </Form>
+              </div>
+            </Panel>
+            <Panel name="3">
+              {{ $t('data_item') }}
+              <div slot="content">
+                {{ $t('no_data_item') }}
+              </div>
+            </Panel>
+          </Collapse>
+        </div>
       </Col>
     </Row>
     <div style="text-align:center">

@@ -419,6 +419,8 @@ export default {
       const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
       if (statusCode === 'OK') {
         this.formData = { ...data }
+        this.formData.useRoles = data.useRoles[0]
+        this.getHandlerRoles()
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
         if (data.items && data.items.length > 0) {

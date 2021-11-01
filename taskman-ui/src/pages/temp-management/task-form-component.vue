@@ -23,7 +23,6 @@
                 item.displayName
               }}</Option>
             </Select>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="3">
@@ -424,11 +423,12 @@ export default {
       const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
       if (statusCode === 'OK') {
         this.formData = { ...data }
-        this.formData.useRoles = data.useRoles[0]
+        this.formData.useRoles = data.useRoles && data.useRoles[0]
         this.getHandlerRoles()
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeDefName = this.nodeData.nodeName
         if (data.items && data.items.length > 0) {
+          data.items.sort(this.compare('sort'))
           this.selectedFormItem = data.items.filter(item => item.attrDefId !== '')
           this.selectedFormItem.forEach(sForm => {
             if (!this.selectedEntities.includes(sForm.entity)) {
@@ -461,6 +461,23 @@ export default {
         }
       }
     },
+    compare (prop) {
+      return function (obj1, obj2) {
+        var val1 = obj1[prop]
+        var val2 = obj2[prop]
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+          val1 = Number(val1)
+          val2 = Number(val2)
+        }
+        if (val1 < val2) {
+          return -1
+        } else if (val1 > val2) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+    },
     async saveForm () {
       if (this.formData.name === '') {
         this.$Notice.warning({
@@ -478,6 +495,7 @@ export default {
       })
       let cloneFormData = JSON.parse(JSON.stringify(this.formData))
       cloneFormData.useRoles = [cloneFormData.useRoles]
+      tmp.sort(this.compare('sort'))
       let res = {
         ...cloneFormData,
         items: tmp

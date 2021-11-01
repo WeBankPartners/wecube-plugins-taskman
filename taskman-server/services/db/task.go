@@ -496,9 +496,9 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if operation == "mark" {
-		if taskObj.Status == "doing" {
-			return taskObj, fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
-		}
+		//if taskObj.Status == "doing" {
+		//	return taskObj, fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+		//}
 		actions = append(actions, &execAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
 		if operator != taskObj.Handler {

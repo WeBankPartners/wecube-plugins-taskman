@@ -4,13 +4,13 @@
       <Form :label-width="100">
         <Col :span="4">
           <FormItem :label="$t('name')">
-            <Input v-model="formData.name" style="width:90%" type="text"> </Input>
+            <Input v-model="formData.name" style="width:85%" type="text"> </Input>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="4">
           <FormItem :label="$t('processing_role')">
-            <Select v-model="formData.useRoles" style="width:90%" filterable>
+            <Select v-model="formData.useRoles" style="width:85%" filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
             </Select>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
@@ -18,7 +18,7 @@
         </Col>
         <Col :span="4">
           <FormItem :label="$t('handler')">
-            <Select v-model="formData.handler" @on-open-change="getHandlerRoles" style="width:90%" filterable>
+            <Select v-model="formData.handler" @on-open-change="getHandlerRoles" style="width:85%" filterable>
               <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                 item.displayName
               }}</Option>
@@ -28,9 +28,10 @@
         </Col>
         <Col :span="3">
           <FormItem :label="$t('task_time_limit')">
-            <Select v-model="formData.expireDay" filterable>
+            <Select v-model="formData.expireDay" style="width:80%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
+            <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="5">
@@ -40,7 +41,7 @@
             </Select>
           </FormItem>
         </Col>
-        <Col :span="5">
+        <Col :span="4">
           <FormItem :label="$t('description')">
             <Input v-model="formData.description" style="width:90%" type="text"> </Input>
           </FormItem>

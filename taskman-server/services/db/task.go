@@ -412,7 +412,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err = x.Exec("update task set reporter=?,report_time=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", operator, nowTime, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set report_time=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", nowTime, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}

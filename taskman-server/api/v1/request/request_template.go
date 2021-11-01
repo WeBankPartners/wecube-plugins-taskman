@@ -109,6 +109,7 @@ func GetUserByRoles(c *gin.Context) {
 }
 
 func GetUserRoles(c *gin.Context) {
+	db.SyncCoreRole()
 	result, err := db.GetRoleList(middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

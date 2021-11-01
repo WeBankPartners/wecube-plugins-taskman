@@ -71,7 +71,7 @@
                   </template>
                 </Tabs>
                 <span>
-                  <div v-if="dataIndex !== 0">
+                  <div v-if="dataIndex !== 0 || data.requestId === ''">
                     <Form :label-width="80" style="margin: 16px 0">
                       <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
                         <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">

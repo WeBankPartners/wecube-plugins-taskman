@@ -104,11 +104,11 @@ export default {
         },
         {
           title: this.$t('estimated_finish_time'),
-          key: 'expectTime'
+          key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
-          key: 'expireTime'
+          key: 'expectTime'
         },
         {
           title: this.$t('report_time'),

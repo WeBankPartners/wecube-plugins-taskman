@@ -26,6 +26,7 @@ func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error
 		log.Logger.Warn("Can not find any data in form template", log.String("id", id))
 		return
 	}
+	result.ExpireDay = requestTemplate.ExpireDay
 	result.Id = formTemplateTable[0].Id
 	result.Name = formTemplateTable[0].Name
 	result.Description = formTemplateTable[0].Description
@@ -40,7 +41,7 @@ func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error
 func CreateRequestFormTemplate(param models.FormTemplateDto, requestTemplateId string) error {
 	param.NowTime = time.Now().Format(models.DateTimeFormat)
 	insertFormActions, formId := getFormTemplateCreateActions(param)
-	insertFormActions = append(insertFormActions, &execAction{Sql: "update request_template set form_template=? where id=?", Param: []interface{}{formId, requestTemplateId}})
+	insertFormActions = append(insertFormActions, &execAction{Sql: "update request_template set form_template=?,expire_day=?,description=? where id=?", Param: []interface{}{formId, param.ExpireDay, param.Description, requestTemplateId}})
 	return transactionWithoutForeignCheck(insertFormActions)
 }
 
@@ -65,6 +66,7 @@ func UpdateRequestFormTemplate(param models.FormTemplateDto) error {
 	if err != nil {
 		return err
 	}
+	updateActions = append(updateActions, &execAction{Sql: "update request_template set expire_day=?,description=? where form_template=?", Param: []interface{}{param.ExpireDay, param.Description, param.Id}})
 	return transaction(updateActions)
 }
 

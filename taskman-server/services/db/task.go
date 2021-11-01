@@ -57,9 +57,9 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 	} else {
 		// Custom task create
 		customExpireTime := ""
-		dueDay, _ := strconv.Atoi(dueDate)
-		if dueDay > 0 {
-			customExpireTime = time.Now().Add(time.Duration(dueDay) * 24 * time.Hour).Format(models.DateTimeFormat)
+		dueMin, _ := strconv.Atoi(dueDate)
+		if dueMin > 0 {
+			customExpireTime = time.Now().Add(time.Duration(dueMin) * time.Minute).Format(models.DateTimeFormat)
 		}
 		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,expire_time,emergency,callback_request_id,next_option,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, customExpireTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, newTaskObj.Handler, "system", nowTime, "system", nowTime}

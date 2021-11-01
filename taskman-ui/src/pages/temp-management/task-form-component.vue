@@ -23,7 +23,6 @@
                 item.displayName
               }}</Option>
             </Select>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="3">

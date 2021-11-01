@@ -109,11 +109,11 @@ export default {
         },
         {
           title: this.$t('estimated_finish_time'),
-          key: 'expectTime'
+          key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
-          key: 'expireTime'
+          key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
@@ -185,9 +185,6 @@ export default {
     window.clearInterval(this.timer)
   },
   methods: {
-    test () {
-      console.log(111)
-    },
     async terminateRequest (row) {
       this.$Modal.confirm({
         title: this.$t('confirm_termination'),

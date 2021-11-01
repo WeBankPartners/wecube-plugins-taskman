@@ -71,9 +71,8 @@ export default {
           key: 'name'
         },
         {
-          title: this.$t('emergency'),
-          key: 'emergency',
-          width: 80
+          title: this.$t('task_source'),
+          key: 'reporter'
         },
         {
           title: this.$t('request_name'),
@@ -90,21 +89,32 @@ export default {
           }
         },
         {
-          title: this.$t('node_name'),
-          key: 'nodeName'
-        },
-        {
-          title: this.$t('description'),
-          key: 'description'
-        },
-        {
           title: this.$t('status'),
           key: 'status',
           width: 100
         },
         {
-          title: this.$t('tm_updated_time'),
-          key: 'updatedTime'
+          title: this.$t('handler'),
+          key: 'owner'
+        },
+        {
+          title: this.$t('created_time'),
+          key: 'createdTime'
+        },
+        {
+          title: this.$t('expire_time'),
+          key: 'expireTime'
+        },
+        {
+          title: this.$t('沙漏'),
+          key: 'expireTime',
+          render: (h, params) => {
+            return (
+              <Tooltip content={params.row.expireObj.leftDay + '/' + params.row.expireObj.totalDay} style="width: 100%">
+                <Progress percent={params.row.expireObj.percent} />
+              </Tooltip>
+            )
+          }
         },
         {
           title: this.$t('action'),

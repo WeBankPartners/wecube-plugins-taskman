@@ -5,18 +5,15 @@
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
           <ul>
             <CheckboxGroup v-model="node.bindData">
+              <!-- v-for="item in filterBindData(node)" -->
               <li
                 v-for="item in filterBindData(node)"
                 :key="item.id"
                 style="width: 46%;display: inline-block;margin: 6px"
               >
                 <Checkbox :label="item.id" :disabled="$parent.formDisable">
-                  <Tooltip
-                    :content="item.displayName"
-                    :delay="500"
-                    max-width="300"
-                    :disabled="item.displayName.length < 30"
-                  >
+                  <Tooltip :content="item.displayName" :delay="500" max-width="300">
+                    <!-- :disabled="item.displayName.length < 30" -->
                     <div class="text-ellipsis">{{ item.displayName }}</div>
                   </Tooltip>
                 </Checkbox>
@@ -97,7 +94,8 @@ export default {
         if (data.taskNodeBindInfos.length > 0) {
           this.nodes.forEach(node => {
             const find = data.taskNodeBindInfos.find(d => d.nodeId === node.nodeId)
-            node.bindData = find.boundEntityValues.map(b => b.oid)
+            node.bindData = find.boundEntityValues.filter(bound => bound.bindFlag === 'Y').map(b => b.oid)
+            node.bindOptions = find.boundEntityValues || []
           })
         }
       }
@@ -119,7 +117,10 @@ export default {
       })
     },
     filterBindData (node) {
-      return this.bindData
+      if (!node.bindOptions || node.bindOptions.length === 0) return []
+      const oid = node.bindOptions.map(n => n.oid)
+      const res = this.bindData.filter(bData => oid.includes(bData.id))
+      return res
     },
     async saveRequest () {
       let tmpData = []
@@ -129,12 +130,18 @@ export default {
           nodeDefId: n.nodeDefId,
           nodeId: n.nodeId
         }
-        n.bindData.map(b => {
-          let findData = this.bindData.find(bData => bData.id === b)
-          findData.bindInfo.bindFlag = 'Y'
-          params.boundEntityValues.push(findData.bindInfo)
-        })
-        tmpData.push(params)
+        if (n.bindOptions.length > 0) {
+          n.bindOptions = n.bindOptions.map(bData => {
+            bData.bindFlag = 'N'
+            return bData
+          })
+          n.bindData.forEach(b => {
+            let findData = n.bindOptions.find(bData => bData.oid === b)
+            findData.bindFlag = 'Y'
+          })
+          params.boundEntityValues = n.bindOptions
+          tmpData.push(params)
+        }
       })
       this.finalData.taskNodeBindInfos = tmpData
       const { statusCode } = await saveRequest(this.$parent.requestId, this.finalData)

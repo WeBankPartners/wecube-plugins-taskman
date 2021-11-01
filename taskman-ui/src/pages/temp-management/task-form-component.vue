@@ -633,6 +633,7 @@ export default {
       }
     },
     async getSelectedForm () {
+      this.entityOptions = []
       const { statusCode, data } = await getSelectedForm(this.requestTemplateId)
       if (statusCode === 'OK') {
         let entitySet = new Set()

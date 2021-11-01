@@ -173,7 +173,7 @@
         </div>
       </Col>
     </Row>
-    <div style="text-align:center">
+    <div style="text-align:center; margin-top: 8px">
       <Button type="primary" @click="saveForm">{{ $t('save') }}{{ $t('data_item') }}</Button>
       <Button @click="next">{{ $t('next') }}</Button>
     </div>

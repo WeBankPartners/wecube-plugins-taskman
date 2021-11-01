@@ -207,7 +207,7 @@
         </div>
       </Col>
     </Row>
-    <div style="text-align:center">
+    <div style="text-align:center; margin-top: 8px">
       <Button type="primary" @click="saveForm">保存当前表单</Button>
     </div>
   </div>

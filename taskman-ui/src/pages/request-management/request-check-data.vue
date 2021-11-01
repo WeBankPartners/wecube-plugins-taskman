@@ -140,7 +140,7 @@ export default {
 <style scoped lang="scss">
 .list-group-item {
   display: inline-block;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 .table-c table {
   border-right: 1px solid #dcdee2;

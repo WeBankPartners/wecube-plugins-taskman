@@ -2,7 +2,7 @@
   <div class=" ">
     <Row>
       <Form :label-width="100">
-        <Col :span="5">
+        <Col :span="4">
           <FormItem :label="$t('name')">
             <Input v-model="formData.name" style="width:90%" type="text"> </Input>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
@@ -10,9 +10,20 @@
         </Col>
         <Col :span="4">
           <FormItem :label="$t('processing_role')">
-            <Select v-model="formData.useRoles" filterable>
+            <Select v-model="formData.useRoles" style="width:90%" filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
             </Select>
+            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+          </FormItem>
+        </Col>
+        <Col :span="4">
+          <FormItem :label="$t('handler')">
+            <Select v-model="formData.handler" @on-open-change="getHandlerRoles" style="width:90%" filterable>
+              <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
+                item.displayName
+              }}</Option>
+            </Select>
+            <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="3">
@@ -198,7 +209,7 @@
 </template>
 
 <script>
-import { getSelectedForm, getUserRoles, saveTaskForm, getTaskFormDataByNodeId } from '@/api/server.js'
+import { getSelectedForm, getUserRoles, saveTaskForm, getTaskFormDataByNodeId, getHandlerRoles } from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 8
 export default {
@@ -215,6 +226,7 @@ export default {
         name: '',
         description: '',
         useRoles: '',
+        handler: '',
         items: [],
         expireDay: 1,
         updatedTime: ''
@@ -228,6 +240,7 @@ export default {
       formItemOptions: [], // 树形数据
       selectedFormItemOptions: [],
       useRolesOptions: [],
+      handlerRolesOptions: [],
 
       customElement: [
         {
@@ -378,7 +391,24 @@ export default {
         this.formData.nodeDefName = this.nodeData.nodeName
         this.getSelectedForm()
         this.getUserRoles()
+        this.getHandlerRoles()
         this.getTaskFormDataByNodeId()
+      }
+    },
+    async getHandlerRoles () {
+      const params = {
+        params: {
+          roles: this.formData.useRoles
+        }
+      }
+      const { statusCode, data } = await getHandlerRoles(params)
+      if (statusCode === 'OK') {
+        this.handlerRolesOptions = data.map(d => {
+          return {
+            displayName: d,
+            id: d
+          }
+        })
       }
     },
     async getTaskFormDataByNodeId () {
@@ -453,6 +483,7 @@ export default {
         })
         this.formData = { ...data }
         this.formData.useRoles = data.useRoles[0]
+        this.getHandlerRoles()
         data.items.forEach(item => {
           let findAttrs = this.finalElement.find(l => l.itemGroup === item.itemGroup)
           let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
@@ -686,6 +717,6 @@ export default {
 }
 .list-group-item {
   display: inline-block;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 </style>

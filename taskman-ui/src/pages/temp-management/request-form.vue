@@ -10,9 +10,10 @@
         </Col>
         <Col :span="6">
           <FormItem :label="$t('request_time_limit')">
-            <Select v-model="formData.expireDay" filterable>
+            <Select v-model="formData.expireDay" style="width:90%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
+            <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="6">
@@ -541,6 +542,6 @@ export default {
 }
 .list-group-item {
   display: inline-block;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 </style>

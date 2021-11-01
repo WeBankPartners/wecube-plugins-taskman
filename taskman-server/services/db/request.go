@@ -507,8 +507,12 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 	}
 	if len(tmpItems) > 0 {
-		tmpEntity = items[len(items)-1].Entity
-		tmpPackageName = items[len(items)-1].PackageName
+		if items[len(items)-1].Entity != "" {
+			tmpEntity = items[len(items)-1].Entity
+		}
+		if items[len(items)-1].PackageName != "" {
+			tmpPackageName = items[len(items)-1].PackageName
+		}
 		tmpItemGroup = items[len(items)-1].ItemGroup
 		tmpItemGroupName = items[len(items)-1].ItemGroupName
 		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})

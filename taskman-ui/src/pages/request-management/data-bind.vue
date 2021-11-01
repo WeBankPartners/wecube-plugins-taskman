@@ -12,9 +12,16 @@
                 style="width: 46%;display: inline-block;margin: 6px"
               >
                 <Checkbox :label="item.id" :disabled="$parent.formDisable">
-                  <Tooltip :content="item.displayName" :delay="500" max-width="300">
-                    <!-- :disabled="item.displayName.length < 30" -->
-                    <div class="text-ellipsis">{{ item.displayName }}</div>
+                  <Tooltip
+                    :content="item.displayName"
+                    :delay="500"
+                    :disabled="item.displayName.length < 30"
+                    max-width="300"
+                  >
+                    <div class="text-ellipsis">
+                      <span v-if="item.id.startsWith('tmp__')" style="color: red">(new)</span>
+                      {{ item.displayName }}
+                    </div>
                   </Tooltip>
                 </Checkbox>
               </li>

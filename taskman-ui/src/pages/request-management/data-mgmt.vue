@@ -12,10 +12,13 @@
         </tr>
         <template v-for="(data, dataIndex) in tableData">
           <tr :key="data.id">
-            <td class="padding-style" style="text-align: center">{{ dataIndex + 1 }}</td>
+            <td class="padding-style" style="text-align: center">
+              <span v-if="data._id.startsWith('tmp__')" style="color: red">(new)</span>
+              {{ dataIndex + 1 }}
+            </td>
             <td class="padding-style">
               <div
-                class="list-group-item"
+                class="list-group-item-"
                 :style="{ width: (element.width / 24) * 100 + '%' }"
                 v-for="element in form"
                 :key="element.id"
@@ -212,9 +215,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.list-group-item {
+.list-group-item- {
   display: inline-block;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 .table-c table {
   border-right: 1px solid #dcdee2;

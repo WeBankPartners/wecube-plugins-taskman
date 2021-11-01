@@ -95,7 +95,7 @@ export default {
         },
         {
           title: this.$t('handler'),
-          key: 'owner'
+          key: 'handler'
         },
         {
           title: this.$t('created_time'),

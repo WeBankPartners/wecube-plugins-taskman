@@ -10,9 +10,10 @@
         </Col>
         <Col :span="6">
           <FormItem :label="$t('request_time_limit')">
-            <Select v-model="formData.expireDay" filterable>
+            <Select v-model="formData.expireDay" style="width:90%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
+            <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="6">
@@ -47,7 +48,7 @@
           :group="{ name: 'people', pull: 'clone', put: false }"
           :clone="cloneDog"
         >
-          <div class="list-group-item" style="width:100%" v-for="element in customElement" :key="element.id">
+          <div class="list-group-item-" style="width:100%" v-for="element in customElement" :key="element.id">
             <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
             <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
             <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
@@ -62,7 +63,7 @@
               <draggable class="dragArea" :list="item.attrs" group="people" :move="onMove" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
-                  :class="['list-group-item', element.isActive ? 'active-zone' : '']"
+                  :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
                   :style="{ width: (element.width / 24) * 100 + '%' }"
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
@@ -539,8 +540,8 @@ export default {
 .ivu-form-item {
   margin-bottom: 8px;
 }
-.list-group-item {
+.list-group-item- {
   display: inline-block;
-  margin: 8px 0;
+  margin: 2px 0;
 }
 </style>

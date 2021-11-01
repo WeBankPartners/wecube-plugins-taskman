@@ -73,6 +73,9 @@
                 <span>
                   <div v-if="dataIndex !== 0 || data.requestId === ''">
                     <Form :label-width="80" style="margin: 16px 0">
+                      <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
+                        <Input disabled v-model="data.description" type="textarea" />
+                      </FormItem>
                       <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
                         <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>

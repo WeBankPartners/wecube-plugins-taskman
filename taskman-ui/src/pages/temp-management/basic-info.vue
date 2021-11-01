@@ -70,6 +70,7 @@ import { ValidationObserver } from 'vee-validate'
 import {
   getTempGroupList,
   getManagementRoles,
+  getHandlerRoles,
   getUserRoles,
   getProcess,
   createTemp,
@@ -116,7 +117,19 @@ export default {
             options: 'mgmtRolesOptions',
             labelKey: 'displayName',
             valueKey: 'id',
-            multiple: true,
+            multiple: false,
+            type: 'select',
+            placeholder: ''
+          },
+          {
+            label: 'handler',
+            value: 'handler',
+            rules: '',
+            onOpenChange: 'getHandlerRoles',
+            options: 'handlerRolesOptions',
+            labelKey: 'displayName',
+            valueKey: 'id',
+            multiple: false,
             type: 'select',
             placeholder: ''
           },
@@ -139,7 +152,8 @@ export default {
           id: '',
           name: '',
           group: '',
-          mgmtRoles: [],
+          mgmtRoles: '',
+          handler: '',
           useRoles: [],
           description: '',
           tags: '',
@@ -149,6 +163,7 @@ export default {
           procDefKey: '',
           procDefName: ''
         },
+        handlerRolesOptions: [],
         groupOptions: [],
         procOptions: [],
         mgmtRolesOptions: [],
@@ -165,6 +180,22 @@ export default {
     },
     execut (method) {
       this[method]()
+    },
+    async getHandlerRoles () {
+      const params = {
+        params: {
+          roles: this.formConfig.values.mgmtRoles
+        }
+      }
+      const { statusCode, data } = await getHandlerRoles(params)
+      if (statusCode === 'OK') {
+        this.formConfig.handlerRolesOptions = data.map(d => {
+          return {
+            displayName: d,
+            id: d
+          }
+        })
+      }
     },
     async getInitData () {
       this.getGroupOptions()
@@ -188,23 +219,27 @@ export default {
       if (statusCode === 'OK') {
         this.formConfig.isAdd = false
         this.formConfig.values = { ...data.contents[0] }
-        this.formConfig.values.mgmtRoles = data.contents[0].mgmtRoles.map(role => role.id)
+        this.formConfig.values.mgmtRoles = data.contents[0].mgmtRoles[0].id
         this.formConfig.values.useRoles = data.contents[0].useRoles.map(role => role.id)
+        this.getHandlerRoles()
       }
     },
     async createTemp () {
       // if (!this.$refs.observer.flags.valid) {
       //   return
       // }
-      const method = this.formConfig.values.id === '' ? createTemp : updateTemp
+      let cacheFromValue = JSON.parse(JSON.stringify(this.formConfig.values))
+      const method = cacheFromValue.id === '' ? createTemp : updateTemp
       const process = this.formConfig.procOptions.find(item => item.procDefId === this.formConfig.values.procDefId)
-      this.formConfig.values.packageName = process.rootEntity.packageName
-      this.formConfig.values.entityName = process.rootEntity.name
-      this.formConfig.values.procDefKey = process.procDefKey
-      this.formConfig.values.procDefName = process.procDefName
-      const { statusCode, data } = await method(this.formConfig.values)
+      cacheFromValue.packageName = process.rootEntity.packageName
+      cacheFromValue.entityName = process.rootEntity.name
+      cacheFromValue.procDefKey = process.procDefKey
+      cacheFromValue.procDefName = process.procDefName
+      cacheFromValue.mgmtRoles = [cacheFromValue.mgmtRoles]
+      const { statusCode, data } = await method(cacheFromValue)
       if (statusCode === 'OK') {
         this.formConfig.values = { ...data }
+        this.formConfig.values.mgmtRoles = this.formConfig.values.mgmtRoles[0]
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')

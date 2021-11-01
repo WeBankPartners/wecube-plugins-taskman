@@ -106,21 +106,21 @@
                   <div>{{ element.title }}:</div>
                   <Input
                     v-if="element.elementType === 'input'"
-                    disabled
+                    :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     placeholder=""
                     style="width: calc(100% - 30px);"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
-                    disabled
+                    :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
                     style="width: calc(100% - 30px);"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
-                    disabled
+                    :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     style="width: calc(100% - 30px);"
                   ></Select>
@@ -556,6 +556,7 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
+          inDisplayName: 'no',
           isEdit: 'no',
           isOutput: 'no',
           isView: 'yes',
@@ -674,6 +675,7 @@ export default {
         attrIndex: eleIndex
       }
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
+      this.editElement.inDisplayName = this.editElement.inDisplayName || 'no'
       this.editElement.isActive = true
     },
     removeForm (element, itemIndex, eleIndex) {

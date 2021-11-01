@@ -68,7 +68,7 @@
                     <parameter datatype="string" mappingType="context">taskFormOutput</parameter>
                 </outputParameters>
             </interface>
-            <interface action="create-custom" path="/taskman/api/v1/plugin/task/create" httpMethod="POST" isAsyncProcessing="Y" type="DYNAMICFORM">
+            <interface action="create-custom" path="/taskman/api/v1/plugin/task/create/custom" httpMethod="POST" isAsyncProcessing="Y" type="DYNAMICFORM">
                 <inputParameters>
                     <parameter datatype="string" mappingType="system_variable" mappingSystemVariableName="CALLBACK_URL" required="Y">
                         callbackUrl

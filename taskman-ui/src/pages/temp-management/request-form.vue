@@ -62,7 +62,7 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea" :list="item.attrs" group="people" :move="onMove" @change="log">
+              <draggable class="dragArea" :list="item.attrs" group="people" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
@@ -340,6 +340,7 @@ export default {
         this.formData = { ...data }
         if (data.items !== null && data.items.length > 0) {
           let itemGroupSet = new Set()
+          data.items.sort(this.compare('sort'))
           data.items.forEach(item => {
             if (itemGroupSet.has(item.itemGroup)) {
               let exitEle = this.finalElement.find(ele => ele.itemGroup === item.itemGroup)
@@ -361,6 +362,23 @@ export default {
         }
       }
     },
+    compare (prop) {
+      return function (obj1, obj2) {
+        var val1 = obj1[prop]
+        var val2 = obj2[prop]
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+          val1 = Number(val1)
+          val2 = Number(val2)
+        }
+        if (val1 < val2) {
+          return -1
+        } else if (val1 > val2) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+    },
     async saveForm () {
       if (this.formData.name === '') {
         this.$Notice.warning({
@@ -376,6 +394,7 @@ export default {
           l.id = ''
         }
       })
+      tmp.sort(this.compare('sort'))
       let res = {
         ...this.formData,
         items: tmp

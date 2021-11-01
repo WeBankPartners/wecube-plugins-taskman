@@ -47,7 +47,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newTaskFormObj := models.FormTable{Id: guid.CreateGuid(), Name: "form_" + input.TaskName}
 	input.RoleName = remakeTaskReportRole(input.RoleName)
-	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ",")}
+	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ","), Handler: input.Handler}
 	var taskFormInput models.PluginTaskFormDto
 	if input.TaskFormInput != "" {
 		err = json.Unmarshal([]byte(input.TaskFormInput), &taskFormInput)
@@ -61,8 +61,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 		if dueDay > 0 {
 			customExpireTime = time.Now().Add(time.Duration(dueDay) * 24 * time.Hour).Format(models.DateTimeFormat)
 		}
-		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,expire_time,emergency,callback_request_id,next_option,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, customExpireTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, "system", nowTime, "system", nowTime}
+		taskInsertAction := execAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,expire_time,emergency,callback_request_id,next_option,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, customExpireTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, newTaskObj.Handler, "system", nowTime, "system", nowTime}
 		actions = append(actions, &taskInsertAction)
 		err = transaction(actions)
 		return
@@ -84,6 +84,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 			newTaskObj.Description = taskTemplateTable[0].Description
 			newTaskObj.Reporter = requestTable[0].Reporter
 			newTaskObj.ReportTime = nowTime
+			newTaskObj.Handler = taskTemplateTable[0].Handler
 			newTaskFormObj.FormTemplate = taskTemplateTable[0].FormTemplate
 		} else {
 			log.Logger.Warn("Can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
@@ -91,8 +92,8 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 			return
 		}
 	}
-	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, "system", nowTime, "system", nowTime}
+	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, "system", nowTime, "system", nowTime}
 	actions = append(actions, &taskInsertAction)
 	actions = append(actions, &execAction{Sql: "insert into form(id,name,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.Name, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {
@@ -181,7 +182,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.owner,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_time from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
+	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.handler,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_time from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -278,7 +279,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 }
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, Description: taskObj.Description, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
 	if taskObj.Status != "done" {
 		taskForm.Editable = true
 	}
@@ -463,6 +464,9 @@ func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableOb
 	if err != nil {
 		return err
 	}
+	if taskObj.Request == "" {
+		return nil
+	}
 	for _, tableForm := range param {
 		tmpColumnMap := make(map[string]int)
 		for _, title := range tableForm.Title {
@@ -495,15 +499,15 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 		if taskObj.Status == "doing" {
 			return taskObj, fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
 		}
-		actions = append(actions, &execAction{Sql: "update task set status=?,owner=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
+		actions = append(actions, &execAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
-		if operator != taskObj.Owner {
-			return taskObj, fmt.Errorf("Task owner is %s ", taskObj.Owner)
+		if operator != taskObj.Handler {
+			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"doing", operator, nowTime, taskId}})
 	} else if operation == "quit" {
-		if operator != taskObj.Owner {
-			return taskObj, fmt.Errorf("Task owner is %s ", taskObj.Owner)
+		if operator != taskObj.Handler {
+			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
 	}
@@ -516,7 +520,7 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 	if taskObj.Status == "created" {
 		taskObj.OperationOptions = []string{"mark"}
 	} else if taskObj.Status == "marked" || taskObj.Status == "doing" {
-		if taskObj.Owner == operator {
+		if taskObj.Handler == operator {
 			taskObj.OperationOptions = []string{"start"}
 		} else {
 			taskObj.OperationOptions = []string{"mark"}
@@ -531,7 +535,7 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	if taskObj.Status == "created" {
 		taskObj.OperationOptions = []string{"mark"}
 	} else if taskObj.Status == "marked" || taskObj.Status == "doing" {
-		if taskObj.Owner == operator {
+		if taskObj.Handler == operator {
 			taskObj.OperationOptions = []string{"start"}
 		} else {
 			taskObj.OperationOptions = []string{"mark"}

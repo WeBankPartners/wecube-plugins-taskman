@@ -34,6 +34,7 @@ func init() {
 		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: request.GetCoreProcessList},
 		&handlerFuncObj{Url: "/process-nodes/:id", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
 		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: request.GetRoleList},
+		&handlerFuncObj{Url: "/role/user/list", Method: "GET", HandlerFunc: request.GetUserByRoles},
 		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: request.GetUserRoles},
 		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: request.QueryRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: request.CreateRequestTemplate},

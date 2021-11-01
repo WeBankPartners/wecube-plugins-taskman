@@ -28,7 +28,7 @@ type TaskTable struct {
 	Reporter          string   `json:"reporter" xorm:"reporter"`
 	ReportTime        string   `json:"reportTime" xorm:"report_time"`
 	ReportRole        string   `json:"reportRole" xorm:"report_role"`
-	Owner             string   `json:"owner" xorm:"owner"`
+	Handler           string   `json:"handler" xorm:"handler"`
 	NextOption        string   `json:"nextOption" xorm:"next_option"`
 	ChoseOption       string   `json:"choseOption" xorm:"chose_option"`
 	CreatedBy         string   `json:"createdBy" xorm:"created_by"`
@@ -53,7 +53,7 @@ type TaskListObj struct {
 	Result           string       `json:"result" xorm:"result"`
 	Reporter         string       `json:"reporter" xorm:"reporter"`
 	ReportTime       string       `json:"reportTime" xorm:"report_time"`
-	Owner            string       `json:"owner" xorm:"owner"`
+	Handler          string       `json:"handler" xorm:"handler"`
 	NextOption       string       `json:"nextOption" xorm:"next_option"`
 	ChoseOption      string       `json:"choseOption" xorm:"chose_option"`
 	CreatedBy        string       `json:"createdBy" xorm:"created_by"`
@@ -96,6 +96,7 @@ type PluginTaskCreateRequestObj struct {
 	ProcInstId        string `json:"procInstId"`
 	CallbackUrl       string `json:"callbackUrl"`
 	Reporter          string `json:"reporter"`
+	Handler           string `json:"handler"`
 	RoleName          string `json:"roleName"`
 	TaskName          string `json:"taskName"`
 	TaskDescription   string `json:"taskDescription"`
@@ -179,6 +180,7 @@ type TaskQueryTimeStep struct {
 type TaskQueryObj struct {
 	RequestId   string                    `json:"requestId"`
 	RequestName string                    `json:"requestName"`
+	Description string                    `json:"description"`
 	TaskId      string                    `json:"taskId"`
 	TaskName    string                    `json:"taskName"`
 	Reporter    string                    `json:"reporter"`

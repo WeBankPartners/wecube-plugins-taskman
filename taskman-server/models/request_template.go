@@ -22,6 +22,7 @@ type RequestTemplateTable struct {
 	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
 	EntityAttrs  string `json:"entityAttrs" xorm:"entity_attrs"`
 	ExpireDay    int    `json:"expireDay" xorm:"expire_day"`
+	Handler      string `json:"handler" xorm:"handler"`
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
 }
 
@@ -41,7 +42,8 @@ type RequestTemplateGroupTable struct {
 type RoleTable struct {
 	Id          string `json:"id" xorm:"id"`
 	DisplayName string `json:"displayName" xorm:"display_name"`
-	UpdatedTime string `json:"updated_time" xorm:"updated_time"`
+	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
+	CoreId      string `json:"coreId" xorm:"core_id"`
 }
 
 type RequestTemplateRoleTable struct {

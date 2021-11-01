@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS `role`;
 CREATE TABLE IF NOT EXISTS `role` (
   `id` varchar(64)  NOT NULL,
   `display_name` varchar(255) NOT NULL,
+  `core_id` varchar(64) DEFAULT NULL,
   `updated_time` datetime,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
@@ -145,6 +146,7 @@ CREATE TABLE IF NOT EXISTS `request_template` (
   `updated_by` varchar(255)   NULL,
   `updated_time` datetime NULL,
   `entity_attrs` text DEFAULT NULL,
+  `handler` varchar(64)  DEFAULT NULL,
   `del_flag` tinyint(2) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   CONSTRAINT `fore_request_template_form` FOREIGN KEY (`form_template`) REFERENCES `form_template` (`id`),
@@ -203,6 +205,7 @@ CREATE TABLE IF NOT EXISTS `task_template` (
   `node_def_id` varchar(255)  DEFAULT NULL,
   `node_name` varchar(255)  DEFAULT NULL,
   `expire_day` int  DEFAULT 7,
+  `handler` varchar(64)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,
@@ -253,7 +256,7 @@ CREATE TABLE IF NOT EXISTS `task` (
   `result` text ,
   `cache` mediumtext ,
   `callback_request_id` varchar(255) DEFAULT NULL,
-  `owner` varchar(64)  DEFAULT NULL,
+  `handler` varchar(64)  DEFAULT NULL,
   `next_option` varchar(255)  DEFAULT NULL,
   `chose_option` varchar(64)  DEFAULT NULL,
   `expire_time` varchar(32)  DEFAULT NULL,

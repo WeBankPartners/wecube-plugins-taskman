@@ -199,7 +199,7 @@ func calcExpireTime(reportTime string, expireDay int) (expire string) {
 func GetRequestWithRoot(requestId string) (result models.RequestTable, err error) {
 	result = models.RequestTable{}
 	var requestTable []*models.RequestTable
-	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache,expire_time,expect_time from request where id=?", requestId).Find(&requestTable)
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache,expire_time,expect_time,handler from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
 	}
@@ -247,15 +247,15 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
-	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time,expect_time,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, requestTemplateObj.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
 	actions = append(actions, &requestInsertAction)
 	return transactionWithoutForeignCheck(actions)
 }
 
 func UpdateRequest(param *models.RequestTable) error {
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set name=?,expect_time=?,emergency=?,updated_by=?,updated_time=? where id=?", param.Name, param.ExpectTime, param.Emergency, param.UpdatedBy, nowTime, param.Id)
+	_, err := x.Exec("update request set name=?,expect_time=?,emergency=?,handler=?,updated_by=?,updated_time=? where id=?", param.Name, param.ExpectTime, param.Emergency, param.Handler, param.UpdatedBy, nowTime, param.Id)
 	return err
 }
 

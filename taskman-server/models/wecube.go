@@ -97,3 +97,14 @@ type CoreRoleDataObj struct {
 	Email       string `json:"email"`
 	DisplayName string `json:"displayName"`
 }
+
+type CoreUserDto struct {
+	Status  string            `json:"status"`
+	Message string            `json:"message"`
+	Data    []CoreUserDataObj `json:"data"`
+}
+
+type CoreUserDataObj struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+}

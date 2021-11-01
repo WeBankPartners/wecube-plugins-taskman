@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 func QueryRequestTemplateGroup(c *gin.Context) {
@@ -90,6 +91,16 @@ func GetCoreProcNodes(c *gin.Context) {
 func GetRoleList(c *gin.Context) {
 	db.SyncCoreRole()
 	result, err := db.GetRoleList([]string{})
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
+func GetUserByRoles(c *gin.Context) {
+	roleString := c.Query("roles")
+	result, err := db.QueryUserByRoles(strings.Split(roleString, ","), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

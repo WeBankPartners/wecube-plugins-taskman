@@ -237,7 +237,7 @@ func SyncCoreRole() {
 			}
 		}
 		if !existFlag {
-			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName})
+			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName, CoreId: v.Id})
 		}
 	}
 	for _, v := range roleTable {
@@ -254,7 +254,7 @@ func SyncCoreRole() {
 	}
 	var actions []*execAction
 	for _, role := range addRoleList {
-		actions = append(actions, &execAction{Sql: "insert into `role`(id,display_name,updated_time) value (?,?,NOW())", Param: []interface{}{role.Id, role.DisplayName}})
+		actions = append(actions, &execAction{Sql: "insert into `role`(id,display_name,core_id,updated_time) value (?,?,?,NOW())", Param: []interface{}{role.Id, role.DisplayName, role.CoreId}})
 	}
 	if len(delRoleList) > 0 {
 		roleIdList := []string{}
@@ -397,8 +397,8 @@ func CreateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	result.Id = newGuid
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
 	actions = append(actions, &insertAction)
 	for _, v := range param.MGMTRoles {
 		result.MGMTRoles = append(result.MGMTRoles, &models.RoleTable{Id: v})
@@ -416,8 +416,8 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
-	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,updated_by=?,updated_time=? where id=?"}
-	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.UpdatedBy, nowTime, param.Id}
+	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,handler=?,updated_by=?,updated_time=? where id=?"}
+	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.UpdatedBy, nowTime, param.Id}
 	actions = append(actions, &updateAction)
 	actions = append(actions, &execAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{param.Id}})
 	for _, v := range param.MGMTRoles {
@@ -538,7 +538,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	newRequestFormTemplateId := guid.CreateGuid()
 	var actions []*execAction
 	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2 where id=?", Param: []interface{}{version, nowTime, requestTemplateObj.Id}})
-	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'confirm' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'%s' as confirm_time from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, requestTemplateObj.Id, version, nowTime, requestTemplateObj.Id)})
+	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time,expire_day,handler) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'confirm' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'%s' as confirm_time,expire_day,handler from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, requestTemplateObj.Id, version, nowTime, requestTemplateObj.Id)})
 	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
@@ -555,7 +555,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	newTaskGuids := guid.CreateGuidList(len(taskTemplates))
 	newTaskFormGuids := guid.CreateGuidList(len(taskTemplates))
 	for i, task := range taskTemplates {
-		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into task_template(id,name,description,form_template,request_template,node_def_id,node_name,expire_day,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,'%s' as form_template,'%s' as request_template,node_def_id,node_name,expire_day,created_by,created_time,updated_by,updated_time from task_template where id='%s'", newTaskGuids[i], newTaskFormGuids[i], newRequestTemplateId, task.Id)})
+		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into task_template(id,name,description,form_template,request_template,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,'%s' as form_template,'%s' as request_template,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time from task_template where id='%s'", newTaskGuids[i], newTaskFormGuids[i], newRequestTemplateId, task.Id)})
 		tmpTaskFormActions, tmpErr := getFormCopyActions(task.FormTemplate, newTaskFormGuids[i])
 		if tmpErr != nil {
 			err = fmt.Errorf("Try to copy task form fail,%s ", tmpErr.Error())
@@ -719,4 +719,61 @@ func getRequestTemplateRoles(requestTemplateId, roleType string) []string {
 		result = append(result, v.Role)
 	}
 	return result
+}
+
+func QueryUserByRoles(roles []string, userToken string) (result []string, err error) {
+	result = []string{}
+	var roleTable []*models.RoleTable
+	err = x.SQL("select * from `role` where id in ('" + strings.Join(roles, "','") + "')").Find(&roleTable)
+	if err != nil || len(roleTable) == 0 {
+		return
+	}
+	existMap := make(map[string]int)
+	for _, v := range roleTable {
+		if v.CoreId == "" {
+			continue
+		}
+		tmpResult, tmpErr := queryCoreUser(v.CoreId, userToken)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+		for _, vv := range tmpResult {
+			if _, b := existMap[vv]; !b {
+				result = append(result, vv)
+				existMap[vv] = 1
+			}
+		}
+	}
+	return
+}
+
+func queryCoreUser(roleId, userToken string) (result []string, err error) {
+	request, newRequestErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/roles/%s/users", models.CoreToken.BaseUrl, roleId), strings.NewReader(""))
+	if newRequestErr != nil {
+		err = fmt.Errorf("Get core role key new request fail:%s ", newRequestErr.Error())
+		return
+	}
+	request.Header.Set("Authorization", userToken)
+	res, requestErr := http.DefaultClient.Do(request)
+	if requestErr != nil {
+		err = fmt.Errorf("Get core user request fail:%s ", requestErr.Error())
+		return
+	}
+	b, _ := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	var response models.CoreUserDto
+	err = json.Unmarshal(b, &response)
+	if err != nil {
+		err = fmt.Errorf("Get core user json unmarshal result:%s ", err.Error())
+		return
+	}
+	if response.Status != "OK" {
+		err = fmt.Errorf(response.Message)
+		return
+	}
+	for _, v := range response.Data {
+		result = append(result, v.Username)
+	}
+	return
 }

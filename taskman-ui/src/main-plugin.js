@@ -41,11 +41,11 @@ const implicitRoute = {
     parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
     childBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Task' }
   },
-  '/taskMgmtIndex': {
+  taskMgmtIndex: {
     parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
     childBreadcrumb: { 'zh-CN': '任务管理', 'en-US': 'Task Management' }
   },
-  '/requestManagementIndex': {
+  requestManagementIndex: {
     parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
     childBreadcrumb: { 'zh-CN': '请求管理', 'en-US': 'Request Management' }
   }

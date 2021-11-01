@@ -84,7 +84,7 @@
             :clone="cloneDog"
           >
             <div class="list-group-item-" style="width:100%" v-for="element in customElement" :key="element.id">
-              <Input v-if="element.elementType === 'input'" :placeholder="$t('input')" />
+              <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
             </div>

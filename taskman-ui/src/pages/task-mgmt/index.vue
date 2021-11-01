@@ -61,12 +61,14 @@
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
                     <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
-                      <TaskData
-                        :data="form"
-                        :isDisabled="!data.editable"
-                        :requestId="requestId"
-                        :enforceDisable="enforceDisable"
-                      ></TaskData>
+                      <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
+                        <TaskData
+                          :data="form"
+                          :isDisabled="!data.editable"
+                          :requestId="requestId"
+                          :enforceDisable="enforceDisable"
+                        ></TaskData>
+                      </div>
                     </TabPane>
                   </template>
                 </Tabs>
@@ -109,6 +111,7 @@ export default {
   name: '',
   data () {
     return {
+      MODALHEIGHT: 500,
       activeStep: 0,
       taskId: '',
       requestId: '',
@@ -119,6 +122,7 @@ export default {
     }
   },
   mounted () {
+    this.MODALHEIGHT = document.body.scrollHeight - 400
     this.taskId = this.$route.query.taskId
     this.enforceDisable = this.$route.query.enforceDisable === 'Y'
     this.getTaskDetail()

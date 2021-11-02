@@ -283,6 +283,10 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 	if !existProDef {
 		actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, requestTemplateObj.ProcDefName}})
 	}
+	tmpActions := getUpdateNodeDefIdActions(requestTemplateObj.Id, userToken)
+	if len(tmpActions) > 0 {
+		actions = append(actions, tmpActions...)
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
 	param.Id = guid.CreateGuid()

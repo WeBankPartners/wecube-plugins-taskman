@@ -502,7 +502,7 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions = append(actions, &execAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
 	if taskObj.Request != "" {
-		for _, tableForm := range param.Form {
+		for _, tableForm := range param.FormData {
 			tmpColumnMap := make(map[string]int)
 			for _, title := range tableForm.Title {
 				tmpColumnMap[title.Name] = 1

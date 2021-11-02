@@ -179,26 +179,27 @@ type TaskQueryTimeStep struct {
 }
 
 type TaskQueryObj struct {
-	RequestId   string                    `json:"requestId"`
-	RequestName string                    `json:"requestName"`
-	Description string                    `json:"description"`
-	TaskId      string                    `json:"taskId"`
-	TaskName    string                    `json:"taskName"`
-	Reporter    string                    `json:"reporter"`
-	ReportTime  string                    `json:"reportTime"`
-	Comment     string                    `json:"comment"`
-	AttachFiles []string                  `json:"attachFiles"`
-	Editable    bool                      `json:"editable"`
-	Status      string                    `json:"status"`
-	NextOption  []string                  `json:"nextOption"`
-	ChoseOption string                    `json:"choseOption"`
-	ExpireTime  string                    `json:"expireTime"`
-	ExpectTime  string                    `json:"expectTime"`
-	FormData    []*RequestPreDataTableObj `json:"formData"`
+	RequestId       string                    `json:"requestId"`
+	RequestName     string                    `json:"requestName"`
+	RequestTemplate string                    `json:"requestTemplate"`
+	Description     string                    `json:"description"`
+	TaskId          string                    `json:"taskId"`
+	TaskName        string                    `json:"taskName"`
+	Reporter        string                    `json:"reporter"`
+	ReportTime      string                    `json:"reportTime"`
+	Comment         string                    `json:"comment"`
+	AttachFiles     []string                  `json:"attachFiles"`
+	Editable        bool                      `json:"editable"`
+	Status          string                    `json:"status"`
+	NextOption      []string                  `json:"nextOption"`
+	ChoseOption     string                    `json:"choseOption"`
+	ExpireTime      string                    `json:"expireTime"`
+	ExpectTime      string                    `json:"expectTime"`
+	FormData        []*RequestPreDataTableObj `json:"formData"`
 }
 
 type TaskApproveParam struct {
-	Form        []*RequestPreDataTableObj `json:"form"`
+	FormData    []*RequestPreDataTableObj `json:"formData"`
 	Comment     string                    `json:"comment"`
 	ChoseOption string                    `json:"choseOption"`
 }

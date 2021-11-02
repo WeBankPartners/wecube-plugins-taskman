@@ -354,6 +354,10 @@ func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []
 		for _, valueObj := range v.Value {
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
+				//if title.Multiple == "Y" {
+				//	tmpV,_ := json.Marshal(valueObj.EntityData[title.Name])
+				//
+				//}
 				actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
 			}
 		}

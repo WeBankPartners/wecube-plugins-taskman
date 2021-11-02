@@ -520,5 +520,17 @@ func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (
 	if formItemTemplate[0].IsRefInside == "no" {
 		return output
 	}
+	var formItems []*models.FormItemTable
+	x.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
+	rowDataMap := make(map[string]int)
+	for _, v := range formItems {
+		rowDataMap[v.RowDataId] = 1
+	}
+	output = []*models.EntityDataObj{}
+	for _, v := range input {
+		if _, b := rowDataMap[v.Id]; b {
+			output = append(output, v)
+		}
+	}
 	return output
 }

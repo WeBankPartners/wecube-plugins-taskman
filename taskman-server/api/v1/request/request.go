@@ -252,6 +252,7 @@ func GetReferenceData(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		result = db.FilterInSideData(result, attrId, requestId)
 		middleware.ReturnData(c, result)
 	}
 }

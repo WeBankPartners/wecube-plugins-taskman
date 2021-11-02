@@ -1,8 +1,12 @@
 <template>
   <div class="table-c">
-    <Button @click="addRow" type="primary" :disabled="formDisable || jumpFrom === 'group_handle'">{{
-      $t('add')
-    }}</Button>
+    <Button
+      @click="addRow"
+      type="primary"
+      v-if="!(formDisable || jumpFrom === 'group_handle')"
+      :disabled="formDisable || jumpFrom === 'group_handle'"
+      >{{ $t('add') }}</Button
+    >
     <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto', width: '100%' }">
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
@@ -13,8 +17,10 @@
         <template v-for="(data, dataIndex) in tableData">
           <tr :key="data.id">
             <td class="padding-style" style="text-align: center">
-              <span v-if="data._id.startsWith('tmp__')" style="color: red">(new)</span>
-              {{ dataIndex + 1 }}
+              <span style="font-size: 18px">
+                {{ dataIndex + 1 }}
+              </span>
+              <span v-if="data._id.startsWith('tmp__')" style="color: #338cf0">new</span>
             </td>
             <td class="padding-style">
               <div
@@ -55,6 +61,7 @@
               <Button
                 style="margin-left: 4px"
                 @click="deleteRow(dataIndex)"
+                v-if="!(formDisable || jumpFrom === 'group_handle')"
                 :disabled="formDisable || jumpFrom === 'group_handle'"
                 size="small"
                 type="error"

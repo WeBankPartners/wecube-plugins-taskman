@@ -20,18 +20,18 @@
                 v-if="element.elementType === 'input'"
                 v-model="data[element.name]"
                 placeholder=""
-                :disabled="isDisabled || enforceDisable"
+                :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
               />
               <Input
                 v-if="element.elementType === 'textarea'"
                 v-model="data[element.name]"
                 type="textarea"
-                :disabled="isDisabled || enforceDisable"
+                :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
               />
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
-                :disabled="isDisabled || enforceDisable"
+                :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{

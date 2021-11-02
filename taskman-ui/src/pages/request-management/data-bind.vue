@@ -19,7 +19,7 @@
                     max-width="300"
                   >
                     <div class="text-ellipsis">
-                      <span v-if="item.id.startsWith('tmp__')" style="color: red">(new)</span>
+                      <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
                       {{ item.displayName }}
                     </div>
                   </Tooltip>

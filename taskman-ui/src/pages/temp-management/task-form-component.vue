@@ -208,7 +208,14 @@
             <Panel name="3">
               {{ $t('data_item') }}
               <div slot="content">
-                {{ $t('no_data_item') }}
+                <Form :label-width="80">
+                  <FormItem :label="$t('constraints')">
+                    <Select v-model="editElement.isRefInside">
+                      <Option value="yes">yes</Option>
+                      <Option value="no">no</Option>
+                    </Select>
+                  </FormItem>
+                </Form>
               </div>
             </Panel>
           </Collapse>
@@ -272,6 +279,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isView: 'yes',
           isOutput: 'no',
@@ -295,6 +303,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isView: 'yes',
           isOutput: 'no',
@@ -318,6 +327,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isView: 'yes',
           isOutput: 'no',
@@ -342,6 +352,7 @@ export default {
         id: 0,
         inDisplayName: 'no',
         isEdit: 'yes',
+        isRefInside: 'no',
         required: 'no',
         isOutput: 'no',
         isView: 'yes',
@@ -514,8 +525,10 @@ export default {
         ...cloneFormData,
         items: tmp
       }
+      this.$Spin.show()
       const { statusCode, data } = await saveTaskForm(this.requestTemplateId, res)
       if (statusCode === 'OK') {
+        this.$Spin.hide()
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')
@@ -572,6 +585,7 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'no',
+          isRefInside: 'no',
           required: 'no',
           isOutput: 'no',
           isView: 'yes',
@@ -638,6 +652,7 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isOutput: 'yes',
           isView: 'yes',

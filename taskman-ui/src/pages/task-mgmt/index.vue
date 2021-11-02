@@ -157,18 +157,57 @@ export default {
     },
     async saveTaskData () {
       const taskData = this.dataInfo.find(d => d.editable === true)
-      const { statusCode } = await saveTaskData(this.taskId, taskData)
-      if (statusCode === 'OK') {
-        this.success()
+      const result = this.paramsCheck(taskData)
+      if (result) {
+        const { statusCode } = await saveTaskData(this.taskId, taskData)
+        this.$Spin.show()
+        if (statusCode === 'OK') {
+          this.$Spin.hide()
+          this.success()
+        }
+      } else {
+        this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
       }
     },
     async commitTaskData () {
       const taskData = this.dataInfo.find(d => d.editable === true)
       const { statusCode } = await commitTaskData(this.taskId, taskData)
+      this.$Spin.show()
       if (statusCode === 'OK') {
+        this.$Spin.hide()
         this.success()
         this.$router.push({ path: '/taskman/task-mgmt' })
       }
+    },
+    paramsCheck (taskData) {
+      console.log(taskData)
+      let result = true
+      taskData.formData.forEach(requestData => {
+        let requiredName = []
+        requestData.title.forEach(t => {
+          if (t.required === 'yes') {
+            requiredName.push(t.name)
+          }
+        })
+        requestData.value.forEach(v => {
+          requiredName.forEach(key => {
+            let val = v.entityData[key]
+            if (Array.isArray(val)) {
+              if (val.length === 0) {
+                result = false
+              }
+            } else {
+              if (val === '') {
+                result = false
+              }
+            }
+          })
+        })
+      })
+      return result
     }
   },
   components: {

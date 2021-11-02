@@ -100,5 +100,6 @@
   "task_source": "任务来源",
   "task": "任务",
   "required": "必填",
-  "required_tip": "请完善必填项"
+  "required_tip": "请完善必填项",
+  "constraints": "约束"
 }

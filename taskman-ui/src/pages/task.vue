@@ -13,6 +13,9 @@
           </Select>
         </Col>
         <Col span="4">
+          <Input v-model="handleRoles" style="width:90%" type="text" :placeholder="$t('handle_role')"> </Input>
+        </Col>
+        <Col span="4">
           <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
@@ -47,6 +50,7 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       status: ['created', 'marked', 'doing'],
+      handleRoles: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -82,8 +86,11 @@ export default {
           }
         },
         {
-          title: this.$t('handler'),
-          key: 'handleRoles'
+          title: this.$t('handle_role'),
+          key: 'handleRoles',
+          render: (h, params) => {
+            return <span>{params.row.handleRoles[0]}</span>
+          }
         },
         {
           title: this.$t('status'),
@@ -191,6 +198,13 @@ export default {
           name: 'name',
           operator: 'contains',
           value: this.name
+        })
+      }
+      if (this.handleRoles) {
+        this.payload.filters.push({
+          name: 'handleRoles',
+          operator: 'contains',
+          value: this.handleRoles
         })
       }
       if (this.status.length > 0) {

@@ -175,7 +175,14 @@
             <Panel name="3">
               {{ $t('data_item') }}
               <div slot="content">
-                {{ $t('no_data_item') }}
+                <Form :label-width="80">
+                  <FormItem :label="$t('constraints')">
+                    <Select v-model="editElement.isRefInside">
+                      <Option value="yes">yes</Option>
+                      <Option value="no">no</Option>
+                    </Select>
+                  </FormItem>
+                </Form>
               </div>
             </Panel>
           </Collapse>
@@ -229,6 +236,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isView: 'yes',
           isOutput: 'no',
@@ -254,6 +262,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isView: 'yes',
           isOutput: 'no',
@@ -279,6 +288,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isView: 'yes',
           isOutput: 'no',
@@ -305,6 +315,7 @@ export default {
         id: 0,
         inDisplayName: 'no',
         isEdit: 'yes',
+        isRefInside: 'no',
         required: 'no',
         isOutput: 'no',
         isView: 'yes',
@@ -471,6 +482,7 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
+          isRefInside: 'no',
           required: 'no',
           isOutput: 'no',
           isView: 'yes',

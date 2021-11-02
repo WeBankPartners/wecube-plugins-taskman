@@ -104,7 +104,7 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	err := db.CreateRequest(&param, middleware.GetRequestRoles(c))
+	err := db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

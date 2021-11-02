@@ -175,9 +175,6 @@ func calcExpireObj(param *models.ExpireObj) {
 	max := expireT.Sub(reportT).Seconds()
 	use := nowT.Sub(reportT).Seconds()
 	param.Percent = (use / max) * 100
-	if param.Percent > 100 {
-		param.Percent = 100
-	}
 	param.TotalDay = max / 86400
 	param.UseDay = use
 	param.LeftDay = (max - use) / 86400

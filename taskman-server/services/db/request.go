@@ -354,11 +354,12 @@ func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []
 		for _, valueObj := range v.Value {
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
-				//if title.Multiple == "Y" {
-				//	tmpV,_ := json.Marshal(valueObj.EntityData[title.Name])
-				//
-				//}
-				actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
+				if title.Multiple == "Y" {
+					tmpV, _ := json.Marshal(valueObj.EntityData[title.Name])
+					actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, tmpV, title.ItemGroup, valueObj.Id}})
+				} else {
+					actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
+				}
 			}
 		}
 	}
@@ -738,7 +739,12 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 					for _, attrValueObj := range entityValue.AttrValues {
 						for _, entityRef := range entityRefs {
 							if attrValueObj.AttrName == entityRef {
-								tmpRefOidList = append(tmpRefOidList, fmt.Sprintf("%s", attrValueObj.DataValue))
+								tmpV := fmt.Sprintf("%s", attrValueObj.DataValue)
+								if strings.Contains(tmpV, ",") {
+									tmpRefOidList = append(tmpRefOidList, strings.Split(tmpV, ",")...)
+								} else {
+									tmpRefOidList = append(tmpRefOidList, tmpV)
+								}
 							}
 						}
 					}
@@ -749,8 +755,16 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 						for _, entityRef := range entityRefs {
 							if attrValueObj.AttrName == entityRef {
 								valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
-								if strings.HasPrefix(valueString, "tmp") {
-									tmpRefOidList = append(tmpRefOidList, valueString)
+								if strings.Contains(valueString, ",") {
+									for _, tmpV := range strings.Split(valueString, ",") {
+										if strings.HasPrefix(tmpV, "tmp") {
+											tmpRefOidList = append(tmpRefOidList, tmpV)
+										}
+									}
+								} else {
+									if strings.HasPrefix(valueString, "tmp") {
+										tmpRefOidList = append(tmpRefOidList, valueString)
+									}
 								}
 							}
 						}
@@ -955,7 +969,12 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData
 	}
 	for k, v := range entityData {
 		if vv, b := titleMap[k]; b {
-			result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
+			if vv.Multiple == "Y" {
+				tmpV := v.([]string)
+				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: strings.Join(tmpV, ",")})
+			} else {
+				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})
+			}
 		}
 	}
 	return

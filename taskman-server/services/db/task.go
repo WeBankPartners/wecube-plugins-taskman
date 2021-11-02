@@ -365,7 +365,20 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 				tmpRowObj := models.EntityTreeObj{Id: row, DataId: row, PackageName: formTable.PackageName, EntityName: formTable.Entity}
 				tmpRowObj.EntityData = make(map[string]interface{})
 				for _, rowItem := range rowItemMap[row] {
-					tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
+					isMulti := false
+					for _, tmpTitle := range formTable.Title {
+						if tmpTitle.Name == rowItem.Name {
+							if tmpTitle.Multiple == "Y" {
+								isMulti = true
+								break
+							}
+						}
+					}
+					if isMulti {
+						tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
+					} else {
+						tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
+					}
 				}
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}
@@ -504,13 +517,22 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	if taskObj.Request != "" {
 		for _, tableForm := range param.FormData {
 			tmpColumnMap := make(map[string]int)
+			tmpMultiMap := make(map[string]int)
 			for _, title := range tableForm.Title {
 				tmpColumnMap[title.Name] = 1
+				if title.Multiple == "Y" {
+					tmpMultiMap[title.Name] = 1
+				}
 			}
 			for _, valueObj := range tableForm.Value {
 				for k, v := range valueObj.EntityData {
 					if _, b := tmpColumnMap[k]; b {
-						actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+						if _, bb := tmpMultiMap[k]; bb {
+							tmpV := v.([]string)
+							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
+						} else {
+							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+						}
 					}
 				}
 			}

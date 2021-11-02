@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS `form_item_template` (
   `is_output` varchar(16) NOT NULL DEFAULT 'no',
   `in_display_name` varchar(16) NOT NULL DEFAULT 'no',
   `is_ref_inside` varchar(16) NOT NULL DEFAULT 'no',
+  `multiple` varchar(16) NOT NULL DEFAULT 'no',
   PRIMARY KEY (`id`),
   CONSTRAINT `fore_form_item_template` FOREIGN KEY (`form_template`) REFERENCES `form_template` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';

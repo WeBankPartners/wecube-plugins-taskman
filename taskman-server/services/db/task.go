@@ -196,9 +196,13 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		return models.PageInfo{}, nil, err
 	}
 	var requestIdList []string
+	roleMap := getTaskTemplateRoles()
 	for _, v := range rowData {
 		buildTaskOperation(v, operator)
 		requestIdList = append(requestIdList, v.Request)
+		if tmpRoles, b := roleMap[v.TaskTemplate]; b {
+			v.HandleRoles = tmpRoles
+		}
 	}
 	var requestTables []*models.RequestTable
 	x.SQL("select t1.id,t1.name,t1.reporter,t1.report_time,t2.name as request_template from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id in ('" + strings.Join(requestIdList, "','") + "')").Find(&requestTables)
@@ -219,6 +223,30 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		}
 	}
 	return
+}
+
+func getTaskTemplateRoles() map[string][]string {
+	result := make(map[string][]string)
+	var taskRoles []*models.TaskTemplateRoleTable
+	x.SQL("select * from task_template_role where role_type='USE' order by task_template").Find(&taskRoles)
+	if len(taskRoles) == 0 {
+		return result
+	}
+	tmpTemplate := taskRoles[0].TaskTemplate
+	tmpList := []string{}
+	for _, v := range taskRoles {
+		if v.TaskTemplate != tmpTemplate {
+			result[tmpTemplate] = tmpList
+			tmpTemplate = v.TaskTemplate
+			tmpList = []string{}
+		}
+		tmpList = append(tmpList, v.Role)
+	}
+	if len(tmpList) > 0 {
+		tmpTemplate = taskRoles[len(taskRoles)-1].TaskTemplate
+		result[tmpTemplate] = tmpList
+	}
+	return result
 }
 
 func GetTask(taskId string) (result models.TaskQueryResult, err error) {

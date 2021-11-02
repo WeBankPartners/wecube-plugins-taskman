@@ -108,9 +108,13 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 				rtMap[v.Id] = fmt.Sprintf("%s(beta)", v.Name)
 			}
 		}
+		rtRoleMap := getRequestTemplateMGMTRole()
 		var actions []*execAction
 		for _, v := range rowData {
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
+			if tmpRoles, b := rtRoleMap[v.RequestTemplate]; b {
+				v.HandleRoles = tmpRoles
+			}
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
 				if newStatus == "InternallyTerminated" {
@@ -130,6 +134,30 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		}
 	}
 	return
+}
+
+func getRequestTemplateMGMTRole() map[string][]string {
+	result := make(map[string][]string)
+	var requestTemplateRole []*models.RequestTemplateRoleTable
+	x.SQL("select * from request_template_role where and role_type='MGMT' order by request_template").Find(&requestTemplateRole)
+	if len(requestTemplateRole) == 0 {
+		return result
+	}
+	tmpTemplate := requestTemplateRole[0].RequestTemplate
+	tmpRoles := []string{}
+	for _, v := range requestTemplateRole {
+		if v.RequestTemplate != tmpTemplate {
+			result[tmpTemplate] = tmpRoles
+			tmpTemplate = v.RequestTemplate
+			tmpRoles = []string{}
+		}
+		tmpRoles = append(tmpRoles, v.Role)
+	}
+	if len(tmpRoles) > 0 {
+		tmpTemplate = requestTemplateRole[len(requestTemplateRole)-1].RequestTemplate
+		result[tmpTemplate] = tmpRoles
+	}
+	return result
 }
 
 func calcExpireObj(param *models.ExpireObj) {

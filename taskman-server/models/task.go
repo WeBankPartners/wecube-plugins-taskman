@@ -62,6 +62,7 @@ type TaskListObj struct {
 	UpdatedTime      string       `json:"updatedTime" xorm:"updated_time"`
 	OperationOptions []string     `json:"operationOptions" xorm:"-"`
 	ExpireTime       string       `json:"expireTime" xorm:"expire_time"`
+	HandleRoles      []string     `json:"handleRoles" xorm:"-"`
 	RequestObj       RequestTable `json:"requestObj" xorm:"-"`
 	ExpirePercentObj ExpireObj    `json:"expireObj"`
 }

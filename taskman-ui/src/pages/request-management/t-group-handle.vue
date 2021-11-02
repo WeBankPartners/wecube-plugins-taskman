@@ -134,7 +134,7 @@ export default {
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 200,
+          width: 230,
           align: 'center',
           render: (h, params) => {
             return (
@@ -167,6 +167,16 @@ export default {
                     {this.$t('terminate')}
                   </Button>
                 )}
+                {params.row.procInstanceId !== '' && (
+                  <Button
+                    onClick={() => this.jumpToOrch(params.row)}
+                    style="margin-left: 8px"
+                    type="success"
+                    size="small"
+                  >
+                    {this.$t('workflow_report_aspect')}
+                  </Button>
+                )}
               </div>
             )
           }
@@ -197,6 +207,9 @@ export default {
     window.clearInterval(this.timer)
   },
   methods: {
+    jumpToOrch (row) {
+      this.$router.push({ path: '/implementation/workflow-execution', query: { id: row.procInstanceId } })
+    },
     async terminateRequest (row) {
       this.$Modal.confirm({
         title: this.$t('confirm_termination'),

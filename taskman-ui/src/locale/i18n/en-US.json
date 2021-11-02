@@ -100,5 +100,6 @@
   "task_source": "Task Source",
   "task": "Task",
   "required": "Required",
-  "required_tip": "Please Check Required Key"
+  "required_tip": "Please Check Required Key",
+  "constraints": "Constraints"
 }

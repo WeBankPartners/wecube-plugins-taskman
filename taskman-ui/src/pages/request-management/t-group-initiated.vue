@@ -99,6 +99,13 @@ export default {
           key: 'requestTemplateName'
         },
         {
+          title: this.$t('handle_role'),
+          key: 'handleRoles',
+          render: (h, params) => {
+            return <span>{params.row.handleRoles[0]}</span>
+          }
+        },
+        {
           title: this.$t('handler'),
           key: 'handler'
         },

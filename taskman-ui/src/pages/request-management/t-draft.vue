@@ -91,7 +91,7 @@ export default {
           key: 'expireTime'
         },
         {
-          title: this.$t('action'),
+          title: this.$t('t_action'),
           key: 'action',
           width: 200,
           align: 'center',

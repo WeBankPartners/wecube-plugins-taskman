@@ -115,7 +115,7 @@ export default {
           key: 'reportTime'
         },
         {
-          title: this.$t('action'),
+          title: this.$t('t_action'),
           key: 'action',
           width: 100,
           align: 'center',

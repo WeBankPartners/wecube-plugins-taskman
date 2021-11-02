@@ -117,7 +117,7 @@ export default {
           }
         },
         {
-          title: this.$t('action'),
+          title: this.$t('t_action'),
           key: 'action',
           width: 160,
           align: 'center',

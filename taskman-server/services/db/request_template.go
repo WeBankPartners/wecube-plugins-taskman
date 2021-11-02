@@ -396,6 +396,8 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pa
 				v.ProcDefId = newProDefId
 				actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, v.ProcDefName}})
 			}
+			tmpActions := getUpdateNodeDefIdActions(v.Id, userToken)
+			actions = append(actions, tmpActions...)
 		}
 		if err != nil {
 			return
@@ -447,6 +449,32 @@ func checkProDefId(proDefId, proDefName, userToken string) (exist bool, newProDe
 		err = fmt.Errorf("Find %d record from process list by query proDefName:%s ", count, proDefName)
 	}
 	return
+}
+
+func getUpdateNodeDefIdActions(requestTemplateId, userToken string) (actions []*execAction) {
+	actions = []*execAction{}
+	var taskTemplate []*models.TaskTemplateTable
+	x.SQL("select * from task_template where request_template=?", requestTemplateId).Find(&taskTemplate)
+	if len(taskTemplate) == 0 {
+		return actions
+	}
+	nodeList, _ := GetProcessNodesByProc(requestTemplateId, userToken, "template")
+	nodeMap := make(map[string]string)
+	for _, v := range nodeList {
+		nodeMap[v.NodeId] = v.NodeDefId
+	}
+	for _, v := range taskTemplate {
+		if v.NodeId == "" {
+			continue
+		}
+		if nowDefId, b := nodeMap[v.NodeId]; b {
+			if v.NodeDefId != nowDefId {
+				actions = append(actions, &execAction{Sql: "update task_template set node_def_id=? where node_id=?", Param: []interface{}{nowDefId, v.NodeId}})
+				actions = append(actions, &execAction{Sql: "update task set node_def_id=? where task_template=?", Param: []interface{}{nowDefId, v.Id}})
+			}
+		}
+	}
+	return actions
 }
 
 func getRequestTemplateIdsBySql(sql string) (ids []string, err error) {

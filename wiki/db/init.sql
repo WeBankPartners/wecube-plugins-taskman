@@ -194,6 +194,7 @@ CREATE TABLE IF NOT EXISTS `task_template` (
   `description` varchar(255)  DEFAULT NULL,
   `form_template` varchar(64) DEFAULT NULL,
   `request_template` varchar(64) DEFAULT NULL,
+  `node_id` varchar(255)  DEFAULT NULL,
   `node_def_id` varchar(255)  DEFAULT NULL,
   `node_name` varchar(255)  DEFAULT NULL,
   `expire_day` int  DEFAULT 7,

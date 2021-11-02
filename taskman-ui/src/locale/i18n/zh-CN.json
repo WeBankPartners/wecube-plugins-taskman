@@ -103,5 +103,6 @@
   "required": "必填",
   "required_tip": "请完善必填项",
   "constraints": "约束",
-  "handle_role": "处理角色"
+  "handle_role": "处理角色",
+  "workflow_report_aspect": "编排"
 }

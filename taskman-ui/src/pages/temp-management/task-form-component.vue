@@ -243,6 +243,7 @@ export default {
       formData: {
         id: '',
         nodeDefId: '',
+        nodeId: '',
         nodeDefName: '',
         name: '',
         description: '',
@@ -433,6 +434,7 @@ export default {
     initPage () {
       if (this.nodeData.nodeId === this.nodeId) {
         this.formData.nodeDefId = this.nodeData.nodeDefId
+        this.formData.nodeId = this.nodeData.nodeId
         this.formData.nodeDefName = this.nodeData.nodeName
         this.getSelectedForm()
         this.getUserRoles()
@@ -467,6 +469,7 @@ export default {
         this.formData.useRoles = data.useRoles && data.useRoles[0]
         this.getHandlerRoles()
         this.formData.nodeDefId = this.nodeData.nodeDefId
+        this.formData.nodeId = this.nodeData.nodeId
         this.formData.nodeDefName = this.nodeData.nodeName
         if (data.items && data.items.length > 0) {
           data.items.sort(this.compare('sort'))

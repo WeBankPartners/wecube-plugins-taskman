@@ -98,6 +98,37 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
+func GetCoreProcessListAll(userToken string) (processList []*models.ProcAllDefObj, err error) {
+	processList = []*models.ProcAllDefObj{}
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/process/definitions?includeDraft=0&permission=USE", nil)
+	if reqErr != nil {
+		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	http.DefaultClient.CloseIdleConnections()
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do request to core fail,%s ", respErr.Error())
+		return
+	}
+	var respObj models.ProcAllQueryResponse
+	respBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	err = json.Unmarshal(respBytes, &respObj)
+	log.Logger.Debug("Get core process list", log.String("body", string(respBytes)))
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if respObj.Status != "OK" {
+		err = fmt.Errorf(respObj.Message)
+		return
+	}
+	processList = respObj.Data
+	return
+}
+
 func GetProcessNodesByProc(requestTemplateId, userToken string, filterType string) (nodeList models.ProcNodeObjList, err error) {
 	requestTemplateObj, tmpErr := getSimpleRequestTemplate(requestTemplateId)
 	if tmpErr != nil {
@@ -387,14 +418,14 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pa
 	if isQueryMessage {
 		actions := []*execAction{}
 		for _, v := range rowData {
-			tmpExist, newProDefId, tmpErr := checkProDefId(v.ProcDefId, v.ProcDefName, userToken)
+			tmpExist, newProDefId, tmpErr := checkProDefId(v.ProcDefId, v.ProcDefName, v.ProcDefKey, userToken)
 			if tmpErr != nil {
 				err = fmt.Errorf("Try to sync new proDefId fail,%s ", tmpErr.Error())
 				break
 			}
 			if !tmpExist {
 				v.ProcDefId = newProDefId
-				actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, v.ProcDefName}})
+				actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where id=?", Param: []interface{}{newProDefId, v.Id}})
 			}
 			tmpActions := getUpdateNodeDefIdActions(v.Id, userToken)
 			actions = append(actions, tmpActions...)
@@ -422,11 +453,29 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pa
 	return
 }
 
-func checkProDefId(proDefId, proDefName, userToken string) (exist bool, newProDefId string, err error) {
+func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist bool, newProDefId string, err error) {
 	exist = false
-	processList, tmpErr := GetCoreProcessListNew(userToken)
-	if tmpErr != nil {
-		err = tmpErr
+	var processList []*models.ProcDefObj
+	if proDefKey != "" {
+		tmpProcessList, tmpErr := GetCoreProcessListNew(userToken)
+		if tmpErr != nil {
+			err = tmpErr
+		} else {
+			for _, v := range tmpProcessList {
+				processList = append(processList, &models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefName: v.ProcDefName, ProcDefKey: v.ProcDefKey})
+			}
+		}
+	} else {
+		allProcessList, tmpErr := GetCoreProcessListAll(userToken)
+		if tmpErr != nil {
+			err = tmpErr
+		} else {
+			for _, v := range allProcessList {
+				processList = append(processList, &models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefName: v.ProcDefName, ProcDefKey: v.ProcDefKey})
+			}
+		}
+	}
+	if err != nil {
 		return
 	}
 	for _, v := range processList {
@@ -440,13 +489,24 @@ func checkProDefId(proDefId, proDefName, userToken string) (exist bool, newProDe
 	}
 	count := 0
 	for _, v := range processList {
+		if proDefKey != "" {
+			if proDefKey == v.ProcDefKey {
+				count = count + 1
+				newProDefId = v.ProcDefId
+			}
+			continue
+		}
 		if v.ProcDefName == proDefName {
 			count = count + 1
 			newProDefId = v.ProcDefId
 		}
 	}
 	if count != 1 {
-		err = fmt.Errorf("Find %d record from process list by query proDefName:%s ", count, proDefName)
+		if proDefKey != "" {
+			err = fmt.Errorf("Find %d record from process list by query proDefKey:%s ", count, proDefKey)
+		} else {
+			err = fmt.Errorf("Find %d record from process list by query proDefName:%s ", count, proDefName)
+		}
 	}
 	return
 }

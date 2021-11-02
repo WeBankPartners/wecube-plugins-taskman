@@ -126,6 +126,21 @@ type ProcQueryResponse struct {
 	Data    []*ProcDefObj `json:"data"`
 }
 
+type ProcAllDefObj struct {
+	ProcDefId   string `json:"procDefId"`
+	ProcDefKey  string `json:"procDefKey"`
+	ProcDefName string `json:"procDefName"`
+	Status      string `json:"status"`
+	RootEntity  string `json:"rootEntity"`
+	CreatedTime string `json:"createdTime"`
+}
+
+type ProcAllQueryResponse struct {
+	Status  string           `json:"status"`
+	Message string           `json:"message"`
+	Data    []*ProcAllDefObj `json:"data"`
+}
+
 type ProcNodeObj struct {
 	NodeId        string        `json:"nodeId"`
 	NodeName      string        `json:"nodeName"`

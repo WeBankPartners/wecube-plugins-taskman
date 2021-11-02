@@ -276,7 +276,7 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 		return err
 	}
 	var actions []*execAction
-	existProDef, newProDefId, tmpErr := checkProDefId(requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, userToken)
+	existProDef, newProDefId, tmpErr := checkProDefId(requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to check proDefId fail,%s ", tmpErr.Error())
 	}

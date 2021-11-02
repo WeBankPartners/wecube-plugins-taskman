@@ -103,7 +103,10 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div>{{ element.title }}:</div>
+                  <div>
+                    <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                    {{ element.title }}:
+                  </div>
                   <Input
                     v-if="element.elementType === 'input'"
                     :disabled="element.isEdit === 'no'"

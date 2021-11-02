@@ -15,7 +15,10 @@
               v-for="element in form"
               :key="element.id"
             >
-              <div>{{ element.title }}:</div>
+              <div>
+                <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                {{ element.title }}:
+              </div>
               <Input
                 v-if="element.elementType === 'input'"
                 v-model="data[element.name]"

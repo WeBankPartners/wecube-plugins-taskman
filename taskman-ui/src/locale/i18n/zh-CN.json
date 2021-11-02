@@ -99,5 +99,6 @@
   "created_time": "创建时间",
   "task_source": "任务来源",
   "task": "任务",
-  "required": "必填"
+  "required": "必填",
+  "required_tip": "请完善必填项"
 }

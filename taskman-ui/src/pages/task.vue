@@ -131,7 +131,7 @@ export default {
             return (
               <div style="text-align: left">
                 <Button onClick={() => this.checkTask(params.row)} style="margin-left: 8px" type="success" size="small">
-                  {this.$t('look_over')}
+                  {this.$t('detail')}
                 </Button>
                 {operationOptions.includes('mark') && (
                   <Button

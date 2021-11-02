@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 24px">
+  <div>
     <div>
       <Row>
         <Col span="4">

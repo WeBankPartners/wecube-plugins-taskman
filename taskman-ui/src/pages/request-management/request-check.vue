@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 24px">
+  <div>
     <Button @click="backToRequest" icon="ios-undo-outline" style="margin-bottom: 8px">{{
       $t('back_to_template')
     }}</Button>

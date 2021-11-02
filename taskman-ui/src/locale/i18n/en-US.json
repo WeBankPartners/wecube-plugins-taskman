@@ -101,5 +101,6 @@
   "task": "Task",
   "required": "Required",
   "required_tip": "Please Check Required Key",
-  "constraints": "Constraints"
+  "constraints": "Constraints",
+  "handle_role": "Handle Role"
 }

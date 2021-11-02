@@ -3,17 +3,17 @@
     <div>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="5">
-          <Select v-model="status" multiple clearable filterable style="width:90%" :placeholder="$t('status')">
+          <Select v-model="status" multiple clearable filterable style="width: 90%" :placeholder="$t('status')">
             <template v-for="option in ['created', 'marked', 'doing', 'done']">
               <Option :label="option" :value="option" :key="option"> </Option>
             </template>
           </Select>
         </Col>
         <Col span="4">
-          <Input v-model="handleRoles" style="width:90%" type="text" :placeholder="$t('handle_role')"> </Input>
+          <Input v-model="handleRoles" style="width: 90%" type="text" :placeholder="$t('handle_role')"> </Input>
         </Col>
         <Col span="4">
           <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
@@ -21,7 +21,7 @@
       </Row>
     </div>
     <Table
-      style="margin: 24px 0;"
+      style="margin: 24px 0"
       border
       size="small"
       :columns="tableColumns"
@@ -29,7 +29,7 @@
       :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float:right"
+      style="float: right"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -111,12 +111,26 @@ export default {
           key: 'expireTime'
         },
         {
-          title: this.$t('沙漏'),
+          title: this.$t('hourglass'),
           key: 'expireTime',
           render: (h, params) => {
+            let pColor = '#2bc453'
+            if (params.row.status !== 'done') {
+              if (params.row.expireObj.percent > 50.0) {
+                pColor = '#2d8cf0'
+              }
+              if (params.row.expireObj.percent > 75.0) {
+                pColor = '#f90'
+              }
+              if (params.row.expireObj.percent > 100.0) {
+                pColor = '#ed4014'
+              }
+            } else {
+              pColor = '#9fa8b2'
+            }
             return (
-              <Tooltip content={params.row.expireObj.leftDay + '/' + params.row.expireObj.totalDay} style="width: 100%">
-                <Progress percent={params.row.expireObj.percent} />
+              <Tooltip content={params.row.expireObj.useDay + '/' + params.row.expireObj.totalDay} style="width: 100%">
+                <Progress percent={params.row.expireObj.percent} stroke-color={pColor} />
               </Tooltip>
             )
           }

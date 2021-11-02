@@ -96,6 +96,7 @@
   "estimated_finish_time": "Estimated Finish Time",
   "expected_completion_time": "Expected Completion Time",
   "expire_time": "Expire Time",
+  "hourglass": "Hourglass",
   "unclassified": "Unclassified",
   "created_time": "Created Time",
   "task_source": "Task Source",

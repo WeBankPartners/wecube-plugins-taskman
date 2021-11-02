@@ -45,14 +45,14 @@
                   v-if="element.elementType === 'input'"
                   v-model="data[element.name]"
                   placeholder=""
-                  :disabled="formDisable || jumpFrom === 'group_handle'"
+                  :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
                   style="width: calc(100% - 30px);"
                 />
                 <Input
                   v-if="element.elementType === 'textarea'"
                   v-model="data[element.name]"
                   type="textarea"
-                  :disabled="formDisable || jumpFrom === 'group_handle'"
+                  :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
                   style="width: calc(100% - 30px);"
                 />
                 <Select
@@ -62,7 +62,7 @@
                   clearable
                   :multiple="element.multiple === 'Y'"
                   @on-open-change="getRefOptions(element, data, dataIndex)"
-                  :disabled="formDisable || jumpFrom === 'group_handle'"
+                  :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
                   style="width: calc(100% - 30px);"
                 >
                   <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{

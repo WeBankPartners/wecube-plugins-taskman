@@ -81,6 +81,7 @@
   "request_time_limit": "请求时效",
   "day": "天",
   "request_name": "请求名称",
+  "request_id": "请求ID",
   "claim": "认领",
   "handle": "处理",
   "select_template": "选择模板",

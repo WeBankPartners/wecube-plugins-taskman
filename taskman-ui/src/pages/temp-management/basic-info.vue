@@ -56,7 +56,7 @@
         </FormItem>
         <!-- </ValidationProvider> -->
       </template>
-      <FormItem>
+      <FormItem style="text-align: center">
         <Button @click="resetParams">{{ $t('reset') }}</Button>
         <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
       </FormItem>

@@ -81,6 +81,7 @@
   "request_time_limit": "Request Time Limit",
   "day": "Day",
   "request_name": "Request Name",
+  "request_id": "Request ID",
   "claim": "Claim",
   "handle": "Handle",
   "select_template": "Select Template",

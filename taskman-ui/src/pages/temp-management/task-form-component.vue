@@ -279,6 +279,8 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
+          selectList: [],
           isRefInside: 'no',
           required: 'no',
           isView: 'yes',
@@ -286,7 +288,9 @@ export default {
           sort: 0,
           attrDefId: '',
           attrDefName: '',
-          attrDefDataType: ''
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
         },
         {
           id: 2,
@@ -303,6 +307,8 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
+          selectList: [],
           isRefInside: 'no',
           required: 'no',
           isView: 'yes',
@@ -310,7 +316,9 @@ export default {
           sort: 0,
           attrDefId: '',
           attrDefName: '',
-          attrDefDataType: ''
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
         },
         {
           id: 3,
@@ -327,6 +335,8 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
+          selectList: [],
           isRefInside: 'no',
           required: 'no',
           isView: 'yes',
@@ -334,7 +344,9 @@ export default {
           sort: 0,
           attrDefId: '',
           attrDefName: '',
-          attrDefDataType: ''
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
         }
       ],
       finalElement: [],
@@ -352,6 +364,8 @@ export default {
         id: 0,
         inDisplayName: 'no',
         isEdit: 'yes',
+        multiple: 'no',
+        selectList: [],
         isRefInside: 'no',
         required: 'no',
         isOutput: 'no',
@@ -360,7 +374,9 @@ export default {
         regular: '',
         sort: 0,
         title: '',
-        width: 24
+        width: 24,
+        refEntity: '',
+        refPackageName: ''
       },
       activeTag: {
         itemGroupIndex: -1,
@@ -583,6 +599,8 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'no',
+          multiple: 'no',
+          selectList: [],
           isRefInside: 'no',
           required: 'no',
           isOutput: 'no',
@@ -591,7 +609,9 @@ export default {
           regular: '',
           sort: 0,
           title: seleted.description,
-          width: 24
+          width: 24,
+          refEntity: seleted.refEntityName,
+          refPackageName: seleted.refPackageName
         }
         const tagExist = this.finalElement.find(l => l.itemGroup === itemGroup)
         if (tagExist) {
@@ -650,6 +670,8 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
+          selectList: [],
           isRefInside: 'no',
           required: 'no',
           isOutput: 'yes',

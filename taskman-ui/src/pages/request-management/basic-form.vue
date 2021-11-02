@@ -17,6 +17,7 @@
           <Select
             v-model="formConfig.values[item.value]"
             filterable
+            clearable
             style="width:90%"
             :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
             :multiple="item.multiple"

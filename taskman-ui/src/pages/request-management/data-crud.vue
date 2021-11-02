@@ -4,6 +4,8 @@
       <FormItem :label="$t('root_entity')">
         <Select
           v-model="rootEntityId"
+          filterable
+          clearable
           :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
           style="width:300px"
         >
@@ -20,7 +22,7 @@
     <Tabs :value="activeTab" @on-click="changeTab">
       <template v-for="entity in requestData">
         <TabPane :label="entity.entity" :name="entity.entity" :key="entity.entity">
-          <DataMgmt ref="dataMgmt" @getEntityData="getEntityData"></DataMgmt>
+          <DataMgmt ref="dataMgmt" @getEntityData="getEntityData" @backData="backData"></DataMgmt>
         </TabPane>
       </template>
     </Tabs>
@@ -64,6 +66,9 @@ export default {
     }
   },
   methods: {
+    backData (data) {
+      this.requestData = data
+    },
     async commitRequest () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('commit'),
@@ -98,14 +103,48 @@ export default {
         rootEntityId: this.rootEntityId,
         data: this.requestData
       }
-      const { statusCode, data } = await saveEntityData(this.requestId, params)
-      if (statusCode === 'OK') {
-        this.requestData = data.data
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
+      const result = this.paramsCheck()
+      if (result) {
+        const { statusCode, data } = await saveEntityData(this.requestId, params)
+        if (statusCode === 'OK') {
+          this.requestData = data.data
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
+      } else {
+        this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
         })
       }
+    },
+    paramsCheck () {
+      let result = true
+      this.requestData.forEach(requestData => {
+        let requiredName = []
+        requestData.title.forEach(t => {
+          if (t.required === 'yes') {
+            requiredName.push(t.name)
+          }
+        })
+        requestData.value.forEach(v => {
+          requiredName.forEach(key => {
+            let val = v.entityData[key]
+            if (Array.isArray(val)) {
+              if (val.length === 0) {
+                result = false
+              }
+            } else {
+              if (val === '') {
+                result = false
+              }
+            }
+          })
+        })
+      })
+      return result
     },
     async getEntity () {
       let params = {

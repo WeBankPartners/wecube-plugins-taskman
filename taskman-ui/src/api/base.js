@@ -14,7 +14,7 @@ const throwError = res => {
   Vue.prototype.$Notice.warning({
     title: 'Error',
     desc: (res.data && 'status:' + res.data.status + '<br/> message:' + res.data.message) || 'error',
-    duration: 10
+    duration: 6
   })
 }
 
@@ -49,7 +49,7 @@ req.interceptors.response.use(
         Vue.prototype.$Notice.error({
           title: 'Error',
           desc: errorMes,
-          duration: 0
+          duration: 6
         })
       }
       return {

@@ -4,6 +4,8 @@
       <FormItem :label="$t('root_entity')">
         <Select
           v-model="rootEntityId"
+          filterable
+          clearable
           :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
           style="width:300px"
         >

@@ -98,5 +98,6 @@
   "unclassified": "未分组",
   "created_time": "创建时间",
   "task_source": "任务来源",
-  "task": "任务"
+  "task": "任务",
+  "required": "必填"
 }

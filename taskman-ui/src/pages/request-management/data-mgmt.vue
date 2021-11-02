@@ -47,6 +47,8 @@
                 <Select
                   v-if="element.elementType === 'select'"
                   v-model="data[element.name]"
+                  filterable
+                  clearable
                   @on-open-change="getRefOptions(element, data, dataIndex)"
                   :disabled="formDisable || jumpFrom === 'group_handle'"
                   style="width: calc(100% - 30px);"

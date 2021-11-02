@@ -31,6 +31,8 @@
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
+                filterable
+                clearable
                 :disabled="isDisabled || enforceDisable"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
               >

@@ -114,6 +114,8 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 			v.RequestTemplateName = rtMap[v.RequestTemplate]
 			if tmpRoles, b := rtRoleMap[v.RequestTemplate]; b {
 				v.HandleRoles = tmpRoles
+			} else {
+				v.HandleRoles = []string{}
 			}
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
@@ -139,7 +141,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 func getRequestTemplateMGMTRole() (result map[string][]string) {
 	result = make(map[string][]string)
 	var requestTemplateRole []*models.RequestTemplateRoleTable
-	x.SQL("select * from request_template_role where and role_type='MGMT' order by request_template").Find(&requestTemplateRole)
+	x.SQL("select * from request_template_role where role_type='MGMT' order by request_template").Find(&requestTemplateRole)
 	if len(requestTemplateRole) == 0 {
 		return result
 	}
@@ -156,6 +158,9 @@ func getRequestTemplateMGMTRole() (result map[string][]string) {
 	if len(tmpRoles) > 0 {
 		tmpTemplate = requestTemplateRole[len(requestTemplateRole)-1].RequestTemplate
 		result[tmpTemplate] = tmpRoles
+	}
+	for k, v := range result {
+		log.Logger.Info("rtMap", log.String("key", k), log.StringList("value", v))
 	}
 	return result
 }
@@ -355,8 +360,13 @@ func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
 				if title.Multiple == "Y" {
-					tmpV, _ := json.Marshal(valueObj.EntityData[title.Name])
-					actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, tmpV, title.ItemGroup, valueObj.Id}})
+					if tmpV, b := valueObj.EntityData[title.Name]; b {
+						tmpStringV := []string{}
+						for _, interfaceV := range tmpV.([]interface{}) {
+							tmpStringV = append(tmpStringV, fmt.Sprintf("%s", interfaceV))
+						}
+						actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, strings.Join(tmpStringV, ","), title.ItemGroup, valueObj.Id}})
+					}
 				} else {
 					actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
 				}

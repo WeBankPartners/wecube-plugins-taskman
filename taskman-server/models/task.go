@@ -182,6 +182,7 @@ type TaskQueryObj struct {
 	RequestId       string                    `json:"requestId"`
 	RequestName     string                    `json:"requestName"`
 	RequestTemplate string                    `json:"requestTemplate"`
+	ProcInstanceId  string                    `json:"procInstanceId"`
 	Description     string                    `json:"description"`
 	TaskId          string                    `json:"taskId"`
 	TaskName        string                    `json:"taskName"`

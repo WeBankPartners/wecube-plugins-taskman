@@ -202,6 +202,8 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		requestIdList = append(requestIdList, v.Request)
 		if tmpRoles, b := roleMap[v.TaskTemplate]; b {
 			v.HandleRoles = tmpRoles
+		} else {
+			v.HandleRoles = []string{}
 		}
 	}
 	var requestTables []*models.RequestTable
@@ -279,6 +281,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
 	requestQuery.ExpireTime = requests[0].ExpireTime
 	requestQuery.ExpectTime = requests[0].ExpectTime
+	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
 	requestQuery.FormData = requestCache.Data
 	if len(requestTemplateTable) > 0 {
 		requestQuery.RequestTemplate = requestTemplateTable[0].Name

@@ -148,6 +148,17 @@ export default {
         return
       }
       let cache = JSON.parse(JSON.stringify(formData))
+      const keys = Object.keys(cache)
+      keys.forEach(key => {
+        if (Array.isArray(cache[key])) {
+          cache[key] = cache[key].map(c => {
+            return {
+              guid: c
+            }
+          })
+          cache[key] = JSON.stringify(cache[key])
+        }
+      })
       cache[formItem.name] = ''
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']

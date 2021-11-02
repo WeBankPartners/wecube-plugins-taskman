@@ -53,6 +53,7 @@ type TaskListObj struct {
 	Result           string       `json:"result" xorm:"result"`
 	Reporter         string       `json:"reporter" xorm:"reporter"`
 	ReportTime       string       `json:"reportTime" xorm:"report_time"`
+	ReportRole       string       `json:"reportRole" xorm:"report_role"`
 	Handler          string       `json:"handler" xorm:"handler"`
 	NextOption       string       `json:"nextOption" xorm:"next_option"`
 	ChoseOption      string       `json:"choseOption" xorm:"chose_option"`

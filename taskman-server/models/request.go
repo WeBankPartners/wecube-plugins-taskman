@@ -72,6 +72,7 @@ type ExpireObj struct {
 	NowTime    string  `json:"nowTime"`
 	TotalDay   float64 `json:"totalDay"`
 	LeftDay    float64 `json:"leftDay"`
+	UseDay     float64 `json:"useDay"`
 }
 
 type AttachFileTable struct {

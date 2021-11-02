@@ -508,3 +508,17 @@ func getRequestNewData(requestId string) (result map[string]map[string]interface
 	}
 	return
 }
+
+func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (output []*models.EntityDataObj) {
+	output = input
+	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
+	var formItemTemplate []*models.FormItemTemplateTable
+	x.SQL("select * from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplate)
+	if len(formItemTemplate) == 0 {
+		return output
+	}
+	if formItemTemplate[0].IsRefInside == "no" {
+		return output
+	}
+	return output
+}

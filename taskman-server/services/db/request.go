@@ -519,6 +519,11 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	}
 	// sort result by dependence
 	result = sortRequestEntity(result)
+	var err error
+	result, err = getCMDBSelectList(result, models.CoreToken.GetCoreToken())
+	if err != nil {
+		log.Logger.Error("Try to get selectList fail", log.Error(err))
+	}
 	return result
 }
 
@@ -951,6 +956,132 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
 	if len(result.TimeStep) > 0 {
 		result.TimeStep[0].Active = true
+	}
+	return
+}
+
+func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string) (output []*models.RequestPreDataTableObj, err error) {
+	output = input
+	ciAttrMap := make(map[string][]string)
+	ciAttrSelectMap := make(map[string][]*models.EntityDataObj)
+	for _, v := range input {
+		if v.Entity == "" {
+			continue
+		}
+		for _, vv := range v.Title {
+			if vv.ElementType == "select" && vv.RefEntity == "" {
+				if _, b := ciAttrMap[v.Entity]; b {
+					ciAttrMap[v.Entity] = append(ciAttrMap[v.Entity], vv.Name)
+				} else {
+					ciAttrMap[v.Entity] = []string{vv.Name}
+				}
+			}
+		}
+	}
+	if len(ciAttrMap) <= 0 {
+		return
+	}
+	for k, v := range ciAttrMap {
+		tmpV, tmpErr := getCMDBAttributes(k, userToken, v)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+		for kk, vv := range tmpV {
+			ciAttrSelectMap[kk] = vv
+		}
+	}
+	if err != nil {
+		return
+	}
+	for _, v := range output {
+		if v.Entity == "" {
+			continue
+		}
+		for _, vv := range v.Title {
+			tmpKey := v.Entity + "_" + vv.Name
+			if tmpSelectList, b := ciAttrSelectMap[tmpKey]; b {
+				vv.SelectList = tmpSelectList
+			}
+		}
+	}
+	return
+}
+
+func getCMDBAttributes(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
+	result = make(map[string][]*models.EntityDataObj)
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, entity), nil)
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	//req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	responseBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("Request cmdb attribute fail,%s ", string(responseBytes))
+		return
+	}
+	var attrQueryResp models.EntityAttributeQueryResponse
+	err = json.Unmarshal(responseBytes, &attrQueryResp)
+	if err != nil {
+		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
+		return
+	}
+	for _, v := range attrQueryResp.Data {
+		existFlag := false
+		for _, vv := range attributes {
+			if v.PropertyName == vv {
+				existFlag = true
+				break
+			}
+		}
+		if existFlag && v.SelectList != "" {
+			tmpSelectList, tmpErr := getAttrCat(v.SelectList, userToken)
+			if tmpErr != nil {
+				err = tmpErr
+				break
+			}
+			result[entity+"_"+v.PropertyName] = tmpSelectList
+		}
+	}
+	return
+}
+
+func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err error) {
+	result = []*models.EntityDataObj{}
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/base-key/categories/%s", models.Config.Wecube.BaseUrl, catId), nil)
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	//req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	responseBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("Request cmdb categories fail,%s ", string(responseBytes))
+		return
+	}
+	var response models.CMDBCategoriesResponse
+	err = json.Unmarshal(responseBytes, &response)
+	if err != nil {
+		err = fmt.Errorf("Json unmarshal categories response fail,%s ", err.Error())
+		return
+	}
+	for _, v := range response.Data {
+		result = append(result, &models.EntityDataObj{Id: v.Code, DisplayName: v.Value})
 	}
 	return
 }

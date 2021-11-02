@@ -108,3 +108,32 @@ type CoreUserDataObj struct {
 	Id       string `json:"id"`
 	Username string `json:"username"`
 }
+
+type EntityAttributeObj struct {
+	CiTypeId     string `json:"ciTypeId"`
+	CiTypeAttrId string `json:"ciTypeAttrId"`
+	PropertyName string `json:"propertyName"`
+	DisplayName  string `json:"displayName"`
+	InputType    string `json:"inputType"`
+	Nullable     string `json:"nullable"`
+	Status       string `json:"status"`
+	SelectList   string `json:"selectList"`
+	Editable     string `json:"editable"`
+}
+
+type EntityAttributeQueryResponse struct {
+	StatusCode string                `json:"statusCode"`
+	Data       []*EntityAttributeObj `json:"data"`
+}
+
+type CMDBCategoriesObj struct {
+	CatId string `json:"catId"`
+	Code  string `json:"code"`
+	Value string `json:"value"`
+	SeqNo int    `json:"seqNo"`
+}
+
+type CMDBCategoriesResponse struct {
+	StatusCode string               `json:"statusCode"`
+	Data       []*CMDBCategoriesObj `json:"data"`
+}

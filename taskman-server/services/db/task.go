@@ -471,24 +471,23 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	if err != nil {
 		return err
 	}
-	if taskObj.Request == "" {
-		return nil
-	}
-	for _, tableForm := range param.Form {
-		tmpColumnMap := make(map[string]int)
-		for _, title := range tableForm.Title {
-			tmpColumnMap[title.Name] = 1
-		}
-		for _, valueObj := range tableForm.Value {
-			for k, v := range valueObj.EntityData {
-				if _, b := tmpColumnMap[k]; b {
-					actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &execAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
+	if taskObj.Request != "" {
+		for _, tableForm := range param.Form {
+			tmpColumnMap := make(map[string]int)
+			for _, title := range tableForm.Title {
+				tmpColumnMap[title.Name] = 1
+			}
+			for _, valueObj := range tableForm.Value {
+				for k, v := range valueObj.EntityData {
+					if _, b := tmpColumnMap[k]; b {
+						actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+					}
 				}
 			}
 		}
 	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions = append(actions, &execAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
 	return transaction(actions)
 }
 

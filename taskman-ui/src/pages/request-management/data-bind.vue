@@ -44,7 +44,7 @@
 
 <script>
 import {
-  getTemplateNodes,
+  getTemplateNodesForRequest,
   getBindData,
   saveRequest,
   getBindRelate,
@@ -71,7 +71,7 @@ export default {
   mounted () {
     this.finalData.procDefId = this.$parent.procDefId
     this.finalData.procDefKey = this.$parent.procDefKey
-    this.getTemplateNodes()
+    this.getTemplateNodesForRequest()
     this.getBindData()
   },
   methods: {
@@ -159,8 +159,8 @@ export default {
         })
       }
     },
-    async getTemplateNodes () {
-      const { statusCode, data } = await getTemplateNodes(this.$parent.requestTemplate)
+    async getTemplateNodesForRequest () {
+      const { statusCode, data } = await getTemplateNodesForRequest(this.$parent.requestTemplate)
       if (statusCode === 'OK') {
         this.nodes = data
           .filter(d => d.taskCategory !== '')

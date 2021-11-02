@@ -98,7 +98,7 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
-func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList models.ProcNodeObjList, err error) {
+func GetProcessNodesByProc(requestTemplateId, userToken string, isTemplate bool) (nodeList models.ProcNodeObjList, err error) {
 	requestTemplateObj, tmpErr := getSimpleRequestTemplate(requestTemplateId)
 	if tmpErr != nil {
 		err = tmpErr
@@ -125,7 +125,7 @@ func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList models
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	err = json.Unmarshal(respBytes, &respObj)
-	log.Logger.Debug("Get process node list", log.String("body", string(respBytes)))
+	log.Logger.Info("Get process node list", log.String("body", string(respBytes)))
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
 		return
@@ -134,13 +134,25 @@ func GetProcessNodesByProc(requestTemplateId, userToken string) (nodeList models
 		err = fmt.Errorf(respObj.Message)
 		return
 	}
-	nodeList = respObj.Data
-	for _, v := range nodeList {
-		if v.OrderedNo == "" {
-			v.OrderedNum = 0
+	for _, v := range respObj.Data {
+		if v.NodeName != "subProcess" {
 			continue
 		}
-		v.OrderedNum, _ = strconv.Atoi(v.OrderedNo)
+		if isTemplate {
+			if v.TaskCategory != "SUTN" {
+				continue
+			}
+		} else {
+			if v.DynamicBind == "Y" {
+				continue
+			}
+		}
+		if v.OrderedNo == "" {
+			v.OrderedNum = 0
+		} else {
+			v.OrderedNum, _ = strconv.Atoi(v.OrderedNo)
+		}
+		nodeList = append(nodeList, v)
 	}
 	sort.Sort(nodeList)
 	return

@@ -78,7 +78,7 @@ func GetTask(c *gin.Context) {
 
 func SaveTaskForm(c *gin.Context) {
 	taskId := c.Param("taskId")
-	var param []*models.RequestPreDataTableObj
+	var param models.TaskApproveParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return

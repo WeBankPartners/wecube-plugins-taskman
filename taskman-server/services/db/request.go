@@ -29,7 +29,7 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 		err = fmt.Errorf("RequestTemplate packageName or entityName illegal ")
 		return
 	}
-	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/%s/entities/%s/query", models.Config.Wecube.BaseUrl, requestTemplateObj.PackageName, requestTemplateObj.EntityName), strings.NewReader("{\"criteria\":{}}"))
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/process/definitions/%s/root-entities", models.Config.Wecube.BaseUrl, requestTemplateObj.ProcDefId), strings.NewReader(""))
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
 		return

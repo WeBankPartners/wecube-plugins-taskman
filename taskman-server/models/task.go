@@ -197,8 +197,9 @@ type TaskQueryObj struct {
 }
 
 type TaskApproveParam struct {
-	Comment     string `json:"comment"`
-	ChoseOption string `json:"choseOption"`
+	Form        []*RequestPreDataTableObj `json:"form"`
+	Comment     string                    `json:"comment"`
+	ChoseOption string                    `json:"choseOption"`
 }
 
 type OperationLogTable struct {

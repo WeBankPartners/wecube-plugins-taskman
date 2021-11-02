@@ -379,9 +379,13 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 }
 
 func ApproveTask(taskId, operator, userToken string, param models.TaskApproveParam) error {
-	requestParam, callbackUrl, err := getApproveCallbackParam(taskId)
+	err := SaveTaskForm(taskId, operator, param)
 	if err != nil {
 		return err
+	}
+	requestParam, callbackUrl, getDataErr := getApproveCallbackParam(taskId)
+	if getDataErr != nil {
+		return getDataErr
 	}
 	if param.ChoseOption != "" {
 		requestParam.ResultCode = param.ChoseOption
@@ -408,10 +412,13 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 	if err != nil {
 		return fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
 	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
+		if strings.Contains(respResult.Message, "None process instance found") {
+			x.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, taskId)
+		}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err = x.Exec("update task set report_time=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", nowTime, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
@@ -458,7 +465,7 @@ func getApproveCallbackParam(taskId string) (result models.PluginTaskCreateResp,
 	return
 }
 
-func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableObj) error {
+func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error {
 	var actions []*execAction
 	taskObj, err := getSimpleTask(taskId)
 	if err != nil {
@@ -467,7 +474,7 @@ func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableOb
 	if taskObj.Request == "" {
 		return nil
 	}
-	for _, tableForm := range param {
+	for _, tableForm := range param.Form {
 		tmpColumnMap := make(map[string]int)
 		for _, title := range tableForm.Title {
 			tmpColumnMap[title.Name] = 1
@@ -481,7 +488,7 @@ func SaveTaskForm(taskId, operator string, param []*models.RequestPreDataTableOb
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions = append(actions, &execAction{Sql: "update task set updated_by=?,updated_time=? where id=?", Param: []interface{}{operator, nowTime, taskId}})
+	actions = append(actions, &execAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
 	return transaction(actions)
 }
 

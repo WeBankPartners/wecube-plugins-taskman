@@ -524,6 +524,13 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	if err != nil {
 		log.Logger.Error("Try to get selectList fail", log.Error(err))
 	}
+	for _, v := range result {
+		for _, vv := range v.Title {
+			if vv.SelectList == nil {
+				vv.SelectList = []*models.EntityDataObj{}
+			}
+		}
+	}
 	return result
 }
 
@@ -961,7 +968,6 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 }
 
 func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string) (output []*models.RequestPreDataTableObj, err error) {
-	output = input
 	ciAttrMap := make(map[string][]string)
 	ciAttrSelectMap := make(map[string][]*models.EntityDataObj)
 	for _, v := range input {
@@ -976,8 +982,10 @@ func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string)
 					ciAttrMap[v.Entity] = []string{vv.Name}
 				}
 			}
+			vv.SelectList = []*models.EntityDataObj{}
 		}
 	}
+	output = input
 	if len(ciAttrMap) <= 0 {
 		return
 	}

@@ -116,9 +116,7 @@ export default {
           this.$Modal.remove()
           await this.saveRequest()
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
-          this.$Spin.show()
           if (statusCode === 'OK') {
-            this.$Spin.hide()
             this.$router.push({ path: '/taskman/request-mgmt' })
           }
         },

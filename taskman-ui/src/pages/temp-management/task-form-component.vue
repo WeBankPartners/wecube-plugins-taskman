@@ -525,10 +525,8 @@ export default {
         ...cloneFormData,
         items: tmp
       }
-      this.$Spin.show()
       const { statusCode, data } = await saveTaskForm(this.requestTemplateId, res)
       if (statusCode === 'OK') {
-        this.$Spin.hide()
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')

@@ -187,10 +187,8 @@ export default {
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      this.$Spin.show()
       const { statusCode, data } = await requestListForDraftInitiated(this.payload)
       if (statusCode === 'OK') {
-        this.$Spin.hide()
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows
       }

@@ -78,7 +78,8 @@ func InitConfig(configFile string) (errMessage string) {
 		errMessage = "parse file to json fail," + err.Error()
 		return
 	}
-	c.Database.Password, err = cipher.DecryptRsa(c.Database.Password, c.RsaKeyPath)
+	rsaFileContent, _ := ioutil.ReadFile(c.RsaKeyPath)
+	c.Database.Password, err = cipher.DecryptRsa(c.Database.Password, string(rsaFileContent))
 	if err != nil {
 		errMessage = "init database password fail,%s " + err.Error()
 		return

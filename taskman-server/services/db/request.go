@@ -281,7 +281,7 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 		return fmt.Errorf("Try to check proDefId fail,%s ", tmpErr.Error())
 	}
 	if !existProDef {
-		actions = append(actions, &execAction{Sql: "update request_template set pro_def_id=? where id=?", Param: []interface{}{newProDefId, requestTemplateObj.Id}})
+		actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where id=?", Param: []interface{}{newProDefId, requestTemplateObj.Id}})
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()

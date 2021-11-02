@@ -524,7 +524,11 @@ func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (
 	x.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
 	rowDataMap := make(map[string]int)
 	for _, v := range formItems {
-		rowDataMap[v.RowDataId] = 1
+		tmpV := v.RowDataId
+		if strings.Contains(tmpV, ":") {
+			tmpV = tmpV[strings.LastIndex(tmpV, ":")+1:]
+		}
+		rowDataMap[tmpV] = 1
 	}
 	output = []*models.EntityDataObj{}
 	for _, v := range input {

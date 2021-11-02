@@ -8,6 +8,9 @@ type RequestTemplateTable struct {
 	FormTemplate string `json:"formTemplate" xorm:"form_template"`
 	Tags         string `json:"tags" xorm:"tags"`
 	Status       string `json:"status" xorm:"status"`
+	RecordId     string `json:"recordId" xorm:"record_id"`
+	Version      string `json:"version" xorm:"version"`
+	ConfirmTime  string `json:"confirmTime" xorm:"confirm_time"`
 	PackageName  string `json:"packageName" xorm:"package_name"`
 	EntityName   string `json:"entityName" xorm:"entity_name"`
 	ProcDefKey   string `json:"procDefKey" xorm:"proc_def_key"`
@@ -18,25 +21,29 @@ type RequestTemplateTable struct {
 	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
 	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
 	EntityAttrs  string `json:"entityAttrs" xorm:"entity_attrs"`
+	ExpireDay    int    `json:"expireDay" xorm:"expire_day"`
+	Handler      string `json:"handler" xorm:"handler"`
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
 }
 
 type RequestTemplateGroupTable struct {
-	Id          string `json:"id" xorm:"id"`
-	Name        string `json:"name" xorm:"name" binding:"required"`
-	Description string `json:"description" xorm:"description"`
-	ManageRole  string `json:"manageRole" xorm:"manage_role" binding:"required"`
-	CreatedBy   string `json:"createdBy" xorm:"created_by"`
-	CreatedTime string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
+	Id            string    `json:"id" xorm:"id"`
+	Name          string    `json:"name" xorm:"name" binding:"required"`
+	Description   string    `json:"description" xorm:"description"`
+	ManageRole    string    `json:"manageRole" xorm:"manage_role" binding:"required"`
+	ManageRoleObj RoleTable `json:"manageRoleObj" xorm:"-"`
+	CreatedBy     string    `json:"createdBy" xorm:"created_by"`
+	CreatedTime   string    `json:"createdTime" xorm:"created_time"`
+	UpdatedBy     string    `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime   string    `json:"updatedTime" xorm:"updated_time"`
+	DelFlag       int       `json:"delFlag" xorm:"del_flag"`
 }
 
 type RoleTable struct {
 	Id          string `json:"id" xorm:"id"`
 	DisplayName string `json:"displayName" xorm:"display_name"`
-	UpdatedTime string `json:"updated_time" xorm:"updated_time"`
+	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
+	CoreId      string `json:"coreId" xorm:"core_id"`
 }
 
 type RequestTemplateRoleTable struct {
@@ -78,16 +85,21 @@ type RequestTemplateUpdateParam struct {
 }
 
 type ProcEntityAttributeObj struct {
-	Id             string `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	DataType       string `json:"dataType"`
-	Mandatory      bool   `json:"mandatory"`
-	RefPackageName string `json:"refPackageName"`
-	RefEntityName  string `json:"refEntityName"`
-	RefAttrName    string `json:"refAttrName"`
-	ReferenceId    string `json:"referenceId"`
-	Active         bool   `json:"active"`
+	Id                string `json:"id"`
+	Name              string `json:"name"`
+	Description       string `json:"description"`
+	DataType          string `json:"dataType"`
+	Mandatory         bool   `json:"mandatory"`
+	RefPackageName    string `json:"refPackageName"`
+	RefEntityName     string `json:"refEntityName"`
+	RefAttrName       string `json:"refAttrName"`
+	ReferenceId       string `json:"referenceId"`
+	Active            bool   `json:"active"`
+	EntityId          string `json:"entityId"`
+	EntityName        string `json:"entityName"`
+	EntityDisplayName string `json:"entityDisplayName"`
+	EntityPackage     string `json:"entityPackage"`
+	Multiple          string `json:"multiple"`
 }
 
 type ProcEntity struct {
@@ -123,6 +135,9 @@ type ProcNodeObj struct {
 	RoutineExp    string        `json:"routineExp"`
 	ServiceId     string        `json:"serviceId"`
 	ServiceName   string        `json:"serviceName"`
+	OrderedNo     string        `json:"orderedNo"`
+	OrderedNum    int           `json:"-"`
+	DynamicBind   string        `json:"dynamicbind"`
 	BoundEntities []*ProcEntity `json:"boundEntities"`
 }
 
@@ -130,4 +145,51 @@ type ProcNodeQueryResponse struct {
 	Status  string         `json:"status"`
 	Message string         `json:"message"`
 	Data    []*ProcNodeObj `json:"data"`
+}
+
+type UserRequestTemplateQueryObj struct {
+	GroupId          string                       `json:"groupId"`
+	GroupName        string                       `json:"groupName"`
+	GroupDescription string                       `json:"groupDescription"`
+	Templates        []*RequestTemplateTable      `json:"-"`
+	Tags             []*UserRequestTemplateTagObj `json:"tags"`
+}
+
+type UserRequestTemplateTagObj struct {
+	Tag       string                  `json:"tag"`
+	Templates []*RequestTemplateTable `json:"templates"`
+}
+
+type RequestTemplateFormStruct struct {
+	Id            string                    `json:"id"`
+	Name          string                    `json:"name"`
+	PackageName   string                    `json:"packageName"`
+	EntityName    string                    `json:"entityName"`
+	ProcDefKey    string                    `json:"procDefKey"`
+	ProcDefId     string                    `json:"procDefId"`
+	ProcDefName   string                    `json:"procDefName"`
+	FormItems     []*FormItemTemplateTable  `json:"formItems"`
+	TaskTemplates []*TaskTemplateFormStruct `json:"taskTemplates"`
+}
+
+type TaskTemplateFormStruct struct {
+	Id          string                   `json:"id"`
+	Name        string                   `json:"name"`
+	NodeDefId   string                   `json:"nodeDefId"`
+	NodeDefName string                   `json:"nodeDefName"`
+	FormItems   []*FormItemTemplateTable `json:"formItems"`
+}
+
+type ProcNodeObjList []*ProcNodeObj
+
+func (s ProcNodeObjList) Len() int {
+	return len(s)
+}
+
+func (s ProcNodeObjList) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ProcNodeObjList) Less(i, j int) bool {
+	return s[i].OrderedNum < s[j].OrderedNum
 }

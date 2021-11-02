@@ -121,14 +121,15 @@ func (d *dbLogger) IsShowSQL() bool {
 
 func queryCount(sql string, params ...interface{}) int {
 	sql = "SELECT COUNT(1) FROM ( " + sql + " ) sub_query"
-	resultMap := make(map[string]int)
-	_, err := x.SQL(sql, params...).Get(&resultMap)
-	if err != nil {
+	params = append([]interface{}{sql}, params...)
+	queryRows, err := x.QueryString(params...)
+	if err != nil || len(queryRows) == 0 {
 		log.Logger.Error("Query sql count message fail", log.Error(err))
 		return 0
 	}
-	if _, b := resultMap["COUNT(1)"]; b {
-		return resultMap["COUNT(1)"]
+	if _, b := queryRows[0]["COUNT(1)"]; b {
+		countNum, _ := strconv.Atoi(queryRows[0]["COUNT(1)"])
+		return countNum
 	}
 	return 0
 }

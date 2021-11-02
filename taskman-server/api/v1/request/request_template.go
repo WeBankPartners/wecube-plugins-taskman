@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 func QueryRequestTemplateGroup(c *gin.Context) {
@@ -78,8 +79,9 @@ func GetCoreProcessList(c *gin.Context) {
 }
 
 func GetCoreProcNodes(c *gin.Context) {
-	procId := c.Param("procId")
-	result, err := db.GetProcessNodesByProc(procId, c.GetHeader("Authorization"))
+	requestTemplateId := c.Param("id")
+	getType := c.Param("type")
+	result, err := db.GetProcessNodesByProc(requestTemplateId, c.GetHeader("Authorization"), getType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -97,7 +99,18 @@ func GetRoleList(c *gin.Context) {
 	}
 }
 
+func GetUserByRoles(c *gin.Context) {
+	roleString := c.Query("roles")
+	result, err := db.QueryUserByRoles(strings.Split(roleString, ","), c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
 func GetUserRoles(c *gin.Context) {
+	db.SyncCoreRole()
 	result, err := db.GetRoleList(middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -112,7 +125,7 @@ func QueryRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.QueryRequestTemplate(&param)
+	pageInfo, rowData, err := db.QueryRequestTemplate(&param, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -130,6 +143,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	param.CreatedBy = middleware.GetRequestUser(c)
 	result, err := db.CreateRequestTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -152,6 +166,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
+	param.UpdatedBy = middleware.GetRequestUser(c)
 	result, err := db.UpdateRequestTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -190,6 +205,16 @@ func DeleteRequestTemplate(c *gin.Context) {
 	}
 }
 
+func ListRequestTemplateEntityAttrs(c *gin.Context) {
+	id := c.Param("id")
+	result, err := db.ListRequestTemplateEntityAttrs(id, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
 func GetRequestTemplateEntityAttrs(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -215,10 +240,20 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.UpdateRequestTemplateEntityAttrs(id, param)
+	err := db.UpdateRequestTemplateEntityAttrs(id, param, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
 		middleware.ReturnSuccess(c)
+	}
+}
+
+func GetRequestTemplateByUser(c *gin.Context) {
+	result, err := db.GetRequestTemplateByUser(middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
 	}
 }

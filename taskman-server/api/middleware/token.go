@@ -22,7 +22,7 @@ func AuthCoreRequestToken() gin.HandlerFunc {
 		err := authCoreRequest(c)
 		if err != nil {
 			log.Logger.Error("Validate core token fail", log.Error(err))
-			c.JSON(http.StatusOK, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
+			c.JSON(http.StatusUnauthorized, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
 			c.Abort()
 		} else {
 			c.Next()

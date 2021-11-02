@@ -80,7 +80,8 @@ func GetCoreProcessList(c *gin.Context) {
 
 func GetCoreProcNodes(c *gin.Context) {
 	requestTemplateId := c.Param("id")
-	result, err := db.GetProcessNodesByProc(requestTemplateId, c.GetHeader("Authorization"))
+	getType := c.Param("type")
+	result, err := db.GetProcessNodesByProc(requestTemplateId, c.GetHeader("Authorization"), getType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

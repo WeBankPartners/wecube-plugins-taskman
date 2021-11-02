@@ -98,7 +98,7 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
-func GetProcessNodesByProc(requestTemplateId, userToken string, isTemplate bool) (nodeList models.ProcNodeObjList, err error) {
+func GetProcessNodesByProc(requestTemplateId, userToken string, filterType string) (nodeList models.ProcNodeObjList, err error) {
 	requestTemplateObj, tmpErr := getSimpleRequestTemplate(requestTemplateId)
 	if tmpErr != nil {
 		err = tmpErr
@@ -138,11 +138,11 @@ func GetProcessNodesByProc(requestTemplateId, userToken string, isTemplate bool)
 		if v.NodeName != "subProcess" {
 			continue
 		}
-		if isTemplate {
+		if filterType == "template" {
 			if v.TaskCategory != "SUTN" {
 				continue
 			}
-		} else {
+		} else if filterType == "bind" {
 			if v.DynamicBind == "Y" {
 				continue
 			}
@@ -456,7 +456,7 @@ func DeleteRequestTemplate(id string) error {
 
 func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.ProcEntity, err error) {
 	result = []*models.ProcEntity{}
-	nodes, getNodesErr := GetProcessNodesByProc(id, userToken)
+	nodes, getNodesErr := GetProcessNodesByProc(id, userToken, "all")
 	if getNodesErr != nil {
 		err = getNodesErr
 		return

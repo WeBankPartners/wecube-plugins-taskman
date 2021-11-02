@@ -32,7 +32,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template-group", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateGroup},
 		&handlerFuncObj{Url: "/request-template-group", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplateGroup},
 		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: request.GetCoreProcessList},
-		&handlerFuncObj{Url: "/process-nodes/:id", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
+		&handlerFuncObj{Url: "/process-nodes/:id/:type", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
 		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: request.GetRoleList},
 		&handlerFuncObj{Url: "/role/user/list", Method: "GET", HandlerFunc: request.GetUserByRoles},
 		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: request.GetUserRoles},

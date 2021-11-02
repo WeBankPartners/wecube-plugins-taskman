@@ -236,6 +236,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -263,6 +264,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -290,6 +292,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -318,6 +321,7 @@ export default {
         id: 0,
         inDisplayName: 'no',
         isEdit: 'yes',
+        multiple: 'no',
         selectList: [],
         isRefInside: 'no',
         required: 'no',
@@ -428,10 +432,8 @@ export default {
         ...this.formData,
         items: tmp
       }
-      this.$Spin.show()
       const { statusCode, data } = await saveRequsetForm(this.$parent.requestTemplateId, res)
       if (statusCode === 'OK') {
-        this.$Spin.hide()
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')
@@ -488,6 +490,7 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',

@@ -59,6 +59,10 @@ export default {
       },
       tableColumns: [
         {
+          title: 'ID',
+          key: 'id'
+        },
+        {
           title: this.$t('name'),
           key: 'name'
         },
@@ -91,7 +95,7 @@ export default {
           key: 'expireTime'
         },
         {
-          title: this.$t('action'),
+          title: this.$t('t_action'),
           key: 'action',
           width: 200,
           align: 'center',
@@ -187,10 +191,8 @@ export default {
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
-      this.$Spin.show()
       const { statusCode, data } = await requestListForDraftInitiated(this.payload)
       if (statusCode === 'OK') {
-        this.$Spin.hide()
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows
       }

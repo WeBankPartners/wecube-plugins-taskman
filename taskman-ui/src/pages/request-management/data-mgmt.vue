@@ -2,7 +2,8 @@
   <div class="table-c">
     <Button
       @click="addRow"
-      type="primary"
+      type="success"
+      style="margin-bottom: 4px"
       v-if="!(formDisable || jumpFrom === 'group_handle')"
       :disabled="formDisable || jumpFrom === 'group_handle'"
       >{{ $t('add') }}</Button
@@ -18,7 +19,7 @@
             style="text-align: center"
             v-if="!(formDisable || jumpFrom === 'group_handle')"
           >
-            {{ $t('action') }}
+            {{ $t('t_action') }}
           </td>
         </tr>
         <template v-for="(data, dataIndex) in tableData">

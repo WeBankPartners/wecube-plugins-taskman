@@ -13,7 +13,7 @@
   "confirm_delete": "确定删除？",
   "confirm_termination": "确定终止？",
   "successful": "成功",
-  "action": "操作",
+  "t_action": "操作",
   "name": "名称",
   "manageRole": "角色",
   "description": "描述",

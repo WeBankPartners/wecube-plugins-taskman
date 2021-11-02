@@ -2,7 +2,7 @@
   <div id="taskman">
     <div class="content-container">
       <transition name="fade" mode="out-in">
-        <router-view class="pages"></router-view>
+        <router-view></router-view>
       </transition>
     </div>
   </div>

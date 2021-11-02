@@ -82,11 +82,8 @@ export default {
           }
         },
         {
-          title: this.$t('template'),
-          key: '',
-          render: (h, params) => {
-            return <span>{params.row.requestObj.requestTemplate}</span>
-          }
+          title: this.$t('handler'),
+          key: 'handleRoles'
         },
         {
           title: this.$t('status'),

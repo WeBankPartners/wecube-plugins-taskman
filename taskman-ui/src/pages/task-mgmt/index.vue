@@ -14,8 +14,14 @@
           <template v-for="(data, dataIndex) in dataInfo">
             <Panel :name="dataIndex + ''" :key="dataIndex">
               <template v-if="dataIndex === 0">
+                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                  >{{ $t('请求ID') }}:{{ data.requestId }}</Tag
+                >
                 <Tag style="font-size:14px" type="border" size="medium" color="primary"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                  >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="warning"
                   >{{ $t('reporter') }}:{{ data.reporter }}</Tag

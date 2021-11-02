@@ -88,6 +88,10 @@ export default {
       },
       tableColumns: [
         {
+          title: 'ID',
+          key: 'id'
+        },
+        {
           title: this.$t('name'),
           key: 'name'
         },

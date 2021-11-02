@@ -106,7 +106,9 @@ export default {
       const result = this.paramsCheck()
       if (result) {
         const { statusCode, data } = await saveEntityData(this.requestId, params)
+        this.$Spin.show()
         if (statusCode === 'OK') {
+          this.$Spin.hide()
           this.requestData = data.data
           this.$Notice.success({
             title: this.$t('successful'),

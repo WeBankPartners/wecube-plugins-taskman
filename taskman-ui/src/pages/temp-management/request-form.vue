@@ -424,8 +424,10 @@ export default {
         ...this.formData,
         items: tmp
       }
+      this.$Spin.show()
       const { statusCode, data } = await saveRequsetForm(this.$parent.requestTemplateId, res)
       if (statusCode === 'OK') {
+        this.$Spin.hide()
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')

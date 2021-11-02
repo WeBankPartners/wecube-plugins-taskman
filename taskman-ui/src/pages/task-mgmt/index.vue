@@ -160,7 +160,9 @@ export default {
       const result = this.paramsCheck(taskData)
       if (result) {
         const { statusCode } = await saveTaskData(this.taskId, taskData)
+        this.$Spin.show()
         if (statusCode === 'OK') {
+          this.$Spin.hide()
           this.success()
         }
       } else {
@@ -173,7 +175,9 @@ export default {
     async commitTaskData () {
       const taskData = this.dataInfo.find(d => d.editable === true)
       const { statusCode } = await commitTaskData(this.taskId, taskData)
+      this.$Spin.show()
       if (statusCode === 'OK') {
+        this.$Spin.hide()
         this.success()
         this.$router.push({ path: '/taskman/task-mgmt' })
       }

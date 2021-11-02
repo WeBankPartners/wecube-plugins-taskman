@@ -15,12 +15,12 @@
             <Panel :name="dataIndex + ''" :key="dataIndex">
               <template v-if="dataIndex === 0">
                 <Tag style="font-size:14px" type="border" size="medium" color="blue"
-                  >{{ $t('请求ID') }}:{{ data.requestId }}</Tag
+                  >{{ $t('request_id') }}:{{ data.requestId }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                <Tag style="font-size:14px" type="border" size="medium" color="orange"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size:14px" type="border" size="medium" color="green"
                   >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="warning"
@@ -93,12 +93,14 @@
                         <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>
-                    <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
-                      $t('save')
-                    }}</Button>
-                    <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
-                      $t('commit')
-                    }}</Button>
+                    <div style="text-align:center">
+                      <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                        $t('save')
+                      }}</Button>
+                      <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
+                        $t('commit')
+                      }}</Button>
+                    </div>
                   </div>
                 </span>
               </p>

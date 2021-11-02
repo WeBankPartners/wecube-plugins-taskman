@@ -89,7 +89,8 @@ export default {
           title: this.$t('handle_role'),
           key: 'handleRoles',
           render: (h, params) => {
-            return <span>{params.row.handleRoles[0]}</span>
+            const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
+            return <span>{handleRoles}</span>
           }
         },
         {

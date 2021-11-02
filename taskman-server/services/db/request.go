@@ -270,15 +270,22 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 	return
 }
 
-func CreateRequest(param *models.RequestTable, operatorRoles []string) error {
+func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken string) error {
 	requestTemplateObj, err := getSimpleRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
+	var actions []*execAction
+	existProDef, newProDefId, tmpErr := checkProDefId(requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, userToken)
+	if tmpErr != nil {
+		return fmt.Errorf("Try to check proDefId fail,%s ", tmpErr.Error())
+	}
+	if !existProDef {
+		actions = append(actions, &execAction{Sql: "update request_template set pro_def_id=? where id=?", Param: []interface{}{newProDefId, requestTemplateObj.Id}})
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
 	param.Id = guid.CreateGuid()
-	var actions []*execAction
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)

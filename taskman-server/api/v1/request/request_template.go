@@ -125,7 +125,7 @@ func QueryRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.QueryRequestTemplate(&param)
+	pageInfo, rowData, err := db.QueryRequestTemplate(&param, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

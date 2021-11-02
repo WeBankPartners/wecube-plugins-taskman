@@ -295,12 +295,16 @@ func GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 	return
 }
 
-func QueryRequestTemplate(param *models.QueryRequestParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
+func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
+	isQueryMessage := false
 	if len(param.Filters) > 0 {
 		newFilters := []*models.QueryRequestFilterObj{}
 		for _, v := range param.Filters {
+			if v.Name == "id" {
+				isQueryMessage = true
+			}
 			if v.Name == "mgmtRoles" || v.Name == "useRoles" {
 				inValueList := v.Value.([]interface{})
 				inValueStringList := []string{}
@@ -380,6 +384,29 @@ func QueryRequestTemplate(param *models.QueryRequestParam) (pageInfo models.Page
 			useRoleMap[v.Id] = tmpRoles
 		}
 	}
+	if isQueryMessage {
+		actions := []*execAction{}
+		for _, v := range rowData {
+			tmpExist, newProDefId, tmpErr := checkProDefId(v.ProcDefId, v.ProcDefName, userToken)
+			if tmpErr != nil {
+				err = fmt.Errorf("Try to sync new proDefId fail,%s ", tmpErr.Error())
+				break
+			}
+			if !tmpExist {
+				v.ProcDefId = newProDefId
+				actions = append(actions, &execAction{Sql: "update request_template set pro_def_id=? where id=?", Param: []interface{}{newProDefId, v.Id}})
+			}
+		}
+		if err != nil {
+			return
+		}
+		if len(actions) > 0 {
+			err = transaction(actions)
+		}
+		if err != nil {
+			return
+		}
+	}
 	for _, v := range rowData {
 		tmpObj := models.RequestTemplateQueryObj{RequestTemplateTable: *v, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 		if _, b := mgmtRoleMap[v.Id]; b {
@@ -389,6 +416,35 @@ func QueryRequestTemplate(param *models.QueryRequestParam) (pageInfo models.Page
 			tmpObj.USERoles = useRoleMap[v.Id]
 		}
 		result = append(result, &tmpObj)
+	}
+	return
+}
+
+func checkProDefId(proDefId, proDefName, userToken string) (exist bool, newProDefId string, err error) {
+	exist = false
+	processList, tmpErr := GetCoreProcessListNew(userToken)
+	if tmpErr != nil {
+		err = tmpErr
+		return
+	}
+	for _, v := range processList {
+		if v.ProcDefId == proDefId {
+			exist = true
+			break
+		}
+	}
+	if exist {
+		return
+	}
+	count := 0
+	for _, v := range processList {
+		if v.ProcDefName == proDefName {
+			count = count + 1
+			newProDefId = v.ProcDefId
+		}
+	}
+	if count != 1 {
+		err = fmt.Errorf("Find %d record from process list by query proDefName:%s ", count, proDefName)
 	}
 	return
 }
@@ -474,6 +530,7 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 			}
 			entityMap[entity.Id] = 1
 			for _, attribute := range entity.Attributes {
+				attribute.Id = fmt.Sprintf("%s:%s:%s", entity.PackageName, entity.Name, attribute.Name)
 				attribute.EntityId = entity.Id
 				attribute.EntityName = entity.Name
 				attribute.EntityDisplayName = entity.DisplayName

@@ -20,7 +20,7 @@
     <Tabs :value="activeTab" @on-click="changeTab">
       <template v-for="entity in requestData">
         <TabPane :label="entity.entity" :name="entity.entity" :key="entity.entity">
-          <DataMgmt ref="dataMgmt" @getEntityData="getEntityData"></DataMgmt>
+          <DataMgmt ref="dataMgmt" @getEntityData="getEntityData" @backData="backData"></DataMgmt>
         </TabPane>
       </template>
     </Tabs>
@@ -64,6 +64,9 @@ export default {
     }
   },
   methods: {
+    backData (data) {
+      this.requestData = data
+    },
     async commitRequest () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('commit'),

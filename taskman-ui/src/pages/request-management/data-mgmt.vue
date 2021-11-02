@@ -77,7 +77,7 @@
 </template>
 
 <script>
-import { saveEntityData, getRefOptions } from '@/api/server'
+import { getRefOptions } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -177,6 +177,7 @@ export default {
           this.getRefOptions(formItem, data, index)
         })
       })
+      this.$emit('backData', this.dataArray)
     },
     async getRefData (formData, key) {
       const ele = this.form.find(f => f.name === key)
@@ -199,21 +200,6 @@ export default {
       if (statusCode === 'OK') {
         formData[key + 'Options'] = data
         return formData
-      }
-    },
-    async saveData (data) {
-      const params = {
-        rootEntityId: this.rootEntityId,
-        data: data
-      }
-      const { statusCode } = await saveEntityData(this.requestId, params)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.cancel()
-        this.$emit('getEntityData')
       }
     }
   },

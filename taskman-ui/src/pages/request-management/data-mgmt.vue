@@ -12,7 +12,14 @@
         <tr>
           <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
           <td width="85%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
-          <td width="10%" class="padding-style" style="text-align: center">{{ $t('action') }}</td>
+          <td
+            width="10%"
+            class="padding-style"
+            style="text-align: center"
+            v-if="!(formDisable || jumpFrom === 'group_handle')"
+          >
+            {{ $t('action') }}
+          </td>
         </tr>
         <template v-for="(data, dataIndex) in tableData">
           <tr :key="data.id">

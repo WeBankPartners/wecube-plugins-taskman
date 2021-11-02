@@ -182,7 +182,7 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.TaskTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_time,t1.emergency,t1.handler,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_time from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
+	baseSql := fmt.Sprintf("select t1.id,t1.name,t1.description,t1.form,t1.status,t1.`version`,t1.request,t1.task_template,t1.node_name,t1.reporter,t1.report_role,t1.report_time,t1.emergency,t1.handler,t1.created_by,t1.created_time,t1.updated_by,t1.updated_time,t1.expire_time from (select * from task where task_template in (select task_template from task_template_role where role_type='USE' and `role` in ('"+strings.Join(userRoles, "','")+"')) union select * from task where task_template is null and (%s)) t1 where t1.del_flag=0 %s ", roleFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -203,7 +203,11 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		if tmpRoles, b := roleMap[v.TaskTemplate]; b {
 			v.HandleRoles = tmpRoles
 		} else {
-			v.HandleRoles = []string{}
+			if v.ReportRole != "" {
+				v.HandleRoles = strings.Split(v.ReportRole[1:len(v.ReportRole)-1], ",")
+			} else {
+				v.HandleRoles = []string{}
+			}
 		}
 	}
 	var requestTables []*models.RequestTable
@@ -220,6 +224,9 @@ func ListTask(param *models.QueryRequestParam, userRoles []string, operator stri
 		}
 		if v.ExpireTime != "" {
 			timeObj := models.ExpireObj{ReportTime: v.ReportTime, ExpireTime: v.ExpireTime, NowTime: nowTime}
+			if v.Status == "done" {
+				timeObj = models.ExpireObj{ReportTime: v.ReportTime, ExpireTime: v.ExpireTime, NowTime: v.UpdatedTime}
+			}
 			calcExpireObj(&timeObj)
 			v.ExpirePercentObj = timeObj
 		}
@@ -468,7 +475,7 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 		}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
-	_, err = x.Exec("update task set report_time=?,callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", nowTime, string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
+	_, err = x.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
 	if err != nil {
 		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
 	}
@@ -536,7 +543,10 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 				for k, v := range valueObj.EntityData {
 					if _, b := tmpColumnMap[k]; b {
 						if _, bb := tmpMultiMap[k]; bb {
-							tmpV := v.([]string)
+							tmpV := []string{}
+							for _, interfaceV := range v.([]interface{}) {
+								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+							}
 							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
 						} else {
 							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})

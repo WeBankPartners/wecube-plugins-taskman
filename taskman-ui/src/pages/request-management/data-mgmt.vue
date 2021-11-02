@@ -140,6 +140,11 @@ export default {
       this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
     },
     async getRefOptions (formItem, formData, index) {
+      if (formItem.refEntity === '') {
+        formData[formItem.name + 'Options'] = formItem.selectList
+        this.$set(this.tableData, index, formData)
+        return
+      }
       let cache = JSON.parse(JSON.stringify(formData))
       cache[formItem.name] = ''
       this.refKeys.forEach(k => {
@@ -171,7 +176,7 @@ export default {
       this.form = data.title
       this.refKeys = []
       this.tableColumns = data.title.map(t => {
-        if (t.attrDefDataType === 'ref') {
+        if (t.elementType === 'select') {
           this.refKeys.push(t.name)
         }
         return t
@@ -190,29 +195,6 @@ export default {
         })
       })
       this.$emit('backData', this.dataArray)
-    },
-    async getRefData (formData, key) {
-      const ele = this.form.find(f => f.name === key)
-      let cache = JSON.parse(JSON.stringify(formData))
-      cache[key] = ''
-      this.refKeys.forEach(k => {
-        delete cache[k + 'Options']
-      })
-      const attr = ele.entity + '__' + key
-      const params = {
-        filters: [],
-        paging: false,
-        dialect: {
-          associatedData: {
-            ...cache
-          }
-        }
-      }
-      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
-      if (statusCode === 'OK') {
-        formData[key + 'Options'] = data
-        return formData
-      }
     }
   },
   components: {}

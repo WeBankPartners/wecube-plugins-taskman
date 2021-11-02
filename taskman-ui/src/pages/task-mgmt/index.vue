@@ -183,7 +183,6 @@ export default {
       }
     },
     paramsCheck (taskData) {
-      console.log(taskData)
       let result = true
       taskData.formData.forEach(requestData => {
         let requiredName = []

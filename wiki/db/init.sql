@@ -70,17 +70,6 @@ CREATE TABLE IF NOT EXISTS `form_item_template` (
   CONSTRAINT `fore_form_item_template` FOREIGN KEY (`form_template`) REFERENCES `form_template` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
-
-INSERT INTO `form_item_template`
-(`id`, `form_template`, `item_group`, `item_group_name`, `name`, `default_value`, `sort`, `package_name`, `entity`, `attr_def_id`, `attr_def_data_type`, `element_type`, `title`, `width`, `ref_package_name`, `ref_entity`, `data_options`)
- VALUES
-    ('1333228970392473601', NULL, 'default', 'default', 'reporter', NULL, 0, NULL, NULL, NULL, NULL, 'text', '上报人', 80, NULL, NULL, NULL),
-    ('1333303089673617409', NULL, 'default', 'default', 'emergency', NULL, 0, NULL, NULL, NULL, NULL, 'select', '紧急程度', 80, NULL, NULL, NULL),
-    ('1333304415006547970', NULL, 'default', 'default', 'attach_file_id', NULL, 0, NULL, NULL, NULL, NULL, 'file', '附件', 80, NULL, NULL, NULL),
-    ('1333319171714420738', NULL, 'default', 'default', 'result', NULL, 0, NULL, NULL, NULL, NULL, 'text', '处理结果', 80, NULL, NULL, NULL),
-    ('1333324857626169346', NULL, 'default', 'default', 'report_time', NULL, 0, NULL, NULL, NULL, NULL, 'date', '上报时间', 80, NULL, NULL, NULL),
-    ('1333324857626169347', NULL, 'default', 'default', 'due_data', NULL, 0, NULL, NULL, NULL, NULL, 'date', '过期时间', 80, NULL, NULL, NULL);
-
 DROP TABLE IF EXISTS `form`;
 CREATE TABLE IF NOT EXISTS `form` (
   `id` varchar(64)  NOT NULL,

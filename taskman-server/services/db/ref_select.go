@@ -145,7 +145,7 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 func getRefSelectEntity(requestId, attrId string) (refEntity string, err error) {
 	var formItemTemplates []*models.FormItemTemplateTable
 	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
-	x.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplates)
+	x.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?)  union select form_template from task_template where request_template in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId, requestId).Find(&formItemTemplates)
 	if len(formItemTemplates) == 0 {
 		return refEntity, fmt.Errorf("Can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
 	}

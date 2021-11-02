@@ -970,7 +970,10 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData
 	for k, v := range entityData {
 		if vv, b := titleMap[k]; b {
 			if vv.Multiple == "Y" {
-				tmpV := v.([]string)
+				tmpV := []string{}
+				for _, interfaceV := range v.([]interface{}) {
+					tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
+				}
 				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: strings.Join(tmpV, ",")})
 			} else {
 				result = append(result, &models.RequestCacheEntityAttrValue{AttrDefId: vv.AttrDefId, AttrName: k, DataType: vv.AttrDefDataType, DataValue: v})

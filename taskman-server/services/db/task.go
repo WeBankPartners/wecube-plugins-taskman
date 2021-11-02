@@ -274,10 +274,15 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	if err != nil {
 		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
 	}
+	var requestTemplateTable []*models.RequestTemplateTable
+	x.SQL("select * from request_template where id in (select request_template from request where id=?)", taskObj.Request).Find(&requestTemplateTable)
 	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
 	requestQuery.ExpireTime = requests[0].ExpireTime
 	requestQuery.ExpectTime = requests[0].ExpectTime
 	requestQuery.FormData = requestCache.Data
+	if len(requestTemplateTable) > 0 {
+		requestQuery.RequestTemplate = requestTemplateTable[0].Name
+	}
 	result.Data = []*models.TaskQueryObj{&requestQuery}
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
 	if err != nil {

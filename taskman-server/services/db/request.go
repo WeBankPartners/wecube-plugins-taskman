@@ -136,8 +136,8 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	return
 }
 
-func getRequestTemplateMGMTRole() map[string][]string {
-	result := make(map[string][]string)
+func getRequestTemplateMGMTRole() (result map[string][]string) {
+	result = make(map[string][]string)
 	var requestTemplateRole []*models.RequestTemplateRoleTable
 	x.SQL("select * from request_template_role where and role_type='MGMT' order by request_template").Find(&requestTemplateRole)
 	if len(requestTemplateRole) == 0 {

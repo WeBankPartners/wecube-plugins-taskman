@@ -34,6 +34,7 @@
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
+                :multiple="element.multiple === 'Y'"
                 :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
               >

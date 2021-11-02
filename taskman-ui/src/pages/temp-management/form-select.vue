@@ -4,7 +4,7 @@
       <Tabs :value="activeTab">
         <template v-for="item in attrOptions">
           <TabPane :label="item.description" :name="item.id" :key="item.id">
-            <ul>
+            <ul :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
               <li v-for="attr in item.attributes" :key="attr.id" style="width: 46%;display: inline-block;margin: 4px">
                 <Checkbox :label="attr.id">
                   <span>{{ attr.description }}({{ attr.name }})</span>
@@ -15,7 +15,7 @@
         </template>
       </Tabs>
     </CheckboxGroup>
-    <div style="margin-top:16px;">
+    <div style="margin-top:16px;text-align: center">
       <Button @click="saveAttrs" :disabled="attrData.length === 0" type="primary">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -27,6 +27,7 @@ export default {
   name: 'form-select',
   data () {
     return {
+      MODALHEIGHT: 500,
       activeTab: '',
       attrData: [],
       attrOptions: []
@@ -34,6 +35,7 @@ export default {
   },
   props: ['requestTemplateId'],
   mounted () {
+    this.MODALHEIGHT = document.body.scrollHeight - 400
     if (!!this.$parent.requestTemplateId !== false) {
       this.getFormList()
       this.getInitData()

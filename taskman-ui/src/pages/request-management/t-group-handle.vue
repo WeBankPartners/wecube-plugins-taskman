@@ -104,6 +104,14 @@ export default {
           key: 'requestTemplateName'
         },
         {
+          title: this.$t('handle_role'),
+          key: 'handleRoles',
+          render: (h, params) => {
+            const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
+            return <span>{handleRoles}</span>
+          }
+        },
+        {
           title: this.$t('handler'),
           key: 'handler'
         },

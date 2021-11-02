@@ -46,7 +46,7 @@
         ></DatePicker>
       </FormItem>
 
-      <FormItem>
+      <FormItem style="text-align:center">
         <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
       </FormItem>
     </Form>

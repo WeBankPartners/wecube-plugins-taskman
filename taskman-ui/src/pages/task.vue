@@ -13,7 +13,7 @@
           </Select>
         </Col>
         <Col span="4">
-          <Input v-model="handleRoles" style="width:90%" type="text" :placeholder="$t('handle_role')"> </Input>
+          <Input v-model="handler" style="width:90%" type="text" :placeholder="$t('handler')"> </Input>
         </Col>
         <Col span="4">
           <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
@@ -50,7 +50,7 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       status: ['created', 'marked', 'doing'],
-      handleRoles: '',
+      handler: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -201,11 +201,11 @@ export default {
           value: this.name
         })
       }
-      if (this.handleRoles) {
+      if (this.handler) {
         this.payload.filters.push({
-          name: 'handleRoles',
+          name: 'handler',
           operator: 'contains',
-          value: this.handleRoles
+          value: this.handler
         })
       }
       if (this.status.length > 0) {

@@ -27,6 +27,9 @@
           </Select>
         </Col>
         <Col span="4">
+          <Input v-model="handler" style="width:90%" type="text" :placeholder="$t('handler')"> </Input>
+        </Col>
+        <Col span="4">
           <Button @click="requestListForHandle" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
@@ -60,6 +63,7 @@ export default {
     return {
       MODALHEIGHT: 500,
       name: '',
+      handler: '',
       requestTemplate: '',
       status: ['Pending'],
       tags: '',
@@ -283,6 +287,13 @@ export default {
           name: 'name',
           operator: 'contains',
           value: this.name
+        })
+      }
+      if (this.handler) {
+        this.payload.filters.push({
+          name: 'handler',
+          operator: 'contains',
+          value: this.handler
         })
       }
       if (this.requestTemplate) {

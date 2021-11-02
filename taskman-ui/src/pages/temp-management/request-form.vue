@@ -70,7 +70,10 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div>{{ element.title }}:</div>
+                  <div>
+                    <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                    {{ element.title }}:
+                  </div>
                   <Input
                     v-if="element.elementType === 'input'"
                     :disabled="element.isEdit === 'no'"
@@ -106,7 +109,7 @@
       </Col>
       <Col span="6" style="border: 1px solid #dcdee2;">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-          <Collapse>
+          <Collapse v-model="openPanel">
             <Panel name="1">
               {{ $t('general_attributes') }}
               <div slot="content">
@@ -138,6 +141,12 @@
                   </FormItem>
                   <FormItem :label="$t('editable')">
                     <Select v-model="editElement.isEdit">
+                      <Option value="yes">yes</Option>
+                      <Option value="no">no</Option>
+                    </Select>
+                  </FormItem>
+                  <FormItem :label="$t('required')">
+                    <Select v-model="editElement.required">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
@@ -189,6 +198,7 @@ export default {
   data () {
     return {
       MODALHEIGHT: 200,
+      openPanel: '',
       formData: {
         id: '',
         name: '',
@@ -219,6 +229,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          required: 'no',
           isView: 'yes',
           isOutput: 'no',
           sort: 0,
@@ -243,6 +254,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          required: 'no',
           isView: 'yes',
           isOutput: 'no',
           sort: 0,
@@ -267,6 +279,7 @@ export default {
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
+          required: 'no',
           isView: 'yes',
           isOutput: 'no',
           sort: 0,
@@ -292,6 +305,7 @@ export default {
         id: 0,
         inDisplayName: 'no',
         isEdit: 'yes',
+        required: 'no',
         isOutput: 'no',
         isView: 'yes',
         name: '',
@@ -457,6 +471,7 @@ export default {
           id: 'c_' + seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
+          required: 'no',
           isOutput: 'no',
           isView: 'yes',
           name: seleted.name,
@@ -493,6 +508,7 @@ export default {
       }
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
       this.editElement.isActive = true
+      this.openPanel = '1'
     },
     async getSelectedForm () {
       this.formItemOptions = []

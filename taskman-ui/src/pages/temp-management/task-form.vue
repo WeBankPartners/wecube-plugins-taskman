@@ -17,7 +17,7 @@
 
 <script>
 import FormComponent from './task-form-component'
-import { getTemplateNodes, confirmTemplate } from '@/api/server.js'
+import { getTemplateNodesForTemp, confirmTemplate } from '@/api/server.js'
 export default {
   name: '',
   data () {
@@ -29,7 +29,7 @@ export default {
   },
   mounted () {
     this.requestTemplateId = this.$parent.requestTemplateId
-    this.getTemplateNodes()
+    this.getTemplateNodesForTemp()
   },
   methods: {
     async confirmTemplate () {
@@ -41,8 +41,8 @@ export default {
         })
       }
     },
-    async getTemplateNodes () {
-      const { statusCode, data } = await getTemplateNodes(this.requestTemplateId)
+    async getTemplateNodesForTemp () {
+      const { statusCode, data } = await getTemplateNodesForTemp(this.requestTemplateId)
       if (statusCode === 'OK') {
         this.nodes = data.filter(item => item.taskCategory === 'SUTN')
         // this.nodes = data

@@ -156,20 +156,15 @@ export default {
       }
     },
     async saveTaskData () {
-      const taskData = this.dataInfo.find(d => d.editable === true).formData
+      const taskData = this.dataInfo.find(d => d.editable === true)
       const { statusCode } = await saveTaskData(this.taskId, taskData)
       if (statusCode === 'OK') {
         this.success()
       }
     },
     async commitTaskData () {
-      await this.saveTaskData()
       const taskData = this.dataInfo.find(d => d.editable === true)
-      const commitData = {
-        comment: taskData.comment,
-        choseOption: taskData.choseOption
-      }
-      const { statusCode } = await commitTaskData(this.taskId, commitData)
+      const { statusCode } = await commitTaskData(this.taskId, taskData)
       if (statusCode === 'OK') {
         this.success()
         this.$router.push({ path: '/taskman/task-mgmt' })

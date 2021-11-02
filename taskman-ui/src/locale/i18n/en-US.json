@@ -98,5 +98,7 @@
   "unclassified": "Unclassified",
   "created_time": "Created Time",
   "task_source": "Task Source",
-  "task": "Task"
+  "task": "Task",
+  "required": "Required",
+  "required_tip": "Please Check Required Key"
 }

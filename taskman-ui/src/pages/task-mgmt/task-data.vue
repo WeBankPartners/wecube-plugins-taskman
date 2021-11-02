@@ -15,23 +15,26 @@
               v-for="element in form"
               :key="element.id"
             >
-              <div>{{ element.title }}:</div>
+              <div>
+                <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                {{ element.title }}:
+              </div>
               <Input
                 v-if="element.elementType === 'input'"
                 v-model="data[element.name]"
                 placeholder=""
-                :disabled="isDisabled || enforceDisable"
+                :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
               />
               <Input
                 v-if="element.elementType === 'textarea'"
                 v-model="data[element.name]"
                 type="textarea"
-                :disabled="isDisabled || enforceDisable"
+                :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
               />
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
-                :disabled="isDisabled || enforceDisable"
+                :disabled="element.isEdit === 'no' || isDisabled || enforceDisable"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{

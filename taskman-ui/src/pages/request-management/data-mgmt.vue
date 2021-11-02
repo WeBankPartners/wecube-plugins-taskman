@@ -1,20 +1,33 @@
 <template>
   <div class="table-c">
-    <Button @click="addRow" type="primary" :disabled="formDisable || jumpFrom === 'group_handle'">{{
-      $t('add')
-    }}</Button>
+    <Button
+      @click="addRow"
+      type="primary"
+      v-if="!(formDisable || jumpFrom === 'group_handle')"
+      :disabled="formDisable || jumpFrom === 'group_handle'"
+      >{{ $t('add') }}</Button
+    >
     <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto', width: '100%' }">
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
           <td width="85%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
-          <td width="10%" class="padding-style" style="text-align: center">{{ $t('action') }}</td>
+          <td
+            width="10%"
+            class="padding-style"
+            style="text-align: center"
+            v-if="!(formDisable || jumpFrom === 'group_handle')"
+          >
+            {{ $t('action') }}
+          </td>
         </tr>
         <template v-for="(data, dataIndex) in tableData">
           <tr :key="data.id">
             <td class="padding-style" style="text-align: center">
-              <span v-if="data._id.startsWith('tmp__')" style="color: red">(new)</span>
-              {{ dataIndex + 1 }}
+              <span style="font-size: 18px">
+                {{ dataIndex + 1 }}
+              </span>
+              <span v-if="data._id.startsWith('tmp__')" style="color: #338cf0">new</span>
             </td>
             <td class="padding-style">
               <div
@@ -23,7 +36,10 @@
                 v-for="element in form"
                 :key="element.id"
               >
-                <div>{{ element.title }}:</div>
+                <div>
+                  <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                  {{ element.title }}:
+                </div>
                 <Input
                   v-if="element.elementType === 'input'"
                   v-model="data[element.name]"
@@ -41,6 +57,8 @@
                 <Select
                   v-if="element.elementType === 'select'"
                   v-model="data[element.name]"
+                  filterable
+                  clearable
                   @on-open-change="getRefOptions(element, data, dataIndex)"
                   :disabled="formDisable || jumpFrom === 'group_handle'"
                   style="width: calc(100% - 30px);"
@@ -55,6 +73,7 @@
               <Button
                 style="margin-left: 4px"
                 @click="deleteRow(dataIndex)"
+                v-if="!(formDisable || jumpFrom === 'group_handle')"
                 :disabled="formDisable || jumpFrom === 'group_handle'"
                 size="small"
                 type="error"
@@ -70,7 +89,7 @@
 </template>
 
 <script>
-import { saveEntityData, getRefOptions } from '@/api/server'
+import { getRefOptions } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -170,6 +189,7 @@ export default {
           this.getRefOptions(formItem, data, index)
         })
       })
+      this.$emit('backData', this.dataArray)
     },
     async getRefData (formData, key) {
       const ele = this.form.find(f => f.name === key)
@@ -192,21 +212,6 @@ export default {
       if (statusCode === 'OK') {
         formData[key + 'Options'] = data
         return formData
-      }
-    },
-    async saveData (data) {
-      const params = {
-        rootEntityId: this.rootEntityId,
-        data: data
-      }
-      const { statusCode } = await saveEntityData(this.requestId, params)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.cancel()
-        this.$emit('getEntityData')
       }
     }
   },

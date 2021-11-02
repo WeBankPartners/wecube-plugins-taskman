@@ -56,6 +56,7 @@ type RequestTable struct {
 	Result              string `json:"result" xorm:"result"`
 	ExpireTime          string `json:"expireTime" xorm:"expire_time"`
 	ExpectTime          string `json:"expectTime" xorm:"expect_time"`
+	ConfirmTime         string `json:"confirmTime" xorm:"confirm_time"`
 	CreatedBy           string `json:"createdBy" xorm:"created_by"`
 	CreatedTime         string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy           string `json:"updatedBy" xorm:"updated_by"`

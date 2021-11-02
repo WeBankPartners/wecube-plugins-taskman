@@ -87,7 +87,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		permission = "USE"
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -199,7 +199,7 @@ func calcExpireTime(reportTime string, expireDay int) (expire string) {
 func GetRequestWithRoot(requestId string) (result models.RequestTable, err error) {
 	result = models.RequestTable{}
 	var requestTable []*models.RequestTable
-	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache,expire_time,expect_time,handler from request where id=?", requestId).Find(&requestTable)
+	err = x.SQL("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,report_time,emergency,status,cache,expire_time,expect_time,confirm_time,handler from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
 	}
@@ -628,22 +628,24 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	result = respResult.Data
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	expireTime := calcExpireTime(nowTime, requestTemplateTable[0].ExpireDay)
-	_, err = x.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,report_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, expireTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
+	_, err = x.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, expireTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
 
 func UpdateRequestStatus(requestId, status, operator, userToken string) error {
-	bindCache := ""
+	var err error
+	nowTime := time.Now().Format(models.DateTimeFormat)
 	if status == "Pending" {
 		bindData, bindErr := GetRequestPreBindData(requestId, userToken)
 		if bindErr != nil {
 			return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
 		}
 		bindCacheBytes, _ := json.Marshal(bindData)
-		bindCache = string(bindCacheBytes)
+		bindCache := string(bindCacheBytes)
+		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
+	} else {
+		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
 	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set status=?,reporter=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, bindCache, operator, nowTime, requestId)
 	return err
 }
 

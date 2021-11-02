@@ -135,7 +135,7 @@ func GetProcessNodesByProc(requestTemplateId, userToken string, filterType strin
 		return
 	}
 	for _, v := range respObj.Data {
-		if v.NodeName != "subProcess" {
+		if v.NodeType != "subProcess" {
 			continue
 		}
 		if filterType == "template" {

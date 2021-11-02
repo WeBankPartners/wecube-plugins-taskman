@@ -173,6 +173,7 @@ CREATE TABLE IF NOT EXISTS `request` (
   `result` mediumtext ,
   `expire_time` varchar(32)  DEFAULT NULL,
   `expect_time` varchar(32)  DEFAULT NULL,
+  `confirm_time` varchar(32)  DEFAULT NULL,
   `created_by` varchar(255)   NULL,
   `created_time` datetime NULL,
   `updated_by` varchar(255)   NULL,

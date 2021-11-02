@@ -394,7 +394,7 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pa
 			}
 			if !tmpExist {
 				v.ProcDefId = newProDefId
-				actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where id=?", Param: []interface{}{newProDefId, v.Id}})
+				actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, v.ProcDefName}})
 			}
 		}
 		if err != nil {

@@ -140,7 +140,7 @@ export default {
                   type="primary"
                   size="small"
                 >
-                  {this.$t('look_over')}
+                  {this.$t('detail')}
                 </Button>
               </div>
             )

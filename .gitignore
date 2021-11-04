@@ -1,0 +1,14 @@
+# IDEA
+.idea
+.editorconfig
+.vscode
+
+# ignore file
+taskman-server/taskman-server
+taskman-server/logs
+taskman-ui/plugin
+taskman-ui/dist
+taskman-ui/node_modules
+taskman-ui/node
+taskman-ui/build
+taskman-ui/package-lock.json

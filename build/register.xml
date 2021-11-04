@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<package name="taskman" version="{{PLUGIN_VERSION}}">
+
+    <!-- 1.依赖分析 - 描述运行本插件包需要的其他插件包 -->
+    <packageDependencies>
+        <packageDependency name="platform" version="v3.2.1"/>
+        <packageDependency name="wecmdb" version="v2.0.4"/>
+    </packageDependencies>
+
+    <!-- 2.菜单注入 - 描述运行本插件包需要注入的菜单 -->
+    <menus>
+        <menu code='TASK_TEMPLATE_GROUP_MANAGEMENT' cat='JOBS' displayName="Template Group Management" localDisplayName="模板组管理">/taskman/template-group</menu>
+        <menu code='TASK_TEMPLATE_MANAGEMENT' cat='JOBS' displayName="Template Management" localDisplayName="模板管理">/taskman/template-mgmt</menu>
+        <menu code='TASK_REQUEST_MANAGEMENT' cat='JOBS' displayName="Request Management" localDisplayName="请求管理">/taskman/request-mgmt</menu>
+        <menu code='TASK_TASK_MANAGEMENT' cat='JOBS' displayName="Task Management" localDisplayName="任务管理">/taskman/task-mgmt</menu>
+    </menus>
+
+    <!-- 3.数据模型 - 描述本插件包的数据模型,并且描述和Framework数据模型的关系 -->
+    <dataModel>
+    </dataModel>
+
+    <!-- 4.系统参数 - 描述运行本插件包需要的系统参数 -->
+    <systemParameters>
+        <systemParameter name="TASKMAN_LOG_LEVEL" scopeType="global" defaultValue="info"/>
+        <systemParameter name="TASKMAN_PROCESS_TAGS" scopeType="global" defaultValue="taskman"/>
+    </systemParameters>
+
+
+    <!-- 5.权限设定 -->
+    <authorities>
+        <authority systemRoleName="SUPER_ADMIN" >
+            <menu code="TASK_TEMPLATE_GROUP_MANAGEMENT"/>
+            <menu code="TASK_TEMPLATE_MANAGEMENT"/>
+            <menu code="TASK_REQUEST_MANAGEMENT"/>
+            <menu code="TASK_TASK_MANAGEMENT"/>
+        </authority >
+    </authorities>
+
+    <!-- 6.运行资源 - 描述部署运行本插件包需要的基础资源(如主机、虚拟机、容器、数据库等) -->
+    <resourceDependencies>
+        <docker imageName="{{REPOSITORY}}:{{PLUGIN_VERSION}}"
+                containerName="{{REPOSITORY}}-{{PLUGIN_VERSION}}"
+                portBindings="{{ALLOCATE_PORT}}:8099"
+                volumeBindings="{{BASE_MOUNT_PATH}}/taskman/log:/app/taskman/logs,/etc/localtime:/etc/localtime,{{BASE_MOUNT_PATH}}/certs:/data/certs"
+                envVariables="TASKMAN_MYSQL_HOST={{DB_HOST}},TASKMAN_MYSQL_PORT={{DB_PORT}},TASKMAN_MYSQL_SCHEMA={{DB_SCHEMA}},TASKMAN_MYSQL_USER={{DB_USER}},TASKMAN_MYSQL_PWD={{DB_PWD}},JWT_SIGNING_KEY={{JWT_SIGNING_KEY}},GATEWAY_URL={{GATEWAY_URL}},SUB_SYSTEM_CODE={{SUB_SYSTEM_CODE}},SUB_SYSTEM_KEY={{SUB_SYSTEM_KEY}},TASKMAN_LOG_LEVEL={{TASKMAN_LOG_LEVEL}},PLUGIN_MODE=yes,TASKMAN_PROCESS_TAGS={{TASKMAN_PROCESS_TAGS}}"
+        />
+        <mysql schema="taskman" initFileName="init.sql" upgradeFileName="upgrade.sql"/>
+    </resourceDependencies>
+
+    <!-- 7.插件列表 - 描述插件包中单个插件的输入和输出 -->
+    <plugins>
+        <plugin name="task">
+            <interface action="create-by-template" path="/taskman/api/v1/plugin/task/create" httpMethod="POST" isAsyncProcessing="Y" type="DYNAMICFORM">
+                <inputParameters>
+                    <parameter datatype="string" mappingType="system_variable" mappingSystemVariableName="CALLBACK_URL" required="Y">
+                        callbackUrl
+                    </parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">taskName</parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">roleName</parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">reporter</parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">taskDescription</parameter>
+                    <parameter datatype="string" mappingType="context" required="Y">procInstId</parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">taskFormInput</parameter>
+                </inputParameters>
+                <outputParameters>
+                    <parameter datatype="string" mappingType="context">errorCode</parameter>
+                    <parameter datatype="string" mappingType="context">errorMessage</parameter>
+                    <parameter datatype="string" mappingType="context">comment</parameter>
+                    <parameter datatype="string" mappingType="context">taskFormOutput</parameter>
+                </outputParameters>
+            </interface>
+            <interface action="create-custom" path="/taskman/api/v1/plugin/task/create/custom" httpMethod="POST" isAsyncProcessing="Y" type="APPROVAL">
+                <inputParameters>
+                    <parameter datatype="string" mappingType="system_variable" mappingSystemVariableName="CALLBACK_URL" required="Y">
+                        callbackUrl
+                    </parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">taskName</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">roleName</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reporter</parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">handler</parameter>
+                    <parameter datatype="string" mappingType="constant" required="N">taskDescription</parameter>
+                    <parameter datatype="string" mappingType="context" required="Y">procInstId</parameter>
+                </inputParameters>
+                <outputParameters>
+                    <parameter datatype="string" mappingType="context">errorCode</parameter>
+                    <parameter datatype="string" mappingType="context">errorMessage</parameter>
+                    <parameter datatype="string" mappingType="context">comment</parameter>
+                </outputParameters>
+            </interface>
+        </plugin>
+    </plugins>
+</package>

@@ -74,8 +74,9 @@ type CodeProcessQueryObj struct {
 
 type RequestTemplateQueryObj struct {
 	RequestTemplateTable
-	MGMTRoles []*RoleTable `json:"mgmtRoles"`
-	USERoles  []*RoleTable `json:"useRoles"`
+	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
+	USERoles       []*RoleTable `json:"useRoles"`
+	OperateOptions []string     `json:"operateOptions"`
 }
 
 type RequestTemplateUpdateParam struct {

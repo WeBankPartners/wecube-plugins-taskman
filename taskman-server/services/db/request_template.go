@@ -383,7 +383,7 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 	}
 	rowData := []*models.RequestTemplateTable{}
 	filterSql, queryColumn, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id in (select record_id from request_template where del_flag=0 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ('"+strings.Join(userRoles, "','")+"')) %s %s ", queryColumn, extFilterSql, filterSql)
+	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ('"+strings.Join(userRoles, "','")+"')) %s %s ", queryColumn, extFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -458,6 +458,11 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 		}
 		if _, b := useRoleMap[v.Id]; b {
 			tmpObj.USERoles = useRoleMap[v.Id]
+		}
+		if v.Status == "confirm" {
+			tmpObj.OperateOptions = []string{"query", "fork"}
+		} else if v.Status == "created" {
+			tmpObj.OperateOptions = []string{"edit", "delete"}
 		}
 		result = append(result, &tmpObj)
 	}

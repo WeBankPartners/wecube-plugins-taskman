@@ -29,7 +29,7 @@ const implicitRoute = {
     parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
     childBreadcrumb: { 'zh-CN': '模板组', 'en-US': 'Template Group' }
   },
-  '/templateManagementIndex': {
+  templateManagementIndex: {
     parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
     childBreadcrumb: { 'zh-CN': '模板管理', 'en-US': 'Template Management' }
   },
@@ -46,6 +46,10 @@ const implicitRoute = {
     childBreadcrumb: { 'zh-CN': '任务管理', 'en-US': 'Task Management' }
   },
   requestManagementIndex: {
+    parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
+    childBreadcrumb: { 'zh-CN': '请求管理', 'en-US': 'Request Management' }
+  },
+  requestCheck: {
     parentBreadcrumb: { 'zh-CN': 'TaskMan', 'en-US': 'TaskMan' },
     childBreadcrumb: { 'zh-CN': '请求管理', 'en-US': 'Request Management' }
   }

@@ -30,7 +30,7 @@
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:48px">
+    <div style="text-align: center;margin-top:12px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('go_back')

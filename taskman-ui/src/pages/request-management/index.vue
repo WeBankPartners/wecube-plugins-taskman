@@ -21,7 +21,7 @@
           </Step>
         </Steps>
       </div>
-      <div v-if="currentStep !== -1" style="margin-top:48px;">
+      <div v-if="currentStep !== -1" style="margin-top:12px;">
         <BasicForm @basicForm="basicForm" v-if="currentStep === 0"></BasicForm>
         <DataCrud @nextStep="nextStep" v-if="currentStep === 1"></DataCrud>
         <DataBind v-if="currentStep === 2"></DataBind>

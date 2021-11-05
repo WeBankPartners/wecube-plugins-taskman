@@ -26,7 +26,7 @@
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:48px">
+    <div style="text-align: center;margin-top:24px">
       <Button @click="saveData" v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')" type="primary">{{
         $t('save')
       }}</Button>

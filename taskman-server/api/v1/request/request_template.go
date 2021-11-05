@@ -15,7 +15,7 @@ func QueryRequestTemplateGroup(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.QueryRequestTemplateGroup(&param)
+	pageInfo, rowData, err := db.QueryRequestTemplateGroup(&param, middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -47,7 +47,12 @@ func UpdateRequestTemplateGroup(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	err := db.UpdateRequestTemplateGroup(&param)
+	err := db.CheckRequestTemplateGroupRoles(param.Id, middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnDataPermissionError(c, err)
+		return
+	}
+	err = db.UpdateRequestTemplateGroup(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -61,7 +66,12 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	err := db.DeleteRequestTemplateGroup(id)
+	err := db.CheckRequestTemplateGroupRoles(id, middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnDataPermissionError(c, err)
+		return
+	}
+	err = db.DeleteRequestTemplateGroup(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -125,7 +135,7 @@ func QueryRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.QueryRequestTemplate(&param, c.GetHeader("Authorization"))
+	pageInfo, rowData, err := db.QueryRequestTemplate(&param, c.GetHeader("Authorization"), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -166,6 +176,10 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
+	if err := db.CheckRequestTemplateRoles(param.Id, middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnDataPermissionError(c, err)
+		return
+	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
 	result, err := db.UpdateRequestTemplate(&param)
 	if err != nil {
@@ -195,6 +209,10 @@ func DeleteRequestTemplate(c *gin.Context) {
 	id := c.Query("id")
 	if id == "" {
 		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	if err := db.CheckRequestTemplateRoles(id, middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
 	err := db.DeleteRequestTemplate(id)
@@ -255,5 +273,15 @@ func GetRequestTemplateByUser(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, result)
+	}
+}
+
+func ForkConfirmRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("id")
+	err := db.ForkConfirmRequestTemplate(requestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
 	}
 }

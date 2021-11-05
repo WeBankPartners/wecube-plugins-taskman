@@ -14,10 +14,10 @@ import (
 	"time"
 )
 
-func QueryRequestTemplateGroup(param *models.QueryRequestParam) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
+func QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
 	rowData = []*models.RequestTemplateGroupTable{}
 	filterSql, queryColumn, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateGroupTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("SELECT %s FROM request_template_group WHERE del_flag=0 %s ", queryColumn, filterSql)
+	baseSql := fmt.Sprintf("SELECT %s FROM request_template_group WHERE manage_role in ('"+strings.Join(userRoles, "','")+"') and del_flag=0 %s ", queryColumn, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -65,6 +65,17 @@ func DeleteRequestTemplateGroup(id string) error {
 		err = fmt.Errorf("Delete database error:%s ", err.Error())
 	}
 	return err
+}
+
+func CheckRequestTemplateGroupRoles(id string, roles []string) error {
+	rowData, err := x.QueryString("select id from request_template_group where id=? and manage_role in ('" + strings.Join(roles, "','") + "')")
+	if err != nil {
+		return fmt.Errorf("Try to query database data fail,%s ", err.Error())
+	}
+	if len(rowData) == 0 {
+		return fmt.Errorf(models.RowDataPermissionErr)
+	}
+	return nil
 }
 
 func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, err error) {
@@ -326,7 +337,7 @@ func GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 	return
 }
 
-func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
+func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, userRoles []string) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
 	isQueryMessage := false
@@ -371,8 +382,8 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pa
 		param.Filters = newFilters
 	}
 	rowData := []*models.RequestTemplateTable{}
-	filterSql, queryColumn, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("SELECT %s FROM request_template WHERE del_flag=0 %s %s ", queryColumn, extFilterSql, filterSql)
+	filterSql, queryColumn, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
+	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id in (select record_id from request_template where del_flag=0 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ('"+strings.Join(userRoles, "','")+"')) %s %s ", queryColumn, extFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -451,6 +462,17 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string) (pa
 		result = append(result, &tmpObj)
 	}
 	return
+}
+
+func CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) error {
+	rowData, err := x.QueryString("select request_template from request_template_role where request_template=? and role_type='MGMT' and `role` in ('"+strings.Join(userRoles, "','")+"')", requestTemplateId)
+	if err != nil {
+		return fmt.Errorf("Try to query database data fail:%s ", err.Error())
+	}
+	if len(rowData) == 0 {
+		return fmt.Errorf(models.RowDataPermissionErr)
+	}
+	return nil
 }
 
 func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist bool, newProDefId string, err error) {
@@ -677,25 +699,24 @@ func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, er
 	return
 }
 
-func ConfirmRequestTemplate(requestTemplateId string) error {
+func ForkConfirmRequestTemplate(requestTemplateId string) error {
 	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
-	if requestTemplateObj.FormTemplate == "" {
-		return fmt.Errorf("Please config request template form ")
+	existQuery, tmpErr := x.QueryString("select id from request_template where record_id=?", requestTemplateObj.Id)
+	if tmpErr != nil {
+		return fmt.Errorf("Query database fail,%s ", tmpErr.Error())
 	}
-	err = validateConfirm(requestTemplateId)
-	if err != nil {
-		return err
+	if len(existQuery) > 0 {
+		return fmt.Errorf("RequestTemplate:%s already have a branch ", requestTemplateObj.Id)
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	version := buildVersionNum(requestTemplateObj.Version)
 	newRequestTemplateId := guid.CreateGuid()
 	newRequestFormTemplateId := guid.CreateGuid()
 	var actions []*execAction
-	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2 where id=?", Param: []interface{}{version, nowTime, requestTemplateObj.Id}})
-	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time,expire_day,handler) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'confirm' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'%s' as confirm_time,expire_day,handler from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, requestTemplateObj.Id, version, nowTime, requestTemplateObj.Id)})
+	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time,expire_day,handler) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'%s' as confirm_time,expire_day,handler from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, requestTemplateObj.Id, version, nowTime, requestTemplateObj.Id)})
 	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
@@ -730,6 +751,31 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 		return err
 	}
 	return transactionWithoutForeignCheck(actions)
+}
+
+func ConfirmRequestTemplate(requestTemplateId string) error {
+	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	if requestTemplateObj.FormTemplate == "" {
+		return fmt.Errorf("Please config request template form ")
+	}
+	if requestTemplateObj.Status == "confirm" {
+		return fmt.Errorf("Request template already confirm ")
+	}
+	err = validateConfirm(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	version := requestTemplateObj.Version
+	if version == "" {
+		version = "v1"
+	}
+	var actions []*execAction
+	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2 where id=?", Param: []interface{}{version, nowTime, requestTemplateObj.Id}})
+	return transaction(actions)
 }
 
 func getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []*execAction, err error) {

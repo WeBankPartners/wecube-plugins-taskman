@@ -197,6 +197,8 @@ type TaskQueryObj struct {
 	ChoseOption     string                    `json:"choseOption"`
 	ExpireTime      string                    `json:"expireTime"`
 	ExpectTime      string                    `json:"expectTime"`
+	Handler         string                    `json:"handler"`
+	HandleTime      string                    `json:"handleTime"`
 	FormData        []*RequestPreDataTableObj `json:"formData"`
 }
 

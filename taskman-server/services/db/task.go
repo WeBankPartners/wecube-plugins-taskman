@@ -325,6 +325,9 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, Description: taskObj.Description, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
 	if taskObj.Status != "done" {
 		taskForm.Editable = true
+	} else {
+		taskForm.Handler = taskObj.UpdatedBy
+		taskForm.HandleTime = taskObj.UpdatedTime
 	}
 	if taskObj.NextOption != "" {
 		taskForm.NextOption = strings.Split(taskObj.NextOption, ",")

@@ -105,5 +105,8 @@
   "required_tip": "Please Check Required Key",
   "constraints": "Constraints",
   "handle_role": "Handle Role",
-  "workflow_report_aspect": "Workflow"
+  "workflow_report_aspect": "Workflow",
+  "high": "High",
+  "medium": "Medium",
+  "low": "Low"
 }

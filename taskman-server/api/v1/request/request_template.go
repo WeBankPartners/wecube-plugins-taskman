@@ -275,3 +275,13 @@ func GetRequestTemplateByUser(c *gin.Context) {
 		middleware.ReturnData(c, result)
 	}
 }
+
+func ForkConfirmRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("id")
+	err := db.ForkConfirmRequestTemplate(requestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}

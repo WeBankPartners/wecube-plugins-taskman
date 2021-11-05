@@ -71,7 +71,7 @@
                 </Select>
               </div>
             </td>
-            <td class="padding-style" style="text-align: center">
+            <td class="padding-style" style="text-align: center" v-if="!(formDisable || jumpFrom === 'group_handle')">
               <Button
                 style="margin-left: 4px"
                 @click="deleteRow(dataIndex)"

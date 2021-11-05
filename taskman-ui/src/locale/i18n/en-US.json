@@ -106,7 +106,7 @@
   "constraints": "Constraints",
   "handle_role": "Handle Role",
   "workflow_report_aspect": "Workflow",
-  "high": "High",
-  "medium": "Medium",
-  "low": "Low"
+  "high": "Urgent",
+  "medium": "Ordinary",
+  "low": "Not Urgent"
 }

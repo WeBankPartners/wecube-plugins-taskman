@@ -662,13 +662,15 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
 	fillBindingWithRequestData(requestId, &cacheData)
+	cacheBytes, _ := json.Marshal(cacheData)
 	startParam := BuildRequestProcessData(cacheData)
-	cacheBytes, tmpErr := json.Marshal(startParam)
+	startParamBytes, tmpErr := json.Marshal(startParam)
 	if tmpErr != nil {
 		err = fmt.Errorf("Json marshal cache data fail,%s ", tmpErr.Error())
 		return
 	}
-	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances", models.Config.Wecube.BaseUrl), bytes.NewReader(cacheBytes))
+	log.Logger.Info("Start request", log.String("param", string(startParamBytes)))
+	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances", models.Config.Wecube.BaseUrl), bytes.NewReader(startParamBytes))
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
 		return

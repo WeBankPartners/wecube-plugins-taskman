@@ -201,3 +201,19 @@ type InstanceStatusQueryNode struct {
 	NodeType  string `json:"nodeType"`
 	Status    string `json:"status"`
 }
+
+type RequestProcessData struct {
+	ProcDefId     string                           `json:"procDefId"`
+	ProcDefKey    string                           `json:"procDefKey"`
+	RootEntityOid string                           `json:"rootEntityOid"`
+	Entities      []*RequestCacheEntityValue       `json:"entities"`
+	Bindings      []*RequestProcessTaskNodeBindObj `json:"bindings"`
+}
+
+type RequestProcessTaskNodeBindObj struct {
+	NodeId       string `json:"nodeId"`
+	NodeDefId    string `json:"nodeDefId"`
+	Oid          string `json:"oid"`
+	EntityDataId string `json:"entityDataId"`
+	BindFlag     string `json:"bindFlag"`
+}

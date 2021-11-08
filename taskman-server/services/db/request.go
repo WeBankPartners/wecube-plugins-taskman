@@ -662,7 +662,8 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
 	fillBindingWithRequestData(requestId, &cacheData)
-	cacheBytes, tmpErr := json.Marshal(cacheData)
+	startParam := BuildRequestProcessData(cacheData)
+	cacheBytes, tmpErr := json.Marshal(startParam)
 	if tmpErr != nil {
 		err = fmt.Errorf("Json marshal cache data fail,%s ", tmpErr.Error())
 		return
@@ -1178,4 +1179,23 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 		result = append(result, &models.EntityDataObj{Id: v.Code, DisplayName: v.Value})
 	}
 	return
+}
+
+func BuildRequestProcessData(input models.RequestCacheData) (result models.RequestProcessData) {
+	result.ProcDefId = input.ProcDefId
+	result.ProcDefKey = input.ProcDefKey
+	result.RootEntityOid = input.RootEntityValue.Oid
+	result.Entities = []*models.RequestCacheEntityValue{}
+	result.Bindings = []*models.RequestProcessTaskNodeBindObj{}
+	entityExistMap := make(map[string]int)
+	for _, node := range input.TaskNodeBindInfos {
+		for _, entity := range node.BoundEntityValues {
+			if _, b := entityExistMap[entity.Oid]; !b {
+				result.Entities = append(result.Entities, entity)
+				entityExistMap[entity.Oid] = 1
+			}
+			result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
+		}
+	}
+	return result
 }

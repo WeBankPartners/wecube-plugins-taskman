@@ -816,7 +816,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp
 				cacheData.RootEntityValue.AttrValues = entityValue.AttrValues
 				cacheData.RootEntityValue.PackageName = entityValue.PackageName
-				cacheData.RootEntityValue.DisplayName = entityValue.DisplayName
+				cacheData.RootEntityValue.EntityDisplayName = entityValue.EntityDisplayName
 				cacheData.RootEntityValue.BindFlag = entityValue.BindFlag
 				cacheData.RootEntityValue.EntityDataId = entityValue.EntityDataId
 				cacheData.RootEntityValue.EntityDataState = entityValue.EntityDataState
@@ -946,7 +946,7 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 			if vv.EntityName == "" {
 				continue
 			}
-			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, DisplayName: vv.DisplayName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
+			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDisplayName: vv.DisplayName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
 			tmpEntityName := fmt.Sprintf("%s:%s", vv.PackageName, vv.EntityName)
 			if _, b := entityDefIdMap[tmpEntityName]; b {
 				tmpValueObj.EntityDefId = entityDefIdMap[tmpEntityName]

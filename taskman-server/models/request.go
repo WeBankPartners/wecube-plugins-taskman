@@ -98,20 +98,20 @@ type RequestCacheTaskNodeBindObj struct {
 }
 
 type RequestCacheEntityValue struct {
-	AttrValues       []*RequestCacheEntityAttrValue `json:"attrValues"`
-	BindFlag         string                         `json:"bindFlag"`
-	EntityDataId     string                         `json:"entityDataId"`
-	EntityDataOp     string                         `json:"entityDataOp"`
-	EntityDataState  string                         `json:"entityDataState"`
-	EntityDefId      string                         `json:"entityDefId"`
-	EntityName       string                         `json:"entityName"`
-	DisplayName      string                         `json:"displayName"`
-	FullEntityDataId interface{}                    `json:"fullEntityDataId"`
-	Oid              string                         `json:"oid"`
-	PackageName      string                         `json:"packageName"`
-	PreviousOids     []string                       `json:"previousOids"`
-	Processed        bool                           `json:"processed"`
-	SucceedingOids   []string                       `json:"succeedingOids"`
+	AttrValues        []*RequestCacheEntityAttrValue `json:"attrValues"`
+	BindFlag          string                         `json:"bindFlag"`
+	EntityDataId      string                         `json:"entityDataId"`
+	EntityDataOp      string                         `json:"entityDataOp"`
+	EntityDataState   string                         `json:"entityDataState"`
+	EntityDefId       string                         `json:"entityDefId"`
+	EntityName        string                         `json:"entityName"`
+	EntityDisplayName string                         `json:"entityDisplayName"`
+	FullEntityDataId  interface{}                    `json:"fullEntityDataId"`
+	Oid               string                         `json:"oid"`
+	PackageName       string                         `json:"packageName"`
+	PreviousOids      []string                       `json:"previousOids"`
+	Processed         bool                           `json:"processed"`
+	SucceedingOids    []string                       `json:"succeedingOids"`
 }
 
 type RequestCacheEntityAttrValue struct {

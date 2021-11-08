@@ -991,6 +991,9 @@ func GetRequestTemplateTags(group string) (result []string, err error) {
 	var requestTemplates []*models.RequestTemplateTable
 	err = x.SQL("select distinct tags from request_template where `group`=?", group).Find(&requestTemplates)
 	for _, v := range requestTemplates {
+		if v.Tags == "" {
+			continue
+		}
 		result = append(result, v.Tags)
 	}
 	return

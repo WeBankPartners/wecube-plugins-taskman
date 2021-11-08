@@ -285,3 +285,13 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 		middleware.ReturnSuccess(c)
 	}
 }
+
+func GetRequestTemplateTags(c *gin.Context) {
+	group := c.Param("requestTemplateGroup")
+	result, err := db.GetRequestTemplateTags(group)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}

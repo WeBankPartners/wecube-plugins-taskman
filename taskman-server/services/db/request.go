@@ -102,9 +102,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		x.SQL("select id,name,version from request_template").Find(&requestTemplateTable)
 		rtMap := make(map[string]string)
 		for _, v := range requestTemplateTable {
-			if v.Status == "confirm" {
-				rtMap[v.Id] = fmt.Sprintf("%s(%s)", v.Name, v.Version)
-			} else {
+			if v.Status != "confirm" {
 				rtMap[v.Id] = fmt.Sprintf("%s(beta)", v.Name)
 			}
 		}
@@ -738,20 +736,6 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	entityOidMap := make(map[string]int)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
-			if entityValue.EntityDataId == cacheData.RootEntityValue.Oid {
-				cacheData.RootEntityValue.Oid = entityValue.Oid
-				cacheData.RootEntityValue.EntityName = entityValue.EntityName
-				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp
-				cacheData.RootEntityValue.AttrValues = entityValue.AttrValues
-				cacheData.RootEntityValue.PackageName = entityValue.PackageName
-				cacheData.RootEntityValue.BindFlag = entityValue.BindFlag
-				cacheData.RootEntityValue.EntityDataId = entityValue.EntityDataId
-				cacheData.RootEntityValue.EntityDataState = entityValue.EntityDataState
-				cacheData.RootEntityValue.EntityDefId = entityValue.EntityDefId
-				cacheData.RootEntityValue.FullEntityDataId = entityValue.FullEntityDataId
-				cacheData.RootEntityValue.PreviousOids = entityValue.PreviousOids
-				cacheData.RootEntityValue.SucceedingOids = entityValue.SucceedingOids
-			}
 			entityOidMap[entityValue.Oid] = 1
 			if _, b := entityNewMap[entityValue.Oid]; b {
 				continue
@@ -820,6 +804,31 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 				entityValue.PreviousOids = listToSet(entityValue.PreviousOids, entityOidMap)
 				entityValue.SucceedingOids = listToSet(entityValue.SucceedingOids, entityOidMap)
 			}
+		}
+	}
+	for _, taskNode := range cacheData.TaskNodeBindInfos {
+		existFlag := false
+		for _, entityValue := range taskNode.BoundEntityValues {
+			if entityValue.EntityDataId == cacheData.RootEntityValue.Oid {
+				existFlag = true
+				cacheData.RootEntityValue.Oid = entityValue.Oid
+				cacheData.RootEntityValue.EntityName = entityValue.EntityName
+				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp
+				cacheData.RootEntityValue.AttrValues = entityValue.AttrValues
+				cacheData.RootEntityValue.PackageName = entityValue.PackageName
+				cacheData.RootEntityValue.DisplayName = entityValue.DisplayName
+				cacheData.RootEntityValue.BindFlag = entityValue.BindFlag
+				cacheData.RootEntityValue.EntityDataId = entityValue.EntityDataId
+				cacheData.RootEntityValue.EntityDataState = entityValue.EntityDataState
+				cacheData.RootEntityValue.EntityDefId = entityValue.EntityDefId
+				cacheData.RootEntityValue.FullEntityDataId = entityValue.FullEntityDataId
+				cacheData.RootEntityValue.PreviousOids = entityValue.PreviousOids
+				cacheData.RootEntityValue.SucceedingOids = entityValue.SucceedingOids
+				break
+			}
+		}
+		if existFlag {
+			break
 		}
 	}
 }
@@ -937,7 +946,7 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 			if vv.EntityName == "" {
 				continue
 			}
-			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
+			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, DisplayName: vv.DisplayName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
 			tmpEntityName := fmt.Sprintf("%s:%s", vv.PackageName, vv.EntityName)
 			if _, b := entityDefIdMap[tmpEntityName]; b {
 				tmpValueObj.EntityDefId = entityDefIdMap[tmpEntityName]

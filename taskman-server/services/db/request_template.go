@@ -843,7 +843,7 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 			if v.RecordId != "" {
 				recordIdMap[v.RecordId] = 1
 			}
-			v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
+			//v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 		} else {
 			if v.ConfirmTime != "" {
 				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
@@ -982,6 +982,16 @@ func queryCoreUser(roleId, userToken string) (result []string, err error) {
 	}
 	for _, v := range response.Data {
 		result = append(result, v.Username)
+	}
+	return
+}
+
+func GetRequestTemplateTags(group string) (result []string, err error) {
+	result = []string{}
+	var requestTemplates []*models.RequestTemplateTable
+	err = x.SQL("select distinct tags from request_template where `group`=?", group).Find(&requestTemplates)
+	for _, v := range requestTemplates {
+		result = append(result, v.Tags)
 	}
 	return
 }

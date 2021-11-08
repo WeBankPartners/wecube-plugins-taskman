@@ -105,6 +105,7 @@ type RequestCacheEntityValue struct {
 	EntityDataState  string                         `json:"entityDataState"`
 	EntityDefId      string                         `json:"entityDefId"`
 	EntityName       string                         `json:"entityName"`
+	DisplayName      string                         `json:"displayName"`
 	FullEntityDataId interface{}                    `json:"fullEntityDataId"`
 	Oid              string                         `json:"oid"`
 	PackageName      string                         `json:"packageName"`

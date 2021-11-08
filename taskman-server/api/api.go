@@ -45,6 +45,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/:id/attrs/list", Method: "GET", HandlerFunc: request.ListRequestTemplateEntityAttrs},
 		&handlerFuncObj{Url: "/request-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-template/fork/:id", Method: "POST", HandlerFunc: request.ForkConfirmRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/tags/:requestTemplateGroup", Method: "GET", HandlerFunc: request.GetRequestTemplateTags},
 
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},

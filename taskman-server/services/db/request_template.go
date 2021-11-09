@@ -851,6 +851,7 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 				}
 			}
 			v.Name = fmt.Sprintf("%s(beta)", v.Name)
+			v.Version = "beta"
 		}
 	}
 	for _, v := range requestTemplateTable {

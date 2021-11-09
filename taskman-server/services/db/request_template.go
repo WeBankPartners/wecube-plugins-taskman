@@ -167,7 +167,6 @@ func GetProcessNodesByProc(requestTemplateId, userToken string, filterType strin
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	err = json.Unmarshal(respBytes, &respObj)
-	log.Logger.Info("Get process node list", log.String("body", string(respBytes)))
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
 		return

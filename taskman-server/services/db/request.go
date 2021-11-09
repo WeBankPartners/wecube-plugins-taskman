@@ -955,7 +955,7 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 			if vv.EntityName == "" {
 				continue
 			}
-			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDisplayName: vv.DisplayName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
+			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDisplayName: vv.DisplayName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: vv.PreviousIds, SucceedingOids: vv.SucceedingIds}
 			tmpEntityName := fmt.Sprintf("%s:%s", vv.PackageName, vv.EntityName)
 			if _, b := entityDefIdMap[tmpEntityName]; b {
 				tmpValueObj.EntityDefId = entityDefIdMap[tmpEntityName]

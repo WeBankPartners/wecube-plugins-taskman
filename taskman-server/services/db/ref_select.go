@@ -175,7 +175,7 @@ func getRequestCacheNewData(requestId, attrId string) (result []*models.CiRefere
 }
 
 func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
-	log.Logger.Info("analyzeFilterData", log.JsonObj("input", input))
+	log.Logger.Debug("analyzeFilterData", log.JsonObj("input", input))
 	var filters []map[string]models.CiDataRefFilterObj
 	err = json.Unmarshal([]byte(input.Filter), &filters)
 	if err != nil {

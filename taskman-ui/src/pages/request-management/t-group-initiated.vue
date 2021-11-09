@@ -38,6 +38,7 @@
       style="margin: 24px 0;"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -95,11 +96,13 @@ export default {
           title: this.$t('name'),
           width: 200,
           resizable: true,
+          sortable: 'custom',
           key: 'name'
         },
         {
           title: this.$t('emergency'),
           key: 'emergency',
+          sortable: 'custom',
           width: 80,
           render: (h, params) => {
             const emergencyObj = {
@@ -114,6 +117,7 @@ export default {
           title: this.$t('template'),
           width: 200,
           resizable: true,
+          sortable: 'custom',
           key: 'requestTemplateName'
         },
         {
@@ -126,22 +130,27 @@ export default {
         },
         {
           title: this.$t('handler'),
+          sortable: 'custom',
           key: 'handler'
         },
         {
           title: this.$t('status'),
+          sortable: 'custom',
           key: 'status'
         },
         {
           title: this.$t('estimated_finish_time'),
+          sortable: 'custom',
           key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
+          sortable: 'custom',
           key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
+          sortable: 'custom',
           key: 'reportTime'
         },
         {
@@ -189,6 +198,13 @@ export default {
     window.clearInterval(this.timer)
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.requestListForDraftInitiated(sorting)
+    },
     async getTemplateList () {
       const params = {
         filters: [],
@@ -226,7 +242,7 @@ export default {
       this.pagination.currentPage = current
       this.requestListForDraftInitiated()
     },
-    async requestListForDraftInitiated () {
+    async requestListForDraftInitiated (sorting) {
       this.payload.filters = [{ name: 'status', operator: 'in', value: this.requestStatus }]
       if (this.name) {
         this.payload.filters.push({
@@ -255,6 +271,9 @@ export default {
           operator: 'in',
           value: this.status
         })
+      }
+      if (sorting) {
+        this.payload.sorting = sorting
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize

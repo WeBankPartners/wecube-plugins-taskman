@@ -17,6 +17,7 @@
     <Table
       style="margin: 24px 0;"
       border
+      @on-sort-change="sortTable"
       size="small"
       :columns="tableColumns"
       :data="tableData"
@@ -66,20 +67,24 @@ export default {
           title: this.$t('name'),
           resizable: true,
           width: 300,
+          sortable: 'custom',
           key: 'name'
         },
         {
           title: this.$t('version'),
           width: 80,
+          sortable: 'custom',
           key: 'version'
         },
         {
           title: this.$t('tags'),
+          sortable: 'custom',
           key: 'tags'
         },
         {
           title: this.$t('status'),
           width: 80,
+          sortable: 'custom',
           key: 'status',
           render: (h, params) => {
             const statusArray = {
@@ -93,6 +98,7 @@ export default {
           title: this.$t('description'),
           resizable: true,
           width: 300,
+          sortable: 'custom',
           key: 'description'
         },
         {
@@ -113,6 +119,7 @@ export default {
         },
         {
           title: this.$t('tm_updated_time'),
+          sortable: 'custom',
           key: 'updatedTime'
         },
         {
@@ -178,6 +185,13 @@ export default {
     this.getTemplateList()
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.getTemplateList(sorting)
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
@@ -233,7 +247,7 @@ export default {
       this.pagination.currentPage = current
       this.getTemplateList()
     },
-    async getTemplateList () {
+    async getTemplateList (sorting) {
       this.payload.filters = []
       if (this.name) {
         this.payload.filters.push({
@@ -248,6 +262,9 @@ export default {
           operator: 'contains',
           value: this.tags
         })
+      }
+      if (sorting) {
+        this.payload.sorting = sorting
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize

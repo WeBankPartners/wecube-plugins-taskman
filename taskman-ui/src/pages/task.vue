@@ -24,6 +24,7 @@
       style="margin: 24px 0"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -74,10 +75,12 @@ export default {
           title: this.$t('name'),
           resizable: true,
           width: 200,
+          sortable: 'custom',
           key: 'name'
         },
         {
           title: this.$t('task_source'),
+          sortable: 'custom',
           key: 'reporter'
         },
         {
@@ -99,19 +102,23 @@ export default {
         },
         {
           title: this.$t('status'),
+          sortable: 'custom',
           key: 'status',
           width: 100
         },
         {
           title: this.$t('handler'),
+          sortable: 'custom',
           key: 'handler'
         },
         {
           title: this.$t('created_time'),
+          sortable: 'custom',
           key: 'createdTime'
         },
         {
           title: this.$t('expire_time'),
+          sortable: 'custom',
           key: 'expireTime'
         },
         {
@@ -180,6 +187,13 @@ export default {
     this.taskList()
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.taskList(sorting)
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
@@ -211,7 +225,7 @@ export default {
       this.pagination.currentPage = current
       this.taskList()
     },
-    async taskList () {
+    async taskList (sorting) {
       this.payload.filters = []
       if (this.name) {
         this.payload.filters.push({
@@ -233,6 +247,9 @@ export default {
           operator: 'in',
           value: this.status
         })
+      }
+      if (sorting) {
+        this.payload.sorting = sorting
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize

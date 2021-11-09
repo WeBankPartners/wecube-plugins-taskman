@@ -27,6 +27,7 @@
       style="margin: 24px 0;"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -104,6 +105,7 @@ export default {
           title: this.$t('name'),
           resizable: true,
           width: 400,
+          sortable: 'custom',
           key: 'name'
         },
         {
@@ -118,10 +120,12 @@ export default {
           title: this.$t('description'),
           resizable: true,
           width: 300,
+          sortable: 'custom',
           key: 'description'
         },
         {
           title: this.$t('tm_updated_time'),
+          sortable: 'custom',
           key: 'updatedTime'
         },
         {
@@ -179,6 +183,13 @@ export default {
     this.getTempGroupList()
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.getTempGroupList(sorting)
+    },
     async getInitRole () {
       const { statusCode, data } = await getManagementRoles()
       if (statusCode === 'OK') {
@@ -245,7 +256,7 @@ export default {
       this.pagination.currentPage = current
       this.getTempGroupList()
     },
-    async getTempGroupList () {
+    async getTempGroupList (sorting) {
       this.payload.filters = []
       if (this.name) {
         this.payload.filters.push({
@@ -260,6 +271,9 @@ export default {
           operator: 'eq',
           value: this.manageRole
         })
+      }
+      if (sorting) {
+        this.payload.sorting = sorting
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize

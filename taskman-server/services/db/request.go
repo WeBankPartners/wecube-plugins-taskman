@@ -1265,12 +1265,16 @@ func getDependEntity(succeeding []string, preEntityList []*models.EntityTreeObj,
 	}
 	// check if use by entity
 	for _, v := range succeeding {
+		vDataId := v
+		if strings.Contains(vDataId, ":") {
+			vDataId = vDataId[strings.LastIndex(vDataId, ":")+1:]
+		}
 		useFlag := false
 		for _, vv := range entityList {
 			for _, attr := range vv.AttrValues {
 				if attr.DataType == "ref" {
 					tmpV := fmt.Sprintf("%s", attr.DataValue)
-					if strings.Contains(tmpV, v) {
+					if strings.Contains(tmpV, vDataId) {
 						useFlag = true
 						break
 					}
@@ -1290,8 +1294,8 @@ func getDependEntity(succeeding []string, preEntityList []*models.EntityTreeObj,
 			}
 			if len(nextSucceeding) > 0 {
 				getDependEntity(nextSucceeding, preEntityList, entityList, dependEntityMap)
-				for _, v := range nextSucceeding {
-					if _, b := dependEntityMap[v]; b {
+				for _, vv := range nextSucceeding {
+					if _, b := dependEntityMap[vv]; b {
 						useFlag = true
 						break
 					}

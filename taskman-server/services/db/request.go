@@ -99,11 +99,13 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
 	if len(rowData) > 0 {
 		var requestTemplateTable []*models.RequestTemplateTable
-		x.SQL("select id,name,version from request_template").Find(&requestTemplateTable)
+		x.SQL("select id,name,status,version from request_template").Find(&requestTemplateTable)
 		rtMap := make(map[string]string)
 		for _, v := range requestTemplateTable {
 			if v.Status != "confirm" {
 				rtMap[v.Id] = fmt.Sprintf("%s(beta)", v.Name)
+			} else {
+				rtMap[v.Id] = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 			}
 		}
 		rtRoleMap := getRequestTemplateMGMTRole()

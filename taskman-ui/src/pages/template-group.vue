@@ -19,7 +19,7 @@
         </Col>
         <Col span="4">
           <Button @click="getTempGroupList" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTempGroup">{{ $t('add') }}</Button>
+          <Button @click="addTempGroup" type="success">{{ $t('add') }}</Button>
         </Col>
       </Row>
     </div>

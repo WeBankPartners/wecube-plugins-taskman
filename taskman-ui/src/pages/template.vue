@@ -10,7 +10,7 @@
         </Col>
         <Col span="4">
           <Button @click="getTemplateList" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTemplate">{{ $t('add') }}</Button>
+          <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
         </Col>
       </Row>
     </div>

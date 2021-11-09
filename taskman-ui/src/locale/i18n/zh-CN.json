@@ -108,5 +108,6 @@
   "workflow_report_aspect": "编排",
   "high": "紧急",
   "medium": "普通",
-  "low": "不紧急"
+  "low": "不紧急",
+  "fork": "定版"
 }

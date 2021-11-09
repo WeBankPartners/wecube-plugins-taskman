@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { getTemplateList, deleteTemplate } from '@/api/server'
+import { getTemplateList, deleteTemplate, forkTemplate } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -122,44 +122,51 @@ export default {
           width: 160,
           align: 'center',
           render: (h, params) => {
-            return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-left': '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.editTemplate(params.row)
-                    }
-                  }
-                },
-                this.$t('edit')
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'error',
-                    size: 'small'
-                  },
-                  style: {
-                    'margin-left': '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.deleteTemplate(params.row)
-                    }
-                  }
-                },
-                this.$t('delete')
-              )
-            ])
+            const operationOptions = params.row.operateOptions
+            return (
+              <div style="text-align: left">
+                {operationOptions.includes('edit') && (
+                  <Button
+                    onClick={() => this.editTemplate(params.row)}
+                    style="margin-left: 8px"
+                    type="primary"
+                    size="small"
+                  >
+                    {this.$t('edit')}
+                  </Button>
+                )}
+                {operationOptions.includes('delete') && (
+                  <Button
+                    onClick={() => this.deleteTemplate(params.row)}
+                    style="margin-left: 8px"
+                    type="error"
+                    size="small"
+                  >
+                    {this.$t('delete')}
+                  </Button>
+                )}
+                {operationOptions.includes('query') && (
+                  <Button
+                    onClick={() => this.deleteTemplate(params.row)}
+                    style="margin-left: 8px"
+                    type="info"
+                    size="small"
+                  >
+                    {this.$t('detail')}
+                  </Button>
+                )}
+                {operationOptions.includes('fork') && (
+                  <Button
+                    onClick={() => this.forTemplate(params.row)}
+                    style="margin-left: 8px"
+                    type="warning"
+                    size="small"
+                  >
+                    {this.$t('fork')}
+                  </Button>
+                )}
+              </div>
+            )
           }
         }
       ],
@@ -175,6 +182,22 @@ export default {
       this.$Notice.success({
         title: this.$t('successful'),
         desc: this.$t('successful')
+      })
+    },
+    forTemplate (row) {
+      this.$Modal.confirm({
+        title: this.$t('final_version'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          let res = await forkTemplate(row.id)
+          if (res.statusCode === 'OK') {
+            this.success()
+            this.getTemplateList()
+          }
+        },
+        onCancel: () => {}
       })
     },
     deleteTemplate (row) {

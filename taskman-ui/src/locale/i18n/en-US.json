@@ -108,5 +108,6 @@
   "workflow_report_aspect": "Workflow",
   "high": "Urgent",
   "medium": "Ordinary",
-  "low": "Not Urgent"
+  "low": "Not Urgent",
+  "fork": "Fork"
 }

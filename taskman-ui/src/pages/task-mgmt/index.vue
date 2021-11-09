@@ -38,10 +38,10 @@
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                  >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                  >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                  >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
+                  >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
@@ -53,10 +53,10 @@
                 >
                 <template v-if="data.status === 'done'">
                   <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                    >{{ $t('handler') }}:{{ data.handler }}</Tag
                   >
                   <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
+                    >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                   >
                   <Tag style="font-size:14px" type="border" size="medium" color="blue"
                     >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag

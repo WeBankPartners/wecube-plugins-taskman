@@ -64,10 +64,13 @@ export default {
       tableColumns: [
         {
           title: this.$t('name'),
+          resizable: true,
+          width: 300,
           key: 'name'
         },
         {
           title: this.$t('version'),
+          width: 80,
           key: 'version'
         },
         {
@@ -76,6 +79,7 @@ export default {
         },
         {
           title: this.$t('status'),
+          width: 80,
           key: 'status',
           render: (h, params) => {
             const statusArray = {
@@ -87,6 +91,8 @@ export default {
         },
         {
           title: this.$t('description'),
+          resizable: true,
+          width: 300,
           key: 'description'
         },
         {
@@ -111,6 +117,7 @@ export default {
         },
         {
           title: this.$t('t_action'),
+          resizable: true,
           key: 'action',
           width: 160,
           align: 'center',

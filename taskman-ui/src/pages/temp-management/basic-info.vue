@@ -56,11 +56,11 @@
         </FormItem>
         <!-- </ValidationProvider> -->
       </template>
-      <FormItem style="text-align: center">
-        <Button @click="resetParams">{{ $t('reset') }}</Button>
-        <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
-      </FormItem>
     </Form>
+    <div style="text-align: center">
+      <Button @click="resetParams">{{ $t('reset') }}</Button>
+      <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
+    </div>
     <!-- </ValidationObserver> -->
   </div>
 </template>

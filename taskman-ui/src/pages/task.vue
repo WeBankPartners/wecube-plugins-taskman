@@ -72,6 +72,8 @@ export default {
       tableColumns: [
         {
           title: this.$t('name'),
+          resizable: true,
+          width: 200,
           key: 'name'
         },
         {
@@ -80,6 +82,8 @@ export default {
         },
         {
           title: this.$t('request_name'),
+          resizable: true,
+          width: 200,
           key: '',
           render: (h, params) => {
             return <span>{params.row.requestObj.name}</span>
@@ -112,6 +116,7 @@ export default {
         },
         {
           title: this.$t('hourglass'),
+          width: 160,
           key: 'expireTime',
           render: (h, params) => {
             let pColor = '#2bc453'
@@ -241,7 +246,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

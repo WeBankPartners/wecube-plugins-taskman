@@ -88,18 +88,32 @@ export default {
       tableColumns: [
         {
           title: 'ID',
+          width: 160,
           key: 'id'
         },
         {
           title: this.$t('name'),
+          width: 200,
+          resizable: true,
           key: 'name'
         },
         {
           title: this.$t('emergency'),
-          key: 'emergency'
+          key: 'emergency',
+          width: 80,
+          render: (h, params) => {
+            const emergencyObj = {
+              1: this.$t('high'),
+              2: this.$t('medium'),
+              3: this.$t('low')
+            }
+            return <span>{emergencyObj[params.row.emergency]}</span>
+          }
         },
         {
           title: this.$t('template'),
+          width: 200,
+          resizable: true,
           key: 'requestTemplateName'
         },
         {

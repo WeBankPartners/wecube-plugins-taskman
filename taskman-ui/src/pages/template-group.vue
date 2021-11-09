@@ -102,6 +102,8 @@ export default {
       tableColumns: [
         {
           title: this.$t('name'),
+          resizable: true,
+          width: 400,
           key: 'name'
         },
         {
@@ -114,6 +116,8 @@ export default {
         },
         {
           title: this.$t('description'),
+          resizable: true,
+          width: 300,
           key: 'description'
         },
         {

@@ -60,22 +60,37 @@ export default {
       tableColumns: [
         {
           title: 'ID',
+          width: 160,
           key: 'id'
         },
         {
           title: this.$t('name'),
+          resizable: true,
+          width: 200,
           key: 'name'
         },
         {
           title: this.$t('template'),
+          resizable: true,
+          width: 200,
           key: 'requestTemplateName'
         },
         {
           title: this.$t('emergency'),
-          key: 'emergency'
+          width: 80,
+          key: 'emergency',
+          render: (h, params) => {
+            const emergencyObj = {
+              1: this.$t('high'),
+              2: this.$t('medium'),
+              3: this.$t('low')
+            }
+            return <span>{emergencyObj[params.row.emergency]}</span>
+          }
         },
         {
           title: this.$t('status'),
+          width: 80,
           key: 'status'
         },
         {

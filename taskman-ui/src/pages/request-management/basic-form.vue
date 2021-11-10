@@ -64,7 +64,7 @@ export default {
         itemConfigs: [
           { label: 'name', value: 'name', rules: 'required', type: 'text' },
           {
-            label: this.$t('emergency'),
+            label: this.$t('priority'),
             value: 'emergency',
             rules: 'required',
             options: 'emergencyOptions',

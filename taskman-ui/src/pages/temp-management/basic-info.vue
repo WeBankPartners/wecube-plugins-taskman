@@ -9,6 +9,7 @@
             v-model="formConfig.values[item.value]"
             style="width:90%"
             :type="item.type"
+            :disabled="$parent.isCheck === 'Y'"
             :placeholder="item.placeholder"
           >
           </Input>
@@ -19,6 +20,7 @@
             v-model="formConfig.values[item.value]"
             style="width:90%"
             :type="item.type"
+            :disabled="$parent.isCheck === 'Y'"
             :rows="item.rows"
             :placeholder="item.placeholder"
           >
@@ -29,6 +31,7 @@
           <InputNumber
             :max="item.max || 1000"
             :min="item.min || 1"
+            :disabled="$parent.isCheck === 'Y'"
             v-model="formConfig.values[item.value]"
           ></InputNumber>
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
@@ -38,6 +41,7 @@
             v-model="formConfig.values[item.value]"
             clearable
             filterable
+            :disabled="$parent.isCheck === 'Y'"
             @on-open-change="execut(item.onOpenChange)"
             style="width:90%"
             :multiple="item.multiple"
@@ -60,6 +64,7 @@
             @on-open-change="execut(item.onOpenChange)"
             filterable
             allow-create
+            :disabled="$parent.isCheck === 'Y'"
             style="width:90%"
             @on-create="handleCreate1"
           >
@@ -72,7 +77,7 @@
       </template>
     </Form>
     <div style="text-align: center">
-      <Button @click="resetParams">{{ $t('reset') }}</Button>
+      <Button @click="resetParams" :disabled="$parent.isCheck === 'Y'">{{ $t('reset') }}</Button>
       <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
     </div>
     <!-- </ValidationObserver> -->
@@ -279,6 +284,10 @@ export default {
       // if (!this.$refs.observer.flags.valid) {
       //   return
       // }
+      if (this.$parent.isCheck === 'Y') {
+        this.$emit('basicInfoNextStep', this.formConfig.values)
+        return
+      }
       let cacheFromValue = JSON.parse(JSON.stringify(this.formConfig.values))
       const method = cacheFromValue.id === '' ? createTemp : updateTemp
       const process = this.formConfig.procOptions.find(item => item.procDefId === this.formConfig.values.procDefId)

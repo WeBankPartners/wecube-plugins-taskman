@@ -21,9 +21,13 @@
         </Steps>
       </Col>
       <Col span="3">
-        <Button @click="confirmTemplate" :disabled="currentStep !== 3" size="small" type="primary">{{
-          $t('publish_template')
-        }}</Button>
+        <Button
+          @click="confirmTemplate"
+          :disabled="currentStep !== 3 || $parent.isCheck === 'Y'"
+          size="small"
+          type="primary"
+          >{{ $t('publish_template') }}</Button
+        >
       </Col>
     </Row>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
@@ -58,13 +62,15 @@ export default {
   data () {
     return {
       currentStep: -1,
-      requestTemplateId: ''
+      requestTemplateId: '',
+      isCheck: 'N'
     }
   },
   mounted () {
     if (this.$route.query.requestTemplateId !== '') {
       this.requestTemplateId = this.$route.query.requestTemplateId
     }
+    this.isCheck = this.$route.query.isCheck
     this.currentStep = 0
   },
   methods: {
@@ -81,7 +87,7 @@ export default {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/taskman/request-mgmt' })
+      this.$router.push({ path: '/taskman/template-mgmt' })
     },
     basicInfoNextStep (data) {
       this.requestTemplateId = data.id

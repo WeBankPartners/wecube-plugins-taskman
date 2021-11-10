@@ -89,7 +89,7 @@ export default {
       tableColumns: [
         {
           title: 'ID',
-          width: 160,
+          width: 130,
           key: 'id'
         },
         {
@@ -100,7 +100,7 @@ export default {
           key: 'name'
         },
         {
-          title: this.$t('emergency'),
+          title: this.$t('priority'),
           key: 'emergency',
           sortable: 'custom',
           width: 80,
@@ -122,6 +122,7 @@ export default {
         },
         {
           title: this.$t('handle_role'),
+          width: 200,
           key: 'handleRoles',
           render: (h, params) => {
             const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
@@ -141,16 +142,19 @@ export default {
         {
           title: this.$t('estimated_finish_time'),
           sortable: 'custom',
+          width: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
           sortable: 'custom',
+          width: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
           sortable: 'custom',
+          width: 130,
           key: 'reportTime'
         },
         {
@@ -287,7 +291,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

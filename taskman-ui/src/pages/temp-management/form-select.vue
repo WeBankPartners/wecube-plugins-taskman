@@ -6,7 +6,7 @@
           <TabPane :label="item.description" :name="item.id" :key="item.id">
             <ul :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
               <li v-for="attr in item.attributes" :key="attr.id" style="width: 46%;display: inline-block;margin: 4px">
-                <Checkbox :label="attr.id">
+                <Checkbox :label="attr.id" :disabled="$parent.isCheck === 'Y'">
                   <span>{{ attr.description }}({{ attr.name }})</span>
                 </Checkbox>
               </li>
@@ -49,6 +49,10 @@ export default {
       }
     },
     async saveAttrs () {
+      if (this.$parent.isCheck === 'Y') {
+        this.$emit('formSelectNextStep')
+        return
+      }
       const attrs = [].concat(...this.attrOptions.map(attr => attr.attributes))
       const params = attrs.filter(item => this.attrData.includes(item.id))
       const { statusCode } = await saveAttrs(this.$parent.requestTemplateId, params)

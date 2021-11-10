@@ -2,7 +2,7 @@
   <div style="width:40%;margin: 0 auto;min-width:700px">
     <!-- <ValidationObserver ref="observer"> -->
     <Form :label-width="100">
-      <template v-for="item in formConfig.itemConfigs">
+      <template v-for="(item, itemIndex) in formConfig.itemConfigs">
         <!-- <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value"> -->
         <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Input
@@ -54,6 +54,20 @@
           </Select>
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
         </FormItem>
+        <FormItem v-if="['create_select'].includes(item.type)" :label="$t(item.label)" :key="itemIndex">
+          <Select
+            v-model="formConfig.values[item.value]"
+            @on-open-change="execut(item.onOpenChange)"
+            filterable
+            allow-create
+            style="width:90%"
+            @on-create="handleCreate1"
+          >
+            <Option v-for="(item, tagIndex) in formConfig[item.options]" :value="item.value" :key="tagIndex">{{
+              item.label
+            }}</Option>
+          </Select>
+        </FormItem>
         <!-- </ValidationProvider> -->
       </template>
     </Form>
@@ -70,6 +84,7 @@ import { ValidationObserver } from 'vee-validate'
 import {
   getTempGroupList,
   getManagementRoles,
+  getTemplateTags,
   getHandlerRoles,
   getUserRoles,
   getProcess,
@@ -145,7 +160,15 @@ export default {
             type: 'select',
             placeholder: ''
           },
-          { label: 'tags', value: 'tags', type: 'text' },
+          {
+            label: 'tags',
+            value: 'tags',
+            onOpenChange: 'getTags',
+            options: 'tagOptions',
+            labelKey: 'label',
+            valueKey: 'value',
+            type: 'create_select'
+          },
           { label: 'description', value: 'description', rows: 2, type: 'textarea' }
         ],
         values: {
@@ -167,7 +190,9 @@ export default {
         groupOptions: [],
         procOptions: [],
         mgmtRolesOptions: [],
-        useRolesOptions: []
+        useRolesOptions: [],
+        tagOptions: [],
+        tmpTagOptions: []
       }
     }
   },
@@ -175,6 +200,31 @@ export default {
     this.getInitData()
   },
   methods: {
+    handleCreate1 (v) {
+      this.formConfig.tmpTagOptions.push(v)
+    },
+    async getTags (val) {
+      if (this.formConfig.values.group === '') {
+        // this.$Notice.warning({
+        //   title: this.$t('warning'),
+        //   desc: '请选选择模板组',
+        // })
+        return
+      }
+      const { statusCode, data } = await getTemplateTags(this.formConfig.values.group)
+      if (statusCode === 'OK') {
+        const totalData = this.unique(this.formConfig.tmpTagOptions.concat(data))
+        this.formConfig.tagOptions = totalData.map(d => {
+          return {
+            label: d,
+            value: d
+          }
+        })
+      }
+    },
+    unique (arr) {
+      return Array.from(new Set(arr))
+    },
     getOptions (options) {
       return this.formConfig[options]
     },
@@ -222,6 +272,7 @@ export default {
         this.formConfig.values.mgmtRoles = data.contents[0].mgmtRoles[0].id
         this.formConfig.values.useRoles = data.contents[0].useRoles.map(role => role.id)
         this.getHandlerRoles()
+        this.getTags()
       }
     },
     async createTemp () {

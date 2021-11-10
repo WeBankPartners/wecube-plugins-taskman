@@ -87,3 +87,5 @@ export const changeTaskStatus = (operation, taskId) => req.post(`/taskman/api/v1
 export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)
 export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/detail/${requestId}`)
 export const getHandlerRoles = params => req.get(`/taskman/api/v1/role/user/list`, params)
+export const getTemplateTags = requestTemplateGroup =>
+  req.get(`/taskman/api/v1/request-template/tags/${requestTemplateGroup}`)

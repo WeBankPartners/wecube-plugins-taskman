@@ -272,8 +272,8 @@ export default {
 </script>
 <style>
 .ivu-table-cell {
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 </style>
 <style scoped lang="scss">

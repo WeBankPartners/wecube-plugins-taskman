@@ -615,13 +615,24 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string) error {
+	rtObj, err := getSimpleRequestTemplate(id)
+	if err != nil {
+		return err
+	}
+	if rtObj.Status == "confirm" {
+		return fmt.Errorf("confirm status can not delete")
+	}
 	var requestTable []*models.RequestTable
 	x.SQL("select id,name from request where request_template=?", id).Find(&requestTable)
 	if len(requestTable) > 0 {
 		return fmt.Errorf("The template used by request:%s ", requestTable[0].Name)
 	}
-	_, err := x.Exec("update request_template set del_flag=1 where id=?", id)
-	return err
+	var actions []*execAction
+	actions = append(actions, &execAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{id}})
+	actions = append(actions, &execAction{Sql: "delete from request_template where id=?", Param: []interface{}{id}})
+	actions = append(actions, &execAction{Sql: "delete from form_item_template where form_template=?", Param: []interface{}{rtObj.FormTemplate}})
+	actions = append(actions, &execAction{Sql: "delete from form_template where id=?", Param: []interface{}{rtObj.FormTemplate}})
+	return transaction(actions)
 }
 
 func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.ProcEntity, err error) {
@@ -703,24 +714,24 @@ func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, er
 	return
 }
 
-func ForkConfirmRequestTemplate(requestTemplateId string) error {
+func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
-	existQuery, tmpErr := x.QueryString("select id from request_template where record_id=?", requestTemplateObj.Id)
+	existQuery, tmpErr := x.QueryString("select id,name,version from request_template where del_flag!=1 and record_id=?", requestTemplateObj.Id)
 	if tmpErr != nil {
 		return fmt.Errorf("Query database fail,%s ", tmpErr.Error())
 	}
 	if len(existQuery) > 0 {
-		return fmt.Errorf("RequestTemplate:%s already have a branch ", requestTemplateObj.Id)
+		return fmt.Errorf("RequestTemplate already have a branch %s:%s", existQuery[0]["name"], existQuery[0]["version"])
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	version := buildVersionNum(requestTemplateObj.Version)
 	newRequestTemplateId := guid.CreateGuid()
 	newRequestFormTemplateId := guid.CreateGuid()
 	var actions []*execAction
-	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time,expire_day,handler) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'%s' as confirm_time,expire_day,handler from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, requestTemplateObj.Id, version, nowTime, requestTemplateObj.Id)})
+	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time,expire_day,handler) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator, nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id)})
 	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())

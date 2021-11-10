@@ -83,12 +83,54 @@ func SaveTaskForm(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.SaveTaskForm(taskId, middleware.GetRequestUser(c), param)
+	var err error
+	for _, v := range param.FormData {
+		tmpErr := validateFormRequire(v)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+	}
+	if err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err = db.SaveTaskForm(taskId, middleware.GetRequestUser(c), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnSuccess(c)
 	}
+}
+
+func validateFormRequire(param *models.RequestPreDataTableObj) error {
+	var err error
+	requireMap := make(map[string]int)
+	for _, v := range param.Title {
+		if v.Required == "yes" {
+			requireMap[v.Name] = 1
+		}
+	}
+	for _, v := range param.Value {
+		for dataKey, dataValue := range v.EntityData {
+			if _, b := requireMap[dataKey]; b {
+				if dataValue == nil {
+					err = fmt.Errorf("Form:%s:%s data:%s can not empty ", v.PackageName, v.EntityName, dataKey)
+				} else {
+					if fmt.Sprintf("%s", dataValue) == "" {
+						err = fmt.Errorf("Form:%s:%s data:%s can not empty ", v.PackageName, v.EntityName, dataKey)
+					}
+				}
+			}
+			if err != nil {
+				break
+			}
+		}
+		if err != nil {
+			break
+		}
+	}
+	return err
 }
 
 func ApproveTask(c *gin.Context) {
@@ -98,7 +140,19 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	var err error
+	for _, v := range param.FormData {
+		tmpErr := validateFormRequire(v)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+	}
+	if err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err = db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

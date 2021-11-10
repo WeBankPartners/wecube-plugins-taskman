@@ -105,7 +105,7 @@ export default {
           key: 'name'
         },
         {
-          title: this.$t('emergency'),
+          title: this.$t('priority'),
           width: 80,
           sortable: 'custom',
           key: 'emergency',

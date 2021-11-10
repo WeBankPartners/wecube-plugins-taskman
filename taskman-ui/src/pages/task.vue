@@ -114,11 +114,13 @@ export default {
         {
           title: this.$t('created_time'),
           sortable: 'custom',
+          width: 130,
           key: 'createdTime'
         },
         {
           title: this.$t('expire_time'),
           sortable: 'custom',
+          width: 130,
           key: 'expireTime'
         },
         {
@@ -265,8 +267,8 @@ export default {
 </script>
 <style>
 .ivu-table-cell {
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 </style>
 <style scoped lang="scss">

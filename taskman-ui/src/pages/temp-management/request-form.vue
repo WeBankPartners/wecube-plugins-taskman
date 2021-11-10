@@ -4,13 +4,13 @@
       <Form :label-width="100">
         <Col :span="6">
           <FormItem :label="$t('name')">
-            <Input v-model="formData.name" style="width:90%" type="text"> </Input>
+            <Input v-model="formData.name" :disabled="$parent.isCheck === 'Y'" style="width:90%" type="text"> </Input>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="6">
           <FormItem :label="$t('request_time_limit')">
-            <Select v-model="formData.expireDay" style="width:90%" filterable>
+            <Select v-model="formData.expireDay" :disabled="$parent.isCheck === 'Y'" style="width:90%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
@@ -18,7 +18,8 @@
         </Col>
         <Col :span="6">
           <FormItem :label="$t('description')">
-            <Input v-model="formData.description" style="width:90%" type="text"> </Input>
+            <Input v-model="formData.description" :disabled="$parent.isCheck === 'Y'" style="width:90%" type="text">
+            </Input>
           </FormItem>
         </Col>
       </Form>
@@ -36,6 +37,7 @@
                 @on-change="changeSelectedForm(item.seletedAttrs, item)"
                 multiple
                 filterable
+                :disabled="$parent.isCheck === 'Y'"
                 :key="item.id"
               >
                 <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
@@ -115,44 +117,52 @@
               <div slot="content">
                 <Form :label-width="80">
                   <FormItem :label="$t('field_name')">
-                    <Input v-model="editElement.name" placeholder=""></Input>
+                    <Input v-model="editElement.name" :disabled="$parent.isCheck === 'Y'" placeholder=""></Input>
                   </FormItem>
                   <FormItem :label="$t('display_name')">
-                    <Input v-model="editElement.title" placeholder=""></Input>
+                    <Input v-model="editElement.title" :disabled="$parent.isCheck === 'Y'" placeholder=""></Input>
                   </FormItem>
                   <FormItem :label="$t('data_type')">
-                    <Select v-model="editElement.elementType" @on-change="editElement.defaultValue = ''">
+                    <Select
+                      v-model="editElement.elementType"
+                      :disabled="$parent.isCheck === 'Y'"
+                      @on-change="editElement.defaultValue = ''"
+                    >
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('defaults')">
-                    <Input v-model="editElement.defaultValue" placeholder=""></Input>
+                    <Input
+                      v-model="editElement.defaultValue"
+                      :disabled="$parent.isCheck === 'Y'"
+                      placeholder=""
+                    ></Input>
                   </FormItem>
                   <!-- <FormItem :label="$t('tags')">
                     <Input v-model="editElement.tag" placeholder=""></Input>
                   </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <Select v-model="editElement.inDisplayName">
+                    <Select v-model="editElement.inDisplayName" :disabled="$parent.isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <Select v-model="editElement.isEdit">
+                    <Select v-model="editElement.isEdit" :disabled="$parent.isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <Select v-model="editElement.required">
+                    <Select v-model="editElement.required" :disabled="$parent.isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('width')">
-                    <Select v-model="editElement.width">
+                    <Select v-model="editElement.width" :disabled="$parent.isCheck === 'Y'">
                       <Option :value="6">6</Option>
                       <Option :value="12">12</Option>
                       <Option :value="18">18</Option>
@@ -167,7 +177,11 @@
               <div slot="content">
                 <Form :label-width="80">
                   <FormItem :label="$t('validation_rules')">
-                    <Input v-model="editElement.regular" :placeholder="$t('only_supports_regular')"></Input>
+                    <Input
+                      v-model="editElement.regular"
+                      :disabled="$parent.isCheck === 'Y'"
+                      :placeholder="$t('only_supports_regular')"
+                    ></Input>
                   </FormItem>
                 </Form>
               </div>
@@ -177,7 +191,7 @@
               <div slot="content">
                 <Form :label-width="80">
                   <FormItem :label="$t('constraints')">
-                    <Select v-model="editElement.isRefInside">
+                    <Select v-model="editElement.isRefInside" :disabled="$parent.isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
@@ -190,7 +204,9 @@
       </Col>
     </Row>
     <div style="text-align:center; margin-top: 8px">
-      <Button type="primary" @click="saveForm">{{ $t('save') }}{{ $t('data_item') }}</Button>
+      <Button type="primary" @click="saveForm" :disabled="$parent.isCheck === 'Y'"
+        >{{ $t('save') }}{{ $t('data_item') }}</Button
+      >
       <Button @click="next">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -584,8 +600,13 @@ export default {
         })
       }
     },
-    next () {
-      this.$emit('formSelectNextStep')
+    async next () {
+      if (this.$parent.isCheck === 'Y') {
+        this.$emit('formSelectNextStep')
+      } else {
+        await this.saveForm()
+        this.$emit('formSelectNextStep')
+      }
     }
   },
   components: {

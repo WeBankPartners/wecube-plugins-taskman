@@ -24,10 +24,12 @@ export default {
     return {
       requestTemplateId: '',
       currentNode: '',
-      nodes: []
+      nodes: [],
+      isCheck: 'N'
     }
   },
   mounted () {
+    this.isCheck = this.$parent.isCheck
     this.requestTemplateId = this.$parent.requestTemplateId
     this.getTemplateNodesForTemp()
   },
@@ -59,7 +61,7 @@ export default {
       this.$refs[this.currentNode][0].initData(this.currentNode, find, this.requestTemplateId)
     },
     initTab (currentNode, data) {
-      this.$refs[this.currentNode][0].initData(currentNode, data, this.requestTemplateId)
+      this.$refs[this.currentNode][0].initData(currentNode, data, this.requestTemplateId, this.isCheck)
     }
   },
   components: {

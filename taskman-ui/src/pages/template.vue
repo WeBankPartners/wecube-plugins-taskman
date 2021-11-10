@@ -154,7 +154,7 @@ export default {
                 )}
                 {operationOptions.includes('query') && (
                   <Button
-                    onClick={() => this.deleteTemplate(params.row)}
+                    onClick={() => this.checkTemplate(params.row)}
                     style="margin-left: 8px"
                     type="info"
                     size="small"
@@ -234,10 +234,13 @@ export default {
       })
     },
     editTemplate (row) {
-      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id } })
+      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id, isCheck: 'N' } })
+    },
+    checkTemplate (row) {
+      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id, isCheck: 'Y' } })
     },
     addTemplate () {
-      this.$router.push({ path: '/templateManagementIndex', params: { requestTemplateId: '' } })
+      this.$router.push({ path: '/templateManagementIndex', params: { requestTemplateId: '', isCheck: 'N' } })
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize

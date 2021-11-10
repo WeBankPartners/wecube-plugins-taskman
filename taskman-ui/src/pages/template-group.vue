@@ -289,7 +289,12 @@ export default {
   }
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

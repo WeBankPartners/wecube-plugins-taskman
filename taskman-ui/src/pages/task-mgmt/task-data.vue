@@ -133,7 +133,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+</style>
 <style scoped lang="scss">
 .list-group-item- {
   display: inline-block;

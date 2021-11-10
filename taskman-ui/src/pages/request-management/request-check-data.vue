@@ -16,24 +16,14 @@
               :key="element.id"
             >
               <div>{{ element.title }}:</div>
-              <Input
-                v-if="element.elementType === 'input'"
-                v-model="data[element.name]"
-                placeholder=""
-                :disabled="isDisabled || enforceDisable"
-              />
-              <Input
-                v-if="element.elementType === 'textarea'"
-                v-model="data[element.name]"
-                type="textarea"
-                :disabled="isDisabled || enforceDisable"
-              />
+              <Input v-if="element.elementType === 'input'" v-model="data[element.name]" placeholder="" disabled />
+              <Input v-if="element.elementType === 'textarea'" v-model="data[element.name]" type="textarea" disabled />
               <Select
                 v-if="element.elementType === 'select'"
                 v-model="data[element.name]"
                 filterable
                 clearable
-                :disabled="isDisabled || enforceDisable"
+                disabled
                 @on-open-change="getRefOptions(element, data, dataIndex)"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
@@ -60,7 +50,7 @@ export default {
       refKeys: [] // 引用类型字段集合
     }
   },
-  props: ['data', 'isDisabled', 'enforceDisable', 'requestId'],
+  props: ['data', 'requestId'],
   mounted () {
     this.initData(this.data)
   },

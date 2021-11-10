@@ -63,12 +63,7 @@
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
                     <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
-                      <RequestCheckData
-                        :data="form"
-                        :isDisabled="!data.editable"
-                        :requestId="requestId"
-                        :enforceDisable="enforceDisable"
-                      ></RequestCheckData>
+                      <RequestCheckData :data="form" :requestId="requestId"></RequestCheckData>
                     </TabPane>
                   </template>
                 </Tabs>
@@ -76,12 +71,12 @@
                   <div v-if="dataIndex !== 0">
                     <Form :label-width="80" style="margin: 16px 0">
                       <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
-                        <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                        <Select v-model="data.choseOption" disabled>
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>
                       </FormItem>
                       <FormItem :label="$t('process_comments')">
-                        <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
+                        <Input disabled v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>
                   </div>
@@ -105,7 +100,6 @@ export default {
       activeStep: 0,
       taskId: '',
       requestId: '',
-      enforceDisable: false,
       timeStep: [],
       openPanel: '',
       dataInfo: []
@@ -114,7 +108,6 @@ export default {
   mounted () {
     this.requestId = this.$route.query.requestId
     this.jumpFrom = this.$route.query.jumpFrom
-    this.enforceDisable = this.$route.query.enforceDisable === 'Y'
     this.getRequestDetail()
   },
   methods: {

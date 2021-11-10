@@ -8,6 +8,12 @@
         <Col span="4">
           <Input v-model="tags" style="width:90%" type="text" :placeholder="$t('tags')"> </Input>
         </Col>
+        <Col span="2">
+          <Select v-model="status" clearable :placeholder="$t('status')" style="width:90%">
+            <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
+            <Option value="created" key="created">{{ this.$t('status_created') }}</Option>
+          </Select>
+        </Col>
         <Col span="4">
           <Button @click="getTemplateList" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
@@ -44,6 +50,7 @@ export default {
     return {
       MODALHEIGHT: 500,
       name: '',
+      status: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -177,7 +184,8 @@ export default {
           }
         }
       ],
-      tableData: []
+      tableData: [],
+      roleOptions: []
     }
   },
   mounted () {
@@ -264,6 +272,13 @@ export default {
           name: 'tags',
           operator: 'contains',
           value: this.tags
+        })
+      }
+      if (this.status) {
+        this.payload.filters.push({
+          name: 'status',
+          operator: 'eq',
+          value: this.status
         })
       }
       if (sorting) {

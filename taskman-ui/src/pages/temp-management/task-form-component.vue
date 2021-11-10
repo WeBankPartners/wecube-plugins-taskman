@@ -97,6 +97,7 @@
           <draggable
             class="dragArea"
             :list="customElement"
+            :sort="false"
             :group="{ name: 'people', pull: 'clone', put: false }"
             :clone="cloneDog"
           >
@@ -113,7 +114,7 @@
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               {{ item.itemGroupName }}
-              <draggable class="dragArea" :list="item.attrs" group="people" @change="log">
+              <draggable class="dragArea" :list="item.attrs" :sort="false" group="people" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
@@ -148,6 +149,7 @@
                   <Button
                     @click.stop="removeForm(element, itemIndex, eleIndex)"
                     type="error"
+                    :disabled="isCheck === 'Y'"
                     size="small"
                     ghost
                     icon="ios-close"
@@ -732,6 +734,7 @@ export default {
       })
     },
     cloneDog (val) {
+      if (this.isCheck === 'Y') return
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = idGlobal++
       // newItem.tag = 'Custom'

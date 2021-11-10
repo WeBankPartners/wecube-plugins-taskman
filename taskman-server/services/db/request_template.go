@@ -627,11 +627,19 @@ func DeleteRequestTemplate(id string) error {
 	if len(requestTable) > 0 {
 		return fmt.Errorf("The template used by request:%s ", requestTable[0].Name)
 	}
+	var taskTemplateTable []*models.TaskTemplateTable
+	x.SQL("select id,form_template from task_template where request_template=?", id).Find(&taskTemplateTable)
+	formTemplateIds := []string{rtObj.FormTemplate}
+	for _, v := range taskTemplateTable {
+		formTemplateIds = append(formTemplateIds, v.FormTemplate)
+	}
 	var actions []*execAction
+	actions = append(actions, &execAction{Sql: "delete from task_template_role where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
+	actions = append(actions, &execAction{Sql: "delete from task_template where request_template=?", Param: []interface{}{id}})
 	actions = append(actions, &execAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{id}})
 	actions = append(actions, &execAction{Sql: "delete from request_template where id=?", Param: []interface{}{id}})
-	actions = append(actions, &execAction{Sql: "delete from form_item_template where form_template=?", Param: []interface{}{rtObj.FormTemplate}})
-	actions = append(actions, &execAction{Sql: "delete from form_template where id=?", Param: []interface{}{rtObj.FormTemplate}})
+	actions = append(actions, &execAction{Sql: "delete from form_item_template where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
+	actions = append(actions, &execAction{Sql: "delete from form_template where id in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	return transaction(actions)
 }
 

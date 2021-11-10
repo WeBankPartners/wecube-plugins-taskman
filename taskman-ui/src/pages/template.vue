@@ -87,24 +87,26 @@ export default {
         {
           title: this.$t('name'),
           resizable: true,
-          width: 300,
+          width: 200,
           sortable: 'custom',
+          fixed: 'left',
           key: 'name'
         },
         {
           title: this.$t('version'),
-          width: 80,
+          minWidth: 80,
           sortable: 'custom',
           key: 'version'
         },
         {
           title: this.$t('tags'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'tags'
         },
         {
           title: this.$t('status'),
-          width: 80,
+          minWidth: 80,
           sortable: 'custom',
           key: 'status',
           render: (h, params) => {
@@ -124,6 +126,7 @@ export default {
         },
         {
           title: this.$t('mgmtRoles'),
+          minWidth: 130,
           key: 'mgmtRoles',
           render: (h, params) => {
             const displayName = params.row.mgmtRoles.map(role => role.displayName).join(',')
@@ -132,6 +135,7 @@ export default {
         },
         {
           title: this.$t('useRoles'),
+          minWidth: 130,
           key: 'mgmtRoles',
           render: (h, params) => {
             const displayName = params.row.useRoles.map(role => role.displayName).join(',')
@@ -141,12 +145,13 @@ export default {
         {
           title: this.$t('tm_updated_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'updatedTime'
         },
         {
           title: this.$t('t_action'),
-          resizable: true,
           key: 'action',
+          fixed: 'right',
           width: 160,
           align: 'center',
           render: (h, params) => {

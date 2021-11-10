@@ -76,7 +76,8 @@ export default {
       tableColumns: [
         {
           title: 'ID',
-          width: 160,
+          minWidth: 160,
+          fixed: 'left',
           key: 'id'
         },
         {
@@ -95,7 +96,7 @@ export default {
         },
         {
           title: this.$t('priority'),
-          width: 80,
+          minWidth: 80,
           sortable: 'custom',
           key: 'emergency',
           render: (h, params) => {
@@ -109,34 +110,39 @@ export default {
         },
         {
           title: this.$t('status'),
-          width: 80,
+          minWidth: 80,
           sortable: 'custom',
           key: 'status'
         },
         {
           title: this.$t('handler'),
           sortable: 'custom',
+          minWidth: 140,
           key: 'handler'
         },
         {
           title: this.$t('report_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'report_time'
         },
         {
           title: this.$t('expected_completion_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('estimated_finish_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
           width: 200,
+          fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (

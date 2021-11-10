@@ -38,7 +38,7 @@
       <FormItem :label="$t('expected_completion_time')">
         <DatePicker
           :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
-          type="date"
+          type="datetime"
           :value="formConfig.values.expectTime"
           @on-change="changeExpectTime"
           placeholder="Select date"

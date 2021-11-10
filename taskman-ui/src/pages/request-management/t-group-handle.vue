@@ -94,7 +94,8 @@ export default {
       tableColumns: [
         {
           title: 'ID',
-          width: 160,
+          minWidth: 130,
+          fixed: 'left',
           key: 'id'
         },
         {
@@ -108,6 +109,7 @@ export default {
           title: this.$t('priority'),
           width: 80,
           sortable: 'custom',
+          minWidth: 100,
           key: 'emergency',
           render: (h, params) => {
             const emergencyObj = {
@@ -121,11 +123,13 @@ export default {
         {
           title: this.$t('template'),
           sortable: 'custom',
+          minWidth: 100,
           key: 'requestTemplateName'
         },
         {
           title: this.$t('handle_role'),
           sortable: 'custom',
+          minWidth: 140,
           key: 'handleRoles',
           render: (h, params) => {
             const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
@@ -135,32 +139,38 @@ export default {
         {
           title: this.$t('handler'),
           sortable: 'custom',
+          minWidth: 140,
           key: 'handler'
         },
         {
           title: this.$t('status'),
           sortable: 'custom',
+          minWidth: 140,
           key: 'status'
         },
         {
           title: this.$t('estimated_finish_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
           sortable: 'custom',
+          minWidth: 130,
           key: 'reportTime'
         },
         {
           title: this.$t('t_action'),
+          fixed: 'right',
           key: 'action',
-          width: 230,
+          width: 180,
           align: 'center',
           render: (h, params) => {
             return (

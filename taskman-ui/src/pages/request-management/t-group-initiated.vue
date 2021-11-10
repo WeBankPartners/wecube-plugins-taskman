@@ -89,12 +89,13 @@ export default {
       tableColumns: [
         {
           title: 'ID',
-          width: 130,
+          minWidth: 130,
+          fixed: 'left',
           key: 'id'
         },
         {
           title: this.$t('name'),
-          width: 200,
+          width: 300,
           resizable: true,
           sortable: 'custom',
           key: 'name'
@@ -122,7 +123,7 @@ export default {
         },
         {
           title: this.$t('handle_role'),
-          width: 200,
+          minWidth: 140,
           key: 'handleRoles',
           render: (h, params) => {
             const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
@@ -131,36 +132,39 @@ export default {
         },
         {
           title: this.$t('handler'),
+          minWidth: 140,
           sortable: 'custom',
           key: 'handler'
         },
         {
           title: this.$t('status'),
           sortable: 'custom',
+          minWidth: 140,
           key: 'status'
         },
         {
           title: this.$t('estimated_finish_time'),
           sortable: 'custom',
-          width: 130,
+          minWidth: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
           sortable: 'custom',
-          width: 130,
+          minWidth: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
           sortable: 'custom',
-          width: 130,
+          minWidth: 130,
           key: 'reportTime'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
           width: 100,
+          fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (

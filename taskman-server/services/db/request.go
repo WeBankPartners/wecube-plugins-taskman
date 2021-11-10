@@ -743,6 +743,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 	}
 	entityNewMap := make(map[string][]string)
 	entityOidMap := make(map[string]int)
+	dataIdOidMap := make(map[string]string)
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
 			entityOidMap[entityValue.Oid] = 1
@@ -766,6 +767,7 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 					}
 					entityNewMap[entityValue.Oid] = tmpRefOidList
 				} else {
+					dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
 					tmpRefOidList := []string{}
 					for _, attrValueObj := range entityValue.AttrValues {
 						for _, entityRef := range entityRefs {
@@ -791,7 +793,16 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 		}
 	}
 	for k, v := range entityNewMap {
-		log.Logger.Info("entityNewMap", log.String("key", k), log.StringList("value", v))
+		tmpRefOidList := []string{}
+		for _, vv := range v {
+			if oid, b := dataIdOidMap[vv]; b {
+				tmpRefOidList = append(tmpRefOidList, oid)
+			} else {
+				tmpRefOidList = append(tmpRefOidList, vv)
+			}
+		}
+		entityNewMap[k] = tmpRefOidList
+		log.Logger.Info("entityNewMap", log.String("key", k), log.StringList("value", tmpRefOidList))
 	}
 	if len(entityNewMap) > 0 {
 		for _, taskNode := range cacheData.TaskNodeBindInfos {

@@ -278,7 +278,7 @@ func GetRequestTemplateByUser(c *gin.Context) {
 
 func ForkConfirmRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("id")
-	err := db.ForkConfirmRequestTemplate(requestTemplateId)
+	err := db.ForkConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

@@ -190,7 +190,7 @@ export default {
                 )}
                 {operationOptions.includes('fork') && (
                   <Button
-                    onClick={() => this.forTemplate(params.row)}
+                    onClick={() => this.forkTemplate(params.row)}
                     style="margin-left: 8px"
                     type="warning"
                     size="small"
@@ -231,9 +231,9 @@ export default {
         desc: this.$t('successful')
       })
     },
-    forTemplate (row) {
+    forkTemplate (row) {
       this.$Modal.confirm({
-        title: this.$t('final_version'),
+        title: this.$t('confirm_change'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

@@ -6,6 +6,20 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
+          <Select
+            v-model="requestTemplate"
+            @on-open-change="getTemplateList"
+            clearable
+            filterable
+            style="width:90%"
+            :placeholder="$t('template')"
+          >
+            <template v-for="option in templateOptions">
+              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
+            </template>
+          </Select>
+        </Col>
+        <Col span="4">
           <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
@@ -33,13 +47,14 @@
 </template>
 
 <script>
-import { requestListForDraftInitiated, deleteRequest, terminateRequest } from '@/api/server'
+import { requestListForDraftInitiated, deleteRequest, terminateRequest, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
+      requestTemplate: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -147,7 +162,8 @@ export default {
           }
         }
       ],
-      tableData: []
+      tableData: [],
+      templateOptions: []
     }
   },
   mounted () {
@@ -173,6 +189,16 @@ export default {
       if (res.statusCode === 'OK') {
         this.success()
         this.requestListForDraftInitiated()
+      }
+    },
+    async getTemplateList () {
+      const params = {
+        filters: [],
+        paging: false
+      }
+      const { statusCode, data } = await getTemplateList(params)
+      if (statusCode === 'OK') {
+        this.templateOptions = data.contents
       }
     },
     deleteRequest (row) {
@@ -213,11 +239,19 @@ export default {
       this.requestListForDraftInitiated()
     },
     async requestListForDraftInitiated (sorting) {
+      this.payload.filters = [{ name: 'status', operator: 'in', value: ['draft', 'created'] }]
       if (this.name) {
         this.payload.filters.push({
           name: 'name',
           operator: 'contains',
           value: this.name
+        })
+      }
+      if (this.requestTemplate) {
+        this.payload.filters.push({
+          name: 'requestTemplate',
+          operator: 'eq',
+          value: this.requestTemplate
         })
       }
       if (sorting) {

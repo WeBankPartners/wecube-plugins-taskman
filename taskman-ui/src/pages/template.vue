@@ -8,6 +8,19 @@
         <Col span="4">
           <Input v-model="tags" style="width:90%" type="text" :placeholder="$t('tags')"> </Input>
         </Col>
+        <Col span="4">
+          <Select
+            v-model="mgmtRoles"
+            @on-open-change="getInitRole"
+            clearable
+            filterable
+            multiple
+            :placeholder="$t('manageRole')"
+            style="width:90%"
+          >
+            <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
+          </Select>
+        </Col>
         <Col span="2">
           <Select v-model="status" clearable :placeholder="$t('status')" style="width:90%">
             <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
@@ -43,7 +56,7 @@
 </template>
 
 <script>
-import { getTemplateList, deleteTemplate, forkTemplate } from '@/api/server'
+import { getTemplateList, deleteTemplate, forkTemplate, getManagementRoles } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -51,6 +64,7 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       status: '',
+      mgmtRoles: [],
       tags: '',
       pagination: {
         pageSize: 10,
@@ -200,6 +214,12 @@ export default {
       }
       this.getTemplateList(sorting)
     },
+    async getInitRole () {
+      const { statusCode, data } = await getManagementRoles()
+      if (statusCode === 'OK') {
+        this.roleOptions = data
+      }
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
@@ -279,6 +299,13 @@ export default {
           name: 'status',
           operator: 'eq',
           value: this.status
+        })
+      }
+      if (this.mgmtRoles.length > 0) {
+        this.payload.filters.push({
+          name: 'mgmtRoles',
+          operator: 'eq',
+          value: this.mgmtRoles
         })
       }
       if (sorting) {

@@ -34,7 +34,7 @@
               <label>{{ item.displayName }}:</label>
               <Select
                 v-model="item.seletedAttrs"
-                @on-change="changeSelectedForm(item.seletedAttrs, item)"
+                @on-change="changeSelectedForm()"
                 multiple
                 filterable
                 :disabled="$parent.isCheck === 'Y'"
@@ -98,7 +98,7 @@
                     style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
-                    @click.stop="removeForm(itemIndex, eleIndex)"
+                    @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
                     size="small"
                     :disabled="$parent.isCheck === 'Y'"
@@ -464,7 +464,7 @@ export default {
         })
       }
     },
-    changeSelectedForm (selectedAttrs, item) {
+    changeSelectedForm () {
       this.selectedFormItem = []
       this.formItemOptions.forEach(f => {
         this.selectedFormItem = this.selectedFormItem.concat(f.seletedAttrs)
@@ -484,7 +484,7 @@ export default {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
         let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
           .attrs
-        const findIndex = findAttr.findIndex(l => l.id === r)
+        const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
       this.selectedFormItem.forEach(item => {
@@ -579,9 +579,13 @@ export default {
         this.selectedFormItemOptions = data
       }
     },
-    removeForm (itemIndex, eleIndex) {
+    removeForm (itemIndex, eleIndex, element) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
-      this.selectedFormItem.splice(eleIndex, 1)
+      const formItemOptionIndex = this.formItemOptions.findIndex(
+        fio => fio.packageName + ':' + fio.name === element.itemGroup
+      )
+      const seletedAttrs = this.formItemOptions[formItemOptionIndex].seletedAttrs
+      seletedAttrs.splice(eleIndex, 1)
     },
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return

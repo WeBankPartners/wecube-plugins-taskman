@@ -147,7 +147,7 @@
                     style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
-                    @click.stop="removeForm(element, itemIndex, eleIndex)"
+                    @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
                     :disabled="isCheck === 'Y'"
                     size="small"
@@ -607,7 +607,7 @@ export default {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
         let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
           .attrs
-        const findIndex = findAttr.findIndex(l => l.id === r)
+        const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
 
@@ -766,16 +766,18 @@ export default {
       this.editElement.isActive = true
       this.openPanel = '1'
     },
-    removeForm (element, itemIndex, eleIndex) {
+    removeForm (itemIndex, eleIndex, element) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
-      const outputIndex = this.selectedOutputFormItem.findIndex(i => i === element.id.substring(2))
+      const outputIndex = this.selectedOutputFormItem.findIndex(i => i === element.attrDefId)
       if (outputIndex > -1) {
-        this.selectedOutputFormItem.splice(outputIndex, 1)
+        const index = this.selectedOutputFormItem.findIndex(inputItem => inputItem === element.attrDefId)
+        this.selectedOutputFormItem.splice(index, 1)
         return
       }
-      const inputIndex = this.selectedInputFormItem.findIndex(i => i === element.id.substring(2))
+      const inputIndex = this.selectedInputFormItem.findIndex(i => i === element.attrDefId)
       if (inputIndex > -1) {
-        this.selectedInputFormItem.splice(inputIndex, 1)
+        const index = this.selectedInputFormItem.findIndex(inputItem => inputItem === element.attrDefId)
+        this.selectedInputFormItem.splice(index, 1)
       }
     },
     async getSelectedForm () {

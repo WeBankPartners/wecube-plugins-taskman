@@ -189,7 +189,7 @@ export default {
         'InProgress(Faulted)',
         'Termination',
         'Completed',
-        'Timeouted',
+        'InProgress(Timeouted)',
         'Faulted'
       ],
       timer: null

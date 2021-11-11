@@ -78,7 +78,15 @@ export default {
           {
             name: 'status',
             operator: 'in',
-            value: ['Pending', 'InProgress', 'InProgress(Faulted)', 'Termination', 'Completed', 'Timeouted', 'Faulted']
+            value: [
+              'Pending',
+              'InProgress',
+              'InProgress(Faulted)',
+              'Termination',
+              'Completed',
+              'InProgress(Timeouted)',
+              'Faulted'
+            ]
           }
         ],
         pageable: {
@@ -226,7 +234,7 @@ export default {
         'InProgress(Faulted)',
         'Termination',
         'Completed',
-        'Timeouted',
+        'InProgress(Timeouted)',
         'Faulted'
       ],
       timer: null

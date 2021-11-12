@@ -279,3 +279,7 @@ CREATE TABLE IF NOT EXISTS `operation_log` (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+#@v0.1.0.1-begin@;
+alter table `role` add column `email` varchar(64) DEFAULT null;
+#@v0.1.0.1-end@;

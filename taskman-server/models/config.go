@@ -3,8 +3,10 @@ package models
 import (
 	"encoding/json"
 	"github.com/WeBankPartners/go-common-lib/cipher"
+	"github.com/WeBankPartners/go-common-lib/smtp"
 	"github.com/WeBankPartners/go-common-lib/token"
 	"io/ioutil"
+	"log"
 	"os"
 )
 
@@ -42,6 +44,14 @@ type WecubeConfig struct {
 	SubSystemKey  string `json:"sub_system_key"`
 }
 
+type MailConfig struct {
+	SenderName   string `json:"sender_name"`
+	SenderMail   string `json:"sender_mail"`
+	AuthServer   string `json:"auth_server"`
+	AuthPassword string `json:"auth_password"`
+	Ssl          string `json:"ssl"`
+}
+
 type GlobalConfig struct {
 	DefaultLanguage string           `json:"default_language"`
 	HttpServer      HttpServerConfig `json:"http_server"`
@@ -49,12 +59,16 @@ type GlobalConfig struct {
 	Database        DatabaseConfig   `json:"database"`
 	RsaKeyPath      string           `json:"rsa_key_path"`
 	Wecube          WecubeConfig     `json:"wecube"`
+	Mail            MailConfig       `json:"mail"`
 }
 
 var (
 	Config           *GlobalConfig
 	CoreToken        *token.CoreToken
 	ProcessFetchTabs string
+	MailEnable       bool
+	MailSender       smtp.MailSender
+	PriorityLevelMap = map[int]string{1: "high", 2: "medium", 3: "low"}
 )
 
 func InitConfig(configFile string) (errMessage string) {
@@ -93,5 +107,19 @@ func InitConfig(configFile string) (errMessage string) {
 	tmpCoreToken.InitCoreToken()
 	CoreToken = &tmpCoreToken
 	ProcessFetchTabs = os.Getenv("TASKMAN_PROCESS_TAGS")
+	// init mail
+	MailEnable = false
+	if c.Mail.AuthServer != "" && c.Mail.SenderMail != "" {
+		MailEnable = true
+		MailSender = smtp.MailSender{SenderName: c.Mail.SenderName, SenderMail: c.Mail.SenderMail, AuthServer: c.Mail.AuthServer, AuthPassword: c.Mail.AuthPassword, SSL: false}
+		if c.Mail.Ssl == "Y" {
+			MailSender.SSL = true
+		}
+		mailInitErr := MailSender.Init()
+		if mailInitErr != nil {
+			log.Printf("Init mail sender fail,%s \n", mailInitErr.Error())
+			MailEnable = false
+		}
+	}
 	return
 }

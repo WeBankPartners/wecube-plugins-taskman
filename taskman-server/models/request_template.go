@@ -44,6 +44,7 @@ type RoleTable struct {
 	DisplayName string `json:"displayName" xorm:"display_name"`
 	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
 	CoreId      string `json:"coreId" xorm:"core_id"`
+	Email       string `json:"email"`
 }
 
 type RequestTemplateRoleTable struct {

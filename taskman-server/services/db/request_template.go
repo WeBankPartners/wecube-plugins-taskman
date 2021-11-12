@@ -290,7 +290,7 @@ func SyncCoreRole() {
 			}
 		}
 		if !existFlag {
-			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName, CoreId: v.Id})
+			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName, CoreId: v.Id, Email: v.Email})
 		}
 	}
 	for _, v := range roleTable {
@@ -307,7 +307,7 @@ func SyncCoreRole() {
 	}
 	var actions []*execAction
 	for _, role := range addRoleList {
-		actions = append(actions, &execAction{Sql: "insert into `role`(id,display_name,core_id,updated_time) value (?,?,?,NOW())", Param: []interface{}{role.Id, role.DisplayName, role.CoreId}})
+		actions = append(actions, &execAction{Sql: "insert into `role`(id,display_name,core_id,email,updated_time) value (?,?,?,?,NOW())", Param: []interface{}{role.Id, role.DisplayName, role.CoreId, role.Email}})
 	}
 	if len(delRoleList) > 0 {
 		roleIdList := []string{}

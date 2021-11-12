@@ -10,5 +10,10 @@ sed -i "s~{{GATEWAY_URL}}~$GATEWAY_URL~g" /app/taskman/conf/default.json
 sed -i "s~{{JWT_SIGNING_KEY}}~$JWT_SIGNING_KEY~g" /app/taskman/conf/default.json
 sed -i "s~{{SUB_SYSTEM_CODE}}~$SUB_SYSTEM_CODE~g" /app/taskman/conf/default.json
 sed -i "s~{{SUB_SYSTEM_KEY}}~$SUB_SYSTEM_KEY~g" /app/taskman/conf/default.json
+sed -i "s~{{TASKMAN_MAIL_SENDER_NAME}}~$TASKMAN_MAIL_SENDER_NAME~g" /app/taskman/conf/default.json
+sed -i "s~{{TASKMAN_MAIL_AUTH_SENDER}}~$TASKMAN_MAIL_AUTH_SENDER~g" /app/taskman/conf/default.json
+sed -i "s~{{TASKMAN_MAIL_AUTH_SERVER}}~$TASKMAN_MAIL_AUTH_SERVER~g" /app/taskman/conf/default.json
+sed -i "s~{{TASKMAN_MAIL_AUTH_PWD}}~$TASKMAN_MAIL_AUTH_PWD~g" /app/taskman/conf/default.json
+sed -i "s~{{TASKMAN_MAIL_AUTH_SSL}}~$TASKMAN_MAIL_AUTH_SSL~g" /app/taskman/conf/default.json
 
 ./taskman-server

@@ -30,5 +30,12 @@
     "jwt_signing_key": "",
     "sub_system_code": "",
     "sub_system_key": ""
+  },
+  "mail": {
+    "sender_name": "",
+    "sender_mail": "",
+    "auth_server": "",
+    "auth_password": "",
+    "ssl": ""
   }
 }

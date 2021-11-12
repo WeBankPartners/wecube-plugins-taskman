@@ -42,11 +42,16 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 	for _, input := range param.Inputs {
-		output, tmpErr := db.PluginTaskCreate(input, param.RequestId, param.DueDate, param.AllowedOptions)
+		output, taskId, tmpErr := db.PluginTaskCreate(input, param.RequestId, param.DueDate, param.AllowedOptions)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
+		} else {
+			notifyErr := db.NotifyTaskMail(taskId)
+			if notifyErr != nil {
+				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
+			}
 		}
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}

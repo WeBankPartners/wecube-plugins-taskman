@@ -30,5 +30,12 @@
     "jwt_signing_key": "{{JWT_SIGNING_KEY}}",
     "sub_system_code": "{{SUB_SYSTEM_CODE}}",
     "sub_system_key": "{{SUB_SYSTEM_KEY}}"
+  },
+  "mail": {
+    "sender_name": "{{TASKMAN_MAIL_SENDER_NAME}}",
+    "sender_mail": "{{TASKMAN_MAIL_AUTH_SENDER}}",
+    "auth_server": "{{TASKMAN_MAIL_AUTH_SERVER}}",
+    "auth_password": "{{TASKMAN_MAIL_AUTH_PWD}}",
+    "ssl": "{{TASKMAN_MAIL_AUTH_SSL}}"
   }
 }

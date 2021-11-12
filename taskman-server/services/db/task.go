@@ -36,23 +36,27 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 	return
 }
 
-func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, err error) {
+func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, taskId string, err error) {
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
 	err = x.SQL("select id,form,request_template,emergency from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
 	if err != nil {
-		return result, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
+		return result, taskId, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
 	}
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newTaskFormObj := models.FormTable{Id: guid.CreateGuid(), Name: "form_" + input.TaskName}
 	input.RoleName = remakeTaskReportRole(input.RoleName)
 	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ","), Handler: input.Handler}
+	taskId = newTaskObj.Id
 	var taskFormInput models.PluginTaskFormDto
 	if input.TaskFormInput != "" {
 		err = json.Unmarshal([]byte(input.TaskFormInput), &taskFormInput)
 		if err != nil {
-			return result, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
+			return result, taskId, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
+		}
+		if newTaskObj.Reporter == "" {
+			newTaskObj.Reporter = "taskman"
 		}
 	} else {
 		// Custom task create
@@ -620,4 +624,34 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	} else {
 		taskObj.OperationOptions = []string{}
 	}
+}
+
+func NotifyTaskMail(taskId string) error {
+	if !models.MailEnable {
+		return nil
+	}
+	var roleTable []*models.RoleTable
+	err := x.SQL("select id,email from `role` where id in (select `role` from task_template_role where role_type='USE' and task_template in (select task_template from task where id=?))", taskId).Find(&roleTable)
+	if err != nil {
+		return fmt.Errorf("query role fail:%s ", err.Error())
+	}
+	if len(roleTable) == 0 {
+		return fmt.Errorf("can not find handle role with task:%s ", taskId)
+	}
+	if roleTable[0].Email == "" {
+		return fmt.Errorf("handle role email is empty ")
+	}
+	var taskTable []*models.TaskTable
+	x.SQL("select t1.id,t1.name,t1.description,t2.name as request,t1.node_name,t1.emergency,t1.reporter,t1.created_time from task t1 left join request t2 on t1.request=t2.id where t1.id=?", taskId).Find(&taskTable)
+	if len(taskTable) == 0 {
+		return fmt.Errorf("can not find task with id:%s ", taskId)
+	}
+	var subject, content string
+	subject = fmt.Sprintf("Taskman task [%s] %s[%s]", models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request)
+	content = fmt.Sprintf("Taskman task \nID:%s \nPriority:%s \nName:%s \nRequest:%s \nDescription:%s \nReporter:%s \nCreateTime:%s \n", taskTable[0].Id, models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request, taskTable[0].Description, taskTable[0].Reporter, taskTable[0].CreatedTime)
+	err = models.MailSender.Send(subject, content, []string{roleTable[0].Email})
+	if err != nil {
+		return fmt.Errorf("send notify email fail:%s ", err.Error())
+	}
+	return nil
 }

@@ -214,8 +214,12 @@ func getInstanceStatus(instanceId, userToken string) string {
 	}
 	status := "InProgress"
 	for _, v := range response.Data.TaskNodeInstances {
-		if v.Status == "Faulted" || v.Status == "Timeouted" {
+		if v.Status == "Faulted" {
 			status = "InProgress(Faulted)"
+			break
+		}
+		if v.Status == "Timeouted" {
+			status = "InProgress(Timeouted)"
 			break
 		}
 	}
@@ -718,6 +722,9 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 		bindCacheBytes, _ := json.Marshal(bindData)
 		bindCache := string(bindCacheBytes)
 		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
+		if err == nil {
+			err = notifyRoleMail(requestId)
+		}
 	} else {
 		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
 	}
@@ -1332,4 +1339,34 @@ func listContains(inputList []string, element string) bool {
 		}
 	}
 	return result
+}
+
+func notifyRoleMail(requestId string) error {
+	if !models.MailEnable {
+		return nil
+	}
+	var roleTable []*models.RoleTable
+	err := x.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
+	if err != nil {
+		return fmt.Errorf("Notify role mail query roles fail,%s ", err.Error())
+	}
+	if len(roleTable) == 0 {
+		return nil
+	}
+	if roleTable[0].Email == "" {
+		return nil
+	}
+	var requestTable []*models.RequestTable
+	x.SQL("select t1.id,t1.name,t2.name as request_template,t1.reporter,t1.report_time,t1.emergency from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id=?", requestId).Find(&requestTable)
+	if len(requestTable) == 0 {
+		return nil
+	}
+	var subject, content string
+	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
+	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
+	err = models.MailSender.Send(subject, content, []string{roleTable[0].Email})
+	if err != nil {
+		return fmt.Errorf("Notify role mail fail,%s ", err.Error())
+	}
+	return nil
 }

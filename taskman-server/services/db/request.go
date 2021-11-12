@@ -159,9 +159,6 @@ func getRequestTemplateMGMTRole() (result map[string][]string) {
 		tmpTemplate = requestTemplateRole[len(requestTemplateRole)-1].RequestTemplate
 		result[tmpTemplate] = tmpRoles
 	}
-	for k, v := range result {
-		log.Logger.Info("rtMap", log.String("key", k), log.StringList("value", v))
-	}
 	return result
 }
 

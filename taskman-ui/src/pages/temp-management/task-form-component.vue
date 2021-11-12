@@ -423,27 +423,23 @@ export default {
   },
   watch: {
     selectedEntities: function (val) {
-      this.formItemOptions = this.cacheFormItemOptions.filter(c => {
-        if (val.includes(c.name)) {
-          return c
-        }
-      })
+      this.formItemOptions = this.cacheFormItemOptions.filter(c => val.includes(c.name))
       let canSelect = []
       this.formItemOptions.forEach(f => {
         f.attributes.forEach(attr => {
           canSelect.push(attr.id)
         })
       })
-      this.selectedInputFormItem.forEach((i, index) => {
-        if (!canSelect.includes(i)) {
-          this.selectedInputFormItem = this.selectedInputFormItem.splice(index, 1)
-        }
-      })
-      this.selectedOutputFormItem.forEach((i, index) => {
-        if (!canSelect.includes(i)) {
-          this.selectedOutputFormItem = this.selectedOutputFormItem.splice(index, 1)
-        }
-      })
+      // this.selectedInputFormItem.forEach((i, index) => {
+      //   if (!canSelect.includes(i)) {
+      //     this.selectedInputFormItem = this.selectedInputFormItem.splice(index, 1)
+      //   }
+      // })
+      // this.selectedOutputFormItem.forEach((i, index) => {
+      //   if (!canSelect.includes(i)) {
+      //     this.selectedOutputFormItem = this.selectedOutputFormItem.splice(index, 1)
+      //   }
+      // })
     }
   },
   methods: {
@@ -461,15 +457,15 @@ export default {
       this.nodeData = node
       this.initPage()
     },
-    initPage () {
+    async initPage () {
       if (this.nodeData.nodeId === this.nodeId) {
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeId = this.nodeData.nodeId
         this.formData.nodeDefName = this.nodeData.nodeName
-        this.getSelectedForm()
         this.getUserRoles()
         this.getHandlerRoles()
-        this.getTaskFormDataByNodeId()
+        await this.getTaskFormDataByNodeId()
+        this.getSelectedForm()
       }
     },
     async getHandlerRoles () {
@@ -493,6 +489,7 @@ export default {
         return
       }
       this.finalElement = []
+      // this.selectedEntities = []
       const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
       if (statusCode === 'OK') {
         this.formData = { ...data }
@@ -531,7 +528,6 @@ export default {
               })
             }
           })
-          // this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
         }
       }
     },
@@ -808,7 +804,7 @@ export default {
           }
         })
         this.cacheFormItemOptions = JSON.parse(JSON.stringify(formItemOptions))
-        this.formItemOptions = formItemOptions
+        this.formItemOptions = formItemOptions.filter(f => this.selectedEntities.includes(f.name))
         this.selectedFormItemOptions = data
       }
     },

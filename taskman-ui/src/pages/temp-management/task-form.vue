@@ -58,7 +58,7 @@ export default {
     changeNode (nodeId) {
       this.currentNode = nodeId
       const find = this.nodes.find(n => n.nodeId === this.currentNode)
-      this.$refs[this.currentNode][0].initData(this.currentNode, find, this.requestTemplateId)
+      this.$refs[this.currentNode][0].initData(this.currentNode, find, this.requestTemplateId, this.isCheck)
     },
     initTab (currentNode, data) {
       this.$refs[this.currentNode][0].initData(currentNode, data, this.requestTemplateId, this.isCheck)

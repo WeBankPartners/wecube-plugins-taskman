@@ -251,7 +251,7 @@
       </Col>
     </Row>
     <div style="text-align:center; margin-top: 8px">
-      <Button type="primary" @click="saveForm" :disabled="isCheck === 'Y'">保存当前表单</Button>
+      <Button type="primary" @click="saveForm" :disabled="isCheck === 'Y'">{{ $t('save') }}</Button>
     </div>
   </div>
 </template>

@@ -184,6 +184,9 @@
                       <Option value="textarea">Textarea</Option>
                     </Select>
                   </FormItem>
+                  <FormItem v-if="editElement.elementType === 'select' && editElement.entity === ''" :label="$t('xxx')">
+                    <Input v-model="editElement.dataOptions" :disabled="isCheck === 'Y'" placeholder="eg:a,b"></Input>
+                  </FormItem>
                   <FormItem :label="$t('defaults')">
                     <Input v-model="editElement.defaultValue" :disabled="isCheck === 'Y'" placeholder=""></Input>
                   </FormItem>
@@ -306,6 +309,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
+          dataOptions: '',
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
@@ -334,6 +338,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
+          dataOptions: '',
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
@@ -362,6 +367,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
+          dataOptions: '',
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
@@ -405,6 +411,7 @@ export default {
         sort: 0,
         title: '',
         width: 24,
+        dataOptions: '',
         refEntity: '',
         refPackageName: ''
       },
@@ -639,6 +646,7 @@ export default {
           sort: 0,
           title: seleted.description,
           width: 24,
+          dataOptions: seleted.dataOptions,
           refEntity: seleted.refEntityName,
           refPackageName: seleted.refPackageName
         }
@@ -710,6 +718,7 @@ export default {
           sort: 0,
           title: seleted.description,
           width: 24,
+          dataOptions: seleted.dataOptions,
           refEntity: seleted.refEntityName,
           refPackageName: seleted.refPackageName
         }

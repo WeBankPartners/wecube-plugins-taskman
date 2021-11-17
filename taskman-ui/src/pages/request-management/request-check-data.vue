@@ -19,16 +19,30 @@
               <Input v-if="element.elementType === 'input'" v-model="data[element.name]" placeholder="" disabled />
               <Input v-if="element.elementType === 'textarea'" v-model="data[element.name]" type="textarea" disabled />
               <Select
-                v-if="element.elementType === 'select'"
+                v-if="element.elementType === 'select' && element.entity !== ''"
                 v-model="data[element.name]"
                 filterable
                 clearable
-                disabled
+                :multiple="element.multiple === 'Y'"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
+                :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
+                style="width: calc(100% - 30px);"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
+              </Select>
+              <Select
+                v-if="element.elementType === 'select' && element.entity === ''"
+                v-model="data[element.name]"
+                filterable
+                clearable
+                :multiple="element.multiple === 'Y'"
+                @on-open-change="getRefOptions(element, data, dataIndex)"
+                :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
+                style="width: calc(100% - 30px);"
+              >
+                <Option v-for="item in data[element.name + 'Options']" :value="item" :key="item">{{ item }}</Option>
               </Select>
             </div>
           </td>
@@ -56,6 +70,11 @@ export default {
   },
   methods: {
     async getRefOptions (formItem, formData, index) {
+      if (formItem.elementType === 'select' && formItem.entity === '') {
+        formData[formItem.name + 'Options'] = formItem.dataOptions.split(',')
+        this.$set(this.tableData, index, formData)
+        return
+      }
       if (formItem.refEntity === '') {
         formData[formItem.name + 'Options'] = formItem.selectList
         this.$set(this.tableData, index, formData)

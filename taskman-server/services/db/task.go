@@ -142,13 +142,13 @@ func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) 
 	}
 	var formItems []*models.FormItemTable
 	err = x.SQL("select * from form_item where ("+strings.Join(filterList, " or ")+") and form in (select form from request where id=? union select form from task where request=?) order by item_group,name,id desc", requestId, requestId).Find(&formItems)
-	if len(formItems) == 0 {
-		for _, v := range formItemTemplates {
-			tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
-			result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: "", RowDataId: ""})
-		}
-		return
-	}
+	//if len(formItems) == 0 {
+	//	for _, v := range formItemTemplates {
+	//		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
+	//		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: "", RowDataId: ""})
+	//	}
+	//	return
+	//}
 	groupNameExistMap := make(map[string]int)
 	for _, v := range formItems {
 		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
@@ -543,29 +543,44 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	if err != nil {
 		return err
 	}
+	var existFormItemTable []*models.FormItemTable
+	x.SQL("select * from form_item where form in (select form from task where id=?)", taskId).Find(&existFormItemTable)
+	existFormItemMap := make(map[string]int)
+	for _, v := range existFormItemTable {
+		existFormItemMap[fmt.Sprintf("%s^%s^%s", v.ItemGroup, v.Name, v.RowDataId)] = 1
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions = append(actions, &execAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
 	if taskObj.Request != "" {
 		for _, tableForm := range param.FormData {
-			tmpColumnMap := make(map[string]int)
+			tmpColumnMap := make(map[string]string)
 			tmpMultiMap := make(map[string]int)
 			for _, title := range tableForm.Title {
-				tmpColumnMap[title.Name] = 1
+				tmpColumnMap[title.Name] = title.Id
 				if title.Multiple == "Y" {
 					tmpMultiMap[title.Name] = 1
 				}
 			}
 			for _, valueObj := range tableForm.Value {
 				for k, v := range valueObj.EntityData {
-					if _, b := tmpColumnMap[k]; b {
+					if titleId, b := tmpColumnMap[k]; b {
+						tmpExistKey := fmt.Sprintf("%s^%s^%s", tableForm.ItemGroup, k, valueObj.Id)
 						if _, bb := tmpMultiMap[k]; bb {
 							tmpV := []string{}
 							for _, interfaceV := range v.([]interface{}) {
 								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
 							}
-							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
+							if _, bbb := existFormItemMap[tmpExistKey]; !bbb {
+								actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskObj.Form, titleId, k, strings.Join(tmpV, ","), tableForm.ItemGroup, valueObj.Id}})
+							} else {
+								actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
+							}
 						} else {
-							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+							if _, bbb := existFormItemMap[tmpExistKey]; !bbb {
+								actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskObj.Form, titleId, k, v, tableForm.ItemGroup, valueObj.Id}})
+							} else {
+								actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+							}
 						}
 					}
 				}

@@ -426,25 +426,12 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 		}
 	}
 	if isQueryMessage {
-		actions := []*execAction{}
 		for _, v := range rowData {
-			tmpExist, newProDefId, tmpErr := checkProDefId(v.ProcDefId, v.ProcDefName, v.ProcDefKey, userToken)
+			tmpErr := SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, userToken)
 			if tmpErr != nil {
-				err = fmt.Errorf("Try to sync new proDefId fail,%s ", tmpErr.Error())
+				err = fmt.Errorf("Try to sync proDefId fail,%s ", tmpErr.Error())
 				break
 			}
-			if !tmpExist {
-				v.ProcDefId = newProDefId
-				actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where id=?", Param: []interface{}{newProDefId, v.Id}})
-			}
-			tmpActions := getUpdateNodeDefIdActions(v.Id, userToken)
-			actions = append(actions, tmpActions...)
-		}
-		if err != nil {
-			return
-		}
-		if len(actions) > 0 {
-			err = transaction(actions)
 		}
 		if err != nil {
 			return
@@ -561,6 +548,37 @@ func getUpdateNodeDefIdActions(requestTemplateId, userToken string) (actions []*
 		}
 	}
 	return actions
+}
+
+func SyncProcDefId(requestTemplateId, proDefId, proDefName, proDefKey, userToken string) error {
+	log.Logger.Info("Start sync process def id")
+	proExistFlag, newProDefId, err := checkProDefId(proDefId, proDefName, proDefKey, userToken)
+	if err != nil {
+		return err
+	}
+	var actions []*execAction
+	if !proExistFlag {
+		if proDefKey != "" {
+			actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where id=?", Param: []interface{}{newProDefId, requestTemplateId}})
+		} else {
+			actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, proDefName}})
+		}
+		err = transaction(actions)
+		if err != nil {
+			return fmt.Errorf("Update requestTemplate procDefId fail,%s ", err.Error())
+		}
+		log.Logger.Info("Update requestTemplate proDefId done")
+		actions = []*execAction{}
+	}
+	tmpActions := getUpdateNodeDefIdActions(requestTemplateId, userToken)
+	if len(tmpActions) > 0 {
+		err = transaction(tmpActions)
+		if err != nil {
+			return fmt.Errorf("Update template node def id fail,%s ", err.Error())
+		}
+		log.Logger.Info("Update taskTemplate nodeDefId done")
+	}
+	return nil
 }
 
 func getRequestTemplateIdsBySql(sql string) (ids []string, err error) {

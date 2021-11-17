@@ -159,9 +159,6 @@ func getRequestTemplateMGMTRole() (result map[string][]string) {
 		tmpTemplate = requestTemplateRole[len(requestTemplateRole)-1].RequestTemplate
 		result[tmpTemplate] = tmpRoles
 	}
-	for k, v := range result {
-		log.Logger.Info("rtMap", log.String("key", k), log.StringList("value", v))
-	}
 	return result
 }
 
@@ -280,16 +277,9 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 		return err
 	}
 	var actions []*execAction
-	existProDef, newProDefId, tmpErr := checkProDefId(requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken)
-	if tmpErr != nil {
-		return fmt.Errorf("Try to check proDefId fail,%s ", tmpErr.Error())
-	}
-	if !existProDef {
-		actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, requestTemplateObj.ProcDefName}})
-	}
-	tmpActions := getUpdateNodeDefIdActions(requestTemplateObj.Id, userToken)
-	if len(tmpActions) > 0 {
-		actions = append(actions, tmpActions...)
+	err = SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken)
+	if err != nil {
+		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()

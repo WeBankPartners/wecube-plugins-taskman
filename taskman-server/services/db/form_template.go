@@ -112,6 +112,7 @@ func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*exec
 			}
 		}
 		if !existFlag {
+			actions = append(actions, &execAction{Sql: "delete from form_item where form_item_template=?", Param: []interface{}{existItem.Id}})
 			actions = append(actions, &execAction{Sql: "delete from form_item_template where id=?", Param: []interface{}{existItem.Id}})
 		}
 	}

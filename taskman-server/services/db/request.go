@@ -79,7 +79,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 	return
 }
 
-func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
+func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission, operator string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
 	rowData = []*models.RequestTable{}
 	if strings.ToLower(permission) == "mgmt" {
 		permission = "MGMT"
@@ -87,7 +87,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		permission = "USE"
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and (created_by='"+operator+"' or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"')))) %s ", filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize

@@ -55,7 +55,7 @@ func ListRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission)
+	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

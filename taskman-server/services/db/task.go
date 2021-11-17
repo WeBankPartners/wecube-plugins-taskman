@@ -142,6 +142,13 @@ func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) 
 	}
 	var formItems []*models.FormItemTable
 	err = x.SQL("select * from form_item where ("+strings.Join(filterList, " or ")+") and form in (select form from request where id=? union select form from task where request=?) order by item_group,name,id desc", requestId, requestId).Find(&formItems)
+	if len(formItems) == 0 {
+		for _, v := range formItemTemplates {
+			tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
+			result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: "", RowDataId: ""})
+		}
+		return
+	}
 	groupNameExistMap := make(map[string]int)
 	for _, v := range formItems {
 		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)

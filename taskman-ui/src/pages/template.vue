@@ -31,6 +31,19 @@
           <Button @click="getTemplateList" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
         </Col>
+        <Upload
+          :action="uploadUrl"
+          :before-upload="handleUpload"
+          :show-upload-list="false"
+          :max-size="10000"
+          with-credentials
+          style="display:inline-block;float:right;margin-right:16px"
+          :headers="headers"
+          :on-success="uploadSucess"
+          :on-error="uploadFailed"
+        >
+          <Button>{{ $t('upload') }}</Button>
+        </Upload>
       </Row>
     </div>
     <Table
@@ -58,7 +71,7 @@
 <script>
 import axios from 'axios'
 import { getCookie } from '@/pages/util/cookie'
-import { getTemplateList, deleteTemplate, forkTemplate, getManagementRoles } from '@/api/server'
+import { getTemplateList, deleteTemplate, forkTemplate, getManagementRoles, confirmUploadTemplate } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -216,22 +229,73 @@ export default {
         }
       ],
       tableData: [],
-      roleOptions: []
+      roleOptions: [],
+      uploadUrl: '/taskman/api/v1/request-template/import',
+      headers: {}
     }
   },
   mounted () {
+    const accessToken = getCookie('accessToken')
+    this.headers = {
+      Authorization: 'Bearer ' + accessToken
+    }
     this.MODALHEIGHT = document.body.scrollHeight - 200
     this.getTemplateList()
   },
   methods: {
+    handleUpload (file) {
+      if (!file.name.endsWith('.json')) {
+        this.$Notice.warning({
+          title: 'Warning',
+          desc: 'Must be a json file'
+        })
+        return false
+      }
+      return true
+    },
+    uploadFailed (val) {
+      this.$Notice.error({
+        title: 'Error',
+        desc: 'Import Faild'
+      })
+    },
+    async uploadSucess (val) {
+      if (val.statusCode === 'CONFIRM') {
+        this.$Modal.confirm({
+          title: this.$t('confirm_import'),
+          'z-index': 1000000,
+          loading: true,
+          onOk: async () => {
+            this.$Modal.remove()
+            const { statusCode } = await confirmUploadTemplate(val.data)
+            if (statusCode === 'OK') {
+              this.$Notice.success({
+                title: 'Successful',
+                desc: 'Successful'
+              })
+              this.getTemplateList()
+            }
+          },
+          onCancel: () => {}
+        })
+      } else if (val.statusCode === 'OK') {
+        this.$Notice.success({
+          title: 'Successful',
+          desc: 'Successful'
+        })
+        this.getTemplateList()
+      } else {
+        this.$Notice.warning({
+          title: 'Warning',
+          desc: val.statusMessage
+        })
+      }
+    },
     async exportTemplate (row) {
-      const accessToken = getCookie('accessToken')
       axios({
         method: 'GET',
         url: `/taskman/api/v1/request-template/export/${row.id}`,
-        headers: {
-          Authorization: 'Bearer ' + accessToken
-        }
+        headers: this.headers
       })
         .then(response => {
           this.isExport = false

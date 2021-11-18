@@ -89,3 +89,5 @@ export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/de
 export const getHandlerRoles = params => req.get(`/taskman/api/v1/role/user/list`, params)
 export const getTemplateTags = requestTemplateGroup =>
   req.get(`/taskman/api/v1/request-template/tags/${requestTemplateGroup}`)
+export const confirmUploadTemplate = confirmToken =>
+  req.post(`/taskman/api/v1/request-template/import-confirm/${confirmToken}`)

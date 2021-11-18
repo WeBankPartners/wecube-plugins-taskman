@@ -112,5 +112,6 @@
   "low": "不紧急",
   "fork": "变更",
   "download": "下载",
-  "upload": "上传"
+  "upload": "上传",
+  "confirm_import": "确认导入"
 }

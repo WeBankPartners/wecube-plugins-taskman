@@ -111,6 +111,7 @@
   "medium": "Ordinary",
   "low": "Not Urgent",
   "fork": "Fork",
-  "download": "Download",
-  "upload": "Upload"
+  "download": "Export",
+  "upload": "Import",
+  "confirm_import": "Import Confirm?"
 }

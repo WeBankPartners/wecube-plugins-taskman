@@ -353,5 +353,13 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss"></style>
+<style>
+.ivu-input[disabled],
+fieldset[disabled] .ivu-input {
+  color: #959595 !important;
+}
+.ivu-select-input[disabled] {
+  color: #959595;
+  -webkit-text-fill-color: #959595;
+}
+</style>

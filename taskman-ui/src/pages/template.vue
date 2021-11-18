@@ -56,6 +56,8 @@
 </template>
 
 <script>
+import axios from 'axios'
+import { getCookie } from '@/pages/util/cookie'
 import { getTemplateList, deleteTemplate, forkTemplate, getManagementRoles } from '@/api/server'
 export default {
   name: '',
@@ -152,7 +154,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 160,
+          width: 180,
           align: 'center',
           render: (h, params) => {
             const operationOptions = params.row.operateOptions
@@ -198,6 +200,16 @@ export default {
                     {this.$t('fork')}
                   </Button>
                 )}
+                {operationOptions.includes('export') && (
+                  <Button
+                    onClick={() => this.exportTemplate(params.row)}
+                    style="margin-left: 8px"
+                    type="success"
+                    size="small"
+                  >
+                    {this.$t('download')}
+                  </Button>
+                )}
               </div>
             )
           }
@@ -212,6 +224,45 @@ export default {
     this.getTemplateList()
   },
   methods: {
+    async exportTemplate (row) {
+      const accessToken = getCookie('accessToken')
+      axios({
+        method: 'GET',
+        url: `/taskman/api/v1/request-template/export/${row.id}`,
+        headers: {
+          Authorization: 'Bearer ' + accessToken
+        }
+      })
+        .then(response => {
+          this.isExport = false
+          if (response.status < 400) {
+            let content = JSON.stringify(response.data)
+            let fileName = `${row.name}.json`
+            let blob = new Blob([content])
+            if ('msSaveOrOpenBlob' in navigator) {
+              window.navigator.msSaveOrOpenBlob(blob, fileName)
+            } else {
+              if ('download' in document.createElement('a')) {
+                // 非IE下载
+                let elink = document.createElement('a')
+                elink.download = fileName
+                elink.style.display = 'none'
+                elink.href = URL.createObjectURL(blob)
+                document.body.appendChild(elink)
+                elink.click()
+                URL.revokeObjectURL(elink.href) // 释放URL 对象
+                document.body.removeChild(elink)
+              } else {
+                // IE10+下载
+                navigator.msSaveOrOpenBlob(blob, fileName)
+              }
+            }
+          }
+        })
+        .catch(() => {
+          this.$Message.warning('Error')
+        })
+    },
     sortTable (col) {
       const sorting = {
         asc: col.order === 'asc',

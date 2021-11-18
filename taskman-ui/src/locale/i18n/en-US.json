@@ -110,5 +110,7 @@
   "high": "Urgent",
   "medium": "Ordinary",
   "low": "Not Urgent",
-  "fork": "Fork"
+  "fork": "Fork",
+  "download": "Download",
+  "upload": "Upload"
 }

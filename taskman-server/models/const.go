@@ -5,4 +5,5 @@ const (
 	SysTableIdConnector  = "__"
 	UrlPrefix            = "/taskman"
 	RowDataPermissionErr = "Row data permission deny "
+	AdminRole            = "SUPER_ADMIN"
 )

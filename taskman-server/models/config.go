@@ -63,12 +63,13 @@ type GlobalConfig struct {
 }
 
 var (
-	Config           *GlobalConfig
-	CoreToken        *token.CoreToken
-	ProcessFetchTabs string
-	MailEnable       bool
-	MailSender       smtp.MailSender
-	PriorityLevelMap = map[int]string{1: "high", 2: "medium", 3: "low"}
+	Config                   *GlobalConfig
+	CoreToken                *token.CoreToken
+	ProcessFetchTabs         string
+	MailEnable               bool
+	MailSender               smtp.MailSender
+	PriorityLevelMap         = map[int]string{1: "high", 2: "medium", 3: "low"}
+	RequestTemplateImportMap = map[string]RequestTemplateExport{}
 )
 
 func InitConfig(configFile string) (errMessage string) {
@@ -99,6 +100,7 @@ func InitConfig(configFile string) (errMessage string) {
 		return
 	}
 	Config = &c
+	RequestTemplateImportMap = make(map[string]RequestTemplateExport)
 	tmpCoreToken := token.CoreToken{}
 	tmpCoreToken.BaseUrl = Config.Wecube.BaseUrl
 	tmpCoreToken.JwtSigningKey = Config.Wecube.JwtSigningKey

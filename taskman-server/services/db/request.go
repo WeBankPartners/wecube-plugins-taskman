@@ -938,7 +938,7 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 	if requestTable[0].Cache == "" {
 		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
 	}
-	processNodes, processErr := GetProcessNodesByProc(requestTable[0].RequestTemplate, userToken, "bind")
+	processNodes, processErr := GetProcessNodesByProc(models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, "bind")
 	if processErr != nil {
 		return result, processErr
 	}

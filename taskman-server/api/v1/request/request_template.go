@@ -1,12 +1,16 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 )
 
 func QueryRequestTemplateGroup(c *gin.Context) {
@@ -91,7 +95,7 @@ func GetCoreProcessList(c *gin.Context) {
 func GetCoreProcNodes(c *gin.Context) {
 	requestTemplateId := c.Param("id")
 	getType := c.Param("type")
-	result, err := db.GetProcessNodesByProc(requestTemplateId, c.GetHeader("Authorization"), getType)
+	result, err := db.GetProcessNodesByProc(models.RequestTemplateTable{Id: requestTemplateId}, c.GetHeader("Authorization"), getType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -215,7 +219,7 @@ func DeleteRequestTemplate(c *gin.Context) {
 		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
-	err := db.DeleteRequestTemplate(id)
+	_, err := db.DeleteRequestTemplate(id, false)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -293,5 +297,66 @@ func GetRequestTemplateTags(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnData(c, result)
+	}
+}
+
+func ExportRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("requestTemplateId")
+	result, err := db.RequestTemplateExport(requestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	b, jsonErr := json.Marshal(result)
+	if jsonErr != nil {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("Export requestTemplate config fail, json marshal object error:%s ", jsonErr.Error()))
+		return
+	}
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s_%s.json", "rt_"+requestTemplateId, time.Now().Format("20060102150405")))
+	c.Data(http.StatusOK, "application/octet-stream", b)
+}
+
+func ImportRequestTemplate(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
+		return
+	}
+	var paramObj models.RequestTemplateExport
+	b, err := ioutil.ReadAll(f)
+	defer f.Close()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
+		return
+	}
+	err = json.Unmarshal(b, &paramObj)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
+		return
+	}
+	backToken, importErr := db.RequestTemplateImport(paramObj, c.GetHeader("Authorization"), "")
+	if importErr != nil {
+		middleware.ReturnServerHandleError(c, importErr)
+		return
+	}
+	if backToken != "" {
+		c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: backToken})
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func ConfirmImportRequestTemplate(c *gin.Context) {
+	confirmToken := c.Param("confirmToken")
+	_, err := db.RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), confirmToken)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
 	}
 }

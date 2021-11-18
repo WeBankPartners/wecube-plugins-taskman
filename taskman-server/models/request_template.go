@@ -210,3 +210,13 @@ func (s ProcNodeObjList) Swap(i, j int) {
 func (s ProcNodeObjList) Less(i, j int) bool {
 	return s[i].OrderedNum < s[j].OrderedNum
 }
+
+type RequestTemplateExport struct {
+	RequestTemplate      RequestTemplateTable        `json:"requestTemplate"`
+	FormTemplate         []*FormTemplateTable        `json:"formTemplate"`
+	FormItemTemplate     []*FormItemTemplateTable    `json:"formItemTemplate"`
+	RequestTemplateRole  []*RequestTemplateRoleTable `json:"requestTemplateRole"`
+	TaskTemplate         []*TaskTemplateTable        `json:"taskTemplate"`
+	TaskTemplateRole     []*TaskTemplateRoleTable    `json:"taskTemplateRole"`
+	RequestTemplateGroup RequestTemplateGroupTable   `json:"requestTemplateGroup"`
+}

@@ -66,7 +66,7 @@
               <p slot="content">
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
-                    <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
+                    <TabPane :label="form.itemGroupName" :name="form.itemGroup" :key="form.itemGroup">
                       <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
                         <TaskData
                           :data="form"

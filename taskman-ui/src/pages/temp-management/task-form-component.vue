@@ -113,7 +113,28 @@
         <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', border: '1px solid #dcdee2;' }">
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
-              {{ item.itemGroupName }}
+              <span v-if="itemIndex !== editItemGroupNameIndex">
+                {{ item.itemGroupName }}
+                <Button
+                  @click.stop="editItemGroupName(itemIndex)"
+                  type="primary"
+                  size="small"
+                  :disabled="isCheck === 'Y'"
+                  ghost
+                  icon="md-create"
+                ></Button>
+              </span>
+              <span v-else>
+                <Input v-model="item.itemGroupName" style="width: calc(50%);"></Input>
+                <Button
+                  @click.stop="confirmItemGroupName(itemIndex)"
+                  type="primary"
+                  size="small"
+                  :disabled="isCheck === 'Y'"
+                  ghost
+                  icon="md-checkmark"
+                ></Button>
+              </span>
               <draggable class="dragArea" :list="item.attrs" :sort="isCheck !== 'Y'" group="people" @change="log">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
@@ -385,6 +406,7 @@ export default {
           refPackageName: ''
         }
       ],
+      editItemGroupNameIndex: null,
       finalElement: [],
       editElement: {
         attrDefDataType: '',
@@ -450,6 +472,16 @@ export default {
     }
   },
   methods: {
+    editItemGroupName (index) {
+      this.editItemGroupNameIndex = index
+    },
+    confirmItemGroupName (index) {
+      let editGroup = this.finalElement[index]
+      editGroup.attrs.forEach(attr => {
+        attr.itemGroupName = editGroup.itemGroupName
+      })
+      this.editItemGroupNameIndex = null
+    },
     log (log) {
       this.finalElement.forEach(l => {
         l.attrs.forEach(attr => {

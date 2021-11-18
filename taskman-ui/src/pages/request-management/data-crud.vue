@@ -21,7 +21,7 @@
     </Form>
     <Tabs :value="activeTab" @on-click="changeTab">
       <template v-for="entity in requestData">
-        <TabPane :label="entity.entity" :name="entity.entity" :key="entity.entity">
+        <TabPane :label="entity.itemGroupName" :name="entity.entity" :key="entity.entity">
           <DataMgmt ref="dataMgmt" @getEntityData="getEntityData" @backData="backData"></DataMgmt>
         </TabPane>
       </template>

@@ -657,6 +657,8 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*execAction
 		for _, v := range formTable {
 			formIds = append(formIds, v.Id)
 		}
+		actions = append(actions, &execAction{Sql: "delete from operation_log where task in (select id from task where task_template in (select id from task_template where request_template=?))", Param: []interface{}{id}})
+		actions = append(actions, &execAction{Sql: "delete from operation_log where request in (select id from request where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})

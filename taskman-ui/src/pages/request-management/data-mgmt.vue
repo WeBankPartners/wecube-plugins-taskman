@@ -236,6 +236,19 @@ export default {
   padding-right: 8px !important;
 }
 </style>
+<style>
+.ivu-input[disabled],
+fieldset[disabled] .ivu-input {
+  color: #959595 !important;
+}
+.ivu-select-input[disabled] {
+  color: #959595 !important;
+  -webkit-text-fill-color: #959595 !important;
+}
+.ivu-select-disabled .ivu-select-selection {
+  color: #959595 !important;
+}
+</style>
 <style scoped lang="scss">
 .list-group-item- {
   display: inline-block;

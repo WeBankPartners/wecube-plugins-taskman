@@ -1080,7 +1080,7 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 	return
 }
 
-func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken string) (backToken string, err error) {
+func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (backToken string, err error) {
 	var actions []*execAction
 	if confirmToken == "" {
 		existFlag, err := checkImportExist(input.RequestTemplate.Id)
@@ -1141,8 +1141,9 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 	if err != nil {
 		return backToken, err
 	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
 	for _, v := range input.FormTemplate {
-		actions = append(actions, &execAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)", Param: []interface{}{v.Id, v.Name, v.Description, v.CreatedBy, v.CreatedTime, v.UpdatedBy, v.UpdatedTime}})
+		actions = append(actions, &execAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)", Param: []interface{}{v.Id, v.Name, v.Description, operator, nowTime, operator, nowTime}})
 	}
 	for _, v := range input.FormItemTemplate {
 		tmpAction := execAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
@@ -1161,15 +1162,17 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		if _, b := roleMap[input.RequestTemplateGroup.ManageRole]; !b {
 			input.RequestTemplateGroup.ManageRole = models.AdminRole
 		}
-		actions = append(actions, &execAction{Sql: "insert into request_template_group(id,name,description,manage_role,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?)", Param: []interface{}{input.RequestTemplateGroup.Id, input.RequestTemplateGroup.Name, input.RequestTemplateGroup.Description, input.RequestTemplateGroup.ManageRole, input.RequestTemplateGroup.CreatedBy, input.RequestTemplateGroup.CreatedTime, input.RequestTemplateGroup.UpdatedBy, input.RequestTemplateGroup.UpdatedTime}})
+		actions = append(actions, &execAction{Sql: "insert into request_template_group(id,name,description,manage_role,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?)", Param: []interface{}{input.RequestTemplateGroup.Id, input.RequestTemplateGroup.Name, input.RequestTemplateGroup.Description, input.RequestTemplateGroup.ManageRole, operator, nowTime, operator, nowTime}})
 	}
-	rtAction := execAction{Sql: "insert into request_template(id,`group`,name,description,form_template,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler,del_flag) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	input.RequestTemplate.Status = "created"
+	input.RequestTemplate.ConfirmTime = ""
+	rtAction := execAction{Sql: "insert into request_template(id,`group`,name,description,form_template,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	rtAction.Param = []interface{}{input.RequestTemplate.Id, input.RequestTemplate.Group, input.RequestTemplate.Name, input.RequestTemplate.Description, input.RequestTemplate.FormTemplate, input.RequestTemplate.Tags, input.RequestTemplate.RecordId, input.RequestTemplate.Version, input.RequestTemplate.ConfirmTime, input.RequestTemplate.Status, input.RequestTemplate.PackageName, input.RequestTemplate.EntityName,
-		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, input.RequestTemplate.CreatedBy, input.RequestTemplate.CreatedTime, input.RequestTemplate.UpdatedBy, input.RequestTemplate.UpdatedTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler, input.RequestTemplate.DelFlag}
+		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, operator, nowTime, operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler}
 	actions = append(actions, &rtAction)
 	for _, v := range input.TaskTemplate {
 		tmpAction := execAction{Sql: "insert into task_template(id,name,description,form_template,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{v.Id, v.Name, v.Description, v.FormTemplate, v.RequestTemplate, v.NodeId, v.NodeDefId, v.NodeName, v.ExpireDay, v.Handler, v.CreatedBy, v.CreatedTime, v.UpdatedBy, v.UpdatedTime}
+		tmpAction.Param = []interface{}{v.Id, v.Name, v.Description, v.FormTemplate, v.RequestTemplate, v.NodeId, v.NodeDefId, v.NodeName, v.ExpireDay, v.Handler, operator, nowTime, operator, nowTime}
 		actions = append(actions, &tmpAction)
 	}
 	rtRoleFetch := false

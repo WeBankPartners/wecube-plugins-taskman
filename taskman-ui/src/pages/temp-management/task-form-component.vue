@@ -105,6 +105,11 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
+              <div v-if="element.elementType === 'group'" style="width:100%;height: 80px;border:1px solid #5ea7f4">
+                <span style="margin: 8px;color:#bbbbbb">
+                  Item Group
+                </span>
+              </div>
             </div>
           </draggable>
         </div>
@@ -125,7 +130,15 @@
                 ></Button>
               </span>
               <span v-else>
-                <Input v-model="item.itemGroupName" style="width: calc(50%);"></Input>
+                <p>GroupName &nbsp;<Input v-model="item.itemGroupName" style="width: 300px;"></Input></p>
+                <p style="display:inline-block">
+                  GroupId &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <Input
+                    :disabled="!(item.attrs.length === 0 || item.attrs[0].entity === '')"
+                    v-model="item.itemGroup"
+                    style="width: 300px;"
+                  ></Input>
+                </p>
                 <Button
                   @click.stop="confirmItemGroupName(itemIndex)"
                   type="primary"
@@ -135,7 +148,7 @@
                   icon="md-checkmark"
                 ></Button>
               </span>
-              <draggable class="dragArea" :list="item.attrs" :sort="isCheck !== 'Y'" group="people" @change="log">
+              <draggable class="dragArea" :list="item.attrs" :sort="isCheck !== 'Y'" group="people" @change="log(item)">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
@@ -205,7 +218,10 @@
                       <Option value="textarea">Textarea</Option>
                     </Select>
                   </FormItem>
-                  <FormItem v-if="editElement.elementType === 'select' && editElement.entity === ''" :label="$t('xxx')">
+                  <FormItem
+                    v-if="editElement.elementType === 'select' && editElement.entity === ''"
+                    :label="$t('data_set')"
+                  >
                     <Input v-model="editElement.dataOptions" :disabled="isCheck === 'Y'" placeholder="eg:a,b"></Input>
                   </FormItem>
                   <FormItem :label="$t('defaults')">
@@ -318,6 +334,12 @@ export default {
       handlerRolesOptions: [],
 
       customElement: [
+        {
+          id: 4,
+          elementType: 'group',
+          itemGroup: '',
+          itemGroupName: ''
+        },
         {
           id: 1,
           name: 'input',
@@ -479,6 +501,7 @@ export default {
       let editGroup = this.finalElement[index]
       editGroup.attrs.forEach(attr => {
         attr.itemGroupName = editGroup.itemGroupName
+        attr.itemGroup = editGroup.itemGroup
       })
       this.editItemGroupNameIndex = null
     },
@@ -771,24 +794,51 @@ export default {
       })
     },
     cloneDog (val) {
-      if (this.isCheck === 'Y') return
+      // if (this.isCheck === 'Y') return
+      // let newItem = JSON.parse(JSON.stringify(val))
+      // newItem.id = idGlobal++
+      // // newItem.tag = 'Custom'
+      // newItem.itemGroup = 'Custom'
+      // newItem.itemGroupName = 'Custom'
+      // newItem.title = newItem.title + idGlobal
+      // const find = this.finalElement.find(l => l.itemGroup === 'Custom')
+      // if (find) {
+      //   find.attrs.push(newItem)
+      // } else {
+      //   this.finalElement.push({
+      //     tag: 'Custom',
+      //     itemGroup: 'Custom',
+      //     itemGroupName: 'Custom',
+      //     attrs: [newItem]
+      //   })
+      // }
+
+      if (this.$parent.isCheck === 'Y') return
+      if (val.elementType === 'group') {
+        this.finalElement.push({
+          itemGroup: 'itemGroup' + idGlobal++,
+          itemGroupName: 'itemGroup' + idGlobal++,
+          attrs: []
+        })
+        return
+      }
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = idGlobal++
-      // newItem.tag = 'Custom'
-      newItem.itemGroup = 'Custom'
-      newItem.itemGroupName = 'Custom'
+      // newItem.itemGroup = 'Custom'
+      // newItem.itemGroupName = 'Custom'
       newItem.title = newItem.title + idGlobal
-      const find = this.finalElement.find(l => l.itemGroup === 'Custom')
-      if (find) {
-        find.attrs.push(newItem)
-      } else {
-        this.finalElement.push({
-          tag: 'Custom',
-          itemGroup: 'Custom',
-          itemGroupName: 'Custom',
-          attrs: [newItem]
-        })
-      }
+      return newItem
+      // const find = this.finalElement.find(l => l.itemGroupName === 'Custom')
+      // if (find) {
+      //   find.attrs.push(newItem)
+      //   return newItem
+      // } else {
+      //   this.finalElement.push({
+      //     itemGroup: 'Custom',
+      //     itemGroupName: 'Custom',
+      //     attrs: [newItem]
+      //   })
+      // }
     },
     selectElement (itemIndex, eleIndex) {
       if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {

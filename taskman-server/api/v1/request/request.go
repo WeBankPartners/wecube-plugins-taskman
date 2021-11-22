@@ -6,6 +6,8 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
 )
 
 func GetEntityData(c *gin.Context) {
@@ -254,5 +256,52 @@ func GetReferenceData(c *gin.Context) {
 	} else {
 		result = db.FilterInSideData(result, attrId, requestId)
 		middleware.ReturnData(c, result)
+	}
+}
+
+func UploadRequestAttachFile(c *gin.Context) {
+	requestId := c.Param("requestId")
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
+		return
+	}
+	b, err := ioutil.ReadAll(f)
+	defer f.Close()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
+		return
+	}
+	err = db.UploadAttachFile(requestId, "", file.Filename, middleware.GetRequestUser(c), b)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func DownloadAttachFile(c *gin.Context) {
+	fileId := c.Param("fileId")
+	fileContent, fileName, err := db.DownloadAttachFile(fileId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
+		c.Data(http.StatusOK, "application/octet-stream", fileContent)
+	}
+}
+
+func RemoveAttachFile(c *gin.Context) {
+	fileId := c.Param("fileId")
+	err := db.RemoveAttachFile(fileId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
 	}
 }

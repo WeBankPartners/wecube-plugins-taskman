@@ -37,32 +37,32 @@ type EntityTreeObj struct {
 }
 
 type RequestTable struct {
-	Id                  string   `json:"id" xorm:"id"`
-	Name                string   `json:"name" xorm:"name"`
-	Form                string   `json:"form" xorm:"form"`
-	RequestTemplate     string   `json:"requestTemplate" xorm:"request_template"`
-	RequestTemplateName string   `json:"requestTemplateName" xorm:"-"`
-	ProcInstanceId      string   `json:"procInstanceId" xorm:"proc_instance_id"`
-	ProcInstanceKey     string   `json:"procInstanceKey" xorm:"proc_instance_key"`
-	Reporter            string   `json:"reporter" xorm:"reporter"`
-	Handler             string   `json:"handler" xorm:"handler"`
-	ReportTime          string   `json:"reportTime" xorm:"report_time"`
-	Emergency           int      `json:"emergency" xorm:"emergency"`
-	ReportRole          string   `json:"reportRole" xorm:"report_role"`
-	AttachFile          string   `json:"attachFile" xorm:"attach_file"`
-	Status              string   `json:"status" xorm:"status"`
-	Cache               string   `json:"cache" xorm:"cache"`
-	BindCache           string   `json:"bindCache" xorm:"bind_cache"`
-	Result              string   `json:"result" xorm:"result"`
-	ExpireTime          string   `json:"expireTime" xorm:"expire_time"`
-	ExpectTime          string   `json:"expectTime" xorm:"expect_time"`
-	ConfirmTime         string   `json:"confirmTime" xorm:"confirm_time"`
-	CreatedBy           string   `json:"createdBy" xorm:"created_by"`
-	CreatedTime         string   `json:"createdTime" xorm:"created_time"`
-	UpdatedBy           string   `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime         string   `json:"updatedTime" xorm:"updated_time"`
-	DelFlag             int      `json:"delFlag" xorm:"del_flag"`
-	HandleRoles         []string `json:"handleRoles" xorm:"-"`
+	Id                  string             `json:"id" xorm:"id"`
+	Name                string             `json:"name" xorm:"name"`
+	Form                string             `json:"form" xorm:"form"`
+	RequestTemplate     string             `json:"requestTemplate" xorm:"request_template"`
+	RequestTemplateName string             `json:"requestTemplateName" xorm:"-"`
+	ProcInstanceId      string             `json:"procInstanceId" xorm:"proc_instance_id"`
+	ProcInstanceKey     string             `json:"procInstanceKey" xorm:"proc_instance_key"`
+	Reporter            string             `json:"reporter" xorm:"reporter"`
+	Handler             string             `json:"handler" xorm:"handler"`
+	ReportTime          string             `json:"reportTime" xorm:"report_time"`
+	Emergency           int                `json:"emergency" xorm:"emergency"`
+	ReportRole          string             `json:"reportRole" xorm:"report_role"`
+	Status              string             `json:"status" xorm:"status"`
+	Cache               string             `json:"cache" xorm:"cache"`
+	BindCache           string             `json:"bindCache" xorm:"bind_cache"`
+	Result              string             `json:"result" xorm:"result"`
+	ExpireTime          string             `json:"expireTime" xorm:"expire_time"`
+	ExpectTime          string             `json:"expectTime" xorm:"expect_time"`
+	ConfirmTime         string             `json:"confirmTime" xorm:"confirm_time"`
+	CreatedBy           string             `json:"createdBy" xorm:"created_by"`
+	CreatedTime         string             `json:"createdTime" xorm:"created_time"`
+	UpdatedBy           string             `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime         string             `json:"updatedTime" xorm:"updated_time"`
+	DelFlag             int                `json:"delFlag" xorm:"del_flag"`
+	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
+	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
 }
 
 type ExpireObj struct {
@@ -78,10 +78,11 @@ type ExpireObj struct {
 type AttachFileTable struct {
 	Id           string `json:"id" xorm:"id"`
 	Name         string `json:"name" xorm:"name"`
-	S3Url        string `json:"s3Url" xorm:"s3_url"`
 	S3BucketName string `json:"s3BucketName" xorm:"s3_bucket_name"`
 	S3KeyName    string `json:"s3KeyName" xorm:"s3_key_name"`
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
+	Request      string `json:"request" xorm:"request"`
+	Task         string `json:"task" xorm:"task"`
 }
 
 type RequestCacheData struct {

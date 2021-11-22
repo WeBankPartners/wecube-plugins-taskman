@@ -283,3 +283,9 @@ SET FOREIGN_KEY_CHECKS = 1;
 #@v0.1.0.1-begin@;
 alter table `role` add column `email` varchar(64) DEFAULT null;
 #@v0.1.0.1-end@;
+
+#@v0.1.0.5-begin@;
+alter table attach_file drop column s3_url;
+alter table attach_file add column request varchar(64) default null;
+alter table attach_file add column task varchar(64) default null;
+#@v0.1.0.5-end@;

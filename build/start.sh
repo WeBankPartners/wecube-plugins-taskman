@@ -15,5 +15,8 @@ sed -i "s~{{TASKMAN_MAIL_AUTH_SENDER}}~$TASKMAN_MAIL_AUTH_SENDER~g" /app/taskman
 sed -i "s~{{TASKMAN_MAIL_AUTH_SERVER}}~$TASKMAN_MAIL_AUTH_SERVER~g" /app/taskman/conf/default.json
 sed -i "s~{{TASKMAN_MAIL_AUTH_PWD}}~$TASKMAN_MAIL_AUTH_PWD~g" /app/taskman/conf/default.json
 sed -i "s~{{TASKMAN_MAIL_AUTH_SSL}}~$TASKMAN_MAIL_AUTH_SSL~g" /app/taskman/conf/default.json
+sed -i "s~{{MINIO_ADDRESS}}~$MINIO_ADDRESS~g" /app/taskman/conf/default.json
+sed -i "s~{{MINIO_ACCESS_KEY}}~$MINIO_ACCESS_KEY~g" /app/taskman/conf/default.json
+sed -i "s~{{MINIO_SECRET_KEY}}~$MINIO_SECRET_KEY~g" /app/taskman/conf/default.json
 
 ./taskman-server

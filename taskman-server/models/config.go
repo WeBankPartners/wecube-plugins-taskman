@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
 
 type HttpServerConfig struct {
@@ -52,6 +53,14 @@ type MailConfig struct {
 	Ssl          string `json:"ssl"`
 }
 
+type AttachFileConfig struct {
+	MinioAddress   string `json:"minio_address"`
+	MinioAccessKey string `json:"minio_access_key"`
+	MinioSecretKey string `json:"minio_secret_key"`
+	Bucket         string `json:"bucket"`
+	SSL            bool   `json:"ssl"`
+}
+
 type GlobalConfig struct {
 	DefaultLanguage string           `json:"default_language"`
 	HttpServer      HttpServerConfig `json:"http_server"`
@@ -60,6 +69,7 @@ type GlobalConfig struct {
 	RsaKeyPath      string           `json:"rsa_key_path"`
 	Wecube          WecubeConfig     `json:"wecube"`
 	Mail            MailConfig       `json:"mail"`
+	AttachFile      AttachFileConfig `json:"attach_file"`
 }
 
 var (
@@ -109,6 +119,12 @@ func InitConfig(configFile string) (errMessage string) {
 	tmpCoreToken.InitCoreToken()
 	CoreToken = &tmpCoreToken
 	ProcessFetchTabs = os.Getenv("TASKMAN_PROCESS_TAGS")
+	// attach file
+	if strings.Contains(Config.AttachFile.MinioAddress, "//") {
+		Config.AttachFile.MinioAddress = strings.Split(Config.AttachFile.MinioAddress, "//")[1]
+	}
+	Config.AttachFile.MinioAccessKey, _ = cipher.DecryptRsa(Config.AttachFile.MinioAccessKey, string(rsaFileContent))
+	Config.AttachFile.MinioSecretKey, _ = cipher.DecryptRsa(Config.AttachFile.MinioSecretKey, string(rsaFileContent))
 	// init mail
 	MailEnable = false
 	if c.Mail.AuthServer != "" && c.Mail.SenderMail != "" {

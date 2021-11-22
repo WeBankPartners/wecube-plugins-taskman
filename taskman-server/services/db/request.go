@@ -253,6 +253,7 @@ func GetRequestWithRoot(requestId string) (result models.RequestTable, err error
 		}
 		result.Cache = cacheObj.RootEntityId
 	}
+	result.AttachFiles = GetRequestAttachFileList(requestId)
 	return
 }
 
@@ -1060,8 +1061,9 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	if err != nil {
 		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
 	}
-	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
 	requestQuery.FormData = requestCache.Data
+	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
 	result.Data = []*models.TaskQueryObj{&requestQuery}
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
 	if len(result.TimeStep) > 0 {

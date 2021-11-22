@@ -37,5 +37,12 @@
     "auth_server": "",
     "auth_password": "",
     "ssl": ""
+  },
+  "attach_file": {
+    "minio_address": "",
+    "minio_access_key": "",
+    "minio_secret_key": "",
+    "bucket": "",
+    "ssl": false
   }
 }

@@ -190,7 +190,7 @@ type TaskQueryObj struct {
 	Reporter        string                    `json:"reporter"`
 	ReportTime      string                    `json:"reportTime"`
 	Comment         string                    `json:"comment"`
-	AttachFiles     []string                  `json:"attachFiles"`
+	AttachFiles     []*AttachFileTable        `json:"attachFiles"`
 	Editable        bool                      `json:"editable"`
 	Status          string                    `json:"status"`
 	NextOption      []string                  `json:"nextOption"`

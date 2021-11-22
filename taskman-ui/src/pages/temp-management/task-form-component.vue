@@ -65,6 +65,7 @@
             multiple
             filterable
           >
+            <Button type="success" @click="selectAll('input')" size="small" long>{{ $t('select_all') }}</Button>
             <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
               <Option
                 v-for="attr in item.attributes"
@@ -83,6 +84,7 @@
             multiple
             filterable
           >
+            <Button type="success" @click="selectAll('output')" size="small" long>{{ $t('select_all') }}</Button>
             <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
               <Option
                 v-for="attr in item.attributes"
@@ -481,19 +483,30 @@ export default {
           canSelect.push(attr.id)
         })
       })
-      // this.selectedInputFormItem.forEach((i, index) => {
-      //   if (!canSelect.includes(i)) {
-      //     this.selectedInputFormItem = this.selectedInputFormItem.splice(index, 1)
-      //   }
-      // })
-      // this.selectedOutputFormItem.forEach((i, index) => {
-      //   if (!canSelect.includes(i)) {
-      //     this.selectedOutputFormItem = this.selectedOutputFormItem.splice(index, 1)
-      //   }
-      // })
     }
   },
   methods: {
+    selectAll (type) {
+      if (type === 'input') {
+        this.formItemOptions.forEach(itemOptions => {
+          itemOptions.attributes.forEach(attr => {
+            if (!this.selectedInputFormItem.includes(attr.id) && !this.selectedOutputFormItem.includes(attr.id)) {
+              this.selectedInputFormItem.push(attr.id)
+            }
+          })
+        })
+        this.changeInputSelectedForm()
+      } else {
+        this.formItemOptions.forEach(itemOptions => {
+          itemOptions.attributes.forEach(attr => {
+            if (!this.selectedInputFormItem.includes(attr.id) && !this.selectedOutputFormItem.includes(attr.id)) {
+              this.selectedOutputFormItem.push(attr.id)
+            }
+          })
+        })
+        this.changeOutputSelectedForm()
+      }
+    },
     editItemGroupName (index) {
       this.editItemGroupNameIndex = index
     },
@@ -759,7 +772,7 @@ export default {
           packageName: seleted.entityPackage,
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
-          id: 'c_' + seleted.id,
+          id: seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
           multiple: 'N',
@@ -794,25 +807,6 @@ export default {
       })
     },
     cloneDog (val) {
-      // if (this.isCheck === 'Y') return
-      // let newItem = JSON.parse(JSON.stringify(val))
-      // newItem.id = idGlobal++
-      // // newItem.tag = 'Custom'
-      // newItem.itemGroup = 'Custom'
-      // newItem.itemGroupName = 'Custom'
-      // newItem.title = newItem.title + idGlobal
-      // const find = this.finalElement.find(l => l.itemGroup === 'Custom')
-      // if (find) {
-      //   find.attrs.push(newItem)
-      // } else {
-      //   this.finalElement.push({
-      //     tag: 'Custom',
-      //     itemGroup: 'Custom',
-      //     itemGroupName: 'Custom',
-      //     attrs: [newItem]
-      //   })
-      // }
-
       if (this.$parent.isCheck === 'Y') return
       if (val.elementType === 'group') {
         this.finalElement.push({
@@ -823,22 +817,9 @@ export default {
         return
       }
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = idGlobal++
-      // newItem.itemGroup = 'Custom'
-      // newItem.itemGroupName = 'Custom'
+      newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
       return newItem
-      // const find = this.finalElement.find(l => l.itemGroupName === 'Custom')
-      // if (find) {
-      //   find.attrs.push(newItem)
-      //   return newItem
-      // } else {
-      //   this.finalElement.push({
-      //     itemGroup: 'Custom',
-      //     itemGroupName: 'Custom',
-      //     attrs: [newItem]
-      //   })
-      // }
     },
     selectElement (itemIndex, eleIndex) {
       if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {

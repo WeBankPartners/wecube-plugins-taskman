@@ -40,6 +40,7 @@
                 :disabled="$parent.isCheck === 'Y'"
                 :key="item.id"
               >
+                <Button type="success" @click="selectAll(item)" size="small" long>{{ $t('select_all') }}</Button>
                 <Option v-for="attr in item.attributes" :value="attr.id" :key="attr.id">{{ attr.description }}</Option>
               </Select>
             </div>
@@ -429,6 +430,15 @@ export default {
     }
   },
   methods: {
+    selectAll (item) {
+      console.log(item)
+      item.attributes.forEach(attr => {
+        if (!item.seletedAttrs.includes(attr.id)) {
+          item.seletedAttrs.push(attr.id)
+        }
+      })
+      this.changeSelectedForm()
+    },
     editItemGroupName (index) {
       this.editItemGroupNameIndex = index
     },
@@ -671,22 +681,9 @@ export default {
         return
       }
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = idGlobal++
-      // newItem.itemGroup = 'Custom'
-      // newItem.itemGroupName = 'Custom'
+      newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
       return newItem
-      // const find = this.finalElement.find(l => l.itemGroupName === 'Custom')
-      // if (find) {
-      //   find.attrs.push(newItem)
-      //   return newItem
-      // } else {
-      //   this.finalElement.push({
-      //     itemGroup: 'Custom',
-      //     itemGroupName: 'Custom',
-      //     attrs: [newItem]
-      //   })
-      // }
     },
     async next () {
       if (this.$parent.isCheck === 'Y') {

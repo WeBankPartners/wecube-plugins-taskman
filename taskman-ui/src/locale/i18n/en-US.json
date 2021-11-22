@@ -113,5 +113,7 @@
   "fork": "Fork",
   "download": "Export",
   "upload": "Import",
-  "confirm_import": "Import Confirm?"
+  "confirm_import": "Import Confirm?",
+  "data_set": "Data Set",
+  "select_all": "Select All"
 }

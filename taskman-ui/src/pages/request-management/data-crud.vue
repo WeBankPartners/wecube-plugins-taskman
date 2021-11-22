@@ -21,7 +21,7 @@
     </Form>
     <Tabs :value="activeTab" @on-click="changeTab">
       <template v-for="entity in requestData">
-        <TabPane :label="entity.itemGroupName" :name="entity.entity" :key="entity.entity">
+        <TabPane :label="entity.itemGroupName" :name="entity.entity || entity.itemGroup" :key="entity.itemGroup">
           <DataMgmt ref="dataMgmt" @getEntityData="getEntityData" @backData="backData"></DataMgmt>
         </TabPane>
       </template>
@@ -169,18 +169,18 @@ export default {
         this.activeTab = this.activeTab || data.data[0].entity
         this.requestData = data.data
         this.$nextTick(() => {
-          const index = this.requestData.findIndex(r => r.entity === this.activeTab)
+          const index = this.requestData.findIndex(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
           this.initTable(index)
         })
       }
     },
     changeTab (entity) {
       this.activeTab = entity
-      const index = this.requestData.findIndex(r => r.entity === this.activeTab)
+      const index = this.requestData.findIndex(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.initTable(index)
     },
     initTable (index) {
-      const find = this.requestData.find(r => r.entity === this.activeTab)
+      const find = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.$refs.dataMgmt[index].initData(
         this.rootEntityId,
         this.requestData,

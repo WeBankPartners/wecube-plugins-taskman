@@ -20,7 +20,15 @@ func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent 
 	fileGuid := guid.CreateGuid()
 	uploadParam := file_server.MinioParam{Ctx: context.Background(), Bucket: models.Config.AttachFile.Bucket}
 	uploadParam.FileContent = fileContent
-	uploadParam.ObjectName = fmt.Sprintf("%s_%s", fileName, fileGuid)
+	requestTemplateId := getAttachFileRequestTemplate(requestId, taskId)
+	if requestTemplateId != "" {
+		requestTemplateId = requestTemplateId + "/"
+	}
+	if requestId != "" {
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, requestId)
+	} else {
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, taskId)
+	}
 	err = ms.Upload(uploadParam)
 	if err != nil {
 		return err
@@ -162,4 +170,17 @@ func CheckAttachFilePermission(fileId, operator, operation string, roles []strin
 		return fmt.Errorf("Permission illegal ")
 	}
 	return nil
+}
+
+func getAttachFileRequestTemplate(requestId, taskId string) string {
+	var requestTable []*models.RequestTable
+	if requestId != "" {
+		x.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
+	} else {
+		x.SQL("select request_template from request where id in (select request from task where id=?)", taskId).Find(&requestTable)
+	}
+	if len(requestTable) > 0 {
+		return requestTable[0].RequestTemplate
+	}
+	return ""
 }

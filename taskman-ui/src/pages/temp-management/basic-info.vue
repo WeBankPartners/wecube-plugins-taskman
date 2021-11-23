@@ -356,10 +356,10 @@ export default {
 <style>
 .ivu-input[disabled],
 fieldset[disabled] .ivu-input {
-  color: #959595 !important;
+  color: #757575 !important;
 }
 .ivu-select-input[disabled] {
-  color: #959595;
-  -webkit-text-fill-color: #959595;
+  color: #757575;
+  -webkit-text-fill-color: #757575;
 }
 </style>

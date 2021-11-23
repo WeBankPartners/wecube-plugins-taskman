@@ -10,6 +10,8 @@ type EntityDataObj struct {
 	Id          string `json:"guid"`
 	DisplayName string `json:"key_name"`
 	IsNew       bool   `json:"isNew"`
+	PackageName string `json:"package_name"`
+	Entity      string `json:"entity"`
 }
 
 type EntityTreeResult struct {
@@ -217,4 +219,15 @@ type RequestProcessTaskNodeBindObj struct {
 	Oid          string `json:"oid"`
 	EntityDataId string `json:"entityDataId"`
 	BindFlag     string `json:"bindFlag"`
+}
+
+type WorkflowEntityQuery struct {
+	Status  string                   `json:"status"`
+	Message string                   `json:"message"`
+	Data    []*WorkflowEntityDataObj `json:"data"`
+}
+
+type WorkflowEntityDataObj struct {
+	Id          string `json:"id"`
+	DisplayName string `json:"displayName"`
 }

@@ -291,6 +291,10 @@ func UploadRequestAttachFile(c *gin.Context) {
 
 func DownloadAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
+	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnDataPermissionDenyError(c)
+		return
+	}
 	fileContent, fileName, err := db.DownloadAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -302,6 +306,10 @@ func DownloadAttachFile(c *gin.Context) {
 
 func RemoveAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
+	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnDataPermissionDenyError(c)
+		return
+	}
 	err := db.RemoveAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -311,6 +319,7 @@ func RemoveAttachFile(c *gin.Context) {
 }
 
 func QueryWorkflowEntity(c *gin.Context) {
-	result := models.EntityQueryResult{Status: "OK", Message: "Success", Data: []*models.EntityDataObj{}}
+	result := models.WorkflowEntityQuery{Status: "OK", Message: "Success", Data: []*models.WorkflowEntityDataObj{}}
+	result.Data = append(result.Data, &models.WorkflowEntityDataObj{Id: "taskman_request_id", DisplayName: "request"})
 	c.JSON(http.StatusOK, result)
 }

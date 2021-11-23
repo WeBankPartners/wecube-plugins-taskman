@@ -6,4 +6,5 @@ const (
 	UrlPrefix            = "/taskman"
 	RowDataPermissionErr = "Row data permission deny "
 	AdminRole            = "SUPER_ADMIN"
+	UploadFileMaxSize    = 10485760
 )

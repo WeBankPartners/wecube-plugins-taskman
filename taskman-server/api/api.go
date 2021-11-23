@@ -119,6 +119,8 @@ func InitHttpServer() {
 			break
 		}
 	}
+	// entity query
+	r.POST(urlPrefix+"/entities/workflow/query", request.QueryWorkflowEntity)
 	r.Run(":" + models.Config.HttpServer.Port)
 }
 

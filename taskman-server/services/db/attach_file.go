@@ -20,7 +20,15 @@ func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent 
 	fileGuid := guid.CreateGuid()
 	uploadParam := file_server.MinioParam{Ctx: context.Background(), Bucket: models.Config.AttachFile.Bucket}
 	uploadParam.FileContent = fileContent
-	uploadParam.ObjectName = fmt.Sprintf("%s_%s", fileName, fileGuid)
+	requestTemplateId := getAttachFileRequestTemplate(requestId, taskId)
+	if requestTemplateId != "" {
+		requestTemplateId = requestTemplateId + "/"
+	}
+	if requestId != "" {
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, requestId)
+	} else {
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, taskId)
+	}
 	err = ms.Upload(uploadParam)
 	if err != nil {
 		return err
@@ -101,4 +109,78 @@ func getMinioServerObj() (ms file_server.MinioServer, err error) {
 	ms = file_server.MinioServer{ServerAddress: models.Config.AttachFile.MinioAddress, AccessKey: models.Config.AttachFile.MinioAccessKey, SecretKey: models.Config.AttachFile.MinioSecretKey, SSL: models.Config.AttachFile.SSL}
 	err = ms.Init()
 	return
+}
+
+func CheckAttachFilePermission(fileId, operator, operation string, roles []string) error {
+	fileObj, err := getAttachFileInfo(fileId)
+	if err != nil {
+		return err
+	}
+	var legalRoles []string
+	if fileObj.Request != "" {
+		var requestTemplateRoles []*models.RequestTemplateRoleTable
+		if operation == "download" {
+			x.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id=?)) union select `role` from request_template_role where request_template in (select request_template from request where id=?)) t1", fileObj.Request, fileObj.Request).Find(&requestTemplateRoles)
+			for _, v := range requestTemplateRoles {
+				legalRoles = append(legalRoles, v.Role)
+			}
+		} else {
+			var requestTable []*models.RequestTable
+			x.SQL("select id,created_by from request where id=?", fileObj.Request).Find(&requestTable)
+			if len(requestTable) > 0 {
+				if requestTable[0].CreatedBy == operator {
+					return nil
+				}
+			}
+			x.SQL("select * from request_template_role where request_template in (select request_template from request where id=?)", fileObj.Request).Find(&requestTemplateRoles)
+			for _, v := range requestTemplateRoles {
+				if v.RoleType == "USE" {
+					legalRoles = append(legalRoles, v.Role)
+				}
+			}
+		}
+	}
+	if fileObj.Task != "" {
+		var taskTemplateRoles []*models.TaskTemplateRoleTable
+		if operation == "download" {
+			x.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id in (select request from task where id=?))) union select `role` from request_template_role where request_template in (select request_template from request where id in (select request from task where id=?))) t1", fileObj.Task, fileObj.Task).Find(&taskTemplateRoles)
+			for _, v := range taskTemplateRoles {
+				legalRoles = append(legalRoles, v.Role)
+			}
+		} else {
+			x.SQL("select * from task_template_role where task_template in (select task_template from task where id=?)", fileObj.Task).Find(&taskTemplateRoles)
+			for _, v := range taskTemplateRoles {
+				legalRoles = append(legalRoles, v.Role)
+			}
+		}
+	}
+	legalFlag := false
+	for _, v := range legalRoles {
+		for _, vv := range roles {
+			if v == vv {
+				legalFlag = true
+				break
+			}
+		}
+		if legalFlag {
+			break
+		}
+	}
+	if !legalFlag {
+		return fmt.Errorf("Permission illegal ")
+	}
+	return nil
+}
+
+func getAttachFileRequestTemplate(requestId, taskId string) string {
+	var requestTable []*models.RequestTable
+	if requestId != "" {
+		x.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
+	} else {
+		x.SQL("select request_template from request where id in (select request from task where id=?)", taskId).Find(&requestTable)
+	}
+	if len(requestTable) > 0 {
+		return requestTable[0].RequestTemplate
+	}
+	return ""
 }

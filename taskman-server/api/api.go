@@ -86,7 +86,7 @@ func init() {
 		&handlerFuncObj{Url: "/task/save/:taskId", Method: "POST", HandlerFunc: task.SaveTaskForm},
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
-		&handlerFuncObj{Url: "/task/attach-file/upload/:requestId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
+		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
 	)
 }
 
@@ -120,7 +120,7 @@ func InitHttpServer() {
 		}
 	}
 	// entity query
-	r.POST(urlPrefix+"/entities/workflow/query", request.QueryWorkflowEntity)
+	r.POST(urlPrefix+"/entities/request/query", request.QueryWorkflowEntity)
 	r.Run(":" + models.Config.HttpServer.Port)
 }
 

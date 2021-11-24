@@ -23,6 +23,7 @@ func main() {
 	if initDbError := db.InitDatabase(); initDbError != nil {
 		return
 	}
+	go db.StartCornJob()
 	//start http
 	api.InitHttpServer()
 }

@@ -42,9 +42,16 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 	}
 	b, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
-	err = json.Unmarshal(b, &result)
+	var responseObj models.WorkflowEntityQuery
+	err = json.Unmarshal(b, &responseObj)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+	} else {
+		result.Status = responseObj.Status
+		result.Message = responseObj.Message
+		for _, v := range responseObj.Data {
+			result.Data = append(result.Data, &models.EntityDataObj{Id: v.Id, DisplayName: v.DisplayName, PackageName: requestTemplateObj.PackageName, Entity: requestTemplateObj.EntityName})
+		}
 	}
 	return
 }
@@ -662,7 +669,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	if err != nil {
 		return result, fmt.Errorf("Try to append useless entity fail,%s ", err.Error())
 	}
-	fillBindingWithRequestData(requestId, &cacheData)
+	fillBindingWithRequestData(requestId, userToken, &cacheData)
 	cacheBytes, _ := json.Marshal(cacheData)
 	startParam := BuildRequestProcessData(cacheData)
 	startParamBytes, tmpErr := json.Marshal(startParam)
@@ -722,7 +729,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 	return err
 }
 
-func fillBindingWithRequestData(requestId string, cacheData *models.RequestCacheData) {
+func fillBindingWithRequestData(requestId, userToken string, cacheData *models.RequestCacheData) {
 	var items []*models.FormItemTemplateTable
 	x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
@@ -847,6 +854,27 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 		}
 		if existFlag {
 			break
+		}
+	}
+	if cacheData.RootEntityValue.Oid != "" && cacheData.RootEntityValue.EntityName == "" {
+		entityQueryResult, entityQueryErr := GetEntityData(requestId, userToken)
+		if entityQueryErr != nil {
+			log.Logger.Error("Try to fill root entity data fail", log.Error(entityQueryErr))
+		} else {
+			for _, v := range entityQueryResult.Data {
+				if cacheData.RootEntityValue.Oid == v.Id {
+					cacheData.RootEntityValue.PackageName = v.PackageName
+					cacheData.RootEntityValue.EntityName = v.Entity
+					cacheData.RootEntityValue.BindFlag = "N"
+					cacheData.RootEntityValue.EntityDataId = v.Id
+					cacheData.RootEntityValue.Oid = fmt.Sprintf("%s:%s:%s", v.PackageName, v.Entity, v.Id)
+					cacheData.RootEntityValue.EntityDisplayName = v.DisplayName
+					cacheData.RootEntityValue.Processed = false
+					cacheData.RootEntityValue.SucceedingOids = []string{}
+					cacheData.RootEntityValue.PreviousOids = []string{}
+					break
+				}
+			}
 		}
 	}
 }
@@ -1216,6 +1244,10 @@ func BuildRequestProcessData(input models.RequestCacheData) (result models.Reque
 				result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
 			}
 		}
+	}
+	if len(result.Entities) == 0 {
+		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}
+		result.Entities = append(result.Entities, &tmpEntityValue)
 	}
 	return result
 }

@@ -17,7 +17,7 @@
 
     <!-- 3.数据模型 - 描述本插件包的数据模型,并且描述和Framework数据模型的关系 -->
     <dataModel>
-        <entity name="workflow" displayName="人工任务" description="人工任务模型">
+        <entity name="request" displayName="人工任务" description="人工任务模型">
             <attribute name="id" datatype="str" description="唯一ID"/>
             <attribute name="displayName" datatype="str" description="显示名"/>
         </entity>

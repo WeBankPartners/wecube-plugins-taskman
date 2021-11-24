@@ -252,10 +252,11 @@ export default {
       }
       return true
     },
-    uploadFailed (val) {
+    uploadFailed (val, response) {
+      console.log(val)
       this.$Notice.error({
         title: 'Error',
-        desc: val.statusMessage
+        desc: response.statusMessage
       })
     },
     async uploadSucess (val) {

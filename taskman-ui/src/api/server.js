@@ -91,3 +91,4 @@ export const getTemplateTags = requestTemplateGroup =>
   req.get(`/taskman/api/v1/request-template/tags/${requestTemplateGroup}`)
 export const confirmUploadTemplate = confirmToken =>
   req.post(`/taskman/api/v1/request-template/import-confirm/${confirmToken}`)
+export const deleteAttach = fileId => req.delete(`/taskman/api/v1/request/attach-file/remove/${fileId}`)

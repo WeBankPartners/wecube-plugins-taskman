@@ -119,7 +119,7 @@
       <Col span="12" style="border: 1px solid #dcdee2;padding: 16px;width:48%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', border: '1px solid #dcdee2;' }">
           <template v-for="(item, itemIndex) in finalElement">
-            <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+            <div :key="itemIndex" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               <span v-if="itemIndex !== editItemGroupNameIndex">
                 {{ item.itemGroupName }}
                 <Button

@@ -69,7 +69,7 @@
       <Col span="12" style="border: 1px solid #dcdee2;padding: 16px;width:48%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
           <template v-for="(item, itemIndex) in finalElement">
-            <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+            <div :key="itemIndex" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
               <span v-if="itemIndex !== editItemGroupNameIndex">
                 {{ item.itemGroupName }}
                 <Button
@@ -431,7 +431,6 @@ export default {
   },
   methods: {
     selectAll (item) {
-      console.log(item)
       item.attributes.forEach(attr => {
         if (!item.seletedAttrs.includes(attr.id)) {
           item.seletedAttrs.push(attr.id)

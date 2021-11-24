@@ -60,6 +60,16 @@
                 </template>
               </template>
               <p slot="content">
+                <Tag
+                  type="border"
+                  v-for="file in data.attachFiles"
+                  x
+                  checkable
+                  :key="file.id"
+                  @on-change="downloadFile(file)"
+                  color="primary"
+                  >{{ file.name }}</Tag
+                >
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
                     <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
@@ -92,6 +102,8 @@
 
 <script>
 import { getRequestDetail } from '@/api/server.js'
+import { getCookie } from '@/pages/util/cookie'
+import axios from 'axios'
 import RequestCheckData from './request-check-data'
 export default {
   name: '',
@@ -102,15 +114,58 @@ export default {
       requestId: '',
       timeStep: [],
       openPanel: '',
-      dataInfo: []
+      dataInfo: [],
+      uploadUrl: '',
+      headers: {}
     }
   },
   mounted () {
     this.requestId = this.$route.query.requestId
     this.jumpFrom = this.$route.query.jumpFrom
+    this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${this.taskId}`
+    const accessToken = getCookie('accessToken')
+    this.headers = {
+      Authorization: 'Bearer ' + accessToken
+    }
     this.getRequestDetail()
   },
   methods: {
+    async downloadFile (file) {
+      axios({
+        method: 'GET',
+        url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
+        headers: this.headers
+      })
+        .then(response => {
+          this.isExport = false
+          if (response.status < 400) {
+            let content = JSON.stringify(response.data)
+            let fileName = `${file.name}`
+            let blob = new Blob([content])
+            if ('msSaveOrOpenBlob' in navigator) {
+              window.navigator.msSaveOrOpenBlob(blob, fileName)
+            } else {
+              if ('download' in document.createElement('a')) {
+                // 非IE下载
+                let elink = document.createElement('a')
+                elink.download = fileName
+                elink.style.display = 'none'
+                elink.href = URL.createObjectURL(blob)
+                document.body.appendChild(elink)
+                elink.click()
+                URL.revokeObjectURL(elink.href) // 释放URL 对象
+                document.body.removeChild(elink)
+              } else {
+                // IE10+下载
+                navigator.msSaveOrOpenBlob(blob, fileName)
+              }
+            }
+          }
+        })
+        .catch(() => {
+          this.$Message.warning('Error')
+        })
+    },
     backToRequest () {
       this.$router.push({ path: '/taskman/request-mgmt', query: { activeTab: this.jumpFrom } })
     },

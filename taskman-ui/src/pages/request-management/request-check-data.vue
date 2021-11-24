@@ -25,7 +25,7 @@
                 clearable
                 :multiple="element.multiple === 'Y'"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
-                :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
+                disabled
                 style="width: calc(100% - 30px);"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
@@ -39,7 +39,7 @@
                 clearable
                 :multiple="element.multiple === 'Y'"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
-                :disabled="element.isEdit === 'no' || formDisable || jumpFrom === 'group_handle'"
+                disabled
                 style="width: calc(100% - 30px);"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item" :key="item">{{ item }}</Option>

@@ -115,5 +115,6 @@
   "upload": "Import",
   "confirm_import": "Import Confirm?",
   "data_set": "Data Set",
-  "select_all": "Select All"
+  "select_all": "Select All",
+  "upload_attachment": "Upload Attachment"
 }

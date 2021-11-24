@@ -37,7 +37,7 @@
   "preset": "预置",
   "request_form_settings": "请求表单设置",
   "task_form_settings": "任务表单设置",
-  "form_settings": "表单设置",
+  "form_settings": "表单填写",
   "input_items": "输入项",
   "output_items": "输出项",
   "custom_form": "自定义表单",
@@ -115,5 +115,6 @@
   "upload": "上传",
   "confirm_import": "确认导入",
   "data_set": "数据集",
-  "select_all": "全选"
+  "select_all": "全选",
+  "upload_attachment": "上传附件"
 }

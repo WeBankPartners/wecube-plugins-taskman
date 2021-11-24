@@ -1245,6 +1245,10 @@ func BuildRequestProcessData(input models.RequestCacheData) (result models.Reque
 			}
 		}
 	}
+	if len(result.Entities) == 0 {
+		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}
+		result.Entities = append(result.Entities, &tmpEntityValue)
+	}
 	return result
 }
 

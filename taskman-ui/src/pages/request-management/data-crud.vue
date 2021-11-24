@@ -126,14 +126,13 @@ export default {
       axios({
         method: 'GET',
         url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
-        headers: this.headers
+        headers: this.headers,
+        responseType: 'blob'
       })
         .then(response => {
-          this.isExport = false
           if (response.status < 400) {
-            let content = JSON.stringify(response.data)
             let fileName = `${file.name}`
-            let blob = new Blob([content])
+            let blob = new Blob([response.data])
             if ('msSaveOrOpenBlob' in navigator) {
               window.navigator.msSaveOrOpenBlob(blob, fileName)
             } else {
@@ -154,14 +153,16 @@ export default {
             }
           }
         })
-        .catch(() => {
+        .catch(error => {
+          console.log(error)
           this.$Message.warning('Error')
         })
     },
     uploadFailed (val) {
+      console.log(val)
       this.$Notice.error({
         title: 'Error',
-        desc: 'Import Faild'
+        desc: val.statusMessage
       })
     },
     async uploadSucess () {

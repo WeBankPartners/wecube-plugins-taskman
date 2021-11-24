@@ -191,7 +191,8 @@ export default {
       axios({
         method: 'GET',
         url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
-        headers: this.headers
+        headers: this.headers,
+        responseType: 'blob'
       })
         .then(response => {
           this.isExport = false
@@ -226,7 +227,7 @@ export default {
     uploadFailed (val) {
       this.$Notice.error({
         title: 'Error',
-        desc: 'Import Faild'
+        desc: val.statusMessage
       })
     },
     async uploadSucess () {

@@ -255,7 +255,7 @@ export default {
     uploadFailed (val) {
       this.$Notice.error({
         title: 'Error',
-        desc: 'Import Faild'
+        desc: val.statusMessage
       })
     },
     async uploadSucess (val) {
@@ -294,14 +294,14 @@ export default {
       axios({
         method: 'GET',
         url: `/taskman/api/v1/request-template/export/${row.id}`,
-        headers: this.headers
+        headers: this.headers,
+        responseType: 'blob'
       })
         .then(response => {
           this.isExport = false
           if (response.status < 400) {
-            let content = JSON.stringify(response.data)
             let fileName = `${row.name}.json`
-            let blob = new Blob([content])
+            let blob = new Blob([response.data])
             if ('msSaveOrOpenBlob' in navigator) {
               window.navigator.msSaveOrOpenBlob(blob, fileName)
             } else {

@@ -68,7 +68,6 @@
                   <Upload
                     :action="uploadUrl"
                     :show-upload-list="false"
-                    :max-size="10000"
                     with-credentials
                     style="display:inline-block;margin-left:32px"
                     :headers="headers"

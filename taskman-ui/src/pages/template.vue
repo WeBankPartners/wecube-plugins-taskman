@@ -35,7 +35,6 @@
           :action="uploadUrl"
           :before-upload="handleUpload"
           :show-upload-list="false"
-          :max-size="10000"
           with-credentials
           style="display:inline-block;float:right;margin-right:16px"
           :headers="headers"

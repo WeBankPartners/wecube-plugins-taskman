@@ -177,8 +177,8 @@
                     </Select>
                   </FormItem>
                   <FormItem
-                    v-if="editElement.elementType === 'select' && editElement.entity === ''"
-                    :label="$t('data_set')"
+                    v-if="editElement.elementType === 'select'"
+                    :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
                   >
                     <Input
                       v-model="editElement.dataOptions"

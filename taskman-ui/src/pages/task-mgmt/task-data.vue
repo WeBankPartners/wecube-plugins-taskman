@@ -82,11 +82,11 @@ export default {
         this.$set(this.tableData, index, formData)
         return
       }
-      if (formItem.refEntity === '') {
-        formData[formItem.name + 'Options'] = formItem.selectList
-        this.$set(this.tableData, index, formData)
-        return
-      }
+      // if (formItem.refEntity === '') {
+      //   formData[formItem.name + 'Options'] = formItem.selectList
+      //   this.$set(this.tableData, index, formData)
+      //   return
+      // }
       let cache = JSON.parse(JSON.stringify(formData))
       const keys = Object.keys(cache)
       keys.forEach(key => {

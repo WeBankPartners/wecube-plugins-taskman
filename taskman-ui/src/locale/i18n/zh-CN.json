@@ -115,6 +115,7 @@
   "upload": "上传",
   "confirm_import": "确认导入",
   "data_set": "数据集",
+  "data_source": "数据源",
   "select_all": "全选",
   "upload_attachment": "上传附件"
 }

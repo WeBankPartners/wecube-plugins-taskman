@@ -577,11 +577,11 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	}
 	// sort result by dependence
 	result = sortRequestEntity(result)
-	var err error
-	result, err = getCMDBSelectList(result, models.CoreToken.GetCoreToken())
-	if err != nil {
-		log.Logger.Error("Try to get selectList fail", log.Error(err))
-	}
+	//var err error
+	//result, err = getCMDBSelectList(result, models.CoreToken.GetCoreToken())
+	//if err != nil {
+	//	log.Logger.Error("Try to get selectList fail", log.Error(err))
+	//}
 	for _, v := range result {
 		for _, vv := range v.Title {
 			if vv.SelectList == nil {

@@ -14,9 +14,15 @@ import (
 func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
 	result = []*models.EntityDataObj{}
 	// if param map data have no new data -> get remote data + same entity new data
-	isContainNewMap := checkIfNeedAnalyze(input)
-	log.Logger.Info("isContainNewMap", log.String("isContainNewMap", fmt.Sprintf("%v", isContainNewMap)))
-	if !isContainNewMap {
+	refFlag, options, tmpErr := checkIfNeedAnalyze(input)
+	log.Logger.Info("isContainNewMap", log.String("isContainNewMap", fmt.Sprintf("%d", refFlag)))
+	if refFlag == -1 {
+		return result, fmt.Errorf("AttrId:%s illegal ", input.AttrId)
+	}
+	if refFlag == 2 {
+		return options, tmpErr
+	}
+	if refFlag == 0 {
 		result, err = getRefDataWithoutFilter(input)
 		return
 	}
@@ -36,28 +42,49 @@ func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.Enti
 	return
 }
 
-func checkIfNeedAnalyze(input *models.RefSelectParam) bool {
-	isNeed := false
-	entity := strings.Split(input.AttrId, models.SysTableIdConnector)[0]
+func checkIfNeedAnalyze(input *models.RefSelectParam) (refFlag int, options []*models.EntityDataObj, err error) {
+	// refFlag 0 -> ref without new  1 -> ref with new  2 -> no ref use options  -1 -> attrId illegal
+	refFlag = 0
+	var entity, attrName, attrRef, dataOptions string
+	if strings.Contains(input.AttrId, models.SysTableIdConnector) {
+		entity = strings.Split(input.AttrId, models.SysTableIdConnector)[0]
+		attrName = strings.Split(input.AttrId, models.SysTableIdConnector)[1]
+	} else {
+		refFlag = -1
+		return refFlag, options, nil
+	}
 	var formItemTemplates []*models.FormItemTemplateTable
-	x.SQL("select id,name,ref_package_name,ref_entity from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
+	x.SQL("select id,name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
 	refColumnMap := make(map[string]int)
 	for _, v := range formItemTemplates {
+		if v.Name == attrName {
+			attrRef = v.RefEntity
+			dataOptions = v.DataOptions
+		}
 		if v.RefEntity != "" {
 			refColumnMap[v.Name] = 1
 		}
+	}
+	if attrRef == "" {
+		refFlag = 2
+		if strings.Contains(dataOptions, "http") {
+			options, err = getRemoteEntityOptions(dataOptions, input.UserToken, input.Param.Dialect.AssociatedData)
+		} else {
+			options, err = getCMDBAttributeOptions(entity, attrName, input.UserToken)
+		}
+		return refFlag, options, err
 	}
 	if input.Param.Dialect != nil {
 		for k, v := range input.Param.Dialect.AssociatedData {
 			if _, b := refColumnMap[k]; b {
 				if strings.HasPrefix(v, "tmp") {
-					isNeed = true
+					refFlag = 1
 					break
 				}
 			}
 		}
 	}
-	return isNeed
+	return refFlag, options, nil
 }
 
 func getCMDBRefFilter(attrId, userToken string) (filterString string, err error) {
@@ -537,4 +564,85 @@ func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (
 		}
 	}
 	return output
+}
+
+func getCMDBAttributeOptions(entity, attribute, userToken string) (result []*models.EntityDataObj, err error) {
+	result = []*models.EntityDataObj{}
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, entity), nil)
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	//req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	responseBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("Request cmdb attribute fail,%s ", string(responseBytes))
+		return
+	}
+	var attrQueryResp models.EntityAttributeQueryResponse
+	err = json.Unmarshal(responseBytes, &attrQueryResp)
+	if err != nil {
+		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
+		return
+	}
+	for _, v := range attrQueryResp.Data {
+		if v.PropertyName == attribute {
+			result, err = getAttrCat(v.SelectList, userToken)
+			break
+		}
+	}
+	return
+}
+
+func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (result []*models.EntityDataObj, err error) {
+	url = strings.ToLower(url)
+	method := http.MethodGet
+	if strings.HasPrefix(url, "post") {
+		method = http.MethodPost
+		url = url[strings.Index(url, "http"):]
+	}
+	for k, v := range inputMap {
+		url = strings.ReplaceAll(url, fmt.Sprintf("{{%s}}", k), v)
+	}
+	reqParam := ""
+	if method == http.MethodPost && strings.Contains(url, "=") {
+		reqParam = url[strings.Index(url, "=")+1:]
+		url = url[:strings.Index(url, "?")]
+	}
+	log.Logger.Info("curl remote entity options", log.String("url", url), log.String("method", method), log.String("param", reqParam))
+	req, reqErr := http.NewRequest(method, url, strings.NewReader(reqParam))
+	if reqErr != nil {
+		err = fmt.Errorf("Try to new request fail,%s ", reqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	if method == http.MethodPost {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do request fail,%s ", respErr.Error())
+		return
+	}
+	if resp.StatusCode != 200 {
+		return result, fmt.Errorf("Do request fail,response statusCode:%d ", resp.StatusCode)
+	}
+	b, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	var response models.WorkflowEntityQuery
+	err = json.Unmarshal(b, &response)
+	if err != nil {
+		return result, fmt.Errorf("Json unmarshal response body fail,%s ", err.Error())
+	}
+	for _, v := range response.Data {
+		result = append(result, &models.EntityDataObj{Id: v.Id, DisplayName: v.DisplayName})
+	}
+	return result, nil
 }

@@ -631,11 +631,11 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 		err = fmt.Errorf("Try to do request fail,%s ", respErr.Error())
 		return
 	}
-	if resp.StatusCode != 200 {
-		return result, fmt.Errorf("Do request fail,response statusCode:%d ", resp.StatusCode)
-	}
 	b, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return result, fmt.Errorf("Do request fail,response statusCode:%d resp:%s ", resp.StatusCode, string(b))
+	}
 	var response models.WorkflowEntityQuery
 	err = json.Unmarshal(b, &response)
 	if err != nil {

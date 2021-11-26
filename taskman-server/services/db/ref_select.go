@@ -602,9 +602,8 @@ func getCMDBAttributeOptions(entity, attribute, userToken string) (result []*mod
 }
 
 func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (result []*models.EntityDataObj, err error) {
-	url = strings.ToLower(url)
 	method := http.MethodGet
-	if strings.HasPrefix(url, "post") {
+	if strings.HasPrefix(strings.ToLower(url), "post") {
 		method = http.MethodPost
 		url = url[strings.Index(url, "http"):]
 	}

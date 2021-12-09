@@ -31,10 +31,10 @@ func notifyAction() {
 		return
 	}
 	for _, v := range taskTable {
-		if v.NotifyCount >= 2 {
+		if v.NotifyCount >= 1 {
 			continue
 		}
-		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime}
+		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime, NowTime: time.Now().Format(models.DateTimeFormat)}
 		calcExpireObj(&tmpExpireObj)
 		if tmpExpireObj.Percent > 75 {
 			tmpErr := NotifyTaskMail(v.Id)

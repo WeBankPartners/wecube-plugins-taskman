@@ -671,6 +671,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	fillBindingWithRequestData(requestId, userToken, &cacheData)
 	cacheBytes, _ := json.Marshal(cacheData)
+	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
 	startParam := BuildRequestProcessData(cacheData)
 	startParamBytes, tmpErr := json.Marshal(startParam)
 	if tmpErr != nil {
@@ -1244,6 +1245,9 @@ func BuildRequestProcessData(input models.RequestCacheData) (result models.Reque
 				result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
 			}
 		}
+	}
+	if _, b := entityExistMap[input.RootEntityValue.Oid]; !b {
+		result.Entities = append(result.Entities, &input.RootEntityValue)
 	}
 	if len(result.Entities) == 0 {
 		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}

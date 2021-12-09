@@ -17,8 +17,8 @@ func startNotifyCronJob() {
 	notifyTaskMap = make(map[string]int)
 	t := time.NewTicker(1 * time.Minute).C
 	for {
-		go notifyAction()
 		<-t
+		go notifyAction()
 	}
 }
 

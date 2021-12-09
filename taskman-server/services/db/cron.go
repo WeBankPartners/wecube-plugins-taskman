@@ -6,15 +6,12 @@ import (
 	"time"
 )
 
-var notifyTaskMap map[string]int
-
 func StartCornJob() {
 	go startNotifyCronJob()
 	select {}
 }
 
 func startNotifyCronJob() {
-	notifyTaskMap = make(map[string]int)
 	t := time.NewTicker(1 * time.Minute).C
 	for {
 		<-t
@@ -25,7 +22,7 @@ func startNotifyCronJob() {
 func notifyAction() {
 	log.Logger.Info("Start notify action")
 	var taskTable []*models.TaskTable
-	err := x.SQL("select id,created_time,expire_time from task where status<>'done'").Find(&taskTable)
+	err := x.SQL("select id,created_time,expire_time,notify_count from task where status<>'done'").Find(&taskTable)
 	if err != nil {
 		log.Logger.Error("notify action fail,query task error", log.Error(err))
 		return
@@ -34,7 +31,7 @@ func notifyAction() {
 		return
 	}
 	for _, v := range taskTable {
-		if _, b := notifyTaskMap[v.Id]; b {
+		if v.NotifyCount >= 2 {
 			continue
 		}
 		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime}
@@ -44,7 +41,7 @@ func notifyAction() {
 			if tmpErr != nil {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			} else {
-				notifyTaskMap[v.Id] = 1
+				x.Exec("update task set notify_count=? where id=?", v.NotifyCount+1, v.Id)
 			}
 		}
 	}

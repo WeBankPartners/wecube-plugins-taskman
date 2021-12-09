@@ -38,6 +38,7 @@ type TaskTable struct {
 	DelFlag           string   `json:"delFlag" xorm:"del_flag"`
 	OperationOptions  []string `json:"operationOptions" xorm:"-"`
 	ExpireTime        string   `json:"expireTime" xorm:"expire_time"`
+	NotifyCount       int      `json:"notifyCount" xorm:"notify_count"`
 }
 
 type TaskListObj struct {

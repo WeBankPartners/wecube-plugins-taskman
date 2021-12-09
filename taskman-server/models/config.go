@@ -137,7 +137,11 @@ func InitConfig(configFile string) (errMessage string) {
 		if mailInitErr != nil {
 			log.Printf("Init mail sender fail,%s \n", mailInitErr.Error())
 			MailEnable = false
+		} else {
+			log.Println("Mail sender init success ")
 		}
+	} else {
+		log.Println("Mail sender disable")
 	}
 	return
 }

@@ -248,6 +248,44 @@ func GetCoreProcessList(userToken string) (processList []*models.CodeProcessQuer
 	return
 }
 
+func getRoleMail(roleList []*models.RoleTable) (mailList []string) {
+	if models.CoreToken.BaseUrl == "" || len(roleList) == 0 {
+		return
+	}
+	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/roles/retrieve", models.CoreToken.BaseUrl), strings.NewReader(""))
+	if err != nil {
+		log.Logger.Error("Get core role key new request fail", log.Error(err))
+		return
+	}
+	request.Header.Set("Authorization", models.CoreToken.GetCoreToken())
+	res, err := http.DefaultClient.Do(request)
+	if err != nil {
+		log.Logger.Error("Get core role key ctxhttp request fail", log.Error(err))
+		return
+	}
+	b, _ := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	var result models.CoreRoleDto
+	err = json.Unmarshal(b, &result)
+	if err != nil {
+		log.Logger.Error("Get core role key json unmarshal result", log.Error(err))
+		return
+	}
+	for _, v := range roleList {
+		tmpMail := ""
+		for _, vv := range result.Data {
+			if vv.Name == v.Id {
+				tmpMail = vv.Email
+				break
+			}
+		}
+		if tmpMail != "" {
+			mailList = append(mailList, tmpMail)
+		}
+	}
+	return
+}
+
 func SyncCoreRole() {
 	if models.CoreToken.BaseUrl == "" {
 		return

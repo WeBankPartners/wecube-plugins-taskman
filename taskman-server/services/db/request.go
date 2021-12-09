@@ -721,7 +721,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 		bindCache := string(bindCacheBytes)
 		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
 		if err == nil {
-			err = notifyRoleMail(requestId)
+			notifyRoleMail(requestId)
 		}
 	} else {
 		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
@@ -1369,6 +1369,7 @@ func notifyRoleMail(requestId string) error {
 	if !models.MailEnable {
 		return nil
 	}
+	log.Logger.Info("Start notify request mail", log.String("requestId", requestId))
 	var roleTable []*models.RoleTable
 	err := x.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
 	if err != nil {
@@ -1377,7 +1378,9 @@ func notifyRoleMail(requestId string) error {
 	if len(roleTable) == 0 {
 		return nil
 	}
-	if roleTable[0].Email == "" {
+	mailList := getRoleMail(roleTable)
+	if len(mailList) == 0 {
+		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
 		return nil
 	}
 	var requestTable []*models.RequestTable
@@ -1388,8 +1391,9 @@ func notifyRoleMail(requestId string) error {
 	var subject, content string
 	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
 	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
-	err = models.MailSender.Send(subject, content, []string{roleTable[0].Email})
+	err = models.MailSender.Send(subject, content, mailList)
 	if err != nil {
+		log.Logger.Error("Notify role mail fail", log.Error(err))
 		return fmt.Errorf("Notify role mail fail,%s ", err.Error())
 	}
 	return nil

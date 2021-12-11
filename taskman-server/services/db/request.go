@@ -1322,7 +1322,7 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 		return entityDepMap, nil
 	}
 	dependEntityMap := make(map[string]*models.RequestCacheEntityAttrValue)
-	log.Logger.Debug("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
+	log.Logger.Info("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
 	// entityList -> in boundValue entity
 	getDependEntity(rootSucceeding, preEntityList, entityList, dependEntityMap)
 	for k, refAttr := range dependEntityMap {
@@ -1332,7 +1332,7 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 		} else {
 			existDepMap = []string{refDataValue}
 		}
-		log.Logger.Debug("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
+		log.Logger.Info("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
 	}
 	if len(dependEntityMap) > 0 {
 		newNode := models.RequestCacheTaskNodeBindObj{NodeId: "", NodeDefId: "", BoundEntityValues: []*models.RequestCacheEntityValue{}}

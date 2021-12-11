@@ -54,7 +54,8 @@ func checkIfNeedAnalyze(input *models.RefSelectParam) (refFlag int, options []*m
 		return refFlag, options, nil
 	}
 	var formItemTemplates []*models.FormItemTemplateTable
-	x.SQL("select id,name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
+	//x.SQL("select id,name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
+	x.SQL("select distinct name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?) union select form_template from task_template where id in (select task_template from task where request=?))", entity, input.RequestId, input.RequestId).Find(&formItemTemplates)
 	refColumnMap := make(map[string]int)
 	for _, v := range formItemTemplates {
 		if v.Name == attrName {

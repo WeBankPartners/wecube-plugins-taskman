@@ -27,7 +27,7 @@
             :on-success="uploadSucess"
             :on-error="uploadFailed"
           >
-            <Button size="small">{{ $t('upload_attachment') }}</Button>
+            <Button size="small" type="success">{{ $t('upload_attachment') }}</Button>
           </Upload>
         </template>
         <div v-for="file in attachFiles" style="display:inline-block" :key="file.id">

@@ -74,7 +74,7 @@
                     :on-success="uploadSucess"
                     :on-error="uploadFailed"
                   >
-                    <Button size="small">{{ $t('upload_attachment') }}</Button>
+                    <Button size="small" type="success">{{ $t('upload_attachment') }}</Button>
                   </Upload>
                 </template>
                 <template v-else>

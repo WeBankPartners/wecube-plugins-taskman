@@ -118,6 +118,7 @@ type RequestCacheEntityValue struct {
 }
 
 type RequestCacheEntityAttrValue struct {
+	DataOid   string      `json:"-"`
 	AttrDefId string      `json:"attrDefId"`
 	AttrName  string      `json:"attrName"`
 	DataType  string      `json:"dataType"`

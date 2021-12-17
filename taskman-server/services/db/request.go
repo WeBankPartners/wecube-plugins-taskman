@@ -781,6 +781,9 @@ func fillBindingWithRequestData(requestId, userToken string, cacheData *models.R
 			}
 		}
 	}
+	for k, v := range dataIdOidMap {
+		log.Logger.Debug("dataIdOidMap", log.String("k", k), log.String("v", v))
+	}
 	for k, v := range entityNewMap {
 		tmpRefOidList := []string{}
 		for _, vv := range v {
@@ -824,6 +827,7 @@ func rebuildEntityRefOids(entityValue *models.RequestCacheEntityValue, entityNew
 
 func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityRefs []string, entityNewMap map[string][]string, dataIdOidMap map[string]string) {
 	if entityValue.EntityDataOp == "create" {
+		log.Logger.Debug("findEntityRefByItemRef create", log.String("oid", entityValue.Oid))
 		tmpRefOidList := []string{}
 		for _, attrValueObj := range entityValue.AttrValues {
 			for _, entityRef := range entityRefs {
@@ -839,12 +843,14 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		}
 		entityNewMap[entityValue.Oid] = tmpRefOidList
 	} else {
+		log.Logger.Debug("findEntityRefByItemRef exist", log.String("oid", entityValue.Oid), log.String("EntityDataId", entityValue.EntityDataId))
 		dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
 		tmpRefOidList := []string{}
 		for _, attrValueObj := range entityValue.AttrValues {
 			for _, entityRef := range entityRefs {
 				if attrValueObj.AttrName == entityRef {
 					valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
+					log.Logger.Debug("findEntityRefByItemRef ref", log.String("oid", entityValue.Oid), log.String("valueString", valueString))
 					if strings.Contains(valueString, ",") {
 						for _, tmpV := range strings.Split(valueString, ",") {
 							if strings.HasPrefix(tmpV, "tmp") {
@@ -1293,10 +1299,12 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 	if cacheData.RootEntityValue.Oid == "" || strings.HasPrefix(cacheData.RootEntityValue.Oid, "tmp") {
 		return entityDepMap, nil
 	}
+	// get core preview data list
 	preData, preErr := ProcessDataPreview(requestTemplateId, cacheData.RootEntityValue.Oid, userToken)
 	if preErr != nil {
 		return entityDepMap, fmt.Errorf("Try to get process preview data fail,%s ", preErr.Error())
 	}
+	// get binding entity data
 	entityList := []*models.RequestCacheEntityValue{}
 	entityExistMap := make(map[string]int)
 	for _, v := range cacheData.TaskNodeBindInfos {
@@ -1307,6 +1315,7 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 			}
 		}
 	}
+	// preEntityList is other entity data
 	preEntityList := []*models.EntityTreeObj{}
 	rootSucceeding := []string{}
 	for _, v := range preData.Data.EntityTreeNodes {
@@ -1326,11 +1335,12 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 	// entityList -> in boundValue entity
 	getDependEntity(rootSucceeding, preEntityList, entityList, dependEntityMap)
 	for k, refAttr := range dependEntityMap {
+		leftOid := refAttr.DataOid
 		refDataValue := fmt.Sprintf("%s", refAttr.DataValue)
-		if existDepMap, b := entityDepMap[k]; b {
-			existDepMap = append(existDepMap, refDataValue)
+		if _, b := entityDepMap[leftOid]; b {
+			entityDepMap[leftOid] = append(entityDepMap[leftOid], refDataValue)
 		} else {
-			existDepMap = []string{refDataValue}
+			entityDepMap[leftOid] = []string{refDataValue}
 		}
 		log.Logger.Info("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
 	}
@@ -1363,7 +1373,7 @@ func getDependEntity(succeeding []string, preEntityList []*models.EntityTreeObj,
 				if attr.DataType == "ref" {
 					tmpV := fmt.Sprintf("%s", attr.DataValue)
 					if strings.Contains(tmpV, vDataId) {
-						tmpRefAttr = models.RequestCacheEntityAttrValue{AttrDefId: attr.AttrDefId, AttrName: attr.AttrName, DataType: attr.DataType, DataValue: v}
+						tmpRefAttr = models.RequestCacheEntityAttrValue{DataOid: vv.Oid, AttrDefId: attr.AttrDefId, AttrName: attr.AttrName, DataType: attr.DataType, DataValue: v}
 						useFlag = true
 						break
 					}

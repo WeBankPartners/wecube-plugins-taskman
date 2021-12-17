@@ -771,6 +771,9 @@ func fillBindingWithRequestData(requestId, userToken string, cacheData *models.R
 	}
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
+			if entityValue.EntityDataId != "" {
+				dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
+			}
 			entityOidMap[entityValue.Oid] = 1
 			if _, b := entityNewMap[entityValue.Oid]; b {
 				continue
@@ -831,7 +834,7 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		for _, attrValueObj := range entityValue.AttrValues {
 			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
 			for _, entityRef := range entityRefs {
-				if tmpAttrEntity == entityRef {
+				if tmpAttrEntity == entityRef && attrValueObj.DataType == "ref" {
 					tmpV := fmt.Sprintf("%s", attrValueObj.DataValue)
 					if strings.Contains(tmpV, ",") {
 						tmpRefOidList = append(tmpRefOidList, strings.Split(tmpV, ",")...)
@@ -849,7 +852,7 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		for _, attrValueObj := range entityValue.AttrValues {
 			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
 			for _, entityRef := range entityRefs {
-				if tmpAttrEntity == entityRef {
+				if tmpAttrEntity == entityRef && attrValueObj.DataType == "ref" {
 					valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
 					log.Logger.Debug("findEntityRefByItemRef ref", log.String("oid", entityValue.Oid), log.String("valueString", valueString))
 					if strings.Contains(valueString, ",") {

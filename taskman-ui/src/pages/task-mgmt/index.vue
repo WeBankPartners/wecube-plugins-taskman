@@ -43,6 +43,9 @@
                 <Tag style="font-size:14px" type="border" size="medium" color="cyan"
                   >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                 >
+                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                >
                 <Tag style="font-size:14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
@@ -58,10 +61,13 @@
                   <Tag style="font-size:14px" type="border" size="medium" color="cyan"
                     >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                   >
-                  <Tag style="font-size:14px" type="border" size="medium" color="blue"
-                    >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
-                  >
                 </template>
+                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                  >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                >
               </template>
               <p slot="content">
                 <template v-if="dataIndex === dataInfo.length - 1 && !enforceDisable">

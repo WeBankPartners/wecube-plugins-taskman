@@ -766,9 +766,8 @@ func fillBindingWithRequestData(requestId, userToken string, cacheData *models.R
 	entityOidMap := make(map[string]int)
 	dataIdOidMap := make(map[string]string)
 	matchEntityRoot(requestId, userToken, cacheData)
-	if entityRefs, b := itemMap[cacheData.RootEntityValue.EntityName]; b {
-		entityOidMap[cacheData.RootEntityValue.Oid] = 1
-		findEntityRefByItemRef(&cacheData.RootEntityValue, entityRefs, entityNewMap, dataIdOidMap)
+	if cacheData.RootEntityValue.EntityDataOp != "create" {
+		dataIdOidMap[cacheData.RootEntityValue.EntityDataId] = cacheData.RootEntityValue.Oid
 	}
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
@@ -830,8 +829,9 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		log.Logger.Debug("findEntityRefByItemRef create", log.String("oid", entityValue.Oid))
 		tmpRefOidList := []string{}
 		for _, attrValueObj := range entityValue.AttrValues {
+			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
 			for _, entityRef := range entityRefs {
-				if attrValueObj.AttrName == entityRef {
+				if tmpAttrEntity == entityRef {
 					tmpV := fmt.Sprintf("%s", attrValueObj.DataValue)
 					if strings.Contains(tmpV, ",") {
 						tmpRefOidList = append(tmpRefOidList, strings.Split(tmpV, ",")...)
@@ -847,8 +847,9 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
 		tmpRefOidList := []string{}
 		for _, attrValueObj := range entityValue.AttrValues {
+			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
 			for _, entityRef := range entityRefs {
-				if attrValueObj.AttrName == entityRef {
+				if tmpAttrEntity == entityRef {
 					valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
 					log.Logger.Debug("findEntityRefByItemRef ref", log.String("oid", entityValue.Oid), log.String("valueString", valueString))
 					if strings.Contains(valueString, ",") {
@@ -867,6 +868,14 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 		}
 		entityNewMap[entityValue.Oid] = tmpRefOidList
 	}
+}
+
+func getEntityNameFromAttrDefId(attrDefId, attrName string) string {
+	stringSplit := strings.Split(attrDefId, ":")
+	if len(stringSplit) == 3 {
+		return stringSplit[1]
+	}
+	return attrName
 }
 
 func matchEntityRoot(requestId, userToken string, cacheData *models.RequestCacheData) {
@@ -1317,6 +1326,7 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 	}
 	// preEntityList is other entity data
 	preEntityList := []*models.EntityTreeObj{}
+	rootParent := models.RequestCacheEntityAttrValue{}
 	rootSucceeding := []string{}
 	for _, v := range preData.Data.EntityTreeNodes {
 		if _, b := entityExistMap[v.Id]; !b {
@@ -1324,6 +1334,9 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 		}
 		if v.DataId == cacheData.RootEntityValue.Oid {
 			rootSucceeding = v.SucceedingIds
+			rootParent.DataType = "ref"
+			rootParent.AttrName = v.EntityName
+			rootParent.DataValue = v.DataId
 		}
 	}
 	// preEntityList -> in preData but no int boundValues
@@ -1333,14 +1346,13 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 	dependEntityMap := make(map[string]*models.RequestCacheEntityAttrValue)
 	log.Logger.Info("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
 	// entityList -> in boundValue entity
-	getDependEntity(rootSucceeding, preEntityList, entityList, dependEntityMap)
+	getDependEntity(rootSucceeding, rootParent, preEntityList, entityList, dependEntityMap)
 	for k, refAttr := range dependEntityMap {
-		leftOid := refAttr.DataOid
 		refDataValue := fmt.Sprintf("%s", refAttr.DataValue)
-		if _, b := entityDepMap[leftOid]; b {
-			entityDepMap[leftOid] = append(entityDepMap[leftOid], refDataValue)
+		if _, b := entityDepMap[k]; b {
+			entityDepMap[k] = append(entityDepMap[k], refDataValue)
 		} else {
-			entityDepMap[leftOid] = []string{refDataValue}
+			entityDepMap[k] = []string{refDataValue}
 		}
 		log.Logger.Info("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
 	}
@@ -1356,7 +1368,7 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 	return entityDepMap, nil
 }
 
-func getDependEntity(succeeding []string, preEntityList []*models.EntityTreeObj, entityList []*models.RequestCacheEntityValue, dependEntityMap map[string]*models.RequestCacheEntityAttrValue) {
+func getDependEntity(succeeding []string, parent models.RequestCacheEntityAttrValue, preEntityList []*models.EntityTreeObj, entityList []*models.RequestCacheEntityValue, dependEntityMap map[string]*models.RequestCacheEntityAttrValue) {
 	if len(succeeding) == 0 {
 		return
 	}
@@ -1373,7 +1385,7 @@ func getDependEntity(succeeding []string, preEntityList []*models.EntityTreeObj,
 				if attr.DataType == "ref" {
 					tmpV := fmt.Sprintf("%s", attr.DataValue)
 					if strings.Contains(tmpV, vDataId) {
-						tmpRefAttr = models.RequestCacheEntityAttrValue{DataOid: vv.Oid, AttrDefId: attr.AttrDefId, AttrName: attr.AttrName, DataType: attr.DataType, DataValue: v}
+						tmpRefAttr = parent
 						useFlag = true
 						break
 					}
@@ -1385,14 +1397,20 @@ func getDependEntity(succeeding []string, preEntityList []*models.EntityTreeObj,
 		}
 		if !useFlag {
 			// find other succeeding
+			tmpParent := models.RequestCacheEntityAttrValue{}
 			nextSucceeding := []string{}
 			for _, vv := range preEntityList {
+				if vv.DataId == v {
+					tmpParent.DataType = "ref"
+					tmpParent.DataValue = v
+					tmpParent.AttrName = vv.EntityName
+				}
 				if listContains(vv.PreviousIds, v) {
 					nextSucceeding = append(nextSucceeding, vv.Id)
 				}
 			}
 			if len(nextSucceeding) > 0 {
-				getDependEntity(nextSucceeding, preEntityList, entityList, dependEntityMap)
+				getDependEntity(nextSucceeding, tmpParent, preEntityList, entityList, dependEntityMap)
 				for _, vv := range nextSucceeding {
 					if _, b := dependEntityMap[vv]; b {
 						useFlag = true

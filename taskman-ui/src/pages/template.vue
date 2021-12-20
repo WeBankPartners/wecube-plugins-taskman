@@ -175,7 +175,7 @@ export default {
                 {operationOptions.includes('edit') && (
                   <Button
                     onClick={() => this.editTemplate(params.row)}
-                    style="margin-left: 8px"
+                    style="margin-left: 6px"
                     type="primary"
                     size="small"
                   >
@@ -185,7 +185,7 @@ export default {
                 {operationOptions.includes('delete') && (
                   <Button
                     onClick={() => this.deleteTemplate(params.row)}
-                    style="margin-left: 8px"
+                    style="margin-left: 6px"
                     type="error"
                     size="small"
                   >
@@ -195,7 +195,7 @@ export default {
                 {operationOptions.includes('query') && (
                   <Button
                     onClick={() => this.checkTemplate(params.row)}
-                    style="margin-left: 8px"
+                    style="margin-left: 6px"
                     type="info"
                     size="small"
                   >
@@ -205,7 +205,7 @@ export default {
                 {operationOptions.includes('fork') && (
                   <Button
                     onClick={() => this.forkTemplate(params.row)}
-                    style="margin-left: 8px"
+                    style="margin-left: 6px"
                     type="warning"
                     size="small"
                   >
@@ -215,7 +215,7 @@ export default {
                 {operationOptions.includes('export') && (
                   <Button
                     onClick={() => this.exportTemplate(params.row)}
-                    style="margin-left: 8px"
+                    style="margin-left: 6px"
                     type="success"
                     size="small"
                   >

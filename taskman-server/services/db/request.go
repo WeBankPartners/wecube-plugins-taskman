@@ -876,7 +876,7 @@ func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityR
 func getEntityNameFromAttrDefId(attrDefId, attrName string) string {
 	stringSplit := strings.Split(attrDefId, ":")
 	if len(stringSplit) == 3 {
-		return stringSplit[1]
+		return stringSplit[2]
 	}
 	return attrName
 }

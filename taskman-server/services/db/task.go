@@ -657,12 +657,10 @@ func NotifyTaskMail(taskId string) error {
 	log.Logger.Info("Start notify task mail", log.String("taskId", taskId))
 	var roleTable []*models.RoleTable
 	x.SQL("select id,email from `role` where id in (select `role` from task_template_role where role_type='USE' and task_template in (select task_template from task where id=?))", taskId).Find(&roleTable)
-	for _, v := range strings.Split(taskObj.Reporter, ",") {
-		if v != "" {
-			roleTable = append(roleTable, &models.RoleTable{Id: v})
-		}
-	}
-	for _, v := range strings.Split(taskObj.ReportRole, ",") {
+	reportRoleString := taskObj.ReportRole
+	reportRoleString = strings.ReplaceAll(reportRoleString, "[", "")
+	reportRoleString = strings.ReplaceAll(reportRoleString, "]", "")
+	for _, v := range strings.Split(reportRoleString, ",") {
 		if v != "" {
 			roleTable = append(roleTable, &models.RoleTable{Id: v})
 		}

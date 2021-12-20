@@ -111,11 +111,11 @@
   "medium": "普通",
   "low": "不紧急",
   "fork": "变更",
-  "download": "下载",
-  "upload": "上传",
+  "download": "导出",
+  "upload": "导入",
   "confirm_import": "确认导入",
   "data_set": "数据集",
   "data_source": "数据源",
   "select_all": "全选",
-  "upload_attachment": "上传附件"
+  "upload_attachment": "导入附件"
 }

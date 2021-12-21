@@ -5,32 +5,36 @@
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
           <ul>
             <CheckboxGroup v-model="node.bindData">
-              <!-- v-for="item in filterBindData(node)" -->
-              <li
-                v-for="item in filterBindData(node)"
-                :key="item.id"
-                style="width: 46%;display: inline-block;margin: 6px"
-              >
-                <Checkbox :label="item.id" :disabled="$parent.formDisable">
-                  <Tooltip
-                    :content="item.displayName"
-                    :delay="500"
-                    :disabled="item.displayName.length < 30"
-                    max-width="300"
+              <template v-for="(entity, entityIndex) in node.classification">
+                <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider>
+                <template v-for="item in filterBindData(node)">
+                  <li
+                    v-if="item.entityName === entity"
+                    :key="item.id + entityIndex"
+                    style="width: 46%;display: inline-block;margin: 6px"
                   >
-                    <div class="text-ellipsis">
-                      <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
-                      {{ item.displayName }}
-                    </div>
-                  </Tooltip>
-                </Checkbox>
-              </li>
+                    <Checkbox :label="item.id" :disabled="$parent.formDisable">
+                      <Tooltip
+                        :content="item.displayName"
+                        :delay="500"
+                        :disabled="item.displayName.length < 30"
+                        max-width="300"
+                      >
+                        <div class="text-ellipsis">
+                          <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
+                          {{ item.displayName }}
+                        </div>
+                      </Tooltip>
+                    </Checkbox>
+                  </li>
+                </template>
+              </template>
             </CheckboxGroup>
           </ul>
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:48px">
+    <div style="text-align: center;margin-top:12px">
       <Button @click="saveRequest" :disabled="$parent.formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('go_back')
@@ -101,8 +105,19 @@ export default {
         if (data.taskNodeBindInfos.length > 0) {
           this.nodes.forEach(node => {
             const find = data.taskNodeBindInfos.find(d => d.nodeId === node.nodeId)
-            node.bindData = find.boundEntityValues.filter(bound => bound.bindFlag === 'Y').map(b => b.oid)
-            node.bindOptions = find.boundEntityValues || []
+            if (!find) {
+              node.bindData = []
+              node.bindOptions = []
+              node.classification = []
+            } else {
+              node.bindData = find.boundEntityValues.filter(bound => bound.bindFlag === 'Y').map(b => b.oid)
+              node.bindOptions = find.boundEntityValues || []
+              let classification = new Set()
+              node.bindOptions.forEach(d => {
+                classification.add(d.entityName)
+              })
+              node.classification = Array.from(classification)
+            }
           })
         }
       }

@@ -44,6 +44,7 @@ type RoleTable struct {
 	DisplayName string `json:"displayName" xorm:"display_name"`
 	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
 	CoreId      string `json:"coreId" xorm:"core_id"`
+	Email       string `json:"email"`
 }
 
 type RequestTemplateRoleTable struct {
@@ -74,8 +75,9 @@ type CodeProcessQueryObj struct {
 
 type RequestTemplateQueryObj struct {
 	RequestTemplateTable
-	MGMTRoles []*RoleTable `json:"mgmtRoles"`
-	USERoles  []*RoleTable `json:"useRoles"`
+	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
+	USERoles       []*RoleTable `json:"useRoles"`
+	OperateOptions []string     `json:"operateOptions"`
 }
 
 type RequestTemplateUpdateParam struct {
@@ -207,4 +209,14 @@ func (s ProcNodeObjList) Swap(i, j int) {
 
 func (s ProcNodeObjList) Less(i, j int) bool {
 	return s[i].OrderedNum < s[j].OrderedNum
+}
+
+type RequestTemplateExport struct {
+	RequestTemplate      RequestTemplateTable        `json:"requestTemplate"`
+	FormTemplate         []*FormTemplateTable        `json:"formTemplate"`
+	FormItemTemplate     []*FormItemTemplateTable    `json:"formItemTemplate"`
+	RequestTemplateRole  []*RequestTemplateRoleTable `json:"requestTemplateRole"`
+	TaskTemplate         []*TaskTemplateTable        `json:"taskTemplate"`
+	TaskTemplateRole     []*TaskTemplateRoleTable    `json:"taskTemplateRole"`
+	RequestTemplateGroup RequestTemplateGroupTable   `json:"requestTemplateGroup"`
 }

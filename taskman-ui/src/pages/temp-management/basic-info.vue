@@ -2,13 +2,14 @@
   <div style="width:40%;margin: 0 auto;min-width:700px">
     <!-- <ValidationObserver ref="observer"> -->
     <Form :label-width="100">
-      <template v-for="item in formConfig.itemConfigs">
+      <template v-for="(item, itemIndex) in formConfig.itemConfigs">
         <!-- <ValidationProvider :rules="item.rules" :name="item.value" v-slot="{ errors }" :key="item.value"> -->
         <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Input
             v-model="formConfig.values[item.value]"
             style="width:90%"
             :type="item.type"
+            :disabled="$parent.isCheck === 'Y'"
             :placeholder="item.placeholder"
           >
           </Input>
@@ -19,6 +20,7 @@
             v-model="formConfig.values[item.value]"
             style="width:90%"
             :type="item.type"
+            :disabled="$parent.isCheck === 'Y'"
             :rows="item.rows"
             :placeholder="item.placeholder"
           >
@@ -29,6 +31,7 @@
           <InputNumber
             :max="item.max || 1000"
             :min="item.min || 1"
+            :disabled="$parent.isCheck === 'Y'"
             v-model="formConfig.values[item.value]"
           ></InputNumber>
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
@@ -38,6 +41,7 @@
             v-model="formConfig.values[item.value]"
             clearable
             filterable
+            :disabled="$parent.isCheck === 'Y'"
             @on-open-change="execut(item.onOpenChange)"
             style="width:90%"
             :multiple="item.multiple"
@@ -54,13 +58,28 @@
           </Select>
           <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
         </FormItem>
+        <FormItem v-if="['create_select'].includes(item.type)" :label="$t(item.label)" :key="itemIndex">
+          <Select
+            v-model="formConfig.values[item.value]"
+            @on-open-change="execut(item.onOpenChange)"
+            filterable
+            allow-create
+            :disabled="$parent.isCheck === 'Y'"
+            style="width:90%"
+            @on-create="handleCreate1"
+          >
+            <Option v-for="(item, tagIndex) in formConfig[item.options]" :value="item.value" :key="tagIndex">{{
+              item.label
+            }}</Option>
+          </Select>
+        </FormItem>
         <!-- </ValidationProvider> -->
       </template>
-      <FormItem style="text-align: center">
-        <Button @click="resetParams">{{ $t('reset') }}</Button>
-        <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
-      </FormItem>
     </Form>
+    <div style="text-align: center">
+      <Button @click="resetParams" :disabled="$parent.isCheck === 'Y'">{{ $t('reset') }}</Button>
+      <Button @click="createTemp" type="primary">{{ $t('next') }}</Button>
+    </div>
     <!-- </ValidationObserver> -->
   </div>
 </template>
@@ -70,6 +89,7 @@ import { ValidationObserver } from 'vee-validate'
 import {
   getTempGroupList,
   getManagementRoles,
+  getTemplateTags,
   getHandlerRoles,
   getUserRoles,
   getProcess,
@@ -145,7 +165,15 @@ export default {
             type: 'select',
             placeholder: ''
           },
-          { label: 'tags', value: 'tags', type: 'text' },
+          {
+            label: 'tags',
+            value: 'tags',
+            onOpenChange: 'getTags',
+            options: 'tagOptions',
+            labelKey: 'label',
+            valueKey: 'value',
+            type: 'create_select'
+          },
           { label: 'description', value: 'description', rows: 2, type: 'textarea' }
         ],
         values: {
@@ -167,7 +195,9 @@ export default {
         groupOptions: [],
         procOptions: [],
         mgmtRolesOptions: [],
-        useRolesOptions: []
+        useRolesOptions: [],
+        tagOptions: [],
+        tmpTagOptions: []
       }
     }
   },
@@ -175,6 +205,31 @@ export default {
     this.getInitData()
   },
   methods: {
+    handleCreate1 (v) {
+      this.formConfig.tmpTagOptions.push(v)
+    },
+    async getTags (val) {
+      if (this.formConfig.values.group === '') {
+        // this.$Notice.warning({
+        //   title: this.$t('warning'),
+        //   desc: '请选选择模板组',
+        // })
+        return
+      }
+      const { statusCode, data } = await getTemplateTags(this.formConfig.values.group)
+      if (statusCode === 'OK') {
+        const totalData = this.unique(this.formConfig.tmpTagOptions.concat(data))
+        this.formConfig.tagOptions = totalData.map(d => {
+          return {
+            label: d,
+            value: d
+          }
+        })
+      }
+    },
+    unique (arr) {
+      return Array.from(new Set(arr))
+    },
     getOptions (options) {
       return this.formConfig[options]
     },
@@ -222,12 +277,17 @@ export default {
         this.formConfig.values.mgmtRoles = data.contents[0].mgmtRoles[0].id
         this.formConfig.values.useRoles = data.contents[0].useRoles.map(role => role.id)
         this.getHandlerRoles()
+        this.getTags()
       }
     },
     async createTemp () {
       // if (!this.$refs.observer.flags.valid) {
       //   return
       // }
+      if (this.$parent.isCheck === 'Y') {
+        this.$emit('basicInfoNextStep', this.formConfig.values)
+        return
+      }
       let cacheFromValue = JSON.parse(JSON.stringify(this.formConfig.values))
       const method = cacheFromValue.id === '' ? createTemp : updateTemp
       const process = this.formConfig.procOptions.find(item => item.procDefId === this.formConfig.values.procDefId)
@@ -293,5 +353,13 @@ export default {
   }
 }
 </script>
-
-<style scoped lang="scss"></style>
+<style>
+.ivu-input[disabled],
+fieldset[disabled] .ivu-input {
+  color: #757575 !important;
+}
+.ivu-select-input[disabled] {
+  color: #757575;
+  -webkit-text-fill-color: #757575;
+}
+</style>

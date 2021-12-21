@@ -49,6 +49,7 @@ export const confirmTemplate = requestTemplateId =>
 
 export const getTemplateList = data => req.post('/taskman/api/v1/request-template/query', data)
 export const deleteTemplate = data => req.delete('/taskman/api/v1/request-template', data)
+export const forkTemplate = requestTemplateId => req.post(`/taskman/api/v1/request-template/fork/${requestTemplateId}`)
 export const getRequestTemplateAttrs = requestTemplateId =>
   req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/get`)
 
@@ -86,3 +87,8 @@ export const changeTaskStatus = (operation, taskId) => req.post(`/taskman/api/v1
 export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)
 export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/detail/${requestId}`)
 export const getHandlerRoles = params => req.get(`/taskman/api/v1/role/user/list`, params)
+export const getTemplateTags = requestTemplateGroup =>
+  req.get(`/taskman/api/v1/request-template/tags/${requestTemplateGroup}`)
+export const confirmUploadTemplate = confirmToken =>
+  req.post(`/taskman/api/v1/request-template/import-confirm/${confirmToken}`)
+export const deleteAttach = fileId => req.delete(`/taskman/api/v1/request/attach-file/remove/${fileId}`)

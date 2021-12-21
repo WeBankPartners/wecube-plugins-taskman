@@ -42,9 +42,16 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 	}
 	b, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
-	err = json.Unmarshal(b, &result)
+	var responseObj models.WorkflowEntityQuery
+	err = json.Unmarshal(b, &responseObj)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+	} else {
+		result.Status = responseObj.Status
+		result.Message = responseObj.Message
+		for _, v := range responseObj.Data {
+			result.Data = append(result.Data, &models.EntityDataObj{Id: v.Id, DisplayName: v.DisplayName, PackageName: requestTemplateObj.PackageName, Entity: requestTemplateObj.EntityName})
+		}
 	}
 	return
 }
@@ -79,7 +86,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 	return
 }
 
-func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
+func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission, operator string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
 	rowData = []*models.RequestTable{}
 	if strings.ToLower(permission) == "mgmt" {
 		permission = "MGMT"
@@ -87,7 +94,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		permission = "USE"
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"'))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and (created_by='"+operator+"' or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"')))) %s ", filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -99,13 +106,13 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	err = x.SQL(baseSql, queryParam...).Find(&rowData)
 	if len(rowData) > 0 {
 		var requestTemplateTable []*models.RequestTemplateTable
-		x.SQL("select id,name,version from request_template").Find(&requestTemplateTable)
+		x.SQL("select id,name,status,version from request_template").Find(&requestTemplateTable)
 		rtMap := make(map[string]string)
 		for _, v := range requestTemplateTable {
-			if v.Status == "confirm" {
-				rtMap[v.Id] = fmt.Sprintf("%s(%s)", v.Name, v.Version)
-			} else {
+			if v.Status != "confirm" {
 				rtMap[v.Id] = fmt.Sprintf("%s(beta)", v.Name)
+			} else {
+				rtMap[v.Id] = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 			}
 		}
 		rtRoleMap := getRequestTemplateMGMTRole()
@@ -159,9 +166,6 @@ func getRequestTemplateMGMTRole() (result map[string][]string) {
 		tmpTemplate = requestTemplateRole[len(requestTemplateRole)-1].RequestTemplate
 		result[tmpTemplate] = tmpRoles
 	}
-	for k, v := range result {
-		log.Logger.Info("rtMap", log.String("key", k), log.StringList("value", v))
-	}
 	return result
 }
 
@@ -214,8 +218,12 @@ func getInstanceStatus(instanceId, userToken string) string {
 	}
 	status := "InProgress"
 	for _, v := range response.Data.TaskNodeInstances {
-		if v.Status == "Faulted" || v.Status == "Timeouted" {
+		if v.Status == "Faulted" {
 			status = "InProgress(Faulted)"
+			break
+		}
+		if v.Status == "Timeouted" {
+			status = "InProgress(Timeouted)"
 			break
 		}
 	}
@@ -252,6 +260,7 @@ func GetRequestWithRoot(requestId string) (result models.RequestTable, err error
 		}
 		result.Cache = cacheObj.RootEntityId
 	}
+	result.AttachFiles = GetRequestAttachFileList(requestId)
 	return
 }
 
@@ -276,16 +285,9 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 		return err
 	}
 	var actions []*execAction
-	existProDef, newProDefId, tmpErr := checkProDefId(requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken)
-	if tmpErr != nil {
-		return fmt.Errorf("Try to check proDefId fail,%s ", tmpErr.Error())
-	}
-	if !existProDef {
-		actions = append(actions, &execAction{Sql: "update request_template set proc_def_id=? where proc_def_name=?", Param: []interface{}{newProDefId, requestTemplateObj.ProcDefName}})
-	}
-	tmpActions := getUpdateNodeDefIdActions(requestTemplateObj.Id, userToken)
-	if len(tmpActions) > 0 {
-		actions = append(actions, tmpActions...)
+	err = SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken)
+	if err != nil {
+		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
@@ -575,11 +577,11 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	}
 	// sort result by dependence
 	result = sortRequestEntity(result)
-	var err error
-	result, err = getCMDBSelectList(result, models.CoreToken.GetCoreToken())
-	if err != nil {
-		log.Logger.Error("Try to get selectList fail", log.Error(err))
-	}
+	//var err error
+	//result, err = getCMDBSelectList(result, models.CoreToken.GetCoreToken())
+	//if err != nil {
+	//	log.Logger.Error("Try to get selectList fail", log.Error(err))
+	//}
 	for _, v := range result {
 		for _, vv := range v.Title {
 			if vv.SelectList == nil {
@@ -663,13 +665,21 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	fillBindingWithRequestData(requestId, &cacheData)
-	cacheBytes, tmpErr := json.Marshal(cacheData)
+	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, &cacheData)
+	if tmpErr != nil {
+		return result, fmt.Errorf("Try to append useless entity fail,%s ", tmpErr.Error())
+	}
+	fillBindingWithRequestData(requestId, userToken, &cacheData, entityDepMap)
+	cacheBytes, _ := json.Marshal(cacheData)
+	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
+	startParam := BuildRequestProcessData(cacheData)
+	startParamBytes, tmpErr := json.Marshal(startParam)
 	if tmpErr != nil {
 		err = fmt.Errorf("Json marshal cache data fail,%s ", tmpErr.Error())
 		return
 	}
-	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances", models.Config.Wecube.BaseUrl), bytes.NewReader(cacheBytes))
+	log.Logger.Info("Start request", log.String("param", string(startParamBytes)))
+	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances", models.Config.Wecube.BaseUrl), bytes.NewReader(startParamBytes))
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
 		return
@@ -711,39 +721,178 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 		bindCacheBytes, _ := json.Marshal(bindData)
 		bindCache := string(bindCacheBytes)
 		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
+		if err == nil {
+			notifyRoleMail(requestId)
+		}
 	} else {
 		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
 	}
 	return err
 }
 
-func fillBindingWithRequestData(requestId string, cacheData *models.RequestCacheData) {
+func fillBindingWithRequestData(requestId, userToken string, cacheData *models.RequestCacheData, existDepMap map[string][]string) {
 	var items []*models.FormItemTemplateTable
 	x.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
 	for _, item := range items {
-		if item.Entity == "" || item.RefEntity == "" {
+		if item.RefEntity == "" {
 			continue
 		}
-		if _, b := itemMap[item.Entity]; !b {
-			itemMap[item.Entity] = []string{item.Name}
+		if nowRefList, b := itemMap[item.Entity]; b {
+			existFlag := false
+			for _, v := range nowRefList {
+				if v == item.RefEntity {
+					existFlag = true
+				}
+			}
+			if !existFlag {
+				itemMap[item.Entity] = append(itemMap[item.Entity], item.RefEntity)
+			}
 		} else {
-			itemMap[item.Entity] = append(itemMap[item.Entity], item.Name)
+			itemMap[item.Entity] = []string{item.RefEntity}
 		}
 	}
+	// itemMap -> entity:[refEntity]
 	for k, v := range itemMap {
 		log.Logger.Info("itemMap", log.String("key", k), log.StringList("value", v))
 	}
 	entityNewMap := make(map[string][]string)
+	for k, v := range existDepMap {
+		log.Logger.Info("existDepMap", log.String("k", k), log.StringList("v", v))
+		if k != "" && len(v) > 0 {
+			entityNewMap[k] = v
+		}
+	}
 	entityOidMap := make(map[string]int)
+	dataIdOidMap := make(map[string]string)
+	matchEntityRoot(requestId, userToken, cacheData)
+	if cacheData.RootEntityValue.EntityDataOp != "create" {
+		dataIdOidMap[cacheData.RootEntityValue.EntityDataId] = cacheData.RootEntityValue.Oid
+	}
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		for _, entityValue := range taskNode.BoundEntityValues {
+			if entityValue.EntityDataId != "" {
+				dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
+			}
+			entityOidMap[entityValue.Oid] = 1
+			if _, b := entityNewMap[entityValue.Oid]; b {
+				continue
+			}
+			if entityRefs, b := itemMap[entityValue.EntityName]; b {
+				findEntityRefByItemRef(entityValue, entityRefs, entityNewMap, dataIdOidMap)
+			}
+		}
+	}
+	for k, v := range dataIdOidMap {
+		log.Logger.Debug("dataIdOidMap", log.String("k", k), log.String("v", v))
+	}
+	for k, v := range entityNewMap {
+		tmpRefOidList := []string{}
+		for _, vv := range v {
+			if oid, b := dataIdOidMap[vv]; b {
+				tmpRefOidList = append(tmpRefOidList, oid)
+			} else {
+				tmpRefOidList = append(tmpRefOidList, vv)
+			}
+		}
+		entityNewMap[k] = tmpRefOidList
+		log.Logger.Info("entityNewMap", log.String("key", k), log.StringList("value", tmpRefOidList))
+	}
+	if len(entityNewMap) > 0 {
+		rebuildEntityRefOids(&cacheData.RootEntityValue, entityNewMap, entityOidMap)
+		for _, taskNode := range cacheData.TaskNodeBindInfos {
+			for _, entityValue := range taskNode.BoundEntityValues {
+				rebuildEntityRefOids(entityValue, entityNewMap, entityOidMap)
+			}
+		}
+	}
+}
+
+func rebuildEntityRefOids(entityValue *models.RequestCacheEntityValue, entityNewMap map[string][]string, entityOidMap map[string]int) {
+	if refOids, b := entityNewMap[entityValue.Oid]; b {
+		entityValue.PreviousOids = append(entityValue.PreviousOids, refOids...)
+	}
+	for tmpOid, refOids := range entityNewMap {
+		inRefFlag := false
+		for _, refOid := range refOids {
+			if entityValue.Oid == refOid {
+				inRefFlag = true
+			}
+		}
+		if inRefFlag {
+			entityValue.SucceedingOids = append(entityValue.SucceedingOids, tmpOid)
+		}
+	}
+	entityValue.PreviousOids = listToSet(entityValue.PreviousOids, entityOidMap)
+	entityValue.SucceedingOids = listToSet(entityValue.SucceedingOids, entityOidMap)
+}
+
+func findEntityRefByItemRef(entityValue *models.RequestCacheEntityValue, entityRefs []string, entityNewMap map[string][]string, dataIdOidMap map[string]string) {
+	if entityValue.EntityDataOp == "create" {
+		log.Logger.Debug("findEntityRefByItemRef create", log.String("oid", entityValue.Oid))
+		tmpRefOidList := []string{}
+		for _, attrValueObj := range entityValue.AttrValues {
+			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
+			for _, entityRef := range entityRefs {
+				if tmpAttrEntity == entityRef && attrValueObj.DataType == "ref" {
+					tmpV := fmt.Sprintf("%s", attrValueObj.DataValue)
+					if strings.Contains(tmpV, ",") {
+						tmpRefOidList = append(tmpRefOidList, strings.Split(tmpV, ",")...)
+					} else {
+						tmpRefOidList = append(tmpRefOidList, tmpV)
+					}
+				}
+			}
+		}
+		entityNewMap[entityValue.Oid] = tmpRefOidList
+	} else {
+		log.Logger.Debug("findEntityRefByItemRef exist", log.String("oid", entityValue.Oid), log.String("EntityDataId", entityValue.EntityDataId))
+		dataIdOidMap[entityValue.EntityDataId] = entityValue.Oid
+		tmpRefOidList := []string{}
+		for _, attrValueObj := range entityValue.AttrValues {
+			tmpAttrEntity := getEntityNameFromAttrDefId(attrValueObj.AttrDefId, attrValueObj.AttrName)
+			for _, entityRef := range entityRefs {
+				if tmpAttrEntity == entityRef && attrValueObj.DataType == "ref" {
+					valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
+					log.Logger.Debug("findEntityRefByItemRef ref", log.String("oid", entityValue.Oid), log.String("valueString", valueString))
+					if strings.Contains(valueString, ",") {
+						for _, tmpV := range strings.Split(valueString, ",") {
+							if strings.HasPrefix(tmpV, "tmp") {
+								tmpRefOidList = append(tmpRefOidList, tmpV)
+							}
+						}
+					} else {
+						if strings.HasPrefix(valueString, "tmp") {
+							tmpRefOidList = append(tmpRefOidList, valueString)
+						}
+					}
+				}
+			}
+		}
+		entityNewMap[entityValue.Oid] = tmpRefOidList
+	}
+}
+
+func getEntityNameFromAttrDefId(attrDefId, attrName string) string {
+	stringSplit := strings.Split(attrDefId, ":")
+	if len(stringSplit) == 3 {
+		return stringSplit[2]
+	}
+	return attrName
+}
+
+func matchEntityRoot(requestId, userToken string, cacheData *models.RequestCacheData) {
+	for _, taskNode := range cacheData.TaskNodeBindInfos {
+		existFlag := false
+		for _, entityValue := range taskNode.BoundEntityValues {
 			if entityValue.EntityDataId == cacheData.RootEntityValue.Oid {
+				existFlag = true
 				cacheData.RootEntityValue.Oid = entityValue.Oid
 				cacheData.RootEntityValue.EntityName = entityValue.EntityName
 				cacheData.RootEntityValue.EntityDataOp = entityValue.EntityDataOp
 				cacheData.RootEntityValue.AttrValues = entityValue.AttrValues
 				cacheData.RootEntityValue.PackageName = entityValue.PackageName
+				cacheData.RootEntityValue.EntityDisplayName = entityValue.EntityDisplayName
 				cacheData.RootEntityValue.BindFlag = entityValue.BindFlag
 				cacheData.RootEntityValue.EntityDataId = entityValue.EntityDataId
 				cacheData.RootEntityValue.EntityDataState = entityValue.EntityDataState
@@ -751,74 +900,31 @@ func fillBindingWithRequestData(requestId string, cacheData *models.RequestCache
 				cacheData.RootEntityValue.FullEntityDataId = entityValue.FullEntityDataId
 				cacheData.RootEntityValue.PreviousOids = entityValue.PreviousOids
 				cacheData.RootEntityValue.SucceedingOids = entityValue.SucceedingOids
-			}
-			entityOidMap[entityValue.Oid] = 1
-			if _, b := entityNewMap[entityValue.Oid]; b {
-				continue
-			}
-			if entityRefs, b := itemMap[entityValue.EntityName]; b {
-				if entityValue.EntityDataOp == "create" {
-					tmpRefOidList := []string{}
-					for _, attrValueObj := range entityValue.AttrValues {
-						for _, entityRef := range entityRefs {
-							if attrValueObj.AttrName == entityRef {
-								tmpV := fmt.Sprintf("%s", attrValueObj.DataValue)
-								if strings.Contains(tmpV, ",") {
-									tmpRefOidList = append(tmpRefOidList, strings.Split(tmpV, ",")...)
-								} else {
-									tmpRefOidList = append(tmpRefOidList, tmpV)
-								}
-							}
-						}
-					}
-					entityNewMap[entityValue.Oid] = tmpRefOidList
-				} else {
-					tmpRefOidList := []string{}
-					for _, attrValueObj := range entityValue.AttrValues {
-						for _, entityRef := range entityRefs {
-							if attrValueObj.AttrName == entityRef {
-								valueString := fmt.Sprintf("%s", attrValueObj.DataValue)
-								if strings.Contains(valueString, ",") {
-									for _, tmpV := range strings.Split(valueString, ",") {
-										if strings.HasPrefix(tmpV, "tmp") {
-											tmpRefOidList = append(tmpRefOidList, tmpV)
-										}
-									}
-								} else {
-									if strings.HasPrefix(valueString, "tmp") {
-										tmpRefOidList = append(tmpRefOidList, valueString)
-									}
-								}
-							}
-						}
-					}
-					entityNewMap[entityValue.Oid] = tmpRefOidList
-				}
+				break
 			}
 		}
+		if existFlag {
+			break
+		}
 	}
-	for k, v := range entityNewMap {
-		log.Logger.Info("entityNewMap", log.String("key", k), log.StringList("value", v))
-	}
-	if len(entityNewMap) > 0 {
-		for _, taskNode := range cacheData.TaskNodeBindInfos {
-			for _, entityValue := range taskNode.BoundEntityValues {
-				if refOids, b := entityNewMap[entityValue.Oid]; b {
-					entityValue.PreviousOids = append(entityValue.PreviousOids, refOids...)
+	if cacheData.RootEntityValue.Oid != "" && cacheData.RootEntityValue.EntityName == "" {
+		entityQueryResult, entityQueryErr := GetEntityData(requestId, userToken)
+		if entityQueryErr != nil {
+			log.Logger.Error("Try to fill root entity data fail", log.Error(entityQueryErr))
+		} else {
+			for _, v := range entityQueryResult.Data {
+				if cacheData.RootEntityValue.Oid == v.Id {
+					cacheData.RootEntityValue.PackageName = v.PackageName
+					cacheData.RootEntityValue.EntityName = v.Entity
+					cacheData.RootEntityValue.BindFlag = "N"
+					cacheData.RootEntityValue.EntityDataId = v.Id
+					cacheData.RootEntityValue.Oid = fmt.Sprintf("%s:%s:%s", v.PackageName, v.Entity, v.Id)
+					cacheData.RootEntityValue.EntityDisplayName = v.DisplayName
+					cacheData.RootEntityValue.Processed = false
+					cacheData.RootEntityValue.SucceedingOids = []string{}
+					cacheData.RootEntityValue.PreviousOids = []string{}
+					break
 				}
-				for tmpOid, refOids := range entityNewMap {
-					inRefFlag := false
-					for _, refOid := range refOids {
-						if entityValue.Oid == refOid {
-							inRefFlag = true
-						}
-					}
-					if inRefFlag {
-						entityValue.SucceedingOids = append(entityValue.SucceedingOids, tmpOid)
-					}
-				}
-				entityValue.PreviousOids = listToSet(entityValue.PreviousOids, entityOidMap)
-				entityValue.SucceedingOids = listToSet(entityValue.SucceedingOids, entityOidMap)
 			}
 		}
 	}
@@ -912,7 +1018,7 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 	if requestTable[0].Cache == "" {
 		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
 	}
-	processNodes, processErr := GetProcessNodesByProc(requestTable[0].RequestTemplate, userToken, "bind")
+	processNodes, processErr := GetProcessNodesByProc(models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, "bind")
 	if processErr != nil {
 		return result, processErr
 	}
@@ -937,7 +1043,7 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 			if vv.EntityName == "" {
 				continue
 			}
-			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: []string{}, SucceedingOids: []string{}}
+			tmpValueObj := models.RequestCacheEntityValue{Oid: vv.Id, BindFlag: "Y", EntityName: vv.EntityName, EntityDisplayName: vv.DisplayName, EntityDataOp: vv.EntityDataOp, EntityDataId: vv.DataId, FullEntityDataId: vv.FullDataId, PackageName: vv.PackageName, PreviousOids: vv.PreviousIds, SucceedingOids: vv.SucceedingIds}
 			tmpEntityName := fmt.Sprintf("%s:%s", vv.PackageName, vv.EntityName)
 			if _, b := entityDefIdMap[tmpEntityName]; b {
 				tmpValueObj.EntityDefId = entityDefIdMap[tmpEntityName]
@@ -1034,8 +1140,9 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	if err != nil {
 		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
 	}
-	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
 	requestQuery.FormData = requestCache.Data
+	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
 	result.Data = []*models.TaskQueryObj{&requestQuery}
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
 	if len(result.TimeStep) > 0 {
@@ -1169,4 +1276,203 @@ func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err er
 		result = append(result, &models.EntityDataObj{Id: v.Code, DisplayName: v.Value})
 	}
 	return
+}
+
+func BuildRequestProcessData(input models.RequestCacheData) (result models.RequestProcessData) {
+	result.ProcDefId = input.ProcDefId
+	result.ProcDefKey = input.ProcDefKey
+	result.RootEntityOid = input.RootEntityValue.Oid
+	result.Entities = []*models.RequestCacheEntityValue{}
+	result.Bindings = []*models.RequestProcessTaskNodeBindObj{}
+	entityExistMap := make(map[string]int)
+	for _, node := range input.TaskNodeBindInfos {
+		for _, entity := range node.BoundEntityValues {
+			if _, b := entityExistMap[entity.Oid]; !b {
+				result.Entities = append(result.Entities, entity)
+				entityExistMap[entity.Oid] = 1
+			}
+			if node.NodeId != "" {
+				result.Bindings = append(result.Bindings, &models.RequestProcessTaskNodeBindObj{Oid: entity.Oid, NodeId: node.NodeId, NodeDefId: node.NodeDefId, EntityDataId: entity.EntityDataId, BindFlag: entity.BindFlag})
+			}
+		}
+	}
+	if _, b := entityExistMap[input.RootEntityValue.Oid]; !b {
+		result.Entities = append(result.Entities, &input.RootEntityValue)
+	}
+	if len(result.Entities) == 0 {
+		tmpEntityValue := models.RequestCacheEntityValue{Oid: result.RootEntityOid, PackageName: "pseudo", EntityName: "pseudo", BindFlag: "N"}
+		result.Entities = append(result.Entities, &tmpEntityValue)
+	}
+	return result
+}
+
+func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.RequestCacheData) (entityDepMap map[string][]string, err error) {
+	entityDepMap = make(map[string][]string)
+	if cacheData.RootEntityValue.Oid == "" || strings.HasPrefix(cacheData.RootEntityValue.Oid, "tmp") {
+		return entityDepMap, nil
+	}
+	// get core preview data list
+	preData, preErr := ProcessDataPreview(requestTemplateId, cacheData.RootEntityValue.Oid, userToken)
+	if preErr != nil {
+		return entityDepMap, fmt.Errorf("Try to get process preview data fail,%s ", preErr.Error())
+	}
+	// get binding entity data
+	entityList := []*models.RequestCacheEntityValue{}
+	entityExistMap := make(map[string]int)
+	for _, v := range cacheData.TaskNodeBindInfos {
+		for _, vv := range v.BoundEntityValues {
+			if _, b := entityExistMap[vv.Oid]; !b {
+				entityList = append(entityList, vv)
+				entityExistMap[vv.Oid] = 1
+			}
+		}
+	}
+	// preEntityList is other entity data
+	preEntityList := []*models.EntityTreeObj{}
+	rootParent := models.RequestCacheEntityAttrValue{}
+	rootSucceeding := []string{}
+	for _, v := range preData.Data.EntityTreeNodes {
+		if _, b := entityExistMap[v.Id]; !b {
+			preEntityList = append(preEntityList, v)
+		}
+		if v.DataId == cacheData.RootEntityValue.Oid {
+			rootSucceeding = v.SucceedingIds
+			rootParent.DataType = "ref"
+			rootParent.AttrName = v.EntityName
+			rootParent.DataValue = v.DataId
+		}
+	}
+	// preEntityList -> in preData but no int boundValues
+	if len(preEntityList) == 0 {
+		return entityDepMap, nil
+	}
+	dependEntityMap := make(map[string]*models.RequestCacheEntityAttrValue)
+	log.Logger.Info("getDependEntity", log.StringList("rootSucceeding", rootSucceeding), log.Int("preLen", len(preEntityList)), log.Int("entityLen", len(entityList)))
+	// entityList -> in boundValue entity
+	getDependEntity(rootSucceeding, rootParent, preEntityList, entityList, dependEntityMap)
+	for k, refAttr := range dependEntityMap {
+		refDataValue := fmt.Sprintf("%s", refAttr.DataValue)
+		if _, b := entityDepMap[k]; b {
+			entityDepMap[k] = append(entityDepMap[k], refDataValue)
+		} else {
+			entityDepMap[k] = []string{refDataValue}
+		}
+		log.Logger.Info("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
+	}
+	if len(dependEntityMap) > 0 {
+		newNode := models.RequestCacheTaskNodeBindObj{NodeId: "", NodeDefId: "", BoundEntityValues: []*models.RequestCacheEntityValue{}}
+		for _, v := range preEntityList {
+			if refAttr, b := dependEntityMap[v.Id]; b {
+				newNode.BoundEntityValues = append(newNode.BoundEntityValues, &models.RequestCacheEntityValue{Oid: v.Id, EntityDataId: v.DataId, PackageName: v.PackageName, EntityName: v.EntityName, EntityDisplayName: v.DisplayName, FullEntityDataId: v.FullDataId, AttrValues: []*models.RequestCacheEntityAttrValue{refAttr}, PreviousOids: v.PreviousIds, SucceedingOids: v.SucceedingIds})
+			}
+		}
+		cacheData.TaskNodeBindInfos = append(cacheData.TaskNodeBindInfos, &newNode)
+	}
+	return entityDepMap, nil
+}
+
+func getDependEntity(succeeding []string, parent models.RequestCacheEntityAttrValue, preEntityList []*models.EntityTreeObj, entityList []*models.RequestCacheEntityValue, dependEntityMap map[string]*models.RequestCacheEntityAttrValue) {
+	if len(succeeding) == 0 {
+		return
+	}
+	// check if use by entity
+	for _, v := range succeeding {
+		tmpRefAttr := models.RequestCacheEntityAttrValue{}
+		vDataId := v
+		if strings.Contains(vDataId, ":") {
+			vDataId = vDataId[strings.LastIndex(vDataId, ":")+1:]
+		}
+		useFlag := false
+		for _, vv := range entityList {
+			for _, attr := range vv.AttrValues {
+				if attr.DataType == "ref" {
+					tmpV := fmt.Sprintf("%s", attr.DataValue)
+					if strings.Contains(tmpV, vDataId) {
+						tmpRefAttr = parent
+						useFlag = true
+						break
+					}
+				}
+			}
+			if useFlag {
+				break
+			}
+		}
+		if !useFlag {
+			// find other succeeding
+			tmpParent := models.RequestCacheEntityAttrValue{}
+			nextSucceeding := []string{}
+			for _, vv := range preEntityList {
+				if vv.DataId == v {
+					tmpParent.DataType = "ref"
+					tmpParent.DataValue = v
+					tmpParent.AttrName = vv.EntityName
+				}
+				if listContains(vv.PreviousIds, v) {
+					nextSucceeding = append(nextSucceeding, vv.Id)
+				}
+			}
+			if len(nextSucceeding) > 0 {
+				getDependEntity(nextSucceeding, tmpParent, preEntityList, entityList, dependEntityMap)
+				for _, vv := range nextSucceeding {
+					if _, b := dependEntityMap[vv]; b {
+						useFlag = true
+						break
+					}
+				}
+			}
+		}
+		if useFlag {
+			for _, vv := range preEntityList {
+				if vv.Id == v {
+					dependEntityMap[v] = &tmpRefAttr
+				}
+			}
+		}
+	}
+}
+
+func listContains(inputList []string, element string) bool {
+	result := false
+	for _, v := range inputList {
+		if v == element {
+			result = true
+			break
+		}
+	}
+	return result
+}
+
+func notifyRoleMail(requestId string) error {
+	if !models.MailEnable {
+		return nil
+	}
+	log.Logger.Info("Start notify request mail", log.String("requestId", requestId))
+	var roleTable []*models.RoleTable
+	err := x.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
+	if err != nil {
+		return fmt.Errorf("Notify role mail query roles fail,%s ", err.Error())
+	}
+	if len(roleTable) == 0 {
+		return nil
+	}
+	mailList := getRoleMail(roleTable)
+	if len(mailList) == 0 {
+		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
+		return nil
+	}
+	var requestTable []*models.RequestTable
+	x.SQL("select t1.id,t1.name,t2.name as request_template,t1.reporter,t1.report_time,t1.emergency from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id=?", requestId).Find(&requestTable)
+	if len(requestTable) == 0 {
+		return nil
+	}
+	var subject, content string
+	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
+	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
+	err = models.MailSender.Send(subject, content, mailList)
+	if err != nil {
+		log.Logger.Error("Notify role mail fail", log.Error(err))
+		return fmt.Errorf("Notify role mail fail,%s ", err.Error())
+	}
+	return nil
 }

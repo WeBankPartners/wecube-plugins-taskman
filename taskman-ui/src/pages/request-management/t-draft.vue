@@ -6,6 +6,20 @@
           <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
+          <Select
+            v-model="requestTemplate"
+            @on-open-change="getTemplateList"
+            clearable
+            filterable
+            style="width:90%"
+            :placeholder="$t('template')"
+          >
+            <template v-for="option in templateOptions">
+              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
+            </template>
+          </Select>
+        </Col>
+        <Col span="4">
           <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
@@ -14,6 +28,7 @@
       style="margin: 24px 0;"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -32,13 +47,14 @@
 </template>
 
 <script>
-import { requestListForDraftInitiated, deleteRequest, terminateRequest } from '@/api/server'
+import { requestListForDraftInitiated, deleteRequest, terminateRequest, getTemplateList } from '@/api/server'
 export default {
   name: '',
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
+      requestTemplate: '',
       tags: '',
       pagination: {
         pageSize: 10,
@@ -60,44 +76,73 @@ export default {
       tableColumns: [
         {
           title: 'ID',
+          minWidth: 160,
+          fixed: 'left',
           key: 'id'
         },
         {
           title: this.$t('name'),
+          resizable: true,
+          width: 200,
+          sortable: 'custom',
           key: 'name'
         },
         {
           title: this.$t('template'),
+          resizable: true,
+          width: 200,
+          sortable: 'custom',
           key: 'requestTemplateName'
         },
         {
-          title: this.$t('emergency'),
-          key: 'emergency'
+          title: this.$t('priority'),
+          minWidth: 80,
+          sortable: 'custom',
+          key: 'emergency',
+          render: (h, params) => {
+            const emergencyObj = {
+              1: this.$t('high'),
+              2: this.$t('medium'),
+              3: this.$t('low')
+            }
+            return <span>{emergencyObj[params.row.emergency]}</span>
+          }
         },
         {
           title: this.$t('status'),
+          minWidth: 80,
+          sortable: 'custom',
           key: 'status'
         },
         {
           title: this.$t('handler'),
+          sortable: 'custom',
+          minWidth: 140,
           key: 'handler'
         },
         {
           title: this.$t('report_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'report_time'
         },
         {
           title: this.$t('expected_completion_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('estimated_finish_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
           width: 200,
+          fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (
@@ -123,7 +168,8 @@ export default {
           }
         }
       ],
-      tableData: []
+      tableData: [],
+      templateOptions: []
     }
   },
   mounted () {
@@ -131,6 +177,13 @@ export default {
     this.requestListForDraftInitiated()
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.requestListForDraftInitiated(sorting)
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
@@ -142,6 +195,16 @@ export default {
       if (res.statusCode === 'OK') {
         this.success()
         this.requestListForDraftInitiated()
+      }
+    },
+    async getTemplateList () {
+      const params = {
+        filters: [],
+        paging: false
+      }
+      const { statusCode, data } = await getTemplateList(params)
+      if (statusCode === 'OK') {
+        this.templateOptions = data.contents
       }
     },
     deleteRequest (row) {
@@ -181,13 +244,24 @@ export default {
       this.pagination.currentPage = current
       this.requestListForDraftInitiated()
     },
-    async requestListForDraftInitiated () {
+    async requestListForDraftInitiated (sorting) {
+      this.payload.filters = [{ name: 'status', operator: 'in', value: ['draft', 'created'] }]
       if (this.name) {
         this.payload.filters.push({
           name: 'name',
           operator: 'contains',
           value: this.name
         })
+      }
+      if (this.requestTemplate) {
+        this.payload.filters.push({
+          name: 'requestTemplate',
+          operator: 'eq',
+          value: this.requestTemplate
+        })
+      }
+      if (sorting) {
+        this.payload.sorting = sorting
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
@@ -201,7 +275,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

@@ -30,5 +30,19 @@
     "jwt_signing_key": "",
     "sub_system_code": "",
     "sub_system_key": ""
+  },
+  "mail": {
+    "sender_name": "",
+    "sender_mail": "",
+    "auth_server": "",
+    "auth_password": "",
+    "ssl": ""
+  },
+  "attach_file": {
+    "minio_address": "",
+    "minio_access_key": "",
+    "minio_secret_key": "",
+    "bucket": "",
+    "ssl": false
   }
 }

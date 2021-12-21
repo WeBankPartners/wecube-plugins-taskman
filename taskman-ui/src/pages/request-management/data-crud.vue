@@ -17,16 +17,40 @@
           type="primary"
           >{{ $t('search') }}</Button
         >
+        <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')">
+          <Upload
+            :action="uploadUrl"
+            :show-upload-list="false"
+            with-credentials
+            style="display:inline-block;margin-left:32px"
+            :headers="headers"
+            :on-success="uploadSucess"
+            :on-error="uploadFailed"
+          >
+            <Button size="small" type="success">{{ $t('upload_attachment') }}</Button>
+          </Upload>
+        </template>
+        <div v-for="file in attachFiles" style="display:inline-block" :key="file.id">
+          <Tag
+            type="border"
+            :closable="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"
+            checkable
+            @on-close="removeFile(file)"
+            @on-change="downloadFile(file)"
+            color="primary"
+            >{{ file.name }}</Tag
+          >
+        </div>
       </FormItem>
     </Form>
     <Tabs :value="activeTab" @on-click="changeTab">
       <template v-for="entity in requestData">
-        <TabPane :label="entity.entity" :name="entity.entity" :key="entity.entity">
+        <TabPane :label="entity.itemGroupName" :name="entity.entity || entity.itemGroup" :key="entity.itemGroup">
           <DataMgmt ref="dataMgmt" @getEntityData="getEntityData" @backData="backData"></DataMgmt>
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:48px">
+    <div style="text-align: center;margin-top:24px">
       <Button @click="saveData" v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')" type="primary">{{
         $t('save')
       }}</Button>
@@ -42,7 +66,16 @@
 
 <script>
 import DataMgmt from './data-mgmt'
-import { getRootEntity, getEntityData, saveEntityData, getRequestInfo, updateRequestStatus } from '@/api/server'
+import axios from 'axios'
+import { getCookie } from '@/pages/util/cookie'
+import {
+  getRootEntity,
+  getEntityData,
+  deleteAttach,
+  saveEntityData,
+  getRequestInfo,
+  updateRequestStatus
+} from '@/api/server'
 export default {
   name: '',
   data () {
@@ -51,7 +84,10 @@ export default {
       rootEntityId: '',
       rootEntityOptions: [],
       activeTab: '',
-      requestData: []
+      attachFiles: [],
+      requestData: [],
+      uploadUrl: '',
+      headers: {}
     }
   },
   components: {
@@ -59,6 +95,11 @@ export default {
   },
   mounted () {
     this.requestId = this.$parent.requestId
+    this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${this.requestId}`
+    const accessToken = getCookie('accessToken')
+    this.headers = {
+      Authorization: 'Bearer ' + accessToken
+    }
     this.getEntity()
     this.getEntityData()
     if (this.$parent.requestId) {
@@ -66,6 +107,71 @@ export default {
     }
   },
   methods: {
+    removeFile (file) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_to_delete'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await deleteAttach(file.id)
+          if (statusCode === 'OK') {
+            this.getRequestInfo()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    async downloadFile (file) {
+      axios({
+        method: 'GET',
+        url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
+        headers: this.headers,
+        responseType: 'blob'
+      })
+        .then(response => {
+          if (response.status < 400) {
+            let fileName = `${file.name}`
+            let blob = new Blob([response.data])
+            if ('msSaveOrOpenBlob' in navigator) {
+              window.navigator.msSaveOrOpenBlob(blob, fileName)
+            } else {
+              if ('download' in document.createElement('a')) {
+                // 非IE下载
+                let elink = document.createElement('a')
+                elink.download = fileName
+                elink.style.display = 'none'
+                elink.href = URL.createObjectURL(blob)
+                document.body.appendChild(elink)
+                elink.click()
+                URL.revokeObjectURL(elink.href) // 释放URL 对象
+                document.body.removeChild(elink)
+              } else {
+                // IE10+下载
+                navigator.msSaveOrOpenBlob(blob, fileName)
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.log(error)
+          this.$Message.warning('Error')
+        })
+    },
+    uploadFailed (val, response) {
+      console.log(val)
+      this.$Notice.error({
+        title: 'Error',
+        desc: response.statusMessage
+      })
+    },
+    async uploadSucess () {
+      this.$Notice.success({
+        title: 'Successful',
+        desc: 'Successful'
+      })
+      this.getRequestInfo()
+    },
     backData (data) {
       this.requestData = data
     },
@@ -88,6 +194,7 @@ export default {
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.requestId)
       if (statusCode === 'OK') {
+        this.attachFiles = data.attachFiles
         this.rootEntityId = data.cache
         this.getEntityData()
       }
@@ -169,18 +276,18 @@ export default {
         this.activeTab = this.activeTab || data.data[0].entity
         this.requestData = data.data
         this.$nextTick(() => {
-          const index = this.requestData.findIndex(r => r.entity === this.activeTab)
+          const index = this.requestData.findIndex(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
           this.initTable(index)
         })
       }
     },
     changeTab (entity) {
       this.activeTab = entity
-      const index = this.requestData.findIndex(r => r.entity === this.activeTab)
+      const index = this.requestData.findIndex(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.initTable(index)
     },
     initTable (index) {
-      const find = this.requestData.find(r => r.entity === this.activeTab)
+      const find = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.$refs.dataMgmt[index].initData(
         this.rootEntityId,
         this.requestData,

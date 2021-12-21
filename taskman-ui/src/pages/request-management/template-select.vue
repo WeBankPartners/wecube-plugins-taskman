@@ -23,7 +23,13 @@
               v-for="temp in tag.templates"
               :key="temp.id"
             >
-              {{ temp.name }}
+              <Tooltip content="" max-width="200">
+                {{ temp.name }}
+                <div slot="content">
+                  <p>{{ $t('version') }}:{{ temp.version }}</p>
+                  <p>{{ $t('description') }}: {{ temp.description }}</p>
+                </div>
+              </Tooltip>
             </div>
           </Card>
         </template>

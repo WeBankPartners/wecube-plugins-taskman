@@ -3,9 +3,12 @@ package models
 import (
 	"encoding/json"
 	"github.com/WeBankPartners/go-common-lib/cipher"
+	"github.com/WeBankPartners/go-common-lib/smtp"
 	"github.com/WeBankPartners/go-common-lib/token"
 	"io/ioutil"
+	"log"
 	"os"
+	"strings"
 )
 
 type HttpServerConfig struct {
@@ -42,6 +45,22 @@ type WecubeConfig struct {
 	SubSystemKey  string `json:"sub_system_key"`
 }
 
+type MailConfig struct {
+	SenderName   string `json:"sender_name"`
+	SenderMail   string `json:"sender_mail"`
+	AuthServer   string `json:"auth_server"`
+	AuthPassword string `json:"auth_password"`
+	Ssl          string `json:"ssl"`
+}
+
+type AttachFileConfig struct {
+	MinioAddress   string `json:"minio_address"`
+	MinioAccessKey string `json:"minio_access_key"`
+	MinioSecretKey string `json:"minio_secret_key"`
+	Bucket         string `json:"bucket"`
+	SSL            bool   `json:"ssl"`
+}
+
 type GlobalConfig struct {
 	DefaultLanguage string           `json:"default_language"`
 	HttpServer      HttpServerConfig `json:"http_server"`
@@ -49,12 +68,18 @@ type GlobalConfig struct {
 	Database        DatabaseConfig   `json:"database"`
 	RsaKeyPath      string           `json:"rsa_key_path"`
 	Wecube          WecubeConfig     `json:"wecube"`
+	Mail            MailConfig       `json:"mail"`
+	AttachFile      AttachFileConfig `json:"attach_file"`
 }
 
 var (
-	Config           *GlobalConfig
-	CoreToken        *token.CoreToken
-	ProcessFetchTabs string
+	Config                   *GlobalConfig
+	CoreToken                *token.CoreToken
+	ProcessFetchTabs         string
+	MailEnable               bool
+	MailSender               smtp.MailSender
+	PriorityLevelMap         = map[int]string{1: "high", 2: "medium", 3: "low"}
+	RequestTemplateImportMap = map[string]RequestTemplateExport{}
 )
 
 func InitConfig(configFile string) (errMessage string) {
@@ -85,6 +110,7 @@ func InitConfig(configFile string) (errMessage string) {
 		return
 	}
 	Config = &c
+	RequestTemplateImportMap = make(map[string]RequestTemplateExport)
 	tmpCoreToken := token.CoreToken{}
 	tmpCoreToken.BaseUrl = Config.Wecube.BaseUrl
 	tmpCoreToken.JwtSigningKey = Config.Wecube.JwtSigningKey
@@ -93,5 +119,29 @@ func InitConfig(configFile string) (errMessage string) {
 	tmpCoreToken.InitCoreToken()
 	CoreToken = &tmpCoreToken
 	ProcessFetchTabs = os.Getenv("TASKMAN_PROCESS_TAGS")
+	// attach file
+	if strings.Contains(Config.AttachFile.MinioAddress, "//") {
+		Config.AttachFile.MinioAddress = strings.Split(Config.AttachFile.MinioAddress, "//")[1]
+	}
+	Config.AttachFile.MinioAccessKey, _ = cipher.DecryptRsa(Config.AttachFile.MinioAccessKey, string(rsaFileContent))
+	Config.AttachFile.MinioSecretKey, _ = cipher.DecryptRsa(Config.AttachFile.MinioSecretKey, string(rsaFileContent))
+	// init mail
+	MailEnable = false
+	if c.Mail.AuthServer != "" && c.Mail.SenderMail != "" {
+		MailEnable = true
+		MailSender = smtp.MailSender{SenderName: c.Mail.SenderName, SenderMail: c.Mail.SenderMail, AuthServer: c.Mail.AuthServer, AuthPassword: c.Mail.AuthPassword, SSL: false}
+		if c.Mail.Ssl == "Y" {
+			MailSender.SSL = true
+		}
+		mailInitErr := MailSender.Init()
+		if mailInitErr != nil {
+			log.Printf("Init mail sender fail,%s \n", mailInitErr.Error())
+			MailEnable = false
+		} else {
+			log.Println("Mail sender init success ")
+		}
+	} else {
+		log.Println("Mail sender disable")
+	}
 	return
 }

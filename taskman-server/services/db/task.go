@@ -36,23 +36,28 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 	return
 }
 
-func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, err error) {
+func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, taskId string, err error) {
+	log.Logger.Debug("task create", log.JsonObj("input", input))
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
 	err = x.SQL("select id,form,request_template,emergency from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
 	if err != nil {
-		return result, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
+		return result, taskId, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
 	}
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newTaskFormObj := models.FormTable{Id: guid.CreateGuid(), Name: "form_" + input.TaskName}
 	input.RoleName = remakeTaskReportRole(input.RoleName)
 	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ","), Handler: input.Handler}
+	taskId = newTaskObj.Id
 	var taskFormInput models.PluginTaskFormDto
 	if input.TaskFormInput != "" {
 		err = json.Unmarshal([]byte(input.TaskFormInput), &taskFormInput)
 		if err != nil {
-			return result, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
+			return result, taskId, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
+		}
+		if newTaskObj.Reporter == "" {
+			newTaskObj.Reporter = "taskman"
 		}
 	} else {
 		// Custom task create
@@ -92,6 +97,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 			return
 		}
 	}
+	log.Logger.Debug("debug1", log.JsonObj("newTaskFormObj", newTaskFormObj))
 	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, "system", nowTime, "system", nowTime}
 	actions = append(actions, &taskInsertAction)
@@ -136,6 +142,13 @@ func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) 
 	}
 	var formItems []*models.FormItemTable
 	err = x.SQL("select * from form_item where ("+strings.Join(filterList, " or ")+") and form in (select form from request where id=? union select form from task where request=?) order by item_group,name,id desc", requestId, requestId).Find(&formItems)
+	//if len(formItems) == 0 {
+	//	for _, v := range formItemTemplates {
+	//		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
+	//		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: "", RowDataId: ""})
+	//	}
+	//	return
+	//}
 	groupNameExistMap := make(map[string]int)
 	for _, v := range formItems {
 		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
@@ -285,7 +298,8 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	}
 	var requestTemplateTable []*models.RequestTemplateTable
 	x.SQL("select * from request_template where id in (select request_template from request where id=?)", taskObj.Request).Find(&requestTemplateTable)
-	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, AttachFiles: []string{requests[0].AttachFile}, Editable: false}
+	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
+	requestQuery.AttachFiles = GetRequestAttachFileList(taskObj.Request)
 	requestQuery.ExpireTime = requests[0].ExpireTime
 	requestQuery.ExpectTime = requests[0].ExpectTime
 	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
@@ -322,9 +336,13 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 }
 
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, Description: taskObj.Description, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, AttachFiles: []string{}, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
+	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, Description: taskObj.Description, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
+	taskForm.AttachFiles = GetTaskAttachFileList(taskObj.Id)
 	if taskObj.Status != "done" {
 		taskForm.Editable = true
+	} else {
+		taskForm.Handler = taskObj.UpdatedBy
+		taskForm.HandleTime = taskObj.UpdatedTime
 	}
 	if taskObj.NextOption != "" {
 		taskForm.NextOption = strings.Split(taskObj.NextOption, ",")
@@ -332,9 +350,6 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 	}
 	if taskObj.Request == "" {
 		return
-	}
-	if taskObj.AttachFile != "" {
-		taskForm.AttachFiles = []string{taskObj.AttachFile}
 	}
 	var itemTemplates []*models.FormItemTemplateTable
 	err = x.SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
@@ -527,29 +542,44 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	if err != nil {
 		return err
 	}
+	var existFormItemTable []*models.FormItemTable
+	x.SQL("select * from form_item where form in (select form from task where id=?)", taskId).Find(&existFormItemTable)
+	existFormItemMap := make(map[string]int)
+	for _, v := range existFormItemTable {
+		existFormItemMap[fmt.Sprintf("%s^%s^%s", v.ItemGroup, v.Name, v.RowDataId)] = 1
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions = append(actions, &execAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
 	if taskObj.Request != "" {
 		for _, tableForm := range param.FormData {
-			tmpColumnMap := make(map[string]int)
+			tmpColumnMap := make(map[string]string)
 			tmpMultiMap := make(map[string]int)
 			for _, title := range tableForm.Title {
-				tmpColumnMap[title.Name] = 1
+				tmpColumnMap[title.Name] = title.Id
 				if title.Multiple == "Y" {
 					tmpMultiMap[title.Name] = 1
 				}
 			}
 			for _, valueObj := range tableForm.Value {
 				for k, v := range valueObj.EntityData {
-					if _, b := tmpColumnMap[k]; b {
+					if titleId, b := tmpColumnMap[k]; b {
+						tmpExistKey := fmt.Sprintf("%s^%s^%s", tableForm.ItemGroup, k, valueObj.Id)
 						if _, bb := tmpMultiMap[k]; bb {
 							tmpV := []string{}
 							for _, interfaceV := range v.([]interface{}) {
 								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
 							}
-							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
+							if _, bbb := existFormItemMap[tmpExistKey]; !bbb {
+								actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskObj.Form, titleId, k, strings.Join(tmpV, ","), tableForm.ItemGroup, valueObj.Id}})
+							} else {
+								actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
+							}
 						} else {
-							actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+							if _, bbb := existFormItemMap[tmpExistKey]; !bbb {
+								actions = append(actions, &execAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskObj.Form, titleId, k, v, tableForm.ItemGroup, valueObj.Id}})
+							} else {
+								actions = append(actions, &execAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
+							}
 						}
 					}
 				}
@@ -617,4 +647,43 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	} else {
 		taskObj.OperationOptions = []string{}
 	}
+}
+
+func NotifyTaskMail(taskId string) error {
+	if !models.MailEnable {
+		return nil
+	}
+	taskObj, _ := getSimpleTask(taskId)
+	log.Logger.Info("Start notify task mail", log.String("taskId", taskId))
+	var roleTable []*models.RoleTable
+	x.SQL("select id,email from `role` where id in (select `role` from task_template_role where role_type='USE' and task_template in (select task_template from task where id=?))", taskId).Find(&roleTable)
+	reportRoleString := taskObj.ReportRole
+	reportRoleString = strings.ReplaceAll(reportRoleString, "[", "")
+	reportRoleString = strings.ReplaceAll(reportRoleString, "]", "")
+	for _, v := range strings.Split(reportRoleString, ",") {
+		if v != "" {
+			roleTable = append(roleTable, &models.RoleTable{Id: v})
+		}
+	}
+	if len(roleTable) == 0 {
+		return fmt.Errorf("can not find handle role with task:%s ", taskId)
+	}
+	mailList := getRoleMail(roleTable)
+	if len(mailList) == 0 {
+		log.Logger.Warn("Notify task mail break,email is empty", log.String("role", roleTable[0].Id))
+		return fmt.Errorf("handle role email is empty ")
+	}
+	var taskTable []*models.TaskTable
+	x.SQL("select t1.id,t1.name,t1.description,t2.name as request,t1.node_name,t1.emergency,t1.reporter,t1.created_time from task t1 left join request t2 on t1.request=t2.id where t1.id=?", taskId).Find(&taskTable)
+	if len(taskTable) == 0 {
+		return fmt.Errorf("can not find task with id:%s ", taskId)
+	}
+	var subject, content string
+	subject = fmt.Sprintf("Taskman task [%s] %s[%s]", models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request)
+	content = fmt.Sprintf("Taskman task \nID:%s \nPriority:%s \nName:%s \nRequest:%s \nDescription:%s \nReporter:%s \nCreateTime:%s \n", taskTable[0].Id, models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request, taskTable[0].Description, taskTable[0].Reporter, taskTable[0].CreatedTime)
+	err := models.MailSender.Send(subject, content, mailList)
+	if err != nil {
+		return fmt.Errorf("send notify email fail:%s ", err.Error())
+	}
+	return nil
 }

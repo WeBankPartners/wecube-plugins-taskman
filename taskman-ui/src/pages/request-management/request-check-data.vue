@@ -16,29 +16,33 @@
               :key="element.id"
             >
               <div>{{ element.title }}:</div>
-              <Input
-                v-if="element.elementType === 'input'"
-                v-model="data[element.name]"
-                placeholder=""
-                :disabled="isDisabled || enforceDisable"
-              />
-              <Input
-                v-if="element.elementType === 'textarea'"
-                v-model="data[element.name]"
-                type="textarea"
-                :disabled="isDisabled || enforceDisable"
-              />
+              <Input v-if="element.elementType === 'input'" v-model="data[element.name]" placeholder="" disabled />
+              <Input v-if="element.elementType === 'textarea'" v-model="data[element.name]" type="textarea" disabled />
               <Select
-                v-if="element.elementType === 'select'"
+                v-if="element.elementType === 'select' && element.entity !== ''"
                 v-model="data[element.name]"
                 filterable
                 clearable
-                :disabled="isDisabled || enforceDisable"
+                :multiple="element.multiple === 'Y'"
                 @on-open-change="getRefOptions(element, data, dataIndex)"
+                disabled
+                style="width: calc(100% - 30px);"
               >
                 <Option v-for="item in data[element.name + 'Options']" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
+              </Select>
+              <Select
+                v-if="element.elementType === 'select' && element.entity === ''"
+                v-model="data[element.name]"
+                filterable
+                clearable
+                :multiple="element.multiple === 'Y'"
+                @on-open-change="getRefOptions(element, data, dataIndex)"
+                disabled
+                style="width: calc(100% - 30px);"
+              >
+                <Option v-for="item in data[element.name + 'Options']" :value="item" :key="item">{{ item }}</Option>
               </Select>
             </div>
           </td>
@@ -60,17 +64,22 @@ export default {
       refKeys: [] // 引用类型字段集合
     }
   },
-  props: ['data', 'isDisabled', 'enforceDisable', 'requestId'],
+  props: ['data', 'requestId'],
   mounted () {
     this.initData(this.data)
   },
   methods: {
     async getRefOptions (formItem, formData, index) {
-      if (formItem.refEntity === '') {
-        formData[formItem.name + 'Options'] = formItem.selectList
+      if (formItem.elementType === 'select' && formItem.entity === '') {
+        formData[formItem.name + 'Options'] = formItem.dataOptions.split(',')
         this.$set(this.tableData, index, formData)
         return
       }
+      // if (formItem.refEntity === '') {
+      //   formData[formItem.name + 'Options'] = formItem.selectList
+      //   this.$set(this.tableData, index, formData)
+      //   return
+      // }
       let cache = JSON.parse(JSON.stringify(formData))
       const keys = Object.keys(cache)
       keys.forEach(key => {
@@ -131,7 +140,25 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+</style>
+<style>
+.ivu-input[disabled],
+fieldset[disabled] .ivu-input {
+  color: #757575 !important;
+}
+.ivu-select-input[disabled] {
+  color: #757575 !important;
+  -webkit-text-fill-color: #757575 !important;
+}
+.ivu-select-disabled .ivu-select-selection {
+  color: #757575 !important;
+}
+</style>
 <style scoped lang="scss">
 .list-group-item- {
   display: inline-block;

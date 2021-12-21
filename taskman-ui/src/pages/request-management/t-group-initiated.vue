@@ -38,6 +38,7 @@
       style="margin: 24px 0;"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -88,22 +89,41 @@ export default {
       tableColumns: [
         {
           title: 'ID',
+          minWidth: 130,
+          fixed: 'left',
           key: 'id'
         },
         {
           title: this.$t('name'),
+          width: 300,
+          resizable: true,
+          sortable: 'custom',
           key: 'name'
         },
         {
-          title: this.$t('emergency'),
-          key: 'emergency'
+          title: this.$t('priority'),
+          key: 'emergency',
+          sortable: 'custom',
+          width: 80,
+          render: (h, params) => {
+            const emergencyObj = {
+              1: this.$t('high'),
+              2: this.$t('medium'),
+              3: this.$t('low')
+            }
+            return <span>{emergencyObj[params.row.emergency]}</span>
+          }
         },
         {
           title: this.$t('template'),
+          width: 200,
+          resizable: true,
+          sortable: 'custom',
           key: 'requestTemplateName'
         },
         {
           title: this.$t('handle_role'),
+          minWidth: 140,
           key: 'handleRoles',
           render: (h, params) => {
             const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
@@ -112,28 +132,39 @@ export default {
         },
         {
           title: this.$t('handler'),
+          minWidth: 140,
+          sortable: 'custom',
           key: 'handler'
         },
         {
           title: this.$t('status'),
+          sortable: 'custom',
+          minWidth: 140,
           key: 'status'
         },
         {
           title: this.$t('estimated_finish_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'reportTime'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
           width: 100,
+          fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (
@@ -158,7 +189,7 @@ export default {
         'InProgress(Faulted)',
         'Termination',
         'Completed',
-        'Timeouted',
+        'InProgress(Timeouted)',
         'Faulted'
       ],
       timer: null
@@ -175,6 +206,13 @@ export default {
     window.clearInterval(this.timer)
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.requestListForDraftInitiated(sorting)
+    },
     async getTemplateList () {
       const params = {
         filters: [],
@@ -212,7 +250,7 @@ export default {
       this.pagination.currentPage = current
       this.requestListForDraftInitiated()
     },
-    async requestListForDraftInitiated () {
+    async requestListForDraftInitiated (sorting) {
       this.payload.filters = [{ name: 'status', operator: 'in', value: this.requestStatus }]
       if (this.name) {
         this.payload.filters.push({
@@ -242,6 +280,9 @@ export default {
           value: this.status
         })
       }
+      if (sorting) {
+        this.payload.sorting = sorting
+      }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
       const { statusCode, data } = await requestListForDraftInitiated(this.payload)
@@ -254,7 +295,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

@@ -60,15 +60,20 @@
                 </template>
               </template>
               <p slot="content">
+                <Tag
+                  type="border"
+                  v-for="file in data.attachFiles"
+                  x
+                  checkable
+                  :key="file.id"
+                  @on-change="downloadFile(file)"
+                  color="primary"
+                  >{{ file.name }}</Tag
+                >
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
                     <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
-                      <RequestCheckData
-                        :data="form"
-                        :isDisabled="!data.editable"
-                        :requestId="requestId"
-                        :enforceDisable="enforceDisable"
-                      ></RequestCheckData>
+                      <RequestCheckData :data="form" :requestId="requestId"></RequestCheckData>
                     </TabPane>
                   </template>
                 </Tabs>
@@ -76,12 +81,12 @@
                   <div v-if="dataIndex !== 0">
                     <Form :label-width="80" style="margin: 16px 0">
                       <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
-                        <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                        <Select v-model="data.choseOption" disabled>
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>
                       </FormItem>
                       <FormItem :label="$t('process_comments')">
-                        <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
+                        <Input disabled v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>
                   </div>
@@ -97,6 +102,8 @@
 
 <script>
 import { getRequestDetail } from '@/api/server.js'
+import { getCookie } from '@/pages/util/cookie'
+import axios from 'axios'
 import RequestCheckData from './request-check-data'
 export default {
   name: '',
@@ -105,19 +112,61 @@ export default {
       activeStep: 0,
       taskId: '',
       requestId: '',
-      enforceDisable: false,
       timeStep: [],
       openPanel: '',
-      dataInfo: []
+      dataInfo: [],
+      uploadUrl: '',
+      headers: {}
     }
   },
   mounted () {
     this.requestId = this.$route.query.requestId
     this.jumpFrom = this.$route.query.jumpFrom
-    this.enforceDisable = this.$route.query.enforceDisable === 'Y'
+    this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${this.taskId}`
+    const accessToken = getCookie('accessToken')
+    this.headers = {
+      Authorization: 'Bearer ' + accessToken
+    }
     this.getRequestDetail()
   },
   methods: {
+    async downloadFile (file) {
+      axios({
+        method: 'GET',
+        url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
+        headers: this.headers,
+        responseType: 'blob'
+      })
+        .then(response => {
+          this.isExport = false
+          if (response.status < 400) {
+            let content = JSON.stringify(response.data)
+            let fileName = `${file.name}`
+            let blob = new Blob([content])
+            if ('msSaveOrOpenBlob' in navigator) {
+              window.navigator.msSaveOrOpenBlob(blob, fileName)
+            } else {
+              if ('download' in document.createElement('a')) {
+                // 非IE下载
+                let elink = document.createElement('a')
+                elink.download = fileName
+                elink.style.display = 'none'
+                elink.href = URL.createObjectURL(blob)
+                document.body.appendChild(elink)
+                elink.click()
+                URL.revokeObjectURL(elink.href) // 释放URL 对象
+                document.body.removeChild(elink)
+              } else {
+                // IE10+下载
+                navigator.msSaveOrOpenBlob(blob, fileName)
+              }
+            }
+          }
+        })
+        .catch(() => {
+          this.$Message.warning('Error')
+        })
+    },
     backToRequest () {
       this.$router.push({ path: '/taskman/request-mgmt', query: { activeTab: this.jumpFrom } })
     },

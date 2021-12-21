@@ -38,7 +38,7 @@
       <FormItem :label="$t('expected_completion_time')">
         <DatePicker
           :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
-          type="date"
+          type="datetime"
           :value="formConfig.values.expectTime"
           @on-change="changeExpectTime"
           placeholder="Select date"
@@ -64,7 +64,7 @@ export default {
         itemConfigs: [
           { label: 'name', value: 'name', rules: 'required', type: 'text' },
           {
-            label: this.$t('emergency'),
+            label: this.$t('priority'),
             value: 'emergency',
             rules: 'required',
             options: 'emergencyOptions',
@@ -94,11 +94,9 @@ export default {
           expectTime: ''
         },
         emergencyOptions: [
-          { label: '1', value: 1 },
-          { label: '2', value: 2 },
-          { label: '3', value: 3 },
-          { label: '4', value: 4 },
-          { label: '5', value: 5 }
+          { label: this.$t('high'), value: 1 },
+          { label: this.$t('medium'), value: 2 },
+          { label: this.$t('low'), value: 3 }
         ]
       }
     }
@@ -143,5 +141,17 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-input[disabled],
+fieldset[disabled] .ivu-input {
+  color: #757575 !important;
+}
+.ivu-select-input[disabled] {
+  color: #757575 !important;
+  -webkit-text-fill-color: #757575 !important;
+}
+.ivu-select-disabled .ivu-select-selection {
+  color: #757575 !important;
+}
+</style>
 <style scoped lang="scss"></style>

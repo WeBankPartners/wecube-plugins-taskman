@@ -6,6 +6,8 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"net/http"
 )
 
 func GetEntityData(c *gin.Context) {
@@ -55,7 +57,7 @@ func ListRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission)
+	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -255,4 +257,69 @@ func GetReferenceData(c *gin.Context) {
 		result = db.FilterInSideData(result, attrId, requestId)
 		middleware.ReturnData(c, result)
 	}
+}
+
+func UploadRequestAttachFile(c *gin.Context) {
+	requestId := c.Param("requestId")
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
+		return
+	}
+	if file.Size > models.UploadFileMaxSize {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File too large ", Data: nil})
+		return
+	}
+	f, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
+		return
+	}
+	b, err := ioutil.ReadAll(f)
+	defer f.Close()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
+		return
+	}
+	err = db.UploadAttachFile(requestId, "", file.Filename, middleware.GetRequestUser(c), b)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func DownloadAttachFile(c *gin.Context) {
+	fileId := c.Param("fileId")
+	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnDataPermissionDenyError(c)
+		return
+	}
+	fileContent, fileName, err := db.DownloadAttachFile(fileId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", fileName))
+		c.Data(http.StatusOK, "application/octet-stream", fileContent)
+	}
+}
+
+func RemoveAttachFile(c *gin.Context) {
+	fileId := c.Param("fileId")
+	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnDataPermissionDenyError(c)
+		return
+	}
+	err := db.RemoveAttachFile(fileId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func QueryWorkflowEntity(c *gin.Context) {
+	result := models.WorkflowEntityQuery{Status: "OK", Message: "Success", Data: []*models.WorkflowEntityDataObj{}}
+	result.Data = append(result.Data, &models.WorkflowEntityDataObj{Id: "taskman_request_id", DisplayName: "request"})
+	c.JSON(http.StatusOK, result)
 }

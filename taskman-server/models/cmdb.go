@@ -67,7 +67,7 @@ type CiDataRefFilterObj struct {
 type RefSelectParam struct {
 	AttrId    string             `json:"attrId"`
 	RequestId string             `json:"requestId"`
-	UserToken string             `json:"userToken"`
+	UserToken string             `json:"-"`
 	Filter    string             `json:"filter"`
 	Param     *QueryRequestParam `json:"param"`
 }

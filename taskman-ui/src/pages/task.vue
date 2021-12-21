@@ -5,7 +5,7 @@
         <Col span="4">
           <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
-        <Col span="5">
+        <Col span="6">
           <Select v-model="status" multiple clearable filterable style="width: 90%" :placeholder="$t('status')">
             <template v-for="option in ['created', 'marked', 'doing', 'done']">
               <Option :label="option" :value="option" :key="option"> </Option>
@@ -24,6 +24,7 @@
       style="margin: 24px 0"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -72,14 +73,22 @@ export default {
       tableColumns: [
         {
           title: this.$t('name'),
+          resizable: true,
+          width: 200,
+          fixed: 'left',
+          sortable: 'custom',
           key: 'name'
         },
         {
           title: this.$t('task_source'),
+          sortable: 'custom',
+          minWidth: 100,
           key: 'reporter'
         },
         {
           title: this.$t('request_name'),
+          resizable: true,
+          width: 200,
           key: '',
           render: (h, params) => {
             return <span>{params.row.requestObj.name}</span>
@@ -87,6 +96,7 @@ export default {
         },
         {
           title: this.$t('handle_role'),
+          minWidth: 100,
           key: 'handleRoles',
           render: (h, params) => {
             const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
@@ -95,23 +105,31 @@ export default {
         },
         {
           title: this.$t('status'),
+          sortable: 'custom',
           key: 'status',
-          width: 100
+          minWidth: 100
         },
         {
           title: this.$t('handler'),
+          sortable: 'custom',
+          minWidth: 100,
           key: 'handler'
         },
         {
           title: this.$t('created_time'),
+          sortable: 'custom',
+          minWidth: 160,
           key: 'createdTime'
         },
         {
           title: this.$t('expire_time'),
+          sortable: 'custom',
+          minWidth: 160,
           key: 'expireTime'
         },
         {
           title: this.$t('hourglass'),
+          minWidth: 160,
           key: 'expireTime',
           render: (h, params) => {
             let pColor = '#2bc453'
@@ -139,6 +157,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           width: 160,
+          fixed: 'right',
           align: 'center',
           render: (h, params) => {
             const operationOptions = params.row.operationOptions
@@ -175,6 +194,13 @@ export default {
     this.taskList()
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.taskList(sorting)
+    },
     success () {
       this.$Notice.success({
         title: this.$t('successful'),
@@ -206,7 +232,7 @@ export default {
       this.pagination.currentPage = current
       this.taskList()
     },
-    async taskList () {
+    async taskList (sorting) {
       this.payload.filters = []
       if (this.name) {
         this.payload.filters.push({
@@ -229,6 +255,9 @@ export default {
           value: this.status
         })
       }
+      if (sorting) {
+        this.payload.sorting = sorting
+      }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
       const { statusCode, data } = await taskList(this.payload)
@@ -241,7 +270,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

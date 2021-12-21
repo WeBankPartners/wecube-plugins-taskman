@@ -38,10 +38,13 @@
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                  >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                  >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                  >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
+                  >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
@@ -53,20 +56,50 @@
                 >
                 <template v-if="data.status === 'done'">
                   <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                    >{{ $t('handler') }}:{{ data.handler }}</Tag
                   >
                   <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
-                  >
-                  <Tag style="font-size:14px" type="border" size="medium" color="blue"
-                    >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                    >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                   >
                 </template>
+                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                >
+                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                  >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                >
               </template>
               <p slot="content">
+                <template v-if="dataIndex === dataInfo.length - 1 && !enforceDisable">
+                  <Upload
+                    :action="uploadUrl"
+                    :show-upload-list="false"
+                    with-credentials
+                    style="display:inline-block;margin-left:32px"
+                    :headers="headers"
+                    :on-success="uploadSucess"
+                    :on-error="uploadFailed"
+                  >
+                    <Button size="small" type="success">{{ $t('upload_attachment') }}</Button>
+                  </Upload>
+                </template>
+                <template v-else>
+                  <div style="display:inline-block;width:30px"></div>
+                </template>
+                <Tag
+                  type="border"
+                  v-for="file in data.attachFiles"
+                  :closable="dataIndex === dataInfo.length - 1 && !enforceDisable"
+                  checkable
+                  :key="file.id"
+                  @on-close="removeFile(file)"
+                  @on-change="downloadFile(file)"
+                  color="primary"
+                  >{{ file.name }}</Tag
+                >
                 <Tabs :value="data.activeTab">
                   <template v-for="form in data.formData">
-                    <TabPane :label="form.itemGroup" :name="form.itemGroup" :key="form.itemGroup">
+                    <TabPane :label="form.itemGroupName" :name="form.itemGroup" :key="form.itemGroup">
                       <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
                         <TaskData
                           :data="form"
@@ -113,8 +146,10 @@
 </template>
 
 <script>
-import { getTaskDetail, saveTaskData, commitTaskData } from '@/api/server.js'
+import { getTaskDetail, saveTaskData, commitTaskData, deleteAttach } from '@/api/server.js'
 import TaskData from './task-data'
+import { getCookie } from '@/pages/util/cookie'
+import axios from 'axios'
 export default {
   name: '',
   data () {
@@ -126,16 +161,89 @@ export default {
       enforceDisable: false,
       timeStep: [],
       openPanel: '',
-      dataInfo: []
+      dataInfo: [],
+      uploadUrl: '',
+      headers: {}
     }
   },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
     this.taskId = this.$route.query.taskId
     this.enforceDisable = this.$route.query.enforceDisable === 'Y'
+    this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${this.taskId}`
+    const accessToken = getCookie('accessToken')
+    this.headers = {
+      Authorization: 'Bearer ' + accessToken
+    }
     this.getTaskDetail()
   },
   methods: {
+    removeFile (file) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_to_delete'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await deleteAttach(file.id)
+          if (statusCode === 'OK') {
+            this.getTaskDetail()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    async downloadFile (file) {
+      axios({
+        method: 'GET',
+        url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
+        headers: this.headers,
+        responseType: 'blob'
+      })
+        .then(response => {
+          this.isExport = false
+          if (response.status < 400) {
+            let content = JSON.stringify(response.data)
+            let fileName = `${file.name}`
+            let blob = new Blob([content])
+            if ('msSaveOrOpenBlob' in navigator) {
+              window.navigator.msSaveOrOpenBlob(blob, fileName)
+            } else {
+              if ('download' in document.createElement('a')) {
+                // 非IE下载
+                let elink = document.createElement('a')
+                elink.download = fileName
+                elink.style.display = 'none'
+                elink.href = URL.createObjectURL(blob)
+                document.body.appendChild(elink)
+                elink.click()
+                URL.revokeObjectURL(elink.href) // 释放URL 对象
+                document.body.removeChild(elink)
+              } else {
+                // IE10+下载
+                navigator.msSaveOrOpenBlob(blob, fileName)
+              }
+            }
+          }
+        })
+        .catch(() => {
+          this.$Message.warning('Error')
+        })
+    },
+    uploadFailed (val, response) {
+      console.log(val)
+      this.$Notice.error({
+        title: 'Error',
+        desc: response.statusMessage
+      })
+    },
+    async uploadSucess () {
+      this.$Notice.success({
+        title: 'Successful',
+        desc: 'Successful'
+      })
+      this.getTaskDetail()
+    },
     backToTask () {
       this.$router.push({ path: '/taskman/task-mgmt' })
     },

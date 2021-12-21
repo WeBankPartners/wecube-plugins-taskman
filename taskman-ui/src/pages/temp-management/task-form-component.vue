@@ -4,13 +4,13 @@
       <Form :label-width="100">
         <Col :span="4">
           <FormItem :label="$t('name')">
-            <Input v-model="formData.name" style="width:85%" type="text"> </Input>
+            <Input v-model="formData.name" :disabled="isCheck === 'Y'" style="width:85%" type="text"> </Input>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="4">
           <FormItem :label="$t('processing_role')">
-            <Select v-model="formData.useRoles" style="width:85%" filterable>
+            <Select v-model="formData.useRoles" :disabled="isCheck === 'Y'" style="width:85%" filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
             </Select>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
@@ -18,7 +18,13 @@
         </Col>
         <Col :span="4">
           <FormItem :label="$t('handler')">
-            <Select v-model="formData.handler" @on-open-change="getHandlerRoles" style="width:85%" filterable>
+            <Select
+              v-model="formData.handler"
+              @on-open-change="getHandlerRoles"
+              :disabled="isCheck === 'Y'"
+              style="width:85%"
+              filterable
+            >
               <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                 item.displayName
               }}</Option>
@@ -27,7 +33,7 @@
         </Col>
         <Col :span="3">
           <FormItem :label="$t('task_time_limit')">
-            <Select v-model="formData.expireDay" style="width:80%" filterable>
+            <Select v-model="formData.expireDay" :disabled="isCheck === 'Y'" style="width:80%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
             <Icon size="10" style="color:#ed4014" type="ios-medical" />
@@ -35,14 +41,14 @@
         </Col>
         <Col :span="5">
           <FormItem :label="$t('Entity')">
-            <Select v-model="selectedEntities" multiple filterable>
+            <Select v-model="selectedEntities" :disabled="isCheck === 'Y'" multiple filterable>
               <Option v-for="item in entityOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
             </Select>
           </FormItem>
         </Col>
         <Col :span="4">
           <FormItem :label="$t('description')">
-            <Input v-model="formData.description" style="width:90%" type="text"> </Input>
+            <Input v-model="formData.description" :disabled="isCheck === 'Y'" style="width:90%" type="text"> </Input>
           </FormItem>
         </Col>
       </Form>
@@ -52,7 +58,14 @@
       <Col span="6" style="border: 1px solid #dcdee2;padding: 0 16px;">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Divider plain>{{ $t('preset') }}{{ $t('input_items') }}</Divider>
-          <Select v-model="selectedInputFormItem" @on-change="changeInputSelectedForm" multiple filterable>
+          <Select
+            v-model="selectedInputFormItem"
+            :disabled="isCheck === 'Y'"
+            @on-change="changeInputSelectedForm"
+            multiple
+            filterable
+          >
+            <Button type="success" @click="selectAll('input')" size="small" long>{{ $t('select_all') }}</Button>
             <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
               <Option
                 v-for="attr in item.attributes"
@@ -64,7 +77,14 @@
             </OptionGroup>
           </Select>
           <Divider plain>{{ $t('preset') }}{{ $t('output_items') }}</Divider>
-          <Select v-model="selectedOutputFormItem" @on-change="changeOutputSelectedForm" multiple filterable>
+          <Select
+            v-model="selectedOutputFormItem"
+            :disabled="isCheck === 'Y'"
+            @on-change="changeOutputSelectedForm"
+            multiple
+            filterable
+          >
+            <Button type="success" @click="selectAll('output')" size="small" long>{{ $t('select_all') }}</Button>
             <OptionGroup v-for="item in formItemOptions" :label="item.description" :key="item.id">
               <Option
                 v-for="attr in item.attributes"
@@ -79,6 +99,7 @@
           <draggable
             class="dragArea"
             :list="customElement"
+            :sort="isCheck !== 'Y'"
             :group="{ name: 'people', pull: 'clone', put: false }"
             :clone="cloneDog"
           >
@@ -86,6 +107,11 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
+              <div v-if="element.elementType === 'group'" style="width:100%;height: 80px;border:1px solid #5ea7f4">
+                <span style="margin: 8px;color:#bbbbbb">
+                  Item Group
+                </span>
+              </div>
             </div>
           </draggable>
         </div>
@@ -93,9 +119,38 @@
       <Col span="12" style="border: 1px solid #dcdee2;padding: 16px;width:48%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', border: '1px solid #dcdee2;' }">
           <template v-for="(item, itemIndex) in finalElement">
-            <div :key="item.itemGroup" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
-              {{ item.itemGroupName }}
-              <draggable class="dragArea" :list="item.attrs" group="people" @change="log">
+            <div :key="itemIndex" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+              <span v-if="itemIndex !== editItemGroupNameIndex">
+                {{ item.itemGroupName }}
+                <Button
+                  @click.stop="editItemGroupName(itemIndex)"
+                  type="primary"
+                  size="small"
+                  :disabled="isCheck === 'Y'"
+                  ghost
+                  icon="md-create"
+                ></Button>
+              </span>
+              <span v-else>
+                <p>GroupName &nbsp;<Input v-model="item.itemGroupName" style="width: 300px;"></Input></p>
+                <p style="display:inline-block">
+                  GroupId &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  <Input
+                    :disabled="!(item.attrs.length === 0 || item.attrs[0].entity === '')"
+                    v-model="item.itemGroup"
+                    style="width: 300px;"
+                  ></Input>
+                </p>
+                <Button
+                  @click.stop="confirmItemGroupName(itemIndex)"
+                  type="primary"
+                  size="small"
+                  :disabled="isCheck === 'Y'"
+                  ghost
+                  icon="md-checkmark"
+                ></Button>
+              </span>
+              <draggable class="dragArea" :list="item.attrs" :sort="isCheck !== 'Y'" group="people" @change="log(item)">
                 <div
                   @click="selectElement(itemIndex, eleIndex)"
                   :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
@@ -128,8 +183,9 @@
                     style="width: calc(100% - 30px);"
                   ></Select>
                   <Button
-                    @click.stop="removeForm(element, itemIndex, eleIndex)"
+                    @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
+                    :disabled="isCheck === 'Y'"
                     size="small"
                     ghost
                     icon="ios-close"
@@ -148,44 +204,54 @@
               <div slot="content">
                 <Form :label-width="80">
                   <FormItem :label="$t('field_name')">
-                    <Input v-model="editElement.name" placeholder=""></Input>
+                    <Input v-model="editElement.name" :disabled="isCheck === 'Y'" placeholder=""></Input>
                   </FormItem>
                   <FormItem :label="$t('display_name')">
-                    <Input v-model="editElement.title" placeholder=""></Input>
+                    <Input v-model="editElement.title" :disabled="isCheck === 'Y'" placeholder=""></Input>
                   </FormItem>
                   <FormItem :label="$t('data_type')">
-                    <Select v-model="editElement.elementType" @on-change="editElement.defaultValue = ''">
+                    <Select
+                      v-model="editElement.elementType"
+                      :disabled="isCheck === 'Y'"
+                      @on-change="editElement.defaultValue = ''"
+                    >
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
                     </Select>
                   </FormItem>
+                  <FormItem
+                    v-if="editElement.elementType === 'select' && editElement.entity === ''"
+                    :label="$t('data_set')"
+                  >
+                    <Input v-model="editElement.dataOptions" :disabled="isCheck === 'Y'" placeholder="eg:a,b"></Input>
+                  </FormItem>
                   <FormItem :label="$t('defaults')">
-                    <Input v-model="editElement.defaultValue" placeholder=""></Input>
+                    <Input v-model="editElement.defaultValue" :disabled="isCheck === 'Y'" placeholder=""></Input>
                   </FormItem>
                   <!-- <FormItem label="标签">
                     <Input v-model="editElement.tag" placeholder=""></Input>
                   </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <Select v-model="editElement.inDisplayName">
+                    <Select v-model="editElement.inDisplayName" :disabled="isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <Select v-model="editElement.isEdit">
+                    <Select v-model="editElement.isEdit" :disabled="isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <Select v-model="editElement.required">
+                    <Select v-model="editElement.required" :disabled="isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
                   </FormItem>
                   <FormItem :label="$t('width')">
-                    <Select v-model="editElement.width">
+                    <Select v-model="editElement.width" :disabled="isCheck === 'Y'">
                       <Option :value="6">6</Option>
                       <Option :value="12">12</Option>
                       <Option :value="18">18</Option>
@@ -200,7 +266,11 @@
               <div slot="content">
                 <Form :label-width="80">
                   <FormItem :label="$t('validation_rules')">
-                    <Input v-model="editElement.regular" :placeholder="$t('only_supports_regular')"></Input>
+                    <Input
+                      v-model="editElement.regular"
+                      :disabled="isCheck === 'Y'"
+                      :placeholder="$t('only_supports_regular')"
+                    ></Input>
                   </FormItem>
                 </Form>
               </div>
@@ -210,7 +280,7 @@
               <div slot="content">
                 <Form :label-width="80">
                   <FormItem :label="$t('constraints')">
-                    <Select v-model="editElement.isRefInside">
+                    <Select v-model="editElement.isRefInside" :disabled="isCheck === 'Y'">
                       <Option value="yes">yes</Option>
                       <Option value="no">no</Option>
                     </Select>
@@ -223,7 +293,7 @@
       </Col>
     </Row>
     <div style="text-align:center; margin-top: 8px">
-      <Button type="primary" @click="saveForm">保存当前表单</Button>
+      <Button type="primary" @click="saveForm" :disabled="isCheck === 'Y'">{{ $t('save') }}</Button>
     </div>
   </div>
 </template>
@@ -237,6 +307,7 @@ export default {
   data () {
     return {
       MODALHEIGHT: 500,
+      isCheck: 'N',
       nodeId: '',
       nodeData: null,
       openPanel: '',
@@ -266,6 +337,12 @@ export default {
 
       customElement: [
         {
+          id: 4,
+          elementType: 'group',
+          itemGroup: '',
+          itemGroupName: ''
+        },
+        {
           id: 1,
           name: 'input',
           title: 'Input',
@@ -277,6 +354,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
+          dataOptions: '',
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
@@ -305,6 +383,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
+          dataOptions: '',
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
@@ -333,6 +412,7 @@ export default {
           packageName: '',
           entity: '',
           width: 24,
+          dataOptions: '',
           regular: '',
           inDisplayName: 'no',
           isEdit: 'yes',
@@ -350,6 +430,7 @@ export default {
           refPackageName: ''
         }
       ],
+      editItemGroupNameIndex: null,
       finalElement: [],
       editElement: {
         attrDefDataType: '',
@@ -376,6 +457,7 @@ export default {
         sort: 0,
         title: '',
         width: 24,
+        dataOptions: '',
         refEntity: '',
         refPackageName: ''
       },
@@ -394,30 +476,48 @@ export default {
   },
   watch: {
     selectedEntities: function (val) {
-      this.formItemOptions = this.cacheFormItemOptions.filter(c => {
-        if (val.includes(c.name)) {
-          return c
-        }
-      })
+      this.formItemOptions = this.cacheFormItemOptions.filter(c => val.includes(c.name))
       let canSelect = []
       this.formItemOptions.forEach(f => {
         f.attributes.forEach(attr => {
           canSelect.push(attr.id)
         })
       })
-      this.selectedInputFormItem.forEach((i, index) => {
-        if (!canSelect.includes(i)) {
-          this.selectedInputFormItem = this.selectedInputFormItem.splice(index, 1)
-        }
-      })
-      this.selectedOutputFormItem.forEach((i, index) => {
-        if (!canSelect.includes(i)) {
-          this.selectedOutputFormItem = this.selectedOutputFormItem.splice(index, 1)
-        }
-      })
     }
   },
   methods: {
+    selectAll (type) {
+      if (type === 'input') {
+        this.formItemOptions.forEach(itemOptions => {
+          itemOptions.attributes.forEach(attr => {
+            if (!this.selectedInputFormItem.includes(attr.id) && !this.selectedOutputFormItem.includes(attr.id)) {
+              this.selectedInputFormItem.push(attr.id)
+            }
+          })
+        })
+        this.changeInputSelectedForm()
+      } else {
+        this.formItemOptions.forEach(itemOptions => {
+          itemOptions.attributes.forEach(attr => {
+            if (!this.selectedInputFormItem.includes(attr.id) && !this.selectedOutputFormItem.includes(attr.id)) {
+              this.selectedOutputFormItem.push(attr.id)
+            }
+          })
+        })
+        this.changeOutputSelectedForm()
+      }
+    },
+    editItemGroupName (index) {
+      this.editItemGroupNameIndex = index
+    },
+    confirmItemGroupName (index) {
+      let editGroup = this.finalElement[index]
+      editGroup.attrs.forEach(attr => {
+        attr.itemGroupName = editGroup.itemGroupName
+        attr.itemGroup = editGroup.itemGroup
+      })
+      this.editItemGroupNameIndex = null
+    },
     log (log) {
       this.finalElement.forEach(l => {
         l.attrs.forEach(attr => {
@@ -426,20 +526,21 @@ export default {
         })
       })
     },
-    initData (currentNode, node, requestTemplateId) {
+    initData (currentNode, node, requestTemplateId, isCheck) {
+      this.isCheck = isCheck
       this.nodeId = currentNode
       this.nodeData = node
       this.initPage()
     },
-    initPage () {
+    async initPage () {
       if (this.nodeData.nodeId === this.nodeId) {
         this.formData.nodeDefId = this.nodeData.nodeDefId
         this.formData.nodeId = this.nodeData.nodeId
         this.formData.nodeDefName = this.nodeData.nodeName
-        this.getSelectedForm()
         this.getUserRoles()
         this.getHandlerRoles()
-        this.getTaskFormDataByNodeId()
+        await this.getTaskFormDataByNodeId()
+        this.getSelectedForm()
       }
     },
     async getHandlerRoles () {
@@ -463,6 +564,7 @@ export default {
         return
       }
       this.finalElement = []
+      // this.selectedEntities = []
       const { statusCode, data } = await getTaskFormDataByNodeId(this.requestTemplateId, this.formData.nodeDefId)
       if (statusCode === 'OK') {
         this.formData = { ...data }
@@ -501,7 +603,6 @@ export default {
               })
             }
           })
-          // this.selectedFormItem = data.items.filter(item => item.attrDefId !== '').map(attr => attr.attrDefId)
         }
       }
     },
@@ -577,7 +678,7 @@ export default {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
         let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
           .attrs
-        const findIndex = findAttr.findIndex(l => l.id === r)
+        const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
 
@@ -613,6 +714,7 @@ export default {
           sort: 0,
           title: seleted.description,
           width: 24,
+          dataOptions: seleted.dataOptions,
           refEntity: seleted.refEntityName,
           refPackageName: seleted.refPackageName
         }
@@ -670,7 +772,7 @@ export default {
           packageName: seleted.entityPackage,
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
-          id: 'c_' + seleted.id,
+          id: seleted.id,
           inDisplayName: 'no',
           isEdit: 'yes',
           multiple: 'N',
@@ -684,6 +786,7 @@ export default {
           sort: 0,
           title: seleted.description,
           width: 24,
+          dataOptions: seleted.dataOptions,
           refEntity: seleted.refEntityName,
           refPackageName: seleted.refPackageName
         }
@@ -704,23 +807,19 @@ export default {
       })
     },
     cloneDog (val) {
-      let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = idGlobal++
-      // newItem.tag = 'Custom'
-      newItem.itemGroup = 'Custom'
-      newItem.itemGroupName = 'Custom'
-      newItem.title = newItem.title + idGlobal
-      const find = this.finalElement.find(l => l.itemGroup === 'Custom')
-      if (find) {
-        find.attrs.push(newItem)
-      } else {
+      if (this.$parent.isCheck === 'Y') return
+      if (val.elementType === 'group') {
         this.finalElement.push({
-          tag: 'Custom',
-          itemGroup: 'Custom',
-          itemGroupName: 'Custom',
-          attrs: [newItem]
+          itemGroup: 'itemGroup' + idGlobal++,
+          itemGroupName: 'itemGroup' + idGlobal++,
+          attrs: []
         })
+        return
       }
+      let newItem = JSON.parse(JSON.stringify(val))
+      newItem.id = 'c_' + idGlobal++
+      newItem.title = newItem.title + idGlobal
+      return newItem
     },
     selectElement (itemIndex, eleIndex) {
       if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {
@@ -735,16 +834,18 @@ export default {
       this.editElement.isActive = true
       this.openPanel = '1'
     },
-    removeForm (element, itemIndex, eleIndex) {
+    removeForm (itemIndex, eleIndex, element) {
       this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
-      const outputIndex = this.selectedOutputFormItem.findIndex(i => i === element.id.substring(2))
+      const outputIndex = this.selectedOutputFormItem.findIndex(i => i === element.attrDefId)
       if (outputIndex > -1) {
-        this.selectedOutputFormItem.splice(outputIndex, 1)
+        const index = this.selectedOutputFormItem.findIndex(inputItem => inputItem === element.attrDefId)
+        this.selectedOutputFormItem.splice(index, 1)
         return
       }
-      const inputIndex = this.selectedInputFormItem.findIndex(i => i === element.id.substring(2))
+      const inputIndex = this.selectedInputFormItem.findIndex(i => i === element.attrDefId)
       if (inputIndex > -1) {
-        this.selectedInputFormItem.splice(inputIndex, 1)
+        const index = this.selectedInputFormItem.findIndex(inputItem => inputItem === element.attrDefId)
+        this.selectedInputFormItem.splice(index, 1)
       }
     },
     async getSelectedForm () {
@@ -775,7 +876,7 @@ export default {
           }
         })
         this.cacheFormItemOptions = JSON.parse(JSON.stringify(formItemOptions))
-        this.formItemOptions = formItemOptions
+        this.formItemOptions = formItemOptions.filter(f => this.selectedEntities.includes(f.name))
         this.selectedFormItemOptions = data
       }
     },
@@ -791,7 +892,19 @@ export default {
   }
 }
 </script>
-
+<style>
+.ivu-input[disabled],
+fieldset[disabled] .ivu-input {
+  color: #757575 !important;
+}
+.ivu-select-input[disabled] {
+  color: #757575 !important;
+  -webkit-text-fill-color: #757575 !important;
+}
+.ivu-select-disabled .ivu-select-selection {
+  color: #757575 !important;
+}
+</style>
 <style scoped lang="scss">
 .active-zone {
   color: #338cf0;

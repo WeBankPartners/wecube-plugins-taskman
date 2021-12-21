@@ -10,6 +10,8 @@ type EntityDataObj struct {
 	Id          string `json:"guid"`
 	DisplayName string `json:"key_name"`
 	IsNew       bool   `json:"isNew"`
+	PackageName string `json:"package_name"`
+	Entity      string `json:"entity"`
 }
 
 type EntityTreeResult struct {
@@ -37,32 +39,32 @@ type EntityTreeObj struct {
 }
 
 type RequestTable struct {
-	Id                  string   `json:"id" xorm:"id"`
-	Name                string   `json:"name" xorm:"name"`
-	Form                string   `json:"form" xorm:"form"`
-	RequestTemplate     string   `json:"requestTemplate" xorm:"request_template"`
-	RequestTemplateName string   `json:"requestTemplateName" xorm:"-"`
-	ProcInstanceId      string   `json:"procInstanceId" xorm:"proc_instance_id"`
-	ProcInstanceKey     string   `json:"procInstanceKey" xorm:"proc_instance_key"`
-	Reporter            string   `json:"reporter" xorm:"reporter"`
-	Handler             string   `json:"handler" xorm:"handler"`
-	ReportTime          string   `json:"reportTime" xorm:"report_time"`
-	Emergency           int      `json:"emergency" xorm:"emergency"`
-	ReportRole          string   `json:"reportRole" xorm:"report_role"`
-	AttachFile          string   `json:"attachFile" xorm:"attach_file"`
-	Status              string   `json:"status" xorm:"status"`
-	Cache               string   `json:"cache" xorm:"cache"`
-	BindCache           string   `json:"bindCache" xorm:"bind_cache"`
-	Result              string   `json:"result" xorm:"result"`
-	ExpireTime          string   `json:"expireTime" xorm:"expire_time"`
-	ExpectTime          string   `json:"expectTime" xorm:"expect_time"`
-	ConfirmTime         string   `json:"confirmTime" xorm:"confirm_time"`
-	CreatedBy           string   `json:"createdBy" xorm:"created_by"`
-	CreatedTime         string   `json:"createdTime" xorm:"created_time"`
-	UpdatedBy           string   `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime         string   `json:"updatedTime" xorm:"updated_time"`
-	DelFlag             int      `json:"delFlag" xorm:"del_flag"`
-	HandleRoles         []string `json:"handleRoles" xorm:"-"`
+	Id                  string             `json:"id" xorm:"id"`
+	Name                string             `json:"name" xorm:"name"`
+	Form                string             `json:"form" xorm:"form"`
+	RequestTemplate     string             `json:"requestTemplate" xorm:"request_template"`
+	RequestTemplateName string             `json:"requestTemplateName" xorm:"-"`
+	ProcInstanceId      string             `json:"procInstanceId" xorm:"proc_instance_id"`
+	ProcInstanceKey     string             `json:"procInstanceKey" xorm:"proc_instance_key"`
+	Reporter            string             `json:"reporter" xorm:"reporter"`
+	Handler             string             `json:"handler" xorm:"handler"`
+	ReportTime          string             `json:"reportTime" xorm:"report_time"`
+	Emergency           int                `json:"emergency" xorm:"emergency"`
+	ReportRole          string             `json:"reportRole" xorm:"report_role"`
+	Status              string             `json:"status" xorm:"status"`
+	Cache               string             `json:"cache" xorm:"cache"`
+	BindCache           string             `json:"bindCache" xorm:"bind_cache"`
+	Result              string             `json:"result" xorm:"result"`
+	ExpireTime          string             `json:"expireTime" xorm:"expire_time"`
+	ExpectTime          string             `json:"expectTime" xorm:"expect_time"`
+	ConfirmTime         string             `json:"confirmTime" xorm:"confirm_time"`
+	CreatedBy           string             `json:"createdBy" xorm:"created_by"`
+	CreatedTime         string             `json:"createdTime" xorm:"created_time"`
+	UpdatedBy           string             `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime         string             `json:"updatedTime" xorm:"updated_time"`
+	DelFlag             int                `json:"delFlag" xorm:"del_flag"`
+	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
+	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
 }
 
 type ExpireObj struct {
@@ -78,10 +80,11 @@ type ExpireObj struct {
 type AttachFileTable struct {
 	Id           string `json:"id" xorm:"id"`
 	Name         string `json:"name" xorm:"name"`
-	S3Url        string `json:"s3Url" xorm:"s3_url"`
 	S3BucketName string `json:"s3BucketName" xorm:"s3_bucket_name"`
 	S3KeyName    string `json:"s3KeyName" xorm:"s3_key_name"`
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
+	Request      string `json:"request" xorm:"request"`
+	Task         string `json:"task" xorm:"task"`
 }
 
 type RequestCacheData struct {
@@ -98,22 +101,24 @@ type RequestCacheTaskNodeBindObj struct {
 }
 
 type RequestCacheEntityValue struct {
-	AttrValues       []*RequestCacheEntityAttrValue `json:"attrValues"`
-	BindFlag         string                         `json:"bindFlag"`
-	EntityDataId     string                         `json:"entityDataId"`
-	EntityDataOp     string                         `json:"entityDataOp"`
-	EntityDataState  string                         `json:"entityDataState"`
-	EntityDefId      string                         `json:"entityDefId"`
-	EntityName       string                         `json:"entityName"`
-	FullEntityDataId interface{}                    `json:"fullEntityDataId"`
-	Oid              string                         `json:"oid"`
-	PackageName      string                         `json:"packageName"`
-	PreviousOids     []string                       `json:"previousOids"`
-	Processed        bool                           `json:"processed"`
-	SucceedingOids   []string                       `json:"succeedingOids"`
+	AttrValues        []*RequestCacheEntityAttrValue `json:"attrValues"`
+	BindFlag          string                         `json:"bindFlag"`
+	EntityDataId      string                         `json:"entityDataId"`
+	EntityDataOp      string                         `json:"entityDataOp"`
+	EntityDataState   string                         `json:"entityDataState"`
+	EntityDefId       string                         `json:"entityDefId"`
+	EntityName        string                         `json:"entityName"`
+	EntityDisplayName string                         `json:"entityDisplayName"`
+	FullEntityDataId  interface{}                    `json:"fullEntityDataId"`
+	Oid               string                         `json:"oid"`
+	PackageName       string                         `json:"packageName"`
+	PreviousOids      []string                       `json:"previousOids"`
+	Processed         bool                           `json:"processed"`
+	SucceedingOids    []string                       `json:"succeedingOids"`
 }
 
 type RequestCacheEntityAttrValue struct {
+	DataOid   string      `json:"-"`
 	AttrDefId string      `json:"attrDefId"`
 	AttrName  string      `json:"attrName"`
 	DataType  string      `json:"dataType"`
@@ -199,4 +204,31 @@ type InstanceStatusQueryNode struct {
 	NodeName  string `json:"nodeName"`
 	NodeType  string `json:"nodeType"`
 	Status    string `json:"status"`
+}
+
+type RequestProcessData struct {
+	ProcDefId     string                           `json:"procDefId"`
+	ProcDefKey    string                           `json:"procDefKey"`
+	RootEntityOid string                           `json:"rootEntityOid"`
+	Entities      []*RequestCacheEntityValue       `json:"entities"`
+	Bindings      []*RequestProcessTaskNodeBindObj `json:"bindings"`
+}
+
+type RequestProcessTaskNodeBindObj struct {
+	NodeId       string `json:"nodeId"`
+	NodeDefId    string `json:"nodeDefId"`
+	Oid          string `json:"oid"`
+	EntityDataId string `json:"entityDataId"`
+	BindFlag     string `json:"bindFlag"`
+}
+
+type WorkflowEntityQuery struct {
+	Status  string                   `json:"status"`
+	Message string                   `json:"message"`
+	Data    []*WorkflowEntityDataObj `json:"data"`
+}
+
+type WorkflowEntityDataObj struct {
+	Id          string `json:"id"`
+	DisplayName string `json:"displayName"`
 }

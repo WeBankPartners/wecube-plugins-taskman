@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `role` (
   `id` varchar(64)  NOT NULL,
   `display_name` varchar(255) NOT NULL,
   `core_id` varchar(64) DEFAULT NULL,
+  `email` varchar(64) DEFAULT NULL,
   `updated_time` datetime,
   PRIMARY KEY (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
@@ -279,3 +280,13 @@ CREATE TABLE IF NOT EXISTS `operation_log` (
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT=' ';
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+#@v0.1.0.5-begin@;
+alter table attach_file drop column s3_url;
+alter table attach_file add column request varchar(64) default null;
+alter table attach_file add column task varchar(64) default null;
+#@v0.1.0.5-end@;
+
+#@v0.1.0.21-begin@;
+alter table task add column notify_count int default 0;
+#@v0.1.0.21-end@;

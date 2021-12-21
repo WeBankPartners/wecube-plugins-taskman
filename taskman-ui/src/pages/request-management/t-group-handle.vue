@@ -38,6 +38,7 @@
       style="margin: 24px 0;"
       border
       size="small"
+      @on-sort-change="sortTable"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -77,7 +78,15 @@ export default {
           {
             name: 'status',
             operator: 'in',
-            value: ['Pending', 'InProgress', 'InProgress(Faulted)', 'Termination', 'Completed', 'Timeouted', 'Faulted']
+            value: [
+              'Pending',
+              'InProgress',
+              'InProgress(Faulted)',
+              'Termination',
+              'Completed',
+              'InProgress(Timeouted)',
+              'Faulted'
+            ]
           }
         ],
         pageable: {
@@ -93,22 +102,42 @@ export default {
       tableColumns: [
         {
           title: 'ID',
+          minWidth: 130,
+          fixed: 'left',
           key: 'id'
         },
         {
           title: this.$t('name'),
+          width: 200,
+          resizable: true,
+          sortable: 'custom',
           key: 'name'
         },
         {
-          title: this.$t('emergency'),
-          key: 'emergency'
+          title: this.$t('priority'),
+          width: 80,
+          sortable: 'custom',
+          minWidth: 100,
+          key: 'emergency',
+          render: (h, params) => {
+            const emergencyObj = {
+              1: this.$t('high'),
+              2: this.$t('medium'),
+              3: this.$t('low')
+            }
+            return <span>{emergencyObj[params.row.emergency]}</span>
+          }
         },
         {
           title: this.$t('template'),
+          sortable: 'custom',
+          minWidth: 100,
           key: 'requestTemplateName'
         },
         {
           title: this.$t('handle_role'),
+          sortable: 'custom',
+          minWidth: 140,
           key: 'handleRoles',
           render: (h, params) => {
             const handleRoles = params.row.handleRoles.length === 1 ? params.row.handleRoles[0] : ''
@@ -117,28 +146,39 @@ export default {
         },
         {
           title: this.$t('handler'),
+          sortable: 'custom',
+          minWidth: 140,
           key: 'handler'
         },
         {
           title: this.$t('status'),
+          sortable: 'custom',
+          minWidth: 140,
           key: 'status'
         },
         {
           title: this.$t('estimated_finish_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'expireTime'
         },
         {
           title: this.$t('expected_completion_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'expectTime'
         },
         {
           title: this.$t('report_time'),
+          sortable: 'custom',
+          minWidth: 130,
           key: 'reportTime'
         },
         {
           title: this.$t('t_action'),
+          fixed: 'right',
           key: 'action',
-          width: 230,
+          width: 180,
           align: 'center',
           render: (h, params) => {
             return (
@@ -194,7 +234,7 @@ export default {
         'InProgress(Faulted)',
         'Termination',
         'Completed',
-        'Timeouted',
+        'InProgress(Timeouted)',
         'Faulted'
       ],
       timer: null
@@ -211,6 +251,13 @@ export default {
     window.clearInterval(this.timer)
   },
   methods: {
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.requestListForHandle(sorting)
+    },
     jumpToOrch (row) {
       this.$router.push({ path: '/implementation/workflow-execution', query: { id: row.procInstanceId } })
     },
@@ -280,7 +327,7 @@ export default {
       this.pagination.currentPage = current
       this.requestListForHandle()
     },
-    async requestListForHandle () {
+    async requestListForHandle (sorting) {
       this.payload.filters = [{ name: 'status', operator: 'in', value: this.requestStatus }]
       if (this.name) {
         this.payload.filters.push({
@@ -310,6 +357,9 @@ export default {
           value: this.status
         })
       }
+      if (sorting) {
+        this.payload.sorting = sorting
+      }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
       const { statusCode, data } = await requestListForHandle(this.payload)
@@ -322,7 +372,12 @@ export default {
   components: {}
 }
 </script>
-
+<style>
+.ivu-table-cell {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+</style>
 <style scoped lang="scss">
 .header-icon {
   float: right;

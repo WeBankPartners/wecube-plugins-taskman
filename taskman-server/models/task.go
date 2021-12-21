@@ -38,6 +38,7 @@ type TaskTable struct {
 	DelFlag           string   `json:"delFlag" xorm:"del_flag"`
 	OperationOptions  []string `json:"operationOptions" xorm:"-"`
 	ExpireTime        string   `json:"expireTime" xorm:"expire_time"`
+	NotifyCount       int      `json:"notifyCount" xorm:"notify_count"`
 }
 
 type TaskListObj struct {
@@ -190,13 +191,15 @@ type TaskQueryObj struct {
 	Reporter        string                    `json:"reporter"`
 	ReportTime      string                    `json:"reportTime"`
 	Comment         string                    `json:"comment"`
-	AttachFiles     []string                  `json:"attachFiles"`
+	AttachFiles     []*AttachFileTable        `json:"attachFiles"`
 	Editable        bool                      `json:"editable"`
 	Status          string                    `json:"status"`
 	NextOption      []string                  `json:"nextOption"`
 	ChoseOption     string                    `json:"choseOption"`
 	ExpireTime      string                    `json:"expireTime"`
 	ExpectTime      string                    `json:"expectTime"`
+	Handler         string                    `json:"handler"`
+	HandleTime      string                    `json:"handleTime"`
 	FormData        []*RequestPreDataTableObj `json:"formData"`
 }
 

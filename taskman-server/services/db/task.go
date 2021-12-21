@@ -653,11 +653,17 @@ func NotifyTaskMail(taskId string) error {
 	if !models.MailEnable {
 		return nil
 	}
+	taskObj, _ := getSimpleTask(taskId)
 	log.Logger.Info("Start notify task mail", log.String("taskId", taskId))
 	var roleTable []*models.RoleTable
-	err := x.SQL("select id,email from `role` where id in (select `role` from task_template_role where role_type='USE' and task_template in (select task_template from task where id=?))", taskId).Find(&roleTable)
-	if err != nil {
-		return fmt.Errorf("query role fail:%s ", err.Error())
+	x.SQL("select id,email from `role` where id in (select `role` from task_template_role where role_type='USE' and task_template in (select task_template from task where id=?))", taskId).Find(&roleTable)
+	reportRoleString := taskObj.ReportRole
+	reportRoleString = strings.ReplaceAll(reportRoleString, "[", "")
+	reportRoleString = strings.ReplaceAll(reportRoleString, "]", "")
+	for _, v := range strings.Split(reportRoleString, ",") {
+		if v != "" {
+			roleTable = append(roleTable, &models.RoleTable{Id: v})
+		}
 	}
 	if len(roleTable) == 0 {
 		return fmt.Errorf("can not find handle role with task:%s ", taskId)
@@ -675,7 +681,7 @@ func NotifyTaskMail(taskId string) error {
 	var subject, content string
 	subject = fmt.Sprintf("Taskman task [%s] %s[%s]", models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request)
 	content = fmt.Sprintf("Taskman task \nID:%s \nPriority:%s \nName:%s \nRequest:%s \nDescription:%s \nReporter:%s \nCreateTime:%s \n", taskTable[0].Id, models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request, taskTable[0].Description, taskTable[0].Reporter, taskTable[0].CreatedTime)
-	err = models.MailSender.Send(subject, content, mailList)
+	err := models.MailSender.Send(subject, content, mailList)
 	if err != nil {
 		return fmt.Errorf("send notify email fail:%s ", err.Error())
 	}

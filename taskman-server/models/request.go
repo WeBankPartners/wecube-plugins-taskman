@@ -7,11 +7,12 @@ type EntityQueryResult struct {
 }
 
 type EntityDataObj struct {
-	Id          string `json:"guid"`
-	DisplayName string `json:"key_name"`
-	IsNew       bool   `json:"isNew"`
-	PackageName string `json:"package_name"`
-	Entity      string `json:"entity"`
+	Id                    string `json:"guid"`
+	DisplayName           string `json:"key_name"`
+	IsNew                 bool   `json:"isNew"`
+	PackageName           string `json:"package_name"`
+	Entity                string `json:"entity"`
+	RegularExpressionRule string `json:"regularExpressionRule"`
 }
 
 type EntityTreeResult struct {

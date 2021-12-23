@@ -182,14 +182,36 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          await this.saveData()
+          this.confirmCommitRequest()
+          // await this.saveData()
+          // const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
+          // if (statusCode === 'OK') {
+          //   this.$router.push({ path: '/taskman/request-mgmt' })
+          // }
+        },
+        onCancel: () => {}
+      })
+    },
+    async confirmCommitRequest () {
+      const params = {
+        rootEntityId: this.rootEntityId,
+        data: this.requestData
+      }
+      const result = this.paramsCheck()
+      if (result) {
+        const { statusCode } = await saveEntityData(this.requestId, params)
+        if (statusCode === 'OK') {
           const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
           if (statusCode === 'OK') {
             this.$router.push({ path: '/taskman/request-mgmt' })
           }
-        },
-        onCancel: () => {}
-      })
+        }
+      } else {
+        this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
     },
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.requestId)

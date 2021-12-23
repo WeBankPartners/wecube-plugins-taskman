@@ -97,6 +97,9 @@ func SaveTaskForm(c *gin.Context) {
 			break
 		}
 	}
+	if err == nil {
+		err = db.ValidateRequestForm(param.FormData, c.GetHeader("Authorization"))
+	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -153,6 +156,9 @@ func ApproveTask(c *gin.Context) {
 			err = tmpErr
 			break
 		}
+	}
+	if err == nil {
+		err = db.ValidateRequestForm(param.FormData, c.GetHeader("Authorization"))
 	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)

@@ -313,9 +313,13 @@ func DeleteRequest(requestId, operator string) error {
 	return err
 }
 
-func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDataDto) error {
+func SaveRequestCacheNew(requestId, operator, userToken string, param *models.RequestPreDataDto) error {
+	err := ValidateRequestForm(param.Data, userToken)
+	if err != nil {
+		return err
+	}
 	var formItemNameQuery []*models.FormItemTemplateTable
-	err := x.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	err = x.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -1174,7 +1178,7 @@ func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string)
 		return
 	}
 	for k, v := range ciAttrMap {
-		tmpV, tmpErr := getCMDBAttributes(k, userToken, v)
+		tmpV, tmpErr := getCMDBAttributeSelectList(k, userToken, v)
 		if tmpErr != nil {
 			err = tmpErr
 			break
@@ -1200,8 +1204,7 @@ func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string)
 	return
 }
 
-func getCMDBAttributes(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
-	result = make(map[string][]*models.EntityDataObj)
+func getCMDBAttributes(entity, userToken string) (result []*models.EntityAttributeObj, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, entity), nil)
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
@@ -1226,7 +1229,18 @@ func getCMDBAttributes(entity, userToken string, attributes []string) (result ma
 		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
 		return
 	}
-	for _, v := range attrQueryResp.Data {
+	result = attrQueryResp.Data
+	return
+}
+
+func getCMDBAttributeSelectList(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
+	result = make(map[string][]*models.EntityDataObj)
+	attrList, queryErr := getCMDBAttributes(entity, userToken)
+	if queryErr != nil {
+		err = queryErr
+		return
+	}
+	for _, v := range attrList {
 		existFlag := false
 		for _, vv := range attributes {
 			if v.PropertyName == vv {

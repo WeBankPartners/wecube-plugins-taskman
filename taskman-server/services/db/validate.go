@@ -15,6 +15,7 @@ func ValidateRequestForm(param []*models.RequestPreDataTableObj, userToken strin
 		}
 		err = validateFormDataRegular(entityData, userToken)
 		if err != nil {
+			err = fmt.Errorf("Entity:%s %s ", entityData.Entity, err.Error())
 			break
 		}
 	}

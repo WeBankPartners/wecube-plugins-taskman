@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 func GetRequestUser(c *gin.Context) string {
@@ -65,7 +66,11 @@ func authCoreRequest(c *gin.Context) error {
 	if authToken.User == "" {
 		return fmt.Errorf("Token content is illegal,main message is empty ")
 	}
-	c.Set("user", authToken.User)
-	c.Set("roles", authToken.Roles)
+	c.Set("user", strings.ReplaceAll(authToken.User, " ", ""))
+	var roles []string
+	for _, v := range authToken.Roles {
+		roles = append(roles, strings.ReplaceAll(v, " ", ""))
+	}
+	c.Set("roles", roles)
 	return nil
 }

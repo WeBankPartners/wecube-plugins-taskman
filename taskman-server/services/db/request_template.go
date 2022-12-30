@@ -17,7 +17,9 @@ import (
 func QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
 	rowData = []*models.RequestTemplateGroupTable{}
 	filterSql, queryColumn, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateGroupTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("SELECT %s FROM request_template_group WHERE manage_role in ('"+strings.Join(userRoles, "','")+"') and del_flag=0 %s ", queryColumn, filterSql)
+	userRoleFilterSql, userRoleFilterParams := createListParams(userRoles, "")
+	baseSql := fmt.Sprintf("SELECT %s FROM request_template_group WHERE manage_role in ("+userRoleFilterSql+") and del_flag=0 %s ", queryColumn, filterSql)
+	queryParam = append(userRoleFilterParams, queryParam...)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -68,11 +70,14 @@ func DeleteRequestTemplateGroup(id string) error {
 }
 
 func CheckRequestTemplateGroupRoles(id string, roles []string) error {
-	rowData, err := x.QueryString("select id from request_template_group where id=? and manage_role in ('" + strings.Join(roles, "','") + "')")
+	rolesFilterSql, rolesFilterParam := createListParams(roles, "")
+	var requestTemplateGroupRows []*models.RequestTemplateGroupTable
+	rolesFilterParam = append([]interface{}{id}, rolesFilterParam...)
+	err := x.SQL("select id from request_template_group where id=? and manage_role in ("+rolesFilterSql+")", rolesFilterParam...).Find(&requestTemplateGroupRows)
 	if err != nil {
 		return fmt.Errorf("Try to query database data fail,%s ", err.Error())
 	}
-	if len(rowData) == 0 {
+	if len(requestTemplateGroupRows) == 0 {
 		return fmt.Errorf(models.RowDataPermissionErr)
 	}
 	return nil
@@ -370,7 +375,8 @@ func GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 	if len(ids) == 0 {
 		err = x.SQL("select * from role").Find(&result)
 	} else {
-		err = x.SQL("select * from role where id in ('" + strings.Join(ids, "','") + "')").Find(&result)
+		idFilterSql, idFilterParam := createListParams(ids, "")
+		err = x.SQL("select * from role where id in ("+idFilterSql+")", idFilterParam...).Find(&result)
 	}
 	return
 }
@@ -400,10 +406,11 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 				}
 				var tmpIds []string
 				var tmpErr error
+				roleFilterSql, roleFilterParam := createListParams(inValueStringList, "")
 				if v.Name == "mgmtRoles" {
-					tmpIds, tmpErr = getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='MGMT' and t2.role in ('" + strings.Join(inValueStringList, "','") + "')")
+					tmpIds, tmpErr = getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='MGMT' and t2.role in ("+roleFilterSql+")", roleFilterParam)
 				} else {
-					tmpIds, tmpErr = getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='USE' and t2.role in ('" + strings.Join(inValueStringList, "','") + "')")
+					tmpIds, tmpErr = getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='USE' and t2.role in ("+roleFilterSql+")", roleFilterParam)
 				}
 				if tmpErr != nil {
 					err = fmt.Errorf("Try to query filter role id fail,%s ", tmpErr.Error())
@@ -421,7 +428,9 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 	}
 	rowData := []*models.RequestTemplateTable{}
 	filterSql, queryColumn, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
-	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ('"+strings.Join(userRoles, "','")+"')) %s %s ", queryColumn, extFilterSql, filterSql)
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	queryParam = append(userRolesFilterParam, queryParam...)
+	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -495,11 +504,14 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 }
 
 func CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) error {
-	rowData, err := x.QueryString("select request_template from request_template_role where request_template=? and role_type='MGMT' and `role` in ('"+strings.Join(userRoles, "','")+"')", requestTemplateId)
+	var requestTemplateRoleRows []*models.RequestTemplateRoleTable
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	userRolesFilterParam = append([]interface{}{requestTemplateId}, userRolesFilterParam...)
+	err := x.SQL("select request_template from request_template_role where request_template=? and role_type='MGMT' and `role` in ("+userRolesFilterSql+")", userRolesFilterParam...).Find(&requestTemplateRoleRows)
 	if err != nil {
 		return fmt.Errorf("Try to query database data fail:%s ", err.Error())
 	}
-	if len(rowData) == 0 {
+	if len(requestTemplateRoleRows) == 0 {
 		return fmt.Errorf(models.RowDataPermissionErr)
 	}
 	return nil
@@ -620,9 +632,9 @@ func SyncProcDefId(requestTemplateId, proDefId, proDefName, proDefKey, userToken
 	return nil
 }
 
-func getRequestTemplateIdsBySql(sql string) (ids []string, err error) {
+func getRequestTemplateIdsBySql(sql string, param []interface{}) (ids []string, err error) {
 	var requestTemplateTables []*models.RequestTemplateTable
-	err = x.SQL(sql).Find(&requestTemplateTables)
+	err = x.SQL(sql, param...).Find(&requestTemplateTables)
 	ids = []string{}
 	for _, v := range requestTemplateTables {
 		ids = append(ids, v.Id)
@@ -919,7 +931,9 @@ func SetRequestTemplateToCreated(id, operator string) {
 func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
 	result = []*models.UserRequestTemplateQueryObj{}
 	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
-	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ('" + strings.Join(userRoles, "','") + "'))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ('" + strings.Join(userRoles, "','") + "'))) order by `group`,tags,status,id").Find(&requestTemplateTable)
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
+	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+"))) order by `group`,tags,status,id", queryParam...).Find(&requestTemplateTable)
 	if err != nil {
 		return
 	}
@@ -1022,7 +1036,8 @@ func getRequestTemplateRoles(requestTemplateId, roleType string) []string {
 func QueryUserByRoles(roles []string, userToken string) (result []string, err error) {
 	result = []string{}
 	var roleTable []*models.RoleTable
-	err = x.SQL("select * from `role` where id in ('" + strings.Join(roles, "','") + "')").Find(&roleTable)
+	rolesFilterSql, rolesFilterParam := createListParams(roles, "")
+	err = x.SQL("select * from `role` where id in ("+rolesFilterSql+")", rolesFilterParam...).Find(&roleTable)
 	if err != nil || len(roleTable) == 0 {
 		return
 	}

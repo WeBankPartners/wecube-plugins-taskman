@@ -156,7 +156,7 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		err := db.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), &param)
+		err := db.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {

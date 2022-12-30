@@ -110,15 +110,16 @@ type CoreUserDataObj struct {
 }
 
 type EntityAttributeObj struct {
-	CiTypeId     string `json:"ciTypeId"`
-	CiTypeAttrId string `json:"ciTypeAttrId"`
-	PropertyName string `json:"propertyName"`
-	DisplayName  string `json:"displayName"`
-	InputType    string `json:"inputType"`
-	Nullable     string `json:"nullable"`
-	Status       string `json:"status"`
-	SelectList   string `json:"selectList"`
-	Editable     string `json:"editable"`
+	CiTypeId              string `json:"ciTypeId"`
+	CiTypeAttrId          string `json:"ciTypeAttrId"`
+	PropertyName          string `json:"propertyName"`
+	DisplayName           string `json:"displayName"`
+	InputType             string `json:"inputType"`
+	Nullable              string `json:"nullable"`
+	Status                string `json:"status"`
+	SelectList            string `json:"selectList"`
+	Editable              string `json:"editable"`
+	RegularExpressionRule string `json:"regularExpressionRule"`
 }
 
 type EntityAttributeQueryResponse struct {

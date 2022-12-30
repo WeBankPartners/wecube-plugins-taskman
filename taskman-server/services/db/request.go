@@ -94,7 +94,9 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 		permission = "USE"
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and (created_by='"+operator+"' or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='"+permission+"' and `role` in ('"+strings.Join(userRoles, "','")+"')))) %s ", filterSql)
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and (created_by=? or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type=? and `role` in ("+userRolesFilterSql+")))) %s ", filterSql)
+	queryParam = append(append([]interface{}{operator, permission}, userRolesFilterParam...), queryParam...)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -313,9 +315,13 @@ func DeleteRequest(requestId, operator string) error {
 	return err
 }
 
-func SaveRequestCacheNew(requestId, operator string, param *models.RequestPreDataDto) error {
+func SaveRequestCacheNew(requestId, operator, userToken string, param *models.RequestPreDataDto) error {
+	err := ValidateRequestForm(param.Data, userToken)
+	if err != nil {
+		return err
+	}
 	var formItemNameQuery []*models.FormItemTemplateTable
-	err := x.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	err = x.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -1174,7 +1180,7 @@ func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string)
 		return
 	}
 	for k, v := range ciAttrMap {
-		tmpV, tmpErr := getCMDBAttributes(k, userToken, v)
+		tmpV, tmpErr := getCMDBAttributeSelectList(k, userToken, v)
 		if tmpErr != nil {
 			err = tmpErr
 			break
@@ -1200,8 +1206,7 @@ func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string)
 	return
 }
 
-func getCMDBAttributes(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
-	result = make(map[string][]*models.EntityDataObj)
+func getCMDBAttributes(entity, userToken string) (result []*models.EntityAttributeObj, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, entity), nil)
 	if newReqErr != nil {
 		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
@@ -1226,7 +1231,18 @@ func getCMDBAttributes(entity, userToken string, attributes []string) (result ma
 		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
 		return
 	}
-	for _, v := range attrQueryResp.Data {
+	result = attrQueryResp.Data
+	return
+}
+
+func getCMDBAttributeSelectList(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
+	result = make(map[string][]*models.EntityDataObj)
+	attrList, queryErr := getCMDBAttributes(entity, userToken)
+	if queryErr != nil {
+		err = queryErr
+		return
+	}
+	for _, v := range attrList {
 		existFlag := false
 		for _, vv := range attributes {
 			if v.PropertyName == vv {

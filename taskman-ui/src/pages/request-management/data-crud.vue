@@ -20,19 +20,21 @@
         {{ $parent.formDisable }}-{{ $parent.jumpFrom }}-{{
           !($parent.formDisable || $parent.jumpFrom === 'group_handle')
         }}
-        <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')">
-          <Upload
-            :action="uploadUrl"
-            :show-upload-list="false"
-            with-credentials
-            style="display:inline-block;margin-left:32px"
-            :headers="headers"
-            :on-success="uploadSucess"
-            :on-error="uploadFailed"
-          >
-            <Button type="success">{{ $t('upload_attachment') }}</Button>
-          </Upload>
-        </template>
+        <!-- <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"> -->
+        <Upload
+          :action="uploadUrl"
+          :show-upload-list="false"
+          with-credentials
+          style="display:inline-block;margin-left:32px"
+          :headers="headers"
+          :on-success="uploadSucess"
+          :on-error="uploadFailed"
+        >
+          <Button type="success" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'">{{
+            $t('upload_attachment')
+          }}</Button>
+        </Upload>
+        <!-- </template> -->
         <div v-for="file in attachFiles" style="display:inline-block" :key="file.id">
           <Tag
             type="border"

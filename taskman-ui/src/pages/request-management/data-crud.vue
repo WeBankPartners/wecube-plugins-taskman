@@ -17,6 +17,9 @@
           type="primary"
           >{{ $t('search') }}</Button
         >
+        {{ $parent.formDisable }}-{{ $parent.jumpFrom }}-{{
+          !($parent.formDisable || $parent.jumpFrom === 'group_handle')
+        }}
         <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')">
           <Upload
             :action="uploadUrl"

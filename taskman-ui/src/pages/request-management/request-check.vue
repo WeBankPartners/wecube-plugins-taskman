@@ -34,7 +34,7 @@
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                  >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                  >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
                 <Tag style="font-size:14px" type="border" size="medium" color="cyan"
                   >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
@@ -49,7 +49,7 @@
                 >
                 <template v-if="data.status === 'done'">
                   <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                    >{{ $t('handler') }}:{{ data.handler }}</Tag
                   >
                   <Tag style="font-size:14px" type="border" size="medium" color="cyan"
                     >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag

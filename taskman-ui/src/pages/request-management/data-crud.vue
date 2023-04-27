@@ -7,7 +7,7 @@
           filterable
           clearable
           :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
-          style="width:300px"
+          style="width: 300px"
         >
           <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
         </Select>
@@ -17,15 +17,12 @@
           type="primary"
           >{{ $t('search') }}</Button
         >
-        {{ $parent.formDisable }}-{{ $parent.jumpFrom }}-{{
-          !($parent.formDisable || $parent.jumpFrom === 'group_handle')
-        }}
         <!-- <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"> -->
         <Upload
           :action="uploadUrl"
           :show-upload-list="false"
           with-credentials
-          style="display:inline-block;margin-left:32px"
+          style="display: inline-block; margin-left: 32px"
           :headers="headers"
           :on-success="uploadSucess"
           :on-error="uploadFailed"
@@ -35,7 +32,7 @@
           }}</Button>
         </Upload>
         <!-- </template> -->
-        <div v-for="file in attachFiles" style="display:inline-block" :key="file.id">
+        <div v-for="file in attachFiles" style="display: inline-block" :key="file.id">
           <Tag
             type="border"
             :closable="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"
@@ -55,7 +52,7 @@
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:24px">
+    <div style="text-align: center; margin-top: 24px">
       <Button @click="saveData" v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')" type="primary">{{
         $t('save')
       }}</Button>

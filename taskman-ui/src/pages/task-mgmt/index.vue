@@ -1,7 +1,7 @@
 <template>
   <div>
     <Button @click="backToTask" icon="ios-undo-outline" style="margin-bottom: 8px">{{ $t('back_to_template') }}</Button>
-    <div style="width: 84%;margin: 0 auto;">
+    <div style="width: 84%; margin: 0 auto">
       <div>
         <Steps :current="activeStep">
           <template v-for="(step, stepIndex) in timeStep">
@@ -14,58 +14,58 @@
           <template v-for="(data, dataIndex) in dataInfo">
             <Panel :name="dataIndex + ''" :key="dataIndex">
               <template v-if="dataIndex === 0">
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('request_id') }}:{{ data.requestId }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="orange"
+                <Tag style="font-size: 14px" type="border" size="medium" color="orange"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="green"
+                <Tag style="font-size: 14px" type="border" size="medium" color="green"
                   >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('reporter') }}:{{ data.reporter }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
               </template>
               <template v-else-if="dataIndex < dataInfo.length - 1">
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
               </template>
               <template v-else>
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
                 <template v-if="data.status === 'done'">
-                  <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                  <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                     >{{ $t('handler') }}:{{ data.handler }}</Tag
                   >
-                  <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                     >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                   >
                 </template>
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
               </template>
@@ -75,7 +75,7 @@
                     :action="uploadUrl"
                     :show-upload-list="false"
                     with-credentials
-                    style="display:inline-block;margin-left:32px"
+                    style="display: inline-block; margin-left: 32px"
                     :headers="headers"
                     :on-success="uploadSucess"
                     :on-error="uploadFailed"
@@ -84,7 +84,7 @@
                   </Upload>
                 </template>
                 <template v-else>
-                  <div style="display:inline-block;width:30px"></div>
+                  <div style="display: inline-block; width: 30px"></div>
                 </template>
                 <Tag
                   type="border"
@@ -126,13 +126,17 @@
                         <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>
-                    <div style="text-align:center">
+                    <div style="text-align: center">
                       <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
                         $t('save')
                       }}</Button>
-                      <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
-                        $t('commit')
-                      }}</Button>
+                      <Button
+                        v-if="data.editable"
+                        :disabled="enforceDisable || data.choseOption === ''"
+                        @click="commitTaskData"
+                        type="primary"
+                        >{{ $t('commit') }}</Button
+                      >
                     </div>
                   </div>
                 </span>

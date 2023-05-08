@@ -118,6 +118,10 @@
                         <Input disabled v-model="data.description" type="textarea" />
                       </FormItem>
                       <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
+                        <span slot="label">
+                          {{ $t('process_result') }}
+                          <span style="color: #ed4014"> * </span>
+                        </span>
                         <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>

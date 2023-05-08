@@ -3,7 +3,7 @@
     <Button @click="backToRequest" icon="ios-undo-outline" style="margin-bottom: 8px">{{
       $t('back_to_template')
     }}</Button>
-    <div style="width: 84%;margin: 0 auto;">
+    <div style="width: 84%; margin: 0 auto">
       <div>
         <Steps :current="activeStep">
           <template v-for="(step, stepIndex) in timeStep">
@@ -16,45 +16,45 @@
           <template v-for="(data, dataIndex) in dataInfo">
             <Panel :name="dataIndex + ''" :key="dataIndex">
               <template v-if="dataIndex === 0">
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('reporter') }}:{{ data.reporter }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
               </template>
               <template v-else-if="dataIndex < dataInfo.length - 1">
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
               </template>
               <template v-else>
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
                 <template v-if="data.status === 'done'">
-                  <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                  <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                     >{{ $t('handler') }}:{{ data.handler }}</Tag
                   >
-                  <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                  <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                     >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
                   >
-                  <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                  <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                     >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                   >
                 </template>
@@ -81,6 +81,10 @@
                   <div v-if="dataIndex !== 0">
                     <Form :label-width="80" style="margin: 16px 0">
                       <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
+                        <span slot="label">
+                          {{ $t('process_result') }}
+                          <span style="color: #ed4014"> * </span>
+                        </span>
                         <Select v-model="data.choseOption" disabled>
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>

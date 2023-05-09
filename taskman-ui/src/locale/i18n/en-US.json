@@ -53,7 +53,7 @@
   "data_item": "Data Item",
   "no_data_item": "No Data Item",
   "warning": "Warning",
-  "can_not_be_empty": "Can Not Be Empty",
+  "can_not_be_empty": " Can Not Be Empty",
   "publish_template": "Publish Template",
   "confirm_change": "Confirm Change",
   "final_version": "Final Version",

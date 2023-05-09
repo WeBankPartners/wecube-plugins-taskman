@@ -53,7 +53,7 @@
   "data_item": "数据项",
   "no_data_item": "没有数据项",
   "warning": "警告",
-  "can_not_be_empty": "不能为空",
+  "can_not_be_empty": " 不能为空",
   "publish_template": "发布模板",
   "confirm_change": "确认变更",
   "final_version": "确认定版",

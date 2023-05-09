@@ -2,6 +2,10 @@
   <div class=" ">
     <Form :label-width="100">
       <FormItem :label="$t('root_entity')">
+        <span slot="label">
+          <span style="color: #ed4014"> * </span>
+          {{ $t('root_entity') }}
+        </span>
         <Select
           v-model="rootEntityId"
           filterable
@@ -183,6 +187,10 @@ export default {
       this.requestData = data
     },
     async commitRequest () {
+      if (this.rootEntityId === '') {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('commit'),
         'z-index': 1000000,
@@ -235,6 +243,10 @@ export default {
       this.$emit('nextStep')
     },
     async saveData () {
+      if (this.rootEntityId === '') {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
       const params = {
         rootEntityId: this.rootEntityId,
         data: this.requestData

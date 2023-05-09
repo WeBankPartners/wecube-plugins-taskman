@@ -681,6 +681,7 @@ export default {
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
+      newItem.name = newItem.name + idGlobal
       return newItem
     },
     async next () {

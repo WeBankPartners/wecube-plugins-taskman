@@ -1,5 +1,5 @@
 <template>
-  <div style="width:40%;margin: 0 auto;min-width:700px">
+  <div style="width: 40%; margin: 0 auto; min-width: 700px">
     <!-- <ValidationObserver ref="observer"> -->
     <Form :label-width="100">
       <template v-for="(item, itemIndex) in formConfig.itemConfigs">
@@ -7,25 +7,25 @@
         <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Input
             v-model="formConfig.values[item.value]"
-            style="width:90%"
+            style="width: 90%"
             :type="item.type"
             :disabled="$parent.isCheck === 'Y'"
             :placeholder="item.placeholder"
           >
           </Input>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+          <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
         <FormItem v-if="['textarea'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Input
             v-model="formConfig.values[item.value]"
-            style="width:90%"
+            style="width: 90%"
             :type="item.type"
             :disabled="$parent.isCheck === 'Y'"
             :rows="item.rows"
             :placeholder="item.placeholder"
           >
           </Input>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+          <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
         <FormItem v-if="['number'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <InputNumber
@@ -34,7 +34,7 @@
             :disabled="$parent.isCheck === 'Y'"
             v-model="formConfig.values[item.value]"
           ></InputNumber>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+          <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
         <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Select
@@ -43,7 +43,7 @@
             filterable
             :disabled="$parent.isCheck === 'Y'"
             @on-open-change="execut(item.onOpenChange)"
-            style="width:90%"
+            style="width: 90%"
             :multiple="item.multiple"
             :placeholder="item.placeholder"
           >
@@ -56,7 +56,7 @@
               </Option>
             </template>
           </Select>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+          <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
         <FormItem v-if="['create_select'].includes(item.type)" :label="$t(item.label)" :key="itemIndex">
           <Select
@@ -65,7 +65,7 @@
             filterable
             allow-create
             :disabled="$parent.isCheck === 'Y'"
-            style="width:90%"
+            style="width: 90%"
             @on-create="handleCreate1"
           >
             <Option v-for="(item, tagIndex) in formConfig[item.options]" :value="item.value" :key="tagIndex">{{
@@ -207,6 +207,7 @@ export default {
   methods: {
     handleCreate1 (v) {
       this.formConfig.tmpTagOptions.push(v)
+      this.formConfig.values.tags = v
     },
     async getTags (val) {
       if (this.formConfig.values.group === '') {
@@ -286,6 +287,10 @@ export default {
       // }
       if (this.$parent.isCheck === 'Y') {
         this.$emit('basicInfoNextStep', this.formConfig.values)
+        return
+      }
+      if (this.formConfig.values.useRoles.length === 0) {
+        this.$Message.warning(this.$t('useRoles') + this.$t('can_not_be_empty'))
         return
       }
       let cacheFromValue = JSON.parse(JSON.stringify(this.formConfig.values))

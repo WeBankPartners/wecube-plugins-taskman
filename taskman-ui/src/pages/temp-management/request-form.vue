@@ -4,21 +4,21 @@
       <Form :label-width="100">
         <Col :span="6">
           <FormItem :label="$t('name')">
-            <Input v-model="formData.name" :disabled="$parent.isCheck === 'Y'" style="width:90%" type="text"> </Input>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+            <Input v-model="formData.name" :disabled="$parent.isCheck === 'Y'" style="width: 90%" type="text"> </Input>
+            <Icon size="10" style="color: #ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="6">
           <FormItem :label="$t('request_time_limit')">
-            <Select v-model="formData.expireDay" :disabled="$parent.isCheck === 'Y'" style="width:90%" filterable>
+            <Select v-model="formData.expireDay" :disabled="$parent.isCheck === 'Y'" style="width: 90%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+            <Icon size="10" style="color: #ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="6">
           <FormItem :label="$t('description')">
-            <Input v-model="formData.description" :disabled="$parent.isCheck === 'Y'" style="width:90%" type="text">
+            <Input v-model="formData.description" :disabled="$parent.isCheck === 'Y'" style="width: 90%" type="text">
             </Input>
           </FormItem>
         </Col>
@@ -26,7 +26,7 @@
     </div>
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
-      <Col span="6" style="border: 1px solid #dcdee2;padding: 0 16px">
+      <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Divider plain>{{ $t('preset') }}{{ $t('form_item') }}</Divider>
           <template v-for="item in formItemOptions">
@@ -53,23 +53,21 @@
             :sort="$parent.isCheck !== 'Y'"
             :clone="cloneDog"
           >
-            <div class="list-group-item-" style="width:100%" v-for="element in customElement" :key="element.id">
+            <div class="list-group-item-" style="width: 100%" v-for="element in customElement" :key="element.id">
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <div v-if="element.elementType === 'group'" style="width:100%;height: 80px;border:1px solid #5ea7f4">
-                <span style="margin: 8px;color:#bbbbbb">
-                  Item Group
-                </span>
+              <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
+                <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
             </div>
           </draggable>
         </div>
       </Col>
-      <Col span="12" style="border: 1px solid #dcdee2;padding: 16px;width:48%; margin: 0 4px">
+      <Col span="12" style="border: 1px solid #dcdee2; padding: 16px; width: 48%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
           <template v-for="(item, itemIndex) in finalElement">
-            <div :key="itemIndex" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+            <div :key="itemIndex" style="border: 1px solid #dcdee2; margin-bottom: 8px; padding: 8px">
               <span v-if="itemIndex !== editItemGroupNameIndex">
                 {{ item.itemGroupName }}
                 <Button
@@ -82,13 +80,13 @@
                 ></Button>
               </span>
               <span v-else>
-                <p>GroupName &nbsp;<Input v-model="item.itemGroupName" style="width: 300px;"></Input></p>
-                <p style="display:inline-block">
+                <p>GroupName &nbsp;<Input v-model="item.itemGroupName" style="width: 300px"></Input></p>
+                <p style="display: inline-block">
                   GroupId &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   <Input
                     :disabled="!(item.attrs.length === 0 || item.attrs[0].entity === '')"
                     v-model="item.itemGroup"
-                    style="width: 300px;"
+                    style="width: 300px"
                   ></Input>
                 </p>
                 <Button
@@ -115,7 +113,7 @@
                   :key="element.id"
                 >
                   <div>
-                    <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                    <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
                     {{ element.title }}:
                   </div>
                   <Input
@@ -123,20 +121,20 @@
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width: calc(100% - 30px);"
+                    style="width: calc(100% - 30px)"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width: calc(100% - 30px);"
+                    style="width: calc(100% - 30px)"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
-                    style="width: calc(100% - 30px);"
+                    style="width: calc(100% - 30px)"
                   ></Select>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
@@ -152,7 +150,7 @@
           </template>
         </div>
       </Col>
-      <Col span="6" style="border: 1px solid #dcdee2;">
+      <Col span="6" style="border: 1px solid #dcdee2">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Collapse v-model="openPanel">
             <Panel name="1">
@@ -256,7 +254,7 @@
         </div>
       </Col>
     </Row>
-    <div style="text-align:center; margin-top: 8px">
+    <div style="text-align: center; margin-top: 8px">
       <Button type="primary" @click="saveForm" :disabled="$parent.isCheck === 'Y'"
         >{{ $t('save') }}{{ $t('data_item') }}</Button
       >
@@ -310,7 +308,7 @@ export default {
           width: 24,
           dataOptions: '',
           regular: '',
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -339,7 +337,7 @@ export default {
           width: 24,
           dataOptions: '',
           regular: '',
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -368,7 +366,7 @@ export default {
           width: 24,
           dataOptions: '',
           regular: '',
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -398,7 +396,7 @@ export default {
         entity: '',
         elementType: 'input',
         id: 0,
-        inDisplayName: 'no',
+        inDisplayName: 'yes',
         isEdit: 'yes',
         multiple: 'N',
         selectList: [],
@@ -563,8 +561,9 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
-          .attrs
+        let findAttr = this.finalElement.find(
+          l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName
+        ).attrs
         const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
@@ -587,7 +586,7 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: seleted.multiple,
           selectList: [],

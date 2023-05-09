@@ -144,9 +144,8 @@ export default {
         .then(response => {
           this.isExport = false
           if (response.status < 400) {
-            let content = JSON.stringify(response.data)
             let fileName = `${file.name}`
-            let blob = new Blob([content])
+            let blob = new Blob([response.data])
             if ('msSaveOrOpenBlob' in navigator) {
               window.navigator.msSaveOrOpenBlob(blob, fileName)
             } else {

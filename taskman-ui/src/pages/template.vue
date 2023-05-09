@@ -3,10 +3,10 @@
     <div>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
-          <Input v-model="tags" style="width:90%" type="text" :placeholder="$t('tags')"> </Input>
+          <Input v-model="tags" style="width: 90%" type="text" :placeholder="$t('tags')"> </Input>
         </Col>
         <Col span="4">
           <Select
@@ -16,13 +16,13 @@
             filterable
             multiple
             :placeholder="$t('manageRole')"
-            style="width:90%"
+            style="width: 90%"
           >
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </Col>
         <Col span="2">
-          <Select v-model="status" clearable :placeholder="$t('status')" style="width:90%">
+          <Select v-model="status" clearable :placeholder="$t('status')" style="width: 90%">
             <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
             <Option value="created" key="created">{{ this.$t('status_created') }}</Option>
           </Select>
@@ -36,7 +36,7 @@
           :before-upload="handleUpload"
           :show-upload-list="false"
           with-credentials
-          style="display:inline-block;float:right;margin-right:16px"
+          style="display: inline-block; float: right; margin-right: 16px"
           :headers="headers"
           :on-success="uploadSucess"
           :on-error="uploadFailed"
@@ -46,7 +46,7 @@
       </Row>
     </div>
     <Table
-      style="margin: 24px 0;"
+      style="margin: 24px 0"
       border
       @on-sort-change="sortTable"
       size="small"
@@ -55,7 +55,7 @@
       :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float:right"
+      style="float: right"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -250,6 +250,7 @@ export default {
         })
         return false
       }
+      this.$Message.info(this.$t('upload_tip'))
       return true
     },
     uploadFailed (val, response) {

@@ -20,6 +20,7 @@
         <!-- <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"> -->
         <Upload
           :action="uploadUrl"
+          :before-upload="handleUpload"
           :show-upload-list="false"
           with-credentials
           style="display: inline-block; margin-left: 32px"
@@ -109,6 +110,10 @@ export default {
     }
   },
   methods: {
+    handleUpload (file) {
+      this.$Message.info(this.$t('upload_tip'))
+      return true
+    },
     removeFile (file) {
       this.$Modal.confirm({
         title: this.$t('confirm_to_delete'),

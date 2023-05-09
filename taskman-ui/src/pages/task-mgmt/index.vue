@@ -73,6 +73,7 @@
                 <template v-if="dataIndex === dataInfo.length - 1 && !enforceDisable">
                   <Upload
                     :action="uploadUrl"
+                    :before-upload="handleUpload"
                     :show-upload-list="false"
                     with-credentials
                     style="display: inline-block; margin-left: 32px"
@@ -186,6 +187,10 @@ export default {
     this.getTaskDetail()
   },
   methods: {
+    handleUpload (file) {
+      this.$Message.info(this.$t('upload_tip'))
+      return true
+    },
     removeFile (file) {
       this.$Modal.confirm({
         title: this.$t('confirm_to_delete'),

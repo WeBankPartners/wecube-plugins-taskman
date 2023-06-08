@@ -3,7 +3,7 @@
     <div>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
           <Select
@@ -11,23 +11,23 @@
             @on-open-change="getTemplateList"
             clearable
             filterable
-            style="width:90%"
+            style="width: 90%"
             :placeholder="$t('template')"
           >
             <template v-for="option in templateOptions">
-              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
+              <Option :label="`${option.name}(${option.version || '-'})`" :value="option.id" :key="option.id"> </Option>
             </template>
           </Select>
         </Col>
         <Col span="4">
-          <Select v-model="status" multiple clearable filterable style="width:90%" :placeholder="$t('status')">
+          <Select v-model="status" multiple clearable filterable style="width: 90%" :placeholder="$t('status')">
             <template v-for="option in requestStatus">
               <Option :label="option" :value="option" :key="option"> </Option>
             </template>
           </Select>
         </Col>
         <Col span="4">
-          <Input v-model="handler" style="width:90%" type="text" :placeholder="$t('handler')"> </Input>
+          <Input v-model="handler" style="width: 90%" type="text" :placeholder="$t('handler')"> </Input>
         </Col>
         <Col span="4">
           <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
@@ -35,7 +35,7 @@
       </Row>
     </div>
     <Table
-      style="margin: 24px 0;"
+      style="margin: 24px 0"
       border
       size="small"
       @on-sort-change="sortTable"
@@ -44,7 +44,7 @@
       :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float:right"
+      style="float: right"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer

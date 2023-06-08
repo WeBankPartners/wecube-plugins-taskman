@@ -272,6 +272,7 @@ func getTaskTemplateRoles() map[string][]string {
 }
 
 func GetTask(taskId string) (result models.TaskQueryResult, err error) {
+	result = models.TaskQueryResult{}
 	taskObj, tmpErr := getSimpleTask(taskId)
 	if tmpErr != nil {
 		return result, tmpErr
@@ -291,6 +292,14 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
 	}
+	if requests[0].Parent != "" {
+		if parentRequest, getParentErr := GetRequestTaskList(requests[0].Parent); getParentErr != nil {
+			err = getParentErr
+			return
+		} else {
+			result = parentRequest
+		}
+	}
 	var requestCache models.RequestPreDataDto
 	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
 	if err != nil {
@@ -307,11 +316,13 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	if len(requestTemplateTable) > 0 {
 		requestQuery.RequestTemplate = requestTemplateTable[0].Name
 	}
-	result.Data = []*models.TaskQueryObj{&requestQuery}
-	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
-	if err != nil {
-		return result, err
+	result.Data = append(result.Data, &requestQuery)
+	resultTimeStep, getTimeStepErr := getRequestTimeStep(requests[0].RequestTemplate)
+	if getTimeStepErr != nil {
+		err = getTimeStepErr
+		return
 	}
+	result.TimeStep = append(result.TimeStep, resultTimeStep...)
 	// get task list
 	var taskList []*models.TaskTable
 	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)

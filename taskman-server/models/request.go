@@ -65,6 +65,7 @@ type RequestTable struct {
 	DelFlag             int                `json:"delFlag" xorm:"del_flag"`
 	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
 	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
+	Parent              string             `json:"parent" xorm:"parent"`
 }
 
 type ExpireObj struct {

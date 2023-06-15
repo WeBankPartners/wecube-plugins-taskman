@@ -1492,3 +1492,43 @@ func notifyRoleMail(requestId string) error {
 	}
 	return nil
 }
+
+func CopyRequest(requestId, createdBy string) (result models.RequestTable, err error) {
+	parentRequest := &models.RequestTable{}
+	var requestTable []*models.RequestTable
+	err = x.SQL("select * from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		return
+	}
+	parentRequest = requestTable[0]
+	if !strings.Contains(parentRequest.Status, "Faulted") && parentRequest.Status != "Termination" {
+		err = fmt.Errorf("Only Faulted request can copy ")
+		return
+	}
+	var formTable []*models.FormTable
+	err = x.SQL("select * from form where id=?", parentRequest.Form).Find(&formTable)
+	if err != nil {
+		return
+	}
+	if len(formTable) == 0 {
+		err = fmt.Errorf("Can not find form %s from parent request:%s ", parentRequest.Form, parentRequest.Id)
+		return
+	}
+	parentForm := formTable[0]
+	var actions []*execAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	formGuid := guid.CreateGuid()
+	newRequestId := guid.CreateGuid()
+	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
+	formInsertAction.Param = []interface{}{formGuid, parentRequest.Name + models.SysTableIdConnector + "form", "", parentForm.FormTemplate, nowTime, createdBy, nowTime, createdBy}
+	actions = append(actions, &formInsertAction)
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{newRequestId, parentRequest.Name, formGuid, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency, parentRequest.ReportRole, "Draft", "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy, nowTime, parentRequest.Id}
+	actions = append(actions, &requestInsertAction)
+	err = transactionWithoutForeignCheck(actions)
+	return
+}

@@ -290,3 +290,7 @@ alter table attach_file add column task varchar(64) default null;
 #@v0.1.0.21-begin@;
 alter table task add column notify_count int default 0;
 #@v0.1.0.21-end@;
+
+#@v0.1.1.1-begin@;
+alter table request add column parent varchar(64) default null;
+#@v0.1.1.1-end@;

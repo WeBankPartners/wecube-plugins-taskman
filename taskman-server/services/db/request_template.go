@@ -85,7 +85,7 @@ func CheckRequestTemplateGroupRoles(id string, roles []string) error {
 
 func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, err error) {
 	processList = []*models.ProcDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions", nil)
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions?tags="+models.ProcessFetchTabs, nil)
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
 		return

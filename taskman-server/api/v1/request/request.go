@@ -323,3 +323,15 @@ func QueryWorkflowEntity(c *gin.Context) {
 	result.Data = append(result.Data, &models.WorkflowEntityDataObj{Id: "taskman_request_id", DisplayName: "request"})
 	c.JSON(http.StatusOK, result)
 }
+
+func CopyRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	createdBy := middleware.GetRequestUser(c)
+	result, err := db.CopyRequest(requestId, createdBy)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		db.RecordRequestLog(requestId, createdBy, "copy")
+		middleware.ReturnData(c, result)
+	}
+}

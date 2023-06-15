@@ -1532,3 +1532,21 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	err = transactionWithoutForeignCheck(actions)
 	return
 }
+
+func GetRequestParent(requestId string) (result models.RequestTable, err error) {
+	var requestTable []*models.RequestTable
+	err = x.SQL("select `parent` from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("can not find request with id:%s ", requestId)
+		return
+	}
+	if requestTable[0].Parent == "" {
+		result = models.RequestTable{}
+		return
+	}
+	result, err = GetRequestWithRoot(requestTable[0].Parent)
+	return
+}

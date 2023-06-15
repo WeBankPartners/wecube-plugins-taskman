@@ -201,6 +201,7 @@ type TaskQueryObj struct {
 	Handler         string                    `json:"handler"`
 	HandleTime      string                    `json:"handleTime"`
 	FormData        []*RequestPreDataTableObj `json:"formData"`
+	IsHistory       bool                      `json:"isHistory"`
 }
 
 type TaskApproveParam struct {

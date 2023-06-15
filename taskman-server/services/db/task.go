@@ -297,7 +297,10 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 			err = getParentErr
 			return
 		} else {
-			result = parentRequest
+			for _, v := range parentRequest.Data {
+				v.IsHistory = true
+			}
+			result.Data = parentRequest.Data
 		}
 	}
 	var requestCache models.RequestPreDataDto
@@ -317,12 +320,10 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 		requestQuery.RequestTemplate = requestTemplateTable[0].Name
 	}
 	result.Data = append(result.Data, &requestQuery)
-	resultTimeStep, getTimeStepErr := getRequestTimeStep(requests[0].RequestTemplate)
-	if getTimeStepErr != nil {
-		err = getTimeStepErr
+	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
+	if err != nil {
 		return
 	}
-	result.TimeStep = append(result.TimeStep, resultTimeStep...)
 	// get task list
 	var taskList []*models.TaskTable
 	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)

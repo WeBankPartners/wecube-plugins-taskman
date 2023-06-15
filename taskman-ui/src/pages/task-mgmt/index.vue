@@ -118,7 +118,7 @@
                       <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
                         <Input disabled v-model="data.description" type="textarea" />
                       </FormItem>
-                      <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
+                      <FormItem :label="$t('process_result')" v-if="data.nextOption && data.nextOption.length !== 0">
                         <span slot="label">
                           {{ $t('process_result') }}
                           <span style="color: #ed4014"> * </span>
@@ -272,6 +272,7 @@ export default {
         this.requestId = data.request
         this.timeStep = data.timeStep
         this.activeStep = this.timeStep.findIndex(t => t.active === true)
+        console.log(data.data)
         this.dataInfo = data.data.map(d => {
           this.requestId = d.requestId
           d.activeTab = ''
@@ -280,6 +281,7 @@ export default {
           }
           return d
         })
+        console.log(this.dataInfo)
 
         this.openPanel = data.data.length - 1 + ''
       }

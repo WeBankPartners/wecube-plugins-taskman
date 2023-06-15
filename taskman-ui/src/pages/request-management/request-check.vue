@@ -80,7 +80,7 @@
                 <span>
                   <div v-if="dataIndex !== 0">
                     <Form :label-width="80" style="margin: 16px 0">
-                      <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
+                      <FormItem :label="$t('process_result')" v-if="data.nextOption && data.nextOption.length !== 0">
                         <span slot="label">
                           {{ $t('process_result') }}
                           <span style="color: #ed4014"> * </span>

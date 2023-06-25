@@ -337,7 +337,7 @@ func CopyRequest(c *gin.Context) {
 }
 
 func GetRequestParent(c *gin.Context) {
-	requestId := c.Param("requestId")
+	requestId := c.Query("requestId")
 	result, err := db.GetRequestParent(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

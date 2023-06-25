@@ -49,6 +49,8 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: request.ExportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: request.ImportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: request.ConfirmImportRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: request.DisableRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: request.EnableRequestTemplate},
 
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},

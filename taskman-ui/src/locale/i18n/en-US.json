@@ -118,5 +118,6 @@
   "data_source": "Data Source",
   "select_all": "Select All",
   "upload_attachment": "Upload Attachment",
-  "upload_tip": "The request has been sent, please be patient."
+  "upload_tip": "The request has been sent, please be patient.",
+  "re-request": "re-request"
 }

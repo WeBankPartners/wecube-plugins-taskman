@@ -7,12 +7,12 @@
         </Col>
       </Row>
     </div>
-    <Tabs :value="activeTab">
+    <Tabs v-model="activeTab">
       <TabPane :label="$t('my_drafts')" name="my_drafts">
-        <TDraft></TDraft>
+        <TDraft v-if="draftsKey"></TDraft>
       </TabPane>
       <TabPane :label="$t('group_initiated')" name="group_initiated">
-        <TGroupInitiated></TGroupInitiated>
+        <TGroupInitiated @requestTabChange="tabChange"></TGroupInitiated>
       </TabPane>
       <TabPane :label="$t('group_handle')" name="group_handle">
         <TGroupHandle></TGroupHandle>
@@ -28,7 +28,8 @@ export default {
   name: '',
   data () {
     return {
-      activeTab: 'my_drafts'
+      activeTab: 'my_drafts',
+      draftsKey: true
     }
   },
   mounted () {
@@ -40,6 +41,15 @@ export default {
         path: '/requestManagementIndex',
         query: { requestId: '', requestTemplate: '', isAdd: 'Y', isCheck: 'N', isHandle: 'N', jumpFrom: '' }
       })
+    },
+    tabChange (name) {
+      if (name) {
+        this.activeTab = name
+        this.draftsKey = false
+        this.$nextTick(() => {
+          this.draftsKey = true
+        })
+      }
     }
   },
   components: {

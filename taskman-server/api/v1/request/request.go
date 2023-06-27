@@ -310,11 +310,15 @@ func RemoveAttachFile(c *gin.Context) {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
-	err := db.RemoveAttachFile(fileId)
+	fileObj, err := db.RemoveAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		if fileObj.Request != "" {
+			middleware.ReturnData(c, db.GetRequestAttachFileList(fileObj.Request))
+		} else {
+			middleware.ReturnData(c, db.GetTaskAttachFileList(fileObj.Task))
+		}
 	}
 }
 

@@ -1545,7 +1545,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	return
 }
 
-func GetRequestParent(requestId string) (result models.TaskQueryResult, err error) {
+func GetRequestParent(requestId string) (parentRequestId string, err error) {
 	var requestTable []*models.RequestTable
 	err = x.SQL("select `parent` from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
@@ -1555,10 +1555,6 @@ func GetRequestParent(requestId string) (result models.TaskQueryResult, err erro
 		err = fmt.Errorf("can not find request with id:%s ", requestId)
 		return
 	}
-	if requestTable[0].Parent == "" {
-		result = models.TaskQueryResult{}
-		return
-	}
-	result, err = GetRequestTaskList(requestTable[0].Parent)
+	parentRequestId = requestTable[0].Parent
 	return
 }

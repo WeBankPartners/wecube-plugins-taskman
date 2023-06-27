@@ -12,8 +12,8 @@
       <div class="task-form">
         <Collapse simple v-model="openPanel">
           <template v-for="(data, dataIndex) in dataInfo">
-            <Panel :name="dataIndex + ''" :key="dataIndex">
-              <template v-if="dataIndex === 0">
+            <Panel :name="dataIndex + ''" :key="dataIndex" :if-history="data.isHistory ? 'history' : 'current'">
+              <template v-if="!data.taskId">
                 <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('request_id') }}:{{ data.requestId }}</Tag
                 >
@@ -33,7 +33,7 @@
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
               </template>
-              <template v-else-if="dataIndex < dataInfo.length - 1">
+              <!-- <template v-else-if="dataIndex < dataInfo.length - 1">
                 <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
@@ -49,7 +49,8 @@
                 <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
-              </template>
+                123
+              </template> -->
               <template v-else>
                 <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
@@ -67,6 +68,9 @@
                 >
                 <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                >
+                <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
+                  ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
                 >
               </template>
               <p slot="content">
@@ -347,5 +351,22 @@ export default {
   height: calc(100vh - 100px);
   margin-top: 24px;
   overflow: auto;
+}
+.history-comment {
+  display: inline-block;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+}
+</style>
+
+<style scoped>
+.task-form >>> .ivu-collapse-item[if-history='history'] {
+  background: #ddd;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] .ivu-collapse-content {
+  background: #ddd;
 }
 </style>

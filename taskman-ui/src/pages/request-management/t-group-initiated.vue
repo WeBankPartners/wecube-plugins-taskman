@@ -167,17 +167,17 @@ export default {
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
-            if (params.row.status.indexOf('Faulted') !== -1) {
-              return (
-                <div style="text-align: left">
-                  <Button
-                    onClick={() => this.checkTemplate(params.row)}
-                    style="margin-left: 8px"
-                    type="primary"
-                    size="small"
-                  >
-                    {this.$t('detail')}
-                  </Button>
+            return (
+              <div style="text-align: left">
+                <Button
+                  onClick={() => this.checkTemplate(params.row)}
+                  style="margin-left: 8px"
+                  type="primary"
+                  size="small"
+                >
+                  {this.$t('detail')}
+                </Button>
+                {params.row.status.indexOf('Faulted') !== -1 && (
                   <Button
                     onClick={() => this.reRequest(params.row)}
                     style="margin-left: 8px"
@@ -186,22 +186,10 @@ export default {
                   >
                     {this.$t('re-request')}
                   </Button>
-                </div>
-              )
-            } else {
-              return (
-                <div style="text-align: left">
-                  <Button
-                    onClick={() => this.checkTemplate(params.row)}
-                    style="margin-left: 8px"
-                    type="primary"
-                    size="small"
-                  >
-                    {this.$t('detail')}
-                  </Button>
-                </div>
-              )
-            }
+                )}
+              </div>
+            )
+            // }
           }
         }
       ],

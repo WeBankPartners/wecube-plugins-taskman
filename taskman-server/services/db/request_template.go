@@ -494,9 +494,11 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 			tmpObj.USERoles = useRoleMap[v.Id]
 		}
 		if v.Status == "confirm" {
-			tmpObj.OperateOptions = []string{"query", "fork", "export"}
+			tmpObj.OperateOptions = []string{"query", "fork", "export", "disable"}
 		} else if v.Status == "created" {
 			tmpObj.OperateOptions = []string{"edit", "delete"}
+		} else if v.Status == "disable" {
+			tmpObj.OperateOptions = []string{"query", "enable"}
 		}
 		result = append(result, &tmpObj)
 	}

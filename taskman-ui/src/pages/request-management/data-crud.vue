@@ -125,9 +125,9 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteAttach(file.id)
+          const { statusCode, data } = await deleteAttach(file.id)
           if (statusCode === 'OK') {
-            this.getRequestInfo()
+            this.attachFiles = data
           }
         },
         onCancel: () => {}
@@ -176,12 +176,12 @@ export default {
         desc: response.statusMessage
       })
     },
-    async uploadSucess () {
+    async uploadSucess (item) {
       this.$Notice.success({
         title: 'Successful',
         desc: 'Successful'
       })
-      this.getRequestInfo()
+      this.attachFiles = item.data
     },
     backData (data) {
       this.requestData = data

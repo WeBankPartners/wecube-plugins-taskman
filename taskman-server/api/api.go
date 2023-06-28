@@ -49,6 +49,8 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: request.ExportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: request.ImportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: request.ConfirmImportRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: request.DisableRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: request.EnableRequestTemplate},
 
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
@@ -64,6 +66,7 @@ func init() {
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: request.CreateRequest},
 		&handlerFuncObj{Url: "/request/:requestId", Method: "PUT", HandlerFunc: request.UpdateRequest},
 		&handlerFuncObj{Url: "/request/:requestId", Method: "DELETE", HandlerFunc: request.DeleteRequest},
+		&handlerFuncObj{Url: "/request-parent/get", Method: "GET", HandlerFunc: request.GetRequestParent},
 		&handlerFuncObj{Url: "/request/copy/:requestId", Method: "POST", HandlerFunc: request.CopyRequest},
 		&handlerFuncObj{Url: "/request-root/:requestId", Method: "GET", HandlerFunc: request.GetRequestRootForm},
 		&handlerFuncObj{Url: "/request-data/preview", Method: "GET", HandlerFunc: request.GetRequestPreviewData},

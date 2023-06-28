@@ -213,6 +213,6 @@ func UploadTaskAttachFile(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		middleware.ReturnData(c, db.GetTaskAttachFileList(taskId))
 	}
 }

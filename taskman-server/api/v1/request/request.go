@@ -285,7 +285,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		middleware.ReturnData(c, db.GetRequestAttachFileList(requestId))
 	}
 }
 
@@ -310,11 +310,15 @@ func RemoveAttachFile(c *gin.Context) {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
-	err := db.RemoveAttachFile(fileId)
+	fileObj, err := db.RemoveAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		if fileObj.Request != "" {
+			middleware.ReturnData(c, db.GetRequestAttachFileList(fileObj.Request))
+		} else {
+			middleware.ReturnData(c, db.GetTaskAttachFileList(fileObj.Task))
+		}
 	}
 }
 
@@ -332,6 +336,16 @@ func CopyRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		db.RecordRequestLog(requestId, createdBy, "copy")
+		middleware.ReturnData(c, result)
+	}
+}
+
+func GetRequestParent(c *gin.Context) {
+	requestId := c.Query("requestId")
+	result, err := db.GetRequestParent(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
 		middleware.ReturnData(c, result)
 	}
 }

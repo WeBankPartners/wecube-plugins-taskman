@@ -360,3 +360,23 @@ func ConfirmImportRequestTemplate(c *gin.Context) {
 		middleware.ReturnSuccess(c)
 	}
 }
+
+func DisableRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("id")
+	err := db.DisableRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}
+
+func EnableRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("id")
+	err := db.EnableRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnSuccess(c)
+	}
+}

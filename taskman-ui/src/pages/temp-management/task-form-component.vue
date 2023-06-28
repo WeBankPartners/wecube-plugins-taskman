@@ -299,7 +299,7 @@
 <script>
 import { getSelectedForm, getUserRoles, saveTaskForm, getTaskFormDataByNodeId, getHandlerRoles } from '@/api/server.js'
 import draggable from 'vuedraggable'
-let idGlobal = 8
+let idGlobal = 80
 export default {
   name: '',
   data () {
@@ -462,7 +462,8 @@ export default {
       activeTag: {
         itemGroupIndex: -1,
         attrIndex: -1
-      }
+      },
+      specialId: ''
     }
   },
   props: ['currentNode', 'node', 'requestTemplateId'],
@@ -521,6 +522,10 @@ export default {
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
+          if (attr.id === this.specialId) {
+            this.editElement = attr
+            this.openPanel = '1'
+          }
         })
       })
     },
@@ -674,9 +679,8 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(
-          l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName
-        ).attrs
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
+          .attrs
         const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
@@ -748,9 +752,8 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(
-          l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName
-        ).attrs
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
+          .attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })
@@ -820,6 +823,7 @@ export default {
       newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
       newItem.name = newItem.name + idGlobal
+      this.specialId = newItem.id
       return newItem
     },
     selectElement (itemIndex, eleIndex) {
@@ -847,6 +851,10 @@ export default {
       if (inputIndex > -1) {
         const index = this.selectedInputFormItem.findIndex(inputItem => inputItem === element.attrDefId)
         this.selectedInputFormItem.splice(index, 1)
+      }
+
+      if (element.id === this.editElement.id) {
+        this.openPanel = ''
       }
     },
     async getSelectedForm () {

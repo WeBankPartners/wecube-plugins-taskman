@@ -21,10 +21,11 @@
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </Col>
-        <Col span="2">
-          <Select v-model="status" clearable :placeholder="$t('status')" style="width: 90%">
+        <Col span="4">
+          <Select multiple v-model="status" clearable :placeholder="$t('status')" style="width: 90%">
             <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
             <Option value="created" key="created">{{ this.$t('status_created') }}</Option>
+            <Option value="disable" key="disable">{{ this.$t('disable') }}</Option>
           </Select>
         </Col>
         <Col span="4">
@@ -64,22 +65,37 @@
       @on-page-size-change="changePageSize"
       show-total
     />
+    <Modal v-model="modalShow" width="300">
+      <p>{{ $t('confirm_disable') }}</p>
+      <template #footer>
+        <Button type="error" size="large" long @click="disableInit">{{ $t('confirm') }}</Button>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 import { getCookie } from '@/pages/util/cookie'
-import { getTemplateList, deleteTemplate, forkTemplate, getManagementRoles, confirmUploadTemplate } from '@/api/server'
+import {
+  getTemplateList,
+  deleteTemplate,
+  forkTemplate,
+  getManagementRoles,
+  confirmUploadTemplate,
+  enableTemplate,
+  disableTemplate
+} from '@/api/server'
 export default {
   name: '',
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
-      status: '',
+      status: ['confirm', 'created'],
       mgmtRoles: [],
       tags: '',
+      modalShow: false,
       pagination: {
         pageSize: 10,
         currentPage: 1,
@@ -126,7 +142,8 @@ export default {
           render: (h, params) => {
             const statusArray = {
               confirm: this.$t('status_confirm'),
-              created: this.$t('status_created')
+              created: this.$t('status_created'),
+              disable: this.$t('disable')
             }
             return <span>{statusArray[params.row.status]}</span>
           }
@@ -166,7 +183,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 180,
+          width: 220,
           align: 'center',
           render: (h, params) => {
             const operationOptions = params.row.operateOptions
@@ -220,6 +237,26 @@ export default {
                     size="small"
                   >
                     {this.$t('download')}
+                  </Button>
+                )}
+                {operationOptions.includes('disable') && (
+                  <Button
+                    onClick={() => this.disableTemplate(params.row)}
+                    style="margin-left: 6px"
+                    type="error"
+                    size="small"
+                  >
+                    {this.$t('disable')}
+                  </Button>
+                )}
+                {operationOptions.includes('enable') && (
+                  <Button
+                    onClick={() => this.enableTemplate(params.row)}
+                    style="margin-left: 6px"
+                    type="success"
+                    size="small"
+                  >
+                    {this.$t('enable')}
                   </Button>
                 )}
               </div>
@@ -418,7 +455,7 @@ export default {
       if (this.status) {
         this.payload.filters.push({
           name: 'status',
-          operator: 'eq',
+          operator: 'in',
           value: this.status
         })
       }
@@ -439,6 +476,18 @@ export default {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows
       }
+    },
+    disableTemplate (row) {
+      this.modalShow = row.id
+    },
+    async disableInit () {
+      await disableTemplate(this.modalShow)
+      this.modalShow = false
+      this.getTemplateList()
+    },
+    async enableTemplate (row) {
+      await enableTemplate(row.id)
+      this.getTemplateList()
     }
   },
   components: {}

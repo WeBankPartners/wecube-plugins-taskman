@@ -120,5 +120,8 @@
   "upload_attachment": "Upload Attachment",
   "upload_tip": "The request has been sent, please be patient.",
   "re-request": "re-request",
-  "pr-vision": "Previous Vision"
+  "pr-vision": "Previous Vision",
+  "disable": "Disable",
+  "enable": "Enable",
+  "confirm_disable": "Disable Confirm?"
 }

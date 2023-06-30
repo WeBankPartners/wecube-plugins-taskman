@@ -573,6 +573,9 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 				}
 			}
 			for _, valueObj := range tableForm.Value {
+				if valueObj.Id == "" {
+					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
+				}
 				for k, v := range valueObj.EntityData {
 					if titleId, b := tmpColumnMap[k]; b {
 						tmpExistKey := fmt.Sprintf("%s^%s^%s", tableForm.ItemGroup, k, valueObj.Id)

@@ -104,8 +104,6 @@ export default {
   props: ['data', 'isDisabled', 'enforceDisable', 'requestId'],
   mounted () {
     this.initData(this.data)
-    console.log(this.isDisabled)
-    console.log(this.enforceDisable)
   },
   methods: {
     async getRefOptions (formItem, formData, index) {
@@ -182,15 +180,17 @@ export default {
           this.getRefOptions(formItem, data, index)
         })
       })
+      console.log(this.tableData)
     },
     addForm () {
-      this.data.value.push(this.valueTemplate)
+      this.data.value.push(JSON.parse(JSON.stringify(this.valueTemplate)))
       this.initTableData()
     },
     delForm (index) {
       console.log(this.tableData)
-      if (this.tableData.length > 1) {
-        this.tableData.splice(index, 1)
+      if (this.data.value.length > 1) {
+        this.data.value.splice(index, 1)
+        this.initTableData()
       }
     }
   },

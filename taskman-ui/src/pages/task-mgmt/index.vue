@@ -82,7 +82,7 @@
                     with-credentials
                     style="display: inline-block; margin-left: 32px"
                     :headers="headers"
-                    :on-success="uploadSucess"
+                    :on-success="res => uploadSucess(res, dataIndex)"
                     :on-error="uploadFailed"
                   >
                     <Button size="small" type="success">{{ $t('upload_attachment') }}</Button>
@@ -97,7 +97,7 @@
                   :closable="dataIndex === dataInfo.length - 1 && !enforceDisable"
                   checkable
                   :key="file.id"
-                  @on-close="removeFile(file)"
+                  @on-close="removeFile(file, dataIndex)"
                   @on-change="downloadFile(file)"
                   color="primary"
                   >{{ file.name }}</Tag
@@ -195,16 +195,16 @@ export default {
       this.$Message.info(this.$t('upload_tip'))
       return true
     },
-    removeFile (file) {
+    removeFile (file, index) {
       this.$Modal.confirm({
         title: this.$t('confirm_to_delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteAttach(file.id)
+          const { statusCode, data } = await deleteAttach(file.id)
           if (statusCode === 'OK') {
-            this.getTaskDetail()
+            this.dataInfo[index].attachFiles = data
           }
         },
         onCancel: () => {}
@@ -254,12 +254,12 @@ export default {
         desc: response.statusMessage
       })
     },
-    async uploadSucess () {
+    async uploadSucess (item, index) {
       this.$Notice.success({
         title: 'Successful',
         desc: 'Successful'
       })
-      this.getTaskDetail()
+      this.dataInfo[index].attachFiles = item.data
     },
     backToTask () {
       this.$router.push({ path: '/taskman/task-mgmt' })
@@ -276,7 +276,6 @@ export default {
         this.requestId = data.request
         this.timeStep = data.timeStep
         this.activeStep = this.timeStep.findIndex(t => t.active === true)
-        console.log(data.data)
         this.dataInfo = data.data.map(d => {
           this.requestId = d.requestId
           d.activeTab = ''
@@ -285,7 +284,6 @@ export default {
           }
           return d
         })
-        console.log(this.dataInfo)
 
         this.openPanel = data.data.length - 1 + ''
       }

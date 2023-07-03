@@ -61,23 +61,24 @@ func DownloadAttachFile(fileId string) (fileContent []byte, fileName string, err
 	return
 }
 
-func RemoveAttachFile(fileId string) error {
-	fileObj, err := getAttachFileInfo(fileId)
+func RemoveAttachFile(fileId string) (fileObj models.AttachFileTable, err error) {
+	fileObj, err = getAttachFileInfo(fileId)
 	if err != nil {
-		return err
+		return
 	}
 	ms, minioErr := getMinioServerObj()
 	if minioErr != nil {
-		return minioErr
+		err = minioErr
+		return
 	}
 	removeParam := file_server.MinioParam{Ctx: context.Background(), Bucket: models.Config.AttachFile.Bucket}
 	removeParam.ObjectName = fileObj.S3KeyName
 	err = ms.Remove(removeParam)
 	if err != nil {
-		return err
+		return
 	}
 	_, err = x.Exec("delete from attach_file where id=?", fileId)
-	return err
+	return
 }
 
 func getAttachFileInfo(fileId string) (fileObj models.AttachFileTable, err error) {

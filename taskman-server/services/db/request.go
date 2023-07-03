@@ -351,7 +351,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 func SaveRequestBindCache(requestId, operator string, param *models.RequestCacheData) error {
 	cacheBytes, _ := json.Marshal(param)
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set status='Draft',bind_cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
+	_, err := x.Exec("update request set bind_cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
 	return err
 }
 
@@ -1509,6 +1509,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		err = fmt.Errorf("Only Faulted request can copy ")
 		return
 	}
+	result = *parentRequest
 	var formTable []*models.FormTable
 	err = x.SQL("select * from form where id=?", parentRequest.Form).Find(&formTable)
 	if err != nil {
@@ -1519,21 +1520,32 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	parentForm := formTable[0]
+	var formItemTable []*models.FormItemTable
+	err = x.SQL("select * from form_item where form=?", parentRequest.Form).Find(&formItemTable)
+	if err != nil {
+		return
+	}
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
 	newRequestId := guid.CreateGuid()
+	result.Id = newRequestId
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, parentRequest.Name + models.SysTableIdConnector + "form", "", parentForm.FormTemplate, nowTime, createdBy, nowTime, createdBy}
 	actions = append(actions, &formInsertAction)
-	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{newRequestId, parentRequest.Name, formGuid, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency, parentRequest.ReportRole, "Draft", "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy, nowTime, parentRequest.Id}
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{newRequestId, parentRequest.Name, formGuid, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency, parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy, nowTime, parentRequest.Id}
 	actions = append(actions, &requestInsertAction)
+	for _, formItemRow := range formItemTable {
+		actions = append(actions, &execAction{Sql: "INSERT INTO form_item (id,form,form_item_template,name,value,item_group,row_data_id) VALUES (?,?,?,?,?,?,?)", Param: []interface{}{
+			guid.CreateGuid(), formGuid, formItemRow.FormItemTemplate, formItemRow.Name, formItemRow.Value, formItemRow.ItemGroup, formItemRow.RowDataId,
+		}})
+	}
 	err = transactionWithoutForeignCheck(actions)
 	return
 }
 
-func GetRequestParent(requestId string) (result models.RequestTable, err error) {
+func GetRequestParent(requestId string) (parentRequestId string, err error) {
 	var requestTable []*models.RequestTable
 	err = x.SQL("select `parent` from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
@@ -1543,10 +1555,6 @@ func GetRequestParent(requestId string) (result models.RequestTable, err error) 
 		err = fmt.Errorf("can not find request with id:%s ", requestId)
 		return
 	}
-	if requestTable[0].Parent == "" {
-		result = models.RequestTable{}
-		return
-	}
-	result, err = GetRequestWithRoot(requestTable[0].Parent)
+	parentRequestId = requestTable[0].Parent
 	return
 }

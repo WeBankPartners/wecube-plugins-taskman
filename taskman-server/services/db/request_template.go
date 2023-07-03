@@ -172,6 +172,7 @@ func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userT
 	var respObj models.ProcNodeQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	log.Logger.Debug("platform process task node return", log.String("body", string(respBytes)))
 	err = json.Unmarshal(respBytes, &respObj)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
@@ -494,9 +495,11 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 			tmpObj.USERoles = useRoleMap[v.Id]
 		}
 		if v.Status == "confirm" {
-			tmpObj.OperateOptions = []string{"query", "fork", "export"}
+			tmpObj.OperateOptions = []string{"query", "fork", "export", "disable"}
 		} else if v.Status == "created" {
 			tmpObj.OperateOptions = []string{"edit", "delete"}
+		} else if v.Status == "disable" {
+			tmpObj.OperateOptions = []string{"query", "enable"}
 		}
 		result = append(result, &tmpObj)
 	}
@@ -733,6 +736,9 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 		err = getNodesErr
 		return
 	}
+	if len(nodes) == 0 {
+		return
+	}
 	entityMap := make(map[string]int)
 	existAttrMap := make(map[string]int)
 	existAttrs, _ := GetRequestTemplateEntityAttrs(id)
@@ -740,7 +746,13 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 		existAttrMap[attr.Id] = 1
 	}
 	for _, node := range nodes {
+		if node == nil {
+			continue
+		}
 		for _, entity := range node.BoundEntities {
+			if entity == nil {
+				continue
+			}
 			if _, b := entityMap[entity.Id]; b {
 				continue
 			}
@@ -942,6 +954,9 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	}
 	recordIdMap := make(map[string]int)
 	for _, v := range requestTemplateTable {
+		if v.Status == "disable" {
+			continue
+		}
 		if v.Status == "confirm" {
 			if v.RecordId != "" {
 				recordIdMap[v.RecordId] = 1
@@ -959,6 +974,9 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	}
 	for _, v := range requestTemplateTable {
 		if _, b := recordIdMap[v.Id]; b {
+			continue
+		}
+		if v.Status == "disable" {
 			continue
 		}
 		tmpTemplateTable = append(tmpTemplateTable, v)
@@ -1257,5 +1275,41 @@ func checkImportExist(requestTemplateId string) (exist bool, err error) {
 	if requestTemplateTable[0].Status == "confirm" {
 		err = fmt.Errorf("RequestTemplate:%s %s already confirm ", requestTemplateTable[0].Name, requestTemplateTable[0].Version)
 	}
+	return
+}
+
+func DisableRequestTemplate(requestTemplateId, operator string) (err error) {
+	queryRows, queryErr := x.QueryString("select status from request_template where id=?", requestTemplateId)
+	if queryErr != nil {
+		err = queryErr
+		return
+	}
+	if len(queryRows) == 0 {
+		err = fmt.Errorf("can not find template with id: %s ", requestTemplateId)
+		return
+	}
+	if queryRows[0]["status"] != "confirm" {
+		err = fmt.Errorf("only confirm status template can disable")
+		return
+	}
+	_, err = x.Exec("update request_template set status='disable' where id=?", requestTemplateId)
+	return
+}
+
+func EnableRequestTemplate(requestTemplateId, operator string) (err error) {
+	queryRows, queryErr := x.QueryString("select status from request_template where id=?", requestTemplateId)
+	if queryErr != nil {
+		err = queryErr
+		return
+	}
+	if len(queryRows) == 0 {
+		err = fmt.Errorf("can not find template with id: %s ", requestTemplateId)
+		return
+	}
+	if queryRows[0]["status"] != "disable" {
+		err = fmt.Errorf("only disable status template can enable")
+		return
+	}
+	_, err = x.Exec("update request_template set status='confirm' where id=?", requestTemplateId)
 	return
 }

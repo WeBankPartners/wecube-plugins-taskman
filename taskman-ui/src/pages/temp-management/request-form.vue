@@ -416,7 +416,8 @@ export default {
       activeTag: {
         itemGroupIndex: -1,
         attrIndex: -1
-      }
+      },
+      specialId: ''
     }
   },
   // // props: ['requestTemplateId'],
@@ -454,11 +455,15 @@ export default {
       // if (e.draggedContext.element.id === 4) return false
       return true
     },
-    log (log) {
+    log (item) {
       this.finalElement.forEach(l => {
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
+          if (attr.id === this.specialId) {
+            this.editElement = attr
+            this.openPanel = '1'
+          }
         })
       })
     },
@@ -561,9 +566,8 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(
-          l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName
-        ).attrs
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
+          .attrs
         const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
@@ -665,8 +669,13 @@ export default {
       const formItemOptionIndex = this.formItemOptions.findIndex(
         fio => fio.packageName + ':' + fio.name === element.itemGroup
       )
-      const seletedAttrs = this.formItemOptions[formItemOptionIndex].seletedAttrs
-      seletedAttrs.splice(eleIndex, 1)
+      if (this.formItemOptions[formItemOptionIndex]) {
+        const seletedAttrs = this.formItemOptions[formItemOptionIndex].seletedAttrs
+        seletedAttrs.splice(eleIndex, 1)
+      }
+      if (element.id === this.editElement.id) {
+        this.openPanel = ''
+      }
     },
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
@@ -682,6 +691,7 @@ export default {
       newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
       newItem.name = newItem.name + idGlobal
+      this.specialId = newItem.id
       return newItem
     },
     async next () {

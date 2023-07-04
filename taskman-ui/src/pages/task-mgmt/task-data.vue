@@ -5,7 +5,7 @@
         <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
         <td width="85%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
         <td
-          v-if="!isDisabled && !enforceDisable ? true : false"
+          v-if="!isDisabled && !enforceDisable && ifEntity ? true : false"
           @click="addForm"
           width="10%"
           class="padding-style"
@@ -64,7 +64,7 @@
             </div>
           </td>
           <td
-            v-if="!isDisabled && !enforceDisable ? true : false"
+            v-if="!isDisabled && !enforceDisable && ifEntity ? true : false"
             @click="delForm(dataIndex)"
             style="text-align: center;color: #2d8cf0;cursor: pointer"
           >
@@ -98,12 +98,16 @@ export default {
         previousIds: null,
         succeedingIds: null
       },
+      ifEntity: false,
       refKeys: [] // 引用类型字段集合
     }
   },
   props: ['data', 'isDisabled', 'enforceDisable', 'requestId'],
   mounted () {
     this.initData(this.data)
+    if (this.data.entity === '' || this.data.entity.includes('taskman')) {
+      this.ifEntity = true
+    }
   },
   methods: {
     async getRefOptions (formItem, formData, index) {

@@ -180,9 +180,16 @@ export default {
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']
       })
+      const filterValue = formData[formItem.name]
       const attr = formItem.entity + '__' + formItem.name
       const params = {
-        filters: [],
+        filters: [
+          {
+            name: 'guid',
+            operator: 'in',
+            value: Array.isArray(filterValue) ? filterValue : [filterValue]
+          }
+        ],
         paging: false,
         dialect: {
           associatedData: {

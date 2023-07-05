@@ -557,6 +557,7 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	var existFormItemTable []*models.FormItemTable
 	x.SQL("select * from form_item where form in (select form from task where id=?)", taskId).Find(&existFormItemTable)
 	existFormItemMap := make(map[string]int)
+	inputItemMap := make(map[string]int)
 	for _, v := range existFormItemTable {
 		existFormItemMap[fmt.Sprintf("%s^%s^%s", v.ItemGroup, v.Name, v.RowDataId)] = 1
 	}
@@ -573,9 +574,13 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 				}
 			}
 			for _, valueObj := range tableForm.Value {
+				if valueObj.Id == "" {
+					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
+				}
 				for k, v := range valueObj.EntityData {
 					if titleId, b := tmpColumnMap[k]; b {
 						tmpExistKey := fmt.Sprintf("%s^%s^%s", tableForm.ItemGroup, k, valueObj.Id)
+						inputItemMap[tmpExistKey] = 1
 						if _, bb := tmpMultiMap[k]; bb {
 							tmpV := []string{}
 							for _, interfaceV := range v.([]interface{}) {
@@ -595,6 +600,11 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 						}
 					}
 				}
+			}
+		}
+		for _, row := range existFormItemTable {
+			if _, ok := inputItemMap[fmt.Sprintf("%s^%s^%s", row.ItemGroup, row.Name, row.RowDataId)]; !ok {
+				actions = append(actions, &execAction{Sql: "delete from form_item where id=?", Param: []interface{}{row.Id}})
 			}
 		}
 	}

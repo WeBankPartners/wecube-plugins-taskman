@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { requestListForDraftInitiated, getTemplateList } from '@/api/server'
+import { requestListForDraftInitiated, getTemplateList, reRequest } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -163,7 +163,7 @@ export default {
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 100,
+          width: 160,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
@@ -177,8 +177,19 @@ export default {
                 >
                   {this.$t('detail')}
                 </Button>
+                {params.row.status.indexOf('Faulted') !== -1 && (
+                  <Button
+                    onClick={() => this.reRequest(params.row)}
+                    style="margin-left: 8px"
+                    type="success"
+                    size="small"
+                  >
+                    {this.$t('re-request')}
+                  </Button>
+                )}
               </div>
             )
+            // }
           }
         }
       ],
@@ -241,6 +252,11 @@ export default {
           jumpFrom: 'group_initiated'
         }
       })
+    },
+    async reRequest (row) {
+      await reRequest(row.id)
+      const activeTab = 'my_drafts'
+      this.$emit('requestTabChange', activeTab)
     },
     changePageSize (pageSize) {
       this.pagination.pageSize = pageSize

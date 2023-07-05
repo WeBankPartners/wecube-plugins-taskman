@@ -351,7 +351,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 func SaveRequestBindCache(requestId, operator string, param *models.RequestCacheData) error {
 	cacheBytes, _ := json.Marshal(param)
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("update request set status='Draft',bind_cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
+	_, err := x.Exec("update request set bind_cache=?,updated_by=?,updated_time=? where id=?", string(cacheBytes), operator, nowTime, requestId)
 	return err
 }
 

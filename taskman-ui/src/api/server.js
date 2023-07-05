@@ -92,3 +92,7 @@ export const getTemplateTags = requestTemplateGroup =>
 export const confirmUploadTemplate = confirmToken =>
   req.post(`/taskman/api/v1/request-template/import-confirm/${confirmToken}`)
 export const deleteAttach = fileId => req.delete(`/taskman/api/v1/request/attach-file/remove/${fileId}`)
+export const reRequest = fileId => req.post(`/taskman/api/v1/request/copy/${fileId}`)
+export const requestParent = requestId => req.get(`/taskman/api/v1/request-parent/get?requestId=${requestId}`)
+export const enableTemplate = templateId => req.post(`/taskman/api/v1/request-template/enable/${templateId}`)
+export const disableTemplate = templateId => req.post(`/taskman/api/v1/request-template/disable/${templateId}`)

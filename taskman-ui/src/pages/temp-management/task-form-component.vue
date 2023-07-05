@@ -542,8 +542,8 @@ export default {
         this.formData.nodeDefName = this.nodeData.nodeName
         this.getUserRoles()
         this.getHandlerRoles()
-        await this.getTaskFormDataByNodeId()
-        this.getSelectedForm()
+        await this.getSelectedForm()
+        this.getTaskFormDataByNodeId()
       }
     },
     async getHandlerRoles () {

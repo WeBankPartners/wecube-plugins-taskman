@@ -42,6 +42,9 @@
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('final_version')
       }}</Button>
+      <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
+        $t('pr-vision')
+      }}</Button>
     </div>
   </div>
 </template>
@@ -53,7 +56,8 @@ import {
   saveRequest,
   getBindRelate,
   updateRequestStatus,
-  startRequest
+  startRequest,
+  requestParent
 } from '@/api/server.js'
 export default {
   name: '',
@@ -69,7 +73,8 @@ export default {
           oid: ''
         },
         taskNodeBindInfos: ''
-      }
+      },
+      requestHistory: false
     }
   },
   mounted () {
@@ -77,8 +82,30 @@ export default {
     this.finalData.procDefKey = this.$parent.procDefKey
     this.getTemplateNodesForRequest()
     this.getBindData()
+    this.requestParent()
   },
   methods: {
+    async requestParent () {
+      const { data } = await requestParent(this.$parent.requestId)
+      if (data) {
+        this.requestHistory = data
+      } else {
+        this.requestHistory = false
+      }
+    },
+    checkHistory () {
+      this.$router.push({
+        path: '/requestCheck',
+        query: {
+          requestId: this.requestHistory,
+          requestTemplate: null,
+          isAdd: 'N',
+          isCheck: 'Y',
+          isHandle: 'N',
+          jumpFrom: 'group_initiated'
+        }
+      })
+    },
     async startRequest () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('final_version'),

@@ -172,6 +172,7 @@ func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userT
 	var respObj models.ProcNodeQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	log.Logger.Debug("platform process task node return", log.String("body", string(respBytes)))
 	err = json.Unmarshal(respBytes, &respObj)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
@@ -735,6 +736,9 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 		err = getNodesErr
 		return
 	}
+	if len(nodes) == 0 {
+		return
+	}
 	entityMap := make(map[string]int)
 	existAttrMap := make(map[string]int)
 	existAttrs, _ := GetRequestTemplateEntityAttrs(id)
@@ -742,7 +746,13 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 		existAttrMap[attr.Id] = 1
 	}
 	for _, node := range nodes {
+		if node == nil {
+			continue
+		}
 		for _, entity := range node.BoundEntities {
+			if entity == nil {
+				continue
+			}
 			if _, b := entityMap[entity.Id]; b {
 				continue
 			}

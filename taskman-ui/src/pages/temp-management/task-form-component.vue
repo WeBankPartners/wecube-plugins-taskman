@@ -537,8 +537,8 @@ export default {
         this.formData.nodeDefName = this.nodeData.nodeName
         this.getUserRoles()
         this.getHandlerRoles()
-        await this.getTaskFormDataByNodeId()
-        this.getSelectedForm()
+        await this.getSelectedForm()
+        this.getTaskFormDataByNodeId()
       }
     },
     async getHandlerRoles () {
@@ -674,9 +674,8 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(
-          l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName
-        ).attrs
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
+          .attrs
         const findIndex = findAttr.findIndex(l => l.attrDefId === r)
         findAttr.splice(findIndex, 1)
       })
@@ -748,9 +747,8 @@ export default {
       })
       remove.forEach(r => {
         let findTag = this.selectedFormItemOptions.find(xItem => xItem.id === r)
-        let findAttr = this.finalElement.find(
-          l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName
-        ).attrs
+        let findAttr = this.finalElement.find(l => l.itemGroup === findTag.entityPackage + ':' + findTag.entityName)
+          .attrs
         const findIndex = findAttr.findIndex(l => l.id === r)
         findAttr.splice(findIndex, 1)
       })

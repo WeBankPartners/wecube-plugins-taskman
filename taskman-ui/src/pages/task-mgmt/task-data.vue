@@ -170,6 +170,10 @@ export default {
       this.valueTemplate.dataId = ''
       this.valueTemplate.id = ''
       this.valueTemplate.entityData = {}
+      if (!data.value[0]) {
+        this.data.value.push(JSON.parse(JSON.stringify(this.valueTemplate)))
+        this.initTableData()
+      }
     },
     initTableData () {
       this.tableData = this.data.value.map(v => {

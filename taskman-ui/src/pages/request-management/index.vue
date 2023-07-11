@@ -1,11 +1,11 @@
 <template>
   <div>
-    <Button @click="backToTemplate" icon="ios-undo-outline" style="margin-bottom: 8px">{{
-      $t('back_to_template')
-    }}</Button>
-
+    <div style="margin-bottom: 8px">
+      <Button @click="backToTemplate" icon="ios-undo-outline">{{ $t('back_to_template') }}</Button>
+      <Input v-model="filterWord" style="width: 200px" placeholder="filter" />
+    </div>
     <template v-if="currentStep === -1">
-      <TemplateSelect @choiceTemp="choiceTemp"></TemplateSelect>
+      <TemplateSelect @choiceTemp="choiceTemp" :filterWord="filterWord"></TemplateSelect>
     </template>
     <template v-else>
       <div style="width: 84%;margin: 0 auto;">
@@ -47,7 +47,8 @@ export default {
       requestTemplate: '',
       procDefId: '',
       procDefKey: '',
-      requestId: ''
+      requestId: '',
+      filterWord: ''
     }
   },
   mounted () {

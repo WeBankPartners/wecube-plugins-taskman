@@ -1,7 +1,7 @@
 <template>
   <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto' }">
     <template v-for="tempG in templateGroup">
-      <Card :key="tempG.groupId">
+      <Card :key="tempG.groupId" style="width:48%;display: inline-block;vertical-align: text-top;margin:1%">
         <p slot="title" @click="tempG.isShow = !tempG.isShow">
           {{ tempG.groupName }}
           <template v-if="tempG.isShow">
@@ -12,7 +12,7 @@
           </template>
         </p>
         <template v-for="(tag, tagIndex) in tempG.tags">
-          <Card :key="tagIndex" v-if="tempG.isShow">
+          <Card :key="tagIndex" v-if="tempG.isShow" style=";margin:1%">
             <p slot="title">
               {{ tag.tag || $t('unclassified') }}
             </p>
@@ -20,7 +20,7 @@
               @click="choiceTemplate(temp)"
               :class="['diy-tag', temp.status === 'created' ? 'red-style' : '']"
               class="diy-tag"
-              v-for="temp in tag.templates"
+              v-for="temp in filterData(tag.templates)"
               :key="temp.id"
             >
               <Tooltip content="" max-width="200">
@@ -48,11 +48,16 @@ export default {
       templateGroup: []
     }
   },
+  props: ['filterWord'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 400
+    this.MODALHEIGHT = document.body.scrollHeight - 200
     this.getTemplate()
   },
   methods: {
+    filterData (templates) {
+      const res = templates.filter(t => t.name.toUpperCase().includes(this.filterWord.toUpperCase()))
+      return res
+    },
     async getTemplate () {
       const { statusCode, data } = await getTemplateByUser()
       if (statusCode === 'OK') {

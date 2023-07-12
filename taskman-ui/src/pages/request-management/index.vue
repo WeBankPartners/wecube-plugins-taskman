@@ -2,7 +2,7 @@
   <div>
     <div style="margin-bottom: 8px">
       <Button @click="backToTemplate" icon="ios-undo-outline">{{ $t('back_to_template') }}</Button>
-      <Input v-model="filterWord" style="width: 200px" placeholder="filter" />
+      <Input v-if="currentStep === -1" v-model="filterWord" style="width: 200px" :placeholder="$t('search')" />
     </div>
     <template v-if="currentStep === -1">
       <TemplateSelect @choiceTemp="choiceTemp" :filterWord="filterWord"></TemplateSelect>

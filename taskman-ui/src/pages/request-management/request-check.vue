@@ -14,10 +14,16 @@
       <div class="task-form">
         <Collapse simple v-model="openPanel">
           <template v-for="(data, dataIndex) in dataInfo">
-            <Panel :name="dataIndex + ''" :key="dataIndex">
-              <template v-if="dataIndex === 0">
-                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
+            <Panel :name="dataIndex + ''" :key="dataIndex" :if-history="data.isHistory ? 'history' : 'current'">
+              <div v-if="!data.taskId">
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                  >{{ $t('request_id') }}:{{ data.requestId }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="orange"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="green"
+                  >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
                 >
                 <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('reporter') }}:{{ data.reporter }}</Tag
@@ -28,22 +34,8 @@
                 <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
-              </template>
-              <template v-else-if="dataIndex < dataInfo.length - 1">
-                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
-                  >{{ $t('task_name') }}:{{ data.taskName }}</Tag
-                >
-                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                  >{{ $t('handler') }}:{{ data.handler }}</Tag
-                >
-                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                  >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
-                >
-                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                  >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
-                >
-              </template>
-              <template v-else>
+              </div>
+              <div v-else>
                 <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
@@ -52,13 +44,19 @@
                     >{{ $t('handler') }}:{{ data.handler }}</Tag
                   >
                   <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
-                  >
-                  <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                    >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                    >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                   >
                 </template>
-              </template>
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                  >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                >
+                <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
+                  ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
+                >
+              </div>
               <p slot="content">
                 <Tag
                   type="border"
@@ -209,5 +207,19 @@ export default {
   height: calc(100vh - 100px);
   margin-top: 24px;
   overflow: auto;
+}
+</style>
+
+<style scoped>
+.task-form >>> .ivu-collapse-header {
+  height: auto;
+  display: flex;
+  align-items: center;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] {
+  background: #ddd;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] .ivu-collapse-content {
+  background: #ddd;
 }
 </style>

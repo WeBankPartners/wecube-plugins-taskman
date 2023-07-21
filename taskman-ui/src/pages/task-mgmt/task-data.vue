@@ -188,14 +188,12 @@ export default {
           this.getRefOptions(formItem, data, index)
         })
       })
-      console.log(this.tableData)
     },
     addForm () {
       this.data.value.push(JSON.parse(JSON.stringify(this.valueTemplate)))
       this.initTableData()
     },
     delForm (index) {
-      console.log(this.tableData)
       if (this.data.value.length > 1) {
         this.data.value.splice(index, 1)
         this.initTableData()

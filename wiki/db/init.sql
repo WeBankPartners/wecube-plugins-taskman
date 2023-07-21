@@ -294,3 +294,7 @@ alter table task add column notify_count int default 0;
 #@v0.1.1.1-begin@;
 alter table request add column parent varchar(64) default null;
 #@v0.1.1.1-end@;
+
+#@v0.1.2.15-begin@;
+alter table form_item modify column value text default null;
+#@v0.1.2.15-end@;

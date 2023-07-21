@@ -953,8 +953,14 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		return
 	}
 	recordIdMap := make(map[string]int)
+	disableNameMap := make(map[string]int)
 	for _, v := range requestTemplateTable {
 		if v.Status == "disable" {
+			disableNameMap[v.Name] = 1
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if _, isDisable := disableNameMap[v.Name]; isDisable {
 			continue
 		}
 		if v.Status == "confirm" {
@@ -976,7 +982,7 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		if _, b := recordIdMap[v.Id]; b {
 			continue
 		}
-		if v.Status == "disable" {
+		if _, isDisable := disableNameMap[v.Name]; isDisable {
 			continue
 		}
 		tmpTemplateTable = append(tmpTemplateTable, v)

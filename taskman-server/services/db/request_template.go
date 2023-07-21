@@ -956,12 +956,23 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	disableNameMap := make(map[string]int)
 	for _, v := range requestTemplateTable {
 		if v.Status == "disable" {
-			disableNameMap[v.Name] = 1
+			if v.Version == "" {
+				disableNameMap[v.Name] = 1
+			} else {
+				tmpV, _ := strconv.Atoi(v.Version[1:])
+				disableNameMap[v.Name] = tmpV
+			}
 		}
 	}
 	for _, v := range requestTemplateTable {
-		if _, isDisable := disableNameMap[v.Name]; isDisable {
-			continue
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
 		}
 		if v.Status == "confirm" {
 			if v.RecordId != "" {
@@ -982,8 +993,14 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		if _, b := recordIdMap[v.Id]; b {
 			continue
 		}
-		if _, isDisable := disableNameMap[v.Name]; isDisable {
-			continue
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
 		}
 		tmpTemplateTable = append(tmpTemplateTable, v)
 	}

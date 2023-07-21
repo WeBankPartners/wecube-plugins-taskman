@@ -344,7 +344,7 @@ export default {
 
 <style scoped>
 .task-form >>> .ivu-collapse-header {
-  height: auto;
+  height: auto !important;
   display: flex;
   align-items: center;
 }

@@ -129,6 +129,12 @@ export default {
           key: 'version'
         },
         {
+          title: this.$t('procDefId'),
+          minWidth: 80,
+          sortable: 'custom',
+          key: 'procDefName'
+        },
+        {
           title: this.$t('tags'),
           sortable: 'custom',
           minWidth: 130,
@@ -151,7 +157,7 @@ export default {
         {
           title: this.$t('description'),
           resizable: true,
-          width: 300,
+          width: 100,
           sortable: 'custom',
           key: 'description'
         },
@@ -172,6 +178,12 @@ export default {
             const displayName = params.row.useRoles.map(role => role.displayName).join(',')
             return <span>{displayName}</span>
           }
+        },
+        {
+          title: this.$t('updatedBy'),
+          sortable: 'updatedBy',
+          minWidth: 100,
+          key: 'updatedBy'
         },
         {
           title: this.$t('tm_updated_time'),

@@ -123,5 +123,8 @@
   "pr-vision": "Previous Vision",
   "disable": "Disable",
   "enable": "Enable",
-  "confirm_disable": "Disable Confirm?"
+  "confirm_disable": "Disable Confirm?",
+  "updatedBy": "Updated By",
+  "createdBy": "Created By",
+  "createdTime": "Created Time"
 }

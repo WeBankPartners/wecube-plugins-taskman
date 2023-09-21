@@ -2,10 +2,10 @@
   <div>
     <div>
       <Row>
-        <Col span="4">
+        <Col span="3">
           <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
-        <Col span="4">
+        <Col span="3">
           <Select
             v-model="requestTemplate"
             @on-open-change="getTemplateList"
@@ -19,6 +19,20 @@
             </template>
           </Select>
         </Col>
+        <!-- <Col span="3">
+          <DatePicker type="datetime"
+            :value="startTime"
+            @on-change="(val)=>changeExpectTime('startTime', val)"
+            format="yyyy-MM-dd HH:mm:ss"
+            placeholder="开始时间" />
+        </Col>
+        <Col span="3">
+          <DatePicker type="datetime"
+            :value="endTime"
+            @on-change="(val)=>changeExpectTime('endTime', val)"
+            format="yyyy-MM-dd HH:mm:ss"
+            placeholder="结束时间" />
+        </Col> -->
         <Col span="4">
           <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
         </Col>
@@ -73,6 +87,8 @@ export default {
           field: 'updatedTime'
         }
       },
+      startTime: '',
+      endTime: '',
       tableColumns: [
         {
           title: 'ID',
@@ -113,6 +129,18 @@ export default {
           minWidth: 80,
           sortable: 'custom',
           key: 'status'
+        },
+        {
+          title: this.$t('createdBy'),
+          sortable: 'createdBy',
+          minWidth: 140,
+          key: 'createdBy'
+        },
+        {
+          title: this.$t('createdTime'),
+          sortable: 'createdTime',
+          minWidth: 140,
+          key: 'createdTime'
         },
         {
           title: this.$t('handler'),
@@ -177,6 +205,9 @@ export default {
     this.requestListForDraftInitiated()
   },
   methods: {
+    changeExpectTime (type, val) {
+      this[type] = val
+    },
     sortTable (col) {
       const sorting = {
         asc: col.order === 'asc',
@@ -260,6 +291,21 @@ export default {
           value: this.requestTemplate
         })
       }
+      if (this.startTime) {
+        this.payload.filters.push({
+          name: 'createdTime',
+          operator: 'eq',
+          value: this.startTime
+        })
+      }
+      if (this.endTime) {
+        this.payload.filters.push({
+          name: 'createdTime',
+          operator: 'eq',
+          value: this.endTime
+        })
+      }
+
       if (sorting) {
         this.payload.sorting = sorting
       }

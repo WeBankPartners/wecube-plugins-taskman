@@ -135,6 +135,18 @@ export default {
           key: 'requestTemplateName'
         },
         {
+          title: this.$t('createdBy'),
+          sortable: 'createdBy',
+          minWidth: 140,
+          key: 'createdBy'
+        },
+        {
+          title: this.$t('createdTime'),
+          sortable: 'createdTime',
+          minWidth: 140,
+          key: 'createdTime'
+        },
+        {
           title: this.$t('handle_role'),
           sortable: 'custom',
           minWidth: 140,

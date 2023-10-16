@@ -1541,6 +1541,17 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 			guid.CreateGuid(), formGuid, formItemRow.FormItemTemplate, formItemRow.Name, formItemRow.Value, formItemRow.ItemGroup, formItemRow.RowDataId,
 		}})
 	}
+	// copy attach file
+	var attachFileRows []*models.AttachFileTable
+	err = x.SQL("select * from attach_file where request=?", requestId).Find(&attachFileRows)
+	if err != nil {
+		err = fmt.Errorf("query attach file table fail:%s ", err.Error())
+		return
+	}
+	for _, v := range attachFileRows {
+		actions = append(actions, &execAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+			guid.CreateGuid(), v.Name, v.S3BucketName, v.S3KeyName, newRequestId, createdBy, nowTime, createdBy, nowTime}})
+	}
 	err = transactionWithoutForeignCheck(actions)
 	return
 }

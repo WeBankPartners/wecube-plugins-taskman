@@ -12,7 +12,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+)
+
+var (
+	requestIdLock = new(sync.RWMutex)
 )
 
 func GetEntityData(requestId, userToken string) (result models.EntityQueryResult, err error) {
@@ -135,6 +140,9 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 					actions = append(actions, &execAction{Sql: "update request set status=? where id=?", Param: []interface{}{newStatus, v.Id}})
 					v.Status = newStatus
 				}
+			}
+			if v.Status == "Completed" {
+				v.CompletedTime = v.UpdatedTime
 			}
 		}
 		if len(actions) > 0 {
@@ -293,7 +301,7 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
-	param.Id = guid.CreateGuid()
+	param.Id = newRequestId()
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
@@ -1567,5 +1575,26 @@ func GetRequestParent(requestId string) (parentRequestId string, err error) {
 		return
 	}
 	parentRequestId = requestTable[0].Parent
+	return
+}
+
+func newRequestId() (requestId string) {
+	dateString := time.Now().Format("2006-01-02")
+	requestId = fmt.Sprintf("%s", time.Now().Format("20060102"))
+	requestIdLock.Lock()
+	defer requestIdLock.Unlock()
+	result, err := x.QueryString(fmt.Sprintf("select count(1) as num from request where created_time>='%s 00:00:00'", dateString))
+	if err != nil {
+		log.Logger.Error("try to new request id fail with count table num", log.Error(err))
+		requestId = fmt.Sprintf("%s-%s", requestId, guid.CreateGuid())
+		return
+	}
+	countNum, _ := strconv.Atoi(result[0]["num"])
+	countNumString := fmt.Sprintf("%d", countNum+1)
+	subId := countNumString
+	for i := 0; i < 6-len(countNumString); i++ {
+		subId = "0" + subId
+	}
+	requestId = fmt.Sprintf("%s-%s", requestId, subId)
 	return
 }

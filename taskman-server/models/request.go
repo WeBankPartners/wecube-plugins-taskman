@@ -66,6 +66,7 @@ type RequestTable struct {
 	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
 	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
 	Parent              string             `json:"parent" xorm:"parent"`
+	CompletedTime       string             `json:"completedTime" xorm:"-"`
 }
 
 type ExpireObj struct {

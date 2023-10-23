@@ -1043,6 +1043,9 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 	for _, v := range processNodes {
 		tmpBoundEntities := []string{}
 		for _, vv := range v.BoundEntities {
+			if vv == nil {
+				continue
+			}
 			entityDefIdMap[fmt.Sprintf("%s:%s", vv.PackageName, vv.Name)] = vv.Id
 			tmpBoundEntities = append(tmpBoundEntities, fmt.Sprintf("%s:%s", vv.PackageName, vv.Name))
 		}

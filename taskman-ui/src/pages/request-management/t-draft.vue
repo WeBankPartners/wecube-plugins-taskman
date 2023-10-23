@@ -34,7 +34,7 @@
             placeholder="结束时间" />
         </Col> -->
         <Col span="4">
-          <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
+          <Button @click="requestListForDraftInitiated()" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>

@@ -100,7 +100,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and (created_by=? or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type=? and `role` in ("+userRolesFilterSql+")))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time,rollback_desc from request where del_flag=0 and (created_by=? or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type=? and `role` in ("+userRolesFilterSql+")))) %s ", filterSql)
 	queryParam = append(append([]interface{}{operator, permission}, userRolesFilterParam...), queryParam...)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
@@ -724,7 +724,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	return
 }
 
-func UpdateRequestStatus(requestId, status, operator, userToken string) error {
+func UpdateRequestStatus(requestId, status, operator, userToken, description string) error {
 	var err error
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if status == "Pending" {
@@ -734,7 +734,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 		}
 		bindCacheBytes, _ := json.Marshal(bindData)
 		bindCache := string(bindCacheBytes)
-		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
+		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,rollback_desc=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, description, operator, nowTime, requestId)
 		if err == nil {
 			notifyRoleMail(requestId)
 		}

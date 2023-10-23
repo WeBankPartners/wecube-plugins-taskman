@@ -298,3 +298,7 @@ alter table request add column parent varchar(64) default null;
 #@v0.1.2.15-begin@;
 alter table form_item modify column value text default null;
 #@v0.1.2.15-end@;
+
+#@v0.1.3.4-begin@;
+alter table request add column `rollback_desc` text  DEFAULT null;
+#@v0.1.3.4-end@;

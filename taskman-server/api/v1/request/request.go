@@ -211,12 +211,12 @@ func UpdateRequestStatus(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("url param can not empty"))
 		return
 	}
+	var description string
 	var param models.UpdateRequestStatusParam
-	if bindErr := c.ShouldBindJSON(&param); bindErr != nil {
-		middleware.ReturnParamValidateError(c, bindErr)
-		return
+	if bindErr := c.ShouldBindJSON(&param); bindErr == nil {
+		description = param.Description
 	}
-	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param.Description)
+	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

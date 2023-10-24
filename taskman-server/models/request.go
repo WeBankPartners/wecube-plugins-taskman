@@ -66,6 +66,8 @@ type RequestTable struct {
 	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
 	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
 	Parent              string             `json:"parent" xorm:"parent"`
+	CompletedTime       string             `json:"completedTime" xorm:"-"`
+	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
 }
 
 type ExpireObj struct {
@@ -232,4 +234,8 @@ type WorkflowEntityQuery struct {
 type WorkflowEntityDataObj struct {
 	Id          string `json:"id"`
 	DisplayName string `json:"displayName"`
+}
+
+type UpdateRequestStatusParam struct {
+	Description string `json:"description"`
 }

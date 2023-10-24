@@ -325,6 +325,12 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 		return
 	}
 	// get task list
+	var taskHandlerRows []*models.TaskHandlerQueryData
+	x.SQL("select t1.id,t2.handler,t4.display_name from task t1 left join task_template t2 on t1.task_template=t2.id left join task_template_role t3 on t1.task_template=t3.task_template left join `role` t4 on t3.`role`=t4.id where t1.request=?", taskObj.Request).Find(&taskHandlerRows)
+	taskHandlerMap := make(map[string]*models.TaskHandlerQueryData)
+	for _, row := range taskHandlerRows {
+		taskHandlerMap[row.Id] = row
+	}
 	var taskList []*models.TaskTable
 	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
 	for _, v := range taskList {
@@ -332,6 +338,10 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 		if tmpErr != nil {
 			err = tmpErr
 			break
+		}
+		if handlerObj, b := taskHandlerMap[tmpTaskForm.TaskId]; b {
+			tmpTaskForm.Handler = handlerObj.Handler
+			tmpTaskForm.HandleRoleName = handlerObj.DisplayName
 		}
 		result.Data = append(result.Data, &tmpTaskForm)
 	}

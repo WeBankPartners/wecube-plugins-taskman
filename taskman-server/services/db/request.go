@@ -12,7 +12,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+)
+
+var (
+	requestIdLock = new(sync.RWMutex)
 )
 
 func GetEntityData(requestId, userToken string) (result models.EntityQueryResult, err error) {
@@ -95,7 +100,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 	}
 	filterSql, _, queryParam := transFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTable{}, PrimaryKey: "id"})
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
-	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time from request where del_flag=0 and (created_by=? or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type=? and `role` in ("+userRolesFilterSql+")))) %s ", filterSql)
+	baseSql := fmt.Sprintf("select id,name,form,request_template,proc_instance_id,proc_instance_key,reporter,handler,report_time,emergency,status,expire_time,expect_time,confirm_time,created_by,created_time,updated_by,updated_time,rollback_desc from request where del_flag=0 and (created_by=? or request_template in (select id from request_template where id in (select request_template from request_template_role where role_type=? and `role` in ("+userRolesFilterSql+")))) %s ", filterSql)
 	queryParam = append(append([]interface{}{operator, permission}, userRolesFilterParam...), queryParam...)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
@@ -135,6 +140,9 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 					actions = append(actions, &execAction{Sql: "update request set status=? where id=?", Param: []interface{}{newStatus, v.Id}})
 					v.Status = newStatus
 				}
+			}
+			if v.Status == "Completed" {
+				v.CompletedTime = v.UpdatedTime
 			}
 		}
 		if len(actions) > 0 {
@@ -293,7 +301,7 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
-	param.Id = guid.CreateGuid()
+	param.Id = newRequestId()
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
@@ -716,7 +724,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	return
 }
 
-func UpdateRequestStatus(requestId, status, operator, userToken string) error {
+func UpdateRequestStatus(requestId, status, operator, userToken, description string) error {
 	var err error
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if status == "Pending" {
@@ -730,6 +738,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken string) error {
 		if err == nil {
 			notifyRoleMail(requestId)
 		}
+	} else if status == "Draft" {
+		_, err = x.Exec("update request set status=?,rollback_desc=?,updated_by=?,updated_time=? where id=?", status, description, operator, nowTime, requestId)
 	} else {
 		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
 	}
@@ -1033,6 +1043,9 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 	for _, v := range processNodes {
 		tmpBoundEntities := []string{}
 		for _, vv := range v.BoundEntities {
+			if vv == nil {
+				continue
+			}
 			entityDefIdMap[fmt.Sprintf("%s:%s", vv.PackageName, vv.Name)] = vv.Id
 			tmpBoundEntities = append(tmpBoundEntities, fmt.Sprintf("%s:%s", vv.PackageName, vv.Name))
 		}
@@ -1541,6 +1554,17 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 			guid.CreateGuid(), formGuid, formItemRow.FormItemTemplate, formItemRow.Name, formItemRow.Value, formItemRow.ItemGroup, formItemRow.RowDataId,
 		}})
 	}
+	// copy attach file
+	var attachFileRows []*models.AttachFileTable
+	err = x.SQL("select * from attach_file where request=?", requestId).Find(&attachFileRows)
+	if err != nil {
+		err = fmt.Errorf("query attach file table fail:%s ", err.Error())
+		return
+	}
+	for _, v := range attachFileRows {
+		actions = append(actions, &execAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+			guid.CreateGuid(), v.Name, v.S3BucketName, v.S3KeyName, newRequestId, createdBy, nowTime, createdBy, nowTime}})
+	}
 	err = transactionWithoutForeignCheck(actions)
 	return
 }
@@ -1556,5 +1580,26 @@ func GetRequestParent(requestId string) (parentRequestId string, err error) {
 		return
 	}
 	parentRequestId = requestTable[0].Parent
+	return
+}
+
+func newRequestId() (requestId string) {
+	dateString := time.Now().Format("2006-01-02")
+	requestId = fmt.Sprintf("%s", time.Now().Format("20060102"))
+	requestIdLock.Lock()
+	defer requestIdLock.Unlock()
+	result, err := x.QueryString(fmt.Sprintf("select count(1) as num from request where created_time>='%s 00:00:00'", dateString))
+	if err != nil {
+		log.Logger.Error("try to new request id fail with count table num", log.Error(err))
+		requestId = fmt.Sprintf("%s-%s", requestId, guid.CreateGuid())
+		return
+	}
+	countNum, _ := strconv.Atoi(result[0]["num"])
+	countNumString := fmt.Sprintf("%d", countNum+1)
+	subId := countNumString
+	for i := 0; i < 6-len(countNumString); i++ {
+		subId = "0" + subId
+	}
+	requestId = fmt.Sprintf("%s-%s", requestId, subId)
 	return
 }

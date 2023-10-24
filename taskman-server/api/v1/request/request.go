@@ -207,7 +207,16 @@ func StartRequest(c *gin.Context) {
 func UpdateRequestStatus(c *gin.Context) {
 	requestId := c.Param("requestId")
 	status := c.Param("status")
-	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	if requestId == "" || status == "" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("url param can not empty"))
+		return
+	}
+	var description string
+	var param models.UpdateRequestStatusParam
+	if bindErr := c.ShouldBindJSON(&param); bindErr == nil {
+		description = param.Description
+	}
+	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

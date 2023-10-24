@@ -202,6 +202,7 @@ type TaskQueryObj struct {
 	HandleTime      string                    `json:"handleTime"`
 	FormData        []*RequestPreDataTableObj `json:"formData"`
 	IsHistory       bool                      `json:"isHistory"`
+	HandleRoleName  string                    `json:"handleRoleName"`
 }
 
 type TaskApproveParam struct {
@@ -217,4 +218,10 @@ type OperationLogTable struct {
 	Operation string `json:"operation" xorm:"operation"`
 	Operator  string `json:"operator" xorm:"operator"`
 	OpTime    string `json:"opTime" xorm:"op_time"`
+}
+
+type TaskHandlerQueryData struct {
+	Id          string `xorm:"id"`
+	Handler     string `xorm:"handler"`
+	DisplayName string `xorm:"display_name"`
 }

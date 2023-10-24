@@ -69,6 +69,7 @@
   "reporter": "上报人",
   "report_time": "上报时间",
   "handler": "处理人",
+  "handler_role": "处理角色",
   "handle_time": "处理时间",
   "process_result": "处理结果",
   "process_comments": "处理意见",
@@ -96,7 +97,9 @@
   "form": "表单",
   "estimated_finish_time": "预计完成时间",
   "expected_completion_time": "期望完成时间",
+  "actual_completion_time": "实际完成时间",
   "expire_time": "截止时效",
+  "report_man": "提单人",
   "hourglass": "沙漏",
   "unclassified": "未分组",
   "created_time": "创建时间",
@@ -126,5 +129,6 @@
   "confirm_disable": "确定禁止？",
   "updatedBy": "更新人",
   "createdBy": "创建人",
-  "createdTime": "创建时间"
+  "createdTime": "创建时间",
+  "rollback_desc": "回退原因"
 }

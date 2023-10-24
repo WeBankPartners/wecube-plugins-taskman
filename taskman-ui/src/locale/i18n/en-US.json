@@ -69,6 +69,7 @@
   "reporter": "Reporter",
   "report_time": "Report Time",
   "handler": "Handler",
+  "handler_role": "Handler Role",
   "handle_time": "Handler Time",
   "process_result": "Process Result",
   "process_comments": "Process Comments",
@@ -96,7 +97,9 @@
   "form": "Form",
   "estimated_finish_time": "Estimated Finish Time",
   "expected_completion_time": "Expected Finish Time",
+  "actual_completion_time": "Actual Completion Time",
   "expire_time": "Expire Time",
+  "report_man": "Reporter",
   "hourglass": "Hourglass",
   "unclassified": "Unclassified",
   "created_time": "Created Time",
@@ -126,5 +129,6 @@
   "confirm_disable": "Disable Confirm?",
   "updatedBy": "Updated By",
   "createdBy": "Created By",
-  "createdTime": "Created Time"
+  "createdTime": "Created Time",
+  "rollback_desc": "Rollback Cause"
 }

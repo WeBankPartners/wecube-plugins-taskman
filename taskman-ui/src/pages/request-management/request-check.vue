@@ -15,6 +15,7 @@
         <Collapse simple v-model="openPanel">
           <template v-for="(data, dataIndex) in dataInfo">
             <Panel :name="dataIndex + ''" :key="dataIndex" :if-history="data.isHistory ? 'history' : 'current'">
+              <!--请求-->
               <div v-if="!data.taskId">
                 <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('request_id') }}:{{ data.requestId }}</Tag
@@ -35,18 +36,20 @@
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
               </div>
+              <!--任务-->
               <div v-else>
                 <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <template v-if="data.status === 'done'">
-                  <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.handler }}</Tag
-                  >
-                  <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
-                  >
-                </template>
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler') }}:{{ data.handler }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
+                >
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="cyan"
+                  >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
+                >
                 <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >

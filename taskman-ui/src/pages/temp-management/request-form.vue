@@ -541,11 +541,12 @@ export default {
           desc: this.$t('successful')
         })
         this.formData = { ...data }
-        data.items.forEach(item => {
-          let findAttrs = this.finalElement.find(l => l.itemGroup === item.itemGroup)
-          let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
-          findAttr.id = item.id
-        })
+        Array.isArray(data.items) &&
+          data.items.forEach(item => {
+            let findAttrs = this.finalElement.find(l => l.itemGroup === item.itemGroup)
+            let findAttr = findAttrs.attrs.find(attr => attr.name === item.name)
+            findAttr.id = item.id
+          })
       }
     },
     changeSelectedForm () {

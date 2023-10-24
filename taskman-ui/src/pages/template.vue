@@ -15,6 +15,7 @@
             clearable
             filterable
             multiple
+            :max-tag-count="3"
             :placeholder="$t('manageRole')"
             style="width: 90%"
           >
@@ -464,7 +465,7 @@ export default {
           value: this.tags
         })
       }
-      if (this.status) {
+      if (this.status.length > 0) {
         this.payload.filters.push({
           name: 'status',
           operator: 'in',

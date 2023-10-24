@@ -68,8 +68,8 @@ export const saveEntityData = (requestId, params) =>
 export const getBindData = requestId => req.get(`/taskman/api/v1/request-data/get/${requestId}/data`)
 export const getBindRelate = requestId => req.get(`/taskman/api/v1/request-data/get/${requestId}/bing`)
 export const saveRequest = (requestId, data) => req.post(`/taskman/api/v1/request-data/save/${requestId}/bing`, data)
-export const updateRequestStatus = (requestId, status) =>
-  req.post(`/taskman/api/v1/request-status/${requestId}/${status}`)
+export const updateRequestStatus = (requestId, status, params) =>
+  req.post(`/taskman/api/v1/request-status/${requestId}/${status}`, params)
 export const requestListForDraftInitiated = params => req.post(`/taskman/api/v1/user/request/use`, params)
 export const requestListForHandle = params => req.post(`/taskman/api/v1/user/request/mgmt`, params)
 export const deleteRequest = id => req.delete(`/taskman/api/v1/request/${id}`)

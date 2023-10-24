@@ -74,7 +74,8 @@ export default {
         },
         taskNodeBindInfos: ''
       },
-      requestHistory: false
+      requestHistory: false,
+      backReason: '' // 回退说明
     }
   },
   mounted () {
@@ -154,10 +155,24 @@ export default {
         title: this.$t('confirm') + this.$t('go_back'),
         'z-index': 1000000,
         loading: true,
+        render: () => {
+          return (
+            <Input
+              type="textarea"
+              maxlength={255}
+              show-word-limit
+              v-model={this.backReason}
+              placeholder="请输入退回说明"
+            ></Input>
+          )
+        },
         onOk: async () => {
           this.$Modal.remove()
           await this.saveRequest()
-          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
+          const params = {
+            description: this.backReason
+          }
+          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft', params)
           if (statusCode === 'OK') {
             this.$router.push({ path: '/taskman/request-mgmt' })
           }

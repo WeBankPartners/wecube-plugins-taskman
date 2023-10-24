@@ -1,6 +1,6 @@
 <template>
   <div class=" ">
-    <Form :label-width="100">
+    <Form :label-width="100" @submit.native.prevent>
       <FormItem :label="$t('root_entity')">
         <span slot="label">
           <span style="color: #ed4014"> * </span>

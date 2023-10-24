@@ -1,6 +1,7 @@
 <template>
   <div class="table-c">
     <Button
+      ref="top"
       @click="addRow"
       type="success"
       style="margin-bottom: 4px"
@@ -8,7 +9,7 @@
       :disabled="formDisable || jumpFrom === 'group_handle'"
       >{{ $t('add') }}</Button
     >
-    <div :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto', width: '100%' }">
+    <div class="table" :style="{ 'max-height': MODALHEIGHT + 'px', overflow: 'auto', width: '100%' }">
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
@@ -121,7 +122,12 @@ export default {
     }
   },
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 500
+    // 优化表格显示高度
+    const clientHeight = document.documentElement.clientHeight
+    const table = document.getElementsByClassName('table')[0]
+    const tableTop = table.getBoundingClientRect().top
+    this.MODALHEIGHT = clientHeight - tableTop - 100
+    // this.MODALHEIGHT = document.body.scrollHeight - 400
   },
   methods: {
     addRow () {

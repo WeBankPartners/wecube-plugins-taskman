@@ -167,6 +167,12 @@ export default {
           key: 'expireTime'
         },
         {
+          title: this.$t('rollback_desc'),
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'rollbackDesc'
+        },
+        {
           title: this.$t('t_action'),
           key: 'action',
           width: 200,

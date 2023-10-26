@@ -337,6 +337,12 @@ export default {
         this.$parent.formDisable,
         this.$parent.jumpFrom
       )
+      // 编辑无数据时，初始化默认新增一行
+      if (Array.isArray(find.value) && find.value.length === 0) {
+        if (!(this.$parent.formDisable || this.$parent.jumpFrom === 'group_handle')) {
+          this.$refs.dataMgmt[index].addRow()
+        }
+      }
     }
   }
 }

@@ -34,7 +34,7 @@
             placeholder="结束时间" />
         </Col> -->
         <Col span="4">
-          <Button @click="requestListForDraftInitiated()" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -273,7 +273,12 @@ export default {
         }
       })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.requestListForDraftInitiated()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.requestListForDraftInitiated()
     },

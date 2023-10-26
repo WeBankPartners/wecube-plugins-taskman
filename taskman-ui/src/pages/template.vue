@@ -30,7 +30,7 @@
           </Select>
         </Col>
         <Col span="4">
-          <Button @click="getTemplateList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
         </Col>
         <Upload
@@ -441,7 +441,12 @@ export default {
     addTemplate () {
       this.$router.push({ path: '/templateManagementIndex', params: { requestTemplateId: '', isCheck: 'N' } })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.getTemplateList()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.getTemplateList()
     },

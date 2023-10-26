@@ -44,7 +44,7 @@
           ></DatePicker>
         </Col>
         <Col span="4">
-          <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -301,7 +301,12 @@ export default {
       const activeTab = 'my_drafts'
       this.$emit('requestTabChange', activeTab)
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.requestListForDraftInitiated()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.requestListForDraftInitiated()
     },

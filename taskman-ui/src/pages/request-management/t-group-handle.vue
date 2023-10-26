@@ -44,7 +44,7 @@
           ></DatePicker>
         </Col>
         <Col span="4">
-          <Button @click="requestListForHandle" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -362,7 +362,12 @@ export default {
         }
       })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.requestListForHandle()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.requestListForHandle()
     },

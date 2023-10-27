@@ -16,7 +16,7 @@
           <Input v-model="handler" style="width:90%" type="text" :placeholder="$t('handler')"> </Input>
         </Col>
         <Col span="4">
-          <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -224,7 +224,12 @@ export default {
     async checkTask (row) {
       this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: 'Y' } })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.taskList()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.taskList()
     },

@@ -37,14 +37,15 @@
                 <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <template v-if="data.status === 'done'">
-                  <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.handler }}</Tag
-                  >
-                  <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
-                  >
-                </template>
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler') }}:{{ data.handler }}</Tag
+                >
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
+                >
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="cyan"
+                  >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
+                >
                 <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >

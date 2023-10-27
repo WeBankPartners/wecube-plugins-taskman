@@ -327,7 +327,6 @@ export default {
 .task-form {
   height: calc(100vh - 200px);
   margin-top: 24px;
-  overflow: auto;
 }
 .history-comment {
   display: inline-block;

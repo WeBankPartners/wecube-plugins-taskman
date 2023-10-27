@@ -59,7 +59,7 @@ body {
 html {
   height: 100%;
 }
-.ivu-table-fixed-body {
-  height: auto !important;
-}
+// .ivu-table-fixed-body {
+//   height: auto !important;
+// }
 </style>

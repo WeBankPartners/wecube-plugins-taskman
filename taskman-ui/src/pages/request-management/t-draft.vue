@@ -169,13 +169,22 @@ export default {
         {
           title: this.$t('rollback_desc'),
           sortable: 'custom',
-          minWidth: 150,
-          key: 'rollbackDesc'
+          width: 180,
+          key: 'rollbackDesc',
+          render: (h, params) => {
+            return (
+              <Tooltip max-width="600" placement="top" content={params.row.rollbackDesc}>
+                <div style="width:170px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                  {params.row.rollbackDesc}
+                </div>
+              </Tooltip>
+            )
+          }
         },
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 200,
+          width: 140,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {

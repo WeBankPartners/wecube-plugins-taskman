@@ -37,10 +37,10 @@
                 <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
-                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
                 >
                 <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="cyan"

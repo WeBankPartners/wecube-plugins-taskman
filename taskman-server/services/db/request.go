@@ -1162,6 +1162,9 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
 	requestQuery.FormData = requestCache.Data
 	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
+	requestQuery.ExpireTime = requests[0].ExpireTime
+	requestQuery.ExpectTime = requests[0].ExpectTime
+	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
 	result.Data = []*models.TaskQueryObj{&requestQuery}
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
 	if len(result.TimeStep) > 0 {

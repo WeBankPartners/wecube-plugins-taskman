@@ -122,9 +122,15 @@
                       <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
                         $t('save')
                       }}</Button>
-                      <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
-                        $t('commit')
-                      }}</Button>
+                      <Button
+                        v-if="data.editable"
+                        :disabled="
+                          enforceDisable || (data.nextOption && data.nextOption.length !== 0 && data.choseOption === '')
+                        "
+                        @click="commitTaskData"
+                        type="primary"
+                        >{{ $t('commit') }}</Button
+                      >
                     </div>
                   </div>
                 </span>

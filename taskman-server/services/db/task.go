@@ -343,6 +343,9 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 			tmpTaskForm.Handler = handlerObj.Handler
 			tmpTaskForm.HandleRoleName = handlerObj.DisplayName
 		}
+		if v.Status == "done" {
+			tmpTaskForm.Handler = v.UpdatedBy
+		}
 		result.Data = append(result.Data, &tmpTaskForm)
 	}
 	if err != nil {

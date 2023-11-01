@@ -342,13 +342,13 @@ export default {
           this.payload.filters.push({
             name: 'createdTime',
             operator: 'gt',
-            value: this.createdTime[0]
+            value: this.createdTime[0] + ' 00:00:00'
           })
         this.createdTime[1] &&
           this.payload.filters.push({
             name: 'createdTime',
             operator: 'lt',
-            value: this.createdTime[1]
+            value: this.createdTime[1] + ' 23:59:59'
           })
       }
       if (this.requestTemplate) {

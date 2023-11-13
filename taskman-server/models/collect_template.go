@@ -1,0 +1,13 @@
+package models
+
+// CollectTemplateTable  收藏模板
+type CollectTemplateTable struct {
+	Id              string `json:"id" xorm:"id"`
+	RequestTemplate string `json:"requestTemplate" xorm:"request_template"` // 收藏模板ID
+	Account         string `json:"account" xorm:"account"`                  // 收藏账号
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`
+}
+
+// QueryCollectTemplateObj 模板查询条件
+type QueryCollectTemplateObj struct {
+}

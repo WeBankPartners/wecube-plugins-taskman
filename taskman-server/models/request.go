@@ -1,5 +1,14 @@
 package models
 
+// PlatformData  工作台数据
+type PlatformData struct {
+	Pending      string `json:"pending"`      // 待处理, eg:7;2 使用;分割开 7表示发布个数,2表示请求个数
+	HasProcessed string `json:"hasProcessed"` // 已处理
+	Submit       string `json:"submit"`       // 我提交的
+	Draft        string `json:"draft"`        // 我暂存的
+	Collect      string `json:"collect"`      // 收藏模板
+}
+
 type EntityQueryResult struct {
 	Status  string           `json:"status"`
 	Message string           `json:"message"`

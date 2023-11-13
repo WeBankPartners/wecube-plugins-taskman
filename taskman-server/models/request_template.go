@@ -24,6 +24,7 @@ type RequestTemplateTable struct {
 	ExpireDay    int    `json:"expireDay" xorm:"expire_day"`
 	Handler      string `json:"handler" xorm:"handler"`
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
+	Type         int    `json:"type" xorm:"type"` // 请求类型, 0表示请求,1表示发布
 }
 
 type RequestTemplateGroupTable struct {

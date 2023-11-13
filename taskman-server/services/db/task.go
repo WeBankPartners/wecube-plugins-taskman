@@ -635,9 +635,6 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if operation == "mark" {
-		//if taskObj.Status == "doing" {
-		//	return taskObj, fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
-		//}
 		actions = append(actions, &execAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
 		if operator != taskObj.Handler {
@@ -646,6 +643,12 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"doing", operator, nowTime, taskId}})
 	} else if operation == "quit" {
 		if operator != taskObj.Handler {
+			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
+		}
+		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
+	} else if operation == "give" {
+		// 转给我
+		if taskObj.Status != "marked" {
 			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})

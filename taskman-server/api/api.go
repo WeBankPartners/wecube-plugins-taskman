@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
@@ -58,6 +59,9 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
 
+		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
+		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
+		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
 		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: request.GetRequestTemplateByUser},
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: request.GetEntityData},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
@@ -74,6 +78,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/get/:requestId/:cacheType", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
 		&handlerFuncObj{Url: "/request-data/reference/query/:attrId/:requestId", Method: "POST", HandlerFunc: request.GetReferenceData},
+		&handlerFuncObj{Url: "/user/platform", Method: "POST", HandlerFunc: request.CountRequest},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
@@ -81,6 +86,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/attach-file/upload/:requestId", Method: "POST", HandlerFunc: request.UploadRequestAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/download/:fileId", Method: "GET", HandlerFunc: request.DownloadAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/remove/:fileId", Method: "DELETE", HandlerFunc: request.RemoveAttachFile},
+		&handlerFuncObj{Url: "/request/handler/:requestId", Method: "POST", HandlerFunc: request.UpdateRequestHandler},
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},
 		&handlerFuncObj{Url: "/plugin/task/create", Method: "POST", HandlerFunc: task.CreateTask},

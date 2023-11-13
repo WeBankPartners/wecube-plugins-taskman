@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	requestIdLock = new(sync.RWMutex)
+	requestIdLock   = new(sync.RWMutex)
+	templateTypeArr = []int{1, 0} // 模版类型: 1表示发布,0表示请求
 )
 
 func GetEntityData(requestId, userToken string) (result models.EntityQueryResult, err error) {
@@ -87,6 +88,87 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 	err = json.Unmarshal(b, &result)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+	}
+	return
+}
+
+// GetRequestCount 工作台请求统计
+func GetRequestCount(user string, userRoles []string) (platformData *models.PlatformData, err error) {
+	platformData.Pending = strings.Join(GetPendingCount(userRoles), ";")
+	platformData.HasProcessed = strings.Join(GetHasProcessedCount(user), ";")
+	platformData.Submit = strings.Join(GetSubmitCount(user), ";")
+	platformData.Draft = strings.Join(GetDraftCount(user), ";")
+	platformData.Collect = strings.Join(GetCollectCount(user), ";")
+	return
+}
+
+// GetPendingCount 统计待处理,包括:(1)待定版 (2)任务待审批,待审批能找到审批人找审批人,找不到则找角色下对应待审批人
+func GetPendingCount(userRoles []string) (resultArr []string) {
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	var queryParam []interface{}
+	var sql string
+	for i := 0; i < len(templateTypeArr); i++ {
+		// 统计 待定版
+		sql = "select id from request where del_flag = 0 and and status = 'Pending' and request_template in (select id " +
+			"from request_template where type = ? and id in (select request_template from request_template_role where role_type= ? " +
+			"and `role` in (" + userRolesFilterSql + ")) union "
+		queryParam = append([]interface{}{templateTypeArr[i], "MGMT"}, userRolesFilterParam...)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+	}
+	return
+}
+
+// GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
+func GetHasProcessedCount(user string) (resultArr []string) {
+	var queryParam []interface{}
+	var sql string
+	for i := 0; i < len(templateTypeArr); i++ {
+		sql = "select id from request where del_flag= 0 and request_template in (select id " +
+			"from request_template where type = ? ) and handler = ?  and status<>'Pending' " +
+			"union select id from request where del_flag= 0 and request_template in (select id " +
+			"from request_template where type = ? ) and id in (select request from task " +
+			"where handler = ? and del_flag=0 and status = 'done')"
+		queryParam = append([]interface{}{templateTypeArr[i], user})
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+	}
+	return resultArr
+}
+
+// GetSubmitCount  统计用户提交
+func GetSubmitCount(user string) (resultArr []string) {
+	var queryParam []interface{}
+	var sql string
+	for i := 0; i < len(templateTypeArr); i++ {
+		sql = "select id from request where del_flag=0 and created_by = ? and request_template in " +
+			"(select id from request_template where type = ?)"
+		queryParam = append([]interface{}{user, templateTypeArr[i]})
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+	}
+	return
+}
+
+// GetDraftCount 统计用户暂存
+func GetDraftCount(user string) (resultArr []string) {
+	var queryParam []interface{}
+	var sql string
+	for i := 0; i < len(templateTypeArr); i++ {
+		sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and request_template in " +
+			"(select id from request_template where type = ?)"
+		queryParam = append([]interface{}{user, templateTypeArr[i]})
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+	}
+	return
+}
+
+// GetCollectCount 统计用户收藏
+func GetCollectCount(user string) (resultArr []string) {
+	var queryParam []interface{}
+	var sql string
+	for i := 0; i < len(templateTypeArr); i++ {
+		sql = "select id from collect_template where account=? and request_template in " +
+			"(select id from request_template where type = ?)"
+		queryParam = append([]interface{}{user, templateTypeArr[i]})
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
 	}
 	return
 }
@@ -1604,5 +1686,28 @@ func newRequestId() (requestId string) {
 		subId = "0" + subId
 	}
 	requestId = fmt.Sprintf("%s-%s", requestId, subId)
+	return
+}
+
+func GetSimpleRequest(requestId string) (request models.RequestTable, err error) {
+	var requestTable []*models.RequestTable
+	err = x.SQL("select * from request where id=?", requestId).Find(&requestTable)
+	if err != nil {
+		return
+	}
+	if len(requestTable) == 0 {
+		return request, fmt.Errorf("Can not find any request with id:%s ", requestId)
+	}
+	request = *requestTable[0]
+	return
+}
+
+// UpdateRequestHandler 请求/发布 认领&转给我逻辑
+func UpdateRequestHandler(requestId, user string) (err error) {
+	var actions []*execAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &execAction{Sql: "update request set handler= ?,updated_by= ?,updated_time= ? where id= ?",
+		Param: []interface{}{user, user, nowTime, requestId}})
+	err = transaction(actions)
 	return
 }

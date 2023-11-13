@@ -50,6 +50,16 @@ func GetRequestPreviewData(c *gin.Context) {
 	}
 }
 
+// CountRequest 个人工作台统计
+func CountRequest(c *gin.Context) {
+	platformData, err := db.GetRequestCount(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, platformData)
+}
+
 func ListRequest(c *gin.Context) {
 	permission := c.Param("permission")
 	var param models.QueryRequestParam
@@ -311,6 +321,26 @@ func DownloadAttachFile(c *gin.Context) {
 		c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", fileName))
 		c.Data(http.StatusOK, "application/octet-stream", fileContent)
 	}
+}
+
+// UpdateRequestHandler 更新请求处理人,包括认领&转给我逻辑
+func UpdateRequestHandler(c *gin.Context) {
+	requestId := c.Param("requestId")
+	request, err := db.GetSimpleRequest(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if request.Status != "Pending" {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("request status invalid,requestId:%s ", requestId))
+		return
+	}
+	err = db.UpdateRequestHandler(requestId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
 }
 
 func RemoveAttachFile(c *gin.Context) {

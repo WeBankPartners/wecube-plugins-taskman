@@ -4,7 +4,7 @@ package models
 type CollectTemplateTable struct {
 	Id              string `json:"id" xorm:"id"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"` // 收藏模板ID
-	Account         string `json:"account" xorm:"account"`                  // 收藏账号
+	User            string `json:"user" xorm:"user"`                        // 收藏用户
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
 }
 

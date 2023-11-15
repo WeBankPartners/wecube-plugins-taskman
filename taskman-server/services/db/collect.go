@@ -11,15 +11,15 @@ func AddTemplateCollect(param *models.CollectTemplateTable) error {
 	param.Id = guid.CreateGuid()
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err := x.Exec("insert into collect_template(id,request_template,account,created_time,updated_time) value (?,?,?,?,?)",
-		param.Id, param.RequestTemplate, param.Account, nowTime)
+		param.Id, param.RequestTemplate, param.User, nowTime)
 	if err != nil {
 		err = fmt.Errorf("Insert database error:%s ", err.Error())
 	}
 	return err
 }
 
-func DeleteTemplateCollect(templateId, account string) error {
-	_, err := x.Exec("delete from collect_template where request_template = ? and account = ?", templateId, account)
+func DeleteTemplateCollect(templateId, user string) error {
+	_, err := x.Exec("delete from collect_template where request_template = ? and account = ?", templateId, user)
 	if err != nil {
 		err = fmt.Errorf("Delete database error:%s ", err.Error())
 	}

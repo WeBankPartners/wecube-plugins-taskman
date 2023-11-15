@@ -93,7 +93,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 }
 
 // GetRequestCount 工作台请求统计
-func GetRequestCount(user string, userRoles []string) (platformData *models.PlatformData, err error) {
+func GetRequestCount(user string, userRoles []string) (platformData models.PlatformData, err error) {
 	platformData.Pending = strings.Join(GetPendingCount(userRoles), ";")
 	platformData.HasProcessed = strings.Join(GetHasProcessedCount(user), ";")
 	platformData.Submit = strings.Join(GetSubmitCount(user), ";")
@@ -102,19 +102,33 @@ func GetRequestCount(user string, userRoles []string) (platformData *models.Plat
 	return
 }
 
-// GetPendingCount 统计待处理,包括:(1)待定版 (2)任务待审批,待审批能找到审批人找审批人,找不到则找角色下对应待审批人
+// GetPendingCount 统计待处理,包括:(1)待定版 (2)任务待审批 分配给本组、本人的所有请求,此处按照角色去统计
 func GetPendingCount(userRoles []string) (resultArr []string) {
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
 	var queryParam []interface{}
+	var roleFilterList []string
 	var sql string
-	for i := 0; i < len(templateTypeArr); i++ {
-		// 统计 待定版
-		sql = "select id from request where del_flag = 0 and and status = 'Pending' and request_template in (select id " +
-			"from request_template where type = ? and id in (select request_template from request_template_role where role_type= ? " +
-			"and `role` in (" + userRolesFilterSql + ")) union "
-		queryParam = append([]interface{}{templateTypeArr[i], "MGMT"}, userRolesFilterParam...)
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+	roleFilterSql := "1=1"
+	if len(userRoles) > 0 {
+		for _, v := range userRoles {
+			roleFilterList = append(roleFilterList, "report_role like '%,"+v+",%'")
+		}
+		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
+	for i := 0; i < len(templateTypeArr); i++ {
+		sql, queryParam = pendingSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
+	}
+	return
+}
+
+func pendingSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
+	sql = fmt.Sprintf("select id from request where del_flag = 0 and status = 'Pending' and type = ? and request_template in (select id "+
+		"from request_template where  id in (select request_template from request_template_role where role_type= 'MGMT' "+
+		"and `role` in ("+userRolesFilterSql+"))) union  select id from request where del_flag=0 and type= ? and id in (select request from task where del_flag = 0 and status <> 'done' and task_template "+
+		"in (select task_template from task_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))"+
+		" union select request from task where task_template is null and (%s) and del_flag=0)", roleFilterSql)
+	queryParam = append(append(append([]interface{}{templateType}, userRolesFilterParam...), templateType), userRolesFilterParam...)
 	return
 }
 
@@ -123,15 +137,18 @@ func GetHasProcessedCount(user string) (resultArr []string) {
 	var queryParam []interface{}
 	var sql string
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql = "select id from request where del_flag= 0 and request_template in (select id " +
-			"from request_template where type = ? ) and handler = ?  and status<>'Pending' " +
-			"union select id from request where del_flag= 0 and request_template in (select id " +
-			"from request_template where type = ? ) and id in (select request from task " +
-			"where handler = ? and del_flag=0 and status = 'done')"
-		queryParam = append([]interface{}{templateTypeArr[i], user})
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+		sql, queryParam = hasProcessedSQL(templateTypeArr[i], user)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
 	}
-	return resultArr
+	return
+}
+
+func hasProcessedSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag= 0 and type = ? and handler = ?  and status not in ('Pending','Draft') " +
+		"union select request from task where handler = ? and del_flag=0 and status = 'done' and " +
+		"request in ( select id from request where type= ? )"
+	queryParam = append([]interface{}{templateType, user, user, templateType})
+	return
 }
 
 // GetSubmitCount  统计用户提交
@@ -139,11 +156,15 @@ func GetSubmitCount(user string) (resultArr []string) {
 	var queryParam []interface{}
 	var sql string
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql = "select id from request where del_flag=0 and created_by = ? and request_template in " +
-			"(select id from request_template where type = ?)"
-		queryParam = append([]interface{}{user, templateTypeArr[i]})
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+		sql, queryParam = submitSQL(templateTypeArr[i], user)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
 	}
+	return
+}
+
+func submitSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag=0 and created_by = ? and type = ?"
+	queryParam = append([]interface{}{user, templateType})
 	return
 }
 
@@ -152,11 +173,15 @@ func GetDraftCount(user string) (resultArr []string) {
 	var queryParam []interface{}
 	var sql string
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and request_template in " +
-			"(select id from request_template where type = ?)"
-		queryParam = append([]interface{}{user, templateTypeArr[i]})
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+		sql, queryParam = draftSQL(templateTypeArr[i], user)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
 	}
+	return
+}
+
+func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ?"
+	queryParam = append([]interface{}{user, templateType})
 	return
 }
 
@@ -165,10 +190,74 @@ func GetCollectCount(user string) (resultArr []string) {
 	var queryParam []interface{}
 	var sql string
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql = "select id from collect_template where account=? and request_template in " +
-			"(select id from request_template where type = ?)"
-		queryParam = append([]interface{}{user, templateTypeArr[i]})
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam)))
+		sql, queryParam = collectSQL(templateTypeArr[i], user)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
+	}
+	return
+}
+
+func collectSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from collect_template where account=? and type= ?"
+	queryParam = append([]interface{}{user, templateType})
+	return
+}
+
+// DataList 首页工作台数据列表
+func DataList(param *models.PlatformRequestParam, userRoles []string, userToken, user string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
+	// 先拼接查询条件
+	var templateType int
+	var sql string
+	var queryParam []interface{}
+	where := transConditionToSQL(param)
+	if param.Action == 1 {
+		templateType = 1
+	} else if param.Action == 2 {
+		templateType = 0
+	}
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	switch param.Tab {
+	case "pending":
+		var roleFilterList []string
+		roleFilterSql := "1=1"
+		if len(userRoles) > 0 {
+			for _, v := range userRoles {
+				roleFilterList = append(roleFilterList, "report_role like '%,"+v+",%'")
+			}
+			roleFilterSql = strings.Join(roleFilterList, " or ")
+		}
+		sql, queryParam = pendingSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+	case "hasProcessed":
+		sql, queryParam = hasProcessedSQL(templateType, user)
+	case "submit":
+		sql, queryParam = submitSQL(templateType, user)
+	case "draft":
+		sql, queryParam = draftSQL(templateType, user)
+	case "collect":
+	default:
+	}
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,r.status,r.created_by,r.handler,r.created_time,"+
+		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) order by created_time desc", where, sql)
+	// 分页处理
+	pageInfo.StartIndex = param.StartIndex
+	pageInfo.PageSize = param.PageSize
+	pageInfo.TotalRows = queryCount(newSQL, queryParam...)
+	pageSQL := newSQL + " limit ?,? "
+	queryParam = append(queryParam, param.StartIndex, param.PageSize)
+	err = x.SQL(pageSQL, queryParam...).Find(&rowData)
+	if len(rowData) > 0 {
+		templateMap, _ := getAllRequestTemplate()
+		for _, platformDataObj := range rowData {
+			// 获取 使用编排
+			if len(templateMap) > 0 && templateMap[platformDataObj.TemplateId] != nil {
+				platformDataObj.ProcDefName = templateMap[platformDataObj.TemplateId].ProcDefName
+			}
+			if platformDataObj.Status == "Pending" {
+				platformDataObj.CurNode = "请求定版"
+			}
+			if platformDataObj.ProcInstanceId != "" {
+				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, userToken)
+			}
+		}
 	}
 	return
 }
@@ -282,27 +371,8 @@ func calcExpireObj(param *models.ExpireObj) {
 }
 
 func getInstanceStatus(instanceId, userToken string) string {
-	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, instanceId), nil)
-	if newReqErr != nil {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "new http request fail"), log.Error(newReqErr))
-		return ""
-	}
-	req.Header.Set("Authorization", userToken)
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to do http request fail"), log.Error(respErr))
-		return ""
-	}
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	var response models.InstanceStatusQuery
-	err := json.Unmarshal(b, &response)
+	response, err := getProcessInstances(instanceId, userToken)
 	if err != nil {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to json unmarshal body fail"), log.Error(err))
-		return ""
-	}
-	if response.Status != "OK" {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", response.Message))
 		return ""
 	}
 	if response.Data.Status != "InProgress" {
@@ -320,6 +390,97 @@ func getInstanceStatus(instanceId, userToken string) string {
 		}
 	}
 	return status
+}
+
+func getCurNodeName(instanceId, userToken string) (progress int, curNode string) {
+	response, err := getProcessInstances(instanceId, userToken)
+	if err != nil || len(response.Data.TaskNodeInstances) == 0 {
+		return
+	}
+	// 统计完成进度 ,已完成/总数
+	for _, v := range response.Data.TaskNodeInstances {
+		if v.Status == "Completed" {
+			progress++
+		}
+	}
+	progress = int(float64(progress) / float64(len(response.Data.TaskNodeInstances)) * 100)
+	switch response.Data.Status {
+	case "Completed":
+		curNode = "Completed"
+		return
+	case "InProgress":
+		for _, v := range response.Data.TaskNodeInstances {
+			if v.Status == "InProgress" {
+				curNode = v.NodeName
+				return
+			}
+		}
+	case "NotStarted":
+		curNode = "NotStarted"
+	default:
+		// 失败状态,显示具体执行失败的节点. filterNode 过滤orderNo为空大节点
+		list := filterNode(response.Data.TaskNodeInstances)
+		if len(list) == 0 {
+			// 如果都没有序号,找一个NotStarted节点,找不到返回 Completed
+			for _, v := range response.Data.TaskNodeInstances {
+				if v.Status == "NotStarted" {
+					curNode = v.NodeName
+					return
+				}
+			}
+			log.Logger.Error("filterNode list is empty fail,instanceId", log.String("instanceId", instanceId))
+			return
+		}
+		// 按 orderNo排序,将有 orderNo的节点按小到大排序,查找第一个非完成的节点状态返回
+		sort.Sort(models.QueryNodeSort(list))
+		for _, item := range list {
+			if item.Status != "Completed" {
+				curNode = item.NodeName
+				return
+			}
+		}
+	}
+	return
+}
+
+func filterNode(instances []*models.InstanceStatusQueryNode) []*models.InstanceStatusQueryNode {
+	var list []*models.InstanceStatusQueryNode
+	for _, node := range instances {
+		if node.OrderedNo != "" {
+			list = append(list, node)
+		}
+	}
+	return list
+}
+
+// getProcessInstances 获取编排
+func getProcessInstances(instanceId, userToken string) (response models.InstanceStatusQuery, err error) {
+	var req *http.Request
+	var resp *http.Response
+	req, err = http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, instanceId), nil)
+	if err != nil {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "new http request fail"), log.Error(err))
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to do http request fail"), log.Error(err))
+		return
+	}
+	b, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	err = json.Unmarshal(b, &response)
+	if err != nil {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to json unmarshal body fail"), log.Error(err))
+		return
+	}
+	if response.Status != "OK" {
+		log.Logger.Error("GetInstanceStatus fail", log.String("msg", response.Message))
+		err = fmt.Errorf("GetInstanceStatus fail")
+		return
+	}
+	return
 }
 
 func calcExpireTime(reportTime string, expireDay int) (expire string) {
@@ -1710,4 +1871,41 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 		Param: []interface{}{user, user, nowTime, requestId}})
 	err = transaction(actions)
 	return
+}
+
+func transConditionToSQL(param *models.PlatformRequestParam) (where string) {
+	where = "where 1 = 1 "
+	if param.Type == 1 {
+		where = where + " and status = 'Pending'"
+	} else if param.Type == 2 {
+		where = where + " and status <> 'Pending'"
+	}
+	if param.Query != "" {
+		where = where + "(and id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
+	}
+	if param.TemplateId != "" {
+		where = where + "template_id = '" + param.TemplateId + "'"
+	}
+	if len(param.Status) > 0 {
+		where = where + "status in (" + getSQL(param.Status) + ")"
+	}
+	if param.OperatorObj != "" {
+		where = where + "operator_obj = '" + param.OperatorObj + "'"
+	}
+	if param.CreatedBy != "" {
+		where = where + "created_by = '" + param.CreatedBy + "'"
+	}
+	return
+}
+
+func getSQL(status []string) string {
+	var sql string
+	for i := 0; i < len(status); i++ {
+		if i == len(status)-1 {
+			sql = sql + "'" + status[i] + "'"
+		} else {
+			sql = sql + "'" + status[i] + "',"
+		}
+	}
+	return sql
 }

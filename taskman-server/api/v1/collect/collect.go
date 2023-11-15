@@ -12,7 +12,7 @@ func AddTemplateCollect(c *gin.Context) {
 	templateId := c.Param("templateId")
 	param := &models.CollectTemplateTable{
 		RequestTemplate: templateId,
-		Account:         middleware.GetRequestUser(c),
+		User:            middleware.GetRequestUser(c),
 	}
 	err := db.AddTemplateCollect(param)
 	if err != nil {

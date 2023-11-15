@@ -817,6 +817,20 @@ func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, er
 	return
 }
 
+func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTable, err error) {
+	templateMap = make(map[string]*models.RequestTemplateTable)
+	var requestTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select * from request_template").Find(&requestTemplateTable)
+	if err != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		return
+	}
+	for _, template := range requestTemplateTable {
+		templateMap[template.Id] = template
+	}
+	return
+}
+
 func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
 	if err != nil {

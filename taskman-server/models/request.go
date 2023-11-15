@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 // PlatformData  工作台数据
 type PlatformData struct {
 	Pending      string `json:"pending"`      // 待处理, eg:7;2 使用;分割开 7表示发布个数,2表示请求个数
@@ -7,6 +9,28 @@ type PlatformData struct {
 	Submit       string `json:"submit"`       // 我提交的
 	Draft        string `json:"draft"`        // 我暂存的
 	Collect      string `json:"collect"`      // 收藏模板
+}
+
+// PlatformDataObj 工作台返回数据
+type PlatformDataObj struct {
+	Id             string `json:"id" xorm:"id"`                           // 请求ID
+	Name           string `json:"name" xorm:"name"`                       // 请求名称
+	TemplateId     string `json:"templateId" xorm:"template_id"`          // 模板ID
+	TemplateName   string `json:"templateName" xorm:"template_name"`      // 使用模板名称
+	OperatorObj    string `json:"operatorObj" xorm:"operator_obj"`        // 操作对象
+	ProcInstanceId string `json:"procInstanceId" xorm:"proc_instance_id"` // 编排id
+	ProcDefName    string `json:"procDefName" xorm:"proc_def_name"`       // 使用编排
+	Status         string `json:"status" xorm:"status"`                   // 请求状态
+	CurNode        string `json:"curNode"  xorm:"cur_node"`               // 当前节点
+	Progress       int    `json:"progress" xorm:"progress"`               // 进展
+	CreatedBy      string `json:"createdBy" xorm:"created_by"`            // 创建人
+	Handler        string `json:"handler" xorm:"handler"`                 // 当前处理人
+	CreatedTime    string `json:"createdTime" xorm:"created_time"`        // 创建时间
+	ExpectTime     string `json:"expectTime" xorm:"expect_time"`          // 期望完成时间
+}
+
+// CollectDataObj 收藏数据项
+type CollectDataObj struct {
 }
 
 type EntityQueryResult struct {
@@ -77,6 +101,8 @@ type RequestTable struct {
 	Parent              string             `json:"parent" xorm:"parent"`
 	CompletedTime       string             `json:"completedTime" xorm:"-"`
 	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
+	Type                int                `json:"type" xorm:"type"`
+	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
 }
 
 type ExpireObj struct {
@@ -216,6 +242,7 @@ type InstanceStatusQueryNode struct {
 	NodeName  string `json:"nodeName"`
 	NodeType  string `json:"nodeType"`
 	Status    string `json:"status"`
+	OrderedNo string `json:"orderedNo"`
 }
 
 type RequestProcessData struct {
@@ -247,4 +274,22 @@ type WorkflowEntityDataObj struct {
 
 type UpdateRequestStatusParam struct {
 	Description string `json:"description"`
+}
+
+type QueryNodeSort []*InstanceStatusQueryNode
+
+func (q QueryNodeSort) Len() int {
+	return len(q)
+}
+
+func (q QueryNodeSort) Less(i, j int) bool {
+	t := strings.Compare(q[i].OrderedNo, q[j].OrderedNo)
+	if t < 0 {
+		return true
+	}
+	return false
+}
+
+func (q QueryNodeSort) Swap(i, j int) {
+	q[i], q[j] = q[j], q[i]
 }

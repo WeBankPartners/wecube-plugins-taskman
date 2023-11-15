@@ -60,6 +60,30 @@ func CountRequest(c *gin.Context) {
 	middleware.ReturnData(c, platformData)
 }
 
+// DataList  工作台数据列表
+func DataList(c *gin.Context) {
+	var param models.PlatformRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.Tab == "" {
+		param.Tab = "pending"
+	}
+	if param.Action == 0 {
+		param.Action = 1
+	}
+	if param.PageSize == 0 {
+		param.PageSize = 10
+	}
+	pageInfo, rowData, err := db.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
 func ListRequest(c *gin.Context) {
 	permission := c.Param("permission")
 	var param models.QueryRequestParam

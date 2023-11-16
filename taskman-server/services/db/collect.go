@@ -58,3 +58,16 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateObj, user, userToken
 	}
 	return
 }
+
+func QueryAllTemplateCollect(user string) (collectMap map[string]bool, err error) {
+	collectMap = make(map[string]bool)
+	var idList []string
+	err = x.SQL("select request_template from collect_template where user = ?", user).Find(&idList)
+	if err != nil {
+		return
+	}
+	for _, id := range idList {
+		collectMap[id] = true
+	}
+	return
+}

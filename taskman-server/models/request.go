@@ -27,6 +27,7 @@ type PlatformDataObj struct {
 	Handler        string `json:"handler" xorm:"handler"`                 // 当前处理人
 	CreatedTime    string `json:"createdTime" xorm:"created_time"`        // 创建时间
 	ExpectTime     string `json:"expectTime" xorm:"expect_time"`          // 期望完成时间
+	CollectFlag    int    `json:"collectFlag" xorm:"collect_flag"`        // 收藏标记,1表示已收藏
 }
 
 // CollectDataObj 收藏数据项

@@ -355,6 +355,7 @@ func UpdateRequestHandler(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	// @todo 需要添加转给人权限校验
 	if request.Status != "Pending" {
 		middleware.ReturnServerHandleError(c, fmt.Errorf("request status invalid,requestId:%s ", requestId))
 		return

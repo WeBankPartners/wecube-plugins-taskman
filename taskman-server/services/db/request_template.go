@@ -954,8 +954,10 @@ func SetRequestTemplateToCreated(id, operator string) {
 	}
 }
 
-func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
-	result = []*models.UserRequestTemplateQueryObj{}
+func GetRequestTemplateByUser(user string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
+	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
+	var groupIdMap = make(map[string]string)
+	result = []*models.UserRequestTemplateQueryObjNew{}
 	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
 	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
@@ -992,7 +994,6 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 			if v.RecordId != "" {
 				recordIdMap[v.RecordId] = 1
 			}
-			//v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
 		} else {
 			if v.ConfirmTime != "" {
 				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
@@ -1017,30 +1018,66 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 			}
 		}
 		tmpTemplateTable = append(tmpTemplateTable, v)
+		groupIdMap[v.Group] = "groupName"
 	}
 	requestTemplateTable = tmpTemplateTable
-	var groupTable []*models.RequestTemplateGroupTable
-	x.SQL("select id,name,description from request_template_group").Find(&groupTable)
-	groupMap := make(map[string]*models.RequestTemplateGroupTable)
-	for _, v := range groupTable {
-		groupMap[v.Id] = v
+	// 查询当前用户所有收藏模板记录
+	collectMap, _ := QueryAllTemplateCollect(user)
+	var collectFlag int
+	var allGroupTable []*models.RequestTemplateGroupTable
+	err = x.SQL("select id,name,description,manage_role from request_template_group").Find(&allGroupTable)
+	if err != nil {
+		return
 	}
-	tmpGroup := requestTemplateTable[0].Group
-	tmpTemplateList := []*models.RequestTemplateTable{}
-	for _, v := range requestTemplateTable {
-		if v.Group != tmpGroup {
-			result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[tmpGroup].Id, GroupName: groupMap[tmpGroup].Name, GroupDescription: groupMap[tmpGroup].Description, Templates: tmpTemplateList})
-			tmpTemplateList = []*models.RequestTemplateTable{}
-			tmpGroup = v.Group
+	for _, group := range allGroupTable {
+		if groupIdMap[group.Id] != "" {
+			// 展示的 group
+			if roleTemplateGroupMap[group.ManageRole] == nil {
+				roleTemplateGroupMap[group.ManageRole] = make(map[string][]*models.RequestTemplateTableObj)
+			}
+			roleTemplateGroupMap[group.ManageRole][group.Id] = make([]*models.RequestTemplateTableObj, 0)
+			// 设置 groupIdMap value 为group name
+			groupIdMap[group.Id] = group.Name
 		}
-		tmpTemplateList = append(tmpTemplateList, v)
 	}
-	if len(tmpTemplateList) > 0 {
-		lastGroup := requestTemplateTable[len(requestTemplateTable)-1].Group
-		result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[lastGroup].Id, GroupName: groupMap[lastGroup].Name, GroupDescription: groupMap[lastGroup].Description, Templates: tmpTemplateList})
+	// 组装数据
+	if len(roleTemplateGroupMap) > 0 && len(requestTemplateTable) > 0 {
+		for _, template := range requestTemplateTable {
+			collectFlag = 0
+			if len(collectMap) > 0 && collectMap[template.Id] {
+				collectFlag = 1
+			}
+			for _, roleGroupMap := range roleTemplateGroupMap {
+				for groupId, templateArr := range roleGroupMap {
+					if template.Group == groupId {
+						templateArr = append(templateArr, &models.RequestTemplateTableObj{
+							Id:          template.Id,
+							Name:        template.Name,
+							Tags:        template.Tags,
+							Status:      template.Status,
+							UpdatedBy:   template.UpdatedBy,
+							UpdatedTime: template.UpdatedTime,
+							CollectFlag: collectFlag,
+						})
+					}
+					roleGroupMap[groupId] = templateArr
+				}
+			}
+		}
 	}
-	for _, v := range result {
-		v.Tags = groupRequestTemplateByTags(v.Templates)
+	for role, roleGroupMap := range roleTemplateGroupMap {
+		groups := make([]*models.TemplateGroupObj, 0)
+		for groupId, templateArr := range roleGroupMap {
+			groups = append(groups, &models.TemplateGroupObj{
+				GroupId:   groupId,
+				GroupName: groupIdMap[groupId],
+				Templates: templateArr,
+			})
+		}
+		result = append(result, &models.UserRequestTemplateQueryObjNew{
+			ManageRole: role,
+			Groups:     groups,
+		})
 	}
 	return
 }

@@ -73,6 +73,15 @@ type CodeProcessQueryObj struct {
 	CreatedUnixTime int64  `json:"-"`
 	Tags            string `json:"tags"`
 }
+type RequestTemplateTableObj struct {
+	Id          string `json:"id" xorm:"id"`
+	Name        string `json:"name" xorm:"name"`
+	Tags        string `json:"tags" xorm:"tags"`
+	Status      string `json:"status" xorm:"status"`
+	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
+	CollectFlag int    `json:"collectFlag" xorm:"collect_flag"` // 是否收藏 1表示已收藏
+}
 
 type RequestTemplateQueryObj struct {
 	RequestTemplateTable
@@ -171,6 +180,17 @@ type UserRequestTemplateQueryObj struct {
 	GroupDescription string                       `json:"groupDescription"`
 	Templates        []*RequestTemplateTable      `json:"-"`
 	Tags             []*UserRequestTemplateTagObj `json:"tags"`
+}
+
+type TemplateGroupObj struct {
+	GroupId   string                     `json:"groupId"`
+	GroupName string                     `json:"groupName"`
+	Templates []*RequestTemplateTableObj `json:"templates"`
+}
+
+type UserRequestTemplateQueryObjNew struct {
+	ManageRole string              `json:"manageRole"` //管理角色
+	Groups     []*TemplateGroupObj `json:"groups"`
 }
 
 type UserRequestTemplateTagObj struct {

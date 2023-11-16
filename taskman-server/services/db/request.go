@@ -245,6 +245,8 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	queryParam = append(queryParam, param.StartIndex, param.PageSize)
 	err = x.SQL(pageSQL, queryParam...).Find(&rowData)
 	if len(rowData) > 0 {
+		// 查询当前用户所有收藏模板记录
+		collectMap, _ := QueryAllTemplateCollect(user)
 		templateMap, _ := getAllRequestTemplate()
 		for _, platformDataObj := range rowData {
 			// 获取 使用编排
@@ -256,6 +258,9 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			}
 			if platformDataObj.ProcInstanceId != "" {
 				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, userToken)
+			}
+			if collectMap[platformDataObj.TemplateId] {
+				platformDataObj.CollectFlag = 1
 			}
 		}
 	}

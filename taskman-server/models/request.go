@@ -31,6 +31,16 @@ type PlatformDataObj struct {
 
 // CollectDataObj 收藏数据项
 type CollectDataObj struct {
+	Id            string   `json:"id" xorm:"id"`                        // 模版ID
+	Name          string   `json:"name" xorm:"name"`                    // 模版名称
+	TemplateGroup string   `json:"templateGroup" xorm:"template_group"` // 模版组
+	ProcDefName   string   `json:"procDefName" xorm:"proc_def_name"`    // 使用编排
+	ManageRole    string   `json:"manageRole" xorm:"manage_role"`       // 宿主角色
+	Owner         string   `json:"owner" xorm:"owner"`                  // 属主
+	UseRole       string   `json:"useRole" xorm:"use_role"`             // 使用角色
+	Tags          string   `json:"tags" xorm:"tags"`                    // 标签
+	WorkNode      []string `json:"workNode" xorm:"work_node"`           // 人工任务
+	CreatedTime   string   `json:"createdTime" xorm:"created_time"`     // 创建时间
 }
 
 type EntityQueryResult struct {

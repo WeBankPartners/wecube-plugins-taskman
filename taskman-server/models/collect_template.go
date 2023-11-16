@@ -10,4 +10,6 @@ type CollectTemplateTable struct {
 
 // QueryCollectTemplateObj 模板查询条件
 type QueryCollectTemplateObj struct {
+	StartIndex int `json:"startIndex"`
+	PageSize   int `json:"pageSize"`
 }

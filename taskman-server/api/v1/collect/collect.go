@@ -40,10 +40,13 @@ func QueryTemplateCollect(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.QueryTemplateCollect(&param)
+	if param.PageSize == 0 {
+		param.PageSize = 10
+	}
+	pageInfo, rowData, err := db.QueryTemplateCollect(&param, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnSuccess(c)
+		return
 	}
+	middleware.ReturnPageData(c, pageInfo, rowData)
 }

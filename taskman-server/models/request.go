@@ -30,6 +30,18 @@ type PlatformDataObj struct {
 	CollectFlag    int    `json:"collectFlag" xorm:"collect_flag"`        // 收藏标记,1表示已收藏
 }
 
+type RequestProgressQueryParam struct {
+	TemplateId string `json:"templateId"` // 模板id
+	RequestId  string `json:"requestId"`  // 请求id
+}
+
+type RequestProgressObj struct {
+	NodeDefId string `json:"nodeDefId" xorm:"node_def_id"`
+	Node      string `json:"node" xorm:"node"`
+	Handler   string `json:"handler" xorm:"handler"`
+	Status    int    `json:"status" xorm:"status"` // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
+}
+
 // CollectDataObj 收藏数据项
 type CollectDataObj struct {
 	Id            string   `json:"id" xorm:"id"`                        // 模版ID

@@ -413,3 +413,24 @@ func GetRequestParent(c *gin.Context) {
 		middleware.ReturnData(c, result)
 	}
 }
+
+// GetRequestProgress  获取请求进度
+func GetRequestProgress(c *gin.Context) {
+	var param models.RequestProgressQueryParam
+	var rowsData []*models.RequestProgressObj
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.RequestId == "" {
+		rowsData, err = db.GetRequestProgressByTemplateId(param.TemplateId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	} else {
+		rowsData, err = db.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
+	}
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowsData)
+}

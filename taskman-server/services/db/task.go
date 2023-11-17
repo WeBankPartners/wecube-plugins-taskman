@@ -474,6 +474,23 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 	return
 }
 
+func getTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTable, err error) {
+	taskMap = make(map[string]*models.TaskTable)
+	var taskTable []*models.TaskTable
+	err = x.SQL("select * from task where request = ?", requestId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) == 0 {
+		err = fmt.Errorf("Can not find any task with request:%s ", requestId)
+		return
+	}
+	for _, task := range taskTable {
+		taskMap[task.NodeDefId] = task
+	}
+	return
+}
+
 func ApproveTask(taskId, operator, userToken string, param models.TaskApproveParam) error {
 	err := SaveTaskForm(taskId, operator, param)
 	if err != nil {

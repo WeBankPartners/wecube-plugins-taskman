@@ -183,9 +183,11 @@ type UserRequestTemplateQueryObj struct {
 }
 
 type TemplateGroupObj struct {
-	GroupId   string                     `json:"groupId"`
-	GroupName string                     `json:"groupName"`
-	Templates []*RequestTemplateTableObj `json:"templates"`
+	GroupId     string                     `json:"groupId"`
+	GroupName   string                     `json:"groupName"`
+	CreatedTime string                     `json:"createdTime"`
+	UpdatedTime string                     `json:"updatedTime"`
+	Templates   []*RequestTemplateTableObj `json:"templates"`
 }
 
 type UserRequestTemplateQueryObjNew struct {

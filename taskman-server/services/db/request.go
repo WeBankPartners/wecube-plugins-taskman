@@ -16,6 +16,21 @@ import (
 	"time"
 )
 
+const (
+	InProgress ProgressStatus = 1 // 进行中
+	NotStart   ProgressStatus = 2 // 未开始
+	Completed  ProgressStatus = 3 // 已完成
+	Fail       ProgressStatus = 4 // 报错失败,被拒绝了
+)
+
+type ProgressStatus int
+
+const (
+	SendRequest     = "sendRequest"     // 发送请求
+	RequestPending  = "requestPending"  // 请求定版
+	RequestComplete = "requestComplete" //请求完成
+)
+
 var (
 	requestIdLock   = new(sync.RWMutex)
 	templateTypeArr = []int{1, 0} // 模版类型: 1表示发布,0表示请求
@@ -1913,4 +1928,143 @@ func getSQL(status []string) string {
 		}
 	}
 	return sql
+}
+
+// GetRequestProgressByTemplateId  请求未创建时,获取请求进度
+func GetRequestProgressByTemplateId(templateId, user, userToken string) (rowsData []*models.RequestProgressObj, err error) {
+	var requestTemplate models.RequestTemplateTable
+	var pendingHandler string
+	requestTemplate, err = getSimpleRequestTemplate(templateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate.Handler != "" {
+		pendingHandler = requestTemplate.Handler
+	} else {
+		pendingHandler = GetRequestTemplateManageRole(templateId)
+	}
+	rowsData = append(append([]*models.RequestProgressObj{
+		{
+			Node:    SendRequest,
+			Handler: user,
+			Status:  int(InProgress),
+		},
+		{
+			Node:    RequestPending,
+			Handler: pendingHandler,
+			Status:  int(NotStart),
+		},
+	}), getCommonRequestProgress(templateId, userToken)...)
+	return
+}
+
+// getTaskApproveHandler 获取任务审批人,有人返回人,没人返回审批角色
+func getTaskApproveHandler(result models.TaskTemplateDto) string {
+	if result.Handler != "" {
+		return result.Handler
+	}
+	if len(result.USERoleObjs) > 0 {
+		return result.USERoleObjs[0].DisplayName
+	}
+	if len(result.USERoles) > 0 {
+		return result.USERoles[0]
+	}
+	return ""
+}
+
+// GetRequestProgress  请求已创建时,获取请求进度
+func GetRequestProgress(requestId, userToken string) (rowsData []*models.RequestProgressObj, err error) {
+	var request models.RequestTable
+	var pendingHandler string
+	var status = int(Completed) //初始化为已完成
+	request, err = GetSimpleRequest(requestId)
+	if err != nil {
+		return
+	}
+	if request.Handler != "" {
+		pendingHandler = request.Handler
+	} else {
+		pendingHandler = GetRequestTemplateManageRole(request.RequestTemplate)
+	}
+	subRowsData := getCommonRequestProgress(request.RequestTemplate, userToken)
+	if request.Status == "Pending" {
+		status = int(InProgress)
+	} else if request.Status == "Completed" {
+		for _, row := range subRowsData {
+			row.Status = int(Completed)
+		}
+	} else {
+		// 请求状态值,从编排接口读取最新状态值
+		requestStatus := getInstanceStatus(request.ProcInstanceId, userToken)
+		// 非定版&非完成状态,需要查询 任务节点状态
+		taskMap, _ := getTaskMapByRequestId(requestId)
+		if len(taskMap) > 0 && len(subRowsData) > 0 {
+			for i := len(subRowsData) - 1; i >= 0; i-- {
+				if v, ok := taskMap[subRowsData[i].NodeDefId]; ok {
+					// 当前任务节点存在,表示前面任务节点都已经完成(任务节点顺序创建,前面完成才会创建后面节点)
+					for j := i - 1; j >= 0; j-- {
+						subRowsData[j].Status = int(Completed)
+					}
+					if v.Status != "done" {
+						// 任务还在进行中,节点还在审批
+						subRowsData[i].Status = int(InProgress)
+					} else {
+						// 任务done,需要根据请求状态去判断,是处理完成还是失败
+						if requestStatus == "Completed" {
+							subRowsData[i].Status = int(Completed)
+						} else if requestStatus == "InProgress" {
+							subRowsData[i].Status = int(InProgress)
+						} else {
+							// 去掉完成和任务中,其他状态都表示失败(包括审批拒绝、编排执行失败)
+							subRowsData[i].Status = int(Fail)
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+
+	rowsData = append(append([]*models.RequestProgressObj{
+		{
+			Node:    SendRequest,
+			Handler: request.CreatedBy,
+			Status:  int(Completed),
+		},
+		{
+			Node:    RequestPending,
+			Handler: pendingHandler,
+			Status:  status,
+		},
+	}), subRowsData...)
+	return
+}
+
+func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.RequestProgressObj) {
+	var nodeList models.ProcNodeObjList
+	var err error
+	nodeList, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: templateId}, userToken, "template")
+	if err != nil {
+		return
+	}
+	if len(nodeList) > 0 {
+		for _, node := range nodeList {
+			dto, err := GetTaskTemplate(templateId, node.NodeDefId)
+			if err != nil {
+				continue
+			}
+			rowsData = append(rowsData, &models.RequestProgressObj{
+				NodeDefId: dto.NodeDefId,
+				Node:      dto.Name,
+				Handler:   getTaskApproveHandler(dto),
+				Status:    int(NotStart),
+			})
+		}
+	}
+	rowsData = append(rowsData, &models.RequestProgressObj{
+		Node:    RequestComplete,
+		Handler: "",
+		Status:  int(NotStart),
+	})
+	return
 }

@@ -96,3 +96,16 @@ export const reRequest = fileId => req.post(`/taskman/api/v1/request/copy/${file
 export const requestParent = requestId => req.get(`/taskman/api/v1/request-parent/get?requestId=${requestId}`)
 export const enableTemplate = templateId => req.post(`/taskman/api/v1/request-template/enable/${templateId}`)
 export const disableTemplate = templateId => req.post(`/taskman/api/v1/request-template/disable/${templateId}`)
+//taskman重构
+//选择模板列表
+export const getTemplateTree = () => req.get('/taskman/api/v1/user/request-template')
+//模板收藏
+export const collectTemplate = (templateId) => req.post(`/taskman/api/v1/user/template/collect/${templateId}`)
+//取消模板收藏
+export const uncollectTemplate = (templateId) => req.delete(`/taskman/api/v1/user/template/collect/${templateId}`)
+//模板收藏列表
+export const collectTemplateList = (params) => req.post(`/taskman/api/v1/user/template/collect/query`, params)
+//工作台看板数量
+export const overviewData = () => req.post(`/taskman/api/v1/user/platform`)
+//工作台列表
+export const getPlatformList = (params) => req.post(`/taskman/api/v1/user/platform/list`, params)

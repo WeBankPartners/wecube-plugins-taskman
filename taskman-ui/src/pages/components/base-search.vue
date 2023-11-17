@@ -10,7 +10,7 @@
               v-model="value[i.key]"
               :placeholder="i.placeholder"
               clearable
-              :style="{width: i.width || 200 + 'px'}"
+              :style="{ width: i.width || 200 + 'px' }"
             ></Input>
             <!--下拉选择-->
             <Select
@@ -21,7 +21,7 @@
               :multiple="i.multiple || false"
               :filterable="i.filterable || false"
               :max-tag-count="1"
-              :style="{width: i.width || 200 + 'px'}"
+              :style="{ width: i.width || 200 + 'px' }"
             >
               <template v-for="(j, idx) in i.list">
                 <Option :key="idx" :value="j.value">{{ j.label }}</Option>
@@ -50,7 +50,11 @@
               <div v-else>
                 <DatePicker
                   :value="value[i.key]"
-                  @on-change="(val) => {handleDateRange(val, i.key)}"
+                  @on-change="
+                    val => {
+                      handleDateRange(val, i.key)
+                    }
+                  "
                   type="daterange"
                   placement="bottom-end"
                   format="yyyy-MM-dd"
@@ -61,7 +65,10 @@
                   size="18"
                   style="cursor:pointer;"
                   type="md-close-circle"
-                  @click="dateType = ''; formData[i.key] = []"
+                  @click="
+                    dateType = ''
+                    formData[i.key] = []
+                  "
                 />
               </div>
             </div>
@@ -90,30 +97,28 @@ export default {
     }
   },
   computed: {
-    formData() {
+    formData () {
       return this.value
     }
   },
-  data() {
+  data () {
     return {
-      dateType: '', //1-近一个月2-近半年3-近一年4-自定义
+      dateType: '', // 1-近一个月2-近半年3-近一年4-自定义
       dateTypeList: [
         { label: '近一个月', value: 1 },
         { label: '近半年', value: 2 },
         { label: '近一年', value: 3 },
-        { label: '自定义', value: 4 },
+        { label: '自定义', value: 4 }
       ]
     }
   },
-  watch: {
-    
-  },
+  watch: {},
   methods: {
-    handleSearch() {
+    handleSearch () {
       this.$emit('search')
     },
-    //重置表单
-    handleReset() {
+    // 重置表单
+    handleReset () {
       const resetObj = {}
       Object.keys(this.formData).forEach(key => {
         if (Array.isArray(this.formData[key])) {
@@ -129,24 +134,30 @@ export default {
       })
       this.$emit('input', resetObj)
     },
-    //自定义时间控件转化时间格式值
-    handleDateTypeChange(key) {
+    // 自定义时间控件转化时间格式值
+    handleDateTypeChange (key) {
       this.formData[key] = []
       const cur = dayjs().format('YYYY-MM-DD')
       if (this.dateType === 1) {
-        const pre = dayjs().subtract(1, 'month').format('YYYY-MM-DD')
+        const pre = dayjs()
+          .subtract(1, 'month')
+          .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
       } else if (this.dateType === 2) {
-        const pre = dayjs().subtract(6, 'month').format('YYYY-MM-DD')
+        const pre = dayjs()
+          .subtract(6, 'month')
+          .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
       } else if (this.dateType === 3) {
-        const pre = dayjs().subtract(1, 'year').format('YYYY-MM-DD')
+        const pre = dayjs()
+          .subtract(1, 'year')
+          .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
       }
-      //同步更新父组件form数据
+      // 同步更新父组件form数据
       this.$emit('input', this.formData)
     },
-    handleDateRange(dateArr, key) {
+    handleDateRange (dateArr, key) {
       this.formData[key] = [...dateArr]
       this.$emit('input', this.formData)
     }

@@ -30,7 +30,7 @@
 <script>
 import { overviewData } from '@/api/server'
 export default {
-  data() {
+  data () {
     return {
       data: [
         {
@@ -71,17 +71,17 @@ export default {
       ]
     }
   },
-  mounted() {
+  mounted () {
     this.getData()
   },
   methods: {
-    async getData() {
-      const { statusCode, data } = await overviewData() 
+    async getData () {
+      const { statusCode, data } = await overviewData()
       if (statusCode === 'OK') {
         for (let key in data) {
           this.data.forEach(i => {
             if (i.type === key) {
-              const numArr = data[key] && data[key].split(';') || []
+              const numArr = (data[key] && data[key].split(';')) || []
               i.publishNum = numArr[0]
               i.requestNum = numArr[1]
               i.total = Number(i.publishNum) + Number(i.requestNum)
@@ -90,7 +90,7 @@ export default {
         }
       }
     },
-    fetchData({ type }) {
+    fetchData ({ type }) {
       this.$emit('fetchData', type)
     }
   }
@@ -101,7 +101,6 @@ export default {
 .workbench-data-card .ivu-card-body {
   padding: 10px;
 }
-
 </style>
 <style lang="scss" scoped>
 .workbench-data-card {

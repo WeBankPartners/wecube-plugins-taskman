@@ -1,20 +1,8 @@
 <template>
   <div class="header-title">
     <div class="header">
-      <Icon
-        v-if="expand"
-        size="26"
-        type="md-arrow-dropdown"
-        @click="handleExpand"
-        style="cursor:pointer"
-      />
-      <Icon
-        v-else
-        size="26"
-        type="md-arrow-dropright"
-        @click="handleExpand"
-        style="cursor:pointer"
-      />
+      <Icon v-if="expand" size="26" type="md-arrow-dropdown" @click="handleExpand" style="cursor:pointer" />
+      <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
     </div>
     <div class="content">
@@ -31,13 +19,13 @@ export default {
       default: ''
     }
   },
-  data() {
+  data () {
     return {
       expand: true
     }
   },
   methods: {
-    handleExpand() {
+    handleExpand () {
       this.expand = !this.expand
     }
   }

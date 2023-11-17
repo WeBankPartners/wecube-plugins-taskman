@@ -4,16 +4,8 @@
       <TabPane label="已发布" name="publish"></TabPane>
       <TabPane label="草稿箱" name="draft"></TabPane>
     </Tabs>
-    <BaseSearch
-      :options="searchOptions"
-      v-model="searchForm"
-      @search="handleQuery"
-    ></BaseSearch>
-    <Table
-      size="small"
-      :columns="tableColumns"
-      :data="tableData"
-    ></Table>
+    <BaseSearch :options="searchOptions" v-model="searchForm" @search="handleQuery"></BaseSearch>
+    <Table size="small" :columns="tableColumns" :data="tableData"></Table>
     <Page
       style="float:right;margin-top:10px;"
       :total="pagination.total"
@@ -33,7 +25,7 @@ export default {
   components: {
     BaseSearch
   },
-  data() {
+  data () {
     return {
       activeTab: 'publish',
       searchForm: {
@@ -60,7 +52,11 @@ export default {
           key: 'object',
           placeholder: '操作对象',
           component: 'select',
-          list: [{label: '已完成', value: 1},{label: '未完成', value: 2},{label: '进行中', value: 3}]
+          list: [
+            { label: '已完成', value: 1 },
+            { label: '未完成', value: 2 },
+            { label: '进行中', value: 3 }
+          ]
         },
         {
           key: 'package',
@@ -70,21 +66,29 @@ export default {
         {
           key: 'id',
           placeholder: '请求ID',
-          component: 'input',
+          component: 'input'
         },
         {
           key: 'tag',
           placeholder: '当前节点',
           component: 'select',
           multiple: true,
-          list: [{label: '已完成', value: 1},{label: '未完成', value: 2},{label: '进行中', value: 3}]
+          list: [
+            { label: '已完成', value: 1 },
+            { label: '未完成', value: 2 },
+            { label: '进行中', value: 3 }
+          ]
         },
         {
           key: 'status',
           placeholder: '请求状态',
           component: 'select',
           multiple: true,
-          list: [{label: '已完成', value: 1},{label: '未完成', value: 2},{label: '进行中', value: 3}]
+          list: [
+            { label: '已完成', value: 1 },
+            { label: '未完成', value: 2 },
+            { label: '进行中', value: 3 }
+          ]
         },
         {
           key: 'createTime',
@@ -104,7 +108,7 @@ export default {
       tableColumns: [
         {
           title: '请求名称',
-          key: 'name',
+          key: 'name'
         },
         {
           title: '请求ID',
@@ -154,7 +158,9 @@ export default {
                 <Button
                   type="info"
                   size="small"
-                  onClick={() => { this.hanldeView(params.row) }}
+                  onClick={() => {
+                    this.hanldeView(params.row)
+                  }}
                   style="margin-right:5px;"
                 >
                   查看
@@ -162,7 +168,9 @@ export default {
                 <Button
                   type="primary"
                   size="small"
-                  onClick={() => { this.handleRepub(params.row) }}
+                  onClick={() => {
+                    this.handleRepub(params.row)
+                  }}
                 >
                   重新发布
                 </Button>
@@ -174,33 +182,27 @@ export default {
     }
   },
   methods: {
-    getList() {
-
-    },
-    handleQuery() {
+    getList () {},
+    handleQuery () {
       this.pagination.currentPage = 1
       this.getList()
     },
-    handlePage(val) {
+    handlePage (val) {
       this.pagination.currentPage = val
       this.getList()
     },
-    handlePageSize(val) {
+    handlePageSize (val) {
       this.pagination.currentPage = 1
       this.pagination.pageSize = val
       this.getList()
     },
-    handleChangeTab(val) {
+    handleChangeTab (val) {
       this.activeTab = val
     },
-    //查看
-    hanldeView(row) {
-
-    },
-    //重新发布
-    handleRepub(row) {
-
-    }
+    // 查看
+    hanldeView (row) {},
+    // 重新发布
+    handleRepub (row) {}
   }
 }
 </script>

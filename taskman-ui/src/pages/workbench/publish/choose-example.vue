@@ -9,7 +9,7 @@
       @on-close="handleCancel"
       class="workbench-choose-example"
     >
-      <div class="content" :style="{maxHeight: maxHeight + 'px'}">
+      <div class="content" :style="{ maxHeight: maxHeight + 'px' }">
         <Tree :data="treeData" show-checkbox @on-check-change="selectTreeData"></Tree>
       </div>
       <div class="drawer-footer">
@@ -27,9 +27,9 @@ export default {
     visible: {
       type: Boolean,
       default: false
-    },
+    }
   },
-  data() {
+  data () {
     return {
       styles: {
         height: 'calc(100% - 55px)',
@@ -53,13 +53,17 @@ export default {
           expand: false,
           parent: 1,
           selectCount: 0,
-          render: (h) => {
-            return <div>已选<span style={this.numberStyle}>{this.treeData[0].selectCount}</span>个子系统</div>
+          render: h => {
+            return (
+              <div>
+                已选<span style={this.numberStyle}>{this.treeData[0].selectCount}</span>个子系统
+              </div>
+            )
           },
           children: [
-            { title: '198.168.15.30', value: '111', type: 1},
-            { title: '198.168.15.30', value: '111', type: 1},
-            { title: '198.168.15.30', value: '111', type: 1}
+            { title: '198.168.15.30', value: '111', type: 1 },
+            { title: '198.168.15.30', value: '111', type: 1 },
+            { title: '198.168.15.30', value: '111', type: 1 }
           ]
         },
         {
@@ -67,13 +71,17 @@ export default {
           expand: false,
           parent: 2,
           selectCount: 0,
-          render: (h) => {
-            return <div>已选<span style={this.numberStyle}>{this.treeData[1].selectCount}</span>个单元</div>
+          render: h => {
+            return (
+              <div>
+                已选<span style={this.numberStyle}>{this.treeData[1].selectCount}</span>个单元
+              </div>
+            )
           },
           children: [
-            { title: '198.168.15.30', value: '111', type: 2},
-            { title: '198.168.15.30', value: '111', type: 2},
-            { title: '198.168.15.30', value: '111', type: 2}
+            { title: '198.168.15.30', value: '111', type: 2 },
+            { title: '198.168.15.30', value: '111', type: 2 },
+            { title: '198.168.15.30', value: '111', type: 2 }
           ]
         },
         {
@@ -81,26 +89,33 @@ export default {
           expand: true,
           parent: 3,
           selectCount: 0,
-          render: (h) => {
-            return <div>已选<span style={this.numberStyle}>{this.treeData[2].selectCount}</span>个实例</div>
+          render: h => {
+            return (
+              <div>
+                已选<span style={this.numberStyle}>{this.treeData[2].selectCount}</span>个实例
+              </div>
+            )
           },
           children: [
-            { title: '198.168.15.30', value: '111', type: 3, checked: true},
-            { title: '198.168.15.30', value: '111', type: 3, checked: true},
-            { title: '198.168.15.30', value: '111', type: 3, checked: true}
+            { title: '198.168.15.30', value: '111', type: 3, checked: true },
+            { title: '198.168.15.30', value: '111', type: 3, checked: true },
+            { title: '198.168.15.30', value: '111', type: 3, checked: true }
           ]
         }
       ]
     }
   },
-  mounted() {
+  mounted () {
     this.maxHeight = document.body.clientHeight - 150
-    window.addEventListener('resize', debounce(() => {
-      this.maxHeight = document.body.clientHeight - 150
-    }, 100))
+    window.addEventListener(
+      'resize',
+      debounce(() => {
+        this.maxHeight = document.body.clientHeight - 150
+      }, 100)
+    )
   },
   methods: {
-    selectTreeData(arr) {
+    selectTreeData (arr) {
       this.treeData.forEach(i => {
         i.selectCount = 0
         for (let j of arr) {
@@ -110,11 +125,11 @@ export default {
         }
       })
     },
-    handleSubmit() {
+    handleSubmit () {
       this.$emit('update:visible', false)
       this.$emit('getData', this.treeData)
     },
-    handleCancel() {
+    handleCancel () {
       this.$emit('update:visible', false)
     }
   }
@@ -141,7 +156,8 @@ export default {
 </style>
 <style lang="scss">
 .workbench-choose-example {
-  .ivu-tree-title-selected, .ivu-tree-title-selected:hover {
+  .ivu-tree-title-selected,
+  .ivu-tree-title-selected:hover {
     background-color: transparent;
   }
 }

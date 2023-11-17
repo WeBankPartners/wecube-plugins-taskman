@@ -1,4 +1,4 @@
-//防抖函数
+// 防抖函数
 export const debounce = (fn, delay) => {
   let timer = null
   let that = this
@@ -10,11 +10,11 @@ export const debounce = (fn, delay) => {
   }
 }
 
-//截流函数
+// 截流函数
 export const throttle = (fn, delay) => {
   let timer = null
   let that = this
-  return (args) => {
+  return args => {
     if (timer) return
     timer = setTimeout(() => {
       fn.apply(that, args)

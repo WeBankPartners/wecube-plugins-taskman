@@ -2,12 +2,12 @@
   <div class="hot-link">
     <span>常用入口：</span>
     <a v-for="(i, index) in linkArr" :key="index" @click="jumpTo(i.path)">{{ i.name }}</a>
-    </div>
+  </div>
 </template>
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       linkArr: [
         {
@@ -30,7 +30,7 @@ export default {
     }
   },
   methods: {
-    jumpTo(path) {
+    jumpTo (path) {
       this.$router.push(path)
     }
   }

@@ -5,7 +5,7 @@
     <Button @click="jump('/taskman/request-mgmt')">发起请求</Button>
     <Button @click="jump('/taskman/task-mgmt')">任务</Button>
     <Button @click="jump('/taskman/workbench')">个人工作台</Button>
-    <div class="app-content-container" :style="{paddingLeft: expand ? '200px' : '20px'}">
+    <div class="app-content-container" :style="{ paddingLeft: expand ? '200px' : '20px' }">
       <BackTop :height="100" :bottom="100" />
       <WorkbenchMenu></WorkbenchMenu>
       <router-view :key="$route.path" />
@@ -20,13 +20,13 @@ export default {
   components: {
     WorkbenchMenu
   },
-  data() {
+  data () {
     return {
       expand: true
     }
   },
-  mounted() {
-    this.$bus.$on('expand-menu', (val) => {
+  mounted () {
+    this.$bus.$on('expand-menu', val => {
       this.expand = val
     })
   },

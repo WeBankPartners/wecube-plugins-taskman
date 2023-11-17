@@ -25,12 +25,7 @@
       <!--搜索条件-->
       <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
       <!--表格分页-->
-      <Table
-        border
-        size="small"
-        :columns="tableColumns"
-        :data="tableData"
-      ></Table>
+      <Table border size="small" :columns="tableColumns" :data="tableData"></Table>
       <Page
         style="float:right;margin-top:10px;"
         :total="pagination.total"
@@ -58,17 +53,17 @@ export default {
     BaseSearch,
     WorkBench
   },
-  data() {
+  data () {
     return {
-      tabName: 'pending', //pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
-      actionName: '1', //1发布行为,2请求,3问题,4事件,5变更
+      tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
+      actionName: '1', // 1发布行为,2请求,3问题,4事件,5变更
       form: {
-        type: 0, //0所有,1请求定版,2任务处理
-        query: '', //ID或名称模糊搜索
-        templateId: '', //模板ID
-        status: [], //状态
-        operatorObj: '', //操作对象
-        createdBy: '' //创建人
+        type: 0, // 0所有,1请求定版,2任务处理
+        query: '', // ID或名称模糊搜索
+        templateId: '', // 模板ID
+        status: [], // 状态
+        operatorObj: '', // 操作对象
+        createdBy: '' // 创建人
       },
       searchOptions: [
         {
@@ -213,7 +208,9 @@ export default {
                 <Button
                   type="info"
                   size="small"
-                  onClick={() => { this.hanldeView(params.row) }}
+                  onClick={() => {
+                    this.hanldeView(params.row)
+                  }}
                   style="margin-right:5px;"
                 >
                   查看
@@ -221,7 +218,9 @@ export default {
                 <Button
                   type="primary"
                   size="small"
-                  onClick={() => { this.handleRepub(params.row) }}
+                  onClick={() => {
+                    this.handleRepub(params.row)
+                  }}
                 >
                   重新发布
                 </Button>
@@ -238,14 +237,14 @@ export default {
       }
     }
   },
-  mounted() {
+  mounted () {
     this.getList()
   },
   methods: {
-    handleOverviewChange(val) {
+    handleOverviewChange (val) {
       this.tabName = val
     },
-    async getList() {
+    async getList () {
       const params = {
         tab: this.tabName,
         action: Number(this.actionName),
@@ -258,27 +257,23 @@ export default {
         this.tableData = data.contents || []
       }
     },
-    handleQuery() {
+    handleQuery () {
       this.pagination.currentPage = 1
       this.getList()
     },
-    changPage(val) {
+    changPage (val) {
       this.pagination.currentPage = val
       this.getList()
     },
-    changePageSize(val) {
+    changePageSize (val) {
       this.pagination.currentPage = 1
       this.pagination.pageSize = val
       this.getList()
     },
-    //查看
-    hanldeView() {
-
-    },
-    //重新发布
-    handleRepub() {
-
-    }
+    // 查看
+    hanldeView () {},
+    // 重新发布
+    handleRepub () {}
   }
 }
 </script>
@@ -289,7 +284,8 @@ export default {
     display: flex;
     justify-content: space-between;
     align-content: center;
-    .left, .right {
+    .left,
+    .right {
       display: flex;
       align-items: center;
       span {

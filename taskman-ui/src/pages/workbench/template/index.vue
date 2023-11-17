@@ -5,14 +5,14 @@
         <FormItem label="模板名" :label-width="60">
           <Input v-model="form.templateName" @on-change="filterData" style="width:300px" placeholder="请输入模板名">
             <template #suffix>
-              <Icon type="ios-search"/>
+              <Icon type="ios-search" />
             </template>
           </Input>
         </FormItem>
         <FormItem label="标签" :label-width="50">
           <Input v-model="form.tagName" @on-change="filterData" style="width:300px" placeholder="请输入模板标签">
             <template #suffix>
-              <Icon type="ios-search"/>
+              <Icon type="ios-search" />
             </template>
           </Input>
         </FormItem>
@@ -55,16 +55,18 @@
       </div>
       <div class="list">
         <Card style="width:300px;min-height:360px;">
-          <div class="header">我的收藏 <span>{{ collectList.length }}</span></div>
+          <div class="header">
+            我的收藏 <span>{{ collectList.length }}</span>
+          </div>
           <div v-for="i in collectList" :key="i.id" class="item">
             {{ i.name }}
             <Tooltip content="取消收藏" placement="top-start">
               <Icon
-                style="cursor:pointer" 
+                style="cursor:pointer"
                 size="18"
                 type="ios-star"
                 color="#ebac42"
-                @click="handleStar({...i, collectFlag: 1})"
+                @click="handleStar({ ...i, collectFlag: 1 })"
               />
             </Tooltip>
           </div>
@@ -77,14 +79,14 @@
 <script>
 import { getTemplateTree, collectTemplate, uncollectTemplate, collectTemplateList } from '@/api/server'
 export default {
-  data() {
+  data () {
     return {
       form: {
         templateName: '',
         tagName: '',
         unPublishShow: true
       },
-      //收藏列表
+      // 收藏列表
       collectList: [],
       // 模板数据
       cardList: [],
@@ -97,29 +99,33 @@ export default {
             return (
               <div>
                 <span style="margin-right:5px">{params.row.name}</span>
-                {
-                  params.row.collectFlag === 0 &&
+                {params.row.collectFlag === 0 && (
                   <Tooltip content="收藏" placement="top-start">
                     <Icon
                       style="cursor:pointer"
                       size="18"
                       type="ios-star-outline"
-                      onClick={(e) => {e.stopPropagation();this.handleStar(params.row)}}
+                      onClick={e => {
+                        e.stopPropagation()
+                        this.handleStar(params.row)
+                      }}
                     />
                   </Tooltip>
-                }
-                {
-                  params.row.collectFlag === 1 &&
+                )}
+                {params.row.collectFlag === 1 && (
                   <Tooltip content="取消收藏" placement="top-start">
                     <Icon
-                      style="cursor:pointer" 
+                      style="cursor:pointer"
                       size="18"
                       type="ios-star"
                       color="#ebac42"
-                      onClick={(e) => {e.stopPropagation();this.handleStar(params.row)}}
+                      onClick={e => {
+                        e.stopPropagation()
+                        this.handleStar(params.row)
+                      }}
                     />
                   </Tooltip>
-                }
+                )}
               </div>
             )
           }
@@ -128,9 +134,11 @@ export default {
           title: '状态',
           key: 'status',
           render: (h, params) => {
-            return <Tag color={params.row.status === 'created' ? '#85888e' : 'success'}>
-              {{created: '未发布', confirm: '已发布'}[params.row.status]}
-            </Tag>
+            return (
+              <Tag color={params.row.status === 'created' ? '#85888e' : 'success'}>
+                {{ created: '未发布', confirm: '已发布' }[params.row.status]}
+              </Tag>
+            )
           }
         },
         {
@@ -147,35 +155,37 @@ export default {
       ]
     }
   },
-  mounted() {
+  mounted () {
     this.getTemplateData()
     this.getCollectTemplate()
   },
   methods: {
-    //获取模板数据
-    async getTemplateData() {
+    // 获取模板数据
+    async getTemplateData () {
       const { statusCode, data } = await getTemplateTree()
       if (statusCode === 'OK') {
-        this.cardList = Array.isArray(data) && data.map(i => {
-          i.expand = true
-          return i
-        })
+        this.cardList =
+          Array.isArray(data) &&
+          data.map(i => {
+            i.expand = true
+            return i
+          })
         this.originCardList = this.cardList
       }
     },
-    //展开收缩卡片
-    handleExpand(item) {
+    // 展开收缩卡片
+    handleExpand (item) {
       item.expand = !item.expand
     },
-    //选中一条模板数据
-    handleChooseTemplate(row) {
+    // 选中一条模板数据
+    handleChooseTemplate (row) {
       console.log('1111111111', row)
       this.$router.push({
         path: '/taskman/workbench/createPublish'
       })
     },
-    //收藏or取消收藏模板
-    async handleStar({ id, collectFlag }) {
+    // 收藏or取消收藏模板
+    async handleStar ({ id, collectFlag }) {
       const method = collectFlag ? uncollectTemplate : collectTemplate
       const { statusCode } = await method(id)
       if (statusCode === 'OK') {
@@ -187,8 +197,8 @@ export default {
         this.getCollectTemplate()
       }
     },
-    //收藏模板列表
-    async getCollectTemplate() {
+    // 收藏模板列表
+    async getCollectTemplate () {
       const params = {
         startIndex: 1,
         pageSize: 500
@@ -198,23 +208,29 @@ export default {
         this.collectList = data.contents || []
       }
     },
-    //搜索过滤模板数据
-    filterData() {
+    // 搜索过滤模板数据
+    filterData () {
       const { templateName, tagName, unPublishShow } = this.form
       this.cardList = JSON.parse(JSON.stringify(this.originCardList))
       this.cardList = this.cardList.filter(i => {
-        i.groups = Array.isArray(i.groups) && i.groups.filter(j => {
-          j.templates = Array.isArray(j.templates) && j.templates.filter(k => {
-            //根据模板名、标签名、模版发布状态组合搜索
-            const nameFlag = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
-            const tagFlag = k.tags.toLowerCase().indexOf(tagName.toLowerCase()) > -1
-            const statusFlag = (unPublishShow ? 'created' : 'confirm') === k.status
-            return nameFlag && tagFlag && statusFlag
-          }) || []
-          //没有模板的组不显示
-          return j.templates.length
-        }) || []
-        //没有组的角色不显示
+        i.groups =
+          (Array.isArray(i.groups) &&
+            i.groups.filter(j => {
+              j.templates =
+                (Array.isArray(j.templates) &&
+                  j.templates.filter(k => {
+                    // 根据模板名、标签名、模版发布状态组合搜索
+                    const nameFlag = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
+                    const tagFlag = k.tags.toLowerCase().indexOf(tagName.toLowerCase()) > -1
+                    const statusFlag = (unPublishShow ? 'created' : 'confirm') === k.status
+                    return nameFlag && tagFlag && statusFlag
+                  })) ||
+                []
+              // 没有模板的组不显示
+              return j.templates.length
+            })) ||
+          []
+        // 没有组的角色不显示
         return i.groups.length
       })
     }
@@ -254,7 +270,7 @@ export default {
         font-size: 14px;
         color: #515a6e;
         .collect {
-          cursor:pointer;
+          cursor: pointer;
           margin-left: 5px;
         }
       }

@@ -4,7 +4,7 @@
       <Col span="18" class="steps">
         <span class="title">请求进度</span>
         <Steps :current="0" style="width:400px">
-          <Step v-for="(i ,index) in steps" :key="index" :content="i.name">
+          <Step v-for="(i, index) in steps" :key="index" :content="i.name">
             <template #icon>
               <Icon size="28" :type="i.icon" />
             </template>
@@ -29,35 +29,23 @@
           </HeaderTitle>
           <HeaderTitle title="发布目标对象">
             <FormItem label="选择操作单元" required>
-              <Select
-                v-model="form.unit"
-                clearable
-                filterable
-                style="width:250px;"
-              >
+              <Select v-model="form.unit" clearable filterable style="width:250px;">
                 <Option v-for="i in 5" :value="i" :key="i">{{ i }}</Option>
               </Select>
               <Button type="primary" @click="handleChooseExample" class="primary">点击勾选操作实例</Button>
             </FormItem>
             <FormItem v-if="chooseExampleData.length" label="已选择">
               <RadioGroup v-model="form.exampleType">
-                <Radio
-                  v-for="(i, idx) in chooseExampleData"
-                  :label="i.parent"
-                  :key="idx"
-                  border
-                >{{ `${i.title}(${i.selectCount})个` }}</Radio>
+                <Radio v-for="(i, idx) in chooseExampleData" :label="i.parent" :key="idx" border>{{
+                  `${i.title}(${i.selectCount})个`
+                }}</Radio>
               </RadioGroup>
               <Tabs value="name1" style="margin-top:20px;">
                 <TabPane label="标签一" name="name1"></TabPane>
                 <TabPane label="标签二" name="name2"></TabPane>
                 <TabPane label="标签三" name="name3"></TabPane>
               </Tabs>
-              <Table
-                size="small"
-                :columns="tableColumns"
-                :data="tableData"
-              ></Table>
+              <Table size="small" :columns="tableColumns" :data="tableData"></Table>
             </FormItem>
           </HeaderTitle>
         </Form>
@@ -82,7 +70,7 @@ export default {
     HeaderTitle,
     ChooseExampleDrawer
   },
-  data() {
+  data () {
     return {
       form: {
         unit: '',
@@ -96,13 +84,13 @@ export default {
         { name: '请求完成', status: 'wait', icon: 'md-radio-button-on' }
       ],
       chooseExampleVisible: false,
-      chooseExampleData: [], //勾选的的实例
-      exampleTabName: '', //当前选中实例tab
+      chooseExampleData: [], // 勾选的的实例
+      exampleTabName: '', // 当前选中实例tab
       exampleTabList: [],
       tableColumns: [
         {
           title: '序号',
-          key: 'no',
+          key: 'no'
         },
         {
           title: 'IP',
@@ -142,18 +130,18 @@ export default {
     }
   },
   methods: {
-    //操作实例弹窗
-    handleChooseExample() {
+    // 操作实例弹窗
+    handleChooseExample () {
       this.chooseExampleVisible = true
     },
-    //获取操作实例弹窗数据
-    getChooseExampleData(data) {
+    // 获取操作实例弹窗数据
+    getChooseExampleData (data) {
       this.chooseExampleData = data
     },
-    //保存草稿
-    handleDraft() {},
-    //发布
-    handlePublish() {}
+    // 保存草稿
+    handleDraft () {},
+    // 发布
+    handlePublish () {}
   }
 }
 </script>

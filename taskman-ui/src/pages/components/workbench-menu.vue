@@ -1,5 +1,5 @@
 <template>
-  <div class="workbench-menu" :style="{width: expand ? '180px' : '0px'}">
+  <div class="workbench-menu" :style="{ width: expand ? '180px' : '0px' }">
     <div v-show="expand" style="height:100%;">
       <div class="home">
         <img style="width:23px;height:23px;margin-right:10px;" src="@/images/menu_desk.png" />
@@ -19,12 +19,7 @@
               {{ i.title }}
             </div>
           </template>
-          <MenuItem
-            v-for="(j, idx) in i.children"
-            :key="idx"
-            :name="j.name"
-            :to="j.path"
-          >{{ j.title }}</MenuItem>
+          <MenuItem v-for="(j, idx) in i.children" :key="idx" :name="j.name" :to="j.path">{{ j.title }}</MenuItem>
         </Submenu>
       </Menu>
     </div>
@@ -38,7 +33,7 @@
         <span>{{ i.title }}</span>
       </div>
     </div> -->
-    <div class="expand" :style="{left: expand ? '180px' : '0px'}">
+    <div class="expand" :style="{ left: expand ? '180px' : '0px' }">
       <Icon v-if="expand" @click="handleExpand" type="ios-arrow-dropleft" size="28" />
       <Icon v-else @click="handleExpand" type="ios-arrow-dropright" size="28" />
     </div>
@@ -47,7 +42,7 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       expand: true,
       activeName: '1-1',
@@ -74,11 +69,11 @@ export default {
     }
   },
   methods: {
-    handleExpand() {
+    handleExpand () {
       this.expand = !this.expand
       this.$bus.$emit('expand-menu', this.expand)
     },
-    handleSelectMenu(name) {
+    handleSelectMenu (name) {
       console.log('111111', name)
     }
   }
@@ -93,7 +88,8 @@ export default {
   .ivu-menu-dark.ivu-menu-vertical .ivu-menu-opened .ivu-menu-submenu-title {
     background: #10192b;
   }
-  .ivu-menu-dark.ivu-menu-vertical .ivu-menu-item, .ivu-menu-dark.ivu-menu-vertical .ivu-menu-submenu-title {
+  .ivu-menu-dark.ivu-menu-vertical .ivu-menu-item,
+  .ivu-menu-dark.ivu-menu-vertical .ivu-menu-submenu-title {
     background: #10192b;
   }
 }

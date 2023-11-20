@@ -175,7 +175,7 @@ func ApproveTask(c *gin.Context) {
 func ChangeTaskStatus(c *gin.Context) {
 	taskId := c.Param("taskId")
 	operation := c.Param("operation")
-	if operation != "mark" && operation != "start" && operation != "quit" {
+	if operation != "mark" && operation != "start" && operation != "quit" && operation != "give" {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("operation illegal"))
 		return
 	}

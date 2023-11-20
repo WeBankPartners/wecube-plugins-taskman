@@ -416,7 +416,7 @@ func GetRequestParent(c *gin.Context) {
 
 // GetRequestProgress  获取请求进度
 func GetRequestProgress(c *gin.Context) {
-	var param models.RequestProgressQueryParam
+	var param models.RequestQueryParam
 	var rowsData []*models.RequestProgressObj
 	var err error
 	if err = c.ShouldBindJSON(&param); err != nil {
@@ -428,6 +428,27 @@ func GetRequestProgress(c *gin.Context) {
 	} else {
 		rowsData, err = db.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
 	}
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowsData)
+}
+
+// GetRequestWorkFlow 获取请求工作流
+func GetRequestWorkFlow(c *gin.Context) {
+	var param models.RequestQueryParam
+	var rowsData []*models.WorkflowNode
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.TemplateId == "" {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	rowsData, err = db.GetRequestWorkFlow(param, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

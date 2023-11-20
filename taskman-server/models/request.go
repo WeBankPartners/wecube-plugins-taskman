@@ -30,7 +30,7 @@ type PlatformDataObj struct {
 	CollectFlag    int    `json:"collectFlag" xorm:"collect_flag"`        // 收藏标记,1表示已收藏
 }
 
-type RequestProgressQueryParam struct {
+type RequestQueryParam struct {
 	TemplateId string `json:"templateId"` // 模板id
 	RequestId  string `json:"requestId"`  // 请求id
 }

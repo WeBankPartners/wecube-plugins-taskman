@@ -249,6 +249,8 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		sql, queryParam = draftSQL(templateType, user)
 	case "collect":
 	default:
+		err = fmt.Errorf("request param err,tab:%s", param.Tab)
+		return
 	}
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,r.status,r.created_by,r.handler,r.created_time,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) order by created_time desc", where, sql)
@@ -269,7 +271,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 				platformDataObj.ProcDefName = templateMap[platformDataObj.TemplateId].ProcDefName
 			}
 			if platformDataObj.Status == "Pending" {
-				platformDataObj.CurNode = "请求定版"
+				platformDataObj.CurNode = "requestPending"
 			}
 			if platformDataObj.ProcInstanceId != "" {
 				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, userToken)
@@ -1896,24 +1898,24 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 func transConditionToSQL(param *models.PlatformRequestParam) (where string) {
 	where = "where 1 = 1 "
 	if param.Type == 1 {
-		where = where + " and status = 'Pending'"
+		where = where + "and status = 'Pending'"
 	} else if param.Type == 2 {
-		where = where + " and status <> 'Pending'"
+		where = where + "and status <> 'Pending'"
 	}
 	if param.Query != "" {
 		where = where + "(and id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
 	}
 	if param.TemplateId != "" {
-		where = where + "template_id = '" + param.TemplateId + "'"
+		where = where + "and template_id = '" + param.TemplateId + "'"
 	}
 	if len(param.Status) > 0 {
-		where = where + "status in (" + getSQL(param.Status) + ")"
+		where = where + "and status in (" + getSQL(param.Status) + ")"
 	}
 	if param.OperatorObj != "" {
-		where = where + "operator_obj = '" + param.OperatorObj + "'"
+		where = where + "and operator_obj = '" + param.OperatorObj + "'"
 	}
 	if param.CreatedBy != "" {
-		where = where + "created_by = '" + param.CreatedBy + "'"
+		where = where + "and created_by = '" + param.CreatedBy + "'"
 	}
 	return
 }
@@ -2066,5 +2068,55 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 		Handler: "",
 		Status:  int(NotStart),
 	})
+	return
+}
+
+func GetRequestWorkFlow(param models.RequestQueryParam, userToken string) (rowsData []*models.WorkflowNode, err error) {
+	var template models.RequestTemplateTable
+	var request models.RequestTable
+	var byteArr []byte
+	var response models.WorkflowRsp
+	template, err = getSimpleRequestTemplate(param.TemplateId)
+	if err != nil {
+		return
+	}
+	var url = fmt.Sprintf("%s/platform/v1/process/definitions/%s/outline", models.Config.Wecube.BaseUrl, template.ProcDefId)
+	if param.RequestId != "" {
+		request, err = GetSimpleRequest(param.RequestId)
+		if err != nil {
+			return
+		}
+		url = fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, request.ProcInstanceId)
+	}
+	byteArr, err = HttpGet(url, userToken)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		return
+	}
+	if len(response.Data.FlowNodes) > 0 {
+		rowsData = response.Data.FlowNodes
+	} else {
+		rowsData = response.Data.TaskNodes
+	}
+	return
+}
+
+func HttpGet(url, userToken string) (byteArr []byte, err error) {
+	req, newReqErr := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	byteArr, _ = ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 	return
 }

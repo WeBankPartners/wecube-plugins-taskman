@@ -98,7 +98,7 @@ export const enableTemplate = templateId => req.post(`/taskman/api/v1/request-te
 export const disableTemplate = templateId => req.post(`/taskman/api/v1/request-template/disable/${templateId}`)
 // taskman重构
 // 选择模板列表
-export const getTemplateTree = () => req.get('/taskman/api/v1/user/request-template')
+export const getTemplateTree = () => req.get('/taskman/api/v1/user/request-template-new')
 // 模板收藏
 export const collectTemplate = templateId => req.post(`/taskman/api/v1/user/template/collect/${templateId}`)
 // 取消模板收藏
@@ -109,3 +109,5 @@ export const collectTemplateList = params => req.post(`/taskman/api/v1/user/temp
 export const overviewData = () => req.post(`/taskman/api/v1/user/platform`)
 // 工作台列表
 export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform/list`, params)
+// 工作台转给我
+export const tansferToMe = templateId => req.post(`/taskman/api/v1/request/handler/${templateId}`)

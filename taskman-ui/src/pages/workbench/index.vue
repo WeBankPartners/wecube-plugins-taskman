@@ -22,20 +22,23 @@
         <TabPane label="发布" name="1"></TabPane>
         <TabPane label="请求" name="2"></TabPane>
       </Tabs>
-      <!--搜索条件-->
-      <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
-      <!--表格分页-->
-      <Table border size="small" :columns="tableColumns" :data="tableData"></Table>
-      <Page
-        style="float:right;margin-top:10px;"
-        :total="pagination.total"
-        @on-change="changPage"
-        show-sizer
-        :current="pagination.currentPage"
-        :page-size="pagination.pageSize"
-        @on-page-size-change="changePageSize"
-        show-total
-      />
+      <CollectTable v-if="tabName === 'collect'" :getTemplateList="getTemplateList"></CollectTable>
+      <template v-else>
+        <!--搜索条件-->
+        <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+        <!--表格分页-->
+        <Table border size="small" :loading="loading" :columns="tableColumns" :data="tableData"></Table>
+        <Page
+          style="float:right;margin-top:10px;"
+          :total="pagination.total"
+          @on-change="changPage"
+          show-sizer
+          :current="pagination.currentPage"
+          :page-size="pagination.pageSize"
+          @on-page-size-change="changePageSize"
+          show-total
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -45,18 +48,20 @@ import WorkBench from '@/pages/components/workbench-menu.vue'
 import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
-import { getPlatformList } from '@/api/server'
+import CollectTable from './collect-table.vue'
+import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus } from '@/api/server'
 export default {
   components: {
     HotLink,
     DataCard,
     BaseSearch,
-    WorkBench
+    WorkBench,
+    CollectTable
   },
   data () {
     return {
       tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
-      actionName: '1', // 1发布行为,2请求,3问题,4事件,5变更
+      actionName: '1', // 1发布行为,2请求(3问题,4事件,5变更)
       form: {
         type: 0, // 0所有,1请求定版,2任务处理
         query: '', // ID或名称模糊搜索
@@ -84,12 +89,8 @@ export default {
         {
           key: 'templateId',
           placeholder: '模板',
-          component: 'select',
-          list: [
-            { label: '已完成', value: 1 },
-            { label: '未完成', value: 2 },
-            { label: '进行中', value: 3 }
-          ]
+          component: 'remote-select',
+          remote: this.getTemplateList
         },
         {
           key: 'status',
@@ -206,7 +207,6 @@ export default {
             return (
               <div>
                 <Button
-                  type="info"
                   size="small"
                   onClick={() => {
                     this.hanldeView(params.row)
@@ -222,19 +222,32 @@ export default {
                     this.handleRepub(params.row)
                   }}
                 >
-                  重新发布
+                  重新发起
                 </Button>
+                {this.username !== params.row.handler && this.tabName === 'pending' && (
+                  <Button
+                    type="success"
+                    size="small"
+                    onClick={() => {
+                      this.handleTransfer(params.row)
+                    }}
+                  >
+                    转给我
+                  </Button>
+                )}
               </div>
             )
           }
         }
       ],
       tableData: [],
+      loading: false,
       pagination: {
         total: 0,
         currentPage: 1,
         pageSize: 10
-      }
+      },
+      username: window.localStorage.getItem('username')
     }
   },
   mounted () {
@@ -243,19 +256,25 @@ export default {
   methods: {
     handleOverviewChange (val) {
       this.tabName = val
+      if (val !== 'collect') {
+        this.handleQuery()
+      }
     },
     async getList () {
+      this.loading = true
       const params = {
         tab: this.tabName,
         action: Number(this.actionName),
         ...this.form,
-        startIndex: this.pagination.currentPage,
+        startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
       }
       const { statusCode, data } = await getPlatformList(params)
       if (statusCode === 'OK') {
         this.tableData = data.contents || []
+        this.pagination.total = data.pageInfo.totalRows
       }
+      this.loading = false
     },
     handleQuery () {
       this.pagination.currentPage = 1
@@ -270,10 +289,53 @@ export default {
       this.pagination.pageSize = val
       this.getList()
     },
-    // 查看
+    // 获取下拉搜索模板列表
+    async getTemplateList () {
+      const params = {
+        filters: [],
+        paging: false
+      }
+      const { statusCode, data } = await getTemplateList(params)
+      if (statusCode === 'OK') {
+        const options = data.contents || []
+        return options.map(option => {
+          return {
+            label: `${option.name}(${option.version || '-'})`,
+            value: option.id
+          }
+        })
+      }
+    },
+    // 表格操作-查看
     hanldeView () {},
-    // 重新发布
-    handleRepub () {}
+    // 表格操作-重新发布
+    handleRepub () {},
+    // 表格操作-转给我
+    async handleTransfer (row) {
+      this.$Modal.confirm({
+        title: this.$t('confirm') + '转给我',
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          // 请求定版的新接口，任务处理的老接口
+          let res = null
+          if (row.status === 'Pending') {
+            res = await tansferToMe(row.id)
+          } else if (row.status === 'InProgress') {
+            res = await changeTaskStatus('give', row.id)
+          }
+          if (res.statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.getList()
+          }
+        },
+        onCancel: () => {}
+      })
+    }
   }
 }
 </script>

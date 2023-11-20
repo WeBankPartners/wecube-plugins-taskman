@@ -179,9 +179,8 @@ export default {
     },
     // 选中一条模板数据
     handleChooseTemplate (row) {
-      console.log('1111111111', row)
       this.$router.push({
-        path: '/taskman/workbench/createPublish'
+        path: `/taskman/workbench/createPublish?id=${row.id}`
       })
     },
     // 收藏or取消收藏模板
@@ -222,7 +221,7 @@ export default {
                     // 根据模板名、标签名、模版发布状态组合搜索
                     const nameFlag = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
                     const tagFlag = k.tags.toLowerCase().indexOf(tagName.toLowerCase()) > -1
-                    const statusFlag = (unPublishShow ? 'created' : 'confirm') === k.status
+                    const statusFlag = unPublishShow ? true : k.status === 'confirm'
                     return nameFlag && tagFlag && statusFlag
                   })) ||
                 []

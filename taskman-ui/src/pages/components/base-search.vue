@@ -27,6 +27,22 @@
                 <Option :key="idx" :value="j.value">{{ j.label }}</Option>
               </template>
             </Select>
+            <!--获取接口的下拉选择-->
+            <Select
+              v-else-if="i.component === 'remote-select'"
+              v-model="value[i.key]"
+              @on-open-change="getRemoteData(i)"
+              :placeholder="i.placeholder"
+              clearable
+              :multiple="i.multiple || false"
+              :filterable="i.filterable || false"
+              :max-tag-count="1"
+              :style="{ width: i.width || 200 + 'px' }"
+            >
+              <template v-for="(j, idx) in i.list">
+                <Option :key="idx" :value="j.value">{{ j.label }}</Option>
+              </template>
+            </Select>
             <!--标签组-->
             <RadioGroup
               v-else-if="i.component === 'radio-group'"
@@ -160,6 +176,11 @@ export default {
     handleDateRange (dateArr, key) {
       this.formData[key] = [...dateArr]
       this.$emit('input', this.formData)
+    },
+    // 获取远程下拉框数据
+    async getRemoteData (i) {
+      const res = await i.remote()
+      this.$set(i, 'list', res)
     }
   }
 }

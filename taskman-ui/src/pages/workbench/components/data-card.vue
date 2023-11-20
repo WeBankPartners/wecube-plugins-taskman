@@ -1,13 +1,7 @@
 <template>
   <div class="workbench-data-card">
-    <Card
-      v-for="(i, index) in data"
-      :key="index"
-      border
-      style="width:250px;margin-right:20px;cursor:pointer;"
-      @click="fetchData(i)"
-    >
-      <div class="content">
+    <Card v-for="(i, index) in data" :key="index" border :style="styles(i)">
+      <div class="content" @click="handleTabChange(i)">
         <div class="header">
           <img :src="i.icon" />
           <span>{{ `${i.label}(${i.total})` }}</span>
@@ -32,6 +26,7 @@ import { overviewData } from '@/api/server'
 export default {
   data () {
     return {
+      active: 'pending',
       data: [
         {
           type: 'pending',
@@ -71,6 +66,18 @@ export default {
       ]
     }
   },
+  computed: {
+    styles () {
+      return function (i) {
+        return {
+          width: '250px',
+          marginRight: '20px',
+          cursor: 'pointer',
+          border: i.type === this.active ? '1px solid #2d8cf0' : ''
+        }
+      }
+    }
+  },
   mounted () {
     this.getData()
   },
@@ -90,7 +97,8 @@ export default {
         }
       }
     },
-    fetchData ({ type }) {
+    handleTabChange ({ type }) {
+      this.active = type
       this.$emit('fetchData', type)
     }
   }

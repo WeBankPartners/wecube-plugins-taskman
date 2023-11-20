@@ -52,6 +52,10 @@ const implicitRoute = {
   requestCheck: {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
     childBreadcrumb: { 'zh-CN': '请求管理', 'en-US': 'Request Management' }
+  },
+  '/taskman/workbench': {
+    parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
+    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
   }
 }
 window.addImplicitRoute(implicitRoute)

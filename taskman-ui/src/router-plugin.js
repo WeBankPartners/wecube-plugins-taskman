@@ -6,6 +6,7 @@ import requestManagementIndex from '@/pages/request-management/index'
 import task from '@/pages/task'
 import taskManagementIndex from '@/pages/task-mgmt/index'
 import requestCheck from '@/pages/request-management/request-check'
+import workbench from '@/pages/workbench/index'
 const router = [
   {
     path: '/taskman/template-mgmt',
@@ -46,6 +47,11 @@ const router = [
     path: '/requestCheck',
     name: 'requestCheck',
     component: requestCheck
+  },
+  {
+    path: '/taskman/workbench',
+    name: '/taskman/workbench',
+    component: workbench
   }
 ]
 export default router

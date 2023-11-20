@@ -2,8 +2,8 @@
   <div id="taskman">
     <div class="content-container" :style="showWorkbench ? workbenchStyle : {}">
       <transition name="fade" mode="out-in">
+        <WorkbenchMenu></WorkbenchMenu>
         <router-view></router-view>
-        <WorkbenchMenu v-if="showWorkbench"></WorkbenchMenu>
       </transition>
     </div>
   </div>

@@ -2,7 +2,7 @@
   <div class="workbench-data-card">
     <Card v-for="(i, index) in data" :key="index" border :style="styles(i)">
       <div class="content" @click="handleTabChange(i)">
-        <div class="header">
+        <div class="w-header">
           <img :src="i.icon" />
           <span>{{ `${i.label}(${i.total})` }}</span>
         </div>
@@ -114,7 +114,7 @@ export default {
 .workbench-data-card {
   display: flex;
   .content {
-    .header {
+    .w-header {
       display: flex;
       align-items: flex-end;
       img {

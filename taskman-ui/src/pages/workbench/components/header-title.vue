@@ -1,6 +1,6 @@
 <template>
   <div class="header-title">
-    <div class="header">
+    <div class="w-header">
       <Icon v-if="expand" size="26" type="md-arrow-dropdown" @click="handleExpand" style="cursor:pointer" />
       <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
@@ -34,7 +34,7 @@ export default {
 
 <style lang="scss" scoped>
 .header-title {
-  .header {
+  .w-header {
     display: flex;
     align-items: center;
     .title {

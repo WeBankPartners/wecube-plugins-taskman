@@ -1,6 +1,6 @@
 <template>
   <div class="workbench-request-create">
-    <Row class="header">
+    <Row class="w-header">
       <Col span="18" class="steps">
         <span class="title">请求进度</span>
         <Steps :current="0" style="width:400px">
@@ -148,7 +148,7 @@ export default {
 
 <style lang="scss" scoped>
 .workbench-request-create {
-  .header {
+  .w-header {
     padding-bottom: 20px;
     margin-bottom: 20px;
     border-bottom: 1px solid #e8eaec;

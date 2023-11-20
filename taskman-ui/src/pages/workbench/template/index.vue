@@ -24,7 +24,7 @@
     <div class="wrapper">
       <div v-if="cardList.length" class="template">
         <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
-          <div class="header" slot="title">
+          <div class="w-header" slot="title">
             <Icon size="28" type="ios-people" />
             <div class="title">
               {{ i.manageRole }}
@@ -55,7 +55,7 @@
       </div>
       <div class="list">
         <Card style="width:300px;min-height:360px;">
-          <div class="header">
+          <div class="w-header">
             我的收藏 <span>{{ collectList.length }}</span>
           </div>
           <div v-for="i in collectList" :key="i.id" class="item">
@@ -256,7 +256,7 @@ export default {
     display: flex;
     .list {
       width: 300px;
-      .header {
+      .w-header {
         font-size: 16px;
         font-weight: 700;
         span {
@@ -277,7 +277,7 @@ export default {
     .template {
       padding: 0px 20px 0 0;
       width: calc(100% - 320px);
-      .header {
+      .w-header {
         display: flex;
         align-items: center;
         .title {

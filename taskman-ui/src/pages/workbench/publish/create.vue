@@ -1,6 +1,6 @@
 <template>
   <div class="workbench-publish-create">
-    <Row class="header">
+    <Row class="w-header">
       <Col span="18" class="steps">
         <span class="title">请求进度：</span>
         <Steps :current="0" style="max-width:500px;">
@@ -152,7 +152,7 @@ export default {
 
 <style lang="scss" scoped>
 .workbench-publish-create {
-  .header {
+  .w-header {
     padding-bottom: 20px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;

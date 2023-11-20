@@ -6,7 +6,6 @@ import requestManagementIndex from '@/pages/request-management/index'
 import task from '@/pages/task'
 import taskManagementIndex from '@/pages/task-mgmt/index'
 import requestCheck from '@/pages/request-management/request-check'
-import workbench from '@/pages/workbench/index'
 const router = [
   {
     path: '/taskman/template-mgmt',
@@ -48,10 +47,41 @@ const router = [
     name: 'requestCheck',
     component: requestCheck
   },
+  // 个人工作台
   {
     path: '/taskman/workbench',
     name: '/taskman/workbench',
-    component: workbench
+    component: () => import('@/pages/workbench/index')
+  },
+  // 模板选择
+  {
+    path: '/taskman/workbench/template',
+    name: '/taskman/workbench/template',
+    component: () => import('@/pages/workbench/template/index')
+  },
+  // 新建发布
+  {
+    path: '/taskman/workbench/createPublish',
+    name: '/taskman/workbench/createPublish',
+    component: () => import('@/pages/workbench/publish/create')
+  },
+  // 发布历史
+  {
+    path: '/taskman/workbench/publishHistory',
+    name: '/taskman/workbench/publishHistory',
+    component: () => import('@/pages/workbench/publish/list')
+  },
+  // 新建请求
+  {
+    path: '/taskman/workbench/createRequest',
+    name: '/taskman/workbench/createRequest',
+    component: () => import('@/pages/workbench/request/create')
+  },
+  // 请求历史
+  {
+    path: '/taskman/workbench/requestHistory',
+    name: '/taskman/workbench/requestHistory',
+    component: () => import('@/pages/workbench/request/list')
   }
 ]
 export default router

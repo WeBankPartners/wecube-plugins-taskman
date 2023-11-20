@@ -272,7 +272,16 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 }
 
 func GetRequestTemplateByUser(c *gin.Context) {
-	result, err := db.GetRequestTemplateByUser(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	result, err := db.GetRequestTemplateByUser(middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
+func GetRequestTemplateByUserNew(c *gin.Context) {
+	result, err := db.GetRequestTemplateByUserV2(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

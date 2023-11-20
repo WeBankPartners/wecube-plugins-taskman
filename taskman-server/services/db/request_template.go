@@ -967,7 +967,99 @@ func SetRequestTemplateToCreated(id, operator string) {
 	}
 }
 
-func GetRequestTemplateByUser(user string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
+func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
+	result = []*models.UserRequestTemplateQueryObj{}
+	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
+	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+"))) order by `group`,tags,status,id", queryParam...).Find(&requestTemplateTable)
+	if err != nil {
+		return
+	}
+	if len(requestTemplateTable) == 0 {
+		return
+	}
+	recordIdMap := make(map[string]int)
+	disableNameMap := make(map[string]int)
+	for _, v := range requestTemplateTable {
+		if v.Status == "disable" {
+			if v.Version == "" {
+				disableNameMap[v.Name] = 1
+			} else {
+				tmpV, _ := strconv.Atoi(v.Version[1:])
+				disableNameMap[v.Name] = tmpV
+			}
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
+		}
+		if v.Status == "confirm" {
+			if v.RecordId != "" {
+				recordIdMap[v.RecordId] = 1
+			}
+			//v.Name = fmt.Sprintf("%s(%s)", v.Name, v.Version)
+		} else {
+			if v.ConfirmTime != "" {
+				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
+					recordIdMap[v.Id] = 1
+				}
+			}
+			v.Name = fmt.Sprintf("%s(beta)", v.Name)
+			v.Version = "beta"
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if _, b := recordIdMap[v.Id]; b {
+			continue
+		}
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
+		}
+		tmpTemplateTable = append(tmpTemplateTable, v)
+	}
+	requestTemplateTable = tmpTemplateTable
+	var groupTable []*models.RequestTemplateGroupTable
+	x.SQL("select id,name,description from request_template_group").Find(&groupTable)
+	groupMap := make(map[string]*models.RequestTemplateGroupTable)
+	for _, v := range groupTable {
+		groupMap[v.Id] = v
+	}
+	tmpGroup := requestTemplateTable[0].Group
+	tmpTemplateList := []*models.RequestTemplateTable{}
+	for _, v := range requestTemplateTable {
+		if v.Group != tmpGroup {
+			result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[tmpGroup].Id, GroupName: groupMap[tmpGroup].Name, GroupDescription: groupMap[tmpGroup].Description, Templates: tmpTemplateList})
+			tmpTemplateList = []*models.RequestTemplateTable{}
+			tmpGroup = v.Group
+		}
+		tmpTemplateList = append(tmpTemplateList, v)
+	}
+	if len(tmpTemplateList) > 0 {
+		lastGroup := requestTemplateTable[len(requestTemplateTable)-1].Group
+		result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[lastGroup].Id, GroupName: groupMap[lastGroup].Name, GroupDescription: groupMap[lastGroup].Description, Templates: tmpTemplateList})
+	}
+	for _, v := range result {
+		v.Tags = groupRequestTemplateByTags(v.Templates)
+	}
+	return
+}
+
+// GetRequestTemplateByUserV2  新的选择模板接口
+func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
 	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
 	var useGroupMap = make(map[string]*models.RequestTemplateGroupTable)
 	result = []*models.UserRequestTemplateQueryObjNew{}

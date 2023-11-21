@@ -71,7 +71,11 @@ export default {
   methods: {
     handleExpand () {
       this.expand = !this.expand
-      this.$bus.$emit('expand-menu', this.expand)
+      if (this.$eventBusP) {
+        this.$eventBusP.$emit('expand-menu', this.expand)
+      } else {
+        this.$bus.$emit('expand-menu', this.expand)
+      }
     },
     handleSelectMenu (name) {
       console.log('111111', name)
@@ -97,10 +101,10 @@ export default {
 <style lang="scss" scoped>
 .workbench-menu {
   position: fixed;
-  top: 0;
+  top: 50px;
   left: 0;
   height: 100%;
-  z-index: 9999;
+  z-index: 100;
   .home {
     display: flex;
     align-items: center;

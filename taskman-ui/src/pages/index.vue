@@ -30,14 +30,20 @@ export default {
   computed: {
     workbenchStyle () {
       return {
-        paddingLeft: this.expand ? '200px' : '20px'
+        paddingLeft: this.expand ? '180px' : '0px'
       }
     }
   },
   mounted () {
-    this.$bus.$on('expand-menu', val => {
-      this.expand = val
-    })
+    if (this.$eventBusP) {
+      this.$eventBusP.$on('expand-menu', val => {
+        this.expand = val
+      })
+    } else {
+      this.$bus.$on('expand-menu', val => {
+        this.expand = val
+      })
+    }
   }
 }
 </script>

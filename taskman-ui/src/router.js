@@ -44,6 +44,7 @@ export default new Router({
       name: 'requestManagementIndex',
       component: () => import('@/pages/request-management/index')
     },
+    // 工作台子页面路由需要以/taskman/workbench为前缀，有些判断条件是以/taskman/workbench写死判断的
     {
       path: '/taskman',
       name: 'taskman',

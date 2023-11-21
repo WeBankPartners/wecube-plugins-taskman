@@ -1,5 +1,5 @@
 <template>
-  <div class="base-search">
+  <div class="taskman-base-search">
     <div class="form">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
@@ -58,7 +58,6 @@
                 v-if="dateType !== 4"
                 v-model="dateType"
                 @on-change="handleDateTypeChange(i.key)"
-                size="small"
                 style="margin-top:-2px;"
               >
                 <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
@@ -187,16 +186,19 @@ export default {
 </script>
 
 <style lang="scss">
-.base-search {
+.taskman-base-search {
   display: flex;
   padding-bottom: 10px;
+  .ivu-form-item {
+    margin-bottom: 10px !important;
+  }
   .ivu-radio {
     display: none;
   }
   .ivu-radio-wrapper {
     border-radius: 5px;
-    height: 30px;
-    line-height: 30px;
+    height: 30px !important;
+    line-height: 30px !important;
     padding: 0 10px;
     font-size: 12px;
     color: #000;

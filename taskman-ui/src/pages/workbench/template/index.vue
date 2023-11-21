@@ -244,6 +244,9 @@ export default {
     padding: 5px 10px;
     line-height: 1;
   }
+  .ivu-form-item {
+    margin-bottom: 10px !important;
+  }
 }
 </style>
 <style lang="scss" scoped>

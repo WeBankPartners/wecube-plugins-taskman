@@ -54,34 +54,34 @@ const implicitRoute = {
     childBreadcrumb: { 'zh-CN': '请求管理', 'en-US': 'Request Management' }
   },
   // 个人工作台
-  '/taskman/workbench': {
+  'taskman/workbench': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
     childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
   },
   // 模板选择
-  '/taskman/workbench/template': {
+  'taskman/workbench/template': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '模板选择', 'en-US': 'Workbench' }
   },
   // 新建发布
-  '/taskman/workbench/createPublish': {
+  'taskman/workbench/createPublish': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '新建发布', 'en-US': 'New Publish' }
   },
   // 发布历史
-  '/taskman/workbench/publishHistory': {
+  'taskman/workbench/publishHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '发布历史', 'en-US': 'Publish History' }
   },
   // 新建请求
-  '/taskman/workbench/createRequest': {
+  'taskman/workbench/createRequest': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '新建请求', 'en-US': 'New Request' }
   },
   // 请求历史
-  '/taskman/workbench/requestHistory': {
+  'taskman/workbench/requestHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '请求历史', 'en-US': 'Request History' }
   }
 }
 window.addImplicitRoute(implicitRoute)

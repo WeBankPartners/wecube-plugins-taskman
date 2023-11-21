@@ -8,8 +8,8 @@
       <Menu
         @on-select="handleSelectMenu"
         theme="dark"
-        active-name="1-1"
-        :open-names="['1']"
+        :active-name="activeName"
+        :open-names="openNames"
         style="width:180px;height:100%;"
       >
         <Submenu v-for="(i, index) in menuList" :key="index" :name="i.name">
@@ -45,14 +45,15 @@ export default {
   data () {
     return {
       expand: true,
-      activeName: '1-1',
+      activeName: '',
+      openNames: [],
       menuList: [
         {
           title: '发布',
           icon: require('@/images/menu_publish.png'),
           name: '1',
           children: [
-            { title: '新建发布', path: '/taskman/workbench/template', name: '1-1' },
+            { title: '新建发布', path: '/taskman/workbench/template?type=publish', name: '1-1' },
             { title: '发布历史', path: '/taskman/workbench/publishHistory', name: '1-2' }
           ]
         },
@@ -61,13 +62,24 @@ export default {
           icon: require('@/images/menu_request.png'),
           name: '2',
           children: [
-            { title: '新建请求', path: '/taskman/workbench/template', name: '2-1' },
+            { title: '新建请求', path: '/taskman/workbench/template?type=request', name: '2-1' },
             { title: '请求历史', path: '/taskman/workbench/requestHistory', name: '2-2' }
           ]
         }
       ]
     }
   },
+  created () {
+    this.menuList.forEach(i => {
+      for (let j of i.children) {
+        if (j.path === this.$route.fullPath) {
+          this.activeName = j.name
+          this.openNames = [i.name]
+        }
+      }
+    })
+  },
+  mounted () {},
   methods: {
     handleExpand () {
       this.expand = !this.expand
@@ -78,7 +90,7 @@ export default {
       }
     },
     handleSelectMenu (name) {
-      console.log('111111', name)
+      this.activeName = name
     }
   }
 }

@@ -360,7 +360,7 @@ export default {
     }
   }
   .hot-link {
-    margin-top: 24px;
+    margin-top: 12px;
   }
   .data-card {
     margin-top: 24px;

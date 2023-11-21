@@ -15,7 +15,7 @@
       <HotLink></HotLink>
     </div>
     <div class="data-card">
-      <DataCard @fetchData="handleOverviewChange"></DataCard>
+      <DataCard :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
       <Tabs v-model="actionName" @on-click="handleQuery">
@@ -254,8 +254,10 @@ export default {
     this.getList()
   },
   methods: {
-    handleOverviewChange (val) {
+    // 点击视图卡片触发查询
+    handleOverviewChange (val, action) {
       this.tabName = val
+      this.actionName = action || '1'
       if (val !== 'collect') {
         this.handleQuery()
       }

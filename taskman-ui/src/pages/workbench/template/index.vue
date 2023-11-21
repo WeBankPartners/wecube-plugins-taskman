@@ -253,7 +253,7 @@ export default {
 .new-publish-template {
   .search {
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
   }
   .wrapper {
     display: flex;

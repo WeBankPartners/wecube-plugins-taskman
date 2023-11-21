@@ -1,11 +1,23 @@
 // 防抖函数
-export const debounce = (fn, delay) => {
+// export const debounce = (fn, delay) => {
+//   let timer = null
+//   let that = this
+//   return (...args) => {
+//     timer && clearTimeout(timer)
+//     timer = setTimeout(() => {
+//       fn.apply(that, args)
+//     }, delay)
+//   }
+// }
+export function debounce (fn, delay = 500) {
   let timer = null
-  let that = this
-  return (...args) => {
-    timer && clearTimeout(timer)
+  return function () {
+    const args = arguments
+    if (timer) {
+      clearTimeout(timer)
+    }
     timer = setTimeout(() => {
-      fn.apply(that, args)
+      fn.apply(this, [...args])
     }, delay)
   }
 }

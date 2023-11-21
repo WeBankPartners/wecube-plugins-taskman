@@ -1,18 +1,36 @@
 <template>
   <div class="workbench-data-card">
-    <Card v-for="(i, index) in data" :key="index" border :style="styles(i)">
+    <Card v-for="(i, index) in data" :key="index" border :style="activeStyles(i)">
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
           <img :src="i.icon" />
           <span>{{ `${i.label}(${i.total})` }}</span>
         </div>
         <div class="data">
-          <div class="list">
-            <span>{{ i.publishNum }}</span>
+          <div
+            class="list"
+            :style="actionStyles(i, '1')"
+            @click="
+              e => {
+                e.stopPropagation()
+                handleTabChange(i, '1')
+              }
+            "
+          >
+            <span style="font-weight:bold;">{{ i.publishNum }}</span>
             <span>发布</span>
           </div>
-          <div class="list">
-            <span>{{ i.requestNum }}</span>
+          <div
+            class="list"
+            :style="actionStyles(i, '2')"
+            @click="
+              e => {
+                e.stopPropagation()
+                handleTabChange(i, '2')
+              }
+            "
+          >
+            <span style="font-weight:bold;">{{ i.requestNum }}</span>
             <span>请求</span>
           </div>
         </div>
@@ -23,10 +41,18 @@
 
 <script>
 import { overviewData } from '@/api/server'
+import { debounce } from '@/pages/util'
 export default {
+  props: {
+    parentAction: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       active: 'pending',
+      action: '1', // 1发布2请求
       data: [
         {
           type: 'pending',
@@ -67,15 +93,27 @@ export default {
     }
   },
   computed: {
-    styles () {
+    activeStyles () {
       return function (i) {
         return {
           width: '250px',
           marginRight: '20px',
           cursor: 'pointer',
-          border: i.type === this.active ? '1px solid #2d8cf0' : ''
+          borderTop: i.type === this.active ? '4px solid #e59e2d' : ''
         }
       }
+    },
+    actionStyles () {
+      return function (i, val) {
+        return {
+          color: this.action === val && i.type === this.active ? '#e59e2d' : 'rgba(16, 16, 16, 1)'
+        }
+      }
+    }
+  },
+  watch: {
+    parentAction (val) {
+      this.action = val
     }
   },
   mounted () {
@@ -97,10 +135,11 @@ export default {
         }
       }
     },
-    handleTabChange ({ type }) {
-      this.active = type
-      this.$emit('fetchData', type)
-    }
+    handleTabChange: debounce(function (item, subType) {
+      this.active = item.type
+      this.action = subType || '1'
+      this.$emit('fetchData', item.type, subType)
+    }, 300)
   }
 }
 </script>
@@ -138,8 +177,8 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
+        padding: 0 10px;
         span {
-          color: rgba(16, 16, 16, 1);
           font-size: 14px;
           font-family: PingFangSC-regular;
         }

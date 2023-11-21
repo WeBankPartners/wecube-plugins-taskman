@@ -60,13 +60,17 @@ export default {
 .taskman-content-container {
   height: calc(100% - 50px);
 }
-.ivu-breadcrumb {
-  color: #515a6e;
-}
-.ivu-tooltip {
-  width: auto !important;
-}
-label {
-  margin-bottom: 0px; /*解决监控插件label样式全局覆盖问题*/
+</style>
+<style lang="scss">
+#taskman {
+  .ivu-breadcrumb {
+    color: #515a6e;
+  }
+  .ivu-tooltip {
+    width: auto !important;
+  }
+  label {
+    margin-bottom: 0px !important; /*解决监控插件label样式全局覆盖问题*/
+  }
 }
 </style>

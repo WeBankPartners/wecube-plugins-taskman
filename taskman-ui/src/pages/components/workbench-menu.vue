@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-menu" :style="{ width: expand ? '180px' : '0px' }">
     <div v-show="expand" style="height:100%;">
-      <div class="home">
+      <div class="home" @click="handleGoHome">
         <img style="width:23px;height:23px;margin-right:10px;" src="@/images/menu_desk.png" />
         工作台
       </div>
@@ -91,6 +91,11 @@ export default {
     },
     handleSelectMenu (name) {
       this.activeName = name
+    },
+    handleGoHome () {
+      this.$router.push({
+        path: '/taskman/workbench'
+      })
     }
   }
 }

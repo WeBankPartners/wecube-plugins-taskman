@@ -5,41 +5,14 @@
     <Button @click="jump('/taskman/request-mgmt')">发起请求</Button>
     <Button @click="jump('/taskman/task-mgmt')">任务</Button>
     <Button @click="jump('/taskman/workbench')">个人工作台</Button>
-    <div class="app-content-container" :style="showWorkbench ? workbenchStyle : {}">
+    <div class="app-content-container">
       <BackTop :height="100" :bottom="100" />
-      <WorkbenchMenu v-if="showWorkbench"></WorkbenchMenu>
       <router-view :key="$route.path" />
     </div>
   </div>
 </template>
 <script>
-import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
-import Vue from 'vue'
-Vue.prototype.$bus = new Vue()
 export default {
-  components: {
-    WorkbenchMenu
-  },
-  data () {
-    return {
-      expand: true
-    }
-  },
-  computed: {
-    workbenchStyle () {
-      return {
-        paddingLeft: this.expand ? '200px' : '20px'
-      }
-    },
-    showWorkbench () {
-      return this.$route.path.indexOf('workbench') > -1
-    }
-  },
-  mounted () {
-    this.$bus.$on('expand-menu', val => {
-      this.expand = val
-    })
-  },
   methods: {
     jump (path) {
       this.$router.push({ path: path })

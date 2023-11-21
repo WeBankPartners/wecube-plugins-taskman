@@ -1,10 +1,10 @@
 <template>
   <div id="taskman">
-    <div class="content-container" :style="showWorkbench ? workbenchStyle : {}">
+    <div class="content-container" :style="workbenchStyle">
       <transition name="fade" mode="out-in">
-        <WorkbenchMenu></WorkbenchMenu>
         <router-view></router-view>
       </transition>
+      <WorkbenchMenu></WorkbenchMenu>
     </div>
   </div>
 </template>
@@ -32,9 +32,6 @@ export default {
       return {
         paddingLeft: this.expand ? '200px' : '20px'
       }
-    },
-    showWorkbench () {
-      return this.$route.path.indexOf('workbench') > -1
     }
   },
   mounted () {

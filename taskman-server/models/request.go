@@ -234,6 +234,13 @@ type RequestPreDataDto struct {
 	Data         []*RequestPreDataTableObj `json:"data"`
 }
 
+type RequestProDataV2Dto struct {
+	Name         string                    `json:"name"`
+	Description  string                    `json:"description"`
+	RootEntityId string                    `json:"rootEntityId"`
+	Data         []*RequestPreDataTableObj `json:"data"`
+}
+
 type TerminateInstanceParam struct {
 	ProcInstId  string `json:"procInstId"`
 	ProcInstKey string `json:"procInstKey"`
@@ -312,9 +319,6 @@ type RequestForm struct {
 	CreatedTime       string `json:"createdTime"`       // 创建时间
 	ExpectTime        string `json:"expectTime" `       // 期望时间
 	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
-	ProcDefId         string `json:"procDefId"`         // 编排ID
-	ProcDefName       string `json:"procDefName"`       // 编排名称
-	ProcCreateTime    string `json:"procCreateTime"`    // 编排创建时间
 }
 
 type RequestDetail struct {

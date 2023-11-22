@@ -147,7 +147,7 @@ func GetCoreProcessListAll(userToken string) (processList []*models.ProcAllDefOb
 
 func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userToken string, filterType string) (nodeList models.ProcNodeObjList, err error) {
 	if requestTemplateObj.ProcDefId == "" {
-		requestTemplateObj, err = getSimpleRequestTemplate(requestTemplateObj.Id)
+		requestTemplateObj, err = GetSimpleRequestTemplate(requestTemplateObj.Id)
 		if err != nil {
 			return
 		}
@@ -687,7 +687,7 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*execAction, err error) {
-	rtObj, err := getSimpleRequestTemplate(id)
+	rtObj, err := GetSimpleRequestTemplate(id)
 	if err != nil {
 		return actions, err
 	}
@@ -801,7 +801,7 @@ func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttri
 	return err
 }
 
-func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
+func GetSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
 	err = x.SQL("select * from request_template where id=?", id).Find(&requestTemplateTable)
 	if err != nil {
@@ -845,7 +845,7 @@ func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTabl
 }
 
 func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -899,7 +899,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 }
 
 func ConfirmRequestTemplate(requestTemplateId string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}

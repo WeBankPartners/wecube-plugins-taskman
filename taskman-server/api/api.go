@@ -2,17 +2,17 @@ package api
 
 import (
 	"bytes"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
-	"io/ioutil"
-	"time"
-
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	requestNew "github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v2/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
+	"time"
 )
 
 type handlerFuncObj struct {
@@ -23,7 +23,8 @@ type handlerFuncObj struct {
 }
 
 var (
-	httpHandlerFuncList []*handlerFuncObj
+	httpHandlerFuncList   []*handlerFuncObj
+	httpHandlerFuncV2List []*handlerFuncObj
 )
 
 func init() {
@@ -52,7 +53,6 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: request.ConfirmImportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: request.DisableRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: request.EnableRequestTemplate},
-
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 
@@ -63,7 +63,7 @@ func init() {
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
 		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: request.GetRequestTemplateByUser},
-		//	&handlerFuncObj{Url: "/user/request-template-new", Method: "GET", HandlerFunc: request.GetRequestTemplateByUserNew},
+
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: request.GetEntityData},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
 
@@ -83,7 +83,6 @@ func init() {
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
-		//	&handlerFuncObj{Url: "/request/detail-new/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetailNew},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
 		&handlerFuncObj{Url: "/request/terminate/:requestId", Method: "POST", HandlerFunc: request.TerminateRequest},
 		&handlerFuncObj{Url: "/request/attach-file/upload/:requestId", Method: "POST", HandlerFunc: request.UploadRequestAttachFile},
@@ -102,6 +101,14 @@ func init() {
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
 		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
+	)
+
+	// v2 版本
+	httpHandlerFuncV2List = append(httpHandlerFuncV2List,
+		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: requestNew.GetRequestTemplateByUser},
+		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestDetail},
+		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: requestNew.CreateRequest},
+		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
 	)
 }
 
@@ -134,6 +141,25 @@ func InitHttpServer() {
 			break
 		}
 	}
+
+	authRouterV2 := r.Group(urlPrefix+"/api/v2", middleware.AuthCoreRequestToken())
+	for _, funcObj := range httpHandlerFuncV2List {
+		switch funcObj.Method {
+		case "GET":
+			authRouterV2.GET(funcObj.Url, funcObj.HandlerFunc)
+			break
+		case "POST":
+			authRouterV2.POST(funcObj.Url, funcObj.HandlerFunc)
+			break
+		case "PUT":
+			authRouterV2.PUT(funcObj.Url, funcObj.HandlerFunc)
+			break
+		case "DELETE":
+			authRouterV2.DELETE(funcObj.Url, funcObj.HandlerFunc)
+			break
+		}
+	}
+
 	// entity query
 	r.POST(urlPrefix+"/entities/request/query", request.QueryWorkflowEntity)
 	r.Run(":" + models.Config.HttpServer.Port)

@@ -41,7 +41,7 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	requestTemplateObj, getTemplateErr := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, getTemplateErr := GetSimpleRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
 		return
@@ -78,7 +78,7 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 }
 
 func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (result models.EntityTreeResult, err error) {
-	requestTemplateObj, getTemplateErr := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, getTemplateErr := GetSimpleRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
 		return
@@ -252,7 +252,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,r.status,r.created_by,r.handler,r.created_time,"+
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,r.status,r.created_by,r.handler,r.created_by,r.created_time,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) order by created_time desc", where, sql)
 	// 分页处理
 	pageInfo.StartIndex = param.StartIndex
@@ -555,7 +555,7 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 }
 
 func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(param.RequestTemplate)
+	requestTemplateObj, err := GetSimpleRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
@@ -618,6 +618,44 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, param)
 	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, requestId}})
+	return transaction(actions)
+}
+
+func SaveRequestCacheV2(requestId, operator, userToken string, param *models.RequestProDataV2Dto) error {
+	err := ValidateRequestForm(param.Data, userToken)
+	if err != nil {
+		return err
+	}
+	var formItemNameQuery []*models.FormItemTemplateTable
+	err = x.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	itemGroupNameMap := make(map[string][]string)
+	for _, v := range formItemNameQuery {
+		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
+	}
+	for _, v := range param.Data {
+		nameList := itemGroupNameMap[v.ItemGroup]
+		for _, value := range v.Value {
+			if value.Id == "" {
+				value.PackageName = v.PackageName
+				value.EntityName = v.Entity
+				value.EntityDataOp = "create"
+				value.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
+				value.DisplayName = concatItemDisplayName(value.EntityData, nameList)
+			}
+		}
+	}
+	newParam := &models.RequestPreDataDto{
+		RootEntityId: param.RootEntityId,
+		Data:         param.Data,
+	}
+	paramBytes, err := json.Marshal(newParam)
+	if err != nil {
+		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions := UpdateRequestFormItem(requestId, newParam)
+	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, requestId}})
 	return transaction(actions)
 }
 
@@ -725,7 +763,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	requestTemplateObj, _ := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, _ := GetSimpleRequestTemplate(requestTemplateId)
 	result.Id = requestTemplateObj.Id
 	result.Name = requestTemplateObj.Name
 	result.PackageName = requestTemplateObj.PackageName
@@ -1968,7 +2006,7 @@ func getSQL(status []string) string {
 func GetRequestProgressByTemplateId(templateId, user, userToken string) (rowsData []*models.RequestProgressObj, err error) {
 	var requestTemplate models.RequestTemplateTable
 	var pendingHandler string
-	requestTemplate, err = getSimpleRequestTemplate(templateId)
+	requestTemplate, err = GetSimpleRequestTemplate(templateId)
 	if err != nil {
 		return
 	}
@@ -2021,44 +2059,50 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 		pendingHandler = GetRequestTemplateManageRole(request.RequestTemplate)
 	}
 	subRowsData := getCommonRequestProgress(request.RequestTemplate, userToken)
-	if request.Status == "Pending" {
+	switch request.Status {
+	case "Draft":
+		status = int(NotStart)
+	case "Pending":
 		status = int(InProgress)
-	} else if request.Status == "Completed" {
+	case "Completed":
 		for _, row := range subRowsData {
 			row.Status = int(Completed)
 		}
-	} else {
+	default:
 		// 请求状态值,从编排接口读取最新状态值
-		requestStatus := getInstanceStatus(request.ProcInstanceId, userToken)
-		// 非定版&非完成状态,需要查询 任务节点状态
-		taskMap, _ := getTaskMapByRequestId(requestId)
-		if len(taskMap) > 0 && len(subRowsData) > 0 {
-			for i := len(subRowsData) - 1; i >= 0; i-- {
-				if v, ok := taskMap[subRowsData[i].NodeDefId]; ok {
-					// 当前任务节点存在,表示前面任务节点都已经完成(任务节点顺序创建,前面完成才会创建后面节点)
-					for j := i - 1; j >= 0; j-- {
-						subRowsData[j].Status = int(Completed)
-					}
-					if v.Status != "done" {
-						// 任务还在进行中,节点还在审批
-						subRowsData[i].Status = int(InProgress)
-					} else {
-						// 任务done,需要根据请求状态去判断,是处理完成还是失败
-						if requestStatus == "Completed" {
-							subRowsData[i].Status = int(Completed)
-						} else if requestStatus == "InProgress" {
+		if request.ProcInstanceId != "" {
+			requestStatus := getInstanceStatus(request.ProcInstanceId, userToken)
+			// 非定版&非完成状态,需要查询 任务节点状态
+			taskMap, _ := getTaskMapByRequestId(requestId)
+			if len(taskMap) > 0 && len(subRowsData) > 0 {
+				for i := len(subRowsData) - 1; i >= 0; i-- {
+					if v, ok := taskMap[subRowsData[i].NodeDefId]; ok {
+						// 当前任务节点存在,表示前面任务节点都已经完成(任务节点顺序创建,前面完成才会创建后面节点)
+						for j := i - 1; j >= 0; j-- {
+							subRowsData[j].Status = int(Completed)
+						}
+						if v.Status != "done" {
+							// 任务还在进行中,节点还在审批
 							subRowsData[i].Status = int(InProgress)
 						} else {
-							// 去掉完成和任务中,其他状态都表示失败(包括审批拒绝、编排执行失败)
-							subRowsData[i].Status = int(Fail)
+							// 任务done,需要根据请求状态去判断,是处理完成还是失败
+							if requestStatus == "Completed" {
+								subRowsData[i].Status = int(Completed)
+							} else if requestStatus == "InProgress" {
+								subRowsData[i].Status = int(InProgress)
+							} else {
+								// 去掉完成和任务中,其他状态都表示失败(包括审批拒绝、编排执行失败)
+								subRowsData[i].Status = int(Fail)
+							}
 						}
+						break
 					}
-					break
 				}
 			}
+		} else {
+			status = int(InProgress)
 		}
 	}
-
 	rowsData = append(append([]*models.RequestProgressObj{
 		{
 			Node:    SendRequest,
@@ -2108,7 +2152,7 @@ func GetRequestWorkFlow(param models.RequestQueryParam, userToken string) (rowsD
 	var request models.RequestTable
 	var byteArr []byte
 	var response models.WorkflowRsp
-	template, err = getSimpleRequestTemplate(param.TemplateId)
+	template, err = GetSimpleRequestTemplate(param.TemplateId)
 	if err != nil {
 		return
 	}
@@ -2118,7 +2162,9 @@ func GetRequestWorkFlow(param models.RequestQueryParam, userToken string) (rowsD
 		if err != nil {
 			return
 		}
-		url = fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, request.ProcInstanceId)
+		if request.ProcInstanceId != "" {
+			url = fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, request.ProcInstanceId)
+		}
 	}
 	byteArr, err = HttpGet(url, userToken)
 	if err != nil {
@@ -2184,18 +2230,5 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken)
 	}
 	form.Handler = request.Handler
-	if tmpTemplate[0].ProcDefId != "" {
-		processList, err := GetCoreProcessListAll(userToken)
-		if err != nil {
-			return
-		}
-		for _, process := range processList {
-			if process.ProcDefId == tmpTemplate[0].ProcDefId {
-				form.ProcDefId = process.ProcDefId
-				form.ProcDefName = process.ProcDefName
-				form.ProcCreateTime = process.CreatedTime
-			}
-		}
-	}
 	return
 }

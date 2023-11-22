@@ -25,7 +25,7 @@ type RequestTemplateTable struct {
 	Handler         string `json:"handler" xorm:"handler"`
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
-	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 请求类型, 0表示请求,1表示发布
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
 }
 
 type RequestTemplateGroupTable struct {

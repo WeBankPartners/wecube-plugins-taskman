@@ -11,7 +11,7 @@ import (
 
 func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error) {
 	result = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
-	requestTemplate, getErr := getSimpleRequestTemplate(id)
+	requestTemplate, getErr := GetSimpleRequestTemplate(id)
 	if getErr != nil {
 		err = getErr
 		return

@@ -126,6 +126,7 @@ type RequestTable struct {
 	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
 	Type                int                `json:"type" xorm:"type"`
 	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
+	Description         string             `json:"description"` // 请求描述
 }
 
 type ExpireObj struct {
@@ -293,6 +294,32 @@ type WorkflowEntityQuery struct {
 type WorkflowEntityDataObj struct {
 	Id          string `json:"id"`
 	DisplayName string `json:"displayName"`
+}
+
+type RequestForm struct {
+	Id                string `json:"id"`
+	Name              string `json:"name"`
+	RequestType       int    `json:"requestType"`       // 请求类型,0表示请求,1表示发布
+	Progress          int    `json:"progress"`          // 请求进度
+	Status            string `json:"status"`            // 请求状态
+	CurNode           string `json:"curNode"`           // 当前节点
+	Handler           string `json:"handler"`           // 当前处理人
+	CreatedBy         string `json:"createdBy"`         // 创建人
+	Role              string `json:"role"`              // 创建人角色
+	TemplateName      string `json:"templateName"`      // 使用模板
+	TemplateGroupName string `json:"templateGroupName"` // 使用模板组
+	Description       string `json:"description"`       // 请求描述
+	CreatedTime       string `json:"createdTime"`       // 创建时间
+	ExpectTime        string `json:"expectTime" `       // 期望时间
+	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
+	ProcDefId         string `json:"procDefId"`         // 编排ID
+	ProcDefName       string `json:"procDefName"`       // 编排名称
+	ProcCreateTime    string `json:"procCreateTime"`    // 编排创建时间
+}
+
+type RequestDetail struct {
+	Request   RequestForm     `json:"request"`   // 请求信息
+	HandleHis []*TaskQueryObj `json:"handleHis"` // 处理历史
 }
 
 type UpdateRequestStatusParam struct {

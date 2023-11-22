@@ -212,7 +212,7 @@ func GetCollectCount(user string) (resultArr []string) {
 }
 
 func collectSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from collect_template where account=? and type= ?"
+	sql = "select id from collect_template where user = ? and type= ?"
 	queryParam = append([]interface{}{user, templateType})
 	return
 }
@@ -271,7 +271,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 				platformDataObj.ProcDefName = templateMap[platformDataObj.TemplateId].ProcDefName
 			}
 			if platformDataObj.Status == "Pending" {
-				platformDataObj.CurNode = "requestPending"
+				platformDataObj.CurNode = RequestPending
 			}
 			if platformDataObj.ProcInstanceId != "" {
 				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, userToken)
@@ -1438,6 +1438,38 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	return
 }
 
+func GetRequestTaskListV2(requestId, userToken string) (result models.RequestDetail, err error) {
+	var taskTable []*models.TaskTable
+	err = x.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) > 0 {
+		result, err = GetTaskV2(taskTable[0].Id, userToken)
+		return
+	}
+	// get request
+	var requests []*models.RequestTable
+	x.SQL("select * from request where id=?", requestId).Find(&requests)
+	if len(requests) == 0 {
+		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
+	}
+	var requestCache models.RequestPreDataDto
+	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
+	if err != nil {
+		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
+	}
+	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
+	requestQuery.FormData = requestCache.Data
+	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
+	requestQuery.ExpireTime = requests[0].ExpireTime
+	requestQuery.ExpectTime = requests[0].ExpectTime
+	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
+	result.HandleHis = []*models.TaskQueryObj{&requestQuery}
+	result.Request = getRequestForm(requests[0], userToken)
+	return
+}
+
 func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string) (output []*models.RequestPreDataTableObj, err error) {
 	ciAttrMap := make(map[string][]string)
 	ciAttrSelectMap := make(map[string][]*models.EntityDataObj)
@@ -2118,5 +2150,52 @@ func HttpGet(url, userToken string) (byteArr []byte, err error) {
 	}
 	byteArr, _ = ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
+	return
+}
+
+// getRequestForm 获取请求信息
+func getRequestForm(request *models.RequestTable, userToken string) (form models.RequestForm) {
+	if request == nil {
+		return
+	}
+	var tmpTemplate []*models.RequestTemplateTmp
+	err := x.SQL("select rt.name as  template_name,rt.proc_def_id from request_template rt join "+
+		"request_template_group rtg on rt.group = rtg.id where rt.id= ?", request.RequestTemplate).Find(&tmpTemplate)
+	if err != nil {
+		return
+	}
+	if len(tmpTemplate) == 0 {
+		err = fmt.Errorf("can not find request_template with id:%s ", request.Id)
+		return
+	}
+	form.Id = request.Id
+	form.RequestType = request.Type
+	form.CreatedTime = request.CreatedTime
+	form.ExpectTime = request.ExpectTime
+	form.CreatedBy = request.CreatedBy
+	form.Role = request.ReportRole
+	form.Description = request.Description
+	form.TemplateName = tmpTemplate[0].TemplateName
+	form.TemplateGroupName = tmpTemplate[0].TemplateGroupName
+	if request.Status == "Pending" {
+		form.CurNode = RequestPending
+	}
+	if request.ProcInstanceId != "" {
+		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken)
+	}
+	form.Handler = request.Handler
+	if tmpTemplate[0].ProcDefId != "" {
+		processList, err := GetCoreProcessListAll(userToken)
+		if err != nil {
+			return
+		}
+		for _, process := range processList {
+			if process.ProcDefId == tmpTemplate[0].ProcDefId {
+				form.ProcDefId = process.ProcDefId
+				form.ProcDefName = process.ProcDefName
+				form.ProcCreateTime = process.CreatedTime
+			}
+		}
+	}
 	return
 }

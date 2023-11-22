@@ -130,5 +130,6 @@
   "updatedBy": "更新人",
   "createdBy": "创建人",
   "createdTime": "创建时间",
-  "rollback_desc": "回退原因"
+  "rollback_desc": "回退原因",
+  "workflow_name": "发布编排流程图"
 }

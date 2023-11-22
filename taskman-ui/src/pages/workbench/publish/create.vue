@@ -55,7 +55,7 @@
         </Form>
       </Col>
       <Col span="8">
-        <div class="program">111111111111111111111111111</div>
+        <StaticFlow></StaticFlow>
       </Col>
     </Row>
     <ChooseExampleDrawer
@@ -69,10 +69,12 @@
 <script>
 import HeaderTitle from '../components/header-title.vue'
 import ChooseExampleDrawer from './choose-example.vue'
+import StaticFlow from './flow/static-flow.vue'
 export default {
   components: {
     HeaderTitle,
-    ChooseExampleDrawer
+    ChooseExampleDrawer,
+    StaticFlow
   },
   data () {
     return {

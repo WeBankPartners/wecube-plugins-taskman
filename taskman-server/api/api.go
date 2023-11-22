@@ -63,7 +63,7 @@ func init() {
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
 		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: request.GetRequestTemplateByUser},
-		&handlerFuncObj{Url: "/user/request-template-new", Method: "GET", HandlerFunc: request.GetRequestTemplateByUserNew},
+		//	&handlerFuncObj{Url: "/user/request-template-new", Method: "GET", HandlerFunc: request.GetRequestTemplateByUserNew},
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: request.GetEntityData},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
 
@@ -83,7 +83,7 @@ func init() {
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
-		&handlerFuncObj{Url: "/request/detail-new/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetailNew},
+		//	&handlerFuncObj{Url: "/request/detail-new/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetailNew},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
 		&handlerFuncObj{Url: "/request/terminate/:requestId", Method: "POST", HandlerFunc: request.TerminateRequest},
 		&handlerFuncObj{Url: "/request/attach-file/upload/:requestId", Method: "POST", HandlerFunc: request.UploadRequestAttachFile},

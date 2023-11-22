@@ -280,15 +280,6 @@ func GetRequestTemplateByUser(c *gin.Context) {
 	}
 }
 
-func GetRequestTemplateByUserNew(c *gin.Context) {
-	result, err := db.GetRequestTemplateByUserV2(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
-	}
-}
-
 func ForkConfirmRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("id")
 	err := db.ForkConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))

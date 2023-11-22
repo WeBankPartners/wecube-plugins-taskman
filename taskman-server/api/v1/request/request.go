@@ -119,17 +119,6 @@ func GetRequestDetail(c *gin.Context) {
 	}
 }
 
-// GetRequestDetailNew 新版请求详情
-func GetRequestDetailNew(c *gin.Context) {
-	requestId := c.Param("requestId")
-	result, err := db.GetRequestTaskListV2(requestId, c.GetHeader("Authorization"))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
-	}
-}
-
 func GetRequestRootForm(c *gin.Context) {
 	requestId := c.Param("requestId")
 	result, err := db.GetRequestRootForm(requestId)

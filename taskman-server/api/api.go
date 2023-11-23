@@ -102,8 +102,6 @@ func init() {
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
 		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
-
-		&handlerFuncObj{Url: "/user/request-template-new", Method: "GET", HandlerFunc: requestNew.GetRequestTemplateByUser},
 	)
 
 	// v2 版本

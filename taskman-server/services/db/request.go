@@ -252,7 +252,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,r.status,r.created_by,r.handler,r.created_by,r.created_time,"+
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,rt.operator_obj_type,rt.role,r.status,r.created_by,r.handler,r.created_by,r.created_time,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) order by created_time desc", where, sql)
 	// 分页处理
 	pageInfo.StartIndex = param.StartIndex
@@ -279,6 +279,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			if collectMap[platformDataObj.TemplateId] {
 				platformDataObj.CollectFlag = 1
 			}
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 		}
 	}
 	return
@@ -568,10 +569,14 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 	formGuid := guid.CreateGuid()
 	param.Id = newRequestId()
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
-	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate, nowTime, param.CreatedBy, nowTime, param.CreatedBy}
+	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate,
+		nowTime, param.CreatedBy, nowTime, param.CreatedBy}
 	actions = append(actions, &formInsertAction)
-	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency, strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, requestTemplateObj.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time," +
+		"expect_time,handler,created_by,created_time,updated_by,updated_time,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency,
+		strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, requestTemplateObj.Handler, param.CreatedBy, nowTime,
+		param.CreatedBy, nowTime, param.Type, param.Role}
 	actions = append(actions, &requestInsertAction)
 	return transactionWithoutForeignCheck(actions)
 }
@@ -654,8 +659,8 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, newParam)
-	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, requestId}})
+	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, requestId, param.ExpectTime}})
 	return transaction(actions)
 }
 
@@ -2234,8 +2239,21 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态,查询任务处理人
-func getRequestHandler() {
+func getRequestHandler(requestId string) (role string, handler string) {
+	request, _ := GetSimpleRequest(requestId)
+	if request.Status == "Draft" || request.Status == "Pending" {
+		// 请求在定版状态,从模板角色表中读取
+		rtRoleMap := getRequestTemplateMGMTRole()
+		roles := rtRoleMap[request.RequestTemplate]
+		if len(roles) > 0 {
+			role = roles[0]
+		}
+		handler = request.Handler
+		return
+	}
+	// 请求在任务状态,需要从模板配置的任务表中获取
 
+	return
 }
 
 func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (nodeData *models.ExecutionNode, err error) {

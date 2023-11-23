@@ -31,6 +31,7 @@ export default {
   },
   data () {
     return {
+      requestData: [],
       styles: {
         height: 'calc(100% - 55px)',
         overflow: 'auto',
@@ -113,8 +114,26 @@ export default {
         this.maxHeight = document.body.clientHeight - 150
       }, 100)
     )
+    this.getEntityData()
   },
   methods: {
+    async getEntityData () {
+      let params = {
+        params: {
+          requestId: this.$parent.requestId || '6557454d5324718d',
+          rootEntityId: this.$parent.form.rootEntityId
+        }
+      }
+      const { statusCode, data } = await getEntityData(params)
+      if (statusCode === 'OK') {
+        // this.activeTab = this.activeTab || data.data[0].entity
+        this.requestData = data.data
+        // this.$nextTick(() => {
+        //   const index = this.requestData.findIndex(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        //   this.initTable(index)
+        // })
+      }
+    },
     selectTreeData (arr) {
       this.treeData.forEach(i => {
         i.selectCount = 0

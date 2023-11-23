@@ -1,7 +1,7 @@
 <template>
   <div
     class="workbench-menu"
-    :style="{ 
+    :style="{
       width: expand ? '180px' : '0px',
       top: scrollTop > 50 ? '0px' : 50 - scrollTop + 'px'
     }"
@@ -90,11 +90,11 @@ export default {
   mounted () {
     window.addEventListener('scroll', debounce(this.getScrollTop, 100))
   },
-  beforeDestroy() {
+  beforeDestroy () {
     window.removeEventListener('scroll', this.getScrollTop)
   },
   methods: {
-    getScrollTop() {
+    getScrollTop () {
       this.scrollTop = document.documentElement.scrollTop || document.body.scrollTop
     },
     handleExpand () {

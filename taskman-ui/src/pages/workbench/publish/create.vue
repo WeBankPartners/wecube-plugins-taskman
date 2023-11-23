@@ -33,20 +33,18 @@
           </HeaderTitle>
           <HeaderTitle title="发布目标对象">
             <FormItem label="选择操作单元" required>
-              <Select
-                v-model="form.rootEntityId"
-                clearable
-                filterable
-                style="width:300px;"
-                @on-change="getEntityData"
-              >
-                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
+              <Select v-model="form.rootEntityId" clearable filterable style="width:300px;" @on-change="getEntityData">
+                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                  item.key_name
+                }}</Option>
               </Select>
             </FormItem>
             <FormItem v-if="requestData.length" label="已选择">
               <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
                 <Radio v-for="(item, index) in requestData" :label="item.entity || item.itemGroup" :key="index" border>
-                  <span>{{`${item.itemGroup}`}}<span class="count">{{ item.value.length }}</span></span>
+                  <span
+                    >{{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span></span
+                  >
                 </Radio>
               </RadioGroup>
               <Table size="small" :columns="tableColumns" :data="tableData"></Table>
@@ -56,8 +54,7 @@
       </Col>
       <!--编排流程-->
       <Col span="8">
-        <div class="program">
-        </div>
+        <div class="program"></div>
       </Col>
     </Row>
     <ChooseExampleDrawer
@@ -90,7 +87,7 @@ export default {
         rootEntityId: '', // 目标对象
         exampleType: 1
       },
-      rootEntityOptions: [], 
+      rootEntityOptions: [],
       steps: [
         { name: '提起请求', status: 'process', icon: 'md-pin', color: '#ffa500' },
         { name: '请求定版', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
@@ -127,7 +124,9 @@ export default {
                     type="md-trash"
                     color="#ed4014"
                     style="cursor:pointer;"
-                    onClick={() => {this.handleDeleteRow(params.row)}}
+                    onClick={() => {
+                      this.handleDeleteRow(params.row)
+                    }}
                   />
                 </Tooltip>
                 <Tooltip content="编辑" placement="top-start">
@@ -135,7 +134,9 @@ export default {
                     size="20"
                     type="md-create"
                     style="cursor:pointer;"
-                    onClick={() => {this.handleEditRow(params.row)}}
+                    onClick={() => {
+                      this.handleEditRow(params.row)
+                    }}
                   />
                 </Tooltip>
                 <Tooltip content="查看" placement="top-start">
@@ -143,7 +144,9 @@ export default {
                     size="20"
                     type="md-eye"
                     style="cursor:pointer;"
-                    onClick={() => {this.handleViewRow(params.row)}}
+                    onClick={() => {
+                      this.handleViewRow(params.row)
+                    }}
                   />
                 </Tooltip>
               </div>
@@ -153,7 +156,7 @@ export default {
       ]
     }
   },
-  async mounted() {
+  async mounted () {
     this.templateId = this.$route.query.templateId || ''
     if (this.templateId) {
       await this.getCreateInfo()
@@ -163,11 +166,11 @@ export default {
   },
   methods: {
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
-    handleTabChange: debounce(function() {
+    handleTabChange: debounce(function () {
       this.initTableData()
     }, 100),
     // 创建发布,使用模板ID获取详情数据
-    async getCreateInfo() {
+    async getCreateInfo () {
       const params = {
         templateId: this.templateId
       }
@@ -234,17 +237,13 @@ export default {
         if (t.elementType === 'select') {
           column.render = (h, params) => {
             return (
-              <Select
-                v-model={params.row[t.name]}
-                multiple={t.multiple === 'Y'}
-                disabled={false}
-              >
-                {
-                  Array.isArray(params.row[t.name + 'Options']) &&
-                  params.row[t.name + 'Options'].map(i => 
-                    <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>{t.entity ? i.key_name : i}</Option>
-                  )
-                }
+              <Select v-model={params.row[t.name]} multiple={t.multiple === 'Y'} disabled={false}>
+                {Array.isArray(params.row[t.name + 'Options']) &&
+                  params.row[t.name + 'Options'].map(i => (
+                    <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
+                      {t.entity ? i.key_name : i}
+                    </Option>
+                  ))}
               </Select>
             )
           }
@@ -254,7 +253,7 @@ export default {
       // 下拉类型数据初始化
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
-          const titleObj= data.title.find(f => f.name === rfk)
+          const titleObj = data.title.find(f => f.name === rfk)
           this.getRefOptions(titleObj, row, index)
         })
       })
@@ -309,17 +308,13 @@ export default {
         this.$set(this.tableData, index, row)
       }
     },
-    handleDeleteRow(row) {
+    handleDeleteRow (row) {
       // let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
       // find.value.splice(index, 1)
       // this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
     },
-    handleEditRow(row) {
-
-    },
-    handleViewRow(row) {
-
-    },
+    handleEditRow (row) {},
+    handleViewRow (row) {},
     // 保存草稿
     handleDraft () {},
     // 发布

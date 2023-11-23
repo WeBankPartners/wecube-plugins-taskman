@@ -36,7 +36,7 @@ export const throttle = (fn, delay) => {
 }
 
 // 深拷贝
-export const deepClone = (obj) => {
+export const deepClone = obj => {
   let objClone = Array.isArray(obj) ? [] : {}
   if (obj && typeof obj === 'object') {
     for (let key in obj) {

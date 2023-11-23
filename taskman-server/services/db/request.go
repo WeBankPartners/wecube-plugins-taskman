@@ -2232,3 +2232,26 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	form.Handler = request.Handler
 	return
 }
+
+// getRequestHandler 获取请求处理人,如果处于任务执行状态,查询任务处理人
+func getRequestHandler() {
+
+}
+
+func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (nodeData *models.ExecutionNode, err error) {
+	var byteArr []byte
+	var response models.ExecutionResponse
+	var url = fmt.Sprintf("%s/platform/v1/process/instances/%s/tasknodes/%s/context", models.Config.Wecube.BaseUrl, procInstanceId, nodeInstanceId)
+	byteArr, err = HttpGet(url, userToken)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		return
+	}
+	if response.Data != nil {
+		nodeData = response.Data
+	}
+	return
+}

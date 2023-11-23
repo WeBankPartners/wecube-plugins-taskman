@@ -25,43 +25,45 @@
         <Form :model="form" label-position="right" :label-width="120">
           <HeaderTitle title="发布信息">
             <FormItem label="请求名称" required>
-              <Input placeholder="请输入" style="width:400px;" />
+              <Input v-model="form.name" placeholder="请输入" style="width:400px;" />
             </FormItem>
             <FormItem label="发布描述">
-              <Input placeholder="请输入" style="width:400px;" />
+              <Input v-model="form.description" placeholder="请输入" style="width:400px;" />
             </FormItem>
           </HeaderTitle>
           <HeaderTitle title="发布目标对象">
             <FormItem label="选择操作单元" required>
-              <Select v-model="form.unit" clearable filterable style="width:250px;margin-right:20px;">
-                <Option v-for="i in 5" :value="i" :key="i">{{ i }}</Option>
+              <Select
+                v-model="form.rootEntityId"
+                clearable
+                filterable
+                style="width:300px;"
+                @on-change="getEntityData"
+              >
+                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
               </Select>
-              <Button type="primary" @click="handleChooseExample">点击勾选操作实例</Button>
             </FormItem>
-            <FormItem v-if="chooseExampleData.length" label="已选择">
-              <RadioGroup v-model="form.exampleType">
-                <Radio v-for="(i, idx) in chooseExampleData" :label="i.parent" :key="idx" border>{{
-                  `${i.title}(${i.selectCount})个`
-                }}</Radio>
+            <FormItem v-if="requestData.length" label="已选择">
+              <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
+                <Radio v-for="(item, index) in requestData" :label="item.entity || item.itemGroup" :key="index" border>
+                  <span>{{`${item.itemGroup}`}}<span class="count">{{ item.value.length }}</span></span>
+                </Radio>
               </RadioGroup>
-              <Tabs value="name1" style="margin-top:20px;">
-                <TabPane label="标签一" name="name1"></TabPane>
-                <TabPane label="标签二" name="name2"></TabPane>
-                <TabPane label="标签三" name="name3"></TabPane>
-              </Tabs>
               <Table size="small" :columns="tableColumns" :data="tableData"></Table>
             </FormItem>
           </HeaderTitle>
         </Form>
       </Col>
+      <!--编排流程-->
       <Col span="8">
-        <div class="program">111111111111111111111111111</div>
+        <div class="program">
+        </div>
       </Col>
     </Row>
     <ChooseExampleDrawer
-      v-if="chooseExampleVisible"
-      :visible.sync="chooseExampleVisible"
-      @getData="getChooseExampleData"
+      v-if="chooseEntityVisible"
+      :visible.sync="chooseEntityVisible"
+      @getData="getChooseEntityData"
     ></ChooseExampleDrawer>
   </div>
 </template>
@@ -69,6 +71,8 @@
 <script>
 import HeaderTitle from '../components/header-title.vue'
 import ChooseExampleDrawer from './choose-example.vue'
+import { createRequest, getRootEntity, getEntityData, getRefOptions } from '@/api/server'
+import { deepClone, debounce } from '@/pages/util'
 export default {
   components: {
     HeaderTitle,
@@ -76,10 +80,17 @@ export default {
   },
   data () {
     return {
+      templateId: '',
+      requestId: '6557454d5324718d',
+      activeTab: '',
+      refKeys: [], // 引用类型字段集合select类型
       form: {
-        unit: '',
+        name: '',
+        description: '',
+        rootEntityId: '', // 目标对象
         exampleType: 1
       },
+      rootEntityOptions: [], 
       steps: [
         { name: '提起请求', status: 'process', icon: 'md-pin', color: '#ffa500' },
         { name: '请求定版', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
@@ -87,60 +98,227 @@ export default {
         { name: '任务2审批', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
         { name: '请求完成', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' }
       ],
-      chooseExampleVisible: false,
-      chooseExampleData: [], // 勾选的的实例
+      chooseEntityVisible: false,
+      chooseEntityData: [], // 勾选的的实例
       exampleTabName: '', // 当前选中实例tab
       exampleTabList: [],
-      tableColumns: [
+      tableColumns: [],
+      tableData: [], // 用于当前表格数据的展示
+      requestData: [], // 用于最后提交的所有表格数据
+      initTableColumns: [
         {
-          title: '序号',
-          key: 'no'
-        },
-        {
-          title: 'IP',
-          key: 'ip'
-        },
-        {
-          title: '部署包',
-          key: 'package'
-        },
-        {
-          title: 'DCN',
-          key: 'dcn'
+          type: 'selection',
+          width: 55,
+          align: 'center',
+          fixed: 'left'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 130,
+          width: 120,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (
-              <div>
-                <Icon size="24" type="md-trash" color="#ed4014" />
-                <Icon size="24" type="md-create" />
-                <Icon size="24" type="md-eye" />
+              <div style="display:flex;justify-content:space-around;">
+                <Tooltip content="删除" placement="top-start">
+                  <Icon
+                    size="20"
+                    type="md-trash"
+                    color="#ed4014"
+                    style="cursor:pointer;"
+                    onClick={() => {this.handleDeleteRow(params.row)}}
+                  />
+                </Tooltip>
+                <Tooltip content="编辑" placement="top-start">
+                  <Icon
+                    size="20"
+                    type="md-create"
+                    style="cursor:pointer;"
+                    onClick={() => {this.handleEditRow(params.row)}}
+                  />
+                </Tooltip>
+                <Tooltip content="查看" placement="top-start">
+                  <Icon
+                    size="20"
+                    type="md-eye"
+                    style="cursor:pointer;"
+                    onClick={() => {this.handleViewRow(params.row)}}
+                  />
+                </Tooltip>
               </div>
             )
           }
         }
-      ],
-      tableData: [
-        { no: 1, ip: '198.168.150.12', package: 'dsad.dada.dasda.dsa', dcn: '321312313312' },
-        { no: 1, ip: '198.168.150.12', package: 'dsad.dada.dasda.dsa', dcn: '321312313312' },
-        { no: 1, ip: '198.168.150.12', package: 'dsad.dada.dasda.dsa', dcn: '321312313312' },
-        { no: 1, ip: '198.168.150.12', package: 'dsad.dada.dasda.dsa', dcn: '321312313312' }
       ]
     }
   },
+  async mounted() {
+    this.templateId = this.$route.query.templateId || ''
+    if (this.templateId) {
+      await this.getCreateInfo()
+    }
+    this.getEntity()
+    this.getEntityData()
+  },
   methods: {
-    // 操作实例弹窗
-    handleChooseExample () {
-      this.chooseExampleVisible = true
+    // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
+    handleTabChange: debounce(function() {
+      this.initTableData()
+    }, 100),
+    // 创建发布,使用模板ID获取详情数据
+    async getCreateInfo() {
+      const params = {
+        templateId: this.templateId
+      }
+      const { statusCode, data } = await createRequest(params)
+      if (statusCode === 'OK') {
+        this.requestId = data.id
+        this.form.name = data.name
+      }
     },
-    // 获取操作实例弹窗数据
-    getChooseExampleData (data) {
-      this.chooseExampleData = data
+    // 操作目标对象下拉值
+    async getEntity () {
+      let params = {
+        params: {
+          requestId: this.requestId
+        }
+      }
+      const { statusCode, data } = await getRootEntity(params)
+      if (statusCode === 'OK') {
+        this.rootEntityOptions = data.data
+      }
+    },
+    // 获取目标对象对应数据
+    async getEntityData () {
+      let params = {
+        params: {
+          requestId: this.requestId,
+          rootEntityId: this.form.rootEntityId
+        }
+      }
+      const { statusCode, data } = await getEntityData(params)
+      if (statusCode === 'OK') {
+        this.requestData = data.data
+        this.activeTab = this.activeTab || data.data[0].entity
+        this.initTableData()
+      }
+    },
+    async initTableData () {
+      // 当前选择tab数据
+      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+      this.oriData = data
+      // select类型集合
+      this.refKeys = []
+      data.title.forEach(t => {
+        if (t.elementType === 'select') {
+          this.refKeys.push(t.name)
+        }
+      })
+      // table数据初始化
+      this.tableData = data.value.map(v => {
+        this.refKeys.forEach(rfk => {
+          v.entityData[rfk + 'Options'] = []
+        })
+        v.entityData._id = v.id
+        return v.entityData
+      })
+      // tableColumns数据初始化
+      this.tableColumns = deepClone(this.initTableColumns)
+      data.title.forEach(t => {
+        let column = {
+          title: t.title,
+          key: t.name,
+          align: 'left'
+        }
+        if (t.elementType === 'select') {
+          column.render = (h, params) => {
+            return (
+              <Select
+                v-model={params.row[t.name]}
+                multiple={t.multiple === 'Y'}
+                disabled={false}
+              >
+                {
+                  Array.isArray(params.row[t.name + 'Options']) &&
+                  params.row[t.name + 'Options'].map(i => 
+                    <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>{t.entity ? i.key_name : i}</Option>
+                  )
+                }
+              </Select>
+            )
+          }
+        }
+        this.tableColumns.push(column)
+      })
+      // 下拉类型数据初始化
+      this.tableData.forEach((row, index) => {
+        this.refKeys.forEach(rfk => {
+          const titleObj= data.title.find(f => f.name === rfk)
+          this.getRefOptions(titleObj, row, index)
+        })
+      })
+    },
+    async getRefOptions (titleObj, row, index) {
+      if (titleObj.elementType === 'select' && titleObj.entity === '') {
+        row[titleObj.name + 'Options'] = titleObj.dataOptions.split(',')
+        this.$set(this.tableData, index, row)
+        return
+      }
+      // if (titleObj.refEntity === '') {
+      //   row[titleObj.name + 'Options'] = titleObj.selectList
+      //   this.$set(this.tableData, index, row)
+      //   return
+      // }
+      let cache = JSON.parse(JSON.stringify(row))
+      const keys = Object.keys(cache)
+      keys.forEach(key => {
+        if (Array.isArray(cache[key])) {
+          cache[key] = cache[key].map(c => {
+            return {
+              guid: c
+            }
+          })
+          cache[key] = JSON.stringify(cache[key])
+        }
+      })
+      cache[titleObj.name] = ''
+      this.refKeys.forEach(k => {
+        delete cache[k + 'Options']
+      })
+      const filterValue = row[titleObj.name]
+      const attr = titleObj.entity + '__' + titleObj.name
+      const params = {
+        filters: [
+          {
+            name: 'guid',
+            operator: 'in',
+            value: Array.isArray(filterValue) ? filterValue : [filterValue]
+          }
+        ],
+        paging: false,
+        dialect: {
+          associatedData: {
+            ...cache
+          }
+        }
+      }
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
+      if (statusCode === 'OK') {
+        row[titleObj.name + 'Options'] = data
+        this.$set(this.tableData, index, row)
+      }
+    },
+    handleDeleteRow(row) {
+      // let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
+      // find.value.splice(index, 1)
+      // this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
+    },
+    handleEditRow(row) {
+
+    },
+    handleViewRow(row) {
+
     },
     // 保存草稿
     handleDraft () {},
@@ -178,6 +356,11 @@ export default {
     .split-line {
       border-right: 2px dashed #d7dadc;
       padding-right: 20px;
+    }
+    .count {
+      font-weight: bold;
+      font-size: 14px;
+      margin-left: 10px;
     }
     .program {
       padding: 20px;

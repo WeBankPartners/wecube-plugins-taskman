@@ -22,8 +22,11 @@
         </Steps>
       </div>
       <div v-if="currentStep !== -1" style="margin-top:12px;">
+        <!--基础信息-->
         <BasicForm @basicForm="basicForm" v-if="currentStep === 0"></BasicForm>
+        <!--表单填写-->
         <DataCrud @nextStep="nextStep" v-if="currentStep === 1"></DataCrud>
+        <!--数据绑定-->
         <DataBind v-if="currentStep === 2"></DataBind>
       </div>
     </template>

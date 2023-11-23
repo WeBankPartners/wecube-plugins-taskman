@@ -244,6 +244,9 @@ export default {
     padding: 5px 10px;
     line-height: 1;
   }
+  .ivu-table-row {
+    cursor: pointer;
+  }
   .ivu-form-item {
     margin-bottom: 10px !important;
   }

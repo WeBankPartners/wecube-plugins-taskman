@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import { debounce } from '@/pages/util'
 export default {
   data () {
     return {
@@ -88,7 +87,7 @@ export default {
     })
   },
   mounted () {
-    window.addEventListener('scroll', debounce(this.getScrollTop, 100))
+    window.addEventListener('scroll', this.getScrollTop)
   },
   beforeDestroy () {
     window.removeEventListener('scroll', this.getScrollTop)

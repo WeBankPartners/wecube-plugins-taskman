@@ -20,8 +20,10 @@
   "tm_updated_time": "更新时间",
   "tm_template_group": "模板组",
   "group": "模板组",
+  "scene_type": "模板场景类型",
   "procDefId": "流程",
   "mgmtRoles": "管理角色",
+  "mgmtRolesNew": "模板属主角色",
   "processing_role": "处理角色",
   "useRoles": "使用角色",
   "tags": "标签",
@@ -69,6 +71,7 @@
   "reporter": "上报人",
   "report_time": "上报时间",
   "handler": "处理人",
+  "handlerNew": "模板属主",
   "handler_role": "处理角色",
   "handle_time": "处理时间",
   "process_result": "处理结果",
@@ -133,5 +136,7 @@
   "rollback_desc": "回退原因",
   "workflow_name": "发布编排流程图",
   "select_an_operation": "请选择操作",
-  "show_log": "查看日志"
+  "show_log": "查看日志",
+  "request": "请求",
+  "publish": "发布"
 }

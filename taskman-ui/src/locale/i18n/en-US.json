@@ -20,8 +20,10 @@
   "tm_updated_time": "Updated Time",
   "tm_template_group": "Template Group",
   "group": "Template Group",
+  "scene_type": "Template Scene Type",
   "procDefId": "Process",
   "mgmtRoles": "MGMT Roles",
+  "mgmtRolesNew": "Template Owner Role",
   "processing_role": "Handle Role",
   "useRoles": "User Role",
   "tags": "Tags",
@@ -69,6 +71,7 @@
   "reporter": "Reporter",
   "report_time": "Report Time",
   "handler": "Handler",
+  "handlerNew": "Template Owner",
   "handler_role": "Handler Role",
   "handle_time": "Handler Time",
   "process_result": "Process Result",
@@ -133,5 +136,7 @@
   "rollback_desc": "Rollback Cause",
   "workflow_name": "Workflow",
   "select_an_operation": "Please Select",
-  "show_log": "Show Log"
+  "show_log": "Show Log",
+  "request": "Request",
+  "publish": "Publish"
 }

@@ -9,53 +9,69 @@
             </template>
           </Input>
         </FormItem>
-        <FormItem label="标签" :label-width="50">
-          <Input v-model="form.tagName" @on-change="filterData" style="width:300px" placeholder="请输入模板标签">
+        <FormItem label="操作对象类型" :label-width="100">
+          <!-- <Input v-model="form.tagName" @on-change="filterData" style="width:300px" placeholder="请选择操作对象类型">
             <template #suffix>
               <Icon type="ios-search" />
             </template>
-          </Input>
+          </Input> -->
+          <Select
+            v-model="form.operatorObjType"
+            @on-change="filterData"
+            clearable
+            filterable
+            placeholder="请选择操作对象类型"
+            style="width:300px;"
+          >
+            <Option v-for="(item, index) in operateOptions" :value="item" :key="index">{{ item }}</Option>
+          </Select>
         </FormItem>
-        <FormItem label="展示未发布模板" :label-width="120">
+        <!-- <FormItem label="展示未发布模板" :label-width="120">
           <i-Switch v-model="form.unPublishShow" @on-change="filterData" />
-        </FormItem>
+        </FormItem> -->
       </Form>
     </div>
     <div class="wrapper">
-      <div v-if="cardList.length" class="template">
-        <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
-          <div class="w-header" slot="title">
-            <Icon size="28" type="ios-people" />
-            <div class="title">
-              {{ i.manageRole }}
-              <span class="underline"></span>
-            </div>
-            <Icon size="28" type="md-arrow-dropdown" style="cursor:pointer;" @click="handleExpand(i)" />
-          </div>
-          <div v-show="i.expand">
-            <div v-for="j in i.groups" :key="j.groupId" class="content">
-              <div class="sub-header">
-                <Icon size="24" type="ios-folder" />
-                <span class="title">{{ j.groupName }}</span>
+      <div class="template">
+        <Tabs v-model="activeName" @on-click="filterData" style="margin-bottom:10px;">
+          <TabPane label="已发布模板" name="confirm"></TabPane>
+          <TabPane label="我的草稿" name="created"></TabPane>
+        </Tabs>
+        <template v-if="cardList.length">
+          <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
+            <div class="w-header" slot="title">
+              <Icon size="28" type="ios-people" />
+              <div class="title">
+                {{ i.manageRole }}
+                <span class="underline"></span>
               </div>
-              <Table
-                @on-row-click="
-                  $event => {
-                    handleChooseTemplate($event, i.manageRole)
-                  }
-                "
-                size="small"
-                :columns="tableColumns"
-                :data="j.templates"
-                style="margin:10px 0 20px 0"
-              >
-              </Table>
+              <Icon size="28" type="md-arrow-dropdown" style="cursor:pointer;" @click="handleExpand(i)" />
             </div>
-          </div>
-        </Card>
-      </div>
-      <div v-else class="template-no-data">
-        暂无数据
+            <div v-show="i.expand">
+              <div v-for="j in i.groups" :key="j.groupId" class="content">
+                <div class="sub-header">
+                  <Icon size="24" type="ios-folder" />
+                  <span class="title">{{ j.groupName }}</span>
+                </div>
+                <Table
+                  @on-row-click="
+                    $event => {
+                      handleChooseTemplate($event, i.manageRole)
+                    }
+                  "
+                  size="small"
+                  :columns="tableColumns"
+                  :data="j.templates"
+                  style="margin:10px 0 20px 0"
+                >
+                </Table>
+              </div>
+            </div>
+          </Card>
+        </template>
+        <div v-else class="template-no-data">
+          暂无数据
+        </div>
       </div>
       <div class="list">
         <Card style="width:300px;min-height:360px;">
@@ -85,11 +101,12 @@ import { getTemplateTree, collectTemplate, uncollectTemplate, collectTemplateLis
 export default {
   data () {
     return {
+      activeName: 'confirm',
       form: {
         templateName: '',
-        tagName: '',
-        unPublishShow: true
+        operatorObjType: ''
       },
+      operateOptions: [],
       // 收藏列表
       collectList: [],
       // 模板数据
@@ -134,22 +151,22 @@ export default {
             )
           }
         },
+        // {
+        //   title: '状态',
+        //   key: 'status',
+        //   render: (h, params) => {
+        //     return (
+        //       <Tag color={params.row.status === 'created' ? '#85888e' : 'success'}>
+        //         {{ created: '未发布', confirm: '已发布' }[params.row.status]}
+        //       </Tag>
+        //     )
+        //   }
+        // },
         {
-          title: '状态',
-          key: 'status',
+          title: '操作对象类型',
+          key: 'operatorObjType',
           render: (h, params) => {
-            return (
-              <Tag color={params.row.status === 'created' ? '#85888e' : 'success'}>
-                {{ created: '未发布', confirm: '已发布' }[params.row.status]}
-              </Tag>
-            )
-          }
-        },
-        {
-          title: '标签',
-          key: 'tags',
-          render: (h, params) => {
-            return params.row.tags && <Tag>{params.row.tags}</Tag>
+            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
           }
         },
         {
@@ -172,6 +189,13 @@ export default {
           Array.isArray(data) &&
           data.map(i => {
             i.expand = true
+            i.groups.forEach(j => {
+              j.templates.forEach(m => {
+                if (m.operatorObjType) {
+                  this.operateOptions.push(m.operatorObjType)
+                }
+              })
+            })
             return i
           })
         this.originCardList = this.cardList
@@ -213,7 +237,7 @@ export default {
     },
     // 搜索过滤模板数据
     filterData () {
-      const { templateName, tagName, unPublishShow } = this.form
+      const { templateName, operatorObjType } = this.form
       this.cardList = JSON.parse(JSON.stringify(this.originCardList))
       this.cardList = this.cardList.filter(i => {
         i.groups =
@@ -224,9 +248,8 @@ export default {
                   j.templates.filter(k => {
                     // 根据模板名、标签名、模版发布状态组合搜索
                     const nameFlag = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
-                    const tagFlag = k.tags.toLowerCase().indexOf(tagName.toLowerCase()) > -1
-                    const statusFlag = unPublishShow ? true : k.status === 'confirm'
-                    return nameFlag && tagFlag && statusFlag
+                    const operatorFlag = operatorObjType ? k.operatorObjType === operatorObjType : true
+                    return nameFlag && operatorFlag && this.activeName === k.status
                   })) ||
                 []
               // 没有模板的组不显示

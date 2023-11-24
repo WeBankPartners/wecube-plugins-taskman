@@ -178,7 +178,7 @@ func GetSubmitCount(user string) (resultArr []string) {
 }
 
 func submitSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag=0 and created_by = ? and type = ?"
+	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ))"
 	queryParam = append([]interface{}{user, templateType})
 	return
 }
@@ -195,7 +195,7 @@ func GetDraftCount(user string) (resultArr []string) {
 }
 
 func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ?"
+	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ? and rollback_desc is null"
 	queryParam = append([]interface{}{user, templateType})
 	return
 }
@@ -1487,34 +1487,13 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	return
 }
 
-func GetRequestTaskListV2(requestId, userToken string) (result models.RequestDetail, err error) {
-	var taskTable []*models.TaskTable
-	err = x.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
-	if err != nil {
-		return
-	}
-	if len(taskTable) > 0 {
-		result, err = GetTaskV2(taskTable[0].Id, userToken)
-		return
-	}
+func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetail, err error) {
 	// get request
 	var requests []*models.RequestTable
 	x.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
 	}
-	var requestCache models.RequestPreDataDto
-	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
-	if err != nil {
-		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
-	}
-	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
-	requestQuery.FormData = requestCache.Data
-	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
-	requestQuery.ExpireTime = requests[0].ExpireTime
-	requestQuery.ExpectTime = requests[0].ExpectTime
-	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
-	result.HandleHis = []*models.TaskQueryObj{&requestQuery}
 	result.Request = getRequestForm(requests[0], userToken)
 	return
 }

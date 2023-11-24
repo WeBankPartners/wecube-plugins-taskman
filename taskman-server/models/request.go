@@ -327,8 +327,7 @@ type RequestForm struct {
 }
 
 type RequestDetail struct {
-	Request   RequestForm     `json:"request"`   // 请求信息
-	HandleHis []*TaskQueryObj `json:"handleHis"` // 处理历史
+	Request RequestForm `json:"request"` // 请求信息
 }
 
 type UpdateRequestStatusParam struct {

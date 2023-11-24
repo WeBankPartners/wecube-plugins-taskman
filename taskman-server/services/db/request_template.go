@@ -1062,6 +1062,8 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
 	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
 	var useGroupMap = make(map[string]*models.RequestTemplateGroupTable)
+	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
+	var roleList []string
 	result = []*models.UserRequestTemplateQueryObjNew{}
 	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
@@ -1159,13 +1161,15 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 				for groupId, templateArr := range roleGroupMap {
 					if template.Group == groupId {
 						templateArr = append(templateArr, &models.RequestTemplateTableObj{
-							Id:          template.Id,
-							Name:        template.Name,
-							Tags:        template.Tags,
-							Status:      template.Status,
-							UpdatedBy:   template.UpdatedBy,
-							UpdatedTime: template.UpdatedTime,
-							CollectFlag: collectFlag,
+							Id:              template.Id,
+							Name:            template.Name,
+							Tags:            template.Tags,
+							Status:          template.Status,
+							UpdatedBy:       template.UpdatedBy,
+							UpdatedTime:     template.UpdatedTime,
+							CollectFlag:     collectFlag,
+							Type:            template.Type,
+							OperatorObjType: template.OperatorObjType,
 						})
 					}
 					roleGroupMap[groupId] = templateArr
@@ -1185,10 +1189,25 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 				Templates:   templateArr,
 			})
 		}
-		result = append(result, &models.UserRequestTemplateQueryObjNew{
+		resultMap[role] = &models.UserRequestTemplateQueryObjNew{
 			ManageRole: role,
 			Groups:     groups,
-		})
+		}
+		roleList = append(roleList, role)
+	}
+	// 角色排序
+	sort.Strings(roleList)
+	for _, role := range roleList {
+		group := resultMap[role].Groups
+		if len(group) > 0 {
+			// 模版组排序
+			sort.Sort(models.TemplateGroupSort(group))
+			for _, templateObj := range group {
+				//模板排序
+				sort.Sort(models.RequestTemplateSort(templateObj.Templates))
+			}
+		}
+		result = append(result, resultMap[role])
 	}
 	return
 }

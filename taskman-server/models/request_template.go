@@ -75,13 +75,15 @@ type CodeProcessQueryObj struct {
 	Tags            string `json:"tags"`
 }
 type RequestTemplateTableObj struct {
-	Id          string `json:"id" xorm:"id"`
-	Name        string `json:"name" xorm:"name"`
-	Tags        string `json:"tags" xorm:"tags"`
-	Status      string `json:"status" xorm:"status"`
-	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
-	CollectFlag int    `json:"collectFlag" xorm:"collect_flag"` // 是否收藏 1表示已收藏
+	Id              string `json:"id" xorm:"id"`
+	Name            string `json:"name" xorm:"name"`
+	Tags            string `json:"tags" xorm:"tags"`
+	Status          string `json:"status" xorm:"status"`
+	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
+	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 是否收藏 1表示已收藏
+	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
 }
 
 type RequestTemplateQueryObj struct {
@@ -312,4 +314,32 @@ type RequestTemplateTmp struct {
 	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
 	Version           string `json:"version" xorm:"version"`
 	Status            string `json:"status" xorm:"status"`
+}
+
+type TemplateGroupSort []*TemplateGroupObj
+
+func (s TemplateGroupSort) Len() int {
+	return len(s)
+}
+
+func (s TemplateGroupSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s TemplateGroupSort) Less(i, j int) bool {
+	return s[i].UpdatedTime > s[j].UpdatedTime
+}
+
+type RequestTemplateSort []*RequestTemplateTableObj
+
+func (s RequestTemplateSort) Len() int {
+	return len(s)
+}
+
+func (s RequestTemplateSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s RequestTemplateSort) Less(i, j int) bool {
+	return s[i].UpdatedTime > s[j].UpdatedTime
 }

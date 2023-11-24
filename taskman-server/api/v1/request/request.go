@@ -455,3 +455,15 @@ func GetRequestWorkFlow(c *gin.Context) {
 	}
 	middleware.ReturnData(c, rowsData)
 }
+
+// GetWorkFlowNodes 获取工作流执行节点
+func GetExecutionNodes(c *gin.Context) {
+	procInstanceId := c.Param("procInstanceId")
+	nodeInstanceId := c.Param("nodeInstanceId")
+	rowData, err := db.GetExecutionNodes(c.GetHeader("Authorization"), procInstanceId, nodeInstanceId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowData)
+}

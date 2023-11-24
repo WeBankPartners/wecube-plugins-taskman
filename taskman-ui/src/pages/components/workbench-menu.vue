@@ -1,5 +1,11 @@
 <template>
-  <div class="workbench-menu" :style="{ width: expand ? '180px' : '0px' }">
+  <div
+    class="workbench-menu"
+    :style="{
+      width: expand ? '180px' : '0px',
+      top: scrollTop > 50 ? '0px' : 50 - scrollTop + 'px'
+    }"
+  >
     <div v-show="expand" style="height:100%;">
       <div class="home" @click="handleGoHome">
         <img style="width:23px;height:23px;margin-right:10px;" src="@/images/menu_desk.png" />
@@ -44,6 +50,7 @@
 export default {
   data () {
     return {
+      scrollTop: 0,
       expand: true,
       activeName: '',
       openNames: [],
@@ -79,8 +86,16 @@ export default {
       }
     })
   },
-  mounted () {},
+  mounted () {
+    window.addEventListener('scroll', this.getScrollTop)
+  },
+  beforeDestroy () {
+    window.removeEventListener('scroll', this.getScrollTop)
+  },
   methods: {
+    getScrollTop () {
+      this.scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+    },
     handleExpand () {
       this.expand = !this.expand
       if (this.$eventBusP) {
@@ -118,7 +133,6 @@ export default {
 <style lang="scss" scoped>
 .workbench-menu {
   position: fixed;
-  top: 50px;
   left: 0;
   height: 100%;
   z-index: 100;

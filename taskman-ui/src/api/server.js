@@ -59,7 +59,7 @@ export const getTaskFormDataByNodeId = (requestTemplateId, nodeId) =>
   req.get(`/taskman/api/v1/task-template/${requestTemplateId}/${nodeId}`)
 
 export const getTemplateByUser = () => req.get('/taskman/api/v1/user/request-template')
-export const createRequest = (requestId, data) => req.post('/taskman/api/v1/request', data)
+export const createRequest = data => req.post('/taskman/api/v1/request', data)
 export const updateRequest = (requestId, data) => req.put(`/taskman/api/v1/request/${requestId}`, data)
 export const getRootEntity = params => req.get('/taskman/api/v1/entity/data', params)
 export const getEntityData = params => req.get('/taskman/api/v1/request-data/preview', params)
@@ -98,7 +98,7 @@ export const enableTemplate = templateId => req.post(`/taskman/api/v1/request-te
 export const disableTemplate = templateId => req.post(`/taskman/api/v1/request-template/disable/${templateId}`)
 // taskman重构
 // 选择模板列表
-export const getTemplateTree = () => req.get('/taskman/api/v1/user/request-template-new')
+export const getTemplateTree = () => req.get('/taskman/api/v2/user/request-template')
 // 模板收藏
 export const collectTemplate = templateId => req.post(`/taskman/api/v1/user/template/collect/${templateId}`)
 // 取消模板收藏

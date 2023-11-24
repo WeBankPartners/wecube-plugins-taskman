@@ -180,7 +180,7 @@ export default {
     // 选中一条模板数据
     handleChooseTemplate (row) {
       this.$router.push({
-        path: `/taskman/workbench/createPublish?id=${row.id}`
+        path: `/taskman/workbench/createPublish?templateId=${row.id}`
       })
     },
     // 收藏or取消收藏模板
@@ -243,6 +243,9 @@ export default {
     border-bottom: 1px solid #e8eaec;
     padding: 5px 10px;
     line-height: 1;
+  }
+  .ivu-table-row {
+    cursor: pointer;
   }
   .ivu-form-item {
     margin-bottom: 10px !important;

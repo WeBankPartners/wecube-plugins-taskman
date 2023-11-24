@@ -147,7 +147,7 @@ func GetCoreProcessListAll(userToken string) (processList []*models.ProcAllDefOb
 
 func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userToken string, filterType string) (nodeList models.ProcNodeObjList, err error) {
 	if requestTemplateObj.ProcDefId == "" {
-		requestTemplateObj, err = getSimpleRequestTemplate(requestTemplateObj.Id)
+		requestTemplateObj, err = GetSimpleRequestTemplate(requestTemplateObj.Id)
 		if err != nil {
 			return
 		}
@@ -651,8 +651,8 @@ func CreateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	result.Id = newGuid
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime, param.Type}
+	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime, param.Type, param.OperatorObjType}
 	actions = append(actions, &insertAction)
 	for _, v := range param.MGMTRoles {
 		result.MGMTRoles = append(result.MGMTRoles, &models.RoleTable{Id: v})
@@ -687,7 +687,7 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*execAction, err error) {
-	rtObj, err := getSimpleRequestTemplate(id)
+	rtObj, err := GetSimpleRequestTemplate(id)
 	if err != nil {
 		return actions, err
 	}
@@ -801,7 +801,7 @@ func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttri
 	return err
 }
 
-func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
+func GetSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
 	err = x.SQL("select * from request_template where id=?", id).Find(&requestTemplateTable)
 	if err != nil {
@@ -845,7 +845,7 @@ func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTabl
 }
 
 func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -899,7 +899,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 }
 
 func ConfirmRequestTemplate(requestTemplateId string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}

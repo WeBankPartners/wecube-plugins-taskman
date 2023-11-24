@@ -1,30 +1,31 @@
 package models
 
 type RequestTemplateTable struct {
-	Id           string `json:"id" xorm:"id"`
-	Group        string `json:"group" xorm:"group"`
-	Name         string `json:"name" xorm:"name"`
-	Description  string `json:"description" xorm:"description"`
-	FormTemplate string `json:"formTemplate" xorm:"form_template"`
-	Tags         string `json:"tags" xorm:"tags"`
-	Status       string `json:"status" xorm:"status"`
-	RecordId     string `json:"recordId" xorm:"record_id"`
-	Version      string `json:"version" xorm:"version"`
-	ConfirmTime  string `json:"confirmTime" xorm:"confirm_time"`
-	PackageName  string `json:"packageName" xorm:"package_name"`
-	EntityName   string `json:"entityName" xorm:"entity_name"`
-	ProcDefKey   string `json:"procDefKey" xorm:"proc_def_key"`
-	ProcDefId    string `json:"procDefId" xorm:"proc_def_id"`
-	ProcDefName  string `json:"procDefName" xorm:"proc_def_name"`
-	CreatedBy    string `json:"createdBy" xorm:"created_by"`
-	CreatedTime  string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
-	EntityAttrs  string `json:"entityAttrs" xorm:"entity_attrs"`
-	ExpireDay    int    `json:"expireDay" xorm:"expire_day"`
-	Handler      string `json:"handler" xorm:"handler"`
-	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
-	Type         int    `json:"type" xorm:"type"` // 请求类型, 0表示请求,1表示发布
+	Id              string `json:"id" xorm:"id"`
+	Group           string `json:"group" xorm:"group"`
+	Name            string `json:"name" xorm:"name"`
+	Description     string `json:"description" xorm:"description"`
+	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
+	Tags            string `json:"tags" xorm:"tags"`
+	Status          string `json:"status" xorm:"status"`
+	RecordId        string `json:"recordId" xorm:"record_id"`
+	Version         string `json:"version" xorm:"version"`
+	ConfirmTime     string `json:"confirmTime" xorm:"confirm_time"`
+	PackageName     string `json:"packageName" xorm:"package_name"`
+	EntityName      string `json:"entityName" xorm:"entity_name"`
+	ProcDefKey      string `json:"procDefKey" xorm:"proc_def_key"`
+	ProcDefId       string `json:"procDefId" xorm:"proc_def_id"`
+	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`
+	CreatedBy       string `json:"createdBy" xorm:"created_by"`
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`
+	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
+	EntityAttrs     string `json:"entityAttrs" xorm:"entity_attrs"`
+	ExpireDay       int    `json:"expireDay" xorm:"expire_day"`
+	Handler         string `json:"handler" xorm:"handler"`
+	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
+	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
 }
 
 type RequestTemplateGroupTable struct {
@@ -276,4 +277,10 @@ type WorkflowNode struct {
 	Description       string   `json:"description"`
 	PreviousNodeIds   []string `json:"previousNodeIds"`
 	SucceedingNodeIds []string `json:"succeedingNodeIds"`
+}
+
+type RequestTemplateTmp struct {
+	ProcDefId         string `json:"procDefId" xorm:"proc_def_id`
+	TemplateName      string `json:"templateName" xorm:"template_name`
+	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
 }

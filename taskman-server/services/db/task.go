@@ -360,6 +360,86 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	return
 }
 
+func GetTaskV2(taskId, userToken string) (result models.RequestDetail, err error) {
+	result = models.RequestDetail{}
+	taskObj, tmpErr := getSimpleTask(taskId)
+	if tmpErr != nil {
+		return result, tmpErr
+	}
+	if taskObj.Request == "" {
+		taskForm, tmpErr := queryTaskForm(&taskObj)
+		if tmpErr != nil {
+			return result, tmpErr
+		}
+		result.HandleHis = []*models.TaskQueryObj{&taskForm}
+		return
+	}
+	// get request
+	var requests []*models.RequestTable
+	x.SQL("select * from request where id=?", taskObj.Request).Find(&requests)
+	if len(requests) == 0 {
+		return result, fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
+	}
+	if requests[0].Parent != "" {
+		if parentRequest, getParentErr := GetRequestTaskList(requests[0].Parent); getParentErr != nil {
+			result.Request = getRequestForm(requests[0], userToken)
+			err = getParentErr
+			return
+		} else {
+			for _, v := range parentRequest.Data {
+				v.IsHistory = true
+			}
+			result.HandleHis = parentRequest.Data
+		}
+	}
+	var requestCache models.RequestPreDataDto
+	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
+	if err != nil {
+		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
+	}
+	var requestTemplateTable []*models.RequestTemplateTable
+	x.SQL("select * from request_template where id in (select request_template from request where id=?)", taskObj.Request).Find(&requestTemplateTable)
+	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
+	requestQuery.AttachFiles = GetRequestAttachFileList(taskObj.Request)
+	requestQuery.ExpireTime = requests[0].ExpireTime
+	requestQuery.ExpectTime = requests[0].ExpectTime
+	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
+	requestQuery.FormData = requestCache.Data
+	if len(requestTemplateTable) > 0 {
+		requestQuery.RequestTemplate = requestTemplateTable[0].Name
+	}
+	result.HandleHis = append(result.HandleHis, &requestQuery)
+	if err != nil {
+		return
+	}
+	// get task list
+	var taskHandlerRows []*models.TaskHandlerQueryData
+	x.SQL("select t1.id,t2.handler,t4.display_name from task t1 left join task_template t2 on t1.task_template=t2.id left join task_template_role t3 on t1.task_template=t3.task_template left join `role` t4 on t3.`role`=t4.id where t1.request=?", taskObj.Request).Find(&taskHandlerRows)
+	taskHandlerMap := make(map[string]*models.TaskHandlerQueryData)
+	for _, row := range taskHandlerRows {
+		taskHandlerMap[row.Id] = row
+	}
+	var taskList []*models.TaskTable
+	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
+	for _, v := range taskList {
+		tmpTaskForm, tmpErr := queryTaskForm(v)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+		if handlerObj, b := taskHandlerMap[tmpTaskForm.TaskId]; b {
+			tmpTaskForm.Handler = handlerObj.Handler
+			tmpTaskForm.HandleRoleName = handlerObj.DisplayName
+		}
+		if v.Status == "done" {
+			tmpTaskForm.Handler = v.UpdatedBy
+		}
+		result.HandleHis = append(result.HandleHis, &tmpTaskForm)
+	}
+	result.Request = getRequestForm(requests[0], userToken)
+	return
+}
+
 func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
 	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, Description: taskObj.Description, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
 	taskForm.AttachFiles = GetTaskAttachFileList(taskObj.Id)

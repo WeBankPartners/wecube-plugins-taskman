@@ -13,21 +13,24 @@ type PlatformData struct {
 
 // PlatformDataObj 工作台返回数据
 type PlatformDataObj struct {
-	Id             string `json:"id" xorm:"id"`                           // 请求ID
-	Name           string `json:"name" xorm:"name"`                       // 请求名称
-	TemplateId     string `json:"templateId" xorm:"template_id"`          // 模板ID
-	TemplateName   string `json:"templateName" xorm:"template_name"`      // 使用模板名称
-	OperatorObj    string `json:"operatorObj" xorm:"operator_obj"`        // 操作对象
-	ProcInstanceId string `json:"procInstanceId" xorm:"proc_instance_id"` // 编排id
-	ProcDefName    string `json:"procDefName" xorm:"proc_def_name"`       // 使用编排
-	Status         string `json:"status" xorm:"status"`                   // 请求状态
-	CurNode        string `json:"curNode"  xorm:"cur_node"`               // 当前节点
-	Progress       int    `json:"progress" xorm:"progress"`               // 进展
-	CreatedBy      string `json:"createdBy" xorm:"created_by"`            // 创建人
-	Handler        string `json:"handler" xorm:"handler"`                 // 当前处理人
-	CreatedTime    string `json:"createdTime" xorm:"created_time"`        // 创建时间
-	ExpectTime     string `json:"expectTime" xorm:"expect_time"`          // 期望完成时间
-	CollectFlag    int    `json:"collectFlag" xorm:"collect_flag"`        // 收藏标记,1表示已收藏
+	Id              string `json:"id" xorm:"id"`                             // 请求ID
+	Name            string `json:"name" xorm:"name"`                         // 请求名称
+	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板ID
+	TemplateName    string `json:"templateName" xorm:"template_name"`        // 使用模板名称
+	OperatorObj     string `json:"operatorObj" xorm:"operator_obj"`          // 操作对象
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
+	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`   // 编排id
+	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
+	Status          string `json:"status" xorm:"status"`                     // 请求状态
+	CurNode         string `json:"curNode"  xorm:"cur_node"`                 // 当前节点
+	Progress        int    `json:"progress" xorm:"progress"`                 // 进展
+	CreatedBy       string `json:"createdBy" xorm:"created_by"`              // 创建人
+	Handler         string `json:"handler" xorm:"handler"`                   // 当前处理人
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`          // 创建时间
+	ExpectTime      string `json:"expectTime" xorm:"expect_time"`            // 期望完成时间
+	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 收藏标记,1表示已收藏
+	Role            string `json:"role" xorm:"role"`                         // 创建请求Role
+	HandleRole      string `json:"handleRole" xorm:"handle_role"`            // 处理role
 }
 
 type RequestQueryParam struct {
@@ -126,6 +129,8 @@ type RequestTable struct {
 	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
 	Type                int                `json:"type" xorm:"type"`
 	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
+	Description         string             `json:"description" xorm:"description"` // 请求描述
+	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
 }
 
 type ExpireObj struct {
@@ -233,6 +238,14 @@ type RequestPreDataDto struct {
 	Data         []*RequestPreDataTableObj `json:"data"`
 }
 
+type RequestProDataV2Dto struct {
+	Name         string                    `json:"name"`
+	Description  string                    `json:"description"`
+	ExpectTime   string                    `json:"expectTime"` // 期望完成时间
+	RootEntityId string                    `json:"rootEntityId"`
+	Data         []*RequestPreDataTableObj `json:"data"`
+}
+
 type TerminateInstanceParam struct {
 	ProcInstId  string `json:"procInstId"`
 	ProcInstKey string `json:"procInstKey"`
@@ -293,6 +306,29 @@ type WorkflowEntityQuery struct {
 type WorkflowEntityDataObj struct {
 	Id          string `json:"id"`
 	DisplayName string `json:"displayName"`
+}
+
+type RequestForm struct {
+	Id                string `json:"id"`
+	Name              string `json:"name"`
+	RequestType       int    `json:"requestType"`       // 请求类型,0表示请求,1表示发布
+	Progress          int    `json:"progress"`          // 请求进度
+	Status            string `json:"status"`            // 请求状态
+	CurNode           string `json:"curNode"`           // 当前节点
+	Handler           string `json:"handler"`           // 当前处理人
+	CreatedBy         string `json:"createdBy"`         // 创建人
+	Role              string `json:"role"`              // 创建人角色
+	TemplateName      string `json:"templateName"`      // 使用模板
+	TemplateGroupName string `json:"templateGroupName"` // 使用模板组
+	Description       string `json:"description"`       // 请求描述
+	CreatedTime       string `json:"createdTime"`       // 创建时间
+	ExpectTime        string `json:"expectTime" `       // 期望时间
+	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
+}
+
+type RequestDetail struct {
+	Request   RequestForm     `json:"request"`   // 请求信息
+	HandleHis []*TaskQueryObj `json:"handleHis"` // 处理历史
 }
 
 type UpdateRequestStatusParam struct {

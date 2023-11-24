@@ -1963,7 +1963,7 @@ func transConditionToSQL(param *models.PlatformRequestParam) (where string) {
 		where = where + "and status <> 'Pending'"
 	}
 	if param.Query != "" {
-		where = where + "(and id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
+		where = where + "and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
 	}
 	if param.TemplateId != "" {
 		where = where + "and template_id = '" + param.TemplateId + "'"

@@ -55,30 +55,15 @@ func CreateRequest(c *gin.Context) {
 
 func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
-	cacheType := c.Param("cacheType")
-	if cacheType == "data" {
-		var param models.RequestProDataV2Dto
-		if err := c.ShouldBindJSON(&param); err != nil {
-			middleware.ReturnParamValidateError(c, err)
-			return
-		}
-		err := db.SaveRequestCacheV2(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), &param)
-		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
-		} else {
-			middleware.ReturnData(c, param)
-		}
+	var param models.RequestProDataV2Dto
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.SaveRequestCacheV2(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), &param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
 	} else {
-		var param models.RequestCacheData
-		if err := c.ShouldBindJSON(&param); err != nil {
-			middleware.ReturnParamValidateError(c, err)
-			return
-		}
-		err := db.SaveRequestBindCache(requestId, middleware.GetRequestUser(c), &param)
-		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
-		} else {
-			middleware.ReturnData(c, param)
-		}
+		middleware.ReturnData(c, param)
 	}
 }

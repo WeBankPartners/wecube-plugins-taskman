@@ -117,3 +117,9 @@ export const getCreateInfo = params => req.post(`/taskman/api/v2/request`, param
 export const getProgressInfo = params => req.post(`/taskman/api/v1/request/progress`, params)
 // 新建发布-保存数据
 export const savePublishData = (requestId, params) => req.post(`/taskman/api/v2/request-data/save/${requestId}`, params)
+
+// 查询流程图
+export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)
+export const getFlowByInstanceId = instanceId => req.get(`/taskman/api/v1/request/process/instances/${instanceId}`)
+export const getNodeContextByNodeId = (instanceId, nodeId) =>
+  req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)

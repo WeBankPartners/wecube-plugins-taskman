@@ -130,5 +130,8 @@
   "updatedBy": "Updated By",
   "createdBy": "Created By",
   "createdTime": "Created Time",
-  "rollback_desc": "Rollback Cause"
+  "rollback_desc": "Rollback Cause",
+  "workflow_name": "Workflow",
+  "select_an_operation": "Please Select",
+  "show_log": "Show Log"
 }

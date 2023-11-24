@@ -22,6 +22,7 @@
 
 <script>
 import { debounce } from '@/pages/util'
+import { getEntityData } from '@/api/server'
 export default {
   props: {
     visible: {

@@ -72,7 +72,8 @@
       </Col>
       <!--编排流程-->
       <Col span="8">
-        <div class="program"></div>
+        <!-- <StaticFlow :templateId="templateId" ref="staticFlowRef"></StaticFlow> -->
+        <DynamicFlow ref="staticFlowRef"></DynamicFlow>
       </Col>
     </Row>
     <EditDrawer
@@ -97,6 +98,8 @@ import {
   getRefOptions,
   savePublishData
 } from '@/api/server'
+import StaticFlow from './flow/static-flow.vue'
+import DynamicFlow from './flow/dynamic-flow.vue'
 import { deepClone, debounce } from '@/pages/util'
 const statusIcon = {
   1: 'md-pin',
@@ -113,6 +116,8 @@ const statusColor = {
 export default {
   components: {
     HeaderTitle,
+    StaticFlow,
+    DynamicFlow,
     EditDrawer
   },
   data () {
@@ -224,6 +229,7 @@ export default {
         this.requestId = data.id
         this.form.name = data.name
       }
+      this.$refs.staticFlowRef.orchestrationSelectHandler(this.templateId)
     },
     // 获取请求进度
     async getProgressInfo () {

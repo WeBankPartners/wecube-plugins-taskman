@@ -268,7 +268,13 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		for _, platformDataObj := range rowData {
 			// 获取 使用编排
 			if len(templateMap) > 0 && templateMap[platformDataObj.TemplateId] != nil {
-				platformDataObj.ProcDefName = templateMap[platformDataObj.TemplateId].ProcDefName
+				template := templateMap[platformDataObj.TemplateId]
+				platformDataObj.ProcDefName = template.ProcDefName
+				if template.Status != "confirm" {
+					platformDataObj.TemplateName = fmt.Sprintf("%s(beta)", template.Name)
+				} else {
+					platformDataObj.TemplateName = fmt.Sprintf("%s(%s)", template.Name, template.Version)
+				}
 			}
 			if platformDataObj.Status == "Pending" {
 				platformDataObj.CurNode = RequestPending
@@ -2152,25 +2158,16 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 	return
 }
 
-func GetRequestWorkFlow(param models.RequestQueryParam, userToken string) (rowsData []*models.WorkflowNode, err error) {
+func GetProcessDefinitions(templateId, userToken string) (rowData *models.DefinitionsData, err error) {
 	var template models.RequestTemplateTable
-	var request models.RequestTable
+	var response models.ProcessDefinitionsResponse
+	var url string
 	var byteArr []byte
-	var response models.WorkflowRsp
-	template, err = GetSimpleRequestTemplate(param.TemplateId)
+	template, err = GetSimpleRequestTemplate(templateId)
 	if err != nil {
 		return
 	}
-	var url = fmt.Sprintf("%s/platform/v1/process/definitions/%s/outline", models.Config.Wecube.BaseUrl, template.ProcDefId)
-	if param.RequestId != "" {
-		request, err = GetSimpleRequest(param.RequestId)
-		if err != nil {
-			return
-		}
-		if request.ProcInstanceId != "" {
-			url = fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, request.ProcInstanceId)
-		}
-	}
+	url = fmt.Sprintf("%s/platform/v1/process/definitions/%s/outline", models.Config.Wecube.BaseUrl, template.ProcDefId)
 	byteArr, err = HttpGet(url, userToken)
 	if err != nil {
 		return
@@ -2179,11 +2176,23 @@ func GetRequestWorkFlow(param models.RequestQueryParam, userToken string) (rowsD
 	if err != nil {
 		return
 	}
-	if len(response.Data.FlowNodes) > 0 {
-		rowsData = response.Data.FlowNodes
-	} else {
-		rowsData = response.Data.TaskNodes
+	rowData = response.Data
+	return
+}
+
+func GetProcessInstance(instanceId, userToken string) (rowData *models.ProcessInstance, err error) {
+	var byteArr []byte
+	var response models.ProcessInstanceResponse
+	url := fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, instanceId)
+	byteArr, err = HttpGet(url, userToken)
+	if err != nil {
+		return
 	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		return
+	}
+	rowData = response.Data
 	return
 }
 
@@ -2210,7 +2219,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 		return
 	}
 	var tmpTemplate []*models.RequestTemplateTmp
-	err := x.SQL("select rt.name as  template_name,rt.proc_def_id from request_template rt join "+
+	err := x.SQL("select rt.name as  template_name,rt.status,rt.version,rt.proc_def_id from request_template rt join "+
 		"request_template_group rtg on rt.group = rtg.id where rt.id= ?", request.RequestTemplate).Find(&tmpTemplate)
 	if err != nil {
 		return
@@ -2219,22 +2228,28 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 		err = fmt.Errorf("can not find request_template with id:%s ", request.Id)
 		return
 	}
+	template := tmpTemplate[0]
 	form.Id = request.Id
 	form.RequestType = request.Type
 	form.CreatedTime = request.CreatedTime
 	form.ExpectTime = request.ExpectTime
 	form.CreatedBy = request.CreatedBy
-	form.Role = request.ReportRole
+	form.Role = request.Role
 	form.Description = request.Description
-	form.TemplateName = tmpTemplate[0].TemplateName
-	form.TemplateGroupName = tmpTemplate[0].TemplateGroupName
+	if template.Status != "confirm" {
+		form.TemplateName = fmt.Sprintf("%s(beta)", template.TemplateName)
+	} else {
+		form.TemplateName = fmt.Sprintf("%s(%s)", template.TemplateName, template.Version)
+	}
+	form.TemplateName = template.TemplateName
+	form.TemplateGroupName = template.TemplateGroupName
 	if request.Status == "Pending" {
 		form.CurNode = RequestPending
 	}
 	if request.ProcInstanceId != "" {
 		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken)
 	}
-	form.Handler = request.Handler
+	_, form.Handler = getRequestHandler(request.Id)
 	return
 }
 
@@ -2252,13 +2267,26 @@ func getRequestHandler(requestId string) (role string, handler string) {
 		return
 	}
 	// 请求在任务状态,需要从模板配置的任务表中获取
-
+	taskTemplateMap, _ := getTaskTemplateHandler(request.RequestTemplate)
+	if len(taskTemplateMap) > 0 {
+		taskMap, _ := getTaskMapByRequestId(requestId)
+		if len(taskMap) > 0 {
+			for _, task := range taskMap {
+				if task.Status != "done" && taskTemplateMap[task.TaskTemplate] != nil {
+					taskTemplate := taskTemplateMap[task.TaskTemplate]
+					role = taskTemplate.Role
+					handler = taskTemplate.Handler
+					break
+				}
+			}
+		}
+	}
 	return
 }
 
-func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (nodeData *models.ExecutionNode, err error) {
-	var byteArr []byte
+func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (data interface{}, err error) {
 	var response models.ExecutionResponse
+	var byteArr []byte
 	var url = fmt.Sprintf("%s/platform/v1/process/instances/%s/tasknodes/%s/context", models.Config.Wecube.BaseUrl, procInstanceId, nodeInstanceId)
 	byteArr, err = HttpGet(url, userToken)
 	if err != nil {
@@ -2268,8 +2296,6 @@ func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) 
 	if err != nil {
 		return
 	}
-	if response.Data != nil {
-		nodeData = response.Data
-	}
+	data = response.Data
 	return
 }

@@ -18,6 +18,11 @@ type TaskTemplateTable struct {
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 }
 
+type TaskTemplateVo struct {
+	TaskTemplateTable
+	Role string `json:"role" xorm:"role"`
+}
+
 type TaskTemplateRoleTable struct {
 	Id           string `json:"id" xorm:"id"`
 	TaskTemplate string `json:"taskTemplate" xorm:"task_template"`

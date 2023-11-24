@@ -57,25 +57,28 @@
         <StaticFlow></StaticFlow>
       </Col>
     </Row>
-    <ChooseExampleDrawer
-      v-if="chooseEntityVisible"
-      :visible.sync="chooseEntityVisible"
-      @getData="getChooseEntityData"
-    ></ChooseExampleDrawer>
+    <EditDrawer
+      v-if="editVisible"
+      v-model="editData"
+      :options="editOptions"
+      :visible.sync="editVisible"
+      :disabled="viewDisabled"
+      @submit="submitEditDrawer"
+    ></EditDrawer>
   </div>
 </template>
 
 <script>
 import HeaderTitle from '../components/header-title.vue'
-import ChooseExampleDrawer from './choose-example.vue'
+import EditDrawer from './edit-item.vue'
 import { createRequest, getRootEntity, getEntityData, getRefOptions } from '@/api/server'
 import StaticFlow from './flow/static-flow.vue'
 import { deepClone, debounce } from '@/pages/util'
 export default {
   components: {
     HeaderTitle,
-    ChooseExampleDrawer,
-    StaticFlow
+    StaticFlow,
+    EditDrawer
   },
   data () {
     return {
@@ -97,13 +100,14 @@ export default {
         { name: '任务2审批', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
         { name: '请求完成', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' }
       ],
-      chooseEntityVisible: false,
-      chooseEntityData: [], // 勾选的的实例
-      exampleTabName: '', // 当前选中实例tab
-      exampleTabList: [],
       tableColumns: [],
       tableData: [], // 用于当前表格数据的展示
       requestData: [], // 用于最后提交的所有表格数据
+      editVisible: false,
+      editOptions: [],
+      editData: {},
+      editIndex: 0,
+      viewDisabled: false,
       initTableColumns: [
         {
           type: 'selection',
@@ -209,10 +213,27 @@ export default {
         this.initTableData()
       }
     },
+    // 编辑操作，刷新requestData
+    refreshRequestData () {
+      this.requestData.forEach(item => {
+        if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
+          for (let m of item.value) {
+            for (let n of this.tableData) {
+              if ((m.id = n._id)) {
+                m.entityData = n
+              }
+            }
+          }
+        }
+      })
+    },
     async initTableData () {
       // 当前选择tab数据
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.oriData = data
+      // 编辑表单的options配置
+      this.editOptions = data.title
+
       // select类型集合
       this.refKeys = []
       data.title.forEach(t => {
@@ -220,14 +241,7 @@ export default {
           this.refKeys.push(t.name)
         }
       })
-      // table数据初始化
-      this.tableData = data.value.map(v => {
-        this.refKeys.forEach(rfk => {
-          v.entityData[rfk + 'Options'] = []
-        })
-        v.entityData._id = v.id
-        return v.entityData
-      })
+
       // tableColumns数据初始化
       this.tableColumns = deepClone(this.initTableColumns)
       data.title.forEach(t => {
@@ -236,10 +250,28 @@ export default {
           key: t.name,
           align: 'left'
         }
+        if (t.required === 'yes') {
+          column.renderHeader = (h, { column }) => {
+            return (
+              <span>
+                {`${column.title}`}
+                <span class="required">（必填）</span>
+              </span>
+            )
+          }
+        }
         if (t.elementType === 'select') {
           column.render = (h, params) => {
             return (
-              <Select v-model={params.row[t.name]} multiple={t.multiple === 'Y'} disabled={false}>
+              <Select
+                value={params.row[t.name]}
+                on-on-change={v => {
+                  this.tableData[params.row._index][t.name] = v
+                  this.refreshRequestData()
+                }}
+                multiple={t.multiple === 'Y'}
+                disabled={t.isEdit === 'no'}
+              >
                 {Array.isArray(params.row[t.name + 'Options']) &&
                   params.row[t.name + 'Options'].map(i => (
                     <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
@@ -249,9 +281,53 @@ export default {
               </Select>
             )
           }
+        } else if (t.elementType === 'input') {
+          column.render = (h, params) => {
+            return (
+              <Input
+                value={params.row[t.name]}
+                onInput={v => {
+                  params.row[t.name] = v
+                  // 暂时这么写,为啥给params赋值不会更新tableData？
+                  this.tableData[params.row._index][t.name] = v
+                }}
+                onBlur={() => {
+                  this.refreshRequestData()
+                }}
+                disabled={t.isEdit === 'no'}
+              />
+            )
+          }
+        } else if (t.elementType === 'textarea') {
+          column.render = (h, params) => {
+            return (
+              <Input
+                value={params.row[t.name]}
+                onInput={v => {
+                  params.row[t.name] = v
+                  this.tableData[params.row._index][t.name] = v
+                }}
+                onBlur={() => {
+                  this.refreshRequestData()
+                }}
+                type="textarea"
+                disabled={t.isEdit === 'no'}
+              />
+            )
+          }
         }
         this.tableColumns.push(column)
       })
+
+      // table数据初始化
+      this.tableData = data.value.map(v => {
+        this.refKeys.forEach(rfk => {
+          v.entityData[rfk + 'Options'] = []
+        })
+        v.entityData._id = v.id
+        return v.entityData
+      })
+
       // 下拉类型数据初始化
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
@@ -311,12 +387,43 @@ export default {
       }
     },
     handleDeleteRow (row) {
-      // let find = this.dataArray.find(d => d.itemGroup === this.oriData.itemGroup)
-      // find.value.splice(index, 1)
-      // this.initData(this.rootEntityId, this.dataArray, find, this.requestId)
+      this.$Modal.confirm({
+        title: this.$t('confirm') + '删除',
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          this.tableData.splice(row._index, 1)
+          this.requestData.forEach(item => {
+            if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
+              item.value.splice(row._index, 1)
+            }
+          })
+        },
+        onCancel: () => {}
+      })
     },
-    handleEditRow (row) {},
-    handleViewRow (row) {},
+    handleEditRow (row) {
+      this.viewDisabled = false
+      this.editVisible = true
+      this.editData = deepClone(row)
+    },
+    submitEditDrawer () {
+      this.tableData = this.tableData.map(item => {
+        if (item._id === this.editData._id) {
+          for (let key in item) {
+            item[key] = this.editData[key]
+          }
+        }
+        return item
+      })
+      this.refreshRequestData()
+    },
+    handleViewRow (row) {
+      this.viewDisabled = true
+      this.editVisible = true
+      this.editData = deepClone(row)
+    },
     // 保存草稿
     handleDraft () {},
     // 发布
@@ -396,6 +503,9 @@ export default {
   }
   .ivu-form-item-content {
     line-height: 20px;
+  }
+  .required {
+    color: red;
   }
 }
 </style>

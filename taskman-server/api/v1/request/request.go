@@ -435,25 +435,38 @@ func GetRequestProgress(c *gin.Context) {
 	middleware.ReturnData(c, rowsData)
 }
 
-// GetRequestWorkFlow 获取请求工作流
-func GetRequestWorkFlow(c *gin.Context) {
-	var param models.RequestQueryParam
-	var rowsData []*models.WorkflowNode
+// GetProcessInstance 获取请求工作流
+func GetProcessInstance(c *gin.Context) {
+	var rowData *models.ProcessInstance
 	var err error
-	if err = c.ShouldBindJSON(&param); err != nil {
+	instanceId := c.Param("instanceId")
+	if instanceId == "" {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if param.TemplateId == "" {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	rowsData, err = db.GetRequestWorkFlow(param, c.GetHeader("Authorization"))
+	rowData, err = db.GetProcessInstance(instanceId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	middleware.ReturnData(c, rowsData)
+	middleware.ReturnData(c, rowData)
+}
+
+// ProcessDefinitions 流程定义
+func GetProcessDefinitions(c *gin.Context) {
+	var rowData *models.DefinitionsData
+	var err error
+	templateId := c.Param("templateId")
+	if templateId == "" {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	rowData, err = db.GetProcessDefinitions(templateId, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowData)
 }
 
 // GetWorkFlowNodes 获取工作流执行节点

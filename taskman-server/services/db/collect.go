@@ -41,6 +41,15 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateObj, user, userToken
 	}
 	if len(rowData) > 0 {
 		for _, collectObj := range rowData {
+			template, err := GetSimpleRequestTemplate(collectObj.Id)
+			if err != nil {
+				continue
+			}
+			if template.Status != "confirm" {
+				collectObj.Name = fmt.Sprintf("%s(beta)", template.Name)
+			} else {
+				collectObj.Name = fmt.Sprintf("%s(%s)", template.Name, template.Version)
+			}
 			var roleList []string
 			err = x.SQL("select role from request_template_role where role_type='USE' and request_template= ?", collectObj.Id).Find(&roleList)
 			if err != nil || len(roleList) == 0 {

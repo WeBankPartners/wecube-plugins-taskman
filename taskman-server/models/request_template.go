@@ -252,9 +252,36 @@ type WorkflowRsp struct {
 }
 
 type Workflow struct {
-	Status    string          `json:"status"`
-	TaskNodes []*WorkflowNode `json:"taskNodeInstances"`
-	FlowNodes []*WorkflowNode `json:"flowNodes"`
+	Status          string           `json:"status"`
+	DefinitionsInfo *DefinitionsInfo `json:"define_data"`
+	InstancesInfo   *InstancesInfo   `json:"instance_data"`
+}
+
+type DefinitionsInfo struct {
+	ProcDefId        string          `json:"procDefId"`
+	ProcDefKey       string          `json:"procDefKey"`
+	ProcDefName      string          `json:"procDefName"`
+	ProcDefVersion   string          `json:"procDefVersion"`
+	Status           string          `json:"status"`
+	ProcDefData      string          `json:"procDefData"`
+	CreatedTime      string          `json:"createdTime"`
+	ExcludeMode      string          `json:"excludeMode"`
+	Tags             string          `json:"tags"`
+	PermissionToRole string          `json:"permissionToRole"`
+	FlowNodes        []*WorkflowNode `json:"flowNodes"`
+}
+
+type InstancesInfo struct {
+	Id           int             `json:"id"`
+	ProcInstKey  string          `json:"procInstKey"`
+	ProcInstName string          `json:"procInstName"`
+	CreatedTime  string          `json:"createdTime"`
+	Operator     string          `json:"operator"`
+	Status       string          `json:"status"`
+	ProcDefId    string          `json:"procDefId"`
+	EntityTypeId string          `json:"entityTypeId"`
+	EntityDataId string          `json:"entityDataId"`
+	TaskNodes    []*WorkflowNode `json:"taskNodeInstances"`
 }
 
 // WorkflowNode 任务编排节点
@@ -283,4 +310,6 @@ type RequestTemplateTmp struct {
 	ProcDefId         string `json:"procDefId" xorm:"proc_def_id`
 	TemplateName      string `json:"templateName" xorm:"template_name`
 	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
+	Version           string `json:"version" xorm:"version"`
+	Status            string `json:"status" xorm:"status"`
 }

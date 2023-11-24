@@ -139,3 +139,16 @@ func getRoleMap() (result map[string]*models.RoleTable, err error) {
 	}
 	return
 }
+
+func getTaskTemplateHandler(requestTemplate string) (taskTemplateMap map[string]*models.TaskTemplateVo, err error) {
+	taskTemplateMap = make(map[string]*models.TaskTemplateVo)
+	var taskTemplateList []*models.TaskTemplateVo
+	err = x.SQL("select  t.id,t.handler,tr.role from task_template t join task_template_role tr on  "+
+		"t.id=tr.task_template where t.request_template = ?", requestTemplate).Find(&taskTemplateList)
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			taskTemplateMap[taskTemplate.Id] = taskTemplate
+		}
+	}
+	return
+}

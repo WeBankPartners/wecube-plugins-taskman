@@ -2284,9 +2284,9 @@ func getRequestHandler(requestId string) (role string, handler string) {
 	return
 }
 
-func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (nodeData *models.ExecutionNode, err error) {
-	var byteArr []byte
+func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (data interface{}, err error) {
 	var response models.ExecutionResponse
+	var byteArr []byte
 	var url = fmt.Sprintf("%s/platform/v1/process/instances/%s/tasknodes/%s/context", models.Config.Wecube.BaseUrl, procInstanceId, nodeInstanceId)
 	byteArr, err = HttpGet(url, userToken)
 	if err != nil {
@@ -2296,8 +2296,6 @@ func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) 
 	if err != nil {
 		return
 	}
-	if response.Data != nil {
-		nodeData = response.Data
-	}
+	data = response.Data
 	return
 }

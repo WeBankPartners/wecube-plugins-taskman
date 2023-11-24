@@ -111,3 +111,9 @@ export const overviewData = () => req.post(`/taskman/api/v1/user/platform`)
 export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform/list`, params)
 // 工作台转给我
 export const tansferToMe = templateId => req.post(`/taskman/api/v1/request/handler/${templateId}`)
+
+// 查询流程图
+export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)
+export const getFlowByInstanceId = instanceId => req.get(`/taskman/api/v1/request/process/instances/${instanceId}`)
+export const getNodeContextByNodeId = (instanceId, nodeId) =>
+  req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)

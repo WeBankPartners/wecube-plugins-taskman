@@ -54,7 +54,8 @@
       </Col>
       <!--编排流程-->
       <Col span="8">
-        <StaticFlow></StaticFlow>
+        <!-- <StaticFlow :templateId="templateId" ref="staticFlowRef"></StaticFlow> -->
+        <DynamicFlow ref="staticFlowRef"></DynamicFlow>
       </Col>
     </Row>
     <EditDrawer
@@ -73,11 +74,13 @@ import HeaderTitle from '../components/header-title.vue'
 import EditDrawer from './edit-item.vue'
 import { createRequest, getRootEntity, getEntityData, getRefOptions } from '@/api/server'
 import StaticFlow from './flow/static-flow.vue'
+import DynamicFlow from './flow/dynamic-flow.vue'
 import { deepClone, debounce } from '@/pages/util'
 export default {
   components: {
     HeaderTitle,
     StaticFlow,
+    DynamicFlow,
     EditDrawer
   },
   data () {
@@ -185,6 +188,7 @@ export default {
         this.requestId = data.id
         this.form.name = data.name
       }
+      this.$refs.staticFlowRef.orchestrationSelectHandler(this.templateId)
     },
     // 操作目标对象下拉值
     async getEntity () {

@@ -131,5 +131,7 @@
   "createdBy": "创建人",
   "createdTime": "创建时间",
   "rollback_desc": "回退原因",
-  "workflow_name": "发布编排流程图"
+  "workflow_name": "发布编排流程图",
+  "select_an_operation": "请选择操作",
+  "show_log": "查看日志"
 }

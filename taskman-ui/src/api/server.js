@@ -111,3 +111,9 @@ export const overviewData = () => req.post(`/taskman/api/v1/user/platform`)
 export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform/list`, params)
 // 工作台转给我
 export const tansferToMe = templateId => req.post(`/taskman/api/v1/request/handler/${templateId}`)
+// 新建发布-发布信息获取
+export const getCreateInfo = params => req.post(`/taskman/api/v2/request`, params)
+// 新建发布-请求进度
+export const getProgressInfo = params => req.post(`/taskman/api/v1/request/progress`, params)
+// 新建发布-保存数据
+export const savePublishData = (requestId, params) => req.post(`/taskman/api/v2/request-data/save/${requestId}`, params)

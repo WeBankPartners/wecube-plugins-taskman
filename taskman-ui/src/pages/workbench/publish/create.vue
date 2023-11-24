@@ -3,14 +3,14 @@
     <Row class="w-header">
       <Col span="18" class="steps">
         <span class="title">请求进度：</span>
-        <Steps :current="0" style="max-width:500px;">
-          <Step v-for="(i, index) in steps" :key="index" :content="i.name">
+        <Steps :current="0" style="max-width:600px;">
+          <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
             <template #icon>
-              <Icon size="26" :type="i.icon" :color="i.color" />
+              <Icon size="24" :type="i.icon" :color="i.color" />
             </template>
             <div class="role" slot="content">
-              <span>{{ i.name }}</span>
-              <span>{{ '管理员' }}</span>
+              <div class="word-eclipse">{{ i.name }}</div>
+              <span>{{ i.handler }}</span>
             </div>
           </Step>
         </Steps>
@@ -30,10 +30,28 @@
             <FormItem label="发布描述">
               <Input v-model="form.description" placeholder="请输入" style="width:400px;" />
             </FormItem>
+            <FormItem :label="$t('expected_completion_time')">
+              <DatePicker
+                type="datetime"
+                :value="form.expectTime"
+                @on-change="
+                  val => {
+                    form.expectTime = val
+                  }
+                "
+                placeholder="Select date"
+                :options="{
+                  disabledDate(date) {
+                    return date && date.valueOf() < Date.now() - 86400000
+                  }
+                }"
+                style="width:400px;"
+              ></DatePicker>
+            </FormItem>
           </HeaderTitle>
           <HeaderTitle title="发布目标对象">
             <FormItem label="选择操作单元" required>
-              <Select v-model="form.rootEntityId" clearable filterable style="width:300px;" @on-change="getEntityData">
+              <Select v-model="form.rootEntityId" clearable filterable style="width:300px;">
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
@@ -63,7 +81,7 @@
       :options="editOptions"
       :visible.sync="editVisible"
       :disabled="viewDisabled"
-      @submit="submitEditDrawer"
+      @submit="submitEditRow"
     ></EditDrawer>
   </div>
 </template>
@@ -71,8 +89,27 @@
 <script>
 import HeaderTitle from '../components/header-title.vue'
 import EditDrawer from './edit-item.vue'
-import { createRequest, getRootEntity, getEntityData, getRefOptions } from '@/api/server'
+import {
+  getCreateInfo,
+  getProgressInfo,
+  getRootEntity,
+  getEntityData,
+  getRefOptions,
+  savePublishData
+} from '@/api/server'
 import { deepClone, debounce } from '@/pages/util'
+const statusIcon = {
+  1: 'md-pin',
+  2: 'md-radio-button-on',
+  3: 'ios-checkmark-circle-outline',
+  4: 'ios-close-circle-outline'
+}
+const statusColor = {
+  1: '#ffa500',
+  2: '#8189a5',
+  3: '#19be6b',
+  4: '#ed4014'
+}
 export default {
   components: {
     HeaderTitle,
@@ -81,23 +118,18 @@ export default {
   data () {
     return {
       templateId: '',
-      requestId: '6557454d5324718d',
+      requestId: '',
       activeTab: '',
       refKeys: [], // 引用类型字段集合select类型
       form: {
         name: '',
         description: '',
+        expectTime: '',
         rootEntityId: '', // 目标对象
-        exampleType: 1
+        data: []
       },
       rootEntityOptions: [],
-      steps: [
-        { name: '提起请求', status: 'process', icon: 'md-pin', color: '#ffa500' },
-        { name: '请求定版', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
-        { name: '任务1审批', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
-        { name: '任务2审批', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' },
-        { name: '请求完成', status: 'wait', icon: 'md-radio-button-on', color: '#8189a5' }
-      ],
+      progressList: [],
       tableColumns: [],
       tableData: [], // 用于当前表格数据的展示
       requestData: [], // 用于最后提交的所有表格数据
@@ -160,13 +192,21 @@ export default {
       ]
     }
   },
+  watch: {
+    'form.rootEntityId' (val) {
+      if (val) {
+        this.getEntityData()
+      }
+    }
+  },
   async mounted () {
     this.templateId = this.$route.query.templateId || ''
     if (this.templateId) {
       await this.getCreateInfo()
     }
+    this.getProgressInfo()
     this.getEntity()
-    this.getEntityData()
+    // this.getEntityData()
   },
   methods: {
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
@@ -176,12 +216,42 @@ export default {
     // 创建发布,使用模板ID获取详情数据
     async getCreateInfo () {
       const params = {
-        templateId: this.templateId
+        requestTemplate: this.templateId,
+        role: this.$route.query.role
       }
-      const { statusCode, data } = await createRequest(params)
+      const { statusCode, data } = await getCreateInfo(params)
       if (statusCode === 'OK') {
         this.requestId = data.id
         this.form.name = data.name
+      }
+    },
+    // 获取请求进度
+    async getProgressInfo () {
+      const params = {
+        templateId: this.templateId,
+        requestId: ''
+      }
+      const { statusCode, data } = await getProgressInfo(params)
+      if (statusCode === 'OK') {
+        this.progressList = data
+        this.progressList.forEach(item => {
+          item.icon = statusIcon[item.status]
+          item.color = statusColor[item.status]
+          switch (item.node) {
+            case 'sendRequest':
+              item.name = '提起请求'
+              break
+            case 'requestPending':
+              item.name = '请求定版'
+              break
+            case 'requestComplete':
+              item.name = '请求完成'
+              break
+            default:
+              item.name = item.node
+              break
+          }
+        })
       }
     },
     // 操作目标对象下拉值
@@ -193,7 +263,8 @@ export default {
       }
       const { statusCode, data } = await getRootEntity(params)
       if (statusCode === 'OK') {
-        this.rootEntityOptions = data.data
+        this.rootEntityOptions = data.data || []
+        this.form.rootEntityId = this.rootEntityOptions[0].guid
       }
     },
     // 获取目标对象对应数据
@@ -207,7 +278,13 @@ export default {
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
         this.requestData = data.data
-        this.activeTab = this.activeTab || data.data[0].entity
+        // 没有数据，默认添加一行
+        this.requestData.forEach(item => {
+          if (item.value.length === 0) {
+            this.handleAddRow(item)
+          }
+        })
+        this.activeTab = this.activeTab || data.data[0].entity || data.data[0].itemGroup
         this.initTableData()
       }
     },
@@ -246,7 +323,8 @@ export default {
         let column = {
           title: t.title,
           key: t.name,
-          align: 'left'
+          align: 'left',
+          minWidth: 200
         }
         if (t.required === 'yes') {
           column.renderHeader = (h, { column }) => {
@@ -384,6 +462,7 @@ export default {
         this.$set(this.tableData, index, row)
       }
     },
+    // 删除行数据
     handleDeleteRow (row) {
       this.$Modal.confirm({
         title: this.$t('confirm') + '删除',
@@ -401,12 +480,35 @@ export default {
         onCancel: () => {}
       })
     },
+    // 添加一条行数据
+    handleAddRow (data) {
+      let entityData = {}
+      data.title.forEach(item => {
+        entityData[item.name] = ''
+        if (item.elementType === 'select') {
+          entityData[item.name + 'Options'] = []
+        }
+      })
+      let obj = {
+        dataId: '',
+        displayName: '',
+        entityData: entityData,
+        entityName: data.entity,
+        entityDataOp: 'create',
+        fullDataId: '',
+        id: '',
+        packageName: data.packageName,
+        previousIds: [],
+        succeedingIds: []
+      }
+      data.value.push(obj)
+    },
     handleEditRow (row) {
       this.viewDisabled = false
       this.editVisible = true
       this.editData = deepClone(row)
     },
-    submitEditDrawer () {
+    submitEditRow () {
       this.tableData = this.tableData.map(item => {
         if (item._id === this.editData._id) {
           for (let key in item) {
@@ -423,7 +525,10 @@ export default {
       this.editData = deepClone(row)
     },
     // 保存草稿
-    handleDraft () {},
+    async handleDraft () {
+      this.form.data = this.requestData
+      savePublishData(this.requestId, this.form)
+    },
     // 发布
     handlePublish () {}
   }
@@ -447,6 +552,12 @@ export default {
       .role {
         display: flex;
         flex-direction: column;
+      }
+      .word-eclipse {
+        max-width: 100px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
       }
     }
     .btn-group {

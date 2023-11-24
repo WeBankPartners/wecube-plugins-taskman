@@ -191,6 +191,7 @@ export default {
   padding-bottom: 10px;
   .ivu-form-item {
     margin-bottom: 10px !important;
+    display: inline-block !important;
   }
   .ivu-radio {
     display: none;

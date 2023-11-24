@@ -39,7 +39,11 @@
                 <span class="title">{{ j.groupName }}</span>
               </div>
               <Table
-                @on-row-click="handleChooseTemplate"
+                @on-row-click="
+                  $event => {
+                    handleChooseTemplate($event, i.manageRole)
+                  }
+                "
                 size="small"
                 :columns="tableColumns"
                 :data="j.templates"
@@ -178,9 +182,9 @@ export default {
       item.expand = !item.expand
     },
     // 选中一条模板数据
-    handleChooseTemplate (row) {
+    handleChooseTemplate (row, role) {
       this.$router.push({
-        path: `/taskman/workbench/createPublish?templateId=${row.id}`
+        path: `/taskman/workbench/createPublish?templateId=${row.id}&role=${role}`
       })
     },
     // 收藏or取消收藏模板

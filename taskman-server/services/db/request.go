@@ -171,14 +171,21 @@ func GetSubmitCount(user string) (resultArr []string) {
 	var queryParam []interface{}
 	var sql string
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql, queryParam = submitSQL(templateTypeArr[i], user)
+		sql, queryParam = submitSQL(0, templateTypeArr[i], user)
 		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
 	}
 	return
 }
 
-func submitSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+func submitSQL(rollback, templateType int, user string) (sql string, queryParam []interface{}) {
 	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ))"
+	if rollback == 1 {
+		// 被退回
+		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and rollback_desc is not null"
+	} else if rollback == 2 {
+		// 其他
+		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status != 'Draft'"
+	}
 	queryParam = append([]interface{}{user, templateType})
 	return
 }
@@ -244,7 +251,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	case "hasProcessed":
 		sql, queryParam = hasProcessedSQL(templateType, user)
 	case "submit":
-		sql, queryParam = submitSQL(templateType, user)
+		sql, queryParam = submitSQL(param.Rollback, templateType, user)
 	case "draft":
 		sql, queryParam = draftSQL(templateType, user)
 	case "collect":
@@ -253,7 +260,15 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		return
 	}
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.created_by,r.handler,r.created_time,"+
-		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) order by created_time desc", where, sql)
+		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
+	// 排序处理
+	if param.Sorting != nil {
+		if param.Sorting.Asc {
+			newSQL += fmt.Sprintf(" ORDER BY %s ASC ", param.Sorting.Field)
+		} else {
+			newSQL += fmt.Sprintf(" ORDER BY %s DESC ", param.Sorting.Field)
+		}
+	}
 	// 分页处理
 	pageInfo.StartIndex = param.StartIndex
 	pageInfo.PageSize = param.PageSize
@@ -666,7 +681,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, newParam)
 	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, requestId, param.ExpectTime}})
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, requestId}})
 	return transaction(actions)
 }
 

@@ -28,6 +28,7 @@ type PlatformDataObj struct {
 	Handler         string `json:"handler" xorm:"handler"`                   // 当前处理人
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`          // 创建时间
 	ExpectTime      string `json:"expectTime" xorm:"expect_time"`            // 期望完成时间
+	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`          // 期望完成时间
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 收藏标记,1表示已收藏
 	Role            string `json:"role" xorm:"role"`                         // 创建请求Role
 	HandleRole      string `json:"handleRole" xorm:"handle_role"`            // 处理role
@@ -242,6 +243,7 @@ type RequestProDataV2Dto struct {
 	Name         string                    `json:"name"`
 	Description  string                    `json:"description"`
 	ExpectTime   string                    `json:"expectTime"` // 期望完成时间
+	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
 }

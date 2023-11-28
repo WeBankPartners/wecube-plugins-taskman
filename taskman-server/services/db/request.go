@@ -260,14 +260,17 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		return
 	}
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,"+
-		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.created_by,r.handler,r.created_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 	// 排序处理
 	if param.Sorting != nil {
-		if param.Sorting.Asc {
-			newSQL += fmt.Sprintf(" ORDER BY %s ASC ", param.Sorting.Field)
-		} else {
-			newSQL += fmt.Sprintf(" ORDER BY %s DESC ", param.Sorting.Field)
+		hashMap, _ := getJsonToXormMap(models.PlatformDataObj{})
+		if len(hashMap) > 0 {
+			if param.Sorting.Asc {
+				newSQL += fmt.Sprintf(" ORDER BY %s ASC ", hashMap[param.Sorting.Field])
+			} else {
+				newSQL += fmt.Sprintf(" ORDER BY %s DESC ", hashMap[param.Sorting.Field])
+			}
 		}
 	}
 	// 分页处理
@@ -681,8 +684,8 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, newParam)
-	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, requestId}})
+	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, requestId}})
 	return transaction(actions)
 }
 

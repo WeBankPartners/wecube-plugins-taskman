@@ -101,10 +101,11 @@ import { getTemplateTree, collectTemplate, uncollectTemplate, collectTemplateLis
 export default {
   data () {
     return {
-      activeName: 'confirm',
+      activeName: 'confirm', // confirm已发布，created未发布
+      type: '', // publish发布，request请求
       form: {
         templateName: '',
-        operatorObjType: ''
+        operatorObjType: '' // 操作对象类型
       },
       operateOptions: [],
       // 收藏列表
@@ -176,7 +177,16 @@ export default {
       ]
     }
   },
+  watch: {
+    // 解决同路由跳转不触发页面更新问题
+    $route (to, from) {
+      this.type = this.$route.query.type || ''
+      this.getTemplateData()
+      this.getCollectTemplate()
+    }
+  },
   mounted () {
+    this.type = this.$route.query.type || ''
     this.getTemplateData()
     this.getCollectTemplate()
   },
@@ -199,6 +209,7 @@ export default {
             return i
           })
         this.originCardList = this.cardList
+        this.filterData()
       }
     },
     // 展开收缩卡片
@@ -246,10 +257,15 @@ export default {
               j.templates =
                 (Array.isArray(j.templates) &&
                   j.templates.filter(k => {
+                    const typeMap = {
+                      0: 'request',
+                      1: 'publish'
+                    }
                     // 根据模板名、标签名、模版发布状态组合搜索
-                    const nameFlag = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
-                    const operatorFlag = operatorObjType ? k.operatorObjType === operatorObjType : true
-                    return nameFlag && operatorFlag && this.activeName === k.status
+                    const nameFilter = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
+                    const operatorFilter = operatorObjType ? k.operatorObjType === operatorObjType : true
+                    const typeFilter = this.type === typeMap[k.type]
+                    return nameFilter && operatorFilter && typeFilter && this.activeName === k.status
                   })) ||
                 []
               // 没有模板的组不显示
@@ -276,6 +292,7 @@ export default {
   }
   .ivu-form-item {
     margin-bottom: 10px !important;
+    display: inline-block !important;
   }
 }
 </style>

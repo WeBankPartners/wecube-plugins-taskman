@@ -49,7 +49,7 @@ import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
-import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus } from '@/api/server'
+import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus, deleteRequest } from '@/api/server'
 export default {
   components: {
     HotLink,
@@ -61,7 +61,7 @@ export default {
   data () {
     return {
       tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
-      actionName: '1', // 1发布行为,2请求(3问题,4事件,5变更)
+      actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
       form: {
         type: 0, // 0所有,1请求定版,2任务处理
         query: '', // ID或名称模糊搜索
@@ -126,24 +126,27 @@ export default {
         },
         {
           title: this.$t('name'),
-          width: 200,
+          minWidth: 250,
           key: 'name'
         },
         {
           title: '使用模板',
           sortable: 'custom',
-          minWidth: 120,
+          minWidth: 180,
           key: 'templateName'
         },
         {
           title: '操作对象',
           resizable: true,
-          width: 200,
-          key: 'operatorObj'
+          minWidth: 100,
+          key: 'operatorObjType',
+          render: (h, params) => {
+            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+          }
         },
         {
           title: '使用编排',
-          minWidth: 200,
+          minWidth: 120,
           key: 'procDefName'
         },
         {
@@ -161,8 +164,11 @@ export default {
         {
           title: '进展',
           sortable: 'custom',
-          minWidth: 120,
-          key: 'progress'
+          width: 120,
+          key: 'progress',
+          render: (h, params) => {
+            return <Progress percent={50} />
+          }
         },
         {
           title: '停留时长',
@@ -177,24 +183,40 @@ export default {
           title: '创建人',
           sortable: 'custom',
           minWidth: 160,
-          key: 'created_by'
+          key: 'created_by',
+          render: (h, params) => {
+            return (
+              <div style="display:flex;flex-direction:column">
+                <span>{params.row.createdBy}</span>
+                <span>{params.row.role}</span>
+              </div>
+            )
+          }
         },
         {
           title: '当前处理人',
           sortable: 'custom',
           minWidth: 160,
-          key: 'handler'
+          key: 'handler',
+          render: (h, params) => {
+            return (
+              <div style="display:flex;flex-direction:column">
+                <span>{params.row.handler}</span>
+                <span>{params.row.handleRole}</span>
+              </div>
+            )
+          }
         },
         {
           title: '创建时间',
           sortable: 'custom',
-          minWidth: 160,
+          minWidth: 150,
           key: 'createdTime'
         },
         {
           title: '期望完成时间',
           sortable: 'custom',
-          minWidth: 160,
+          minWidth: 150,
           key: 'expectTime'
         },
         {
@@ -206,24 +228,52 @@ export default {
           render: (h, params) => {
             return (
               <div>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    this.hanldeView(params.row)
-                  }}
-                  style="margin-right:5px;"
-                >
-                  查看
-                </Button>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => {
-                    this.handleRepub(params.row)
-                  }}
-                >
-                  重新发起
-                </Button>
+                {['pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      this.hanldeView(params.row)
+                    }}
+                    style="margin-right:5px;"
+                  >
+                    查看
+                  </Button>
+                )}
+                {
+                  // <Button
+                  //   type="primary"
+                  //   size="small"
+                  //   onClick={() => {
+                  //     this.handleRepub(params.row)
+                  //   }}
+                  // >
+                  //   重新发起
+                  // </Button>
+                }
+                {
+                  // this.username !== params.row.handler && this.tabName === 'pending' && (
+                  // <Button
+                  //   type="success"
+                  //   size="small"
+                  //   onClick={() => {
+                  //     this.handleTransfer(params.row)
+                  //   }}
+                  // >
+                  //   处理
+                  // </Button>
+                  // )
+                }
+                {this.username === params.row.handler && this.tabName === 'pending' && (
+                  <Button
+                    type="success"
+                    size="small"
+                    onClick={() => {
+                      this.handleTransfer(params.row)
+                    }}
+                  >
+                    认领
+                  </Button>
+                )}
                 {this.username !== params.row.handler && this.tabName === 'pending' && (
                   <Button
                     type="success"
@@ -233,6 +283,29 @@ export default {
                     }}
                   >
                     转给我
+                  </Button>
+                )}
+                {this.tabName === 'draft' && (
+                  <Button
+                    type="success"
+                    size="small"
+                    onClick={() => {
+                      this.handleTransfer(params.row)
+                    }}
+                    style="margin-right:5px;"
+                  >
+                    去发起
+                  </Button>
+                )}
+                {this.tabName === 'draft' && (
+                  <Button
+                    type="error"
+                    size="small"
+                    onClick={() => {
+                      this.handleDeleteDraft(params.row)
+                    }}
+                  >
+                    删除
                   </Button>
                 )}
               </div>
@@ -248,6 +321,31 @@ export default {
         pageSize: 10
       },
       username: window.localStorage.getItem('username')
+    }
+  },
+  watch: {
+    tabName: {
+      handler (val) {
+        if (val) {
+          this.$nextTick(() => {
+            if (['pending', 'hasProcessed'].includes(val)) {
+              this.searchOptions[0].initValue = 1
+              this.searchOptions[0].list = [
+                { label: '请求定版', value: 1 },
+                { label: '任务处理', value: 2 }
+              ]
+            } else {
+              this.searchOptions[0].initValue = 0
+              this.searchOptions[0].list = [
+                { label: '所有', value: 0 },
+                { label: '请求定版', value: 1 },
+                { label: '任务处理', value: 2 }
+              ]
+            }
+          })
+        }
+      },
+      immediate: true
     }
   },
   mounted () {
@@ -337,6 +435,32 @@ export default {
         },
         onCancel: () => {}
       })
+    },
+    // 去发起
+    hanldeCreate (row) {
+      this.$router.push({
+        path: `/taskman/workbench/createPublish?id=${row.templateId}`
+      })
+    },
+    // 删除草稿
+    handleDeleteDraft (row) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          let res = await deleteRequest(row.id)
+          if (res.statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.getList()
+          }
+        },
+        onCancel: () => {}
+      })
     }
   }
 }
@@ -369,6 +493,14 @@ export default {
   }
   .data-tabs {
     margin-top: 24px;
+  }
+}
+</style>
+<style lang="scss">
+.workbench {
+  .ivu-progress-outer {
+    padding-right: 30px;
+    margin-right: -33px;
   }
 }
 </style>

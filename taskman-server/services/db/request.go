@@ -259,7 +259,8 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.created_by,r.handler,r.created_time,"+
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.created_by,r.handler,r.created_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 	// 排序处理
 	if param.Sorting != nil {
@@ -2291,5 +2292,47 @@ func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) 
 		return
 	}
 	data = response.Data
+	return
+}
+
+func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, err error) {
+	data = &models.FilterItem{}
+	var pairList []models.KeyValuePair
+	var dataList []*models.FilterObj
+	var templateMap = make(map[string]string)
+	var operatorObjTypeMap = make(map[string]bool)
+	var procDefNameMap = make(map[string]bool)
+	var createdByMap = make(map[string]bool)
+	var handlerMap = make(map[string]bool)
+	var sql = "select rt.id as template_id,rt.name as template_name,rt.operator_obj_type,rt.proc_def_name,r.created_by," +
+		"r.handler from request r join request_template rt on r.request_template = rt.id where r.created_time > ?"
+	err = x.SQL(sql, param.StartTime).Find(&dataList)
+	if err != nil {
+		return
+	}
+	for _, item := range dataList {
+		templateMap[item.TemplateName] = item.TemplateId
+		operatorObjTypeMap[item.OperatorObjType] = true
+		procDefNameMap[item.ProcDefName] = true
+		createdByMap[item.CreatedBy] = true
+		handlerMap[item.Handler] = true
+	}
+	for key, value := range templateMap {
+		pairList = append(pairList, models.KeyValuePair{TemplateId: value, TemplateName: key})
+	}
+	data.TemplateList = pairList
+	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)
+	data.ProcDefNameList = convertMap2Array(procDefNameMap)
+	data.CreatedByList = convertMap2Array(createdByMap)
+	data.HandlerList = convertMap2Array(handlerMap)
+	return
+}
+
+func convertMap2Array(hashMap map[string]bool) (arr []string) {
+	for key, _ := range hashMap {
+		if key != "" {
+			arr = append(arr, key)
+		}
+	}
 	return
 }

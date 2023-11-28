@@ -47,3 +47,7 @@ type PlatformRequestParam struct {
 	PageSize    int                  `json:"pageSize"`
 	Sorting     *QueryRequestSorting `json:"sorting"` // 排序字段
 }
+
+type FilterRequestParam struct {
+	StartTime string `json:"startTime"` //开始时间
+}

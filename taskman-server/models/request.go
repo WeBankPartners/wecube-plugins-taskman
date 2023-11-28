@@ -326,6 +326,28 @@ type RequestForm struct {
 	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
 }
 
+type FilterItem struct {
+	TemplateList        []KeyValuePair `json:"templateList"`        // 模板列表
+	OperatorObjTypeList []string       `json:"operatorObjTypeList"` // 操作对象类型列表
+	ProcDefNameList     []string       `json:"procDefNameList"`     // 使用编排
+	CreatedByList       []string       `json:"createdByList"`       // 创建人列表
+	HandlerList         []string       `json:"handlerList"`         // 处理人列表
+}
+
+type KeyValuePair struct {
+	TemplateId   string `json:"templateId"`   // 使用模板
+	TemplateName string `json:"templateName"` // 使用模板
+}
+
+type FilterObj struct {
+	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板IDa
+	TemplateName    string `json:"templateName" xorm:"template_name"`        // 模板名称
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
+	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
+	CreatedBy       string `json:"createdBy" xorm:"created_by"`              // 创建人
+	Handler         string `json:"handler" xorm:"handler"`                   // 处理人
+}
+
 type RequestDetail struct {
 	Request RequestForm `json:"request"` // 请求信息
 }

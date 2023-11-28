@@ -60,6 +60,21 @@ func CountRequest(c *gin.Context) {
 	middleware.ReturnData(c, platformData)
 }
 
+// FilterItem 过滤数据
+func FilterItem(c *gin.Context) {
+	var param models.FilterRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	data, err := db.GetFilterItem(param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, data)
+}
+
 // DataList  工作台数据列表
 func DataList(c *gin.Context) {
 	var param models.PlatformRequestParam

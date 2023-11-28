@@ -270,7 +270,7 @@ export default {
       const { statusCode, data } = await getRootEntity(params)
       if (statusCode === 'OK') {
         this.rootEntityOptions = data.data || []
-        this.form.rootEntityId = this.rootEntityOptions[0].guid
+        this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
       }
     },
     // 获取目标对象对应数据
@@ -590,7 +590,7 @@ export default {
 <style lang="scss">
 .workbench-publish-create {
   .ivu-steps-content {
-    padding-left: 0px;
+    padding-left: 0px !important;
     padding-top: 5px;
     font-size: 12px;
     color: #3d3c38 !important;

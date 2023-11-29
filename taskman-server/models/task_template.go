@@ -19,8 +19,9 @@ type TaskTemplateTable struct {
 }
 
 type TaskTemplateVo struct {
-	TaskTemplateTable
-	Role string `json:"role" xorm:"role"`
+	Id      string `json:"id" xorm:"id"`
+	Handler string `json:"handler" xorm:"handler"`
+	Role    string `json:"role" xorm:"role"`
 }
 
 type TaskTemplateRoleTable struct {

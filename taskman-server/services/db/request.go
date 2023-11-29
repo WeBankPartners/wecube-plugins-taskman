@@ -465,6 +465,16 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 		}
 	case "NotStarted":
 		curNode = "NotStarted"
+	case "Faulted":
+		// 失败状态,显示具体执行失败的节点. filterNode 过滤orderNo为空大节点
+		list := filterNode(response.Data.TaskNodeInstances)
+		if len(list) == 0 {
+			return
+		}
+		// 按 orderNo排序,将有 orderNo的节点按小到大排序,找到最后一个节点状态返回
+		sort.Sort(models.QueryNodeSort(list))
+		curNode = list[len(list)-1].NodeName
+		return
 	default:
 		// 失败状态,显示具体执行失败的节点. filterNode 过滤orderNo为空大节点
 		list := filterNode(response.Data.TaskNodeInstances)

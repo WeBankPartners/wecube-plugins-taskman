@@ -18,16 +18,23 @@
       <DataCard :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
-      <Tabs v-model="actionName" @on-click="handleQuery">
+      <Tabs v-model="actionName" @on-click="handleActionNameChange">
         <TabPane label="发布" name="1"></TabPane>
         <TabPane label="请求" name="2"></TabPane>
       </Tabs>
-      <CollectTable v-if="tabName === 'collect'" :getTemplateList="getTemplateList"></CollectTable>
+      <CollectTable ref="collect" v-if="tabName === 'collect'" :getTemplateList="getTemplateList"></CollectTable>
       <template v-else>
         <!--搜索条件-->
         <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
         <!--表格分页-->
-        <Table border size="small" :loading="loading" :columns="tableColumns" :data="tableData"></Table>
+        <Table
+          border
+          size="small"
+          :loading="loading"
+          :columns="tableColumns"
+          :data="tableData"
+          @on-sort-change="sortTable"
+        ></Table>
         <Page
           style="float:right;margin-top:10px;"
           :total="pagination.total"
@@ -74,6 +81,7 @@ export default {
         {
           key: 'type',
           initValue: 0,
+          hidden: false,
           component: 'radio-group',
           list: [
             { label: '所有', value: 0 },
@@ -98,13 +106,13 @@ export default {
           component: 'select',
           multiple: true,
           list: [
-            { label: 'Pending', value: 'Pending' },
-            { label: 'InProgress', value: 'InProgress' },
-            { label: 'InProgress(Faulted)', value: 'InProgress(Faulted)' },
-            { label: 'Termination', value: 'Termination' },
-            { label: 'Completed', value: 'Completed' },
-            { label: 'InProgress(Timeouted)', value: 'InProgress(Timeouted)' },
-            { label: 'Faulted', value: 'Faulted' }
+            { label: this.$t('status_pending'), value: 'Pending' },
+            { label: this.$t('status_inProgress'), value: 'InProgress' },
+            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
+            { label: this.$t('status_termination'), value: 'Termination' },
+            { label: this.$t('status_complete'), value: 'Completed' },
+            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
+            { label: this.$t('status_faulted'), value: 'Faulted' }
           ]
         },
         {
@@ -126,6 +134,7 @@ export default {
         },
         {
           title: this.$t('name'),
+          sortable: 'custom',
           minWidth: 250,
           key: 'name'
         },
@@ -138,7 +147,8 @@ export default {
         {
           title: '操作对象',
           resizable: true,
-          minWidth: 100,
+          sortable: 'custom',
+          minWidth: 150,
           key: 'operatorObjType',
           render: (h, params) => {
             return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
@@ -146,33 +156,43 @@ export default {
         },
         {
           title: '使用编排',
-          minWidth: 120,
+          minWidth: 150,
           key: 'procDefName'
         },
         {
           title: '请求状态',
           sortable: 'custom',
           key: 'status',
-          minWidth: 120
+          minWidth: 120,
+          render: (h, params) => {
+            const list = [
+              { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+              { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+              { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
+              { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
+              { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
+              { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
+              { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' }
+            ]
+            const item = list.find(i => i.value === params.row.status)
+            return item && <Tag color={item.color}>{item.label}</Tag>
+          }
         },
         {
           title: '当前节点',
-          sortable: 'custom',
           minWidth: 120,
           key: 'curNode'
         },
         {
           title: '进展',
-          sortable: 'custom',
           width: 120,
           key: 'progress',
           render: (h, params) => {
-            return <Progress percent={50} />
+            return <Progress percent={params.row.progress} />
           }
         },
         {
           title: '停留时长',
-          sortable: 'custom',
           minWidth: 160,
           key: 'expectTime',
           render: (h, params) => {
@@ -328,19 +348,29 @@ export default {
       handler (val) {
         if (val) {
           this.$nextTick(() => {
+            this.searchOptions[0].hidden = false
+            this.form.type = 0
+            // 待处理、进行中
             if (['pending', 'hasProcessed'].includes(val)) {
+              this.form.type = 1
               this.searchOptions[0].initValue = 1
               this.searchOptions[0].list = [
                 { label: '请求定版', value: 1 },
                 { label: '任务处理', value: 2 }
               ]
-            } else {
+              // 我提交的
+            } else if (val === 'submit') {
               this.searchOptions[0].initValue = 0
               this.searchOptions[0].list = [
                 { label: '所有', value: 0 },
                 { label: '请求定版', value: 1 },
                 { label: '任务处理', value: 2 }
               ]
+            } else if (val === 'draft') {
+              this.searchOptions[0].hidden = true
+            }
+            if (val !== 'collect') {
+              this.handleQuery()
             }
           })
         }
@@ -356,11 +386,16 @@ export default {
     handleOverviewChange (val, action) {
       this.tabName = val
       this.actionName = action || '1'
-      if (val !== 'collect') {
-        this.handleQuery()
-      }
     },
-    async getList () {
+    // 表格排序
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.getList(sorting)
+    },
+    async getList (sort = { asc: false, field: 'updatedTime' }) {
       this.loading = true
       const params = {
         tab: this.tabName,
@@ -369,12 +404,23 @@ export default {
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
       }
+      if (sort) {
+        params.sort = sort
+      }
       const { statusCode, data } = await getPlatformList(params)
       if (statusCode === 'OK') {
         this.tableData = data.contents || []
         this.pagination.total = data.pageInfo.totalRows
       }
       this.loading = false
+    },
+    // 切换发布请求类型
+    handleActionNameChange () {
+      if (this.tabName !== 'collect') {
+        this.handleQuery()
+      } else {
+        this.$refs.collect.handleQuery()
+      }
     },
     handleQuery () {
       this.pagination.currentPage = 1
@@ -407,7 +453,11 @@ export default {
       }
     },
     // 表格操作-查看
-    hanldeView () {},
+    hanldeView (row) {
+      this.$router.push({
+        path: `/taskman/workbench/createPublish?templateId=${row.templateId}&requestId=${row.id}&type=detail`
+      })
+    },
     // 表格操作-重新发布
     handleRepub () {},
     // 表格操作-转给我

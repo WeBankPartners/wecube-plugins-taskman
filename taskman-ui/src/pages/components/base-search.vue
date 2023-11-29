@@ -3,7 +3,7 @@
     <div class="form">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
-          <FormItem :label="i.label || ''" :prop="i.key" :label-width="i.labelWidth || 0" :key="index">
+          <FormItem v-if="!i.hidden" :label="i.label || ''" :prop="i.key" :label-width="i.labelWidth || 0" :key="index">
             <!--输入框-->
             <Input
               v-if="i.component === 'input'"

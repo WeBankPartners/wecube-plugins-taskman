@@ -138,5 +138,12 @@
   "select_an_operation": "Please Select",
   "show_log": "Show Log",
   "request": "Request",
-  "publish": "Publish"
+  "publish": "Publish",
+  "status_pending": "Pending",
+  "status_inProgress": "InProgress",
+  "status_inProgress_faulted": "InProgress(Faulted)",
+  "status_termination": "Termination",
+  "status_complete": "Completed",
+  "status_inProgress_timeouted": "InProgress(Timeouted)",
+  "status_faulted": "Faulted"
 }

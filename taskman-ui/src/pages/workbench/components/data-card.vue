@@ -77,7 +77,7 @@ export default {
         },
         {
           type: 'draft',
-          label: '我保存的',
+          label: '我暂存的',
           icon: require('@/images/save.png'),
           requestNum: 10,
           publishNum: 5

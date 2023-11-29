@@ -132,7 +132,6 @@ export default {
         {
           title: this.$t('priority'),
           width: 80,
-          sortable: 'custom',
           minWidth: 100,
           key: 'emergency',
           render: (h, params) => {

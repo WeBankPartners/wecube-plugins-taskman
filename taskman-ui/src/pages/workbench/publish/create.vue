@@ -16,14 +16,56 @@
         </Steps>
       </Col>
       <Col span="6" class="btn-group">
-        <Button @click="handleDraft" style="margin-right:10px;">保存草稿</Button>
-        <Button type="primary" @click="handlePublish">发布</Button>
+        <Button v-if="this.type !== 'detail'" @click="handleDraft" style="margin-right:10px;">保存草稿</Button>
+        <Button v-if="this.type !== 'detail'" type="primary" @click="handlePublish">发布</Button>
       </Col>
     </Row>
     <Row class="content">
       <Col span="16" class="split-line">
         <Form :model="form" label-position="right" :label-width="120">
-          <HeaderTitle title="发布信息">
+          <HeaderTitle v-if="type === 'detail'" title="请求信息">
+            <Row>
+              <Col :span="4">请求ID：</Col>
+              <Col :span="8">{{ detailInfo.id }}</Col>
+              <Col :span="4">请求类型：</Col>
+              <Col :span="8">{{ detailInfo.requestType }}</Col>
+            </Row>
+            <Row style="margin-top:10px;">
+              <Col :span="4">创建时间：</Col>
+              <Col :span="8">{{ detailInfo.createdTime }}</Col>
+              <Col :span="4">期望完成时间：</Col>
+              <Col :span="8">{{ detailInfo.expectTime }}</Col>
+            </Row>
+            <Row style="margin-top:10px;">
+              <Col :span="4">请求进度：</Col>
+              <Col :span="8">{{ detailInfo.progress }}</Col>
+              <Col :span="4">请求状态：</Col>
+              <Col :span="8">{{ detailInfo.status }}</Col>
+            </Row>
+            <Row style="margin-top:10px;">
+              <Col :span="4">当前节点：</Col>
+              <Col :span="8">{{ detailInfo.curNode }}</Col>
+              <Col :span="4">当前处理人：</Col>
+              <Col :span="8">{{ detailInfo.handler }}</Col>
+            </Row>
+            <Row style="margin-top:10px;">
+              <Col :span="4">创建人：</Col>
+              <Col :span="8">{{ detailInfo.createdBy }}</Col>
+              <Col :span="4">创建人角色：</Col>
+              <Col :span="8">{{ detailInfo.role }}</Col>
+            </Row>
+            <Row style="margin-top:10px;">
+              <Col :span="4">使用模板：</Col>
+              <Col :span="8">{{ detailInfo.templateName }}</Col>
+              <Col :span="4">模板组：</Col>
+              <Col :span="8">{{ detailInfo.templateGroupName }}</Col>
+            </Row>
+            <Row style="margin-top:10px;">
+              <Col :span="4">请求描述：</Col>
+              <Col :span="8">{{ detailInfo.description }}</Col>
+            </Row>
+          </HeaderTitle>
+          <HeaderTitle v-else title="发布信息">
             <FormItem label="请求名称" required>
               <Input v-model="form.name" placeholder="请输入" style="width:400px;" />
             </FormItem>
@@ -51,7 +93,13 @@
           </HeaderTitle>
           <HeaderTitle title="发布目标对象">
             <FormItem label="选择操作单元" required>
-              <Select v-model="form.rootEntityId" clearable filterable style="width:300px;">
+              <Select
+                v-model="form.rootEntityId"
+                :disabled="type === 'detail'"
+                clearable
+                filterable
+                style="width:300px;"
+              >
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
@@ -96,7 +144,8 @@ import {
   getRootEntity,
   getEntityData,
   getRefOptions,
-  savePublishData
+  savePublishData,
+  getPublishInfo
 } from '@/api/server'
 import StaticFlow from './flow/static-flow.vue'
 import DynamicFlow from './flow/dynamic-flow.vue'
@@ -122,10 +171,12 @@ export default {
   },
   data () {
     return {
+      type: this.$route.query.type, // detail查看
       templateId: '',
       requestId: '',
       activeTab: '',
       refKeys: [], // 引用类型字段集合select类型
+      detailInfo: {}, // 详情信息
       form: {
         name: '',
         description: '',
@@ -206,7 +257,11 @@ export default {
   },
   async mounted () {
     this.templateId = this.$route.query.templateId || ''
-    if (this.templateId) {
+    this.requestId = this.$route.query.requestId || ''
+    // 查看调用详情接口
+    if (this.requestId) {
+      await this.getPublishInfo()
+    } else {
       await this.getCreateInfo()
     }
     this.getProgressInfo()
@@ -258,6 +313,13 @@ export default {
               break
           }
         })
+      }
+    },
+    // 获取发布信息
+    async getPublishInfo () {
+      const { statusCode, data } = await getPublishInfo(this.requestId)
+      if (statusCode === 'OK') {
+        this.detailInfo = data.request || {}
       }
     },
     // 操作目标对象下拉值
@@ -352,7 +414,7 @@ export default {
                   this.refreshRequestData()
                 }}
                 multiple={t.multiple === 'Y'}
-                disabled={t.isEdit === 'no'}
+                disabled={t.isEdit === 'no' || this.type === 'detail'}
               >
                 {Array.isArray(params.row[t.name + 'Options']) &&
                   params.row[t.name + 'Options'].map(i => (
@@ -376,7 +438,7 @@ export default {
                 onBlur={() => {
                   this.refreshRequestData()
                 }}
-                disabled={t.isEdit === 'no'}
+                disabled={t.isEdit === 'no' || this.type === 'detail'}
               />
             )
           }
@@ -393,7 +455,7 @@ export default {
                   this.refreshRequestData()
                 }}
                 type="textarea"
-                disabled={t.isEdit === 'no'}
+                disabled={t.isEdit === 'no' || this.type === 'detail'}
               />
             )
           }
@@ -533,10 +595,32 @@ export default {
     // 保存草稿
     async handleDraft () {
       this.form.data = this.requestData
+      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId)
+      this.form.entityName = item.key_name
       savePublishData(this.requestId, this.form)
     },
     // 发布
-    handlePublish () {}
+    async handlePublish () {
+      if (this.form.rootEntityId === '') {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
+      this.$Modal.confirm({
+        title: this.$t('confirm') + this.$t('commit'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          this.confirmCommitRequest()
+          // await this.saveData()
+          // const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
+          // if (statusCode === 'OK') {
+          //   this.$router.push({ path: '/taskman/request-mgmt' })
+          // }
+        },
+        onCancel: () => {}
+      })
+    }
   }
 }
 </script>

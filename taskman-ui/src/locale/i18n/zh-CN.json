@@ -138,5 +138,12 @@
   "select_an_operation": "请选择操作",
   "show_log": "查看日志",
   "request": "请求",
-  "publish": "发布"
+  "publish": "发布",
+  "status_pending": "等待定版",
+  "status_inProgress": "执行中",
+  "status_inProgress_faulted": "节点报错",
+  "status_termination": "手动终止",
+  "status_complete": "成功",
+  "status_inProgress_timeouted": "节点超时",
+  "status_faulted": "自动退出"
 }

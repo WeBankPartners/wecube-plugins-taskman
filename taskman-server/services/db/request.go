@@ -458,7 +458,7 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 		return
 	case "InProgress":
 		for _, v := range response.Data.TaskNodeInstances {
-			if v.Status == "InProgress" {
+			if v.Status == "InProgress" || v.Status == "Timeouted" || v.Status == "Faulted" {
 				curNode = v.NodeName
 				return
 			}

@@ -31,7 +31,7 @@ func DeleteTemplateCollect(templateId, user string) error {
 func QueryTemplateCollect(param *models.QueryCollectTemplateObj, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
 	sql := "select rt.id,rt.name,rtg.name  as template_group ,rt.proc_def_name,rtg.manage_role,rt.handler as owner,rt.tags,rt.created_time from request_template rt " +
-		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?) order by rt.created_time desc"
+		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?) order by rt.updated_time desc"
 	pageInfo.PageSize = param.PageSize
 	pageInfo.StartIndex = param.StartIndex
 	pageInfo.TotalRows = queryCount(sql, user)

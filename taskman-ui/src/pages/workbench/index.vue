@@ -206,7 +206,15 @@ export default {
         {
           title: '当前节点',
           minWidth: 120,
-          key: 'curNode'
+          key: 'curNode',
+          render: (h, params) => {
+            const map = {
+              sendRequest: '提起请求',
+              requestPending: '请求定版',
+              requestComplete: '请求完成'
+            }
+            return <span>{map[params.row.curNode] || params.row.curNode}</span>
+          }
         },
         {
           title: '进展',

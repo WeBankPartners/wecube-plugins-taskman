@@ -28,7 +28,7 @@
               <Col :span="4">请求ID：</Col>
               <Col :span="8">{{ detailInfo.id }}</Col>
               <Col :span="4">请求类型：</Col>
-              <Col :span="8">{{ detailInfo.requestType }}</Col>
+              <Col :span="8">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
             </Row>
             <Row style="margin-top:10px;">
               <Col :span="4">创建时间：</Col>
@@ -38,13 +38,21 @@
             </Row>
             <Row style="margin-top:10px;">
               <Col :span="4">请求进度：</Col>
-              <Col :span="8">{{ detailInfo.progress }}</Col>
+              <Col :span="8">
+                <Progress :percent="detailInfo.progress" style="width:150px;" />
+              </Col>
               <Col :span="4">请求状态：</Col>
               <Col :span="8">{{ detailInfo.status }}</Col>
             </Row>
             <Row style="margin-top:10px;">
               <Col :span="4">当前节点：</Col>
-              <Col :span="8">{{ detailInfo.curNode }}</Col>
+              <Col :span="8">{{
+                {
+                  sendRequest: '提起请求',
+                  requestPending: '请求定版',
+                  requestComplete: '请求完成'
+                }[detailInfo.curNode] || detailInfo.curNode
+              }}</Col>
               <Col :span="4">当前处理人：</Col>
               <Col :span="8">{{ detailInfo.handler }}</Col>
             </Row>
@@ -627,7 +635,6 @@ export default {
         onOk: async () => {
           this.$Modal.remove()
           const draftResult = await this.handleDraft()
-          console.log('111111111111', draftResult)
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {

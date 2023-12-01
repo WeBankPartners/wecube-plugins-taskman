@@ -73,10 +73,10 @@ export default {
         type: 0, // 0所有,1请求定版,2任务处理
         rollback: 0, // 0所有,1已退回,2其他
         query: '', // ID或名称模糊搜索
-        templateId: '', // 模板ID
+        templateId: [], // 模板ID
         status: [], // 状态
         operatorObj: '', // 操作对象
-        createdBy: '' // 创建人
+        createdBy: [] // 创建人
       },
       searchOptions: [
         {
@@ -96,8 +96,14 @@ export default {
           component: 'input'
         },
         {
+          key: 'operatorObj',
+          placeholder: '操作对象',
+          component: 'input'
+        },
+        {
           key: 'templateId',
           placeholder: '模板',
+          multiple: true,
           component: 'remote-select',
           remote: this.getTemplateList
         },
@@ -118,14 +124,20 @@ export default {
           ]
         },
         {
-          key: 'operatorObj',
-          placeholder: '操作对象',
-          component: 'input'
-        },
-        {
           key: 'createdBy',
           placeholder: '创建人',
-          component: 'input'
+          component: 'select',
+          multiple: true,
+          list: [
+            { label: this.$t('status_pending'), value: 'Pending' },
+            { label: this.$t('status_inProgress'), value: 'InProgress' },
+            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
+            { label: this.$t('status_termination'), value: 'Termination' },
+            { label: this.$t('status_complete'), value: 'Completed' },
+            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
+            { label: this.$t('status_faulted'), value: 'Faulted' },
+            { label: this.$t('status_draft'), value: 'Draft' }
+          ]
         }
       ],
       tableColumns: [
@@ -151,17 +163,17 @@ export default {
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObjType'
+          key: 'operatorObjType',
+          render: (h, params) => {
+            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+          }
         },
         {
           title: '操作对象',
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObjType',
-          render: (h, params) => {
-            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
-          }
+          key: 'operatorObj'
         },
         {
           title: '使用编排',
@@ -196,12 +208,6 @@ export default {
               )
             )
           }
-        },
-        {
-          title: '退回原因',
-          sortable: 'custom',
-          key: 'rollbackDesc',
-          minWidth: 150
         },
         {
           title: '当前节点',
@@ -271,6 +277,12 @@ export default {
           sortable: 'custom',
           minWidth: 150,
           key: 'expectTime'
+        },
+        {
+          title: '退回原因',
+          sortable: 'custom',
+          key: 'rollbackDesc',
+          minWidth: 200
         },
         {
           title: this.$t('t_action'),
@@ -386,7 +398,7 @@ export default {
             // 待处理、进行中
             if (['pending', 'hasProcessed'].includes(val)) {
               this.form.type = 2
-              this.rollback = 0
+              this.form.rollback = 0
               this.searchOptions[0].key = 'type'
               this.searchOptions[0].initValue = 2
               this.searchOptions[0].list = [
@@ -395,8 +407,8 @@ export default {
               ]
               // 我提交的
             } else if (val === 'submit') {
-              this.form.type = 0
               this.form.rollback = 0
+              this.form.type = 0
               this.searchOptions[0].key = 'rollback'
               this.searchOptions[0].initValue = 0
               this.searchOptions[0].list = [
@@ -445,6 +457,12 @@ export default {
     },
     async getList (sort = { asc: false, field: 'updatedTime' }) {
       this.loading = true
+      if (this.form.type === '') {
+        this.form.type = 0
+      }
+      if (this.form.rollback === '') {
+        this.form.rollback = 0
+      }
       const params = {
         tab: this.tabName,
         action: Number(this.actionName),
@@ -492,6 +510,10 @@ export default {
         })
       }
     },
+    // 获取下拉列表的值
+    // async getFilterOptions() {
+    //   await getPlatformFilter({ startTime: '' })
+    // },
     // 表格操作-查看
     hanldeView (row) {
       this.$router.push({

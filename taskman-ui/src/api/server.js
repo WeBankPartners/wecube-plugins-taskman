@@ -109,6 +109,8 @@ export const collectTemplateList = params => req.post(`/taskman/api/v1/user/temp
 export const overviewData = () => req.post(`/taskman/api/v1/user/platform`)
 // 工作台列表
 export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform/list`, params)
+// 获取工作台筛选数据集合
+export const getPlatformFilter = params => req.post(`/taskman/api/v1/user/platform/filter-item`, params)
 // 工作台转给我
 export const tansferToMe = templateId => req.post(`/taskman/api/v1/request/handler/${templateId}`)
 // 新建发布-发布信息获取

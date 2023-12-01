@@ -16,7 +16,7 @@
         </Steps>
       </Col>
       <Col span="6" class="btn-group">
-        <Button v-if="this.type !== 'detail'" @click="handleDraft" style="margin-right:10px;">保存草稿</Button>
+        <Button v-if="this.type !== 'detail'" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
         <Button v-if="this.type !== 'detail'" type="primary" @click="handlePublish">发布</Button>
       </Col>
     </Row>
@@ -602,7 +602,7 @@ export default {
       this.editData = deepClone(row)
     },
     // 保存草稿
-    async handleDraft () {
+    async handleDraft (noJump) {
       if (this.form.rootEntityId === '') {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
@@ -613,12 +613,12 @@ export default {
       if (this.requestDataCheck()) {
         const { statusCode } = await savePublishData(this.requestId, this.form)
         if (statusCode === 'OK') {
-          this.$Notice.success({
-            title: this.$t('successful'),
-            desc: this.$t('successful')
-          })
+          if (noJump) {
+            return statusCode
+          } else {
+            this.$router.push({ path: '/taskman/workbench?tabName=pending' })
+          }
         }
-        return statusCode
       } else {
         this.$Notice.warning({
           title: this.$t('warning'),
@@ -634,11 +634,11 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const draftResult = await this.handleDraft()
+          const draftResult = await this.handleDraft(true)
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench' })
+              this.$router.push({ path: '/taskman/workbench?tabName=pending' })
             }
           }
         },

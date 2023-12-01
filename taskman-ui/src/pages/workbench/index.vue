@@ -439,6 +439,8 @@ export default {
     }
   },
   mounted () {
+    // this.tabName = this.$route.query.tabName
+    // this.actionName = this.$route.query.actionName
     this.getList()
   },
   methods: {

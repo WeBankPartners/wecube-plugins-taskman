@@ -161,8 +161,9 @@ func GetHasProcessedCount(user string) (resultArr []string) {
 func hasProcessedSQL(templateType int, user string) (sql string, queryParam []interface{}) {
 	sql = "select id from request where del_flag= 0 and type = ? and handler = ?  and status not in ('Pending','Draft') " +
 		"union select request from task where handler = ? and del_flag=0 and status = 'done' and " +
-		"request in ( select id from request where type= ? )"
-	queryParam = append([]interface{}{templateType, user, user, templateType})
+		"request in ( select id from request where type= ? ) union select id from request where del_flag= 0 " +
+		"and type = ? and handler = ? and status='Draft' and rollback_desc is not null"
+	queryParam = append([]interface{}{templateType, user, user, templateType, templateType, user})
 	return
 }
 
@@ -260,7 +261,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		return
 	}
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,"+
-		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 	// 排序处理
 	if param.Sorting != nil {
@@ -466,8 +467,8 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 	case "NotStarted":
 		curNode = "NotStarted"
 	case "Faulted":
-		// 失败状态,显示具体执行失败的节点. filterNode 过滤orderNo为空大节点
-		list := filterNode(response.Data.TaskNodeInstances)
+		// 失败状态,筛选成功并且有序号的节点
+		list := filterSuccessNode(response.Data.TaskNodeInstances)
 		if len(list) == 0 {
 			return
 		}
@@ -505,6 +506,16 @@ func filterNode(instances []*models.InstanceStatusQueryNode) []*models.InstanceS
 	var list []*models.InstanceStatusQueryNode
 	for _, node := range instances {
 		if node.OrderedNo != "" {
+			list = append(list, node)
+		}
+	}
+	return list
+}
+
+func filterSuccessNode(instances []*models.InstanceStatusQueryNode) []*models.InstanceStatusQueryNode {
+	var list []*models.InstanceStatusQueryNode
+	for _, node := range instances {
+		if node.OrderedNo != "" && node.Status == "Completed" {
 			list = append(list, node)
 		}
 	}
@@ -1898,13 +1909,15 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
-	newRequestId := guid.CreateGuid()
+	newRequestId := newRequestId()
 	result.Id = newRequestId
 	formInsertAction := execAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
 	formInsertAction.Param = []interface{}{formGuid, parentRequest.Name + models.SysTableIdConnector + "form", "", parentForm.FormTemplate, nowTime, createdBy, nowTime, createdBy}
 	actions = append(actions, &formInsertAction)
-	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{newRequestId, parentRequest.Name, formGuid, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency, parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy, nowTime, parentRequest.Id}
+	requestInsertAction := execAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status," +
+		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{newRequestId, parentRequest.Name, formGuid, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency, parentRequest.ReportRole, "Draft", parentRequest.Cache,
+		"", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy, nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role}
 	actions = append(actions, &requestInsertAction)
 	for _, formItemRow := range formItemTable {
 		actions = append(actions, &execAction{Sql: "INSERT INTO form_item (id,form,form_item_template,name,value,item_group,row_data_id) VALUES (?,?,?,?,?,?,?)", Param: []interface{}{
@@ -1987,24 +2000,39 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 func transConditionToSQL(param *models.PlatformRequestParam) (where string) {
 	where = "where 1 = 1 "
 	if param.Type == 1 {
-		where = where + "and status = 'Pending'"
+		where = where + " and (status = 'Pending' or status = 'Draft')"
 	} else if param.Type == 2 {
-		where = where + "and status <> 'Pending'"
+		where = where + " and status <> 'Pending' and status <> 'Draft'"
 	}
 	if param.Query != "" {
-		where = where + "and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
+		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
 	}
-	if param.TemplateId != "" {
-		where = where + "and template_id = '" + param.TemplateId + "'"
+	if len(param.TemplateId) > 0 {
+		where = where + " and template_id in (" + getSQL(param.TemplateId) + ")"
 	}
 	if len(param.Status) > 0 {
-		where = where + "and status in (" + getSQL(param.Status) + ")"
+		where = where + " and status in (" + getSQL(param.Status) + ")"
 	}
 	if param.OperatorObj != "" {
-		where = where + "and operator_obj = '" + param.OperatorObj + "'"
+		where = where + " and operator_obj = '" + param.OperatorObj + "'"
 	}
-	if param.CreatedBy != "" {
-		where = where + "and created_by = '" + param.CreatedBy + "'"
+	if len(param.CreatedBy) > 0 {
+		where = where + " and created_by in (" + getSQL(param.CreatedBy) + ")"
+	}
+	if len(param.OperatorObjType) > 0 {
+		where = where + " and operator_obj_type in (" + getSQL(param.OperatorObjType) + ")"
+	}
+	if len(param.ProcDefName) > 0 {
+		where = where + " and proc_def_name in (" + getSQL(param.ProcDefName) + ")"
+	}
+	if len(param.Handler) > 0 {
+		where = where + " and handler in (" + getSQL(param.Handler) + ")"
+	}
+	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
+		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"
+	}
+	if param.ExpectStartTime != "" && param.ExpectEndTime != "" {
+		where = where + " and expect_time >= ' " + param.ExpectStartTime + "' and expect_time <= ' " + param.ExpectEndTime + "'"
 	}
 	return
 }

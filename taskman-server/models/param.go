@@ -39,13 +39,13 @@ type PlatformRequestParam struct {
 	Type             int                  `json:"type"`              // 0代表所有,1表示请求定版,2表示任务处理
 	Rollback         int                  `json:"rollback"`          // 0代表所有,1表示被退回,2表示其他(submit 我提交的tab下才有这个筛选生效)
 	Query            string               `json:"query"`             // ID或名称模糊匹配
-	TemplateId       string               `json:"templateId"`        // 模版id
+	TemplateId       []string             `json:"templateId"`        // 模版id
 	Status           []string             `json:"status"`            // 请求状态 Pending InProgress(Faulted)
 	OperatorObj      string               `json:"operatorObj"`       // 操作对象
-	CreatedBy        string               `json:"createdBy"`         // 创建人
-	OperatorObjType  string               `json:"operatorObjType"`   // 操作对象类型
-	ProcDefName      string               `json:"procDefName"`       // 使用编排
-	Handler          string               `json:"handler"`           // 当前处理人
+	CreatedBy        []string             `json:"createdBy"`         // 创建人
+	OperatorObjType  []string             `json:"operatorObjType"`   // 操作对象类型
+	ProcDefName      []string             `json:"procDefName"`       // 使用编排
+	Handler          []string             `json:"handler"`           // 当前处理人
 	CreatedStartTime string               `json:"createdStartTime" ` // 创建开始时间
 	CreatedEndTime   string               `json:"createdEndTime" `   // 创建结束时间
 	ExpectStartTime  string               `json:"expectStartTime" `  // 期望开始时间

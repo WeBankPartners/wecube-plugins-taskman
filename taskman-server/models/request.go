@@ -32,6 +32,7 @@ type PlatformDataObj struct {
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 收藏标记,1表示已收藏
 	Role            string `json:"role" xorm:"role"`                         // 创建请求Role
 	HandleRole      string `json:"handleRole" xorm:"handle_role"`            // 处理role
+	RollbackDesc    string `json:"rollbackDesc" xorm:"rollback_desc"`        // 回退原因
 }
 
 type RequestQueryParam struct {

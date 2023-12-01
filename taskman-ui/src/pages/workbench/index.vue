@@ -18,7 +18,7 @@
       <DataCard :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
-      <Tabs v-model="actionName" @on-click="handleActionNameChange">
+      <Tabs v-model="actionName">
         <TabPane label="发布" name="1"></TabPane>
         <TabPane label="请求" name="2"></TabPane>
       </Tabs>
@@ -71,6 +71,7 @@ export default {
       actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
       form: {
         type: 0, // 0所有,1请求定版,2任务处理
+        rollback: 0, // 0所有,1已退回,2其他
         query: '', // ID或名称模糊搜索
         templateId: '', // 模板ID
         status: [], // 状态
@@ -112,7 +113,8 @@ export default {
             { label: this.$t('status_termination'), value: 'Termination' },
             { label: this.$t('status_complete'), value: 'Completed' },
             { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
-            { label: this.$t('status_faulted'), value: 'Faulted' }
+            { label: this.$t('status_faulted'), value: 'Faulted' },
+            { label: this.$t('status_draft'), value: 'Draft' }
           ]
         },
         {
@@ -145,6 +147,13 @@ export default {
           key: 'templateName'
         },
         {
+          title: '操作对象类型',
+          resizable: true,
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'operatorObjType'
+        },
+        {
           title: '操作对象',
           resizable: true,
           sortable: 'custom',
@@ -172,11 +181,27 @@ export default {
               { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
               { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
-              { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' }
+              { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+              { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
             ]
             const item = list.find(i => i.value === params.row.status)
-            return item && <Tag color={item.color}>{item.label}</Tag>
+            return (
+              item && (
+                <Tag color={item.color}>
+                  {// 已处理请求定版的草稿添加被退回说明
+                    this.tabName === 'hasProcessed' && this.form.type === 1 && params.row.status === 'Draft'
+                      ? `${item.label}（被退回）`
+                      : item.label}
+                </Tag>
+              )
+            )
           }
+        },
+        {
+          title: '退回原因',
+          sortable: 'custom',
+          key: 'rollbackDesc',
+          minWidth: 150
         },
         {
           title: '当前节点',
@@ -344,29 +369,36 @@ export default {
     }
   },
   watch: {
+    // 切换tab视图
     tabName: {
       handler (val) {
         if (val) {
           this.$nextTick(() => {
             this.searchOptions[0].hidden = false
-            this.form.type = 0
             // 待处理、进行中
             if (['pending', 'hasProcessed'].includes(val)) {
-              this.form.type = 1
-              this.searchOptions[0].initValue = 1
+              this.form.type = 2
+              this.rollback = 0
+              this.searchOptions[0].key = 'type'
+              this.searchOptions[0].initValue = 2
               this.searchOptions[0].list = [
-                { label: '请求定版', value: 1 },
-                { label: '任务处理', value: 2 }
+                { label: '任务处理', value: 2 },
+                { label: '请求定版', value: 1 }
               ]
               // 我提交的
             } else if (val === 'submit') {
+              this.form.type = 0
+              this.form.rollback = 0
+              this.searchOptions[0].key = 'rollback'
               this.searchOptions[0].initValue = 0
               this.searchOptions[0].list = [
                 { label: '所有', value: 0 },
-                { label: '请求定版', value: 1 },
-                { label: '任务处理', value: 2 }
+                { label: '被退回', value: 1 },
+                { label: '其他', value: 2 }
               ]
             } else if (val === 'draft') {
+              this.form.type = 0
+              this.form.rollback = 0
               this.searchOptions[0].hidden = true
             }
             if (val !== 'collect') {
@@ -376,6 +408,14 @@ export default {
         }
       },
       immediate: true
+    },
+    // 切换行为action
+    actionName () {
+      if (this.tabName !== 'collect') {
+        this.handleQuery()
+      } else {
+        this.$refs.collect.handleQuery()
+      }
     }
   },
   mounted () {
@@ -405,7 +445,7 @@ export default {
         pageSize: this.pagination.pageSize
       }
       if (sort) {
-        params.sort = sort
+        params.sorting = sort
       }
       const { statusCode, data } = await getPlatformList(params)
       if (statusCode === 'OK') {
@@ -413,14 +453,6 @@ export default {
         this.pagination.total = data.pageInfo.totalRows
       }
       this.loading = false
-    },
-    // 切换发布请求类型
-    handleActionNameChange () {
-      if (this.tabName !== 'collect') {
-        this.handleQuery()
-      } else {
-        this.$refs.collect.handleQuery()
-      }
     },
     handleQuery () {
       this.pagination.currentPage = 1

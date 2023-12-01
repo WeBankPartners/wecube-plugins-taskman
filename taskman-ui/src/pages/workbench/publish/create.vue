@@ -145,7 +145,8 @@ import {
   getEntityData,
   getRefOptions,
   savePublishData,
-  getPublishInfo
+  getPublishInfo,
+  updateRequestStatus
 } from '@/api/server'
 import StaticFlow from './flow/static-flow.vue'
 import DynamicFlow from './flow/dynamic-flow.vue'
@@ -257,6 +258,7 @@ export default {
   },
   async mounted () {
     this.templateId = this.$route.query.templateId || ''
+    this.$refs.staticFlowRef.orchestrationSelectHandler(this.templateId)
     this.requestId = this.$route.query.requestId || ''
     // 查看调用详情接口
     if (this.requestId) {
@@ -284,7 +286,6 @@ export default {
         this.requestId = data.id
         this.form.name = data.name
       }
-      this.$refs.staticFlowRef.orchestrationSelectHandler(this.templateId)
     },
     // 获取请求进度
     async getProgressInfo () {
@@ -594,32 +595,74 @@ export default {
     },
     // 保存草稿
     async handleDraft () {
-      this.form.data = this.requestData
-      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId)
-      this.form.entityName = item.key_name
-      savePublishData(this.requestId, this.form)
-    },
-    // 发布
-    async handlePublish () {
       if (this.form.rootEntityId === '') {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
+      this.form.data = this.requestData
+      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId)
+      this.form.entityName = item.key_name
+      if (this.requestDataCheck()) {
+        const { statusCode } = await savePublishData(this.requestId, this.form)
+        if (statusCode === 'OK') {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
+        return statusCode
+      } else {
+        this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
+    },
+    // 发布
+    async handlePublish () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('commit'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          this.confirmCommitRequest()
-          // await this.saveData()
-          // const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Pending')
-          // if (statusCode === 'OK') {
-          //   this.$router.push({ path: '/taskman/request-mgmt' })
-          // }
+          const draftResult = await this.handleDraft()
+          console.log('111111111111', draftResult)
+          if (draftResult === 'OK') {
+            const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
+            if (statusCode === 'OK') {
+              this.$router.push({ path: '/taskman/workbench' })
+            }
+          }
         },
         onCancel: () => {}
       })
+    },
+    requestDataCheck () {
+      let result = true
+      this.requestData.forEach(requestData => {
+        let requiredName = []
+        requestData.title.forEach(t => {
+          if (t.required === 'yes') {
+            requiredName.push(t.name)
+          }
+        })
+        requestData.value.forEach(v => {
+          requiredName.forEach(key => {
+            let val = v.entityData[key]
+            if (Array.isArray(val)) {
+              if (val.length === 0) {
+                result = false
+              }
+            } else {
+              if (val === '') {
+                result = false
+              }
+            }
+          })
+        })
+      })
+      return result
     }
   }
 }

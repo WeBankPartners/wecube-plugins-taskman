@@ -145,5 +145,6 @@
   "status_termination": "Termination",
   "status_complete": "Completed",
   "status_inProgress_timeouted": "InProgress(Timeouted)",
-  "status_faulted": "Faulted"
+  "status_faulted": "Faulted",
+  "status_draft": "Draft"
 }

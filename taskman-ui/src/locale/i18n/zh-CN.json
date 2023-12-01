@@ -145,5 +145,6 @@
   "status_termination": "手动终止",
   "status_complete": "成功",
   "status_inProgress_timeouted": "节点超时",
-  "status_faulted": "自动退出"
+  "status_faulted": "自动退出",
+  "status_draft": "草稿"
 }

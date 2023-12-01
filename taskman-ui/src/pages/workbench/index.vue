@@ -73,10 +73,10 @@ export default {
         type: 0, // 0所有,1请求定版,2任务处理
         rollback: 0, // 0所有,1已退回,2其他
         query: '', // ID或名称模糊搜索
-        templateId: '', // 模板ID
+        templateId: [], // 模板ID
         status: [], // 状态
         operatorObj: '', // 操作对象
-        createdBy: '' // 创建人
+        createdBy: [] // 创建人
       },
       searchOptions: [
         {
@@ -98,6 +98,7 @@ export default {
         {
           key: 'templateId',
           placeholder: '模板',
+          multiple: true,
           component: 'remote-select',
           remote: this.getTemplateList
         },
@@ -125,7 +126,18 @@ export default {
         {
           key: 'createdBy',
           placeholder: '创建人',
-          component: 'input'
+          component: 'select',
+          multiple: true,
+          list: [
+            { label: this.$t('status_pending'), value: 'Pending' },
+            { label: this.$t('status_inProgress'), value: 'InProgress' },
+            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
+            { label: this.$t('status_termination'), value: 'Termination' },
+            { label: this.$t('status_complete'), value: 'Completed' },
+            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
+            { label: this.$t('status_faulted'), value: 'Faulted' },
+            { label: this.$t('status_draft'), value: 'Draft' }
+          ]
         }
       ],
       tableColumns: [
@@ -386,7 +398,6 @@ export default {
             // 待处理、进行中
             if (['pending', 'hasProcessed'].includes(val)) {
               this.form.type = 2
-              this.rollback = 0
               this.searchOptions[0].key = 'type'
               this.searchOptions[0].initValue = 2
               this.searchOptions[0].list = [
@@ -395,7 +406,6 @@ export default {
               ]
               // 我提交的
             } else if (val === 'submit') {
-              this.form.type = 0
               this.form.rollback = 0
               this.searchOptions[0].key = 'rollback'
               this.searchOptions[0].initValue = 0
@@ -406,7 +416,6 @@ export default {
               ]
             } else if (val === 'draft') {
               this.form.type = 0
-              this.form.rollback = 0
               this.searchOptions[0].hidden = true
             }
             if (val !== 'collect') {
@@ -445,6 +454,12 @@ export default {
     },
     async getList (sort = { asc: false, field: 'updatedTime' }) {
       this.loading = true
+      if (this.form.type === '') {
+        this.form.type = 0
+      }
+      if (this.form.rollback === '') {
+        this.form.rollback = 0
+      }
       const params = {
         tab: this.tabName,
         action: Number(this.actionName),

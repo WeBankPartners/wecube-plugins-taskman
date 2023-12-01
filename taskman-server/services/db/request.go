@@ -1088,7 +1088,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 		}
 		bindCacheBytes, _ := json.Marshal(bindData)
 		bindCache := string(bindCacheBytes)
-		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
+		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc = '' where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
 		if err == nil {
 			notifyRoleMail(requestId)
 		}

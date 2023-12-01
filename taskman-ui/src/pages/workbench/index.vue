@@ -96,6 +96,11 @@ export default {
           component: 'input'
         },
         {
+          key: 'operatorObj',
+          placeholder: '操作对象',
+          component: 'input'
+        },
+        {
           key: 'templateId',
           placeholder: '模板',
           multiple: true,
@@ -117,11 +122,6 @@ export default {
             { label: this.$t('status_faulted'), value: 'Faulted' },
             { label: this.$t('status_draft'), value: 'Draft' }
           ]
-        },
-        {
-          key: 'operatorObj',
-          placeholder: '操作对象',
-          component: 'input'
         },
         {
           key: 'createdBy',
@@ -163,17 +163,17 @@ export default {
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObjType'
+          key: 'operatorObjType',
+          render: (h, params) => {
+            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+          }
         },
         {
           title: '操作对象',
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObjType',
-          render: (h, params) => {
-            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
-          }
+          key: 'operatorObj'
         },
         {
           title: '使用编排',
@@ -208,12 +208,6 @@ export default {
               )
             )
           }
-        },
-        {
-          title: '退回原因',
-          sortable: 'custom',
-          key: 'rollbackDesc',
-          minWidth: 150
         },
         {
           title: '当前节点',
@@ -283,6 +277,12 @@ export default {
           sortable: 'custom',
           minWidth: 150,
           key: 'expectTime'
+        },
+        {
+          title: '退回原因',
+          sortable: 'custom',
+          key: 'rollbackDesc',
+          minWidth: 200
         },
         {
           title: this.$t('t_action'),
@@ -398,6 +398,7 @@ export default {
             // 待处理、进行中
             if (['pending', 'hasProcessed'].includes(val)) {
               this.form.type = 2
+              this.form.rollback = 0
               this.searchOptions[0].key = 'type'
               this.searchOptions[0].initValue = 2
               this.searchOptions[0].list = [
@@ -407,6 +408,7 @@ export default {
               // 我提交的
             } else if (val === 'submit') {
               this.form.rollback = 0
+              this.form.type = 0
               this.searchOptions[0].key = 'rollback'
               this.searchOptions[0].initValue = 0
               this.searchOptions[0].list = [
@@ -416,6 +418,7 @@ export default {
               ]
             } else if (val === 'draft') {
               this.form.type = 0
+              this.form.rollback = 0
               this.searchOptions[0].hidden = true
             }
             if (val !== 'collect') {
@@ -507,6 +510,10 @@ export default {
         })
       }
     },
+    // 获取下拉列表的值
+    // async getFilterOptions() {
+    //   await getPlatformFilter({ startTime: '' })
+    // },
     // 表格操作-查看
     hanldeView (row) {
       this.$router.push({

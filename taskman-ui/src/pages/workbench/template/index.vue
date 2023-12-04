@@ -193,7 +193,12 @@ export default {
   methods: {
     // 获取模板数据
     async getTemplateData () {
+      this.operateOptions = []
       const { statusCode, data } = await getTemplateTree()
+      const typeMap = {
+        0: 'request',
+        1: 'publish'
+      }
       if (statusCode === 'OK') {
         this.cardList =
           Array.isArray(data) &&
@@ -201,7 +206,7 @@ export default {
             i.expand = true
             i.groups.forEach(j => {
               j.templates.forEach(m => {
-                if (m.operatorObjType) {
+                if (m.operatorObjType && typeMap[m.type] === this.type) {
                   this.operateOptions.push(m.operatorObjType)
                 }
               })
@@ -209,6 +214,8 @@ export default {
             return i
           })
         this.originCardList = this.cardList
+        // 数据去重
+        this.operateOptions = Array.from(new Set(this.operateOptions))
         this.filterData()
       }
     },
@@ -219,7 +226,7 @@ export default {
     // 选中一条模板数据
     handleChooseTemplate (row, role) {
       this.$router.push({
-        path: `/taskman/workbench/createPublish?templateId=${row.id}&role=${role}`
+        path: `/taskman/workbench/createPublish?templateId=${row.id}&role=${role}&type=add`
       })
     },
     // 收藏or取消收藏模板

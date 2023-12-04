@@ -121,15 +121,22 @@
                   >
                 </Radio>
               </RadioGroup>
-              <Table size="small" :columns="tableColumns" :data="tableData"></Table>
+              <Table
+                size="small"
+                :columns="tableColumns"
+                :data="tableData"
+                @on-selection-change="handleChooseData"
+              ></Table>
             </FormItem>
           </HeaderTitle>
         </Form>
       </Col>
       <!--编排流程-->
       <Col span="8">
-        <!-- <StaticFlow :templateId="templateId" ref="staticFlowRef"></StaticFlow> -->
-        <DynamicFlow ref="staticFlowRef"></DynamicFlow>
+        <div style="padding: 0 20px">
+          <DynamicFlow v-if="type === 'detail'" ref="staticFlowRef"></DynamicFlow>
+          <StaticFlow v-else :templateId="templateId" ref="staticFlowRef"></StaticFlow>
+        </div>
       </Col>
     </Row>
     <EditDrawer
@@ -357,7 +364,7 @@ export default {
         this.requestData = data.data
         // 没有数据，默认添加一行
         this.requestData.forEach(item => {
-          if (item.value.length === 0) {
+          if (item.value.length === 0 && this.type === 'add') {
             this.handleAddRow(item)
           }
         })
@@ -516,6 +523,7 @@ export default {
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']
       })
+      delete cache._checked
       const filterValue = row[titleObj.name]
       const attr = titleObj.entity + '__' + titleObj.name
       const params = {
@@ -607,7 +615,15 @@ export default {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
-      this.form.data = this.requestData
+      // 提取表格勾选的数据
+      this.form.data = this.requestData.map(item => {
+        if (Array.isArray(item.value)) {
+          item.value = item.value.filter(value => {
+            return value.entityData._checked
+          })
+        }
+        return item
+      })
       const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId)
       this.form.entityName = item.key_name
       if (this.requestDataCheck()) {
@@ -645,9 +661,10 @@ export default {
         onCancel: () => {}
       })
     },
+    // 校验表格数据必填项
     requestDataCheck () {
       let result = true
-      this.requestData.forEach(requestData => {
+      this.form.data.forEach(requestData => {
         let requiredName = []
         requestData.title.forEach(t => {
           if (t.required === 'yes') {
@@ -670,6 +687,17 @@ export default {
         })
       })
       return result
+    },
+    // 给勾选的表格数据设置_checked属性
+    handleChooseData (selection) {
+      const selectIds = selection.map(i => i._id)
+      this.tableData.forEach(row => {
+        if (selectIds.includes(row._id)) {
+          row._checked = true
+        } else {
+          row._checked = false
+        }
+      })
     }
   }
 }

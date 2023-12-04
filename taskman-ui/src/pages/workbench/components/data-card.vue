@@ -96,8 +96,9 @@ export default {
     activeStyles () {
       return function (i) {
         return {
-          width: '250px',
-          marginRight: '20px',
+          width: '100%',
+          height: '110px',
+          marginRight: i.type === 'collect' ? '0px' : '20px',
           cursor: 'pointer',
           borderTop: i.type === this.active ? '4px solid #e59e2d' : ''
         }

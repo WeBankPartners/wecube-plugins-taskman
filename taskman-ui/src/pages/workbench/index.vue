@@ -22,13 +22,18 @@
         <TabPane label="发布" name="1"></TabPane>
         <TabPane label="请求" name="2"></TabPane>
       </Tabs> -->
-      <CollectTable ref="collect" v-if="tabName === 'collect'" :getTemplateList="getTemplateList"></CollectTable>
+      <CollectTable
+        ref="collect"
+        v-if="tabName === 'collect'"
+        :getTemplateList="getTemplateList"
+        :actionName="actionName"
+      ></CollectTable>
       <template v-else>
         <!--搜索条件-->
         <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
         <!--表格分页-->
         <Table
-          border
+          :border="false"
           size="small"
           :loading="loading"
           :columns="tableColumns"
@@ -287,7 +292,7 @@ export default {
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 160,
+          minWidth: 160,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
@@ -326,7 +331,7 @@ export default {
                     认领
                   </Button>
                 )}
-                {this.username !== params.row.handler && this.tabName === 'pending' && (
+                {params.row.handler && this.username !== params.row.handler && this.tabName === 'pending' && (
                   <Button
                     type="success"
                     size="small"
@@ -422,7 +427,9 @@ export default {
             if (val !== 'collect') {
               this.handleQuery()
             } else {
-              this.$refs.collect.handleQuery()
+              this.$nextTick(() => {
+                this.$refs.collect.handleQuery()
+              })
             }
           })
         }
@@ -434,14 +441,16 @@ export default {
       if (this.tabName !== 'collect') {
         this.handleQuery()
       } else {
-        this.$refs.collect.handleQuery()
+        this.$nextTick(() => {
+          this.$refs.collect.handleQuery()
+        })
       }
     }
   },
   mounted () {
     // this.tabName = this.$route.query.tabName
     // this.actionName = this.$route.query.actionName
-    this.getList()
+    // this.getList()
   },
   methods: {
     // 点击视图卡片触发查询

@@ -28,6 +28,10 @@ export default {
     getTemplateList: {
       type: Function,
       default: () => {}
+    },
+    actionName: {
+      type: String,
+      default: '1'
     }
   },
   data () {
@@ -179,6 +183,7 @@ export default {
       this.loading = true
       const params = {
         ...this.form,
+        action: Number(this.actionName),
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
       }

@@ -72,5 +72,11 @@ export default {
   label {
     margin-bottom: 0px !important; /*解决监控插件label样式全局覆盖问题*/
   }
+  .ivu-table-tip span {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
 }
 </style>

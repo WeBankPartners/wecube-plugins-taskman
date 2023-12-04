@@ -180,7 +180,7 @@ export default {
   },
   data () {
     return {
-      type: this.$route.query.type, // detail查看
+      type: this.$route.query.type, // detail查看，handle处理，add添加
       templateId: '',
       requestId: '',
       activeTab: '',

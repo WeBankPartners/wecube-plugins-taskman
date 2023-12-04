@@ -18,10 +18,10 @@
       <DataCard :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
-      <Tabs v-model="actionName">
+      <!-- <Tabs v-model="actionName">
         <TabPane label="发布" name="1"></TabPane>
         <TabPane label="请求" name="2"></TabPane>
-      </Tabs>
+      </Tabs> -->
       <CollectTable ref="collect" v-if="tabName === 'collect'" :getTemplateList="getTemplateList"></CollectTable>
       <template v-else>
         <!--搜索条件-->
@@ -56,7 +56,7 @@ import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
-import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus, deleteRequest } from '@/api/server'
+import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus, deleteRequest, reRequest } from '@/api/server'
 export default {
   components: {
     HotLink,
@@ -304,31 +304,18 @@ export default {
                     查看
                   </Button>
                 )}
-                {
-                  // <Button
-                  //   type="primary"
-                  //   size="small"
-                  //   onClick={() => {
-                  //     this.handleRepub(params.row)
-                  //   }}
-                  // >
-                  //   重新发起
-                  // </Button>
-                }
-                {
-                  // this.username !== params.row.handler && this.tabName === 'pending' && (
-                  // <Button
-                  //   type="success"
-                  //   size="small"
-                  //   onClick={() => {
-                  //     this.handleTransfer(params.row)
-                  //   }}
-                  // >
-                  //   处理
-                  // </Button>
-                  // )
-                }
                 {this.username === params.row.handler && this.tabName === 'pending' && (
+                  <Button
+                    type="success"
+                    size="small"
+                    onClick={() => {
+                      this.handleEdit(params.row)
+                    }}
+                  >
+                    处理
+                  </Button>
+                )}
+                {!params.row.handler && this.tabName === 'pending' && (
                   <Button
                     type="success"
                     size="small"
@@ -350,12 +337,23 @@ export default {
                     转给我
                   </Button>
                 )}
+                {this.tabName === 'submit' && params.row.status.indexOf('Faulted') !== -1 && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => {
+                      this.handleRepub(params.row)
+                    }}
+                  >
+                    重新发起
+                  </Button>
+                )}
                 {this.tabName === 'draft' && (
                   <Button
                     type="success"
                     size="small"
                     onClick={() => {
-                      this.handleTransfer(params.row)
+                      this.hanldeCreate(params.row)
                     }}
                     style="margin-right:5px;"
                   >
@@ -423,6 +421,8 @@ export default {
             }
             if (val !== 'collect') {
               this.handleQuery()
+            } else {
+              this.$refs.collect.handleQuery()
             }
           })
         }
@@ -522,8 +522,12 @@ export default {
         path: `/taskman/workbench/createPublish?templateId=${row.templateId}&requestId=${row.id}&type=detail`
       })
     },
-    // 表格操作-重新发布
-    handleRepub () {},
+    // 表格操作-处理
+    handleEdit (row) {
+      this.$router.push({
+        path: `/taskman/workbench/createPublish?templateId=${row.templateId}&requestId=${row.id}&type=handle`
+      })
+    },
     // 表格操作-转给我
     async handleTransfer (row) {
       this.$Modal.confirm({
@@ -549,6 +553,11 @@ export default {
         },
         onCancel: () => {}
       })
+    },
+    // 表格操作-重新发起
+    async handleRepub (row) {
+      await reRequest(row.id)
+      this.tabName = 'draft'
     },
     // 去发起
     hanldeCreate (row) {

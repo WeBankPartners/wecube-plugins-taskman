@@ -306,6 +306,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 				platformDataObj.CollectFlag = 1
 			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
+			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
 		}
 	}
 	return
@@ -2037,6 +2038,42 @@ func transConditionToSQL(param *models.PlatformRequestParam) (where string) {
 	return
 }
 
+func transCollectConditionToSQL(param *models.QueryCollectTemplateParam) (where string) {
+	where = "where 1 = 1 "
+	if param.Query != "" {
+		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
+	}
+	if len(param.TemplateGroupId) > 0 {
+		where = where + " and template_group_id in (" + getSQL(param.TemplateGroupId) + ")"
+	}
+	if len(param.OperatorObjType) > 0 {
+		where = where + " and operator_obj_type in (" + getSQL(param.OperatorObjType) + ")"
+	}
+	if len(param.ProcDefName) > 0 {
+		where = where + " and proc_def_name in (" + getSQL(param.ProcDefName) + ")"
+	}
+	if len(param.ManageRole) > 0 {
+		where = where + " and manage_role in (" + getSQL(param.ManageRole) + ")"
+	}
+	if len(param.Owner) > 0 {
+		where = where + " and owner in (" + getSQL(param.Owner) + ")"
+	}
+	if len(param.Tags) > 0 {
+		where = where + " and tags in (" + getSQL(param.Tags) + ")"
+	}
+	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
+		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"
+	}
+	if len(param.UseRole) > 0 {
+		var templateIdList []string
+		x.SQL("select request_template from request_template_role where role_type='USE' and role in (" + getSQL(param.UseRole) + ")").Find(&templateIdList)
+		if len(templateIdList) > 0 {
+			where = where + " and id in (" + getSQL(templateIdList) + ")"
+		}
+	}
+	return
+}
+
 func getSQL(status []string) string {
 	var sql string
 	for i := 0; i < len(status); i++ {
@@ -2317,6 +2354,35 @@ func getRequestHandler(requestId string) (role string, handler string) {
 			}
 		}
 	}
+	return
+}
+
+// getRequestRemainTime 获取请求停留时长
+func getRequestRemainTime(requestId string) (startTime string, effectiveDays int) {
+	request, _ := GetSimpleRequest(requestId)
+	if request.Status == "Draft" || request.Status == "Pending" || request.Status == "Completed" {
+		requestTemplate, _ := GetSimpleRequestTemplate(request.RequestTemplate)
+		startTime = request.CreatedTime
+		effectiveDays = requestTemplate.ExpireDay
+		return
+	}
+	// 请求在任务状态
+	taskTemplateMap, _ := GetTaskTemplateMapByRequestTemplate(request.RequestTemplate)
+	if len(taskTemplateMap) > 0 {
+		taskMap, _ := getTaskMapByRequestId(requestId)
+		if len(taskMap) > 0 {
+			for _, task := range taskMap {
+				if task.Status != "done" && taskTemplateMap[task.Name] != 0 {
+					startTime = task.CreatedTime
+					effectiveDays = taskTemplateMap[task.Name]
+					return
+				}
+			}
+		}
+	}
+	requestTemplate, _ := GetSimpleRequestTemplate(request.RequestTemplate)
+	startTime = request.CreatedTime
+	effectiveDays = requestTemplate.ExpireDay
 	return
 }
 

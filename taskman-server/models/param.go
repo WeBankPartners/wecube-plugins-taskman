@@ -58,3 +58,20 @@ type PlatformRequestParam struct {
 type FilterRequestParam struct {
 	StartTime string `json:"startTime"` //开始时间
 }
+
+// QueryCollectTemplateObj 模板查询条件
+type QueryCollectTemplateParam struct {
+	Query            string               `json:"query"`            // ID或名称模糊匹配
+	TemplateGroupId  []string             `json:"templateGroupId"`  // 模板组id
+	OperatorObjType  []string             `json:"operatorObjType"`  // 操作对象类型
+	ProcDefName      []string             `json:"procDefName"`      // 使用编排
+	ManageRole       []string             `json:"manageRole"`       // 属主角色
+	Owner            []string             `json:"owner"`            // 属主
+	UseRole          []string             `json:"useRole"`          // 使用角色
+	Tags             []string             `json:"tags" `            // 标签
+	CreatedStartTime string               `json:"createdStartTime"` // 创建开始时间
+	CreatedEndTime   string               `json:"createdEndTime"`   // 创建结束时间
+	StartIndex       int                  `json:"startIndex"`
+	PageSize         int                  `json:"pageSize"`
+	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段
+}

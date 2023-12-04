@@ -8,9 +8,3 @@ type CollectTemplateTable struct {
 	Type            int    `json:"type" xorm:"type"`                        // 类型:0表示请求 1发布
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
 }
-
-// QueryCollectTemplateObj 模板查询条件
-type QueryCollectTemplateObj struct {
-	StartIndex int `json:"startIndex"`
-	PageSize   int `json:"pageSize"`
-}

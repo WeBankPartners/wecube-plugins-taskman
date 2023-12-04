@@ -152,3 +152,16 @@ func getTaskTemplateHandler(requestTemplate string) (taskTemplateMap map[string]
 	}
 	return
 }
+
+func GetTaskTemplateMapByRequestTemplate(requestTemplate string) (taskTemplateMap map[string]int, err error) {
+	taskTemplateMap = make(map[string]int)
+	var rowsData []*models.TaskTemplateTable
+	sql := "select * from task_template where request_template = ?"
+	err = x.SQL(sql, requestTemplate).Find(&rowsData)
+	if len(rowsData) > 0 {
+		for _, row := range rowsData {
+			taskTemplateMap[row.Name] = row.ExpireDay
+		}
+	}
+	return
+}

@@ -28,10 +28,22 @@ func DeleteTemplateCollect(templateId, user string) error {
 }
 
 // QueryTemplateCollect 查询模板收藏
-func QueryTemplateCollect(param *models.QueryCollectTemplateObj, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
+func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
-	sql := "select rt.id,rt.name,rtg.name  as template_group ,rt.proc_def_name,rtg.manage_role,rt.handler as owner,rt.tags,rt.created_time from request_template rt " +
-		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?) order by rt.updated_time desc"
+	sql := fmt.Sprintf("select * from (select rt.id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,rt.proc_def_name,rtg.manage_role,rt.handler as owner,rt.tags,rt.created_time from request_template rt "+
+		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?)) t %s", transCollectConditionToSQL(param))
+	// 排序处理
+	if param.Sorting != nil {
+		hashMap, _ := getJsonToXormMap(models.CollectDataObj{})
+		if len(hashMap) > 0 {
+			if param.Sorting.Asc {
+				sql += fmt.Sprintf(" ORDER BY %s ASC", hashMap[param.Sorting.Field])
+			} else {
+				sql += fmt.Sprintf(" ORDER BY %s DESC", hashMap[param.Sorting.Field])
+			}
+		}
+	}
+	// 分页处理
 	pageInfo.PageSize = param.PageSize
 	pageInfo.StartIndex = param.StartIndex
 	pageInfo.TotalRows = queryCount(sql, user)
@@ -78,5 +90,53 @@ func QueryAllTemplateCollect(user string) (collectMap map[string]bool, err error
 	for _, id := range idList {
 		collectMap[id] = true
 	}
+	return
+}
+
+func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *models.CollectFilterItem, err error) {
+	data = &models.CollectFilterItem{}
+	var pairList []models.KeyValuePair
+	var rowsData []*models.CollectDataObj
+	var templateGroupMap = make(map[string]string)
+	var operatorObjTypeMap = make(map[string]bool)
+	var procDefNameMap = make(map[string]bool)
+	var ownerMap = make(map[string]bool)
+	var tagMap = make(map[string]bool)
+	var manageRoleMap = make(map[string]bool)
+	var useRoleMap = make(map[string]bool)
+	var sql = "select rt.id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,rt.proc_def_name,rtg.manage_role,rt.handler as owner,rt.tags,rt.created_time from request_template rt " +
+		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?) and rt.created_time > ?"
+	err = x.SQL(sql, user, param.StartTime).Find(&rowsData)
+	if err != nil {
+		return
+	}
+	if len(rowsData) > 0 {
+		for _, row := range rowsData {
+			templateGroupMap[row.TemplateGroup] = row.TemplateGroupId
+			operatorObjTypeMap[row.OperatorObjType] = true
+			procDefNameMap[row.ProcDefName] = true
+			ownerMap[row.Owner] = true
+			tagMap[row.Tags] = true
+			manageRoleMap[row.ManageRole] = true
+			var roleList []string
+			err = x.SQL("select role from request_template_role where role_type='USE' and request_template= ?", row.Id).Find(&roleList)
+			if err != nil || len(roleList) == 0 {
+				continue
+			}
+			for _, role := range roleList {
+				useRoleMap[role] = true
+			}
+		}
+	}
+	for key, value := range templateGroupMap {
+		pairList = append(pairList, models.KeyValuePair{TemplateId: value, TemplateName: key})
+	}
+	data.TemplateGroupList = pairList
+	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)
+	data.ProcDefNameList = convertMap2Array(procDefNameMap)
+	data.OwnerList = convertMap2Array(ownerMap)
+	data.TagList = convertMap2Array(tagMap)
+	data.ManageRoleList = convertMap2Array(manageRoleMap)
+	data.UseRoleList = convertMap2Array(useRoleMap)
 	return
 }

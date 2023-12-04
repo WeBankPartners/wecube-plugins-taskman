@@ -35,7 +35,7 @@ func CancelTemplateCollect(c *gin.Context) {
 
 // QueryTemplateCollect  获取收藏模板列表
 func QueryTemplateCollect(c *gin.Context) {
-	var param models.QueryCollectTemplateObj
+	var param models.QueryCollectTemplateParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -49,4 +49,19 @@ func QueryTemplateCollect(c *gin.Context) {
 		return
 	}
 	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
+// FilterItem 过滤数据
+func FilterItem(c *gin.Context) {
+	var param models.FilterRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	data, err := db.GetCollectFilterItem(&param, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, data)
 }

@@ -1094,7 +1094,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 			notifyRoleMail(requestId)
 		}
 	} else if status == "Draft" {
-		_, err = x.Exec("update request set status=?,rollback_desc=?,updated_by=?,updated_time=? where id=?", status, description, operator, nowTime, requestId)
+		_, err = x.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=? where id=?", status, description, operator, operator, nowTime, requestId)
 	} else {
 		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
 	}

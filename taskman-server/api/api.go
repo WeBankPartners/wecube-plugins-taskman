@@ -95,6 +95,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: request.GetProcessDefinitions},
 		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: request.GetProcessInstance},
 		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: request.GetExecutionNodes},
+		&handlerFuncObj{Url: "/request/history/list", Method: "POST", HandlerFunc: request.HistoryList},
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},
 		&handlerFuncObj{Url: "/plugin/task/create", Method: "POST", HandlerFunc: task.CreateTask},

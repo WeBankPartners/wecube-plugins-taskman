@@ -231,7 +231,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	var templateType int
 	var sql string
 	var queryParam []interface{}
-	where := transConditionToSQL(param)
+	where := transPlatConditionToSQL(param)
 	if param.Action == 1 {
 		templateType = 1
 	} else if param.Action == 2 {
@@ -260,30 +260,50 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,"+
+	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken})
+	return
+}
+
+// HistoryList 发布历史
+func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToken, user string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
+	var sql = "select id from request"
+	var queryParam []interface{}
+	where := transHistoryConditionToSQL(param)
+	// 查看本组数据
+	if param.Permission == "group" {
+		userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+		sql = "select id from request where request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in (" + userRolesFilterSql + ")))"
+		queryParam = append(queryParam, userRolesFilterParam...)
+	}
+	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken})
+	return
+}
+
+func getPlatData(req models.PlatDataParam) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,"+
 		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
-		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
+		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
 	// 排序处理
-	if param.Sorting != nil {
+	if req.Param.Sorting != nil {
 		hashMap, _ := getJsonToXormMap(models.PlatformDataObj{})
 		if len(hashMap) > 0 {
-			if param.Sorting.Asc {
-				newSQL += fmt.Sprintf(" ORDER BY %s ASC ", hashMap[param.Sorting.Field])
+			if req.Param.Sorting.Asc {
+				newSQL += fmt.Sprintf(" ORDER BY %s ASC ", hashMap[req.Param.Sorting.Field])
 			} else {
-				newSQL += fmt.Sprintf(" ORDER BY %s DESC ", hashMap[param.Sorting.Field])
+				newSQL += fmt.Sprintf(" ORDER BY %s DESC ", hashMap[req.Param.Sorting.Field])
 			}
 		}
 	}
 	// 分页处理
-	pageInfo.StartIndex = param.StartIndex
-	pageInfo.PageSize = param.PageSize
-	pageInfo.TotalRows = queryCount(newSQL, queryParam...)
+	pageInfo.StartIndex = req.Param.StartIndex
+	pageInfo.PageSize = req.Param.PageSize
+	pageInfo.TotalRows = queryCount(newSQL, req.QueryParam...)
 	pageSQL := newSQL + " limit ?,? "
-	queryParam = append(queryParam, param.StartIndex, param.PageSize)
-	err = x.SQL(pageSQL, queryParam...).Find(&rowData)
+	req.QueryParam = append(req.QueryParam, req.Param.StartIndex, req.Param.PageSize)
+	err = x.SQL(pageSQL, req.QueryParam...).Find(&rowData)
 	if len(rowData) > 0 {
 		// 查询当前用户所有收藏模板记录
-		collectMap, _ := QueryAllTemplateCollect(user)
+		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := getAllRequestTemplate()
 		for _, platformDataObj := range rowData {
 			// 获取 使用编排
@@ -300,7 +320,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 				platformDataObj.CurNode = RequestPending
 			}
 			if platformDataObj.ProcInstanceId != "" {
-				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, userToken)
+				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken)
 			}
 			if collectMap[platformDataObj.TemplateId] {
 				platformDataObj.CollectFlag = 1
@@ -1998,13 +2018,34 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 	return
 }
 
-func transConditionToSQL(param *models.PlatformRequestParam) (where string) {
+func transPlatConditionToSQL(param *models.PlatformRequestParam) (where string) {
 	where = "where 1 = 1 "
 	if param.Type == 1 {
 		where = where + " and (status = 'Pending' or status = 'Draft')"
 	} else if param.Type == 2 {
 		where = where + " and status <> 'Pending' and status <> 'Draft'"
 	}
+	where = where + transCommonRequestToSQL(param.CommonRequestParam)
+	return
+}
+
+func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string) {
+	where = "where 1 = 1 "
+	if param.Tab == "commit" {
+		where = where + " and status <> 'Draft'"
+	} else if param.Tab == "draft" {
+		where = where + " and status = 'Draft'"
+	}
+	if param.Action == 1 {
+		where = where + " and type = 1"
+	} else if param.Action == 2 {
+		where = where + " and type = 0"
+	}
+	where = where + transCommonRequestToSQL(param.CommonRequestParam)
+	return
+}
+
+func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.Query != "" {
 		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
 	}
@@ -2303,6 +2344,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	}
 	template := tmpTemplate[0]
 	form.Id = request.Id
+	form.Name = request.Name
 	form.RequestType = request.Type
 	form.CreatedTime = request.CreatedTime
 	form.ExpectTime = request.ExpectTime

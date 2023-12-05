@@ -99,6 +99,24 @@ func DataList(c *gin.Context) {
 	middleware.ReturnPageData(c, pageInfo, rowData)
 }
 
+// HistoryList 发布/请求历史
+func HistoryList(c *gin.Context) {
+	var param models.RequestHistoryParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.PageSize == 0 {
+		param.PageSize = 10
+	}
+	pageInfo, rowData, err := db.HistoryList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
 func ListRequest(c *gin.Context) {
 	permission := c.Param("permission")
 	var param models.QueryRequestParam

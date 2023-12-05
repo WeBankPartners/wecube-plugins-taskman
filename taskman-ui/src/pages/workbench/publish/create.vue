@@ -1,5 +1,9 @@
 <template>
   <div class="workbench-publish-create">
+    <Row class="back-header">
+      <Icon size="24" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
+      <span>{{ detailInfo.templateName || form.name }}</span>
+    </Row>
     <Row class="w-header">
       <Col span="18" class="steps">
         <span class="title">请求进度：</span>
@@ -306,7 +310,7 @@ export default {
     async getProgressInfo () {
       const params = {
         templateId: this.templateId,
-        requestId: ''
+        requestId: this.requestId
       }
       const { statusCode, data } = await getProgressInfo(params)
       if (statusCode === 'OK') {
@@ -423,22 +427,30 @@ export default {
         if (t.elementType === 'select') {
           column.render = (h, params) => {
             return (
-              <Select
-                value={params.row[t.name]}
-                on-on-change={v => {
-                  this.tableData[params.row._index][t.name] = v
-                  this.refreshRequestData()
-                }}
-                multiple={t.multiple === 'Y'}
-                disabled={t.isEdit === 'no' || this.type === 'detail'}
-              >
-                {Array.isArray(params.row[t.name + 'Options']) &&
-                  params.row[t.name + 'Options'].map(i => (
-                    <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
-                      {t.entity ? i.key_name : i}
-                    </Option>
-                  ))}
-              </Select>
+              <div style="display:flex;align-items:center">
+                {t.name === 'deploy_package' && t.required === 'yes' && !params.row[t.name] && (
+                  <Icon size="24" color="#ed4014" type="md-apps" />
+                )}
+                {t.name === 'deploy_package' && t.required === 'yes' && params.row[t.name] && (
+                  <Icon size="24" color="#19be6b" type="md-apps" />
+                )}
+                <Select
+                  value={params.row[t.name]}
+                  on-on-change={v => {
+                    this.tableData[params.row._index][t.name] = v
+                    this.refreshRequestData()
+                  }}
+                  multiple={t.multiple === 'Y'}
+                  disabled={t.isEdit === 'no' || this.type === 'detail'}
+                >
+                  {Array.isArray(params.row[t.name + 'Options']) &&
+                    params.row[t.name + 'Options'].map(i => (
+                      <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
+                        {t.entity ? i.key_name : i}
+                      </Option>
+                    ))}
+                </Select>
+              </div>
             )
           }
         } else if (t.elementType === 'input') {
@@ -705,6 +717,15 @@ export default {
 
 <style lang="scss" scoped>
 .workbench-publish-create {
+  .back-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    span {
+      font-size: 14px;
+      margin-left: 20px;
+    }
+  }
   .w-header {
     padding-bottom: 20px;
     margin-bottom: 20px;

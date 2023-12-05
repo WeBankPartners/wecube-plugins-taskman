@@ -260,12 +260,12 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken})
+	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken}, true)
 	return
 }
 
 // HistoryList 发布历史
-func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToken, user string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
+func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToken, user string) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var sql = "select id from request"
 	var queryParam []interface{}
 	where := transHistoryConditionToSQL(param)
@@ -275,11 +275,42 @@ func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToke
 		sql = "select id from request where request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in (" + userRolesFilterSql + ")))"
 		queryParam = append(queryParam, userRolesFilterParam...)
 	}
-	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken})
+	pageInfo, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken}, true)
 	return
 }
 
-func getPlatData(req models.PlatDataParam) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
+// Export 数据导出
+func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken, user string) (err error) {
+	var rowsData []*models.PlatformDataObj
+	var sql = "select id from request"
+	var queryParam []interface{}
+	where := transHistoryConditionToSQL(param)
+	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken}, false)
+	if len(rowsData) > 0 {
+		/*	f := excelize.NewFile()
+			// 将 Excel 文件保存到临时文件中
+			tempFile, err := os.CreateTemp("", "excel_*.xlsx")
+			if err != nil {
+				return err
+			}
+			defer os.Remove(tempFile.Name())
+			defer tempFile.Close()
+
+			if err := f.Write(tempFile); err != nil {
+				return err
+			}
+			// 设置 HTTP 响应头
+			w.Header().Set("Content-Disposition", "attachment; filename=xxx.xlsx")
+			w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+			err = f.Write(w)
+			if err != nil {
+				return
+			}*/
+	}
+	return
+}
+
+func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,"+
 		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
@@ -295,17 +326,21 @@ func getPlatData(req models.PlatDataParam) (pageInfo models.PageInfo, rowData []
 		}
 	}
 	// 分页处理
-	pageInfo.StartIndex = req.Param.StartIndex
-	pageInfo.PageSize = req.Param.PageSize
-	pageInfo.TotalRows = queryCount(newSQL, req.QueryParam...)
-	pageSQL := newSQL + " limit ?,? "
-	req.QueryParam = append(req.QueryParam, req.Param.StartIndex, req.Param.PageSize)
-	err = x.SQL(pageSQL, req.QueryParam...).Find(&rowData)
-	if len(rowData) > 0 {
+	if page {
+		pageInfo.StartIndex = req.Param.StartIndex
+		pageInfo.PageSize = req.Param.PageSize
+		pageInfo.TotalRows = queryCount(newSQL, req.QueryParam...)
+		pageSQL := newSQL + " limit ?,? "
+		req.QueryParam = append(req.QueryParam, req.Param.StartIndex, req.Param.PageSize)
+		err = x.SQL(pageSQL, req.QueryParam...).Find(&rowsData)
+	} else {
+		err = x.SQL(newSQL, req.QueryParam...).Find(&rowsData)
+	}
+	if len(rowsData) > 0 {
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := getAllRequestTemplate()
-		for _, platformDataObj := range rowData {
+		for _, platformDataObj := range rowsData {
 			// 获取 使用编排
 			if len(templateMap) > 0 && templateMap[platformDataObj.TemplateId] != nil {
 				template := templateMap[platformDataObj.TemplateId]

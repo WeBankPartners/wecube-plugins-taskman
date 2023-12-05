@@ -117,6 +117,21 @@ func HistoryList(c *gin.Context) {
 	middleware.ReturnPageData(c, pageInfo, rowData)
 }
 
+// Export 请求导出
+func Export(c *gin.Context) {
+	var param models.RequestHistoryParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.Export(c.Writer, &param, c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func ListRequest(c *gin.Context) {
 	permission := c.Param("permission")
 	var param models.QueryRequestParam

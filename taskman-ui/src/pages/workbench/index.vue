@@ -62,6 +62,7 @@ import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
 import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus, deleteRequest, reRequest } from '@/api/server'
+import dayjs from 'dayjs'
 export default {
   components: {
     HotLink,
@@ -237,17 +238,24 @@ export default {
         },
         {
           title: '停留时长',
-          minWidth: 160,
+          minWidth: 200,
           key: 'expectTime',
           render: (h, params) => {
-            // 需根据createdTime、expectTime计算出来
+            const diff = dayjs(new Date()).diff(params.row.createdTime, 'day')
+            const percent = (diff / params.row.effectiveDays) * 100
+            const color = percent > 50 ? (percent > 80 ? '#bd3124' : '#ffbf6b') : '#81b337'
+            return (
+              <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>
+                <span>{`${diff}日/${params.row.effectiveDays}日`}</span>
+              </Progress>
+            )
           }
         },
         {
           title: '创建人',
           sortable: 'custom',
           minWidth: 160,
-          key: 'created_by',
+          key: 'createdBy',
           render: (h, params) => {
             return (
               <div style="display:flex;flex-direction:column">
@@ -358,7 +366,7 @@ export default {
                     type="success"
                     size="small"
                     onClick={() => {
-                      this.hanldeCreate(params.row)
+                      this.hanldeLaunch(params.row)
                     }}
                     style="margin-right:5px;"
                   >
@@ -527,15 +535,15 @@ export default {
     // },
     // 表格操作-查看
     hanldeView (row) {
-      this.$router.push({
-        path: `/taskman/workbench/createPublish?templateId=${row.templateId}&requestId=${row.id}&type=detail`
-      })
+      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const url = `/taskman/workbench/${path}?templateId=${row.templateId}&requestId=${row.id}&type=detail`
+      this.$router.push({ path: url })
     },
     // 表格操作-处理
     handleEdit (row) {
-      this.$router.push({
-        path: `/taskman/workbench/createPublish?templateId=${row.templateId}&requestId=${row.id}&type=handle`
-      })
+      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const url = `/taskman/workbench/${path}?templateId=${row.templateId}&requestId=${row.id}&type=handle`
+      this.$router.push({ path: url })
     },
     // 表格操作-转给我
     async handleTransfer (row) {
@@ -569,10 +577,10 @@ export default {
       this.tabName = 'draft'
     },
     // 去发起
-    hanldeCreate (row) {
-      this.$router.push({
-        path: `/taskman/workbench/createPublish?id=${row.templateId}`
-      })
+    hanldeLaunch (row) {
+      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const url = `/taskman/workbench/${path}?templateId=${row.templateId}&requestId=${row.id}&type=add`
+      this.$router.push({ path: url })
     },
     // 删除草稿
     handleDeleteDraft (row) {
@@ -631,8 +639,19 @@ export default {
 <style lang="scss">
 .workbench {
   .ivu-progress-outer {
+    width: 90px;
     padding-right: 30px;
     margin-right: -33px;
+  }
+  .ivu-progress-inner {
+    width: 60px;
+  }
+  .ivu-progress-text {
+    color: #515a6e;
+    min-width: 80px;
+  }
+  .ivu-progress {
+    display: flex;
   }
 }
 </style>

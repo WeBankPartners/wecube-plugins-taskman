@@ -225,9 +225,9 @@ export default {
     },
     // 选中一条模板数据
     handleChooseTemplate (row, role) {
-      this.$router.push({
-        path: `/taskman/workbench/createPublish?templateId=${row.id}&role=${role}&type=add`
-      })
+      const path = row.type === 0 ? 'createRequest' : 'createPublish'
+      const url = `/taskman/workbench/${path}?templateId=${row.id}&role=${role}&type=add`
+      this.$router.push({ path: url })
     },
     // 收藏or取消收藏模板
     async handleStar ({ id, collectFlag }) {

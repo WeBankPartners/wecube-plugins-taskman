@@ -651,8 +651,8 @@ func CreateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	result.Id = newGuid
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime, param.Type, param.OperatorObjType}
+	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime, param.Type, param.OperatorObjType, newGuid}
 	actions = append(actions, &insertAction)
 	for _, v := range param.MGMTRoles {
 		result.MGMTRoles = append(result.MGMTRoles, &models.RoleTable{Id: v})
@@ -1074,7 +1074,8 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 }
 
 // GetRequestTemplateByUserV2  新的选择模板接口
-func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
+func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
+	var operatorObjTypeMap = make(map[string]string)
 	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
 	var useGroupMap = make(map[string]*models.RequestTemplateGroupTable)
 	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
@@ -1122,7 +1123,6 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 					recordIdMap[v.Id] = 1
 				}
 			}
-			v.Name = fmt.Sprintf("%s(beta)", v.Name)
 			v.Version = "beta"
 		}
 	}
@@ -1168,6 +1168,8 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 		}
 	}
 	// 组装数据
+	// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
+	operatorObjTypeMap = getAllCoreProcess(userToken)
 	if len(roleTemplateGroupMap) > 0 && len(requestTemplateTable) > 0 {
 		for _, template := range requestTemplateTable {
 			collectFlag = 0
@@ -1177,14 +1179,13 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 			for _, roleGroupMap := range roleTemplateGroupMap {
 				for groupId, templateArr := range roleGroupMap {
 					if template.Group == groupId {
-						var version = template.Version
-						if template.Status != "confirm" {
-							version = "beta"
+						if template.OperatorObjType == "" {
+							template.OperatorObjType = operatorObjTypeMap[template.ProcDefKey]
 						}
 						templateArr = append(templateArr, &models.RequestTemplateTableObj{
 							Id:              template.Id,
 							Name:            template.Name,
-							Version:         version,
+							Version:         template.Version,
 							Tags:            template.Tags,
 							Status:          template.Status,
 							UpdatedBy:       template.UpdatedBy,

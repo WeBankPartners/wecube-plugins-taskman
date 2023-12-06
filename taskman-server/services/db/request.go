@@ -37,6 +37,7 @@ var (
 )
 
 func GetEntityData(requestId, userToken string) (result models.EntityQueryResult, err error) {
+	var byteArr []byte
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {
 		return result, tmpErr
@@ -50,21 +51,10 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 		err = fmt.Errorf("RequestTemplate packageName or entityName illegal ")
 		return
 	}
-	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/process/definitions/%s/root-entities", models.Config.Wecube.BaseUrl, requestTemplateObj.ProcDefId), strings.NewReader(""))
-	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
-		return
-	}
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	url := fmt.Sprintf("%s/platform/v1/process/definitions/%s/root-entities", models.Config.Wecube.BaseUrl, requestTemplateObj.ProcDefId)
+	byteArr, err = HttpGet(url, userToken)
 	var responseObj models.WorkflowEntityQuery
-	err = json.Unmarshal(b, &responseObj)
+	err = json.Unmarshal(byteArr, &responseObj)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
 	} else {
@@ -343,6 +333,7 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := getAllRequestTemplate()
+		var actions []*execAction
 		for _, platformDataObj := range rowsData {
 			// 获取 使用编排
 			if len(templateMap) > 0 && templateMap[platformDataObj.TemplateId] != nil {
@@ -366,8 +357,21 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 			if platformDataObj.OperatorObjType == "" {
 				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
 			}
+			if platformDataObj.OperatorObj == "" {
+				result, _ := GetEntityData(platformDataObj.Id, req.UserToken)
+				if len(result.Data) > 0 {
+					platformDataObj.OperatorObj = result.Data[0].DisplayName
+					actions = append(actions, &execAction{Sql: "update request set operator_obj=? where id=?", Param: []interface{}{platformDataObj.OperatorObj, platformDataObj.Id}})
+				}
+			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
+		}
+		if len(actions) > 0 {
+			updateRequestErr := transaction(actions)
+			if updateRequestErr != nil {
+				log.Logger.Error("Try to update request status fail", log.Error(updateRequestErr))
+			}
 		}
 	}
 	return

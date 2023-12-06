@@ -209,8 +209,17 @@ export default {
     },
     // 发起
     hanldeCreate (row) {
+      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
-        path: `/taskman/workbench/createPublish?id=${row.id}`
+        path: url,
+        query: {
+          requestTemplate: row.id,
+          isAdd: 'Y',
+          isCheck: 'N',
+          isHandle: 'N',
+          jumpFrom: ''
+        }
       })
     },
     // 取消收藏

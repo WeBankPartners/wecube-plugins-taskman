@@ -10,11 +10,6 @@
           </Input>
         </FormItem>
         <FormItem label="操作对象类型" :label-width="100">
-          <!-- <Input v-model="form.tagName" @on-change="filterData" style="width:300px" placeholder="请选择操作对象类型">
-            <template #suffix>
-              <Icon type="ios-search" />
-            </template>
-          </Input> -->
           <Select
             v-model="form.operatorObjType"
             @on-change="filterData"
@@ -26,9 +21,6 @@
             <Option v-for="(item, index) in operateOptions" :value="item" :key="index">{{ item }}</Option>
           </Select>
         </FormItem>
-        <!-- <FormItem label="展示未发布模板" :label-width="120">
-          <i-Switch v-model="form.unPublishShow" @on-change="filterData" />
-        </FormItem> -->
       </Form>
     </div>
     <div class="wrapper">
@@ -101,7 +93,7 @@ import { getTemplateTree, collectTemplate, uncollectTemplate, collectTemplateLis
 export default {
   data () {
     return {
-      activeName: 'confirm', // confirm已发布，created未发布
+      activeName: 'confirm', // confirm已发布，created我的草稿(未发布)
       type: '', // publish发布，request请求
       form: {
         templateName: '',
@@ -121,7 +113,7 @@ export default {
             return (
               <div>
                 <span style="margin-right:5px">{params.row.name}</span>
-                {params.row.collectFlag === 0 && (
+                {params.row.collectFlag === 0 && this.activeName === 'confirm' && (
                   <Tooltip content="收藏" placement="top-start">
                     <Icon
                       style="cursor:pointer"
@@ -134,7 +126,7 @@ export default {
                     />
                   </Tooltip>
                 )}
-                {params.row.collectFlag === 1 && (
+                {params.row.collectFlag === 1 && this.activeName === 'confirm' && (
                   <Tooltip content="取消收藏" placement="top-start">
                     <Icon
                       style="cursor:pointer"
@@ -171,8 +163,16 @@ export default {
           }
         },
         {
-          title: '属主',
-          key: 'updatedBy'
+          title: '属主/角色',
+          key: 'updatedBy',
+          render: (h, params) => {
+            return (
+              <div style="display:flex;flex-direction:column">
+                <span>{params.row.handler}</span>
+                <span>{params.row.role}</span>
+              </div>
+            )
+          }
         }
       ]
     }
@@ -226,8 +226,18 @@ export default {
     // 选中一条模板数据
     handleChooseTemplate (row, role) {
       const path = row.type === 0 ? 'createRequest' : 'createPublish'
-      const url = `/taskman/workbench/${path}?templateId=${row.id}&role=${role}&type=add`
-      this.$router.push({ path: url })
+      const url = `/taskman/workbench/${path}`
+      this.$router.push({
+        path: url,
+        query: {
+          requestTemplate: row.id,
+          role: role,
+          isAdd: 'Y',
+          isCheck: 'N',
+          isHandle: 'N',
+          jumpFrom: ''
+        }
+      })
     },
     // 收藏or取消收藏模板
     async handleStar ({ id, collectFlag }) {

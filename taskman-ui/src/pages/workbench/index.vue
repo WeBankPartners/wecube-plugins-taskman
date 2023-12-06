@@ -78,7 +78,8 @@ export default {
       form: {
         type: 0, // 0所有,1请求定版,2任务处理
         rollback: 0, // 0所有,1已退回,2其他
-        query: '', // ID或名称模糊搜索
+        name: '', // ID或名称模糊搜索
+        id: '',
         templateId: [], // 模板ID
         status: [], // 状态
         operatorObj: '', // 操作对象
@@ -97,8 +98,13 @@ export default {
           ]
         },
         {
-          key: 'query',
+          key: 'name',
           placeholder: '名称',
+          component: 'input'
+        },
+        {
+          key: 'id',
+          placeholder: 'id',
           component: 'input'
         },
         {
@@ -233,7 +239,11 @@ export default {
           width: 120,
           key: 'progress',
           render: (h, params) => {
-            return <Progress percent={params.row.progress} />
+            return (
+              <Progress percent={params.row.progress}>
+                <span>{params.row.progress + '%'}</span>
+              </Progress>
+            )
           }
         },
         {
@@ -536,14 +546,34 @@ export default {
     // 表格操作-查看
     hanldeView (row) {
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
-      const url = `/taskman/workbench/${path}?templateId=${row.templateId}&requestId=${row.id}&type=detail`
-      this.$router.push({ path: url })
+      const url = `/taskman/workbench/${path}`
+      this.$router.push({
+        path: url,
+        query: {
+          requestId: row.id,
+          requestTemplate: row.templateId,
+          isAdd: 'N',
+          isCheck: 'Y',
+          isHandle: 'N',
+          jumpFrom: 'group_handle'
+        }
+      })
     },
     // 表格操作-处理
     handleEdit (row) {
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
-      const url = `/taskman/workbench/${path}?templateId=${row.templateId}&requestId=${row.id}&type=handle`
-      this.$router.push({ path: url })
+      const url = `/taskman/workbench/${path}`
+      this.$router.push({
+        path: url,
+        query: {
+          requestId: row.id,
+          requestTemplate: row.templateId,
+          isAdd: 'N',
+          isCheck: 'N',
+          isHandle: 'Y',
+          jumpFrom: 'group_handle'
+        }
+      })
     },
     // 表格操作-转给我
     async handleTransfer (row) {
@@ -576,11 +606,21 @@ export default {
       await reRequest(row.id)
       this.tabName = 'draft'
     },
-    // 去发起
+    // 表格操作-草稿去发起
     hanldeLaunch (row) {
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
-      const url = `/taskman/workbench/${path}?templateId=${row.templateId}&requestId=${row.id}&type=add`
-      this.$router.push({ path: url })
+      const url = `/taskman/workbench/${path}`
+      this.$router.push({
+        path: url,
+        query: {
+          requestId: row.id,
+          requestTemplate: row.templateId,
+          isAdd: 'Y',
+          isCheck: 'N',
+          isHandle: 'N',
+          jumpFrom: 'my_drafts'
+        }
+      })
     },
     // 删除草稿
     handleDeleteDraft (row) {
@@ -639,16 +679,16 @@ export default {
 <style lang="scss">
 .workbench {
   .ivu-progress-outer {
-    width: 90px;
-    padding-right: 30px;
-    margin-right: -33px;
+    width: 90px !important;
+    padding-right: 30px !important;
+    margin-right: -33px !important;
   }
   .ivu-progress-inner {
     width: 60px;
   }
   .ivu-progress-text {
-    color: #515a6e;
-    min-width: 80px;
+    color: #515a6e !important;
+    min-width: 80px !important;
   }
   .ivu-progress {
     display: flex;

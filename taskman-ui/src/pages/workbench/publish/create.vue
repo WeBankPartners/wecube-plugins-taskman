@@ -20,126 +20,137 @@
         </Steps>
       </Col>
       <Col span="6" class="btn-group">
-        <Button v-if="this.type !== 'detail'" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
-        <Button v-if="this.type !== 'detail'" type="primary" @click="handlePublish">发布</Button>
+        <Button @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
+        <Button type="primary" @click="handlePublish">发布</Button>
       </Col>
     </Row>
     <Row class="content">
       <Col span="16" class="split-line">
         <Form :model="form" label-position="right" :label-width="120">
-          <HeaderTitle v-if="type === 'detail'" title="请求信息">
-            <Row>
-              <Col :span="4">请求ID：</Col>
-              <Col :span="8">{{ detailInfo.id }}</Col>
-              <Col :span="4">请求类型：</Col>
-              <Col :span="8">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
-            </Row>
-            <Row style="margin-top:10px;">
-              <Col :span="4">创建时间：</Col>
-              <Col :span="8">{{ detailInfo.createdTime }}</Col>
-              <Col :span="4">期望完成时间：</Col>
-              <Col :span="8">{{ detailInfo.expectTime }}</Col>
-            </Row>
-            <Row style="margin-top:10px;">
-              <Col :span="4">请求进度：</Col>
-              <Col :span="8">
-                <Progress :percent="detailInfo.progress" style="width:150px;" />
-              </Col>
-              <Col :span="4">请求状态：</Col>
-              <Col :span="8">{{ detailInfo.status }}</Col>
-            </Row>
-            <Row style="margin-top:10px;">
-              <Col :span="4">当前节点：</Col>
-              <Col :span="8">{{
-                {
-                  sendRequest: '提起请求',
-                  requestPending: '请求定版',
-                  requestComplete: '请求完成'
-                }[detailInfo.curNode] || detailInfo.curNode
-              }}</Col>
-              <Col :span="4">当前处理人：</Col>
-              <Col :span="8">{{ detailInfo.handler }}</Col>
-            </Row>
-            <Row style="margin-top:10px;">
-              <Col :span="4">创建人：</Col>
-              <Col :span="8">{{ detailInfo.createdBy }}</Col>
-              <Col :span="4">创建人角色：</Col>
-              <Col :span="8">{{ detailInfo.role }}</Col>
-            </Row>
-            <Row style="margin-top:10px;">
-              <Col :span="4">使用模板：</Col>
-              <Col :span="8">{{ detailInfo.templateName }}</Col>
-              <Col :span="4">模板组：</Col>
-              <Col :span="8">{{ detailInfo.templateGroupName }}</Col>
-            </Row>
-            <Row style="margin-top:10px;">
-              <Col :span="4">请求描述：</Col>
-              <Col :span="8">{{ detailInfo.description }}</Col>
-            </Row>
-          </HeaderTitle>
-          <HeaderTitle v-else title="发布信息">
-            <FormItem label="请求名称" required>
-              <Input v-model="form.name" placeholder="请输入" style="width:400px;" />
-            </FormItem>
-            <FormItem label="发布描述">
-              <Input v-model="form.description" placeholder="请输入" style="width:400px;" />
-            </FormItem>
-            <FormItem :label="$t('expected_completion_time')">
-              <DatePicker
-                type="datetime"
-                :value="form.expectTime"
-                @on-change="
-                  val => {
-                    form.expectTime = val
-                  }
-                "
-                placeholder="Select date"
-                :options="{
-                  disabledDate(date) {
-                    return date && date.valueOf() < Date.now() - 86400000
-                  }
-                }"
-                style="width:400px;"
-              ></DatePicker>
-            </FormItem>
-          </HeaderTitle>
-          <HeaderTitle title="发布目标对象">
-            <FormItem label="选择操作单元" required>
-              <Select
-                v-model="form.rootEntityId"
-                :disabled="type === 'detail'"
-                clearable
-                filterable
-                style="width:300px;"
-              >
-                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                  item.key_name
-                }}</Option>
-              </Select>
-            </FormItem>
-            <FormItem v-if="requestData.length" label="已选择">
-              <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
-                <Radio v-for="(item, index) in requestData" :label="item.entity || item.itemGroup" :key="index" border>
-                  <span
-                    >{{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span></span
+          <template v-if="isAdd">
+            <HeaderTitle title="发布信息">
+              <FormItem label="请求名称" required>
+                <Input v-model="form.name" :maxlength="50" placeholder="请输入" style="width:400px;" />
+              </FormItem>
+              <FormItem label="发布描述">
+                <Input
+                  v-model="form.description"
+                  type="textarea"
+                  :maxlength="100"
+                  show-word-limit
+                  placeholder="请输入"
+                  style="width:400px;"
+                />
+              </FormItem>
+              <FormItem :label="$t('expected_completion_time')">
+                <DatePicker
+                  type="datetime"
+                  :value="form.expectTime"
+                  @on-change="
+                    val => {
+                      form.expectTime = val
+                    }
+                  "
+                  placeholder="Select date"
+                  :options="{
+                    disabledDate(date) {
+                      return date && date.valueOf() < Date.now() - 86400000
+                    }
+                  }"
+                  style="width:400px;"
+                ></DatePicker>
+              </FormItem>
+            </HeaderTitle>
+            <HeaderTitle title="发布目标对象">
+              <FormItem label="选择操作单元" required>
+                <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
+                  <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                    item.key_name
+                  }}</Option>
+                </Select>
+              </FormItem>
+              <FormItem v-if="requestData.length" label="已选择">
+                <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
+                  <Radio
+                    v-for="(item, index) in requestData"
+                    :label="item.entity || item.itemGroup"
+                    :key="index"
+                    border
                   >
-                </Radio>
-              </RadioGroup>
-              <Table
-                size="small"
-                :columns="tableColumns"
-                :data="tableData"
-                @on-selection-change="handleChooseData"
-              ></Table>
-            </FormItem>
-          </HeaderTitle>
+                    <span
+                      >{{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span></span
+                    >
+                  </Radio>
+                </RadioGroup>
+                <Table
+                  size="small"
+                  :columns="tableColumns"
+                  :data="tableData"
+                  @on-selection-change="handleChooseData"
+                ></Table>
+              </FormItem>
+            </HeaderTitle>
+          </template>
+          <template v-else>
+            <HeaderTitle title="请求信息">
+              <Row>
+                <Col :span="4">请求ID：</Col>
+                <Col :span="8">{{ detailInfo.id }}</Col>
+                <Col :span="4">请求类型：</Col>
+                <Col :span="8">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
+              </Row>
+              <Row style="margin-top:10px;">
+                <Col :span="4">创建时间：</Col>
+                <Col :span="8">{{ detailInfo.createdTime }}</Col>
+                <Col :span="4">期望完成时间：</Col>
+                <Col :span="8">{{ detailInfo.expectTime }}</Col>
+              </Row>
+              <Row style="margin-top:10px;">
+                <Col :span="4">请求进度：</Col>
+                <Col :span="8">
+                  <Progress :percent="detailInfo.progress" style="width:150px;" />
+                </Col>
+                <Col :span="4">请求状态：</Col>
+                <Col :span="8">{{ getStatusName(detailInfo.status) }}</Col>
+              </Row>
+              <Row style="margin-top:10px;">
+                <Col :span="4">当前节点：</Col>
+                <Col :span="8">{{
+                  {
+                    sendRequest: '提起请求',
+                    requestPending: '请求定版',
+                    requestComplete: '请求完成'
+                  }[detailInfo.curNode] || detailInfo.curNode
+                }}</Col>
+                <Col :span="4">当前处理人：</Col>
+                <Col :span="8">{{ detailInfo.handler }}</Col>
+              </Row>
+              <Row style="margin-top:10px;">
+                <Col :span="4">创建人：</Col>
+                <Col :span="8">{{ detailInfo.createdBy }}</Col>
+                <Col :span="4">创建人角色：</Col>
+                <Col :span="8">{{ detailInfo.role }}</Col>
+              </Row>
+              <Row style="margin-top:10px;">
+                <Col :span="4">使用模板：</Col>
+                <Col :span="8">{{ detailInfo.templateName }}</Col>
+                <Col :span="4">模板组：</Col>
+                <Col :span="8">{{ detailInfo.templateGroupName }}</Col>
+              </Row>
+              <Row style="margin-top:10px;">
+                <Col :span="4">请求描述：</Col>
+                <Col :span="8">{{ detailInfo.description }}</Col>
+              </Row>
+            </HeaderTitle>
+            <HeaderTitle title="处理历史"> </HeaderTitle>
+          </template>
         </Form>
       </Col>
       <!--编排流程-->
       <Col span="8">
         <div style="padding: 0 20px">
-          <DynamicFlow v-if="type === 'detail'" ref="staticFlowRef"></DynamicFlow>
-          <StaticFlow v-else :templateId="templateId" ref="staticFlowRef"></StaticFlow>
+          <StaticFlow v-if="isAdd" :templateId="requestTemplate" ref="staticFlowRef"></StaticFlow>
+          <DynamicFlow v-else ref="staticFlowRef"></DynamicFlow>
         </div>
       </Col>
     </Row>
@@ -170,6 +181,7 @@ import {
 import StaticFlow from './flow/static-flow.vue'
 import DynamicFlow from './flow/dynamic-flow.vue'
 import { deepClone, debounce } from '@/pages/util'
+import dayjs from 'dayjs'
 const statusIcon = {
   1: 'md-pin',
   2: 'md-radio-button-on',
@@ -191,9 +203,14 @@ export default {
   },
   data () {
     return {
-      type: this.$route.query.type, // detail查看，handle处理，add添加
-      templateId: '',
-      requestId: '',
+      isAdd: this.$route.query.isAdd === 'Y',
+      isHandle: this.$route.query.isHandle === 'Y', // 处理标志
+      formDisable: this.$route.query.isCheck === 'Y', // 查看标志
+      jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
+      requestTemplate: this.$route.query.requestTemplate,
+      requestId: this.$route.query.requestId,
+      // procDefId: '',
+      // procDefKey: '',
       activeTab: '',
       refKeys: [], // 引用类型字段集合select类型
       detailInfo: {}, // 详情信息
@@ -224,23 +241,25 @@ export default {
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 120,
+          width: 100,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (
               <div style="display:flex;justify-content:space-around;">
-                <Tooltip content="删除" placement="top-start">
-                  <Icon
-                    size="20"
-                    type="md-trash"
-                    color="#ed4014"
-                    style="cursor:pointer;"
-                    onClick={() => {
-                      this.handleDeleteRow(params.row)
-                    }}
-                  />
-                </Tooltip>
+                {
+                  // <Tooltip content="删除" placement="top-start">
+                  //   <Icon
+                  //     size="20"
+                  //     type="md-trash"
+                  //     color="#ed4014"
+                  //     style="cursor:pointer;"
+                  //     onClick={() => {
+                  //       this.handleDeleteRow(params.row)
+                  //     }}
+                  //   />
+                  // </Tooltip>
+                }
                 <Tooltip content="编辑" placement="top-start">
                   <Icon
                     size="20"
@@ -268,6 +287,24 @@ export default {
       ]
     }
   },
+  computed: {
+    getStatusName () {
+      return function (val) {
+        const list = [
+          { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+          { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+          { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
+          { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
+          { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
+          { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
+          { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+          { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
+        ]
+        const item = list.find(i => i.value === val) || {}
+        return item.label
+      }
+    }
+  },
   watch: {
     'form.rootEntityId' (val) {
       if (val) {
@@ -276,9 +313,7 @@ export default {
     }
   },
   async mounted () {
-    this.templateId = this.$route.query.templateId || ''
-    this.$refs.staticFlowRef.orchestrationSelectHandler(this.templateId)
-    this.requestId = this.$route.query.requestId || ''
+    this.$refs.staticFlowRef.orchestrationSelectHandler(this.requestTemplate)
     // 查看调用详情接口
     if (this.requestId) {
       await this.getPublishInfo()
@@ -287,7 +322,6 @@ export default {
     }
     this.getProgressInfo()
     this.getEntity()
-    // this.getEntityData()
   },
   methods: {
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
@@ -297,19 +331,22 @@ export default {
     // 创建发布,使用模板ID获取详情数据
     async getCreateInfo () {
       const params = {
-        requestTemplate: this.templateId,
+        requestTemplate: this.requestTemplate,
         role: this.$route.query.role
       }
       const { statusCode, data } = await getCreateInfo(params)
       if (statusCode === 'OK') {
         this.requestId = data.id
         this.form.name = data.name
+        this.form.expectTime = dayjs()
+          .add(data.expireDay || 0, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
       }
     },
     // 获取请求进度
     async getProgressInfo () {
       const params = {
-        templateId: this.templateId,
+        templateId: this.requestTemplate,
         requestId: this.requestId
       }
       const { statusCode, data } = await getProgressInfo(params)
@@ -340,6 +377,12 @@ export default {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
         this.detailInfo = data.request || {}
+        const { name, description, expectTime } = this.detailInfo
+        this.form = Object.assign({}, this.form, {
+          name,
+          description,
+          expectTime
+        })
       }
     },
     // 操作目标对象下拉值
@@ -368,7 +411,7 @@ export default {
         this.requestData = data.data
         // 没有数据，默认添加一行
         this.requestData.forEach(item => {
-          if (item.value.length === 0 && this.type === 'add') {
+          if (item.value.length === 0 && this.isAdd) {
             this.handleAddRow(item)
           }
         })
@@ -441,7 +484,7 @@ export default {
                     this.refreshRequestData()
                   }}
                   multiple={t.multiple === 'Y'}
-                  disabled={t.isEdit === 'no' || this.type === 'detail'}
+                  disabled={t.isEdit === 'no' || this.formDisable}
                 >
                   {Array.isArray(params.row[t.name + 'Options']) &&
                     params.row[t.name + 'Options'].map(i => (
@@ -466,7 +509,7 @@ export default {
                 onBlur={() => {
                   this.refreshRequestData()
                 }}
-                disabled={t.isEdit === 'no' || this.type === 'detail'}
+                disabled={t.isEdit === 'no' || this.formDisable}
               />
             )
           }
@@ -483,7 +526,7 @@ export default {
                   this.refreshRequestData()
                 }}
                 type="textarea"
-                disabled={t.isEdit === 'no' || this.type === 'detail'}
+                disabled={t.isEdit === 'no' || this.formDisable}
               />
             )
           }

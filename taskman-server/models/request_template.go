@@ -80,6 +80,8 @@ type RequestTemplateTableObj struct {
 	Tags            string `json:"tags" xorm:"tags"`
 	Status          string `json:"status" xorm:"status"`
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
+	Handler         string `json:"handler" xorm:"handler"`
+	Role            string `json:"role" xorm:"role"`
 	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 是否收藏 1表示已收藏
 	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布

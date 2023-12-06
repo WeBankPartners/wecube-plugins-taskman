@@ -19,7 +19,8 @@ type PlatformDataObj struct {
 	TemplateName    string `json:"templateName" xorm:"template_name"`        // 使用模板名称
 	OperatorObj     string `json:"operatorObj" xorm:"operator_obj"`          // 操作对象
 	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
-	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`   // 编排id
+	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`   // 编排实例id
+	ProcDefId       string `json:"procDefId" xorm:"proc_def_id"`             // 编排id
 	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
 	Status          string `json:"status" xorm:"status"`                     // 请求状态
 	CurNode         string `json:"curNode"  xorm:"cur_node"`                 // 当前节点
@@ -137,6 +138,7 @@ type RequestTable struct {
 	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
 	Description         string             `json:"description" xorm:"description"` // 请求描述
 	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
+	ExpireDay           int                `json:"expireDay" xorm:"expire_day"`    // 模板过期时间
 }
 
 type ExpireObj struct {

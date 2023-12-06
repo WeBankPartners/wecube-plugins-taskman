@@ -40,10 +40,11 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	// 设置请求名称
-	param.Name = fmt.Sprintf("%s-%s-%s", template.Name, template.OperatorObjType, time.Now().Format("20060102150405"))
+	param.Name = fmt.Sprintf("%s-%s-%s", template.Name, template.OperatorObjType, time.Now().Format("060102150405"))
 	// 设置请求类型
 	param.Type = template.Type
 	param.CreatedBy = middleware.GetRequestUser(c)
+	param.ExpireDay = template.ExpireDay
 	err = db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

@@ -1130,6 +1130,8 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 	requestTemplateTable = tmpTemplateTable
 	// 查询当前用户所有收藏模板记录
 	collectMap, _ := QueryAllTemplateCollect(user)
+	// 查询所有模板属主角色
+	ownerRoleMap := getMGmtRequestTemplateRoles()
 	var collectFlag int
 	var allGroupTable []*models.RequestTemplateGroupTable
 	err = x.SQL("select id,name,description,manage_role from request_template_group").Find(&allGroupTable)
@@ -1166,6 +1168,8 @@ func GetRequestTemplateByUserV2(user string, userRoles []string) (result []*mode
 							Tags:            template.Tags,
 							Status:          template.Status,
 							UpdatedBy:       template.UpdatedBy,
+							Handler:         template.Handler,
+							Role:            ownerRoleMap[template.Id],
 							UpdatedTime:     template.UpdatedTime,
 							CollectFlag:     collectFlag,
 							Type:            template.Type,
@@ -1253,6 +1257,16 @@ func getRequestTemplateRoles(requestTemplateId, roleType string) []string {
 		result = append(result, v.Role)
 	}
 	return result
+}
+
+func getMGmtRequestTemplateRoles() map[string]string {
+	var roleMap = make(map[string]string, 0)
+	var rtRoles []*models.RequestTemplateRoleTable
+	x.SQL("select * from request_template_role where  role_type='MGMT'").Find(&rtRoles)
+	for _, v := range rtRoles {
+		roleMap[v.RequestTemplate] = v.Role
+	}
+	return roleMap
 }
 
 func QueryUserByRoles(roles []string, userToken string) (result []string, err error) {

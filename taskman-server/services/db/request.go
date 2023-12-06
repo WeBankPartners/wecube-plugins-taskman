@@ -311,8 +311,9 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 }
 
 func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
+	var operatorObjTypeMap = make(map[string]string)
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,"+
-		"r.proc_instance_id,r.operator_obj,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
 	// 排序处理
 	if req.Param.Sorting != nil {
@@ -337,6 +338,8 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 		err = x.SQL(newSQL, req.QueryParam...).Find(&rowsData)
 	}
 	if len(rowsData) > 0 {
+		// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
+		operatorObjTypeMap = getAllCoreProcess(req.UserToken)
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := getAllRequestTemplate()
@@ -359,6 +362,9 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 			}
 			if collectMap[platformDataObj.TemplateId] {
 				platformDataObj.CollectFlag = 1
+			}
+			if platformDataObj.OperatorObjType == "" {
+				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefId]
 			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
@@ -2519,4 +2525,18 @@ func convertMap2Array(hashMap map[string]bool) (arr []string) {
 		}
 	}
 	return
+}
+
+func getAllCoreProcess(userToken string) map[string]string {
+	var processMap = make(map[string]string)
+	// 查询全部流程
+	result, _ := GetCoreProcessListNew(userToken)
+	if len(result) > 0 {
+		for _, procDef := range result {
+			if procDef != nil {
+				processMap[procDef.ProcDefId] = procDef.RootEntity.DisplayName
+			}
+		}
+	}
+	return processMap
 }

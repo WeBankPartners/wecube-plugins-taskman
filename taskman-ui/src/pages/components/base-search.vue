@@ -93,7 +93,7 @@
     </div>
     <div class="button-group">
       <Button @click="handleSearch" size="small" type="primary">查询</Button>
-      <Button @click="handleReset" size="small" style="margin-top:10px;">重置</Button>
+      <Button @click="handleReset" size="small" style="margin-left:5px;">重置</Button>
     </div>
   </div>
 </template>
@@ -215,13 +215,13 @@ export default {
     flex: 1;
   }
   .button-group {
-    width: 65px;
-    display: flex;
-    flex-direction: column;
+    height: 30px;
+    display: inline-block;
     border-left: 1px solid #0000000f;
     padding-left: 20px;
     box-sizing: content-box;
     button {
+      width: 50px;
       height: 28px;
       line-height: 28px;
       font-size: 13px;

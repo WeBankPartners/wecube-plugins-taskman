@@ -30,7 +30,7 @@ func DeleteTemplateCollect(templateId, user string) error {
 // QueryTemplateCollect 查询模板收藏
 func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
-	sql := fmt.Sprintf("select * from (select rt.id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,rt.proc_def_name,rtg.manage_role,rt.handler as owner,rt.tags,rt.created_time from request_template rt "+
+	sql := fmt.Sprintf("select * from (select rt.id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,rt.proc_def_name,rt.handler as owner,rt.tags,rt.created_time from request_template rt "+
 		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?)) t %s", transCollectConditionToSQL(param))
 	// 排序处理
 	if param.Sorting != nil {
@@ -63,9 +63,16 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 				collectObj.Name = fmt.Sprintf("%s(%s)", template.Name, template.Version)
 			}
 			var roleList []string
-			err = x.SQL("select role from request_template_role where role_type='USE' and request_template= ?", collectObj.Id).Find(&roleList)
-			if err != nil || len(roleList) == 0 {
+			requestTemplateRoleList, _ := getRequestTemplateRole(collectObj.Id)
+			if len(requestTemplateRoleList) == 0 {
 				continue
+			}
+			for _, requestTemplateRole := range requestTemplateRoleList {
+				if requestTemplateRole.RoleType == "USE" {
+					roleList = append(roleList, requestTemplateRole.Role)
+				} else if requestTemplateRole.RoleType == "MGMT" {
+					collectObj.ManageRole = requestTemplateRole.Role
+				}
 			}
 			collectObj.UseRole = strings.Join(roleList, ",")
 			result, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: collectObj.Id}, userToken, "template")

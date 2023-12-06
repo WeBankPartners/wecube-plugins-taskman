@@ -830,6 +830,15 @@ func GetRequestTemplateManageRole(id string) (role string) {
 	return
 }
 
+func getRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
+	err = x.SQL("select role from request_template_role where request_template=?", templateId).Find(&requestTemplateRoleList)
+	if err != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		return
+	}
+	return
+}
+
 func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTable, err error) {
 	templateMap = make(map[string]*models.RequestTemplateTable)
 	var requestTemplateTable []*models.RequestTemplateTable

@@ -313,7 +313,7 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var operatorObjTypeMap = make(map[string]string)
 	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,"+
-		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
 	// 排序处理
 	if req.Param.Sorting != nil {
@@ -364,7 +364,7 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 				platformDataObj.CollectFlag = 1
 			}
 			if platformDataObj.OperatorObjType == "" {
-				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefId]
+				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
 			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
@@ -2534,7 +2534,7 @@ func getAllCoreProcess(userToken string) map[string]string {
 	if len(result) > 0 {
 		for _, procDef := range result {
 			if procDef != nil {
-				processMap[procDef.ProcDefId] = procDef.RootEntity.DisplayName
+				processMap[procDef.ProcDefKey] = procDef.RootEntity.DisplayName
 			}
 		}
 	}

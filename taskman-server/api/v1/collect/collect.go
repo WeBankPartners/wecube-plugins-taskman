@@ -1,6 +1,7 @@
 package collect
 
 import (
+	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
@@ -10,11 +11,15 @@ import (
 // AddTemplateCollect 添加模板收藏
 func AddTemplateCollect(c *gin.Context) {
 	templateId := c.Param("templateId")
+	parentId, err := getRequestTemplateParentId(templateId)
+	if err != nil {
+		middleware.ReturnParamValidateError(c, err)
+	}
 	param := &models.CollectTemplateTable{
-		RequestTemplate: templateId,
+		RequestTemplate: parentId,
 		User:            middleware.GetRequestUser(c),
 	}
-	err := db.AddTemplateCollect(param)
+	err = db.AddTemplateCollect(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -25,7 +30,11 @@ func AddTemplateCollect(c *gin.Context) {
 // CancelTemplateCollect  取消收藏模板
 func CancelTemplateCollect(c *gin.Context) {
 	templateId := c.Param("templateId")
-	err := db.DeleteTemplateCollect(templateId, middleware.GetRequestUser(c))
+	parentId, err := getRequestTemplateParentId(templateId)
+	if err != nil {
+		middleware.ReturnParamValidateError(c, err)
+	}
+	err = db.DeleteTemplateCollect(parentId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -64,4 +73,20 @@ func FilterItem(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, data)
+}
+
+// getRequestTemplateParentId  根据模板id查找 最开始版本模板id
+func getRequestTemplateParentId(templateId string) (string, error) {
+	// 根据 templateId 查找parent_id,模板会变更产生多个版本,只需要关联最开始版本
+	requestTemplate, err := db.GetSimpleRequestTemplate(templateId)
+	if err != nil {
+		return "", err
+	}
+	if requestTemplate.Id == "" {
+		return "", fmt.Errorf("templateId:%s err", templateId)
+	}
+	if requestTemplate.ParentId != "" {
+		return requestTemplate.ParentId, nil
+	}
+	return templateId, nil
 }

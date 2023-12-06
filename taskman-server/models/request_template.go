@@ -26,6 +26,7 @@ type RequestTemplateTable struct {
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
 	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
+	ParentId        string `json:"parentId" xorm:"parent_id"`                // 父类ID
 }
 
 type RequestTemplateGroupTable struct {
@@ -77,6 +78,7 @@ type CodeProcessQueryObj struct {
 type RequestTemplateTableObj struct {
 	Id              string `json:"id" xorm:"id"`
 	Name            string `json:"name" xorm:"name"`
+	Version         string `json:"version" xorm:"version"`
 	Tags            string `json:"tags" xorm:"tags"`
 	Status          string `json:"status" xorm:"status"`
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`

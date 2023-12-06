@@ -30,8 +30,21 @@ func DeleteTemplateCollect(templateId, user string) error {
 // QueryTemplateCollect 查询模板收藏
 func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
+	var requestTemplateList []string
+	var resultList []string
+	// 查询该用户收藏的所有模板id
+	err = x.SQL("select request_template from collect_template where user = ?", user).Find(&requestTemplateList)
+	if err != nil {
+		return
+	}
+	// 遍历模板id,查询 当前最新的发布模板id
+	for _, requestTemplate := range requestTemplateList {
+		var tempList []string
+		x.SQL("select * from request_template where status='confirm' and parent_id = ? order by created_time desc limit 0,1", requestTemplate).Find(&tempList)
+		resultList = append(resultList, tempList...)
+	}
 	sql := fmt.Sprintf("select * from (select rt.id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,rt.proc_def_name,rt.handler as owner,rt.tags,rt.created_time from request_template rt "+
-		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?)) t %s", transCollectConditionToSQL(param))
+		"join request_template_group rtg on rt.group= rtg.id where rt.id in ("+getSQL(resultList)+")) t %s", transCollectConditionToSQL(param))
 	// 排序处理
 	if param.Sorting != nil {
 		hashMap, _ := getJsonToXormMap(models.CollectDataObj{})
@@ -58,9 +71,9 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 				continue
 			}
 			if template.Status != "confirm" {
-				collectObj.Name = fmt.Sprintf("%s(beta)", template.Name)
+				collectObj.Version = "beta"
 			} else {
-				collectObj.Name = fmt.Sprintf("%s(%s)", template.Name, template.Version)
+				collectObj.Version = template.Version
 			}
 			var roleList []string
 			requestTemplateRoleList, _ := getRequestTemplateRole(collectObj.Id)

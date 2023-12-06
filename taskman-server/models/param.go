@@ -47,7 +47,8 @@ type FilterRequestParam struct {
 
 // QueryCollectTemplateObj 模板查询条件
 type QueryCollectTemplateParam struct {
-	Query            string               `json:"query"`            // ID或名称模糊匹配
+	Id               string               `json:"id"`               // ID
+	Name             string               `json:"name"`             // Name
 	TemplateGroupId  []string             `json:"templateGroupId"`  // 模板组id
 	OperatorObjType  []string             `json:"operatorObjType"`  // 操作对象类型
 	ProcDefName      []string             `json:"procDefName"`      // 使用编排
@@ -70,7 +71,8 @@ type RequestHistoryParam struct {
 }
 
 type CommonRequestParam struct {
-	Query            string               `json:"query"`             // ID或名称模糊匹配
+	Id               string               `json:"id"`                // ID
+	Name             string               `json:"name"`              // Name
 	TemplateId       []string             `json:"templateId"`        // 模版id
 	Status           []string             `json:"status"`            // 请求状态 Pending InProgress(Faulted)
 	OperatorObj      string               `json:"operatorObj"`       // 操作对象

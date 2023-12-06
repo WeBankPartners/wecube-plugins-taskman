@@ -17,6 +17,7 @@ type PlatformDataObj struct {
 	Name            string `json:"name" xorm:"name"`                         // 请求名称
 	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板ID
 	TemplateName    string `json:"templateName" xorm:"template_name"`        // 使用模板名称
+	Version         string `json:"version" xorm:"version"`                   // 模板版本
 	OperatorObj     string `json:"operatorObj" xorm:"operator_obj"`          // 操作对象
 	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
 	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`   // 编排实例id
@@ -55,6 +56,7 @@ type RequestProgressObj struct {
 type CollectDataObj struct {
 	Id              string   `json:"id" xorm:"id"`                             // 模版ID
 	Name            string   `json:"name" xorm:"name"`                         // 模版名称
+	Version         string   `json:"version" xorm:"version"`                   // 模版名称
 	TemplateGroupId string   `json:"templateGourpId" xorm:"template_group_id"` // 模版组ID
 	TemplateGroup   string   `json:"templateGroup" xorm:"template_group"`      // 模版组
 	OperatorObjType string   `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
@@ -329,6 +331,7 @@ type RequestForm struct {
 	CreatedBy         string `json:"createdBy"`         // 创建人
 	Role              string `json:"role"`              // 创建人角色
 	TemplateName      string `json:"templateName"`      // 使用模板
+	Version           string `json:"version"`           // 模板版本
 	TemplateGroupName string `json:"templateGroupName"` // 使用模板组
 	Description       string `json:"description"`       // 请求描述
 	CreatedTime       string `json:"createdTime"`       // 创建时间

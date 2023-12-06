@@ -339,10 +339,11 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 			if len(templateMap) > 0 && templateMap[platformDataObj.TemplateId] != nil {
 				template := templateMap[platformDataObj.TemplateId]
 				platformDataObj.ProcDefName = template.ProcDefName
+				platformDataObj.TemplateName = template.Name
 				if template.Status != "confirm" {
-					platformDataObj.TemplateName = fmt.Sprintf("%s(beta)", template.Name)
+					platformDataObj.Version = "beta"
 				} else {
-					platformDataObj.TemplateName = fmt.Sprintf("%s(%s)", template.Name, template.Version)
+					platformDataObj.Version = template.Version
 				}
 			}
 			if platformDataObj.Status == "Pending" {
@@ -2091,8 +2092,11 @@ func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string
 }
 
 func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
-	if param.Query != "" {
-		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
+	if param.Id != "" {
+		where = where + " and ( id like '%" + param.Id + "%' or name like '%" + param.Id + "%')"
+	}
+	if param.Name != "" {
+		where = where + " and ( name like '%" + param.Name + "%' or name like '%" + param.Name + "%')"
 	}
 	if len(param.TemplateId) > 0 {
 		where = where + " and template_id in (" + getSQL(param.TemplateId) + ")"
@@ -2126,8 +2130,11 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 
 func transCollectConditionToSQL(param *models.QueryCollectTemplateParam) (where string) {
 	where = "where 1 = 1 "
-	if param.Query != "" {
-		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%')"
+	if param.Id != "" {
+		where = where + " and ( id like '%" + param.Id + "%' or id like '%" + param.Id + "%')"
+	}
+	if param.Name != "" {
+		where = where + " and ( id like '%" + param.Name + "%' or name like '%" + param.Name + "%')"
 	}
 	if len(param.TemplateGroupId) > 0 {
 		where = where + " and template_group_id in (" + getSQL(param.TemplateGroupId) + ")"
@@ -2378,6 +2385,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 		return
 	}
 	var tmpTemplate []*models.RequestTemplateTmp
+	var version string
 	err := x.SQL("select rt.name as  template_name,rt.status,rt.version,rt.proc_def_id from request_template rt join "+
 		"request_template_group rtg on rt.group = rtg.id where rt.id= ?", request.RequestTemplate).Find(&tmpTemplate)
 	if err != nil {
@@ -2396,12 +2404,14 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	form.CreatedBy = request.CreatedBy
 	form.Role = request.Role
 	form.Description = request.Description
+	form.Status = request.Status
 	if template.Status != "confirm" {
-		form.TemplateName = fmt.Sprintf("%s(beta)", template.TemplateName)
+		version = "beta"
 	} else {
-		form.TemplateName = fmt.Sprintf("%s(%s)", template.TemplateName, template.Version)
+		version = template.Version
 	}
 	form.TemplateName = template.TemplateName
+	form.Version = version
 	form.TemplateGroupName = template.TemplateGroupName
 	if request.Status == "Pending" {
 		form.CurNode = RequestPending

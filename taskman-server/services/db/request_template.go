@@ -651,7 +651,7 @@ func CreateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	result.Id = newGuid
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime, param.Type, param.OperatorObjType, newGuid}
 	actions = append(actions, &insertAction)
 	for _, v := range param.MGMTRoles {

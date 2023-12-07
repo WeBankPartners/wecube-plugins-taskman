@@ -15,9 +15,9 @@ func GetRequestDetail(c *gin.Context) {
 	result, err := db.GetRequestDetailV2(requestId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func CreateRequest(c *gin.Context) {

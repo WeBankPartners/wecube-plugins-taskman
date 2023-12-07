@@ -11,8 +11,8 @@ import (
 func AddTemplateCollect(param *models.CollectTemplateTable) error {
 	param.Id = guid.CreateGuid()
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("insert into collect_template(id,request_template,user,created_time) value (?,?,?,?)",
-		param.Id, param.RequestTemplate, param.User, nowTime)
+	_, err := x.Exec("insert into collect_template(id,request_template,user,type,created_time) value (?,?,?,?,?)",
+		param.Id, param.RequestTemplate, param.User, param.Type, nowTime)
 	if err != nil {
 		err = fmt.Errorf("Insert database error:%s ", err.Error())
 	}
@@ -32,8 +32,16 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	var result models.ProcNodeObjList
 	var requestTemplateList []string
 	var resultList []string
+	var templateType int
+	if param.Action == 1 {
+		// 发布
+		templateType = 1
+	} else if param.Action == 2 {
+		// 请求
+		templateType = 0
+	}
 	// 查询该用户收藏的所有模板id
-	err = x.SQL("select request_template from collect_template where user = ?", user).Find(&requestTemplateList)
+	err = x.SQL("select request_template from collect_template where user = ? and type = ?", user, templateType).Find(&requestTemplateList)
 	if err != nil {
 		return
 	}
@@ -162,4 +170,17 @@ func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *
 	data.ManageRoleList = convertMap2Array(manageRoleMap)
 	data.UseRoleList = convertMap2Array(useRoleMap)
 	return
+}
+
+// CheckUserCollectExist 检查用户模板id是否收藏
+func CheckUserCollectExist(templateId, user string) bool {
+	var idList []string
+	err := x.SQL("select id from collect_template where request_template=? and user=?", templateId, user).Find(&idList)
+	if err != nil {
+		return true
+	}
+	if len(idList) > 0 {
+		return true
+	}
+	return false
 }

@@ -15,18 +15,26 @@ func AddTemplateCollect(c *gin.Context) {
 	requestTemplate, err := db.GetSimpleRequestTemplate(templateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
 	}
 	parentId = requestTemplate.ParentId
 	if parentId == "" {
 		// parentId为空说明 模板为老数据,需要更新该名称的模板
 		parentId = db.UpdateRequestTemplateParentId(requestTemplate)
 	}
+	if db.CheckUserCollectExist(parentId, middleware.GetRequestUser(c)) {
+		err = fmt.Errorf("repeate templateId:%s collect", parentId)
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
+		return
 	}
 	param := &models.CollectTemplateTable{
 		RequestTemplate: parentId,
 		User:            middleware.GetRequestUser(c),
+		Type:            requestTemplate.Type,
 	}
 	err = db.AddTemplateCollect(param)
 	if err != nil {
@@ -42,13 +50,14 @@ func CancelTemplateCollect(c *gin.Context) {
 	parentId, err := getRequestTemplateParentId(templateId)
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
+		return
 	}
 	err = db.DeleteTemplateCollect(parentId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnSuccess(c)
+		return
 	}
+	middleware.ReturnSuccess(c)
 }
 
 // QueryTemplateCollect  获取收藏模板列表

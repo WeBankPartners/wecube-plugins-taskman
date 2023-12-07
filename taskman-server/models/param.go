@@ -47,6 +47,7 @@ type FilterRequestParam struct {
 
 // QueryCollectTemplateObj 模板查询条件
 type QueryCollectTemplateParam struct {
+	Action           int                  `json:"action"`           // 1表示发布,2表示请求
 	Id               string               `json:"id"`               // ID
 	Name             string               `json:"name"`             // Name
 	TemplateGroupId  []string             `json:"templateGroupId"`  // 模板组id

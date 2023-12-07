@@ -1579,7 +1579,7 @@ func UpdateRequestTemplateParentId(requestTemplate models.RequestTemplateTable) 
 	}
 	if len(templateIds) > 0 && parentId != "" {
 		for _, templateId := range templateIds {
-			actions = append(actions, &execAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{templateId, parentId}})
+			actions = append(actions, &execAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{parentId, templateId}})
 		}
 	}
 	if len(actions) > 0 {

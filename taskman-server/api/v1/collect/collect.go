@@ -16,11 +16,10 @@ func AddTemplateCollect(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	}
-	if requestTemplate.ParentId == "" {
-		// 没有parentId值说明 模板为老数据,需要更新该名称的模板
-
-	} else {
-		parentId = requestTemplate.ParentId
+	parentId = requestTemplate.ParentId
+	if parentId == "" {
+		// parentId为空说明 模板为老数据,需要更新该名称的模板
+		parentId = db.UpdateRequestTemplateParentId(requestTemplate)
 	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)

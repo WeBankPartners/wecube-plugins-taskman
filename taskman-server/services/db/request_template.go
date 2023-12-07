@@ -914,6 +914,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 }
 
 func ConfirmRequestTemplate(requestTemplateId string) error {
+	var parentId string
 	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
@@ -929,12 +930,16 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 		return err
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
+	if requestTemplateObj.RecordId != "" {
+		prevRequestTemplateObj, _ := GetSimpleRequestTemplate(requestTemplateObj.RecordId)
+		parentId = prevRequestTemplateObj.ParentId
+	}
 	version := requestTemplateObj.Version
 	if version == "" {
 		version = "v1"
 	}
 	var actions []*execAction
-	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2 where id=?", Param: []interface{}{version, nowTime, requestTemplateObj.Id}})
+	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=? where id=?", Param: []interface{}{version, nowTime, parentId, requestTemplateObj.Id}})
 	return transaction(actions)
 }
 
@@ -1550,5 +1555,38 @@ func EnableRequestTemplate(requestTemplateId, operator string) (err error) {
 		return
 	}
 	_, err = x.Exec("update request_template set status='confirm' where id=?", requestTemplateId)
+	return
+}
+
+func UpdateRequestTemplateParentId(requestTemplate models.RequestTemplateTable) (parentId string) {
+	var actions []*execAction
+	var templateIds []string
+	// 老模板有多个版本,需要更新所有版本,并找到 recordId为空的记录
+	requestTemplateMap, _ := getAllRequestTemplate()
+	if len(requestTemplateMap) > 0 {
+		temp := &requestTemplate
+		for {
+			if temp == nil {
+				break
+			}
+			templateIds = append(templateIds, temp.Id)
+			if temp.RecordId == "" {
+				parentId = temp.Id
+				break
+			}
+			temp = requestTemplateMap[temp.RecordId]
+		}
+	}
+	if len(templateIds) > 0 && parentId != "" {
+		for _, templateId := range templateIds {
+			actions = append(actions, &execAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{templateId, parentId}})
+		}
+	}
+	if len(actions) > 0 {
+		updateErr := transaction(actions)
+		if updateErr != nil {
+			log.Logger.Error("Try to update request_template parent_id fail", log.Error(updateErr))
+		}
+	}
 	return
 }

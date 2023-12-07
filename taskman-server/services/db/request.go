@@ -2520,7 +2520,7 @@ func getRequestRemainTime(requestId string) (startTime string, effectiveDays int
 	request, _ := GetSimpleRequest(requestId)
 	if request.Status == "Draft" || request.Status == "Pending" || request.Status == "Completed" {
 		requestTemplate, _ := GetSimpleRequestTemplate(request.RequestTemplate)
-		startTime = request.CreatedTime
+		startTime = request.ReportTime
 		effectiveDays = requestTemplate.ExpireDay
 		return
 	}

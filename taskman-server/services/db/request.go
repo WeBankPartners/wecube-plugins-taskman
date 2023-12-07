@@ -1594,14 +1594,75 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	return
 }
 
+func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryObj, err error) {
+	var taskTable []*models.TaskTable
+	err = x.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) > 0 {
+		taskQueryList, err = GetTaskV2(taskTable[0].Id)
+		return
+	}
+	// get request
+	var requests []*models.RequestTable
+	x.SQL("select * from request where id=?", requestId).Find(&requests)
+	if len(requests) == 0 {
+		err = fmt.Errorf("Can not find request with id:%s ", requestId)
+		return
+	}
+	var requestCache models.RequestPreDataDto
+	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
+	if err != nil {
+		return
+	}
+	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
+	requestQuery.FormData = requestCache.Data
+	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
+	requestQuery.ExpireTime = requests[0].ExpireTime
+	requestQuery.ExpectTime = requests[0].ExpectTime
+	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
+	taskQueryList = append(taskQueryList, []*models.TaskQueryObj{&requestQuery, getPendingRequestData(requests[0])}...)
+	return
+}
+
+func getPendingRequestData(request *models.RequestTable) *models.TaskQueryObj {
+	var role string
+	// 请求在定版状态,从模板角色表中读取
+	rtRoleMap := getRequestTemplateMGMTRole()
+	roles := rtRoleMap[request.RequestTemplate]
+	if len(roles) > 0 {
+		role = roles[0]
+	}
+	return &models.TaskQueryObj{
+		RequestId:      request.Id,
+		RequestName:    request.Name,
+		Editable:       false,
+		Status:         "",
+		ExpireTime:     request.ExpireTime,
+		ExpectTime:     request.ExpectTime,
+		Handler:        request.Handler,
+		HandleTime:     request.UpdatedTime,
+		FormData:       nil,
+		IsHistory:      false,
+		HandleRoleName: role,
+	}
+}
+
 func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetail, err error) {
 	// get request
 	var requests []*models.RequestTable
+	var taskQueryList []*models.TaskQueryObj
 	x.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
 	}
 	result.Request = getRequestForm(requests[0], userToken)
+	taskQueryList, err = GetRequestTaskListV2(requestId)
+	if err != nil {
+		return
+	}
+	result.Data = taskQueryList
 	return
 }
 

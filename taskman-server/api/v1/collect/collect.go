@@ -8,10 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// AddTemplateCollect 添加模板收藏
+// AddTemplateCollect 添加模板收藏,需要区分新老数据.之前旧模板,需要先更新数据
 func AddTemplateCollect(c *gin.Context) {
+	var parentId string
 	templateId := c.Param("templateId")
-	parentId, err := getRequestTemplateParentId(templateId)
+	requestTemplate, err := db.GetSimpleRequestTemplate(templateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	}
+	if requestTemplate.ParentId == "" {
+		// 没有parentId值说明 模板为老数据,需要更新该名称的模板
+
+	} else {
+		parentId = requestTemplate.ParentId
+	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
 	}

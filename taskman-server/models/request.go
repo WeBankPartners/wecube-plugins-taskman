@@ -362,7 +362,8 @@ type FilterObj struct {
 }
 
 type RequestDetail struct {
-	Request RequestForm `json:"request"` // 请求信息
+	Request RequestForm     `json:"request"` // 请求信息
+	Data    []*TaskQueryObj `json:"data"`
 }
 
 type UpdateRequestStatusParam struct {

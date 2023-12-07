@@ -251,7 +251,7 @@ export default {
           minWidth: 200,
           key: 'expectTime',
           render: (h, params) => {
-            const diff = dayjs(new Date()).diff(params.row.createdTime, 'day')
+            const diff = params.row.startTime ? dayjs(new Date()).diff(params.row.startTime, 'day') : 0
             const percent = (diff / params.row.effectiveDays) * 100
             const color = percent > 50 ? (percent > 80 ? '#bd3124' : '#ffbf6b') : '#81b337'
             return (
@@ -569,7 +569,7 @@ export default {
           requestId: row.id,
           requestTemplate: row.templateId,
           isAdd: 'N',
-          isCheck: 'N',
+          isCheck: 'Y',
           isHandle: 'Y',
           jumpFrom: 'group_handle'
         }

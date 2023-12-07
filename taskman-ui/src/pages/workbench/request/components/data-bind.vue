@@ -103,7 +103,8 @@ export default {
           this.requestParent()
         }
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   },
   mounted () {},
@@ -143,7 +144,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: '/taskman/request-mgmt' })
+            this.$router.push({ path: '/taskman/workbench?tabName=pending' })
           }
         },
         onCancel: () => {}

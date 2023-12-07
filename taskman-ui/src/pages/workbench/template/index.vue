@@ -255,7 +255,7 @@ export default {
     // 收藏模板列表
     async getCollectTemplate () {
       const params = {
-        startIndex: 1,
+        startIndex: 0,
         pageSize: 500
       }
       const { statusCode, data } = await collectTemplateList(params)

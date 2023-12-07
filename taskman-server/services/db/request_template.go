@@ -1187,7 +1187,7 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	if len(roleTemplateGroupMap) > 0 && len(requestTemplateTable) > 0 {
 		for _, template := range requestTemplateTable {
 			collectFlag = 0
-			if len(collectMap) > 0 && collectMap[template.Id] {
+			if len(collectMap) > 0 && collectMap[template.ParentId] {
 				collectFlag = 1
 			}
 			for _, roleGroupMap := range roleTemplateGroupMap {

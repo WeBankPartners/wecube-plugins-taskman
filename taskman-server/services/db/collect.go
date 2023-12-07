@@ -119,11 +119,7 @@ func QueryAllTemplateCollect(user string) (collectMap map[string]bool, err error
 		return
 	}
 	for _, id := range idList {
-		var tempList []string
-		x.SQL("select id from request_template where status='confirm' and parent_id = ? order by created_time desc limit 0,1", id).Find(&tempList)
-		if len(tempList) > 0 {
-			collectMap[tempList[0]] = true
-		}
+		collectMap[id] = true
 	}
 	return
 }

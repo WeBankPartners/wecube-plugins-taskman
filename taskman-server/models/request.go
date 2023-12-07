@@ -38,6 +38,7 @@ type PlatformDataObj struct {
 	RollbackDesc    string `json:"rollbackDesc" xorm:"rollback_desc"`        // 回退原因
 	StartTime       string `json:"startTime" xorm:"-"`                       // 开始时间
 	EffectiveDays   int    `json:"effectiveDays" xorm:"-"`                   // 有效天数
+	ParentId        string `json:"parentId" xorm:"parent_id"`                // 模板父类id
 }
 
 type RequestQueryParam struct {

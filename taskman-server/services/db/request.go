@@ -302,7 +302,7 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 
 func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var operatorObjTypeMap = make(map[string]string)
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,"+
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
 	// 排序处理
@@ -352,7 +352,7 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 			if platformDataObj.ProcInstanceId != "" {
 				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken)
 			}
-			if collectMap[platformDataObj.TemplateId] {
+			if collectMap[platformDataObj.ParentId] {
 				platformDataObj.CollectFlag = 1
 			}
 			if platformDataObj.OperatorObjType == "" {

@@ -70,7 +70,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	// 分页处理
 	pageInfo.PageSize = param.PageSize
 	pageInfo.StartIndex = param.StartIndex
-	pageInfo.TotalRows = queryCount(sql, user)
+	pageInfo.TotalRows = queryCount(sql)
 	err = x.SQL(sql+" limit ?,?", param.StartIndex, param.PageSize).Find(&rowData)
 	if err != nil {
 		return

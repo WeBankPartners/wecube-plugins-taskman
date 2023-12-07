@@ -501,9 +501,18 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 		} else if v.Status == "disable" {
 			tmpObj.OperateOptions = []string{"query", "enable"}
 		}
+		tmpObj.ModifyType = getRequestTemplateModifyType(v)
 		result = append(result, &tmpObj)
 	}
 	return
+}
+
+// getRequestTemplateModifyType 模板版本 > v1表示 模板有多个版本,不允许多个版本都去修改模板类型,要求保持一致
+func getRequestTemplateModifyType(requestTemplate *models.RequestTemplateTable) bool {
+	if strings.Compare(requestTemplate.Version, "v1") > 0 {
+		return false
+	}
+	return true
 }
 
 func CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) error {

@@ -95,6 +95,7 @@ type RequestTemplateQueryObj struct {
 	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
 	USERoles       []*RoleTable `json:"useRoles"`
 	OperateOptions []string     `json:"operateOptions"`
+	ModifyType     bool         `json:"modifyType"` // 是否能够修改模板类型
 }
 
 type RequestTemplateUpdateParam struct {

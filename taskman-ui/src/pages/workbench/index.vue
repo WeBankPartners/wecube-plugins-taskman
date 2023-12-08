@@ -15,7 +15,7 @@
       <HotLink></HotLink>
     </div>
     <div class="data-card">
-      <DataCard :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
+      <DataCard ref="dataCard" :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
       <!-- <Tabs v-model="actionName">
@@ -247,7 +247,9 @@ export default {
           }
         },
         {
-          title: '停留时长',
+          renderHeader: () => {
+            return <span>{this.form.type === 2 ? '任务停留时长' : '请求停留时长'}</span>
+          },
           minWidth: 200,
           key: 'expectTime',
           render: (h, params) => {
@@ -327,9 +329,9 @@ export default {
                     查看
                   </Button>
                 )}
-                {this.username === params.row.handler && this.tabName === 'pending' && (
+                {this.username === params.row.handler && ['Pending', 'InProgress'].includes(params.row.status) && (
                   <Button
-                    type="success"
+                    type="warning"
                     size="small"
                     onClick={() => {
                       this.handleEdit(params.row)
@@ -338,9 +340,9 @@ export default {
                     处理
                   </Button>
                 )}
-                {!params.row.handler && this.tabName === 'pending' && (
+                {!params.row.handler && ['Pending', 'InProgress'].includes(params.row.status) && (
                   <Button
-                    type="success"
+                    type="info"
                     size="small"
                     onClick={() => {
                       this.handleTransfer(params.row)
@@ -349,7 +351,9 @@ export default {
                     认领
                   </Button>
                 )}
-                {params.row.handler && this.username !== params.row.handler && this.tabName === 'pending' && (
+                {params.row.handler &&
+                  this.username !== params.row.handler &&
+                  ['Pending', 'InProgress'].includes(params.row.status) && (
                   <Button
                     type="success"
                     size="small"
@@ -357,10 +361,10 @@ export default {
                       this.handleTransfer(params.row)
                     }}
                   >
-                    转给我
+                      转给我
                   </Button>
                 )}
-                {this.tabName === 'submit' && params.row.status.indexOf('Faulted') !== -1 && (
+                {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && (
                   <Button
                     type="primary"
                     size="small"
@@ -512,6 +516,7 @@ export default {
     handleQuery () {
       this.pagination.currentPage = 1
       this.getList()
+      this.$refs.dataCard.getData()
     },
     changPage (val) {
       this.pagination.currentPage = val
@@ -555,11 +560,12 @@ export default {
           isAdd: 'N',
           isCheck: 'Y',
           isHandle: 'N',
+          enforceDisable: 'Y',
           jumpFrom: 'group_handle'
         }
       })
     },
-    // 表格操作-处理
+    // 表格操作-处理(任务处理和请求定版)
     handleEdit (row) {
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const url = `/taskman/workbench/${path}`
@@ -571,6 +577,7 @@ export default {
           isAdd: 'N',
           isCheck: 'Y',
           isHandle: 'Y',
+          enforceDisable: 'N',
           jumpFrom: 'group_handle'
         }
       })

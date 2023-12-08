@@ -351,7 +351,7 @@ export default {
     return {
       enforceDisable: this.$route.query.enforceDisable === 'Y',
       isAdd: this.$route.query.isAdd === 'Y',
-      isHandle: this.$route.query.isHandle === 'Y', // 处理标志
+      isHandle: this.$route.query.isHandle === 'Y', // 处理标志(用于请求定版)
       formDisable: this.$route.query.isCheck === 'Y', // 查看标志
       jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
       requestTemplate: this.$route.query.requestTemplate,

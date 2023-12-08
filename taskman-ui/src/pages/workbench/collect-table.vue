@@ -122,9 +122,12 @@ export default {
           minWidth: 160,
           key: 'workNode',
           render: (h, params) => {
-            return params.row.workNode.map(i => {
-              return <Tag color="#2d8cf0">{i}</Tag>
-            })
+            return (
+              params.row.workNode &&
+              params.row.workNode.map(i => {
+                return <Tag color="#2d8cf0">{i}</Tag>
+              })
+            )
           }
         },
         {

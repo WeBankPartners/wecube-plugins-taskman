@@ -208,8 +208,10 @@ export default {
       })
     },
     async confirmCommitRequest () {
+      const find = this.rootEntityOptions.find(item => item.guid === this.rootEntityId)
       const params = {
         rootEntityId: this.rootEntityId,
+        entityName: find.key_name,
         data: this.requestData
       }
       const result = this.paramsCheck()
@@ -247,8 +249,10 @@ export default {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
+      const find = this.rootEntityOptions.find(item => item.guid === this.rootEntityId)
       const params = {
         rootEntityId: this.rootEntityId,
+        entityName: find.key_name,
         data: this.requestData
       }
       const result = this.paramsCheck()

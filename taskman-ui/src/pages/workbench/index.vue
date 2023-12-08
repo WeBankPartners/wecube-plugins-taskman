@@ -603,8 +603,22 @@ export default {
     },
     // 表格操作-重新发起
     async handleRepub (row) {
-      await reRequest(row.id)
-      this.tabName = 'draft'
+      const { statusCode, data } = await reRequest(row.id)
+      if (statusCode === 'OK') {
+        const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        const url = `/taskman/workbench/${path}`
+        this.$router.push({
+          path: url,
+          query: {
+            requestId: data.id,
+            requestTemplate: data.requestTemplate,
+            isAdd: 'Y',
+            isCheck: 'N',
+            isHandle: 'N',
+            jumpFrom: 'my_drafts'
+          }
+        })
+      }
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {

@@ -54,7 +54,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	if len(resultList) == 0 {
 		return
 	}
-	sql := fmt.Sprintf("select * from (select rt.parent_id as id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,"+
+	sql := fmt.Sprintf("select * from (select rt.id,rt.parent_id,rt.name,rtg.id as template_group_id,rtg.name as template_group,rtg.manage_role as template_group_role,rt.operator_obj_type,"+
 		"rt.proc_def_name,rt.handler as owner,rt.tags,rt.created_time,rt.updated_time from request_template rt "+
 		"join request_template_group rtg on rt.group= rtg.id where rt.id in ("+getSQL(resultList)+")) t %s", transCollectConditionToSQL(param))
 	// 排序处理

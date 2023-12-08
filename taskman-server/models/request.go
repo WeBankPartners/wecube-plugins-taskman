@@ -56,19 +56,21 @@ type RequestProgressObj struct {
 
 // CollectDataObj 收藏数据项
 type CollectDataObj struct {
-	Id              string   `json:"id" xorm:"id"`                             // 模版ID
-	Name            string   `json:"name" xorm:"name"`                         // 模版名称
-	Version         string   `json:"version" xorm:"version"`                   // 模版名称
-	TemplateGroupId string   `json:"templateGourpId" xorm:"template_group_id"` // 模版组ID
-	TemplateGroup   string   `json:"templateGroup" xorm:"template_group"`      // 模版组
-	OperatorObjType string   `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
-	ProcDefName     string   `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
-	ManageRole      string   `json:"manageRole" xorm:"manage_role"`            // 属主角色
-	Owner           string   `json:"owner" xorm:"owner"`                       // 属主
-	UseRole         string   `json:"useRole" xorm:"use_role"`                  // 使用角色
-	Tags            string   `json:"tags" xorm:"tags"`                         // 标签
-	WorkNode        []string `json:"workNode" xorm:"work_node"`                // 人工任务
-	CreatedTime     string   `json:"createdTime" xorm:"created_time"`          // 创建时间
+	ParentId          string   `json:"parentId" xorm:"parent_id"`                    // 父类ID
+	Id                string   `json:"id" xorm:"id"`                                 // 模版ID
+	Name              string   `json:"name" xorm:"name"`                             // 模版名称
+	Version           string   `json:"version" xorm:"version"`                       // 模版名称
+	TemplateGroupId   string   `json:"templateGourpId" xorm:"template_group_id"`     // 模版组ID
+	TemplateGroup     string   `json:"templateGroup" xorm:"template_group"`          // 模版组
+	TemplateGroupRole string   `json:"templateGroupRole" xorm:"template_group_role"` // 模版组角色
+	OperatorObjType   string   `json:"operatorObjType" xorm:"operator_obj_type"`     // 操作对象类型
+	ProcDefName       string   `json:"procDefName" xorm:"proc_def_name"`             // 使用编排
+	ManageRole        string   `json:"manageRole" xorm:"manage_role"`                // 属主角色
+	Owner             string   `json:"owner" xorm:"owner"`                           // 属主
+	UseRole           string   `json:"useRole" xorm:"use_role"`                      // 使用角色
+	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
+	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
+	CreatedTime       string   `json:"createdTime" xorm:"created_time"`              // 创建时间
 }
 
 type EntityQueryResult struct {

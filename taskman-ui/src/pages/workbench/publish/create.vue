@@ -20,8 +20,8 @@
         </Steps>
       </Col>
       <Col span="6" class="btn-group">
-        <Button @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
-        <Button type="primary" @click="handlePublish">发布</Button>
+        <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
+        <Button v-if="isAdd" type="primary" @click="handlePublish">发布</Button>
       </Col>
     </Row>
     <Row class="content">
@@ -70,24 +70,7 @@
                 </Select>
               </FormItem>
               <FormItem v-if="requestData.length" label="已选择">
-                <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
-                  <Radio
-                    v-for="(item, index) in requestData"
-                    :label="item.entity || item.itemGroup"
-                    :key="index"
-                    border
-                  >
-                    <span
-                      >{{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span></span
-                    >
-                  </Radio>
-                </RadioGroup>
-                <Table
-                  size="small"
-                  :columns="tableColumns"
-                  :data="tableData"
-                  @on-selection-change="handleChooseData"
-                ></Table>
+                <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" :isAdd="isAdd"></EntityTable>
               </FormItem>
             </HeaderTitle>
           </template>
@@ -142,7 +125,176 @@
                 <Col :span="8">{{ detailInfo.description }}</Col>
               </Row>
             </HeaderTitle>
-            <HeaderTitle title="处理历史"> </HeaderTitle>
+            <HeaderTitle title="处理历史">
+              <Collapse v-model="activeStep">
+                <Panel v-for="(data, index) in historyData" :name="index + ''" :key="index">
+                  <!--提交请求-->
+                  <template v-if="index === 0">
+                    <div style="display:flex;align-items:center;">
+                      <div style="width:70px;">提交请求</div>
+                      <div style="flex:1">
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('request_id') }}:{{ data.requestId }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="orange"
+                          >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="green"
+                          >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('reporter') }}:{{ data.reporter }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
+                        >
+                      </div>
+                    </div>
+                    <div slot="content">
+                      <FormItem label="选择操作单元" required>
+                        <Select
+                          v-model="form.rootEntityId"
+                          :disabled="formDisable"
+                          clearable
+                          filterable
+                          style="width:300px;"
+                        >
+                          <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                            item.key_name
+                          }}</Option>
+                        </Select>
+                      </FormItem>
+                      <EntityTable
+                        :data="data.formData"
+                        :requestId="requestId"
+                        :formDisable="formDisable"
+                      ></EntityTable>
+                    </div>
+                  </template>
+                  <!--请求定版-->
+                  <template v-else-if="index === 1">
+                    <div style="display:flex;align-items:center;">
+                      <div style="width:70px;">请求定版</div>
+                      <div style="flex:1;">
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('request_id') }}:{{ data.requestId }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="orange"
+                          >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="green"
+                          >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('reporter') }}:{{ data.reporter }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
+                        >
+                      </div>
+                    </div>
+                    <div slot="content">
+                      <DataBind
+                        :isHandle="isHandle"
+                        :requestTemplate="requestTemplate"
+                        :requestId="requestId"
+                        :formDisable="formDisable"
+                      ></DataBind>
+                    </div>
+                  </template>
+                  <!--任务审批-->
+                  <template v-else>
+                    <div style="display:flex;align-items:center;">
+                      <div style="width:70px;">{{ data.taskName }}</div>
+                      <div style="flex:1;">
+                        <Tag style="font-size: 14px" type="border" size="medium" color="primary"
+                          >{{ $t('task_name') }}:{{ data.taskName }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('handler') }}:{{ data.handler }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
+                        >
+                        <Tag
+                          v-if="data.status === 'done'"
+                          style="font-size: 14px"
+                          type="border"
+                          size="medium"
+                          color="cyan"
+                          >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                        >
+                        <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
+                          ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
+                        >
+                      </div>
+                    </div>
+                    <div slot="content">
+                      <EntityTable
+                        :data="data.formData"
+                        :requestId="requestId"
+                        :formDisable="formDisable"
+                      ></EntityTable>
+                      <div>
+                        <Form :label-width="80" style="margin: 16px 0">
+                          <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
+                            <Input disabled v-model="data.description" type="textarea" />
+                          </FormItem>
+                          <FormItem
+                            :label="$t('process_result')"
+                            v-if="data.nextOption && data.nextOption.length !== 0"
+                          >
+                            <span slot="label">
+                              {{ $t('process_result') }}
+                              <span style="color: #ed4014"> * </span>
+                            </span>
+                            <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                              <Option v-for="option in data.nextOption" :value="option" :key="option">{{
+                                option
+                              }}</Option>
+                            </Select>
+                          </FormItem>
+                          <FormItem :label="$t('process_comments')">
+                            <Input
+                              :disabled="!data.editable || enforceDisable"
+                              v-model="data.comment"
+                              type="textarea"
+                            />
+                          </FormItem>
+                        </Form>
+                        <div style="text-align: center">
+                          <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                            $t('save')
+                          }}</Button>
+                          <Button
+                            v-if="data.editable"
+                            :disabled="
+                              enforceDisable ||
+                                (data.nextOption && data.nextOption.length !== 0 && data.choseOption === '')
+                            "
+                            @click="commitTaskData"
+                            type="primary"
+                            >{{ $t('commit') }}</Button
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </Panel>
+              </Collapse>
+            </HeaderTitle>
           </template>
         </Form>
       </Col>
@@ -154,33 +306,26 @@
         </div>
       </Col>
     </Row>
-    <EditDrawer
-      v-if="editVisible"
-      v-model="editData"
-      :options="editOptions"
-      :visible.sync="editVisible"
-      :disabled="viewDisabled"
-      @submit="submitEditRow"
-    ></EditDrawer>
   </div>
 </template>
 
 <script>
 import HeaderTitle from '../components/header-title.vue'
-import EditDrawer from './edit-item.vue'
+import StaticFlow from './flow/static-flow.vue'
+import DynamicFlow from './flow/dynamic-flow.vue'
+import EntityTable from '../components/entity-table.vue'
+import DataBind from '../request/components/data-bind.vue'
 import {
   getCreateInfo,
   getProgressInfo,
   getRootEntity,
   getEntityData,
-  getRefOptions,
   savePublishData,
   getPublishInfo,
-  updateRequestStatus
+  updateRequestStatus,
+  saveTaskData,
+  commitTaskData
 } from '@/api/server'
-import StaticFlow from './flow/static-flow.vue'
-import DynamicFlow from './flow/dynamic-flow.vue'
-import { deepClone, debounce } from '@/pages/util'
 import dayjs from 'dayjs'
 const statusIcon = {
   1: 'md-pin',
@@ -199,10 +344,12 @@ export default {
     HeaderTitle,
     StaticFlow,
     DynamicFlow,
-    EditDrawer
+    EntityTable,
+    DataBind
   },
   data () {
     return {
+      enforceDisable: this.$route.query.enforceDisable === 'Y',
       isAdd: this.$route.query.isAdd === 'Y',
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       formDisable: this.$route.query.isCheck === 'Y', // 查看标志
@@ -211,8 +358,6 @@ export default {
       requestId: this.$route.query.requestId,
       // procDefId: '',
       // procDefKey: '',
-      activeTab: '',
-      refKeys: [], // 引用类型字段集合select类型
       detailInfo: {}, // 详情信息
       form: {
         name: '',
@@ -223,68 +368,9 @@ export default {
       },
       rootEntityOptions: [],
       progressList: [],
-      tableColumns: [],
-      tableData: [], // 用于当前表格数据的展示
-      requestData: [], // 用于最后提交的所有表格数据
-      editVisible: false,
-      editOptions: [],
-      editData: {},
-      editIndex: 0,
-      viewDisabled: false,
-      initTableColumns: [
-        {
-          type: 'selection',
-          width: 55,
-          align: 'center',
-          fixed: 'left'
-        },
-        {
-          title: this.$t('t_action'),
-          key: 'action',
-          width: 100,
-          fixed: 'right',
-          align: 'center',
-          render: (h, params) => {
-            return (
-              <div style="display:flex;justify-content:space-around;">
-                {
-                  // <Tooltip content="删除" placement="top-start">
-                  //   <Icon
-                  //     size="20"
-                  //     type="md-trash"
-                  //     color="#ed4014"
-                  //     style="cursor:pointer;"
-                  //     onClick={() => {
-                  //       this.handleDeleteRow(params.row)
-                  //     }}
-                  //   />
-                  // </Tooltip>
-                }
-                <Tooltip content="编辑" placement="top-start">
-                  <Icon
-                    size="20"
-                    type="md-create"
-                    style="cursor:pointer;"
-                    onClick={() => {
-                      this.handleEditRow(params.row)
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip content="查看" placement="top-start">
-                  <Icon
-                    size="20"
-                    type="md-eye"
-                    style="cursor:pointer;"
-                    onClick={() => {
-                      this.handleViewRow(params.row)
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            )
-          }
-        }
-      ]
+      requestData: [], // 发布目标对象表格数据
+      historyData: [], // 处理历史数据
+      activeStep: ''
     }
   },
   computed: {
@@ -314,7 +400,7 @@ export default {
   },
   async mounted () {
     this.$refs.staticFlowRef.orchestrationSelectHandler(this.requestTemplate)
-    // 查看调用详情接口
+    // 路由有requestId详情接口，无requestId创建接口
     if (this.requestId) {
       await this.getPublishInfo()
     } else {
@@ -324,11 +410,6 @@ export default {
     this.getEntity()
   },
   methods: {
-    // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
-    handleTabChange: debounce(function () {
-      this.initTableData()
-    }, 100),
-    // 创建发布,使用模板ID获取详情数据
     async getCreateInfo () {
       const params = {
         requestTemplate: this.requestTemplate,
@@ -383,6 +464,8 @@ export default {
           description,
           expectTime
         })
+        this.historyData = data.data || []
+        this.activeStep = this.historyData.length - 1 + ''
       }
     },
     // 操作目标对象下拉值
@@ -409,260 +492,7 @@ export default {
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
         this.requestData = data.data
-        // 没有数据，默认添加一行
-        this.requestData.forEach(item => {
-          if (item.value.length === 0 && this.isAdd) {
-            this.handleAddRow(item)
-          }
-        })
-        this.activeTab = this.activeTab || data.data[0].entity || data.data[0].itemGroup
-        this.initTableData()
       }
-    },
-    // 编辑操作，刷新requestData
-    refreshRequestData () {
-      this.requestData.forEach(item => {
-        if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
-          for (let m of item.value) {
-            for (let n of this.tableData) {
-              if ((m.id = n._id)) {
-                m.entityData = n
-              }
-            }
-          }
-        }
-      })
-    },
-    async initTableData () {
-      // 当前选择tab数据
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      this.oriData = data
-      // 编辑表单的options配置
-      this.editOptions = data.title
-
-      // select类型集合
-      this.refKeys = []
-      data.title.forEach(t => {
-        if (t.elementType === 'select') {
-          this.refKeys.push(t.name)
-        }
-      })
-
-      // tableColumns数据初始化
-      this.tableColumns = deepClone(this.initTableColumns)
-      data.title.forEach(t => {
-        let column = {
-          title: t.title,
-          key: t.name,
-          align: 'left',
-          minWidth: 200
-        }
-        if (t.required === 'yes') {
-          column.renderHeader = (h, { column }) => {
-            return (
-              <span>
-                {`${column.title}`}
-                <span class="required">（必填）</span>
-              </span>
-            )
-          }
-        }
-        if (t.elementType === 'select') {
-          column.render = (h, params) => {
-            return (
-              <div style="display:flex;align-items:center">
-                {t.name === 'deploy_package' && t.required === 'yes' && !params.row[t.name] && (
-                  <Icon size="24" color="#ed4014" type="md-apps" />
-                )}
-                {t.name === 'deploy_package' && t.required === 'yes' && params.row[t.name] && (
-                  <Icon size="24" color="#19be6b" type="md-apps" />
-                )}
-                <Select
-                  value={params.row[t.name]}
-                  on-on-change={v => {
-                    this.tableData[params.row._index][t.name] = v
-                    this.refreshRequestData()
-                  }}
-                  multiple={t.multiple === 'Y'}
-                  disabled={t.isEdit === 'no' || this.formDisable}
-                >
-                  {Array.isArray(params.row[t.name + 'Options']) &&
-                    params.row[t.name + 'Options'].map(i => (
-                      <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
-                        {t.entity ? i.key_name : i}
-                      </Option>
-                    ))}
-                </Select>
-              </div>
-            )
-          }
-        } else if (t.elementType === 'input') {
-          column.render = (h, params) => {
-            return (
-              <Input
-                value={params.row[t.name]}
-                onInput={v => {
-                  params.row[t.name] = v
-                  // 暂时这么写,为啥给params赋值不会更新tableData？
-                  this.tableData[params.row._index][t.name] = v
-                }}
-                onBlur={() => {
-                  this.refreshRequestData()
-                }}
-                disabled={t.isEdit === 'no' || this.formDisable}
-              />
-            )
-          }
-        } else if (t.elementType === 'textarea') {
-          column.render = (h, params) => {
-            return (
-              <Input
-                value={params.row[t.name]}
-                onInput={v => {
-                  params.row[t.name] = v
-                  this.tableData[params.row._index][t.name] = v
-                }}
-                onBlur={() => {
-                  this.refreshRequestData()
-                }}
-                type="textarea"
-                disabled={t.isEdit === 'no' || this.formDisable}
-              />
-            )
-          }
-        }
-        this.tableColumns.push(column)
-      })
-
-      // table数据初始化
-      this.tableData = data.value.map(v => {
-        this.refKeys.forEach(rfk => {
-          v.entityData[rfk + 'Options'] = []
-        })
-        v.entityData._id = v.id
-        return v.entityData
-      })
-
-      // 下拉类型数据初始化
-      this.tableData.forEach((row, index) => {
-        this.refKeys.forEach(rfk => {
-          const titleObj = data.title.find(f => f.name === rfk)
-          this.getRefOptions(titleObj, row, index)
-        })
-      })
-    },
-    async getRefOptions (titleObj, row, index) {
-      if (titleObj.elementType === 'select' && titleObj.entity === '') {
-        row[titleObj.name + 'Options'] = titleObj.dataOptions.split(',')
-        this.$set(this.tableData, index, row)
-        return
-      }
-      // if (titleObj.refEntity === '') {
-      //   row[titleObj.name + 'Options'] = titleObj.selectList
-      //   this.$set(this.tableData, index, row)
-      //   return
-      // }
-      let cache = JSON.parse(JSON.stringify(row))
-      const keys = Object.keys(cache)
-      keys.forEach(key => {
-        if (Array.isArray(cache[key])) {
-          cache[key] = cache[key].map(c => {
-            return {
-              guid: c
-            }
-          })
-          cache[key] = JSON.stringify(cache[key])
-        }
-      })
-      cache[titleObj.name] = ''
-      this.refKeys.forEach(k => {
-        delete cache[k + 'Options']
-      })
-      delete cache._checked
-      const filterValue = row[titleObj.name]
-      const attr = titleObj.entity + '__' + titleObj.name
-      const params = {
-        filters: [
-          {
-            name: 'guid',
-            operator: 'in',
-            value: Array.isArray(filterValue) ? filterValue : [filterValue]
-          }
-        ],
-        paging: false,
-        dialect: {
-          associatedData: {
-            ...cache
-          }
-        }
-      }
-      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
-      if (statusCode === 'OK') {
-        row[titleObj.name + 'Options'] = data
-        this.$set(this.tableData, index, row)
-      }
-    },
-    // 删除行数据
-    handleDeleteRow (row) {
-      this.$Modal.confirm({
-        title: this.$t('confirm') + '删除',
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          this.$Modal.remove()
-          this.tableData.splice(row._index, 1)
-          this.requestData.forEach(item => {
-            if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
-              item.value.splice(row._index, 1)
-            }
-          })
-        },
-        onCancel: () => {}
-      })
-    },
-    // 添加一条行数据
-    handleAddRow (data) {
-      let entityData = {}
-      data.title.forEach(item => {
-        entityData[item.name] = ''
-        if (item.elementType === 'select') {
-          entityData[item.name + 'Options'] = []
-        }
-      })
-      let obj = {
-        dataId: '',
-        displayName: '',
-        entityData: entityData,
-        entityName: data.entity,
-        entityDataOp: 'create',
-        fullDataId: '',
-        id: '',
-        packageName: data.packageName,
-        previousIds: [],
-        succeedingIds: []
-      }
-      data.value.push(obj)
-    },
-    handleEditRow (row) {
-      this.viewDisabled = false
-      this.editVisible = true
-      this.editData = deepClone(row)
-    },
-    submitEditRow () {
-      this.tableData = this.tableData.map(item => {
-        if (item._id === this.editData._id) {
-          for (let key in item) {
-            item[key] = this.editData[key]
-          }
-        }
-        return item
-      })
-      this.refreshRequestData()
-    },
-    handleViewRow (row) {
-      this.viewDisabled = true
-      this.editVisible = true
-      this.editData = deepClone(row)
     },
     // 保存草稿
     async handleDraft (noJump) {
@@ -671,10 +501,10 @@ export default {
         return
       }
       // 提取表格勾选的数据
-      this.form.data = this.requestData.map(item => {
+      this.form.data = this.$refs.entityTable.requestData.map(item => {
         if (Array.isArray(item.value)) {
-          item.value = item.value.filter(value => {
-            return value.entityData._checked
+          item.value = item.value.filter(j => {
+            return j.entityData._checked
           })
         }
         return item
@@ -743,16 +573,62 @@ export default {
       })
       return result
     },
-    // 给勾选的表格数据设置_checked属性
-    handleChooseData (selection) {
-      const selectIds = selection.map(i => i._id)
-      this.tableData.forEach(row => {
-        if (selectIds.includes(row._id)) {
-          row._checked = true
-        } else {
-          row._checked = false
+    // 任务审批保存
+    async saveTaskData () {
+      const taskData = this.historyData.find(d => d.editable === true)
+      const result = this.paramsCheck(taskData)
+      if (result) {
+        const { statusCode } = await saveTaskData(taskData.taskId, taskData)
+        if (statusCode === 'OK') {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
         }
+      } else {
+        this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
+    },
+    // 任务审批提交
+    async commitTaskData () {
+      const taskData = this.historyData.find(d => d.editable === true)
+      const { statusCode } = await commitTaskData(taskData.taskId, taskData)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed' })
+      }
+    },
+    paramsCheck (taskData) {
+      let result = true
+      taskData.formData.forEach(requestData => {
+        let requiredName = []
+        requestData.title.forEach(t => {
+          if (t.required === 'yes') {
+            requiredName.push(t.name)
+          }
+        })
+        requestData.value.forEach(v => {
+          requiredName.forEach(key => {
+            let val = v.entityData[key]
+            if (Array.isArray(val)) {
+              if (val.length === 0) {
+                result = false
+              }
+            } else {
+              if (val === '') {
+                result = false
+              }
+            }
+          })
+        })
       })
+      return result
     }
   }
 }
@@ -847,6 +723,11 @@ export default {
   }
   .required {
     color: red;
+  }
+  .ivu-collapse-header {
+    height: auto !important;
+    display: flex;
+    align-items: center;
   }
 }
 </style>

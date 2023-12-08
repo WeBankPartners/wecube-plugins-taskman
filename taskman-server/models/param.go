@@ -59,6 +59,8 @@ type QueryCollectTemplateParam struct {
 	Tags             []string             `json:"tags" `            // 标签
 	CreatedStartTime string               `json:"createdStartTime"` // 创建开始时间
 	CreatedEndTime   string               `json:"createdEndTime"`   // 创建结束时间
+	UpdatedStartTime string               `json:"updatedStartTime"` // 更新开始时间
+	UpdatedEndTime   string               `json:"updatedEndTime"`   // 更新结束时间
 	StartIndex       int                  `json:"startIndex"`
 	PageSize         int                  `json:"pageSize"`
 	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段
@@ -83,6 +85,8 @@ type CommonRequestParam struct {
 	Handler          []string             `json:"handler"`           // 当前处理人
 	CreatedStartTime string               `json:"createdStartTime" ` // 创建开始时间
 	CreatedEndTime   string               `json:"createdEndTime" `   // 创建结束时间
+	UpdatedStartTime string               `json:"updatedStartTime" ` // 更新开始时间
+	UpdatedEndTime   string               `json:"updatedEndTime" `   // 更新结束时间
 	ExpectStartTime  string               `json:"expectStartTime" `  // 期望开始时间
 	ExpectEndTime    string               `json:"expectEndTime" `    // 期望结束时间
 	StartIndex       int                  `json:"startIndex"`

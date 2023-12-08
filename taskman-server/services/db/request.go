@@ -365,7 +365,7 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 					actions = append(actions, &execAction{Sql: "update request set operator_obj=? where id=?", Param: []interface{}{platformDataObj.OperatorObj, platformDataObj.Id}})
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
+			platformDataObj.TaskId, platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
 		}
 		if len(actions) > 0 {
@@ -2183,6 +2183,9 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
 		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"
 	}
+	if param.UpdatedStartTime != "" && param.UpdatedEndTime != "" {
+		where = where + " and updated_time >= ' " + param.UpdatedStartTime + "' and updated_time <= ' " + param.UpdatedEndTime + "'"
+	}
 	if param.ExpectStartTime != "" && param.ExpectEndTime != "" {
 		where = where + " and expect_time >= ' " + param.ExpectStartTime + "' and expect_time <= ' " + param.ExpectEndTime + "'"
 	}
@@ -2217,6 +2220,9 @@ func transCollectConditionToSQL(param *models.QueryCollectTemplateParam) (where 
 	}
 	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
 		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"
+	}
+	if param.UpdatedStartTime != "" && param.UpdatedEndTime != "" {
+		where = where + " and updated_time >= ' " + param.UpdatedStartTime + "' and updated_time <= ' " + param.UpdatedEndTime + "'"
 	}
 	if len(param.UseRole) > 0 {
 		var templateIdList []string
@@ -2480,12 +2486,12 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	if request.ProcInstanceId != "" {
 		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken)
 	}
-	_, form.Handler = getRequestHandler(request.Id)
+	_, _, form.Handler = getRequestHandler(request.Id)
 	return
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态,查询任务处理人
-func getRequestHandler(requestId string) (role string, handler string) {
+func getRequestHandler(requestId string) (taskId string, role, handler string) {
 	request, _ := GetSimpleRequest(requestId)
 	if request.Status == "Draft" || request.Status == "Pending" {
 		// 请求在定版状态,从模板角色表中读取
@@ -2504,9 +2510,14 @@ func getRequestHandler(requestId string) (role string, handler string) {
 		if len(taskMap) > 0 {
 			for _, task := range taskMap {
 				if task.Status != "done" && taskTemplateMap[task.TaskTemplate] != nil {
+					taskId = task.Id
 					taskTemplate := taskTemplateMap[task.TaskTemplate]
 					role = taskTemplate.Role
-					handler = taskTemplate.Handler
+					// 任务处理人已任务处理为主,可以通过认领转给我修改.空的时候才取模板配置值
+					handler = task.Handler
+					if handler == "" {
+						handler = taskTemplate.Handler
+					}
 					break
 				}
 			}

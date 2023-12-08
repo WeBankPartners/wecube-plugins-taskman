@@ -39,6 +39,7 @@ type PlatformDataObj struct {
 	StartTime       string `json:"startTime" xorm:"-"`                       // 开始时间
 	EffectiveDays   int    `json:"effectiveDays" xorm:"-"`                   // 有效天数
 	ParentId        string `json:"parentId" xorm:"parent_id"`                // 模板父类id
+	TaskId          string `json:"taskId" xorm:"taskId"`                     // 当前正在进行中的taskId
 }
 
 type RequestQueryParam struct {

@@ -37,7 +37,14 @@
                 {{ i.manageRole }}
                 <span class="underline"></span>
               </div>
-              <Icon size="28" type="md-arrow-dropdown" style="cursor:pointer;" @click="handleExpand(i)" />
+              <Icon
+                v-if="i.expand"
+                size="28"
+                type="md-arrow-dropdown"
+                style="cursor:pointer;"
+                @click="handleExpand(i)"
+              />
+              <Icon v-else size="28" type="md-arrow-dropright" style="cursor:pointer;" @click="handleExpand(i)" />
             </div>
             <div v-show="i.expand">
               <div v-for="j in i.groups" :key="j.groupId" class="content">
@@ -71,7 +78,10 @@
             我的收藏 <span>{{ collectList.length }}</span>
           </div>
           <div v-for="i in collectList" :key="i.id" class="item">
-            {{ i.name }}
+            <div class="template" @click="handleChooseTemplate(i, i.manageRole)">
+              {{ i.name }}
+              <Tag style="margin-left:5px">{{ i.version }}</Tag>
+            </div>
             <Tooltip content="取消收藏" placement="top-start">
               <Icon
                 style="cursor:pointer"
@@ -112,7 +122,10 @@ export default {
           render: (h, params) => {
             return (
               <div>
-                <span style="margin-right:5px">{params.row.name}</span>
+                <span style="margin-right:2px">
+                  {params.row.name}
+                  <Tag style="margin-left:5px">{params.row.version}</Tag>
+                </span>
                 {params.row.collectFlag === 0 && this.activeName === 'confirm' && (
                   <Tooltip content="收藏" placement="top-start">
                     <Icon
@@ -255,6 +268,7 @@ export default {
     // 收藏模板列表
     async getCollectTemplate () {
       const params = {
+        action: this.type === 'publish' ? 1 : 2, // 1发布2请求
         startIndex: 0,
         pageSize: 500
       }
@@ -332,12 +346,23 @@ export default {
         }
       }
       .item {
+        display: flex;
         padding: 5px 0 3px 5px;
         font-size: 14px;
         color: #515a6e;
         .collect {
           cursor: pointer;
           margin-left: 5px;
+        }
+        .template {
+          width: 250px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          // white-space: nowrap;
+          &:hover {
+            color: #5cadff;
+            cursor: pointer;
+          }
         }
       }
     }

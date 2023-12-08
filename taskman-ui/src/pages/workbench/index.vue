@@ -167,8 +167,16 @@ export default {
         {
           title: '使用模板',
           sortable: 'custom',
-          minWidth: 180,
-          key: 'templateName'
+          minWidth: 200,
+          key: 'templateName',
+          render: (h, params) => {
+            return (
+              <span>
+                {params.row.templateName}
+                <Tag>{params.row.version}</Tag>
+              </span>
+            )
+          }
         },
         {
           title: '操作对象类型',
@@ -345,7 +353,7 @@ export default {
                     type="info"
                     size="small"
                     onClick={() => {
-                      this.handleTransfer(params.row)
+                      this.handleTransfer(params.row, 'mark')
                     }}
                   >
                     认领
@@ -358,7 +366,7 @@ export default {
                     type="success"
                     size="small"
                     onClick={() => {
-                      this.handleTransfer(params.row)
+                      this.handleTransfer(params.row, 'give')
                     }}
                   >
                       转给我
@@ -582,8 +590,8 @@ export default {
         }
       })
     },
-    // 表格操作-转给我
-    async handleTransfer (row) {
+    // 表格操作-转给我/认领
+    async handleTransfer (row, type) {
       this.$Modal.confirm({
         title: this.$t('confirm') + '转给我',
         'z-index': 1000000,
@@ -595,7 +603,7 @@ export default {
           if (row.status === 'Pending') {
             res = await tansferToMe(row.id)
           } else if (row.status === 'InProgress') {
-            res = await changeTaskStatus('give', row.id)
+            res = await changeTaskStatus(type, row.taskId)
           }
           if (res.statusCode === 'OK') {
             this.$Notice.success({

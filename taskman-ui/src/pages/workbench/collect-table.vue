@@ -77,8 +77,16 @@ export default {
         },
         {
           title: '模板名称',
-          width: 200,
-          key: 'name'
+          width: 250,
+          key: 'name',
+          render: (h, params) => {
+            return (
+              <span>
+                {params.row.name}
+                <Tag>{params.row.version}</Tag>
+              </span>
+            )
+          }
         },
         {
           title: '模板组',

@@ -742,7 +742,7 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
 	} else if operation == "give" {
 		// 转给我
-		if taskObj.Status != "marked" {
+		if taskObj.Status == "done" {
 			return taskObj, fmt.Errorf("Task status:%s is not marked ", taskObj.Status)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})

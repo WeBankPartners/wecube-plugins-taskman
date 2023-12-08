@@ -2246,34 +2246,6 @@ func getSQL(status []string) string {
 	return sql
 }
 
-// GetRequestProgressByTemplateId  请求未创建时,获取请求进度
-func GetRequestProgressByTemplateId(templateId, user, userToken string) (rowsData []*models.RequestProgressObj, err error) {
-	var requestTemplate models.RequestTemplateTable
-	var pendingHandler string
-	requestTemplate, err = GetSimpleRequestTemplate(templateId)
-	if err != nil {
-		return
-	}
-	if requestTemplate.Handler != "" {
-		pendingHandler = requestTemplate.Handler
-	} else {
-		pendingHandler = GetRequestTemplateManageRole(templateId)
-	}
-	rowsData = append(append([]*models.RequestProgressObj{
-		{
-			Node:    SendRequest,
-			Handler: user,
-			Status:  int(InProgress),
-		},
-		{
-			Node:    RequestPending,
-			Handler: pendingHandler,
-			Status:  int(NotStart),
-		},
-	}), getCommonRequestProgress(templateId, userToken)...)
-	return
-}
-
 // getTaskApproveHandler 获取任务审批人,有人返回人,没人返回审批角色
 func getTaskApproveHandler(result models.TaskTemplateDto) string {
 	if result.Handler != "" {
@@ -2306,6 +2278,19 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 	switch request.Status {
 	case "Draft":
 		status = int(NotStart)
+		rowsData = append(append([]*models.RequestProgressObj{
+			{
+				Node:    SendRequest,
+				Handler: request.CreatedBy,
+				Status:  int(InProgress),
+			},
+			{
+				Node:    RequestPending,
+				Handler: pendingHandler,
+				Status:  int(NotStart),
+			},
+		}), subRowsData...)
+		return
 	case "Pending":
 		status = int(InProgress)
 	case "Completed":
@@ -2367,6 +2352,12 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 	var err error
 	nodeList, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: templateId}, userToken, "template")
 	if err != nil {
+		log.Logger.Error("GetProcessNodesByProc err", log.Error(err))
+		rowsData = append(rowsData, &models.RequestProgressObj{
+			Node:    RequestComplete,
+			Handler: "",
+			Status:  int(NotStart),
+		})
 		return
 	}
 	if len(nodeList) > 0 {

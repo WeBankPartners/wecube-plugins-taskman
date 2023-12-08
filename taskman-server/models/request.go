@@ -145,7 +145,8 @@ type RequestTable struct {
 	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
 	Description         string             `json:"description" xorm:"description"` // 请求描述
 	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
-	ExpireDay           int                `json:"expireDay" xorm:"expire_day"`    // 模板过期时间
+	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
+	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
 }
 
 type ExpireObj struct {

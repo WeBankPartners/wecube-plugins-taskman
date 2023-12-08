@@ -471,11 +471,7 @@ func GetRequestProgress(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if param.RequestId == "" {
-		rowsData, err = db.GetRequestProgressByTemplateId(param.TemplateId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
-	} else {
-		rowsData, err = db.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
-	}
+	rowsData, err = db.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

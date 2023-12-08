@@ -46,6 +46,11 @@ func CreateRequest(c *gin.Context) {
 	param.CreatedBy = middleware.GetRequestUser(c)
 	param.ExpireDay = template.ExpireDay
 	param.RequestTemplateName = template.Name
+	if template.Status != "confirm" {
+		param.TemplateVersion = "beta"
+	} else {
+		param.TemplateVersion = template.Version
+	}
 	err = db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

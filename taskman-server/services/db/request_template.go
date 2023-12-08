@@ -1163,7 +1163,7 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	ownerRoleMap := getMGmtRequestTemplateRoles()
 	var collectFlag int
 	var allGroupTable []*models.RequestTemplateGroupTable
-	err = x.SQL("select id,name,description,manage_role from request_template_group").Find(&allGroupTable)
+	err = x.SQL("select id,name,description,manage_role,created_time,updated_time from request_template_group").Find(&allGroupTable)
 	if err != nil {
 		return
 	}

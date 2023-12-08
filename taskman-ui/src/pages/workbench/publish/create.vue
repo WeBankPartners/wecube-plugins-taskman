@@ -1,8 +1,8 @@
 <template>
   <div class="workbench-publish-create">
     <Row class="back-header">
-      <Icon size="24" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
-      <span>{{ detailInfo.templateName || form.name }}</span>
+      <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
+      <span>{{ `${templateName}（${version}）` }}</span>
     </Row>
     <Row class="w-header">
       <Col span="18" class="steps">
@@ -116,7 +116,7 @@
               </Row>
               <Row style="margin-top:10px;">
                 <Col :span="4">使用模板：</Col>
-                <Col :span="8">{{ detailInfo.templateName }}</Col>
+                <Col :span="8">{{ `${detailInfo.templateName}（${detailInfo.version}）` }}</Col>
                 <Col :span="4">模板组：</Col>
                 <Col :span="8">{{ detailInfo.templateGroupName }}</Col>
               </Row>
@@ -311,10 +311,10 @@
 
 <script>
 import HeaderTitle from '../components/header-title.vue'
-import StaticFlow from './flow/static-flow.vue'
-import DynamicFlow from './flow/dynamic-flow.vue'
+import StaticFlow from '../components/flow/static-flow.vue'
+import DynamicFlow from '../components/flow/dynamic-flow.vue'
 import EntityTable from '../components/entity-table.vue'
-import DataBind from '../request/components/data-bind.vue'
+import DataBind from '../components/data-bind.vue'
 import {
   getCreateInfo,
   getProgressInfo,
@@ -349,6 +349,8 @@ export default {
   },
   data () {
     return {
+      templateName: '',
+      version: '', // 模板版本号
       enforceDisable: this.$route.query.enforceDisable === 'Y',
       isAdd: this.$route.query.isAdd === 'Y',
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志(用于请求定版)
@@ -418,6 +420,8 @@ export default {
       const { statusCode, data } = await getCreateInfo(params)
       if (statusCode === 'OK') {
         this.requestId = data.id
+        this.templateName = data.requestTemplateName
+        this.version = data.templateVersion
         this.form.name = data.name
         this.form.expectTime = dayjs()
           .add(data.expireDay || 0, 'day')
@@ -458,6 +462,8 @@ export default {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
         this.detailInfo = data.request || {}
+        this.templateName = data.request.templateName
+        this.version = data.request.version
         const { name, description, expectTime } = this.detailInfo
         this.form = Object.assign({}, this.form, {
           name,
@@ -517,7 +523,7 @@ export default {
           if (noJump) {
             return statusCode
           } else {
-            this.$router.push({ path: '/taskman/workbench?tabName=pending' })
+            this.$router.push({ path: '/taskman/workbench?tabName=draft&actionName=1' })
           }
         }
       } else {
@@ -539,7 +545,7 @@ export default {
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench?tabName=pending' })
+              this.$router.push({ path: '/taskman/workbench?tabName=pending&actionName=1' })
             }
           }
         },
@@ -601,7 +607,7 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed' })
+        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed&actionName=1' })
       }
     },
     paramsCheck (taskData) {
@@ -641,7 +647,7 @@ export default {
     align-items: center;
     margin-bottom: 10px;
     span {
-      font-size: 14px;
+      font-size: 16px;
       margin-left: 20px;
     }
   }
@@ -678,14 +684,6 @@ export default {
       border-right: 2px dashed #d7dadc;
       padding-right: 20px;
     }
-    .count {
-      font-weight: bold;
-      font-size: 14px;
-      margin-left: 10px;
-    }
-    .program {
-      padding: 20px;
-    }
   }
 }
 </style>
@@ -700,20 +698,6 @@ export default {
   .ivu-steps .ivu-steps-tail > i {
     height: 3px;
     background: #8189a5;
-  }
-  .ivu-radio {
-    display: none;
-  }
-  .ivu-radio-wrapper {
-    border-radius: 20px;
-    font-size: 12px;
-    color: #000;
-    background: #fff;
-  }
-  .ivu-radio-wrapper-checked.ivu-radio-border {
-    border-color: #2d8cf0;
-    background: #2d8cf0;
-    color: #fff;
   }
   .ivu-form-item {
     margin-bottom: 25px;

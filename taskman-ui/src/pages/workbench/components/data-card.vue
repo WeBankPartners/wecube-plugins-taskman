@@ -4,7 +4,7 @@
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
           <img :src="i.icon" />
-          <span>{{ `${i.label}(${i.total})` }}</span>
+          <span>{{ `${i.label}(${i.total || ''})` }}</span>
         </div>
         <div class="data">
           <div
@@ -17,7 +17,7 @@
               }
             "
           >
-            <span style="font-weight:bold;">{{ i.publishNum }}</span>
+            <span style="font-weight:bold;">{{ i.publishNum || '' }}</span>
             <span>发布</span>
           </div>
           <div
@@ -30,7 +30,7 @@
               }
             "
           >
-            <span style="font-weight:bold;">{{ i.requestNum }}</span>
+            <span style="font-weight:bold;">{{ i.requestNum || '' }}</span>
             <span>请求</span>
           </div>
         </div>
@@ -113,9 +113,12 @@ export default {
     }
   },
   watch: {
-    parentAction (val) {
+    actionName (val) {
       this.action = val
     }
+    // tabName (val) {
+    //   this.active = val
+    // }
   },
   mounted () {
     this.getData()

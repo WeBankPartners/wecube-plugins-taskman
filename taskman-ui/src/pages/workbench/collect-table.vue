@@ -73,7 +73,7 @@ export default {
         {
           title: '模板ID',
           minWidth: 150,
-          key: 'id'
+          key: 'parentId'
         },
         {
           title: '模板名称',
@@ -226,6 +226,7 @@ export default {
         path: url,
         query: {
           requestTemplate: row.id,
+          role: row.manageRole,
           isAdd: 'Y',
           isCheck: 'N',
           isHandle: 'N',

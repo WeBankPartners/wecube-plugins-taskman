@@ -1,8 +1,8 @@
 <template>
   <div class="workbench-request-create">
     <Row class="back-header">
-      <Icon size="24" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
-      <span>{{ detailInfo.templateName || form.name }}</span>
+      <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
+      <span>{{ `${templateName}（${version}）` }}</span>
     </Row>
     <Row class="w-header">
       <Col span="18" class="steps">
@@ -20,8 +20,8 @@
         </Steps>
       </Col>
       <Col span="6" class="btn-group">
-        <Button @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
-        <Button type="primary" @click="handlePublish">发布</Button>
+        <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
+        <Button v-if="isAdd" type="primary" @click="handlePublish">发布</Button>
       </Col>
     </Row>
     <Row class="content">
@@ -30,10 +30,17 @@
           <template v-if="isAdd">
             <HeaderTitle title="发布信息">
               <FormItem label="请求名称" required>
-                <Input v-model="form.name" placeholder="请输入" style="width:400px;" />
+                <Input v-model="form.name" :maxlength="50" placeholder="请输入" style="width:400px;" />
               </FormItem>
               <FormItem label="发布描述">
-                <Input v-model="form.description" type="textarea" placeholder="请输入" style="width:400px;" />
+                <Input
+                  v-model="form.description"
+                  type="textarea"
+                  :maxlength="100"
+                  show-word-limit
+                  placeholder="请输入"
+                  style="width:400px;"
+                />
               </FormItem>
               <FormItem :label="$t('expected_completion_time')">
                 <DatePicker
@@ -55,12 +62,16 @@
               </FormItem>
             </HeaderTitle>
             <HeaderTitle title="发布目标对象">
-              <DataCrud
-                ref="dataCrud"
-                :requestId="requestId"
-                :formDisable="formDisable"
-                :jumpFrom="jumpFrom"
-              ></DataCrud>
+              <FormItem label="选择操作单元" required>
+                <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
+                  <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                    item.key_name
+                  }}</Option>
+                </Select>
+              </FormItem>
+              <FormItem v-if="requestData.length" label="已选择">
+                <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" :isAdd="isAdd"></EntityTable>
+              </FormItem>
             </HeaderTitle>
           </template>
           <template v-else>
@@ -105,7 +116,7 @@
               </Row>
               <Row style="margin-top:10px;">
                 <Col :span="4">使用模板：</Col>
-                <Col :span="8">{{ detailInfo.templateName }}</Col>
+                <Col :span="8">{{ `${detailInfo.templateName}（${detailInfo.version}）` }}</Col>
                 <Col :span="4">模板组：</Col>
                 <Col :span="8">{{ detailInfo.templateGroupName }}</Col>
               </Row>
@@ -115,13 +126,174 @@
               </Row>
             </HeaderTitle>
             <HeaderTitle title="处理历史">
-              <!-- <DataCrud ref="dataCrud" :requestId="requestId" :formDisable="formDisable" :jumpFrom="jumpFrom"></DataCrud> -->
-              <DataBind
-                :isHandle="isHandle"
-                :requestTemplate="requestTemplate"
-                :requestId="requestId"
-                :formDisable="formDisable"
-              ></DataBind>
+              <Collapse v-model="activeStep">
+                <Panel v-for="(data, index) in historyData" :name="index + ''" :key="index">
+                  <!--提交请求-->
+                  <template v-if="index === 0">
+                    <div style="display:flex;align-items:center;">
+                      <div style="width:70px;">提交请求</div>
+                      <div style="flex:1">
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('request_id') }}:{{ data.requestId }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="orange"
+                          >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="green"
+                          >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('reporter') }}:{{ data.reporter }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
+                        >
+                      </div>
+                    </div>
+                    <div slot="content">
+                      <FormItem label="选择操作单元" required>
+                        <Select
+                          v-model="form.rootEntityId"
+                          :disabled="formDisable"
+                          clearable
+                          filterable
+                          style="width:300px;"
+                        >
+                          <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                            item.key_name
+                          }}</Option>
+                        </Select>
+                      </FormItem>
+                      <EntityTable
+                        :data="data.formData"
+                        :requestId="requestId"
+                        :formDisable="formDisable"
+                      ></EntityTable>
+                    </div>
+                  </template>
+                  <!--请求定版-->
+                  <template v-else-if="index === 1">
+                    <div style="display:flex;align-items:center;">
+                      <div style="width:70px;">请求定版</div>
+                      <div style="flex:1;">
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('request_id') }}:{{ data.requestId }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="orange"
+                          >{{ $t('request_name') }}:{{ data.requestName }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="green"
+                          >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('reporter') }}:{{ data.reporter }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
+                        >
+                      </div>
+                    </div>
+                    <div slot="content">
+                      <DataBind
+                        :isHandle="isHandle"
+                        :requestTemplate="requestTemplate"
+                        :requestId="requestId"
+                        :formDisable="formDisable"
+                      ></DataBind>
+                    </div>
+                  </template>
+                  <!--任务审批-->
+                  <template v-else>
+                    <div style="display:flex;align-items:center;">
+                      <div style="width:70px;">{{ data.taskName }}</div>
+                      <div style="flex:1;">
+                        <Tag style="font-size: 14px" type="border" size="medium" color="primary"
+                          >{{ $t('task_name') }}:{{ data.taskName }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('handler') }}:{{ data.handler }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                          >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
+                        >
+                        <Tag
+                          v-if="data.status === 'done'"
+                          style="font-size: 14px"
+                          type="border"
+                          size="medium"
+                          color="cyan"
+                          >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                        >
+                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                          >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
+                        >
+                        <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
+                          ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
+                        >
+                      </div>
+                    </div>
+                    <div slot="content">
+                      <EntityTable
+                        :data="data.formData"
+                        :requestId="requestId"
+                        :formDisable="formDisable"
+                      ></EntityTable>
+                      <div>
+                        <Form :label-width="80" style="margin: 16px 0">
+                          <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
+                            <Input disabled v-model="data.description" type="textarea" />
+                          </FormItem>
+                          <FormItem
+                            :label="$t('process_result')"
+                            v-if="data.nextOption && data.nextOption.length !== 0"
+                          >
+                            <span slot="label">
+                              {{ $t('process_result') }}
+                              <span style="color: #ed4014"> * </span>
+                            </span>
+                            <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                              <Option v-for="option in data.nextOption" :value="option" :key="option">{{
+                                option
+                              }}</Option>
+                            </Select>
+                          </FormItem>
+                          <FormItem :label="$t('process_comments')">
+                            <Input
+                              :disabled="!data.editable || enforceDisable"
+                              v-model="data.comment"
+                              type="textarea"
+                            />
+                          </FormItem>
+                        </Form>
+                        <div style="text-align: center">
+                          <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                            $t('save')
+                          }}</Button>
+                          <Button
+                            v-if="data.editable"
+                            :disabled="
+                              enforceDisable ||
+                                (data.nextOption && data.nextOption.length !== 0 && data.choseOption === '')
+                            "
+                            @click="commitTaskData"
+                            type="primary"
+                            >{{ $t('commit') }}</Button
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </Panel>
+              </Collapse>
             </HeaderTitle>
           </template>
         </Form>
@@ -139,11 +311,21 @@
 
 <script>
 import HeaderTitle from '../components/header-title.vue'
-import { getCreateInfo, getProgressInfo, savePublishData, getPublishInfo, updateRequestStatus } from '@/api/server'
-import StaticFlow from '../publish/flow/static-flow.vue'
-import DynamicFlow from '../publish/flow/dynamic-flow.vue'
-import DataCrud from './components/data-crud.vue'
-import DataBind from './components/data-bind.vue'
+import StaticFlow from '../components/flow/static-flow.vue'
+import DynamicFlow from '../components/flow/dynamic-flow.vue'
+import EntityTable from '../components/entity-table.vue'
+import DataBind from '../components/data-bind.vue'
+import {
+  getCreateInfo,
+  getProgressInfo,
+  getRootEntity,
+  getEntityData,
+  savePublishData,
+  getPublishInfo,
+  updateRequestStatus,
+  saveTaskData,
+  commitTaskData
+} from '@/api/server'
 import dayjs from 'dayjs'
 const statusIcon = {
   1: 'md-pin',
@@ -162,29 +344,35 @@ export default {
     HeaderTitle,
     StaticFlow,
     DynamicFlow,
-    DataCrud,
+    EntityTable,
     DataBind
   },
   data () {
     return {
+      templateName: '',
+      version: '', // 模板版本号
+      enforceDisable: this.$route.query.enforceDisable === 'Y',
+      isAdd: this.$route.query.isAdd === 'Y',
+      isHandle: this.$route.query.isHandle === 'Y', // 处理标志(用于请求定版)
+      formDisable: this.$route.query.isCheck === 'Y', // 查看标志
+      jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
+      requestTemplate: this.$route.query.requestTemplate,
+      requestId: this.$route.query.requestId,
+      // procDefId: '',
+      // procDefKey: '',
       detailInfo: {}, // 详情信息
       form: {
         name: '',
         description: '',
         expectTime: '',
         rootEntityId: '', // 目标对象
-        entityName: '',
         data: []
       },
+      rootEntityOptions: [],
       progressList: [],
-      isAdd: this.$route.query.isAdd === 'Y',
-      isHandle: this.$route.query.isHandle === 'Y', // 处理标志
-      formDisable: this.$route.query.isCheck === 'Y', // 查看标志
-      jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
-      requestTemplate: this.$route.query.requestTemplate,
-      requestId: this.$route.query.requestId,
-      procDefId: '',
-      procDefKey: ''
+      requestData: [], // 发布目标对象表格数据
+      historyData: [], // 处理历史数据
+      activeStep: ''
     }
   },
   computed: {
@@ -205,18 +393,25 @@ export default {
       }
     }
   },
+  watch: {
+    'form.rootEntityId' (val) {
+      if (val) {
+        this.getEntityData()
+      }
+    }
+  },
   async mounted () {
     this.$refs.staticFlowRef.orchestrationSelectHandler(this.requestTemplate)
-    // 查看调用详情接口
+    // 路由有requestId详情接口，无requestId创建接口
     if (this.requestId) {
       await this.getPublishInfo()
     } else {
       await this.getCreateInfo()
     }
     this.getProgressInfo()
+    this.getEntity()
   },
   methods: {
-    // 创建发布,使用模板ID获取详情数据
     async getCreateInfo () {
       const params = {
         requestTemplate: this.requestTemplate,
@@ -225,6 +420,8 @@ export default {
       const { statusCode, data } = await getCreateInfo(params)
       if (statusCode === 'OK') {
         this.requestId = data.id
+        this.templateName = data.requestTemplateName
+        this.version = data.templateVersion
         this.form.name = data.name
         this.form.expectTime = dayjs()
           .add(data.expireDay || 0, 'day')
@@ -265,32 +462,68 @@ export default {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
         this.detailInfo = data.request || {}
+        this.templateName = data.request.templateName
+        this.version = data.request.version
         const { name, description, expectTime } = this.detailInfo
         this.form = Object.assign({}, this.form, {
           name,
           description,
           expectTime
         })
+        this.historyData = data.data || []
+        this.activeStep = this.historyData.length - 1 + ''
+      }
+    },
+    // 操作目标对象下拉值
+    async getEntity () {
+      let params = {
+        params: {
+          requestId: this.requestId
+        }
+      }
+      const { statusCode, data } = await getRootEntity(params)
+      if (statusCode === 'OK') {
+        this.rootEntityOptions = data.data || []
+        this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
+      }
+    },
+    // 获取目标对象对应数据
+    async getEntityData () {
+      let params = {
+        params: {
+          requestId: this.requestId,
+          rootEntityId: this.form.rootEntityId
+        }
+      }
+      const { statusCode, data } = await getEntityData(params)
+      if (statusCode === 'OK') {
+        this.requestData = data.data
       }
     },
     // 保存草稿
     async handleDraft (noJump) {
-      this.form = Object.assign({}, this.form, {
-        rootEntityId: this.$refs.dataCrud.rootEntityId,
-        entityName: this.$refs.dataCrud.entityName,
-        data: this.$refs.dataCrud.requestData
-      })
       if (this.form.rootEntityId === '') {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
+      // 提取表格勾选的数据
+      this.form.data = this.$refs.entityTable.requestData.map(item => {
+        if (Array.isArray(item.value)) {
+          item.value = item.value.filter(j => {
+            return j.entityData._checked
+          })
+        }
+        return item
+      })
+      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId)
+      this.form.entityName = item.key_name
       if (this.requestDataCheck()) {
         const { statusCode } = await savePublishData(this.requestId, this.form)
         if (statusCode === 'OK') {
           if (noJump) {
             return statusCode
           } else {
-            this.$router.push({ path: '/taskman/workbench?tabName=pending' })
+            this.$router.push({ path: '/taskman/workbench?tabName=draft&actionName=1' })
           }
         }
       } else {
@@ -312,16 +545,74 @@ export default {
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench?tabName=pending' })
+              this.$router.push({ path: '/taskman/workbench?tabName=pending&actionName=1' })
             }
           }
         },
         onCancel: () => {}
       })
     },
+    // 校验表格数据必填项
     requestDataCheck () {
       let result = true
       this.form.data.forEach(requestData => {
+        let requiredName = []
+        requestData.title.forEach(t => {
+          if (t.required === 'yes') {
+            requiredName.push(t.name)
+          }
+        })
+        requestData.value.forEach(v => {
+          requiredName.forEach(key => {
+            let val = v.entityData[key]
+            if (Array.isArray(val)) {
+              if (val.length === 0) {
+                result = false
+              }
+            } else {
+              if (val === '') {
+                result = false
+              }
+            }
+          })
+        })
+      })
+      return result
+    },
+    // 任务审批保存
+    async saveTaskData () {
+      const taskData = this.historyData.find(d => d.editable === true)
+      const result = this.paramsCheck(taskData)
+      if (result) {
+        const { statusCode } = await saveTaskData(taskData.taskId, taskData)
+        if (statusCode === 'OK') {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
+      } else {
+        this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
+    },
+    // 任务审批提交
+    async commitTaskData () {
+      const taskData = this.historyData.find(d => d.editable === true)
+      const { statusCode } = await commitTaskData(taskData.taskId, taskData)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed&actionName=1' })
+      }
+    },
+    paramsCheck (taskData) {
+      let result = true
+      taskData.formData.forEach(requestData => {
         let requiredName = []
         requestData.title.forEach(t => {
           if (t.required === 'yes') {
@@ -356,8 +647,8 @@ export default {
     align-items: center;
     margin-bottom: 10px;
     span {
-      font-size: 14px;
-      margin-left: 15px;
+      font-size: 16px;
+      margin-left: 20px;
     }
   }
   .w-header {
@@ -393,14 +684,6 @@ export default {
       border-right: 2px dashed #d7dadc;
       padding-right: 20px;
     }
-    .count {
-      font-weight: bold;
-      font-size: 14px;
-      margin-left: 10px;
-    }
-    .program {
-      padding: 20px;
-    }
   }
 }
 </style>
@@ -416,20 +699,6 @@ export default {
     height: 3px;
     background: #8189a5;
   }
-  .ivu-radio {
-    display: none;
-  }
-  .ivu-radio-wrapper {
-    border-radius: 20px;
-    font-size: 12px;
-    color: #000;
-    background: #fff;
-  }
-  .ivu-radio-wrapper-checked.ivu-radio-border {
-    border-color: #2d8cf0;
-    background: #2d8cf0;
-    color: #fff;
-  }
   .ivu-form-item {
     margin-bottom: 25px;
   }
@@ -438,6 +707,11 @@ export default {
   }
   .required {
     color: red;
+  }
+  .ivu-collapse-header {
+    height: auto !important;
+    display: flex;
+    align-items: center;
   }
 }
 </style>

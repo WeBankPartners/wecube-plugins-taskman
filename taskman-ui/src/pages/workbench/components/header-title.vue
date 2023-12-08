@@ -5,7 +5,7 @@
       <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
     </div>
-    <div class="content">
+    <div v-show="expand" class="content">
       <slot></slot>
     </div>
   </div>

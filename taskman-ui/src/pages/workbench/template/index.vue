@@ -54,8 +54,8 @@
                 </div>
                 <Table
                   @on-row-click="
-                    $event => {
-                      handleChooseTemplate($event, i.manageRole)
+                    row => {
+                      handleChooseTemplate(row, row.role)
                     }
                   "
                   size="small"

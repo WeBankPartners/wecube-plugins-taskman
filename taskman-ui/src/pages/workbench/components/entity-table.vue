@@ -393,8 +393,27 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .workbench-entity-table {
   width: 100%;
+  .ivu-radio {
+    display: none;
+  }
+  .ivu-radio-wrapper {
+    border-radius: 20px;
+    font-size: 12px;
+    color: #000;
+    background: #fff;
+  }
+  .ivu-radio-wrapper-checked.ivu-radio-border {
+    border-color: #2d8cf0;
+    background: #2d8cf0;
+    color: #fff;
+  }
+  .count {
+    font-weight: bold;
+    font-size: 14px;
+    margin-left: 10px;
+  }
 }
 </style>

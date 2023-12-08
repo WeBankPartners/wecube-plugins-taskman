@@ -9,13 +9,14 @@
       class="workbench-edit-drawer"
     >
       <div class="content" :style="{ maxHeight: maxHeight + 'px' }">
-        <Form :model="value" label-position="left" :label-width="120">
+        <Form :model="value" ref="form" label-position="left" :label-width="120">
           <template v-for="(i, index) in options">
             <FormItem
               :label="i.title"
               :prop="i.name"
               :key="index"
               :required="i.required === 'yes'"
+              :rules="i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []"
               style="margin-bottom:20px;"
             >
               <!--输入框-->
@@ -121,8 +122,12 @@ export default {
   },
   methods: {
     handleSubmit () {
-      this.$emit('update:visible', false)
-      this.$emit('submit')
+      this.$refs.form.validate(valid => {
+        if (valid) {
+          this.$emit('update:visible', false)
+          this.$emit('submit')
+        }
+      })
     },
     handleCancel () {
       this.$emit('update:visible', false)

@@ -15,7 +15,7 @@
       <HotLink></HotLink>
     </div>
     <div class="data-card">
-      <DataCard ref="dataCard" :parent-action="actionName" @fetchData="handleOverviewChange"></DataCard>
+      <DataCard ref="dataCard" :tabName="tabName" :actionName="actionName" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
       <!-- <Tabs v-model="actionName">
@@ -337,7 +337,9 @@ export default {
                     查看
                   </Button>
                 )}
-                {this.username === params.row.handler && ['Pending', 'InProgress'].includes(params.row.status) && (
+                {this.username === params.row.handler &&
+                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  this.tabName === 'pending' && (
                   <Button
                     type="warning"
                     size="small"
@@ -345,10 +347,12 @@ export default {
                       this.handleEdit(params.row)
                     }}
                   >
-                    处理
+                      处理
                   </Button>
                 )}
-                {!params.row.handler && ['Pending', 'InProgress'].includes(params.row.status) && (
+                {!params.row.handler &&
+                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  this.tabName === 'pending' && (
                   <Button
                     type="info"
                     size="small"
@@ -356,12 +360,13 @@ export default {
                       this.handleTransfer(params.row, 'mark')
                     }}
                   >
-                    认领
+                      认领
                   </Button>
                 )}
                 {params.row.handler &&
                   this.username !== params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) && (
+                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  this.tabName === 'pending' && (
                   <Button
                     type="success"
                     size="small"
@@ -372,7 +377,7 @@ export default {
                       转给我
                   </Button>
                 )}
-                {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && (
+                {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
                   <Button
                     type="primary"
                     size="small"
@@ -478,9 +483,9 @@ export default {
     }
   },
   mounted () {
-    // this.tabName = this.$route.query.tabName
-    // this.actionName = this.$route.query.actionName
-    // this.getList()
+    // this.tabName = this.$route.query.tabName || 'pending'
+    // this.actionName = this.$route.query.actionName || '1'
+    this.getList()
   },
   methods: {
     // 点击视图卡片触发查询
@@ -574,7 +579,11 @@ export default {
       })
     },
     // 表格操作-处理(任务处理和请求定版)
-    handleEdit (row) {
+    async handleEdit (row) {
+      // 处理任务需要更新任务状态
+      if (row.status === 'InProgress') {
+        await changeTaskStatus('start', row.taskId)
+      }
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -583,7 +592,7 @@ export default {
           requestId: row.id,
           requestTemplate: row.templateId,
           isAdd: 'N',
-          isCheck: 'Y',
+          isCheck: 'N',
           isHandle: 'Y',
           enforceDisable: 'N',
           jumpFrom: 'group_handle'

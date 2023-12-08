@@ -302,7 +302,7 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 
 func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var operatorObjTypeMap = make(map[string]string)
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
+	newSQL := fmt.Sprintf("select * from (select r.id,r.name,r.cache,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
 	// 排序处理
@@ -358,11 +358,17 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 			if platformDataObj.OperatorObjType == "" {
 				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
 			}
-			if platformDataObj.OperatorObj == "" {
+			if platformDataObj.OperatorObj == "" && platformDataObj.Cache != "" {
 				result, _ := GetEntityData(platformDataObj.Id, req.UserToken)
 				if len(result.Data) > 0 {
-					platformDataObj.OperatorObj = result.Data[0].DisplayName
-					actions = append(actions, &execAction{Sql: "update request set operator_obj=? where id=?", Param: []interface{}{platformDataObj.OperatorObj, platformDataObj.Id}})
+					var cacheObj models.RequestPreDataDto
+					err = json.Unmarshal([]byte(platformDataObj.Cache), &cacheObj)
+					for _, entity := range result.Data {
+						if entity.Id == cacheObj.RootEntityId {
+							platformDataObj.OperatorObj = entity.DisplayName
+							actions = append(actions, &execAction{Sql: "update request set operator_obj=? where id=?", Param: []interface{}{platformDataObj.OperatorObj, platformDataObj.Id}})
+						}
+					}
 				}
 			}
 			platformDataObj.TaskId, platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
@@ -735,7 +741,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, param)
-	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, requestId}})
+	actions = append(actions, &execAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,operator_obj=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.EntityName, requestId}})
 	return transaction(actions)
 }
 

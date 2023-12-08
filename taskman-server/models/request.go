@@ -40,6 +40,7 @@ type PlatformDataObj struct {
 	EffectiveDays   int    `json:"effectiveDays" xorm:"-"`                   // 有效天数
 	ParentId        string `json:"parentId" xorm:"parent_id"`                // 模板父类id
 	TaskId          string `json:"taskId" xorm:"taskId"`                     // 当前正在进行中的taskId
+	Cache           string `json:"cache" xorm:"cache"`                       // request cache
 }
 
 type RequestQueryParam struct {
@@ -251,6 +252,7 @@ func (s RequestPreDataSort) Less(i, j int) bool {
 
 type RequestPreDataDto struct {
 	RootEntityId string                    `json:"rootEntityId"`
+	EntityName   string                    `json:"entityName"` // 操作单元
 	Data         []*RequestPreDataTableObj `json:"data"`
 }
 

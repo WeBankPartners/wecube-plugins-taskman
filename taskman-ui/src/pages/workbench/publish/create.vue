@@ -155,23 +155,13 @@
                     </div>
                     <div slot="content">
                       <FormItem label="选择操作单元" required>
-                        <Select
-                          v-model="form.rootEntityId"
-                          :disabled="formDisable"
-                          clearable
-                          filterable
-                          style="width:300px;"
-                        >
+                        <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
                           <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                             item.key_name
                           }}</Option>
                         </Select>
                       </FormItem>
-                      <EntityTable
-                        :data="data.formData"
-                        :requestId="requestId"
-                        :formDisable="formDisable"
-                      ></EntityTable>
+                      <EntityTable :data="data.formData" :requestId="requestId" :formDisable="true"></EntityTable>
                     </div>
                   </template>
                   <!--请求定版-->
@@ -204,7 +194,7 @@
                         :isHandle="isHandle"
                         :requestTemplate="requestTemplate"
                         :requestId="requestId"
-                        :formDisable="formDisable"
+                        :formDisable="detailInfo.status !== 'Pending'"
                       ></DataBind>
                     </div>
                   </template>
@@ -245,7 +235,7 @@
                       <EntityTable
                         :data="data.formData"
                         :requestId="requestId"
-                        :formDisable="formDisable"
+                        :formDisable="!data.editable || enforceDisable"
                       ></EntityTable>
                       <div>
                         <Form :label-width="80" style="margin: 16px 0">

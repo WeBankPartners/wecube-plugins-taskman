@@ -3,7 +3,13 @@
     <div class="form">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
-          <FormItem v-if="!i.hidden" :label="i.label || ''" :prop="i.key" :label-width="i.labelWidth || 0" :key="index">
+          <FormItem
+            v-if="!i.hidden"
+            :label="i.label ? `${i.label}：` : ''"
+            :prop="i.key"
+            :label-width="i.labelWidth || 0"
+            :key="index"
+          >
             <!--输入框-->
             <Input
               v-if="i.component === 'input'"
@@ -55,9 +61,9 @@
             <!--自定义时间选择器-->
             <div v-else-if="i.component === 'custom-time'" class="custom-time">
               <RadioGroup
-                v-if="dateType !== 4"
-                v-model="dateType"
-                @on-change="handleDateTypeChange(i.key)"
+                v-if="i.dateType !== 4"
+                v-model="i.dateType"
+                @on-change="handleDateTypeChange(i.key, i.dateType)"
                 style="margin-top:-2px;"
               >
                 <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
@@ -73,7 +79,7 @@
                   type="daterange"
                   placement="bottom-end"
                   format="yyyy-MM-dd"
-                  :placeholder="$t('created_time')"
+                  :placeholder="i.label"
                   style="width: 200px"
                 />
                 <Icon
@@ -81,7 +87,7 @@
                   style="cursor:pointer;"
                   type="md-close-circle"
                   @click="
-                    dateType = ''
+                    i.dateType = ''
                     formData[i.key] = []
                   "
                 />
@@ -150,20 +156,20 @@ export default {
       this.$emit('input', resetObj)
     },
     // 自定义时间控件转化时间格式值
-    handleDateTypeChange (key) {
+    handleDateTypeChange (key, dateType) {
       this.formData[key] = []
       const cur = dayjs().format('YYYY-MM-DD')
-      if (this.dateType === 1) {
+      if (dateType === 1) {
         const pre = dayjs()
           .subtract(1, 'month')
           .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
-      } else if (this.dateType === 2) {
+      } else if (dateType === 2) {
         const pre = dayjs()
           .subtract(6, 'month')
           .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
-      } else if (this.dateType === 3) {
+      } else if (dateType === 3) {
         const pre = dayjs()
           .subtract(1, 'year')
           .format('YYYY-MM-DD')

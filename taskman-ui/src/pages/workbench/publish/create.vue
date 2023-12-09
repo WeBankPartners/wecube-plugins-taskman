@@ -194,7 +194,7 @@
                         :isHandle="isHandle"
                         :requestTemplate="requestTemplate"
                         :requestId="requestId"
-                        :formDisable="detailInfo.status !== 'Pending'"
+                        :formDisable="formDisable || detailInfo.status !== 'Pending'"
                       ></DataBind>
                     </div>
                   </template>

@@ -242,6 +242,7 @@ export default {
         },
         {
           title: '使用编排',
+          sortable: 'custom',
           minWidth: 150,
           key: 'procDefName'
         },
@@ -508,6 +509,7 @@ export default {
       } else if (val === 'draft') {
         this.form.type = 0
         this.form.rollback = 0
+        this.searchOptions[0].initValue = 0
         this.searchOptions[0].hidden = true
       }
 

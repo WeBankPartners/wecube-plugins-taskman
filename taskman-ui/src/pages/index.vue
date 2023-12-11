@@ -78,5 +78,8 @@ export default {
     transform: translate(-50%, -50%);
     pointer-events: none;
   }
+  .ivu-table-wrapper {
+    z-index: 999;
+  }
 }
 </style>

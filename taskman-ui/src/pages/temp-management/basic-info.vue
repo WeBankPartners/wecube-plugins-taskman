@@ -36,12 +36,13 @@
           ></InputNumber>
           <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
+        <!--编辑模板，modifyType返回false，禁用模板使用场景-->
         <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Select
             v-model="formConfig.values[item.value]"
             clearable
             filterable
-            :disabled="$parent.isCheck === 'Y'"
+            :disabled="$parent.isCheck === 'Y' || (!formConfig.values.modifyType === false && item.value === 'type')"
             @on-open-change="execut(item.onOpenChange)"
             style="width: 90%"
             :multiple="item.multiple"

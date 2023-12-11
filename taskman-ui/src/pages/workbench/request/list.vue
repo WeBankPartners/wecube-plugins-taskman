@@ -1,11 +1,11 @@
 <template>
   <div class="workbench-request-history">
     <Tabs :value="activeTab" @on-click="handleChangeTab">
-      <TabPane label="已发布" name="publish"></TabPane>
+      <TabPane label="已发布" name="commit"></TabPane>
       <TabPane label="草稿箱" name="draft"></TabPane>
     </Tabs>
-    <BaseSearch :options="searchOptions" v-model="searchForm" @search="handleQuery"></BaseSearch>
-    <Table size="small" :columns="tableColumns" :data="tableData"></Table>
+    <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+    <Table size="small" :columns="tableColumns" :data="tableData" :loading="loading"></Table>
     <Page
       style="float:right;margin-top:10px;"
       :total="pagination.total"
@@ -21,142 +21,222 @@
 
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
+import { getPublishList } from '@/api/server'
+import { deepClone } from '@/pages/util/index'
 export default {
   components: {
     BaseSearch
   },
   data () {
     return {
-      activeTab: 'publish',
-      searchForm: {
-        name: '',
-        object: '',
-        package: '',
+      activeTab: 'commit',
+      form: {
+        name: '', // ID或名称模糊搜索
         id: '',
-        tag: [],
-        status: [],
-        createTime: []
+        templateId: [], // 模板ID
+        status: [], // 状态
+        operatorObjType: [], // 操作对象类型
+        procDefName: [], // 使用编排
+        createdBy: [], // 创建人
+        handler: [], // 当前处理人
+        createdTime: [],
+        updatedTime: [],
+        expectTime: []
       },
+      tableData: [],
+      loading: false,
       pagination: {
-        pageSize: 10,
+        total: 0,
         currentPage: 1,
-        total: 0
+        pageSize: 10
       },
       searchOptions: [
         {
           key: 'name',
-          placeholder: '请求名称',
-          component: 'input'
-        },
-        {
-          key: 'object',
-          placeholder: '操作对象',
-          component: 'select',
-          list: [
-            { label: '已完成', value: 1 },
-            { label: '未完成', value: 2 },
-            { label: '进行中', value: 3 }
-          ]
-        },
-        {
-          key: 'package',
-          placeholder: '部署包',
+          placeholder: '名称',
           component: 'input'
         },
         {
           key: 'id',
-          placeholder: '请求ID',
+          placeholder: 'id',
           component: 'input'
         },
         {
-          key: 'tag',
-          placeholder: '当前节点',
-          component: 'select',
+          key: 'operatorObjType',
+          placeholder: '操作对象类型',
           multiple: true,
-          list: [
-            { label: '已完成', value: 1 },
-            { label: '未完成', value: 2 },
-            { label: '进行中', value: 3 }
-          ]
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'templateId',
+          placeholder: '模板',
+          multiple: true,
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'procDefName',
+          placeholder: '使用编排',
+          multiple: true,
+          component: 'select',
+          list: []
         },
         {
           key: 'status',
-          placeholder: '请求状态',
+          placeholder: '状态',
           component: 'select',
           multiple: true,
           list: [
-            { label: '已完成', value: 1 },
-            { label: '未完成', value: 2 },
-            { label: '进行中', value: 3 }
+            { label: this.$t('status_pending'), value: 'Pending' },
+            { label: this.$t('status_inProgress'), value: 'InProgress' },
+            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
+            { label: this.$t('status_termination'), value: 'Termination' },
+            { label: this.$t('status_complete'), value: 'Completed' },
+            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
+            { label: this.$t('status_faulted'), value: 'Faulted' },
+            { label: this.$t('status_draft'), value: 'Draft' }
           ]
         },
         {
-          key: 'createTime',
+          key: 'createdBy',
+          placeholder: '创建人',
+          component: 'select',
+          multiple: true,
+          list: []
+        },
+        {
+          key: 'handler',
+          placeholder: '处理人',
+          component: 'select',
+          multiple: true,
+          list: []
+        },
+        {
+          key: 'createdTime',
           label: '创建时间',
-          labelWidth: 70,
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
+        },
+        {
+          key: 'updatedTime',
+          label: '更新时间',
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
+        },
+        {
+          key: 'expectTime',
+          label: '期望时间',
+          dateType: 4,
+          labelWidth: 85,
           component: 'custom-time'
         }
-      ],
-      tableData: [
-        { name: '1111111' },
-        { name: '1111111' },
-        { name: '1111111' },
-        { name: '1111111' },
-        { name: '1111111' },
-        { name: '1111111' }
       ],
       tableColumns: [
         {
           title: '请求名称',
-          key: 'name'
+          key: 'name',
+          minWidth: 200
         },
         {
           title: '请求ID',
-          key: 'id'
+          key: 'id',
+          minWidth: 100
         },
         {
           title: '请求状态',
-          key: 'status'
-        },
-        {
-          title: '进度',
-          key: 'progress'
+          sortable: 'custom',
+          key: 'status',
+          minWidth: 120,
+          render: (h, params) => {
+            const list = [
+              { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+              { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+              { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
+              { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
+              { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
+              { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
+              { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
+              { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
+            ]
+            const item = list.find(i => i.value === params.row.status)
+            return item && <Tag color={item.color}>{item.label}</Tag>
+          }
         },
         {
           title: '当前节点',
-          key: 'tag'
+          minWidth: 120,
+          key: 'curNode',
+          render: (h, params) => {
+            const map = {
+              sendRequest: '提起请求',
+              requestPending: '请求定版',
+              requestComplete: '请求完成'
+            }
+            return <span>{map[params.row.curNode] || params.row.curNode}</span>
+          }
         },
         {
-          title: '发布操作对象',
-          key: 'object'
+          title: '进展',
+          width: 120,
+          key: 'progress',
+          render: (h, params) => {
+            return (
+              <Progress percent={params.row.progress}>
+                <span>{params.row.progress + '%'}</span>
+              </Progress>
+            )
+          }
+        },
+        {
+          title: '操作对象',
+          resizable: true,
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'operatorObj'
         },
         {
           title: '部署实例',
-          key: 'example'
+          key: 'example',
+          minWidth: 100
         },
         {
           title: '部署包',
-          key: 'package'
+          key: 'package',
+          minWidth: 100
         },
         {
           title: '创建人',
-          key: 'create'
+          sortable: 'custom',
+          minWidth: 160,
+          key: 'createdBy',
+          render: (h, params) => {
+            return (
+              <div style="display:flex;flex-direction:column">
+                <span>{params.row.createdBy}</span>
+                <span>{params.row.role}</span>
+              </div>
+            )
+          }
         },
         {
           title: '创建时间',
-          key: 'createTime'
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'createdTime'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 160,
+          width: 120,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (
               <div>
                 <Button
-                  type="info"
                   size="small"
                   onClick={() => {
                     this.hanldeView(params.row)
@@ -165,15 +245,17 @@ export default {
                 >
                   查看
                 </Button>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => {
-                    this.handleRepub(params.row)
-                  }}
-                >
-                  重新发布
-                </Button>
+                {
+                  // <Button
+                  //   type="primary"
+                  //   size="small"
+                  //   onClick={() => {
+                  //     this.handleRepub(params.row)
+                  //   }}
+                  // >
+                  //   重新发布
+                  // </Button>
+                }
               </div>
             )
           }
@@ -181,8 +263,39 @@ export default {
       ]
     }
   },
+  mounted () {
+    this.getList()
+  },
   methods: {
-    getList () {},
+    async getList () {
+      this.loading = true
+      const form = deepClone(this.form)
+      const dateTransferArr = ['createdTime', 'updatedTime', 'expectTime']
+      dateTransferArr.forEach(item => {
+        if (form[item] && form[item].length > 0) {
+          form[item + 'Start'] = form[item][0] + ' 00:00:00'
+          form[item + 'End'] = form[item][1] + ' 23:59:59'
+          delete form[item]
+        } else {
+          form[item + 'Start'] = ''
+          form[item + 'End'] = ''
+          delete form[item]
+        }
+      })
+      const params = {
+        tab: this.activeTab,
+        action: 2,
+        ...this.form,
+        startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
+        pageSize: this.pagination.pageSize
+      }
+      const { statusCode, data } = await getPublishList(params)
+      if (statusCode === 'OK') {
+        this.tableData = data.contents || []
+        this.pagination.total = data.pageInfo.totalRows
+      }
+      this.loading = false
+    },
     handleQuery () {
       this.pagination.currentPage = 1
       this.getList()
@@ -198,9 +311,24 @@ export default {
     },
     handleChangeTab (val) {
       this.activeTab = val
+      this.handleQuery()
     },
-    // 查看
-    hanldeView (row) {},
+    // 表格操作-查看
+    hanldeView (row) {
+      const url = `/taskman/workbench/createRequest`
+      this.$router.push({
+        path: url,
+        query: {
+          requestId: row.id,
+          requestTemplate: row.templateId,
+          isAdd: 'N',
+          isCheck: 'Y',
+          isHandle: 'N',
+          enforceDisable: 'Y',
+          jumpFrom: ''
+        }
+      })
+    },
     // 重新发布
     handleRepub (row) {}
   }

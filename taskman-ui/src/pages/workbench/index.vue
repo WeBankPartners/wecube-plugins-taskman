@@ -61,8 +61,17 @@ import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
-import { getPlatformList, getTemplateList, tansferToMe, changeTaskStatus, deleteRequest, reRequest } from '@/api/server'
+import {
+  getPlatformList,
+  getTemplateList,
+  tansferToMe,
+  changeTaskStatus,
+  deleteRequest,
+  reRequest,
+  getPlatformFilter
+} from '@/api/server'
 import dayjs from 'dayjs'
+import { deepClone } from '@/pages/util/index'
 export default {
   components: {
     HotLink,
@@ -82,9 +91,15 @@ export default {
         id: '',
         templateId: [], // 模板ID
         status: [], // 状态
-        operatorObj: '', // 操作对象
-        createdBy: [] // 创建人
+        operatorObjType: [], // 操作对象类型
+        procDefName: [], // 使用编排
+        createdBy: [], // 创建人
+        handler: [], // 当前处理人
+        createdTime: [],
+        updatedTime: [],
+        expectTime: []
       },
+      filterOptions: [],
       searchOptions: [
         {
           key: 'type',
@@ -108,16 +123,25 @@ export default {
           component: 'input'
         },
         {
-          key: 'operatorObj',
-          placeholder: '操作对象',
-          component: 'input'
+          key: 'operatorObjType',
+          placeholder: '操作对象类型',
+          multiple: true,
+          component: 'select',
+          list: []
         },
         {
           key: 'templateId',
           placeholder: '模板',
           multiple: true,
-          component: 'remote-select',
-          remote: this.getTemplateList
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'procDefName',
+          placeholder: '使用编排',
+          multiple: true,
+          component: 'select',
+          list: []
         },
         {
           key: 'status',
@@ -140,16 +164,35 @@ export default {
           placeholder: '创建人',
           component: 'select',
           multiple: true,
-          list: [
-            { label: this.$t('status_pending'), value: 'Pending' },
-            { label: this.$t('status_inProgress'), value: 'InProgress' },
-            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
-            { label: this.$t('status_termination'), value: 'Termination' },
-            { label: this.$t('status_complete'), value: 'Completed' },
-            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
-            { label: this.$t('status_faulted'), value: 'Faulted' },
-            { label: this.$t('status_draft'), value: 'Draft' }
-          ]
+          list: []
+        },
+        {
+          key: 'handler',
+          placeholder: '处理人',
+          component: 'select',
+          multiple: true,
+          list: []
+        },
+        {
+          key: 'createdTime',
+          label: '创建时间',
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
+        },
+        {
+          key: 'updatedTime',
+          label: '更新时间',
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
+        },
+        {
+          key: 'expectTime',
+          label: '期望时间',
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
         }
       ],
       tableColumns: [
@@ -459,6 +502,7 @@ export default {
               this.form.rollback = 0
               this.searchOptions[0].hidden = true
             }
+
             if (val !== 'collect') {
               this.handleQuery()
             } else {
@@ -486,6 +530,7 @@ export default {
     // this.tabName = this.$route.query.tabName || 'pending'
     // this.actionName = this.$route.query.actionName || '1'
     this.getList()
+    this.getFilterOptions()
   },
   methods: {
     // 点击视图卡片触发查询
@@ -503,16 +548,29 @@ export default {
     },
     async getList (sort = { asc: false, field: 'updatedTime' }) {
       this.loading = true
-      if (this.form.type === '') {
-        this.form.type = 0
+      const form = deepClone(this.form)
+      if (form.type === '') {
+        form.type = 0
       }
-      if (this.form.rollback === '') {
-        this.form.rollback = 0
+      if (form.rollback === '') {
+        form.rollback = 0
       }
+      const dateTransferArr = ['createdTime', 'updatedTime', 'expectTime']
+      dateTransferArr.forEach(item => {
+        if (form[item] && form[item].length > 0) {
+          form[item + 'Start'] = form[item][0] + ' 00:00:00'
+          form[item + 'End'] = form[item][1] + ' 23:59:59'
+          delete form[item]
+        } else {
+          form[item + 'Start'] = ''
+          form[item + 'End'] = ''
+          delete form[item]
+        }
+      })
       const params = {
         tab: this.tabName,
         action: Number(this.actionName),
-        ...this.form,
+        ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
       }
@@ -557,10 +615,61 @@ export default {
         })
       }
     },
-    // 获取下拉列表的值
-    // async getFilterOptions() {
-    //   await getPlatformFilter({ startTime: '' })
-    // },
+    // 获取搜索条件的下拉值
+    async getFilterOptions () {
+      const { statusCode, data } = await getPlatformFilter({ startTime: '' })
+      if (statusCode === 'OK') {
+        this.filterOptions = data
+        this.searchOptions.forEach(item => {
+          if (item.key === 'operatorObjType') {
+            item.list =
+              data.operatorObjTypeList &&
+              data.operatorObjTypeList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'templateId') {
+            item.list =
+              data.templateList &&
+              data.templateList.map(item => {
+                return {
+                  label: item.templateName,
+                  value: item.templateId
+                }
+              })
+          } else if (item.key === 'procDefName') {
+            item.list =
+              data.procDefNameList &&
+              data.procDefNameList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'handler') {
+            item.list =
+              data.handlerList &&
+              data.handlerList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'createdBy') {
+            item.list =
+              data.createdByList &&
+              data.createdByList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          }
+        })
+      }
+    },
     // 表格操作-查看
     hanldeView (row) {
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'

@@ -33,6 +33,7 @@ type PlatformDataObj struct {
 	ReportTime      string `json:"reportTime" xorm:"report_time"`            // 请求提交时间
 	ExpectTime      string `json:"expectTime" xorm:"expect_time"`            // 期望完成时间
 	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`          // 期望完成时间
+	ApprovalTime    string `json:"ApprovalTime" xorm:"-"`                    // 处理时间
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 收藏标记,1表示已收藏
 	Role            string `json:"role" xorm:"role"`                         // 创建请求Role
 	HandleRole      string `json:"handleRole" xorm:"handle_role"`            // 处理role
@@ -347,6 +348,7 @@ type RequestForm struct {
 	CreatedTime       string `json:"createdTime"`       // 创建时间
 	ExpectTime        string `json:"expectTime" `       // 期望时间
 	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
+	ProcInstanceId    string `json:"procInstanceId"`    // 编排实例ID
 }
 
 type FilterItem struct {

@@ -158,6 +158,11 @@ func hasProcessedSQL(templateType int, user string) (sql string, queryParam []in
 	return
 }
 
+func hasProcessedRequest(templateType int, user string) (sql string, queryParam []interface{}) {
+
+	return
+}
+
 // GetSubmitCount  统计用户提交
 func GetSubmitCount(user string) (resultArr []string) {
 	var queryParam []interface{}
@@ -2474,6 +2479,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	form.Role = request.Role
 	form.Description = request.Description
 	form.Status = request.Status
+	form.ProcInstanceId = request.ProcInstanceId
 	if template.Status != "confirm" {
 		version = "beta"
 	} else {

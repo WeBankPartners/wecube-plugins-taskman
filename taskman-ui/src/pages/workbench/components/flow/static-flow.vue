@@ -1,5 +1,5 @@
 <template>
-  <div style="min-width: 500px;">
+  <div style="width: 400px;">
     <div style="margin-bottom: 8px;">
       <span class="custom-title">{{ $t('workflow_name') }}</span>
       <span class="custom-display">{{ flowData.procDefName }}</span>
@@ -16,20 +16,36 @@ import * as d3 from 'd3-selection'
 // eslint-disable-next-line no-unused-vars
 import * as d3Graphviz from 'd3-graphviz'
 export default {
+  props: {
+    requestTemplate: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       flowGraph: {},
       flowData: {}
     }
   },
+  watch: {
+    requestTemplate: {
+      handler (val) {
+        if (val) {
+          this.orchestrationSelectHandler()
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
-    orchestrationSelectHandler (templateId) {
+    orchestrationSelectHandler () {
       this.currentFlowNodeId = ''
       this.currentModelNodeRefs = []
-      this.getFlowOutlineData(templateId)
+      this.getFlowOutlineData()
     },
-    async getFlowOutlineData (templateId) {
-      let { statusCode, data } = await getFlowByTemplateId(templateId)
+    async getFlowOutlineData () {
+      let { statusCode, data } = await getFlowByTemplateId(this.requestTemplate)
       if (statusCode === 'OK') {
         this.flowData = data
         this.initFlowGraph()
@@ -137,13 +153,13 @@ export default {
   font-size: 14px;
   color: #515a6e;
   line-height: 1;
-  padding: 10px 12px 10px 0;
+  padding: 0 12px 10px 0;
   box-sizing: border-box;
 }
 
 .custom-display {
   display: inline-block;
-  width: 300px;
+  width: 400px;
   height: 32px;
   line-height: 1.5;
   padding: 4px 7px;

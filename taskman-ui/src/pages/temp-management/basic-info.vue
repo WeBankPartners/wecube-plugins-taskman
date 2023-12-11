@@ -42,7 +42,7 @@
             v-model="formConfig.values[item.value]"
             clearable
             filterable
-            :disabled="$parent.isCheck === 'Y' || (!formConfig.values.modifyType === false && item.value === 'type')"
+            :disabled="$parent.isCheck === 'Y' || (formConfig.values.modifyType === false && item.value === 'type')"
             @on-open-change="execut(item.onOpenChange)"
             style="width: 90%"
             :multiple="item.multiple"

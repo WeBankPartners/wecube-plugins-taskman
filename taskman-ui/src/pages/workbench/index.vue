@@ -15,7 +15,7 @@
       <HotLink></HotLink>
     </div>
     <div class="data-card">
-      <DataCard ref="dataCard" :tabName="tabName" :actionName="actionName" @fetchData="handleOverviewChange"></DataCard>
+      <DataCard ref="dataCard" :initTab="initTab" :initAction="initAction" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
       <!-- <Tabs v-model="actionName">
@@ -84,6 +84,8 @@ export default {
     return {
       tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
+      initTab: '',
+      initAction: '',
       form: {
         type: 0, // 0所有,1请求定版,2任务处理
         rollback: 0, // 0所有,1已退回,2其他
@@ -278,6 +280,7 @@ export default {
           key: 'curNode',
           render: (h, params) => {
             const map = {
+              waitCommit: '等待提交',
               sendRequest: '提起请求',
               requestPending: '请求定版',
               requestComplete: '请求完成'
@@ -469,67 +472,9 @@ export default {
       username: window.localStorage.getItem('username')
     }
   },
-  watch: {
-    // 切换tab视图
-    tabName: {
-      handler (val) {
-        if (val) {
-          this.$nextTick(() => {
-            this.searchOptions[0].hidden = false
-            // 待处理、进行中
-            if (['pending', 'hasProcessed'].includes(val)) {
-              this.form.type = 2
-              this.form.rollback = 0
-              this.searchOptions[0].key = 'type'
-              this.searchOptions[0].initValue = 2
-              this.searchOptions[0].list = [
-                { label: '任务处理', value: 2 },
-                { label: '请求定版', value: 1 }
-              ]
-              // 我提交的
-            } else if (val === 'submit') {
-              this.form.rollback = 0
-              this.form.type = 0
-              this.searchOptions[0].key = 'rollback'
-              this.searchOptions[0].initValue = 0
-              this.searchOptions[0].list = [
-                { label: '所有', value: 0 },
-                { label: '被退回', value: 1 },
-                { label: '其他', value: 2 }
-              ]
-            } else if (val === 'draft') {
-              this.form.type = 0
-              this.form.rollback = 0
-              this.searchOptions[0].hidden = true
-            }
-
-            if (val !== 'collect') {
-              this.handleQuery()
-            } else {
-              this.$nextTick(() => {
-                this.$refs.collect.handleQuery()
-              })
-            }
-          })
-        }
-      },
-      immediate: true
-    },
-    // 切换行为action
-    actionName () {
-      if (this.tabName !== 'collect') {
-        this.handleQuery()
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-        })
-      }
-    }
-  },
   mounted () {
-    // this.tabName = this.$route.query.tabName || 'pending'
-    // this.actionName = this.$route.query.actionName || '1'
-    this.getList()
+    this.initTab = this.$route.query.tabName || 'pending'
+    this.initAction = this.$route.query.actionName || '1'
     this.getFilterOptions()
   },
   methods: {
@@ -537,6 +482,42 @@ export default {
     handleOverviewChange (val, action) {
       this.tabName = val
       this.actionName = action || '1'
+
+      this.searchOptions[0].hidden = false
+      // 待处理、进行中
+      if (['pending', 'hasProcessed'].includes(val)) {
+        this.form.type = 2
+        this.form.rollback = 0
+        this.searchOptions[0].key = 'type'
+        this.searchOptions[0].initValue = 2
+        this.searchOptions[0].list = [
+          { label: '任务处理', value: 2 },
+          { label: '请求定版', value: 1 }
+        ]
+        // 我提交的
+      } else if (val === 'submit') {
+        this.form.rollback = 0
+        this.form.type = 0
+        this.searchOptions[0].key = 'rollback'
+        this.searchOptions[0].initValue = 0
+        this.searchOptions[0].list = [
+          { label: '所有', value: 0 },
+          { label: '被退回', value: 1 },
+          { label: '其他', value: 2 }
+        ]
+      } else if (val === 'draft') {
+        this.form.type = 0
+        this.form.rollback = 0
+        this.searchOptions[0].hidden = true
+      }
+
+      if (val !== 'collect') {
+        this.handleQuery()
+      } else {
+        this.$nextTick(() => {
+          this.$refs.collect.handleQuery()
+        })
+      }
     },
     // 表格排序
     sortTable (col) {

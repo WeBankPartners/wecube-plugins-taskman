@@ -1,5 +1,5 @@
 <template>
-  <div style="min-width: 500px;">
+  <div style="width: 400px;">
     <div style="margin-bottom: 8px;">
       <span class="custom-title">{{ $t('workflow_name') }}</span>
       <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
@@ -53,9 +53,14 @@ import * as d3 from 'd3-selection'
 import * as d3Graphviz from 'd3-graphviz'
 import { addEvent, removeEvent } from './event.js'
 export default {
+  props: {
+    flowId: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
-      flowId: 561,
       currentModelNodeRefs: [],
       showNodeDetail: false,
       isTargetNodeDetail: false,
@@ -150,13 +155,21 @@ export default {
   watch: {
     nodeDetailFullscreen: function (tag) {
       tag ? (this.fullscreenModalContentStyle = {}) : (this.fullscreenModalContentStyle['max-height'] = '400px')
+    },
+    flowId: {
+      handler (val) {
+        if (val) {
+          this.orchestrationSelectHandler()
+        }
+      },
+      immediate: true
     }
   },
   destroyed () {
     clearInterval(this.timer)
   },
   methods: {
-    orchestrationSelectHandler (flowId) {
+    orchestrationSelectHandler () {
       this.stop()
       this.isEnqueryPage = true
       this.$nextTick(async () => {
@@ -410,13 +423,13 @@ export default {
   font-size: 14px;
   color: #515a6e;
   line-height: 1;
-  padding: 10px 12px 10px 0;
+  padding: 0 12px 10px 0;
   box-sizing: border-box;
 }
 
 .custom-display {
   display: inline-block;
-  width: 300px;
+  width: 400px;
   height: 32px;
   line-height: 1.5;
   padding: 4px 7px;

@@ -44,15 +44,19 @@ import { overviewData } from '@/api/server'
 import { debounce } from '@/pages/util'
 export default {
   props: {
-    parentAction: {
+    initTab: {
+      type: String,
+      default: ''
+    },
+    initAction: {
       type: String,
       default: ''
     }
   },
   data () {
     return {
-      active: 'pending',
-      action: '1', // 1发布2请求
+      active: '',
+      action: '',
       data: [
         {
           type: 'pending',
@@ -113,15 +117,28 @@ export default {
     }
   },
   watch: {
-    actionName (val) {
-      this.action = val
+    initAction: {
+      handler (val) {
+        if (val) {
+          this.action = val
+          if (this.action && this.active) {
+            this.$emit('fetchData', this.active, this.action)
+          }
+        }
+      },
+      immediate: true
+    },
+    initTab: {
+      handler (val) {
+        if (val) {
+          this.active = val
+          if (this.action && this.active) {
+            this.$emit('fetchData', this.active, this.action)
+          }
+        }
+      },
+      immediate: true
     }
-    // tabName (val) {
-    //   this.active = val
-    // }
-  },
-  mounted () {
-    this.getData()
   },
   methods: {
     async getData () {

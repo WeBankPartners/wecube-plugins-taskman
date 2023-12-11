@@ -1091,11 +1091,11 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
 	var operatorObjTypeMap = make(map[string]string)
 	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
-	var useGroupMap = make(map[string]*models.RequestTemplateGroupTable)
 	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
 	var roleList []string
-	result = []*models.UserRequestTemplateQueryObjNew{}
 	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
+	result = []*models.UserRequestTemplateQueryObjNew{}
+	useGroupMap, _ := getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
 	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
 	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+"))) order by `group`,tags,status,id", queryParam...).Find(&requestTemplateTable)
@@ -1154,7 +1154,6 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 			}
 		}
 		tmpTemplateTable = append(tmpTemplateTable, v)
-		useGroupMap[v.Group] = &models.RequestTemplateGroupTable{}
 	}
 	requestTemplateTable = tmpTemplateTable
 	// 查询当前用户所有收藏模板记录
@@ -1162,57 +1161,44 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	// 查询所有模板属主角色
 	ownerRoleMap := getMGmtRequestTemplateRoles()
 	var collectFlag int
-	var allGroupTable []*models.RequestTemplateGroupTable
-	err = x.SQL("select id,name,description,manage_role,created_time,updated_time from request_template_group").Find(&allGroupTable)
-	if err != nil {
-		return
-	}
-	for _, group := range allGroupTable {
-		if useGroupMap[group.Id] != nil {
-			// 展示的 group
-			if roleTemplateGroupMap[group.ManageRole] == nil {
-				roleTemplateGroupMap[group.ManageRole] = make(map[string][]*models.RequestTemplateTableObj)
-			}
-			roleTemplateGroupMap[group.ManageRole][group.Id] = make([]*models.RequestTemplateTableObj, 0)
-			useGroupMap[group.Id] = &models.RequestTemplateGroupTable{
-				Name:        group.Name,
-				CreatedTime: group.CreatedTime,
-				UpdatedTime: group.UpdatedTime,
-			}
-		}
-	}
 	// 组装数据
 	// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
 	operatorObjTypeMap = getAllCoreProcess(userToken)
-	if len(roleTemplateGroupMap) > 0 && len(requestTemplateTable) > 0 {
+	if len(requestTemplateTable) > 0 {
 		for _, template := range requestTemplateTable {
-			collectFlag = 0
-			if len(collectMap) > 0 && collectMap[template.ParentId] {
-				collectFlag = 1
+			var roleArr []string
+			err = x.SQL("SELECT role FROM request_template_role WHERE request_template = ?  AND role_type = 'USE' ", template.Id).Find(&roleArr)
+			if err != nil {
+				continue
 			}
-			for _, roleGroupMap := range roleTemplateGroupMap {
-				for groupId, templateArr := range roleGroupMap {
-					if template.Group == groupId {
-						if template.OperatorObjType == "" {
-							template.OperatorObjType = operatorObjTypeMap[template.ProcDefKey]
-						}
-						templateArr = append(templateArr, &models.RequestTemplateTableObj{
-							Id:              template.Id,
-							Name:            template.Name,
-							Version:         template.Version,
-							Tags:            template.Tags,
-							Status:          template.Status,
-							UpdatedBy:       template.UpdatedBy,
-							Handler:         template.Handler,
-							Role:            ownerRoleMap[template.Id],
-							UpdatedTime:     template.UpdatedTime,
-							CollectFlag:     collectFlag,
-							Type:            template.Type,
-							OperatorObjType: template.OperatorObjType,
-						})
-					}
-					roleGroupMap[groupId] = templateArr
+			for _, role := range roleArr {
+				collectFlag = 0
+				if len(collectMap) > 0 && collectMap[template.ParentId] {
+					collectFlag = 1
 				}
+				if _, ok := roleTemplateGroupMap[role]; !ok {
+					roleTemplateGroupMap[role] = make(map[string][]*models.RequestTemplateTableObj)
+				}
+				if _, ok := roleTemplateGroupMap[role][template.Group]; !ok {
+					roleTemplateGroupMap[role][template.Group] = make([]*models.RequestTemplateTableObj, 0)
+				}
+				if template.OperatorObjType == "" {
+					template.OperatorObjType = operatorObjTypeMap[template.ProcDefKey]
+				}
+				roleTemplateGroupMap[role][template.Group] = append(roleTemplateGroupMap[role][template.Group], &models.RequestTemplateTableObj{
+					Id:              template.Id,
+					Name:            template.Name,
+					Version:         template.Version,
+					Tags:            template.Tags,
+					Status:          template.Status,
+					UpdatedBy:       template.UpdatedBy,
+					Handler:         template.Handler,
+					Role:            ownerRoleMap[template.Id],
+					UpdatedTime:     template.UpdatedTime,
+					CollectFlag:     collectFlag,
+					Type:            template.Type,
+					OperatorObjType: template.OperatorObjType,
+				})
 			}
 		}
 	}
@@ -1564,6 +1550,19 @@ func EnableRequestTemplate(requestTemplateId, operator string) (err error) {
 		return
 	}
 	_, err = x.Exec("update request_template set status='confirm' where id=?", requestTemplateId)
+	return
+}
+
+func getAllRequestTemplateGroup() (groupMap map[string]*models.RequestTemplateGroupTable, err error) {
+	groupMap = make(map[string]*models.RequestTemplateGroupTable)
+	var allGroupTable []*models.RequestTemplateGroupTable
+	err = x.SQL("select id,name,description,manage_role,created_time,updated_time from request_template_group").Find(&allGroupTable)
+	if err != nil {
+		return
+	}
+	for _, group := range allGroupTable {
+		groupMap[group.Id] = group
+	}
 	return
 }
 

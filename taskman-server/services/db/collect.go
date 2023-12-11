@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"strings"
 	"time"
 )
 
@@ -30,7 +29,8 @@ func DeleteTemplateCollect(templateId, user string) error {
 // QueryTemplateCollect 查询模板收藏
 func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
-	var requestTemplateList []string
+	var collectTemplateList []*models.CollectTemplateTable
+	var roleTemplateMap = make(map[string]string)
 	var resultList []string
 	var templateType int
 	if param.Action == 1 {
@@ -41,15 +41,16 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		templateType = 0
 	}
 	// 查询该用户收藏的所有模板id
-	err = x.SQL("select request_template from collect_template where user = ? and type = ?", user, templateType).Find(&requestTemplateList)
+	err = x.SQL("select * from collect_template where user = ? and type = ?", user, templateType).Find(&collectTemplateList)
 	if err != nil {
 		return
 	}
 	// 遍历模板id,查询 当前最新的发布模板id
-	for _, requestTemplate := range requestTemplateList {
+	for _, collectTemplate := range collectTemplateList {
 		var tempList []string
-		x.SQL("select id from request_template where status='confirm' and parent_id = ? order by created_time desc limit 0,1", requestTemplate).Find(&tempList)
+		x.SQL("select id from request_template where status='confirm' and parent_id = ? order by created_time desc limit 0,1", collectTemplate.RequestTemplate).Find(&tempList)
 		resultList = append(resultList, tempList...)
+		roleTemplateMap[collectTemplate.RequestTemplate] = collectTemplate.Role
 	}
 	if len(resultList) == 0 {
 		return
@@ -87,19 +88,17 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 			} else {
 				collectObj.Version = template.Version
 			}
-			var roleList []string
 			requestTemplateRoleList, _ := getRequestTemplateRole(collectObj.Id)
 			if len(requestTemplateRoleList) == 0 {
 				continue
 			}
 			for _, requestTemplateRole := range requestTemplateRoleList {
-				if requestTemplateRole.RoleType == "USE" {
-					roleList = append(roleList, requestTemplateRole.Role)
-				} else if requestTemplateRole.RoleType == "MGMT" {
+				if requestTemplateRole.RoleType == "MGMT" {
 					collectObj.ManageRole = requestTemplateRole.Role
+					break
 				}
 			}
-			collectObj.UseRole = strings.Join(roleList, ",")
+			collectObj.UseRole = roleTemplateMap[collectObj.ParentId]
 			result, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: collectObj.Id}, userToken, "template")
 			if err != nil {
 				continue

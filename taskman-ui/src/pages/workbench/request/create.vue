@@ -2,7 +2,9 @@
   <div class="workbench-request-create">
     <Row class="back-header">
       <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
-      <span>{{ `${templateName}（${version}）` }}</span>
+      <span class="name"
+        >{{ `${templateName}` }}<Tag size="medium">{{ version }}</Tag></span
+      >
     </Row>
     <Row class="w-header">
       <Col span="18" class="steps">
@@ -24,13 +26,13 @@
         <Button v-if="isAdd" type="primary" @click="handlePublish">发布</Button>
       </Col>
     </Row>
-    <Row class="content">
-      <Col span="16" class="split-line">
+    <div style="display:flex;" class="content">
+      <div style="width:calc(100% - 440px)" class="split-line">
         <Form :model="form" label-position="right" :label-width="120">
           <template v-if="isAdd">
             <HeaderTitle title="发布信息">
               <FormItem label="请求名称" required>
-                <Input v-model="form.name" :maxlength="50" placeholder="请输入" style="width:400px;" />
+                <Input v-model="form.name" :maxlength="50" placeholder="请输入" style="width:100%;" />
               </FormItem>
               <FormItem label="发布描述">
                 <Input
@@ -39,7 +41,7 @@
                   :maxlength="100"
                   show-word-limit
                   placeholder="请输入"
-                  style="width:400px;"
+                  style="width:100%;"
                 />
               </FormItem>
               <FormItem :label="$t('expected_completion_time')">
@@ -76,29 +78,29 @@
           </template>
           <template v-else>
             <HeaderTitle title="请求信息">
-              <Row>
-                <Col :span="4">请求ID：</Col>
-                <Col :span="8">{{ detailInfo.id }}</Col>
-                <Col :span="4">请求类型：</Col>
-                <Col :span="8">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
+              <Row gutter="20">
+                <Col :span="3">请求ID：</Col>
+                <Col :span="9">{{ detailInfo.id }}</Col>
+                <Col :span="3">请求类型：</Col>
+                <Col :span="9">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
               </Row>
-              <Row style="margin-top:10px;">
-                <Col :span="4">创建时间：</Col>
-                <Col :span="8">{{ detailInfo.createdTime }}</Col>
-                <Col :span="4">期望完成时间：</Col>
-                <Col :span="8">{{ detailInfo.expectTime }}</Col>
+              <Row style="margin-top:10px;" gutter="20">
+                <Col :span="3">创建时间：</Col>
+                <Col :span="9">{{ detailInfo.createdTime }}</Col>
+                <Col :span="3">期望完成时间：</Col>
+                <Col :span="9">{{ detailInfo.expectTime }}</Col>
               </Row>
-              <Row style="margin-top:10px;">
-                <Col :span="4">请求进度：</Col>
-                <Col :span="8">
+              <Row style="margin-top:10px;" gutter="20">
+                <Col :span="3">请求进度：</Col>
+                <Col :span="9">
                   <Progress :percent="detailInfo.progress" style="width:150px;" />
                 </Col>
-                <Col :span="4">请求状态：</Col>
-                <Col :span="8">{{ getStatusName(detailInfo.status) }}</Col>
+                <Col :span="3">请求状态：</Col>
+                <Col :span="9">{{ getStatusName(detailInfo.status) }}</Col>
               </Row>
-              <Row style="margin-top:10px;">
-                <Col :span="4">当前节点：</Col>
-                <Col :span="8">{{
+              <Row style="margin-top:10px;" gutter="20">
+                <Col :span="3">当前节点：</Col>
+                <Col :span="9">{{
                   {
                     waitCommit: '等待提交',
                     sendRequest: '提起请求',
@@ -106,24 +108,26 @@
                     requestComplete: '请求完成'
                   }[detailInfo.curNode] || detailInfo.curNode
                 }}</Col>
-                <Col :span="4">当前处理人：</Col>
-                <Col :span="8">{{ detailInfo.handler }}</Col>
+                <Col :span="3">当前处理人：</Col>
+                <Col :span="9">{{ detailInfo.handler }}</Col>
               </Row>
-              <Row style="margin-top:10px;">
-                <Col :span="4">创建人：</Col>
-                <Col :span="8">{{ detailInfo.createdBy }}</Col>
-                <Col :span="4">创建人角色：</Col>
-                <Col :span="8">{{ detailInfo.role }}</Col>
+              <Row style="margin-top:10px;" gutter="20">
+                <Col :span="3">创建人：</Col>
+                <Col :span="9">{{ detailInfo.createdBy }}</Col>
+                <Col :span="3">创建人角色：</Col>
+                <Col :span="9">{{ detailInfo.role }}</Col>
               </Row>
-              <Row style="margin-top:10px;">
-                <Col :span="4">使用模板：</Col>
-                <Col :span="8">{{ `${detailInfo.templateName}（${detailInfo.version}）` }}</Col>
-                <Col :span="4">模板组：</Col>
-                <Col :span="8">{{ detailInfo.templateGroupName }}</Col>
+              <Row style="margin-top:10px;" gutter="20">
+                <Col :span="3">使用模板：</Col>
+                <Col :span="9"
+                  >{{ detailInfo.templateName }}<Tag>{{ version }}</Tag></Col
+                >
+                <Col :span="3">模板组：</Col>
+                <Col :span="9">{{ detailInfo.templateGroupName }}</Col>
               </Row>
-              <Row style="margin-top:10px;">
-                <Col :span="4">请求描述：</Col>
-                <Col :span="8">{{ detailInfo.description }}</Col>
+              <Row style="margin-top:10px;" gutter="20">
+                <Col :span="3">请求描述：</Col>
+                <Col :span="9">{{ detailInfo.description }}</Col>
               </Row>
             </HeaderTitle>
             <HeaderTitle title="处理历史">
@@ -288,9 +292,9 @@
             </HeaderTitle>
           </template>
         </Form>
-      </Col>
+      </div>
       <!--编排流程-->
-      <Col span="8">
+      <div style="width:440px">
         <div style="padding: 0 20px">
           <StaticFlow
             v-if="isAdd || ['Draft', 'Pending'].includes(detailInfo.status)"
@@ -298,8 +302,8 @@
           ></StaticFlow>
           <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -639,9 +643,11 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
-    span {
+    .name {
       font-size: 16px;
       margin-left: 20px;
+      display: flex;
+      align-items: center;
     }
   }
   .w-header {

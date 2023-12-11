@@ -1,8 +1,8 @@
 <template>
-  <div style="min-width: 500px;">
+  <div style="width: 400px;">
     <div style="margin-bottom: 8px;">
       <span class="custom-title">{{ $t('workflow_name') }}</span>
-      <span @click="handleWorkflow" class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
+      <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>
     <div id="graphcontain">
       <div class="graph-container" id="flow" style="height: 90%"></div>
@@ -411,10 +411,6 @@ export default {
     zoomModal () {
       this.tableMaxHeight = document.body.scrollHeight - 410
       this.nodeDetailFullscreen = true
-    },
-    // 跳转到编排执行历史
-    handleWorkflow () {
-      this.$router.push({ path: '/implementation/workflow-execution', query: { id: this.flowId } })
     }
   }
 }
@@ -427,14 +423,13 @@ export default {
   font-size: 14px;
   color: #515a6e;
   line-height: 1;
-  padding: 10px 12px 10px 0;
+  padding: 0 12px 10px 0;
   box-sizing: border-box;
 }
 
 .custom-display {
   display: inline-block;
-  min-width: 300px;
-  max-width: 400px;
+  width: 400px;
   height: 32px;
   line-height: 1.5;
   padding: 4px 7px;

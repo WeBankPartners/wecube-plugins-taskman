@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form">
+    <div class="form" :style="{ maxHeight: expand ? '200px' : '50px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem
@@ -97,6 +97,22 @@
         </template>
       </Form>
     </div>
+    <Icon
+      v-show="!expand"
+      @click="handleExpand"
+      size="28"
+      color="#2d8cf0"
+      type="ios-arrow-down"
+      style="cursor:pointer;margin-right:10px;"
+    />
+    <Icon
+      v-show="expand"
+      @click="handleExpand"
+      size="28"
+      color="#2d8cf0"
+      type="ios-arrow-up"
+      style="cursor:pointer;margin-right:10px;"
+    />
     <div class="button-group">
       <Button @click="handleSearch" size="small" type="primary">查询</Button>
       <Button @click="handleReset" size="small" style="margin-left:5px;">重置</Button>
@@ -124,6 +140,7 @@ export default {
   },
   data () {
     return {
+      expand: false,
       dateType: '', // 1-近一个月2-近半年3-近一年4-自定义
       dateTypeList: [
         { label: '近一个月', value: 1 },
@@ -135,6 +152,9 @@ export default {
   },
   watch: {},
   methods: {
+    handleExpand () {
+      this.expand = !this.expand
+    },
     handleSearch () {
       this.$emit('search')
     },
@@ -194,9 +214,8 @@ export default {
 <style lang="scss">
 .taskman-base-search {
   display: flex;
-  padding-bottom: 10px;
   .ivu-form-item {
-    margin-bottom: 10px !important;
+    margin-bottom: 15px !important;
     display: inline-block !important;
   }
   .ivu-radio {
@@ -219,6 +238,7 @@ export default {
   }
   .form {
     flex: 1;
+    transition: all 0.2s;
   }
   .button-group {
     height: 30px;

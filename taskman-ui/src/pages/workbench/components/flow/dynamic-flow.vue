@@ -2,7 +2,7 @@
   <div style="min-width: 500px;">
     <div style="margin-bottom: 8px;">
       <span class="custom-title">{{ $t('workflow_name') }}</span>
-      <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
+      <span @click="handleWorkflow" class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>
     <div id="graphcontain">
       <div class="graph-container" id="flow" style="height: 90%"></div>
@@ -53,9 +53,14 @@ import * as d3 from 'd3-selection'
 import * as d3Graphviz from 'd3-graphviz'
 import { addEvent, removeEvent } from './event.js'
 export default {
+  props: {
+    flowId: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
-      flowId: 561,
       currentModelNodeRefs: [],
       showNodeDetail: false,
       isTargetNodeDetail: false,
@@ -150,13 +155,21 @@ export default {
   watch: {
     nodeDetailFullscreen: function (tag) {
       tag ? (this.fullscreenModalContentStyle = {}) : (this.fullscreenModalContentStyle['max-height'] = '400px')
+    },
+    flowId: {
+      handler (val) {
+        if (val) {
+          this.orchestrationSelectHandler()
+        }
+      },
+      immediate: true
     }
   },
   destroyed () {
     clearInterval(this.timer)
   },
   methods: {
-    orchestrationSelectHandler (flowId) {
+    orchestrationSelectHandler () {
       this.stop()
       this.isEnqueryPage = true
       this.$nextTick(async () => {
@@ -398,6 +411,10 @@ export default {
     zoomModal () {
       this.tableMaxHeight = document.body.scrollHeight - 410
       this.nodeDetailFullscreen = true
+    },
+    // 跳转到编排执行历史
+    handleWorkflow () {
+      this.$router.push({ path: '/implementation/workflow-execution', query: { id: this.flowId } })
     }
   }
 }
@@ -416,7 +433,8 @@ export default {
 
 .custom-display {
   display: inline-block;
-  width: 300px;
+  min-width: 300px;
+  max-width: 400px;
   height: 32px;
   line-height: 1.5;
   padding: 4px 7px;

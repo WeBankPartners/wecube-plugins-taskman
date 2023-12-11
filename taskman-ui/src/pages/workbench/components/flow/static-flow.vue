@@ -16,20 +16,36 @@ import * as d3 from 'd3-selection'
 // eslint-disable-next-line no-unused-vars
 import * as d3Graphviz from 'd3-graphviz'
 export default {
+  props: {
+    requestTemplate: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       flowGraph: {},
       flowData: {}
     }
   },
+  watch: {
+    requestTemplate: {
+      handler (val) {
+        if (val) {
+          this.orchestrationSelectHandler()
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
-    orchestrationSelectHandler (templateId) {
+    orchestrationSelectHandler () {
       this.currentFlowNodeId = ''
       this.currentModelNodeRefs = []
-      this.getFlowOutlineData(templateId)
+      this.getFlowOutlineData()
     },
-    async getFlowOutlineData (templateId) {
-      let { statusCode, data } = await getFlowByTemplateId(templateId)
+    async getFlowOutlineData () {
+      let { statusCode, data } = await getFlowByTemplateId(this.requestTemplate)
       if (statusCode === 'OK') {
         this.flowData = data
         this.initFlowGraph()

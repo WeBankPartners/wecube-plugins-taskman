@@ -100,6 +100,7 @@
                 <Col :span="4">当前节点：</Col>
                 <Col :span="8">{{
                   {
+                    waitCommit: '等待提交',
                     sendRequest: '提起请求',
                     requestPending: '请求定版',
                     requestComplete: '请求完成'
@@ -291,8 +292,11 @@
       <!--编排流程-->
       <Col span="8">
         <div style="padding: 0 20px">
-          <StaticFlow v-if="isAdd" :templateId="requestTemplate" ref="staticFlowRef"></StaticFlow>
-          <DynamicFlow v-else ref="staticFlowRef"></DynamicFlow>
+          <StaticFlow
+            v-if="isAdd || ['Draft', 'Pending'].includes(detailInfo.status)"
+            :requestTemplate="requestTemplate"
+          ></StaticFlow>
+          <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
         </div>
       </Col>
     </Row>
@@ -391,7 +395,6 @@ export default {
     }
   },
   async mounted () {
-    this.$refs.staticFlowRef.orchestrationSelectHandler(this.requestTemplate)
     // 路由有requestId详情接口，无requestId创建接口
     if (this.requestId) {
       await this.getPublishInfo()

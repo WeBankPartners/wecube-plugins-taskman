@@ -30,6 +30,7 @@ type PlatformDataObj struct {
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`              // 创建人
 	Handler         string `json:"handler" xorm:"handler"`                   // 当前处理人
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`          // 创建时间
+	ReportTime      string `json:"reportTime" xorm:"report_time"`            // 请求提交时间
 	ExpectTime      string `json:"expectTime" xorm:"expect_time"`            // 期望完成时间
 	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`          // 期望完成时间
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 收藏标记,1表示已收藏
@@ -39,7 +40,9 @@ type PlatformDataObj struct {
 	StartTime       string `json:"startTime" xorm:"-"`                       // 开始时间
 	EffectiveDays   int    `json:"effectiveDays" xorm:"-"`                   // 有效天数
 	ParentId        string `json:"parentId" xorm:"parent_id"`                // 模板父类id
-	TaskId          string `json:"taskId" xorm:"taskId"`                     // 当前正在进行中的taskId
+	TaskId          string `json:"taskId" xorm:"-"`                          // 当前正在进行中的taskId
+	TaskName        string `json:"taskName" xorm:"-"`                        // taskName
+	TaskCreatedTime string `json:"taskCreatedTime" xorm:"-"`                 // task创建时间
 	Cache           string `json:"cache" xorm:"cache"`                       // request cache
 }
 

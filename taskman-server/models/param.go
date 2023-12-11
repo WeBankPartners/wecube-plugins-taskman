@@ -57,10 +57,10 @@ type QueryCollectTemplateParam struct {
 	Owner            []string             `json:"owner"`            // 属主
 	UseRole          []string             `json:"useRole"`          // 使用角色
 	Tags             []string             `json:"tags" `            // 标签
-	CreatedStartTime string               `json:"createdStartTime"` // 创建开始时间
-	CreatedEndTime   string               `json:"createdEndTime"`   // 创建结束时间
-	UpdatedStartTime string               `json:"updatedStartTime"` // 更新开始时间
-	UpdatedEndTime   string               `json:"updatedEndTime"`   // 更新结束时间
+	CreatedStartTime string               `json:"createdTimeStart"` // 创建开始时间
+	CreatedEndTime   string               `json:"createdTimeEnd"`   // 创建结束时间
+	UpdatedStartTime string               `json:"updatedTimeStart"` // 更新开始时间
+	UpdatedEndTime   string               `json:"updatedTimeEnd"`   // 更新结束时间
 	StartIndex       int                  `json:"startIndex"`
 	PageSize         int                  `json:"pageSize"`
 	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段
@@ -83,12 +83,12 @@ type CommonRequestParam struct {
 	OperatorObjType  []string             `json:"operatorObjType"`   // 操作对象类型
 	ProcDefName      []string             `json:"procDefName"`       // 使用编排
 	Handler          []string             `json:"handler"`           // 当前处理人
-	CreatedStartTime string               `json:"createdStartTime" ` // 创建开始时间
-	CreatedEndTime   string               `json:"createdEndTime" `   // 创建结束时间
-	UpdatedStartTime string               `json:"updatedStartTime" ` // 更新开始时间
-	UpdatedEndTime   string               `json:"updatedEndTime" `   // 更新结束时间
-	ExpectStartTime  string               `json:"expectStartTime" `  // 期望开始时间
-	ExpectEndTime    string               `json:"expectEndTime" `    // 期望结束时间
+	CreatedStartTime string               `json:"createdTimeStart" ` // 创建开始时间
+	CreatedEndTime   string               `json:"createdTimeEnd" `   // 创建结束时间
+	UpdatedStartTime string               `json:"updatedTimeStart" ` // 更新开始时间
+	UpdatedEndTime   string               `json:"updatedTimeEnd" `   // 更新结束时间
+	ExpectStartTime  string               `json:"expectTimeStart" `  // 期望开始时间
+	ExpectEndTime    string               `json:"expectTimeEnd" `    // 期望结束时间
 	StartIndex       int                  `json:"startIndex"`
 	PageSize         int                  `json:"pageSize"`
 	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段

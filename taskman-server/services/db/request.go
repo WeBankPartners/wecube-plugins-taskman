@@ -26,9 +26,10 @@ const (
 type ProgressStatus int
 
 const (
+	WaitCommit      = "waitCommit"      // 等待提交
 	SendRequest     = "sendRequest"     // 发送请求
 	RequestPending  = "requestPending"  // 请求定版
-	RequestComplete = "requestComplete" //请求完成
+	RequestComplete = "requestComplete" // 请求完成
 )
 
 var (
@@ -346,7 +347,9 @@ func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo,
 					platformDataObj.Version = template.Version
 				}
 			}
-			if platformDataObj.Status == "Pending" {
+			if platformDataObj.Status == "Draft" {
+				platformDataObj.CurNode = WaitCommit
+			} else if platformDataObj.Status == "Pending" {
 				platformDataObj.CurNode = RequestPending
 			}
 			if platformDataObj.ProcInstanceId != "" {
@@ -2452,7 +2455,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	}
 	var tmpTemplate []*models.RequestTemplateTmp
 	var version string
-	err := x.SQL("select rt.name as  template_name,rt.status,rt.version,rt.proc_def_id from request_template rt join "+
+	err := x.SQL("select rt.name as  template_name,rt.status,rtg.name as template_group_name,rt.version,rt.proc_def_id from request_template rt join "+
 		"request_template_group rtg on rt.group = rtg.id where rt.id= ?", request.RequestTemplate).Find(&tmpTemplate)
 	if err != nil {
 		return

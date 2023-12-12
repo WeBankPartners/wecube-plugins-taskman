@@ -111,9 +111,9 @@ func GetRequestCount(user string, userRoles []string) (platformData models.Platf
 // GetPendingCount 统计待处理,包括:(1)待定版 (2)任务待审批 分配给本组、本人的所有请求,此处按照角色去统计
 func GetPendingCount(userRoles []string) (resultArr []string) {
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
-	var queryParam []interface{}
+	var requestQueryParam, taskQueryParam []interface{}
 	var roleFilterList []string
-	var sql string
+	var requestSQL, taskSQL string
 	roleFilterSql := "1=1"
 	if len(userRoles) > 0 {
 		for _, v := range userRoles {
@@ -122,44 +122,51 @@ func GetPendingCount(userRoles []string) (resultArr []string) {
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql, queryParam = pendingSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
+		requestSQL, requestQueryParam = pendingRequestSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		taskSQL, taskQueryParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(requestSQL, requestQueryParam...)+queryCount(taskSQL, taskQueryParam...)))
 	}
 	return
 }
 
-func pendingSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
+func pendingRequestSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
 	sql = fmt.Sprintf("select id from request where del_flag = 0 and status = 'Pending' and type = ? and request_template in (select id "+
 		"from request_template where  id in (select request_template from request_template_role where role_type= 'MGMT' "+
-		"and `role` in ("+userRolesFilterSql+"))) union  select id from request where del_flag=0 and type= ? and id in (select request from task where del_flag = 0 and status <> 'done' and task_template "+
+		"and `role` in ("+userRolesFilterSql+"))) ", roleFilterSql)
+	queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
+	return
+}
+
+func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
+	sql = fmt.Sprintf("select id from task where del_flag = 0 and status <> 'done' and template_type = ? and task_template "+
 		"in (select task_template from task_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))"+
-		" union select request from task where task_template is null and (%s) and del_flag=0)", roleFilterSql)
-	queryParam = append(append(append([]interface{}{templateType}, userRolesFilterParam...), templateType), userRolesFilterParam...)
+		" union select id from task where task_template is null and (%s) and del_flag=0 and template_type = ?)", roleFilterSql)
+	queryParam = append(append([]interface{}{templateType}, userRolesFilterParam...), templateType)
 	return
 }
 
 // GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
 func GetHasProcessedCount(user string) (resultArr []string) {
-	var queryParam []interface{}
-	var sql string
+	var requestSQL, taskSQL string
+	var requestQueryParam, taskQueryParam []interface{}
 	for i := 0; i < len(templateTypeArr); i++ {
-		sql, queryParam = hasProcessedSQL(templateTypeArr[i], user)
-		resultArr = append(resultArr, strconv.Itoa(queryCount(sql, queryParam...)))
+		requestSQL, requestQueryParam = hasProcessedRequestSQL(templateTypeArr[i], user)
+		taskSQL, taskQueryParam = hasProcessedTaskSQL(templateTypeArr[i], user)
+		resultArr = append(resultArr, strconv.Itoa(queryCount(requestSQL, requestQueryParam...)+queryCount(taskSQL, taskQueryParam...)))
 	}
 	return
 }
 
-func hasProcessedSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+func hasProcessedRequestSQL(templateType int, user string) (sql string, queryParam []interface{}) {
 	sql = "select id from request where del_flag= 0 and type = ? and handler = ?  and status not in ('Pending','Draft') " +
-		"union select request from task where handler = ? and del_flag=0 and status = 'done' and " +
-		"request in ( select id from request where type= ? ) union select id from request where del_flag= 0 " +
-		"and type = ? and handler = ? and status='Draft' and rollback_desc is not null"
-	queryParam = append([]interface{}{templateType, user, user, templateType, templateType, user})
+		"union select id from request where del_flag = 0 and type = ? and handler = ? and status='Draft' and rollback_desc is not null"
+	queryParam = append([]interface{}{templateType, user, templateType, user})
 	return
 }
 
-func hasProcessedRequest(templateType int, user string) (sql string, queryParam []interface{}) {
-
+func hasProcessedTaskSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from task where handler= ? and del_flag = 0 and status ='done' and template_type = ?"
+	queryParam = append([]interface{}{user, templateType})
 	return
 }
 
@@ -175,13 +182,16 @@ func GetSubmitCount(user string) (resultArr []string) {
 }
 
 func submitSQL(rollback, templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ))"
+	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ) or (status = 'Draft' and revoke_flag = 1))"
 	if rollback == 1 {
 		// 被退回
 		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and rollback_desc is not null"
 	} else if rollback == 2 {
 		// 其他
 		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status != 'Draft'"
+	} else if rollback == 3 {
+		// 撤销
+		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and revoke_flag = 1 "
 	}
 	queryParam = append([]interface{}{user, templateType})
 	return
@@ -199,7 +209,7 @@ func GetDraftCount(user string) (resultArr []string) {
 }
 
 func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ? and rollback_desc is null"
+	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ? and rollback_desc is null and revoke_flag = 0"
 	queryParam = append([]interface{}{user, templateType})
 	return
 }
@@ -244,19 +254,30 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			}
 			roleFilterSql = strings.Join(roleFilterList, " or ")
 		}
-		sql, queryParam = pendingSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		if param.Type == 1 {
+			sql, queryParam = pendingRequestSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		} else if param.Type == 2 {
+			sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), true)
+			return
+		}
 	case "hasProcessed":
-		sql, queryParam = hasProcessedSQL(templateType, user)
+		if param.Type == 1 {
+			sql, queryParam = hasProcessedRequestSQL(templateType, user)
+		} else if param.Type == 2 {
+			sql, queryParam = hasProcessedTaskSQL(templateType, user)
+			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), true)
+			return
+		}
 	case "submit":
 		sql, queryParam = submitSQL(param.Rollback, templateType, user)
 	case "draft":
 		sql, queryParam = draftSQL(templateType, user)
-	case "collect":
 	default:
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken}, true)
+	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatRequestSQL(where, sql), true)
 	return
 }
 
@@ -271,7 +292,7 @@ func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToke
 		sql = "select id from request where request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in (" + userRolesFilterSql + ")))"
 		queryParam = append(queryParam, userRolesFilterParam...)
 	}
-	pageInfo, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken}, true)
+	pageInfo, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), true)
 	return
 }
 
@@ -281,7 +302,7 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 	var sql = "select id from request"
 	var queryParam []interface{}
 	where := transHistoryConditionToSQL(param)
-	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, Where: where, Sql: sql, UserToken: userToken}, false)
+	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), false)
 	if len(rowsData) > 0 {
 		/*	f := excelize.NewFile()
 			// 将 Excel 文件保存到临时文件中
@@ -306,11 +327,21 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 	return
 }
 
-func getPlatData(req models.PlatDataParam, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
-	var operatorObjTypeMap = make(map[string]string)
-	newSQL := fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
+func getPlatRequestSQL(where, sql string) string {
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
-		"r.expect_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", req.Where, req.Sql)
+		"r.expect_time,r.revoke_flag from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
+}
+
+func getPlatTaskSQL(where, sql string) string {
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.created_time as task_created_time,t.updated_time as task_approval_time,t.handler as task_handler "+
+		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
+}
+
+func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
+	var operatorObjTypeMap = make(map[string]string)
 	// 排序处理
 	if req.Param.Sorting != nil {
 		hashMap, _ := getJsonToXormMap(models.PlatformDataObj{})
@@ -1169,7 +1200,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 		}
 		bindCacheBytes, _ := json.Marshal(bindData)
 		bindCache := string(bindCacheBytes)
-		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc = '' where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
+		_, err = x.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc = '',revoke_flag=0 where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
 		if err == nil {
 			notifyRoleMail(requestId)
 		}
@@ -2141,15 +2172,8 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 	return
 }
 
-func transPlatConditionToSQL(param *models.PlatformRequestParam) (where string) {
-	where = "where 1 = 1 "
-	if param.Type == 1 {
-		where = where + " and (status = 'Pending' or status = 'Draft')"
-	} else if param.Type == 2 {
-		where = where + " and status <> 'Pending' and status <> 'Draft'"
-	}
-	where = where + transCommonRequestToSQL(param.CommonRequestParam)
-	return
+func transPlatConditionToSQL(param *models.PlatformRequestParam) string {
+	return "where 1 = 1 " + transCommonRequestToSQL(param.CommonRequestParam)
 }
 
 func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string) {
@@ -2170,10 +2194,10 @@ func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string
 
 func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.Id != "" {
-		where = where + " and ( id like '%" + param.Id + "%' or name like '%" + param.Id + "%')"
+		where = where + " and ( id like '%" + param.Id + "%') "
 	}
 	if param.Name != "" {
-		where = where + " and ( name like '%" + param.Name + "%' or name like '%" + param.Name + "%')"
+		where = where + " and ( name like '%" + param.Name + "%') "
 	}
 	if len(param.TemplateId) > 0 {
 		where = where + " and template_id in (" + getSQL(param.TemplateId) + ")"
@@ -2195,6 +2219,9 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	}
 	if len(param.Handler) > 0 {
 		where = where + " and handler in (" + getSQL(param.Handler) + ")"
+	}
+	if param.TaskName != "" {
+		where = where + " and ( task_name like '%" + param.TaskName + "%') "
 	}
 	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
 		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"

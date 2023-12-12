@@ -37,7 +37,7 @@ type PlatformRequestParam struct {
 	Tab      string `json:"tab"`      // 标签,取值有:pending 待处理    hasProcessed 已处理  submit 我提交的 draft 我的暂存  collect 收藏
 	Action   int    `json:"action"`   // 行为, 1表示发布行为,2请求,3问题,4事件, 5变更
 	Type     int    `json:"type"`     // 0代表所有,1表示请求定版,2表示任务处理
-	Rollback int    `json:"rollback"` // 0代表所有,1表示被退回,2表示其他(submit 我提交的tab下才有这个筛选生效)
+	Rollback int    `json:"rollback"` // 0代表所有,1表示被退回,2表示其他,3表示自己撤销(submit 我提交的tab下才有这个筛选生效)
 	CommonRequestParam
 }
 
@@ -66,6 +66,12 @@ type QueryCollectTemplateParam struct {
 	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段
 }
 
+// AddCollectTemplateParam 添加收藏
+type AddCollectTemplateParam struct {
+	TemplateId string `json:"templateId"` //模板id
+	Role       string `json:"role"`       //模板使用角色
+}
+
 type RequestHistoryParam struct {
 	Tab        string `json:"tab"`        // 标签,取值有: draft 暂存  commit 已经提交
 	Permission string `json:"permission"` // 权限,取值有: group 本组,  all 表示所有
@@ -89,6 +95,7 @@ type CommonRequestParam struct {
 	UpdatedEndTime   string               `json:"updatedTimeEnd" `   // 更新结束时间
 	ExpectStartTime  string               `json:"expectTimeStart" `  // 期望开始时间
 	ExpectEndTime    string               `json:"expectTimeEnd" `    // 期望结束时间
+	TaskName         string               `json:"taskName"`          // 任务名称
 	StartIndex       int                  `json:"startIndex"`
 	PageSize         int                  `json:"pageSize"`
 	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段
@@ -98,7 +105,5 @@ type PlatDataParam struct {
 	Param      CommonRequestParam
 	QueryParam []interface{}
 	User       string
-	Where      string
-	Sql        string
 	UserToken  string
 }

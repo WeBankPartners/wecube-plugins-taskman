@@ -10,9 +10,13 @@ import (
 
 // AddTemplateCollect 添加模板收藏,需要区分新老数据.之前旧模板,需要先更新数据
 func AddTemplateCollect(c *gin.Context) {
+	var param models.AddCollectTemplateParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
 	var parentId string
-	templateId := c.Param("templateId")
-	requestTemplate, err := db.GetSimpleRequestTemplate(templateId)
+	requestTemplate, err := db.GetSimpleRequestTemplate(param.TemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -31,12 +35,13 @@ func AddTemplateCollect(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	param := &models.CollectTemplateTable{
+	collectTemplate := &models.CollectTemplateTable{
 		RequestTemplate: parentId,
 		User:            middleware.GetRequestUser(c),
+		Role:            param.Role,
 		Type:            requestTemplate.Type,
 	}
-	err = db.AddTemplateCollect(param)
+	err = db.AddTemplateCollect(collectTemplate)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

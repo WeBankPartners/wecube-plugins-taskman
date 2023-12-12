@@ -13,38 +13,41 @@ type PlatformData struct {
 
 // PlatformDataObj 工作台返回数据
 type PlatformDataObj struct {
-	Id              string `json:"id" xorm:"id"`                             // 请求ID
-	Name            string `json:"name" xorm:"name"`                         // 请求名称
-	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板ID
-	TemplateName    string `json:"templateName" xorm:"template_name"`        // 使用模板名称
-	Version         string `json:"version" xorm:"version"`                   // 模板版本
-	OperatorObj     string `json:"operatorObj" xorm:"operator_obj"`          // 操作对象
-	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
-	ProcInstanceId  string `json:"procInstanceId" xorm:"proc_instance_id"`   // 编排实例id
-	ProcDefId       string `json:"procDefId" xorm:"proc_def_id"`             // 编排 key
-	ProcDefKey      string `json:"procDefKey" xorm:"proc_def_key"`           // 编排id
-	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
-	Status          string `json:"status" xorm:"status"`                     // 请求状态
-	CurNode         string `json:"curNode"  xorm:"cur_node"`                 // 当前节点
-	Progress        int    `json:"progress" xorm:"progress"`                 // 进展
-	CreatedBy       string `json:"createdBy" xorm:"created_by"`              // 创建人
-	Handler         string `json:"handler" xorm:"handler"`                   // 当前处理人
-	CreatedTime     string `json:"createdTime" xorm:"created_time"`          // 创建时间
-	ReportTime      string `json:"reportTime" xorm:"report_time"`            // 请求提交时间
-	ExpectTime      string `json:"expectTime" xorm:"expect_time"`            // 期望完成时间
-	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`          // 期望完成时间
-	ApprovalTime    string `json:"ApprovalTime" xorm:"-"`                    // 处理时间
-	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 收藏标记,1表示已收藏
-	Role            string `json:"role" xorm:"role"`                         // 创建请求Role
-	HandleRole      string `json:"handleRole" xorm:"handle_role"`            // 处理role
-	RollbackDesc    string `json:"rollbackDesc" xorm:"rollback_desc"`        // 回退原因
-	StartTime       string `json:"startTime" xorm:"-"`                       // 开始时间
-	EffectiveDays   int    `json:"effectiveDays" xorm:"-"`                   // 有效天数
-	ParentId        string `json:"parentId" xorm:"parent_id"`                // 模板父类id
-	TaskId          string `json:"taskId" xorm:"-"`                          // 当前正在进行中的taskId
-	TaskName        string `json:"taskName" xorm:"-"`                        // taskName
-	TaskCreatedTime string `json:"taskCreatedTime" xorm:"-"`                 // task创建时间
-	Cache           string `json:"cache" xorm:"cache"`                       // request cache
+	Id               string `json:"id" xorm:"id"`                               // 请求ID
+	Name             string `json:"name" xorm:"name"`                           // 请求名称
+	TemplateId       string `json:"templateId" xorm:"template_id"`              // 模板ID
+	TemplateName     string `json:"templateName" xorm:"template_name"`          // 使用模板名称
+	Version          string `json:"version" xorm:"version"`                     // 模板版本
+	OperatorObj      string `json:"operatorObj" xorm:"operator_obj"`            // 操作对象
+	OperatorObjType  string `json:"operatorObjType" xorm:"operator_obj_type"`   // 操作对象类型
+	ProcInstanceId   string `json:"procInstanceId" xorm:"proc_instance_id"`     // 编排实例id
+	ProcDefId        string `json:"procDefId" xorm:"proc_def_id"`               // 编排 key
+	ProcDefKey       string `json:"procDefKey" xorm:"proc_def_key"`             // 编排id
+	ProcDefName      string `json:"procDefName" xorm:"proc_def_name"`           // 使用编排
+	Status           string `json:"status" xorm:"status"`                       // 请求状态
+	CurNode          string `json:"curNode"  xorm:"cur_node"`                   // 当前节点
+	Progress         int    `json:"progress" xorm:"progress"`                   // 进展
+	CreatedBy        string `json:"createdBy" xorm:"created_by"`                // 创建人
+	Handler          string `json:"handler" xorm:"handler"`                     // 当前处理人
+	CreatedTime      string `json:"createdTime" xorm:"created_time"`            // 创建时间
+	ReportTime       string `json:"reportTime" xorm:"report_time"`              // 请求提交时间
+	ExpectTime       string `json:"expectTime" xorm:"expect_time"`              // 期望完成时间
+	UpdatedTime      string `json:"updatedTime" xorm:"updated_time"`            // 期望完成时间
+	ApprovalTime     string `json:"ApprovalTime" xorm:"-"`                      // 请求处理时间
+	CollectFlag      int    `json:"collectFlag" xorm:"collect_flag"`            // 收藏标记,1表示已收藏
+	Role             string `json:"role" xorm:"role"`                           // 创建请求Role
+	HandleRole       string `json:"handleRole" xorm:"handle_role"`              // 处理role
+	RollbackDesc     string `json:"rollbackDesc" xorm:"rollback_desc"`          // 回退原因
+	RevokeFlag       int    `json:"revokeFlag" xorm:"revoke_flag"`              // 是否撤回,0表示否,1表示撤回
+	StartTime        string `json:"startTime" xorm:"-"`                         // 开始时间
+	EffectiveDays    int    `json:"effectiveDays" xorm:"-"`                     // 有效天数
+	ParentId         string `json:"parentId" xorm:"parent_id"`                  // 模板父类id
+	Cache            string `json:"cache" xorm:"cache"`                         // request cache
+	TaskId           string `json:"taskId" xorm:"task_id"`                      // 当前正在进行中的taskId
+	TaskName         string `json:"taskName" xorm:"task_name"`                  // taskName
+	TaskCreatedTime  string `json:"taskCreatedTime" xorm:"task_created_time"`   // task创建时间
+	TaskApprovalTime string `json:"taskApprovalTime" xorm:"task_approval_time"` // 任务处理时间
+	TaskHandler      string `json:"taskHandler" xorm:"task_handler"`            // 任务审批人
 }
 
 type RequestQueryParam struct {
@@ -150,6 +153,7 @@ type RequestTable struct {
 	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
 	Description         string             `json:"description" xorm:"description"` // 请求描述
 	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
+	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`  // 撤回标志 0表示没被撤回,1表示撤回
 	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
 }

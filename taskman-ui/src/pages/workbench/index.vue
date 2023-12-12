@@ -39,6 +39,7 @@
           :columns="tableColumns"
           :data="tableData"
           @on-sort-change="sortTable"
+          @on-cell-click="handleCellClick"
         ></Table>
         <Page
           style="float:right;margin-top:10px;"
@@ -771,6 +772,10 @@ export default {
         },
         onCancel: () => {}
       })
+    },
+    handleCellClick (row, column) {
+      console.log('11111111111111', row)
+      console.log('22222222222222', column)
     }
   }
 }

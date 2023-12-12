@@ -73,7 +73,7 @@
         </div>
       </div>
       <div class="list">
-        <Card style="width:300px;min-height:360px;">
+        <Card style="width:350px;min-height:360px;">
           <div class="w-header">
             我的收藏 <span>{{ collectList.length }}</span>
           </div>
@@ -119,6 +119,7 @@ export default {
         {
           title: '模板名称',
           key: 'name',
+          minWidth: 250,
           render: (h, params) => {
             return (
               <div>
@@ -157,17 +158,6 @@ export default {
             )
           }
         },
-        // {
-        //   title: '状态',
-        //   key: 'status',
-        //   render: (h, params) => {
-        //     return (
-        //       <Tag color={params.row.status === 'created' ? '#85888e' : 'success'}>
-        //         {{ created: '未发布', confirm: '已发布' }[params.row.status]}
-        //       </Tag>
-        //     )
-        //   }
-        // },
         {
           title: '操作对象类型',
           key: 'operatorObjType',
@@ -336,7 +326,7 @@ export default {
   .wrapper {
     display: flex;
     .list {
-      width: 300px;
+      width: 350px;
       .w-header {
         font-size: 16px;
         font-weight: 700;
@@ -355,7 +345,7 @@ export default {
           margin-left: 5px;
         }
         .template {
-          width: 250px;
+          width: 280px;
           text-overflow: ellipsis;
           overflow: hidden;
           // white-space: nowrap;
@@ -368,7 +358,7 @@ export default {
     }
     .template {
       padding: 0px 20px 0 0;
-      width: calc(100% - 320px);
+      width: calc(100% - 370px);
       .w-header {
         display: flex;
         align-items: center;

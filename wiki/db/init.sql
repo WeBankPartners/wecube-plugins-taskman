@@ -302,3 +302,32 @@ alter table form_item modify column value text default null;
 #@v0.1.3.4-begin@;
 alter table request add column `rollback_desc` text  DEFAULT null;
 #@v0.1.3.4-end@;
+
+#@v0.1.3.12-begin@;
+alter table request add column `type` tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';
+alter table request add column operator_obj varchar(255) default null DEFAULT NULL COMMENT '操作对象';
+alter table request add column description varchar(255) default null COMMENT '发布描述';
+alter table request add column role varchar(255) default null COMMENT '创建请求的role';
+alter table request add column revoke_flag tinyint(2) default 0 COMMENT '是否撤回,0表示否,1表示撤回';
+
+alter table request_template add column `type` tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';
+alter table request_template add column operator_obj_type varchar(255) default null DEFAULT NULL COMMENT '操作对象类型';
+alter table request_template add column parent_id varchar(64) default null DEFAULT NULL COMMENT '父类ID';
+
+alter table task add column template_type tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';
+
+DROP TABLE IF EXISTS `collect_template`;
+CREATE TABLE `collect_template` (
+  `id` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `request_template` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '请求模板id',
+  `type` tinyint(2) NOT NULL DEFAULT '0' COMMENT '模板类型:0表示请求 1表示发布',
+  `user` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户',
+  `role` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '收藏模板使用角色',
+  `created_time` datetime DEFAULT NULL,
+  `updated_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `account` (`user`(191)),
+  KEY `fore_collect_request_template` (`request_template`),
+  CONSTRAINT `fore_collect_request_template` FOREIGN KEY (`request_template`) REFERENCES `request_template` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏模板';
+#@v0.1.3.12-end@;

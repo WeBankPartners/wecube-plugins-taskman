@@ -336,7 +336,7 @@ func getPlatRequestSQL(where, sql string) string {
 func getPlatTaskSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
-		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.created_time as task_created_time,t.updated_time as task_approval_time,t.handler as task_handler "+
+		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.created_time as task_created_time,t.updated_time as task_approval_time,t.expire_time as task_expect_time,t.handler as task_handler "+
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }
 
@@ -410,7 +410,7 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 					}
 				}
 			}
-			platformDataObj.TaskId, platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
 		}
 		if len(actions) > 0 {
@@ -2232,6 +2232,9 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.ExpectStartTime != "" && param.ExpectEndTime != "" {
 		where = where + " and expect_time >= ' " + param.ExpectStartTime + "' and expect_time <= ' " + param.ExpectEndTime + "'"
 	}
+	if param.TaskExpectStartTime != "" && param.TaskExpectEndTime != "" {
+		where = where + " and task_expect_time >= ' " + param.TaskExpectStartTime + "' and task_expect_time <= ' " + param.TaskExpectEndTime + "'"
+	}
 	return
 }
 
@@ -2291,6 +2294,16 @@ func getSQL(status []string) string {
 
 // getTaskApproveHandler 获取任务审批人,有人返回人,没人返回审批角色
 func getTaskApproveHandler(result models.TaskTemplateDto) string {
+	// 审批人以 任务表审批人为主,任务可以认领转给我会修改任务审批人
+	var taskList []*models.TaskTable
+	x.SQL("select name,handler,node_def_id,node_name from task where request = ?", result.RequestTemplateId).Find(&taskList)
+	if len(taskList) > 0 {
+		for _, task := range taskList {
+			if task.NodeDefId == result.NodeDefId && task.Handler != "" {
+				return task.Handler
+			}
+		}
+	}
 	if result.Handler != "" {
 		return result.Handler
 	}
@@ -2521,12 +2534,12 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	if request.ProcInstanceId != "" {
 		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken)
 	}
-	_, _, form.Handler = getRequestHandler(request.Id)
+	_, form.Handler = getRequestHandler(request.Id)
 	return
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态,查询任务处理人
-func getRequestHandler(requestId string) (taskId string, role, handler string) {
+func getRequestHandler(requestId string) (role, handler string) {
 	request, _ := GetSimpleRequest(requestId)
 	if request.Status == "Draft" || request.Status == "Pending" {
 		// 请求在定版状态,从模板角色表中读取
@@ -2545,7 +2558,6 @@ func getRequestHandler(requestId string) (taskId string, role, handler string) {
 		if len(taskMap) > 0 {
 			for _, task := range taskMap {
 				if task.Status != "done" && taskTemplateMap[task.TaskTemplate] != nil {
-					taskId = task.Id
 					taskTemplate := taskTemplateMap[task.TaskTemplate]
 					role = taskTemplate.Role
 					// 任务处理人已任务处理为主,可以通过认领转给我修改.空的时候才取模板配置值

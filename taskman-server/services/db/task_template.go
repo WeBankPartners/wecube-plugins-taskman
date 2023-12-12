@@ -24,6 +24,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 	result.MGMTRoles = []string{}
 	result.USERoleObjs = []*models.RoleTable{}
 	result.USERoles = []string{}
+	result.RequestTemplateId = requestTemplateId
 	var formTemplateTable []*models.FormTemplateTable
 	err = x.SQL("select * from form_template where id=?", taskTemplate.FormTemplate).Find(&formTemplateTable)
 	if err != nil {

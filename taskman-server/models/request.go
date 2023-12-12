@@ -47,6 +47,7 @@ type PlatformDataObj struct {
 	TaskName         string `json:"taskName" xorm:"task_name"`                  // taskName
 	TaskCreatedTime  string `json:"taskCreatedTime" xorm:"task_created_time"`   // task创建时间
 	TaskApprovalTime string `json:"taskApprovalTime" xorm:"task_approval_time"` // 任务处理时间
+	TaskExpectTime   string `json:"taskExpectTime" xorm:"task_expect_time"`     // 任务期望完成时间
 	TaskHandler      string `json:"taskHandler" xorm:"task_handler"`            // 任务审批人
 }
 

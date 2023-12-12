@@ -122,24 +122,24 @@ func GetPendingCount(userRoles []string) (resultArr []string) {
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	for i := 0; i < len(templateTypeArr); i++ {
-		requestSQL, requestQueryParam = pendingRequestSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		requestSQL, requestQueryParam = pendingRequestSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam)
 		taskSQL, taskQueryParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
 		resultArr = append(resultArr, strconv.Itoa(queryCount(requestSQL, requestQueryParam...)+queryCount(taskSQL, taskQueryParam...)))
 	}
 	return
 }
 
-func pendingRequestSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
-	sql = fmt.Sprintf("select id from request where del_flag = 0 and status = 'Pending' and type = ? and request_template in (select id "+
-		"from request_template where  id in (select request_template from request_template_role where role_type= 'MGMT' "+
-		"and `role` in ("+userRolesFilterSql+"))) ", roleFilterSql)
+func pendingRequestSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag = 0 and status = 'Pending' and type = ? and request_template in (select id " +
+		"from request_template where  id in (select request_template from request_template_role where role_type= 'MGMT' " +
+		"and `role` in (" + userRolesFilterSql + "))) "
 	queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
 	return
 }
 
 func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
 	sql = fmt.Sprintf("select id from task where del_flag = 0 and status <> 'done' and template_type = ? and task_template "+
-		"in (select task_template from task_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))"+
+		"in (select task_template from task_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+")"+
 		" union select id from task where task_template is null and (%s) and del_flag=0 and template_type = ?)", roleFilterSql)
 	queryParam = append(append([]interface{}{templateType}, userRolesFilterParam...), templateType)
 	return
@@ -255,7 +255,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			roleFilterSql = strings.Join(roleFilterList, " or ")
 		}
 		if param.Type == 1 {
-			sql, queryParam = pendingRequestSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+			sql, queryParam = pendingRequestSQL(templateType, userRolesFilterSql, userRolesFilterParam)
 		} else if param.Type == 2 {
 			sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
 			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), true)

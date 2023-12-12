@@ -42,7 +42,7 @@ type PlatformDataObj struct {
 	StartTime        string `json:"startTime" xorm:"-"`                         // 开始时间
 	EffectiveDays    int    `json:"effectiveDays" xorm:"-"`                     // 有效天数
 	ParentId         string `json:"parentId" xorm:"parent_id"`                  // 模板父类id
-	Cache            string `json:"cache" xorm:"cache"`                         // request cache
+	Cache            string `json:"-" xorm:"cache"`                             // request cache
 	TaskId           string `json:"taskId" xorm:"task_id"`                      // 当前正在进行中的taskId
 	TaskName         string `json:"taskName" xorm:"task_name"`                  // taskName
 	TaskCreatedTime  string `json:"taskCreatedTime" xorm:"task_created_time"`   // task创建时间

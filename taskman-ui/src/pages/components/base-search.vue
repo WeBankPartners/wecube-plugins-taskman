@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form" :style="{ maxHeight: expand ? '200px' : '50px' }">
+    <div class="form" :style="{ maxHeight: expand ? '200px' : '46px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem

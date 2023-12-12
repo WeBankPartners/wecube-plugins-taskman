@@ -663,7 +663,7 @@ export default {
     }
   }
   .w-header {
-    padding-bottom: 20px;
+    padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
     .steps {

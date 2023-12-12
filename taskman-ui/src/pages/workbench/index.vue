@@ -200,7 +200,7 @@ export default {
       tableColumns: [
         {
           title: '请求ID',
-          width: 150,
+          width: 140,
           key: 'id',
           render: (h, params) => {
             return (
@@ -308,9 +308,10 @@ export default {
               waitCommit: '等待提交',
               sendRequest: '提起请求',
               requestPending: '请求定版',
-              requestComplete: '请求完成'
+              requestComplete: '请求完成',
+              Completed: '请求完成'
             }
-            return <span>{map[params.row.curNode] || params.row.curNode}</span>
+            return <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
           }
         },
         {
@@ -329,7 +330,7 @@ export default {
           renderHeader: () => {
             return <span>{this.form.type === 2 ? '任务停留时长' : '请求停留时长'}</span>
           },
-          minWidth: 200,
+          minWidth: 140,
           key: 'expectTime',
           render: (h, params) => {
             const diff = params.row.startTime ? dayjs(new Date()).diff(params.row.startTime, 'day') : 0
@@ -345,7 +346,7 @@ export default {
         {
           title: '创建人',
           sortable: 'custom',
-          minWidth: 160,
+          minWidth: 140,
           key: 'createdBy',
           render: (h, params) => {
             return (
@@ -359,7 +360,7 @@ export default {
         {
           title: '当前处理人',
           sortable: 'custom',
-          minWidth: 160,
+          minWidth: 140,
           key: 'handler',
           render: (h, params) => {
             return (
@@ -849,7 +850,7 @@ export default {
     margin-right: -33px !important;
   }
   .ivu-progress-inner {
-    width: 60px;
+    width: 60px !important;
   }
   .ivu-progress-text {
     color: #515a6e !important;
@@ -857,6 +858,7 @@ export default {
   }
   .ivu-progress {
     display: flex;
+    // flex-direction: column;
   }
 }
 </style>

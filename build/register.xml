@@ -39,6 +39,7 @@
     <!-- 5.权限设定 -->
     <authorities>
         <authority systemRoleName="SUPER_ADMIN" >
+            <menu code="TASK_WORKBENCH"/>
             <menu code="TASK_TEMPLATE_GROUP_MANAGEMENT"/>
             <menu code="TASK_TEMPLATE_MANAGEMENT"/>
             <menu code="TASK_REQUEST_MANAGEMENT"/>

@@ -39,7 +39,6 @@
           :columns="tableColumns"
           :data="tableData"
           @on-sort-change="sortTable"
-          @on-cell-click="handleCellClick"
         ></Table>
         <Page
           style="float:right;margin-top:10px;"
@@ -202,13 +201,37 @@ export default {
         {
           title: '请求ID',
           width: 150,
-          key: 'id'
+          key: 'id',
+          render: (h, params) => {
+            return (
+              <span
+                style="cursor:pointer;"
+                onDblclick={() => {
+                  this.handleDbClick(params.row)
+                }}
+              >
+                {params.row.id}
+              </span>
+            )
+          }
         },
         {
           title: this.$t('name'),
           sortable: 'custom',
           minWidth: 250,
-          key: 'name'
+          key: 'name',
+          render: (h, params) => {
+            return (
+              <span
+                style="cursor:pointer;"
+                onDblclick={() => {
+                  this.handleDbClick(params.row)
+                }}
+              >
+                {params.row.name}
+              </span>
+            )
+          }
         },
         {
           title: '使用模板',
@@ -773,9 +796,16 @@ export default {
         onCancel: () => {}
       })
     },
-    handleCellClick (row, column) {
-      console.log('11111111111111', row)
-      console.log('22222222222222', column)
+    handleDbClick (row) {
+      if (
+        this.username === row.handler &&
+        ['Pending', 'InProgress'].includes(row.status) &&
+        this.tabName === 'pending'
+      ) {
+        this.handleEdit(row)
+      } else {
+        this.hanldeView(row)
+      }
     }
   }
 }

@@ -27,7 +27,7 @@
       </Col>
     </Row>
     <div style="display:flex;" class="content">
-      <div style="width:calc(100% - 440px)" class="split-line">
+      <div style="width:calc(100% - 420px)" class="split-line">
         <Form :model="form" label-position="right" :label-width="120">
           <template v-if="isAdd">
             <HeaderTitle title="发布信息">
@@ -78,19 +78,19 @@
           </template>
           <template v-else>
             <HeaderTitle title="请求信息">
-              <Row gutter="20">
+              <Row :gutter="20">
                 <Col :span="3">请求ID：</Col>
                 <Col :span="9">{{ detailInfo.id }}</Col>
                 <Col :span="3">请求类型：</Col>
                 <Col :span="9">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
               </Row>
-              <Row style="margin-top:10px;" gutter="20">
+              <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">创建时间：</Col>
                 <Col :span="9">{{ detailInfo.createdTime }}</Col>
                 <Col :span="3">期望完成时间：</Col>
                 <Col :span="9">{{ detailInfo.expectTime }}</Col>
               </Row>
-              <Row style="margin-top:10px;" gutter="20">
+              <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">请求进度：</Col>
                 <Col :span="9">
                   <Progress :percent="detailInfo.progress" style="width:150px;" />
@@ -98,7 +98,7 @@
                 <Col :span="3">请求状态：</Col>
                 <Col :span="9">{{ getStatusName(detailInfo.status) }}</Col>
               </Row>
-              <Row style="margin-top:10px;" gutter="20">
+              <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">当前节点：</Col>
                 <Col :span="9">{{
                   {
@@ -111,7 +111,7 @@
                 <Col :span="3">当前处理人：</Col>
                 <Col :span="9">{{ detailInfo.handler }}</Col>
               </Row>
-              <Row style="margin-top:10px;" gutter="20">
+              <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">创建人：</Col>
                 <Col :span="9">{{ detailInfo.createdBy }}</Col>
                 <Col :span="3">创建人角色：</Col>
@@ -125,7 +125,7 @@
                 <Col :span="3">模板组：</Col>
                 <Col :span="9">{{ detailInfo.templateGroupName }}</Col>
               </Row>
-              <Row style="margin-top:10px;" gutter="20">
+              <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">请求描述：</Col>
                 <Col :span="9">{{ detailInfo.description }}</Col>
               </Row>
@@ -294,14 +294,12 @@
         </Form>
       </div>
       <!--编排流程-->
-      <div style="width:440px">
-        <div style="padding: 0 20px">
-          <StaticFlow
-            v-if="isAdd || ['Draft', 'Pending'].includes(detailInfo.status)"
-            :requestTemplate="requestTemplate"
-          ></StaticFlow>
-          <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
-        </div>
+      <div style="width:420px;padding-left:20px;">
+        <StaticFlow
+          v-if="isAdd || ['Draft', 'Pending'].includes(detailInfo.status)"
+          :requestTemplate="requestTemplate"
+        ></StaticFlow>
+        <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
       </div>
     </div>
   </div>
@@ -320,6 +318,7 @@ import {
   getEntityData,
   savePublishData,
   getPublishInfo,
+  getRequestInfo,
   updateRequestStatus,
   saveTaskData,
   commitTaskData
@@ -395,6 +394,8 @@ export default {
     'form.rootEntityId' (val) {
       if (val) {
         this.getEntityData()
+      } else {
+        this.requestData = []
       }
     }
   },
@@ -402,6 +403,7 @@ export default {
     // 路由有requestId详情接口，无requestId创建接口
     if (this.requestId) {
       await this.getPublishInfo()
+      this.getRequestInfo()
     } else {
       await this.getCreateInfo()
     }
@@ -454,6 +456,13 @@ export default {
         })
       }
     },
+    async getRequestInfo () {
+      const { statusCode, data } = await getRequestInfo(this.requestId)
+      if (statusCode === 'OK') {
+        // this.attachFiles = data.attachFiles
+        this.form.rootEntityId = data.cache
+      }
+    },
     // 获取发布信息
     async getPublishInfo () {
       const { statusCode, data } = await getPublishInfo(this.requestId)
@@ -481,7 +490,7 @@ export default {
       const { statusCode, data } = await getRootEntity(params)
       if (statusCode === 'OK') {
         this.rootEntityOptions = data.data || []
-        this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
+        // this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
       }
     },
     // 获取目标对象对应数据
@@ -499,20 +508,23 @@ export default {
     },
     // 保存草稿
     async handleDraft (noJump) {
-      if (this.form.rootEntityId === '') {
+      if (!this.form.rootEntityId) {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
       // 提取表格勾选的数据
-      this.form.data = this.$refs.entityTable.requestData.map(item => {
-        if (Array.isArray(item.value)) {
-          item.value = item.value.filter(j => {
-            return j.entityData._checked
-          })
-        }
-        return item
-      })
-      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId)
+      this.form.data =
+        (this.$refs.entityTable &&
+          this.$refs.entityTable.requestData.map(item => {
+            if (Array.isArray(item.value)) {
+              item.value = item.value.filter(j => {
+                return j.entityData._checked
+              })
+            }
+            return item
+          })) ||
+        []
+      const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
       this.form.entityName = item.key_name
       if (this.requestDataCheck()) {
         const { statusCode } = await savePublishData(this.requestId, this.form)

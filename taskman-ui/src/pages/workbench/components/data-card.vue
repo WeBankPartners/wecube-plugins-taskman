@@ -62,36 +62,36 @@ export default {
           type: 'pending',
           label: '待处理的',
           icon: require('@/images/warning.png'),
-          requestNum: 10,
-          publishNum: 5
+          requestNum: 0,
+          publishNum: 0
         },
         {
           type: 'hasProcessed',
           label: '已处理的',
           icon: require('@/images/checked.png'),
-          requestNum: 10,
-          publishNum: 5
+          requestNum: 0,
+          publishNum: 0
         },
         {
           type: 'submit',
           label: '我提交的',
           icon: require('@/images/upload.png'),
-          requestNum: 10,
-          publishNum: 5
+          requestNum: 0,
+          publishNum: 0
         },
         {
           type: 'draft',
           label: '我暂存的',
           icon: require('@/images/save.png'),
-          requestNum: 10,
-          publishNum: 5
+          requestNum: 0,
+          publishNum: 0
         },
         {
           type: 'collect',
           label: '收藏模板',
           icon: require('@/images/star.png'),
-          requestNum: 10,
-          publishNum: 5
+          requestNum: 0,
+          publishNum: 0
         }
       ]
     }

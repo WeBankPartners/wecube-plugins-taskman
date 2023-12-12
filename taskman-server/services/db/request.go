@@ -165,7 +165,7 @@ func hasProcessedRequestSQL(templateType int, user string) (sql string, queryPar
 }
 
 func hasProcessedTaskSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from task where handler= ? and del_flag = 0 and status ='done' and template_type = ?"
+	sql = "select id from task where handler= ? and del_flag = 0 and status ='done' and template_type = ? and request is not null"
 	queryParam = append([]interface{}{user, templateType})
 	return
 }

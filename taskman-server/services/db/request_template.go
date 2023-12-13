@@ -1166,16 +1166,16 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	operatorObjTypeMap = getAllCoreProcess(userToken)
 	if len(requestTemplateTable) > 0 {
 		for _, template := range requestTemplateTable {
+			collectFlag = 0
 			var roleArr []string
 			err = x.SQL("SELECT role FROM request_template_role WHERE request_template = ?  AND role_type = 'USE' ", template.Id).Find(&roleArr)
 			if err != nil {
 				continue
 			}
+			if len(collectMap) > 0 && collectMap[template.ParentId] {
+				collectFlag = 1
+			}
 			for _, role := range roleArr {
-				collectFlag = 0
-				if len(collectMap) > 0 && collectMap[template.ParentId] {
-					collectFlag = 1
-				}
 				if _, ok := roleTemplateGroupMap[role]; !ok {
 					roleTemplateGroupMap[role] = make(map[string][]*models.RequestTemplateTableObj)
 				}

@@ -99,6 +99,17 @@ func DataList(c *gin.Context) {
 	middleware.ReturnPageData(c, pageInfo, rowData)
 }
 
+// RevokeRequest 撤回请求
+func RevokeRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	err := db.RevokeRequest(requestId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 // HistoryList 发布/请求历史
 func HistoryList(c *gin.Context) {
 	var param models.RequestHistoryParam

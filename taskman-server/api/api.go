@@ -83,6 +83,7 @@ func init() {
 		&handlerFuncObj{Url: "/user/platform", Method: "POST", HandlerFunc: request.CountRequest},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
+		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},

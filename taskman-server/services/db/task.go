@@ -413,6 +413,8 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 	requestQuery.ExpectTime = requests[0].ExpectTime
 	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
 	requestQuery.FormData = requestCache.Data
+	requestQuery.CreatedTime = requests[0].CreatedTime
+	requestQuery.HandleTime = requests[0].ReportTime
 	if len(requestTemplateTable) > 0 {
 		requestQuery.RequestTemplate = requestTemplateTable[0].Name
 	}
@@ -438,7 +440,9 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 		}
 		if v.Status == "done" {
 			tmpTaskForm.Handler = v.UpdatedBy
+			tmpTaskForm.HandleTime = v.UpdatedTime
 		}
+		tmpTaskForm.CreatedTime = v.CreatedTime
 		taskQueryList = append(taskQueryList, &tmpTaskForm)
 	}
 	return

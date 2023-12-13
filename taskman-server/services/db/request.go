@@ -335,7 +335,7 @@ func getPlatRequestSQL(where, sql string) string {
 
 func getPlatTaskSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
-		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,t.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.created_time as task_created_time,t.updated_time as task_approval_time,t.expire_time as task_expect_time,t.handler as task_handler "+
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }
@@ -410,7 +410,7 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 					}
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
+			platformDataObj.HandleRole, _ = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
 		}
 		if len(actions) > 0 {
@@ -670,6 +670,29 @@ func calcExpireTime(reportTime string, expireDay int) (expire string) {
 		return
 	}
 	expire = t.Add(time.Duration(expireDay*24) * time.Hour).Format(models.DateTimeFormat)
+	return
+}
+
+func RevokeRequest(requestId, user string) (err error) {
+	var request models.RequestTable
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	request, err = GetSimpleRequest(requestId)
+	if err != nil {
+		return
+	}
+	if request.Id == "" {
+		err = fmt.Errorf("param requestId:%s not exist", requestId)
+		return
+	}
+	if request.Status != "Pending" {
+		err = fmt.Errorf("request status:%s err", request.Status)
+		return
+	}
+	if request.CreatedBy != user {
+		err = fmt.Errorf("request not yours")
+		return
+	}
+	_, err = x.Exec("update request set status ='Draft',revoke_flag=1,updated_time=? where id=?", nowTime, request.Id)
 	return
 }
 
@@ -1669,6 +1692,8 @@ func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryOb
 	requestQuery.ExpireTime = requests[0].ExpireTime
 	requestQuery.ExpectTime = requests[0].ExpectTime
 	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
+	requestQuery.CreatedTime = requests[0].CreatedTime
+	requestQuery.HandleTime = requests[0].ReportTime
 	taskQueryList = append(taskQueryList, []*models.TaskQueryObj{&requestQuery, getPendingRequestData(requests[0])}...)
 	return
 }
@@ -1681,7 +1706,7 @@ func getPendingRequestData(request *models.RequestTable) *models.TaskQueryObj {
 	if len(roles) > 0 {
 		role = roles[0]
 	}
-	return &models.TaskQueryObj{
+	taskQueryObj := &models.TaskQueryObj{
 		RequestId:      request.Id,
 		RequestName:    request.Name,
 		Editable:       false,
@@ -1693,7 +1718,12 @@ func getPendingRequestData(request *models.RequestTable) *models.TaskQueryObj {
 		FormData:       nil,
 		IsHistory:      false,
 		HandleRoleName: role,
+		CreatedTime:    request.ReportTime,
 	}
+	if request.Status != "Draft" && request.Status != "Pending" {
+		taskQueryObj.HandleTime = request.UpdatedTime
+	}
+	return taskQueryObj
 }
 
 func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetail, err error) {

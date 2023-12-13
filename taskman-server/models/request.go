@@ -69,6 +69,7 @@ type CollectDataObj struct {
 	Id                string   `json:"id" xorm:"id"`                                 // 模版ID
 	Name              string   `json:"name" xorm:"name"`                             // 模版名称
 	Version           string   `json:"version" xorm:"version"`                       // 模版名称
+	Status            int      `json:"status" xorm:"status"`                         // 模版状态: 1可使用 2已禁用 3权限被移除
 	TemplateGroupId   string   `json:"templateGourpId" xorm:"template_group_id"`     // 模版组ID
 	TemplateGroup     string   `json:"templateGroup" xorm:"template_group"`          // 模版组
 	TemplateGroupRole string   `json:"templateGroupRole" xorm:"template_group_role"` // 模版组角色

@@ -335,7 +335,7 @@ func getPlatRequestSQL(where, sql string) string {
 
 func getPlatTaskSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
-		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,t.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.created_time as task_created_time,t.updated_time as task_approval_time,t.expire_time as task_expect_time,t.handler as task_handler "+
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }
@@ -410,7 +410,7 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 					}
 				}
 			}
-			platformDataObj.HandleRole, _ = getRequestHandler(platformDataObj.Id)
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
 		}
 		if len(actions) > 0 {
@@ -1694,6 +1694,8 @@ func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryOb
 	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
 	requestQuery.CreatedTime = requests[0].CreatedTime
 	requestQuery.HandleTime = requests[0].ReportTime
+	requestQuery.HandleRoleName = requests[0].Role
+	requestQuery.Handler = requests[0].CreatedBy
 	taskQueryList = append(taskQueryList, []*models.TaskQueryObj{&requestQuery, getPendingRequestData(requests[0])}...)
 	return
 }

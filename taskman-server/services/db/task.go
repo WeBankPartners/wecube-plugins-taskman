@@ -415,6 +415,8 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 	requestQuery.FormData = requestCache.Data
 	requestQuery.CreatedTime = requests[0].CreatedTime
 	requestQuery.HandleTime = requests[0].ReportTime
+	requestQuery.Handler = requests[0].CreatedBy
+	requestQuery.HandleRoleName = requests[0].Role
 	if len(requestTemplateTable) > 0 {
 		requestQuery.RequestTemplate = requestTemplateTable[0].Name
 	}

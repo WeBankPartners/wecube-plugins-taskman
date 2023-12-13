@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"strings"
 	"time"
 )
 
@@ -30,7 +31,9 @@ func DeleteTemplateCollect(templateId, user string) error {
 func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
 	var collectTemplateList []*models.CollectTemplateTable
+	var disableTemplateVersionMap = getAllDisableTemplateVersionMap()
 	var roleTemplateMap = make(map[string]string)
+	var templateUserRoleMap = make(map[string]bool)
 	var resultList []string
 	var templateType int
 	if param.Action == 1 {
@@ -79,6 +82,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	}
 	if len(rowData) > 0 {
 		for _, collectObj := range rowData {
+			templateUserRoleMap = make(map[string]bool, 0)
 			template, err := GetSimpleRequestTemplate(collectObj.Id)
 			if err != nil {
 				continue
@@ -95,10 +99,19 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 			for _, requestTemplateRole := range requestTemplateRoleList {
 				if requestTemplateRole.RoleType == "MGMT" {
 					collectObj.ManageRole = requestTemplateRole.Role
-					break
+				} else if requestTemplateRole.RoleType == "USE" {
+					templateUserRoleMap[requestTemplateRole.Role] = true
 				}
 			}
 			collectObj.UseRole = roleTemplateMap[collectObj.ParentId]
+			collectObj.Status = 1
+			// 判断 收藏模板是否被禁用. 禁用版本 大于等于当前模板版本表示禁用
+			if disableTemplateVersionMap[template.ParentId] != "" && strings.Compare(disableTemplateVersionMap[template.ParentId], template.Version) >= 0 {
+				collectObj.Status = 2
+			} else if !templateUserRoleMap[collectObj.UseRole] {
+				// 模板使用权限变更,导致收藏模板时候角色,没权限新建请求
+				collectObj.Status = 3
+			}
 			result, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: collectObj.Id}, userToken, "template")
 			if err != nil {
 				continue
@@ -109,6 +122,18 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		}
 	}
 	return
+}
+
+func getAllDisableTemplateVersionMap() map[string]string {
+	var hashMap = make(map[string]string)
+	var list []*models.RequestTemplateTable
+	x.SQL("select * from request_template where status = 'disable'").Find(&list)
+	if len(list) > 0 {
+		for _, requestTemplate := range list {
+			hashMap[requestTemplate.ParentId] = requestTemplate.Version
+		}
+	}
+	return hashMap
 }
 
 func QueryAllTemplateCollect(user string) (collectMap map[string]bool, err error) {

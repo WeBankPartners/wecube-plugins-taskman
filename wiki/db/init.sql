@@ -299,9 +299,9 @@ alter table request add column parent varchar(64) default null;
 alter table form_item modify column value text default null;
 #@v0.1.2.15-end@;
 
-#@v0.1.3.4-begin@;
+#@v0.1.2.16-begin@;
 alter table request add column `rollback_desc` text  DEFAULT null;
-#@v0.1.3.4-end@;
+#@v0.1.2.16-end@;
 
 #@v0.1.3.12-begin@;
 alter table request add column `type` tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';

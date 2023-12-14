@@ -2388,7 +2388,6 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 	default:
 		// 请求状态值,从编排接口读取最新状态值
 		if request.ProcInstanceId != "" {
-			requestStatus := getInstanceStatus(request.ProcInstanceId, userToken)
 			// 非定版&非完成状态,需要查询 任务节点状态
 			taskMap, _ := getTaskMapByRequestId(requestId)
 			if len(taskMap) > 0 && len(subRowsData) > 0 {
@@ -2398,22 +2397,33 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 						for j := i - 1; j >= 0; j-- {
 							subRowsData[j].Status = int(Completed)
 						}
-						if v.Status != "done" {
+						if v.Status == "done" {
+							// 任务还在进行中,节点还在审批
+							subRowsData[i].Status = int(Completed)
+						} else {
 							// 任务还在进行中,节点还在审批
 							subRowsData[i].Status = int(InProgress)
-						} else {
-							// 任务done,需要根据请求状态去判断,是处理完成还是失败
-							if requestStatus == "Completed" {
-								subRowsData[i].Status = int(Completed)
-							} else if requestStatus == "InProgress" {
-								subRowsData[i].Status = int(InProgress)
-							} else {
-								// 去掉完成和任务中,其他状态都表示失败(包括审批拒绝、编排执行失败)
-								subRowsData[i].Status = int(Fail)
-							}
 						}
 						break
 					}
+				}
+			}
+			response, err := getProcessInstances(request.ProcInstanceId, userToken)
+			if err != nil {
+				log.Logger.Error("http getProcessInstances error", log.Error(err))
+			}
+			// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
+			for _, v := range response.Data.TaskNodeInstances {
+				if v.Status == "Faulted" || v.Status == "Timeouted" {
+					rowsData = append(rowsData, &models.RequestProgressObj{
+						NodeDefId: v.NodeDefId,
+						Node:      v.NodeName,
+						Handler:   "autoNode",
+						Status:    4,
+						OrderedNo: v.OrderedNo,
+					})
+					sort.Sort(models.RequestProgressObjSort(rowsData))
+					break
 				}
 			}
 		} else {
@@ -2459,7 +2469,8 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 				continue
 			}
 			rowsData = append(rowsData, &models.RequestProgressObj{
-				NodeDefId: dto.NodeDefId,
+				OrderedNo: node.OrderedNo,
+				NodeDefId: node.NodeDefId,
 				Node:      node.NodeName,
 				Handler:   getTaskApproveHandler(dto),
 				Status:    int(NotStart),
@@ -2476,7 +2487,8 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 					continue
 				}
 				rowsData = append(rowsData, &models.RequestProgressObj{
-					NodeDefId: dto.NodeDefId,
+					OrderedNo: node.OrderedNo,
+					NodeDefId: node.NodeDefId,
 					Node:      node.NodeName,
 					Handler:   getTaskApproveHandler(dto),
 					Status:    int(NotStart),

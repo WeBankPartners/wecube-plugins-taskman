@@ -61,6 +61,7 @@ type RequestProgressObj struct {
 	Node      string `json:"node" xorm:"node"`
 	Handler   string `json:"handler" xorm:"handler"`
 	Status    int    `json:"status" xorm:"status"` // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
+	OrderedNo string `json:"orderNo" xorm:"-"`     // 排序字段
 }
 
 // CollectDataObj 收藏数据项
@@ -403,5 +404,23 @@ func (q QueryNodeSort) Less(i, j int) bool {
 }
 
 func (q QueryNodeSort) Swap(i, j int) {
+	q[i], q[j] = q[j], q[i]
+}
+
+type RequestProgressObjSort []*RequestProgressObj
+
+func (q RequestProgressObjSort) Len() int {
+	return len(q)
+}
+
+func (q RequestProgressObjSort) Less(i, j int) bool {
+	t := strings.Compare(q[i].OrderedNo, q[j].OrderedNo)
+	if t < 0 {
+		return true
+	}
+	return false
+}
+
+func (q RequestProgressObjSort) Swap(i, j int) {
 	q[i], q[j] = q[j], q[i]
 }

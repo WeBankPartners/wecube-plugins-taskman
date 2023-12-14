@@ -32,6 +32,10 @@ const (
 	RequestComplete = "requestComplete" // 请求完成
 )
 
+const (
+	AutoNode = "autoNode" //自动节点
+)
+
 var (
 	requestIdLock   = new(sync.RWMutex)
 	templateTypeArr = []int{1, 0} // 模版类型: 1表示发布,0表示请求
@@ -2415,14 +2419,14 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 			// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
 			for _, v := range response.Data.TaskNodeInstances {
 				if v.Status == "Faulted" || v.Status == "Timeouted" {
-					rowsData = append(rowsData, &models.RequestProgressObj{
+					subRowsData = append(subRowsData, &models.RequestProgressObj{
 						NodeDefId: v.NodeDefId,
 						Node:      v.NodeName,
-						Handler:   "autoNode",
-						Status:    4,
+						Handler:   AutoNode,
+						Status:    int(Fail),
 						OrderedNo: v.OrderedNo,
 					})
-					sort.Sort(models.RequestProgressObjSort(rowsData))
+					sort.Sort(models.RequestProgressObjSort(subRowsData))
 					break
 				}
 			}

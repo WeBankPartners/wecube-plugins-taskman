@@ -1158,8 +1158,6 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	requestTemplateTable = tmpTemplateTable
 	// 查询当前用户所有收藏模板记录
 	collectMap, _ := QueryAllTemplateCollect(user)
-	// 查询所有模板属主角色
-	ownerRoleMap := getMGmtRequestTemplateRoles()
 	var collectFlag int
 	// 组装数据
 	// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
@@ -1193,7 +1191,7 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 					Status:          template.Status,
 					UpdatedBy:       template.UpdatedBy,
 					Handler:         template.Handler,
-					Role:            ownerRoleMap[template.Id],
+					Role:            role,
 					UpdatedTime:     template.UpdatedTime,
 					CollectFlag:     collectFlag,
 					Type:            template.Type,

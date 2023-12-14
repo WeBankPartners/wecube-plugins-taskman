@@ -59,7 +59,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
 
-		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
+		&handlerFuncObj{Url: "/user/template/collect", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem},

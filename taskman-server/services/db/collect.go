@@ -11,8 +11,8 @@ import (
 func AddTemplateCollect(param *models.CollectTemplateTable) error {
 	param.Id = guid.CreateGuid()
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("insert into collect_template(id,request_template,user,type,created_time) value (?,?,?,?,?)",
-		param.Id, param.RequestTemplate, param.User, param.Type, nowTime)
+	_, err := x.Exec("insert into collect_template(id,request_template,type,user,role,created_time) value (?,?,?,?,?,?)",
+		param.Id, param.RequestTemplate, param.Type, param.User, param.Role, nowTime)
 	if err != nil {
 		err = fmt.Errorf("Insert database error:%s ", err.Error())
 	}

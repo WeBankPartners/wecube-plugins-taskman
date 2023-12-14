@@ -100,7 +100,7 @@ export const disableTemplate = templateId => req.post(`/taskman/api/v1/request-t
 // 选择模板列表
 export const getTemplateTree = () => req.get('/taskman/api/v2/user/request-template')
 // 模板收藏
-export const collectTemplate = templateId => req.post(`/taskman/api/v1/user/template/collect/${templateId}`)
+export const collectTemplate = params => req.post(`/taskman/api/v1/user/template/collect`, params)
 // 取消模板收藏
 export const uncollectTemplate = templateId => req.delete(`/taskman/api/v1/user/template/collect/${templateId}`)
 // 模板收藏列表

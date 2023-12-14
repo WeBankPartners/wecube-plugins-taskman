@@ -130,35 +130,19 @@
                 <Col :span="9">{{ detailInfo.description }}</Col>
               </Row>
             </HeaderTitle>
+            <!--处理历史-->
             <HeaderTitle title="处理历史">
-              <Collapse v-model="activeStep">
+              <Collapse v-model="activeStep" simple style="margin-top:30px;">
                 <Panel v-for="(data, index) in historyData" :name="index + ''" :key="index">
                   <!--提交请求-->
                   <template v-if="index === 0">
-                    <div style="display:flex;align-items:center;">
-                      <div style="width:70px;">提交请求</div>
-                      <div style="flex:1">
-                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                          >{{ $t('request_id') }}:{{ data.requestId }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="orange"
-                          >{{ $t('request_name') }}:{{ data.requestName }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="green"
-                          >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                          >{{ $t('reporter') }}:{{ data.reporter }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                          >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
-                        >
+                    <div style="display:flex;align-items:center;width:100%;">
+                      <div style="width:70px;font-weight:bold;">提交请求</div>
+                      <div style="width:calc(100% - 70px)">
+                        <HeaderTag :showHeader="true" :data="data" operation="提交审批"></HeaderTag>
                       </div>
                     </div>
-                    <div slot="content">
+                    <div slot="content" class="history">
                       <FormItem label="选择操作单元" required>
                         <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
                           <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
@@ -171,30 +155,13 @@
                   </template>
                   <!--请求定版-->
                   <template v-else-if="index === 1">
-                    <div style="display:flex;align-items:center;">
-                      <div style="width:70px;">请求定版</div>
-                      <div style="flex:1;">
-                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                          >{{ $t('request_id') }}:{{ data.requestId }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="orange"
-                          >{{ $t('request_name') }}:{{ data.requestName }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="green"
-                          >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                          >{{ $t('reporter') }}:{{ data.reporter }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                          >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
-                        >
+                    <div style="display:flex;align-items:center;width:100%;">
+                      <div style="width:70px;font-weight:bold;">请求定版</div>
+                      <div style="width:calc(100% - 70px)">
+                        <HeaderTag :data="data" operation="确认定版"></HeaderTag>
                       </div>
                     </div>
-                    <div slot="content">
+                    <div slot="content" class="history">
                       <DataBind
                         :isHandle="isHandle"
                         :requestTemplate="requestTemplate"
@@ -205,38 +172,13 @@
                   </template>
                   <!--任务审批-->
                   <template v-else>
-                    <div style="display:flex;align-items:center;">
-                      <div style="width:70px;">{{ data.taskName }}</div>
-                      <div style="flex:1;">
-                        <Tag style="font-size: 14px" type="border" size="medium" color="primary"
-                          >{{ $t('task_name') }}:{{ data.taskName }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                          >{{ $t('handler') }}:{{ data.handler }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="warning"
-                          >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
-                        >
-                        <Tag
-                          v-if="data.status === 'done'"
-                          style="font-size: 14px"
-                          type="border"
-                          size="medium"
-                          color="cyan"
-                          >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
-                          >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
-                        >
-                        <Tag style="font-size: 14px" type="border" size="medium" color="blue"
-                          >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
-                        >
-                        <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
-                          ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
-                        >
+                    <div style="display:flex;align-items:center;width:100%;">
+                      <div style="width:70px;font-weight:bold;">{{ data.taskName }}</div>
+                      <div style="width:calc(100% - 70px)">
+                        <HeaderTag :data="data"></HeaderTag>
                       </div>
                     </div>
-                    <div slot="content">
+                    <div slot="content" class="history">
                       <EntityTable
                         :data="data.formData"
                         :requestId="requestId"
@@ -290,6 +232,118 @@
                 </Panel>
               </Collapse>
             </HeaderTitle>
+            <!--当前处理-任务审批-->
+            <HeaderTitle
+              v-if="isHandle && detailInfo.status === 'InProgress'"
+              title="当前处理"
+              :subTitle="handleData.taskName"
+            >
+              <Steps :current="1" direction="vertical">
+                <Step>
+                  <div slot="title" class="task-step">
+                    <div>第一步：填写任务表单</div>
+                    <div>（请按格式填写任务表单）</div>
+                  </div>
+                  <div slot="content" style="padding:20px 0px;">
+                    <EntityTable
+                      :data="handleData.formData"
+                      :requestId="requestId"
+                      :formDisable="!handleData.editable || enforceDisable"
+                    ></EntityTable>
+                  </div>
+                </Step>
+                <Step>
+                  <div slot="title" class="task-step">
+                    <div>第二步：填写反馈结果</div>
+                    <div>（默认为同意，支持修改，支持附件上传）</div>
+                  </div>
+                  <div slot="content" style="padding:20px 0px;">
+                    <Form :label-width="80" style="margin: 16px 0">
+                      <FormItem v-if="handleData.requestId === ''" :label="$t('task') + $t('description')">
+                        <Input disabled v-model="handleData.description" type="textarea" />
+                      </FormItem>
+                      <FormItem
+                        :label="$t('process_result')"
+                        v-if="handleData.nextOption && handleData.nextOption.length !== 0"
+                      >
+                        <span slot="label">
+                          {{ $t('process_result') }}
+                          <span style="color: #ed4014"> * </span>
+                        </span>
+                        <Select v-model="handleData.choseOption" :disabled="!handleData.editable || enforceDisable">
+                          <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{
+                            option
+                          }}</Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem :label="$t('process_comments')">
+                        <Input
+                          :disabled="!handleData.editable || enforceDisable"
+                          v-model="handleData.comment"
+                          type="textarea"
+                        />
+                      </FormItem>
+                    </Form>
+                    <div style="text-align: center">
+                      <Button v-if="handleData.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                        $t('save')
+                      }}</Button>
+                      <Button
+                        v-if="handleData.editable"
+                        :disabled="
+                          enforceDisable ||
+                            (handleData.nextOption &&
+                              handleData.nextOption.length !== 0 &&
+                              handleData.choseOption === '')
+                        "
+                        @click="commitTaskData"
+                        type="primary"
+                        >{{ $t('commit') }}</Button
+                      >
+                    </div>
+                  </div>
+                </Step>
+              </Steps>
+            </HeaderTitle>
+            <!--当前处理-请求定版-->
+            <HeaderTitle v-if="isHandle && detailInfo.status === 'Pending'" title="当前处理" subTitle="请求定版">
+              <Steps :current="1" direction="vertical">
+                <Step>
+                  <div slot="title" class="task-step">
+                    <div>第一步：表单填写审核</div>
+                    <div>（确认表单填写格式、数据正确不可修改）</div>
+                  </div>
+                  <div slot="content" style="padding:20px 0px;">
+                    <FormItem label="选择操作单元" required>
+                      <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
+                        <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                          item.key_name
+                        }}</Option>
+                      </Select>
+                    </FormItem>
+                    <EntityTable
+                      :data="historyData[0].formData"
+                      :requestId="requestId"
+                      :formDisable="true"
+                    ></EntityTable>
+                  </div>
+                </Step>
+                <Step>
+                  <div slot="title" class="task-step">
+                    <div>第二步：编排节点使用数据确认</div>
+                    <div>（确认编排的自动节点绑定的对象可以修改）</div>
+                  </div>
+                  <div slot="content" style="padding:20px 0px;">
+                    <DataBind
+                      :isHandle="isHandle"
+                      :requestTemplate="requestTemplate"
+                      :requestId="requestId"
+                      :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                    ></DataBind>
+                  </div>
+                </Step>
+              </Steps>
+            </HeaderTitle>
           </template>
         </Form>
       </div>
@@ -307,6 +361,7 @@
 
 <script>
 import HeaderTitle from '../components/header-title.vue'
+import HeaderTag from '../components/header-tag.vue'
 import StaticFlow from '../components/flow/static-flow.vue'
 import DynamicFlow from '../components/flow/dynamic-flow.vue'
 import EntityTable from '../components/entity-table.vue'
@@ -317,8 +372,8 @@ import {
   getRootEntity,
   getEntityData,
   savePublishData,
-  getRequestInfo,
   getPublishInfo,
+  getRequestInfo,
   updateRequestStatus,
   saveTaskData,
   commitTaskData
@@ -339,6 +394,7 @@ const statusColor = {
 export default {
   components: {
     HeaderTitle,
+    HeaderTag,
     StaticFlow,
     DynamicFlow,
     EntityTable,
@@ -369,6 +425,7 @@ export default {
       progressList: [],
       requestData: [], // 发布目标对象表格数据
       historyData: [], // 处理历史数据
+      handleData: {},
       activeStep: ''
     }
   },
@@ -477,7 +534,20 @@ export default {
           expectTime
         })
         this.historyData = data.data || []
-        this.activeStep = this.historyData.length - 1 + ''
+        // 获取请求定版-当前处理数据
+        if (this.detailInfo.status === 'Pending') {
+          if (this.historyData && this.historyData.length > 1) {
+            this.handleData = this.historyData[1]
+            this.historyData.splice(1, 1)
+          }
+        } else if (this.detailInfo.status === 'InProgress') {
+          const index = this.historyData.findIndex(item => item.editable)
+          this.handleData = this.historyData[index]
+          this.historyData.splice(index, 1)
+        }
+        if (this.isHandle === false) {
+          this.activeStep = this.historyData.length - 1 + ''
+        }
       }
     },
     // 操作目标对象下拉值
@@ -590,7 +660,8 @@ export default {
     },
     // 任务审批保存
     async saveTaskData () {
-      const taskData = this.historyData.find(d => d.editable === true)
+      // const taskData = this.historyData.find(d => d.editable === true)
+      const taskData = this.handleData
       const result = this.paramsCheck(taskData)
       if (result) {
         const { statusCode } = await saveTaskData(taskData.taskId, taskData)
@@ -609,7 +680,8 @@ export default {
     },
     // 任务审批提交
     async commitTaskData () {
-      const taskData = this.historyData.find(d => d.editable === true)
+      // const taskData = this.historyData.find(d => d.editable === true)
+      const taskData = this.handleData
       const { statusCode } = await commitTaskData(taskData.taskId, taskData)
       if (statusCode === 'OK') {
         this.$Notice.success({
@@ -654,7 +726,7 @@ export default {
   .back-header {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     .name {
       font-size: 16px;
       margin-left: 20px;
@@ -695,6 +767,22 @@ export default {
       border-right: 2px dashed #d7dadc;
       padding-right: 20px;
     }
+    .history {
+      padding: 20px;
+      border: 1px dashed #d7dadc;
+      margin-top: 20px;
+    }
+    .task-step {
+      display: flex;
+      div:first-child {
+        color: #515a6e;
+      }
+      div:last-child {
+        font-weight: 400;
+        font-size: 12px;
+        color: #515a6e;
+      }
+    }
   }
 }
 </style>
@@ -706,7 +794,7 @@ export default {
     font-size: 12px;
     color: #3d3c38 !important;
   }
-  .ivu-steps .ivu-steps-tail > i {
+  .steps .ivu-steps .ivu-steps-tail > i {
     height: 3px;
     background: #8189a5;
   }
@@ -719,10 +807,23 @@ export default {
   .required {
     color: red;
   }
+  .ivu-collapse {
+    border: none !important;
+  }
+  .ivu-collapse > .ivu-collapse-item {
+    border-top: none;
+  }
   .ivu-collapse-header {
     height: auto !important;
     display: flex;
     align-items: center;
+    padding-left: 0px !important;
+  }
+  .ivu-collapse-content {
+    padding: 0 0 0 16px;
+  }
+  .ivu-icon {
+    font-weight: bold;
   }
 }
 </style>

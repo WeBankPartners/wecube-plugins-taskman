@@ -4,6 +4,7 @@
       <Icon v-if="expand" size="26" type="md-arrow-dropdown" @click="handleExpand" style="cursor:pointer" />
       <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
+      <span v-if="subTitle" class="sub-title">{{ '(' + subTitle + ')' }}</span>
     </div>
     <div v-show="expand" class="content">
       <slot></slot>
@@ -15,6 +16,10 @@
 export default {
   props: {
     title: {
+      type: String,
+      default: ''
+    },
+    subTitle: {
       type: String,
       default: ''
     }
@@ -53,6 +58,9 @@ export default {
         background-color: #c6eafe;
         box-sizing: content-box;
       }
+    }
+    .sub-title {
+      font-size: 15px;
     }
   }
   .content {

@@ -1,7 +1,9 @@
 <template>
   <div style="width: 400px;">
     <div style="margin-bottom: 8px;">
-      <Alert show-icon>如对以下编排的设计、执行情况有任何疑问。请复制编排名。发送给wecube管理员询问</Alert>
+      <Alert type="warning" show-icon
+        >如对以下编排的设计、执行情况有任何疑问。请复制编排名。发送给wecube管理员询问</Alert
+      >
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
       <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>

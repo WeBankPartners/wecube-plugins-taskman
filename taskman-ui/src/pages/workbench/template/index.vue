@@ -243,9 +243,10 @@ export default {
       })
     },
     // 收藏or取消收藏模板
-    async handleStar ({ id, collectFlag }) {
+    async handleStar ({ id, collectFlag, role }) {
       const method = collectFlag ? uncollectTemplate : collectTemplate
-      const { statusCode } = await method(id)
+      const params = collectFlag ? id : { templateId: id, role }
+      const { statusCode } = await method(params)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),

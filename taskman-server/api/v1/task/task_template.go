@@ -11,7 +11,7 @@ import (
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
 	proNodeId := c.Param("proNodeId")
-	result, err := db.GetTaskTemplate(requestTemplateId, proNodeId)
+	result, err := db.GetTaskTemplate(requestTemplateId, proNodeId, "")
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -42,7 +42,7 @@ func UpdateTaskTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-		result, _ := db.GetTaskTemplate(id, param.NodeDefId)
+		result, _ := db.GetTaskTemplate(id, param.NodeDefId, "")
 		middleware.ReturnData(c, result)
 	}
 }

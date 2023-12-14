@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTemplateDto, err error) {
+func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models.TaskTemplateDto, err error) {
 	result = models.TaskTemplateDto{}
-	taskTemplate, getTaskErr := getSimpleTaskTemplate("", requestTemplateId, proNodeId)
+	taskTemplate, getTaskErr := getSimpleTaskTemplate("", requestTemplateId, proNodeId, nodeId)
 	if getTaskErr != nil {
 		log.Logger.Warn("GetTaskTemplate warning", log.Error(getTaskErr))
 		return
@@ -58,7 +58,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 }
 
 func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) error {
-	_, checkExistErr := getSimpleTaskTemplate("", requestTemplateId, param.NodeDefId)
+	_, checkExistErr := getSimpleTaskTemplate("", requestTemplateId, param.NodeDefId, "")
 	if checkExistErr == nil {
 		return fmt.Errorf("RequestTemplate:%s nodeDefId:%s already have task form,please reload ", requestTemplateId, param.NodeDefId)
 	}
@@ -77,7 +77,7 @@ func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) 
 }
 
 func UpdateTaskTemplate(param models.TaskTemplateDto) error {
-	taskTemplate, err := getSimpleTaskTemplate(param.Id, "", "")
+	taskTemplate, err := getSimpleTaskTemplate(param.Id, "", "", "")
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func UpdateTaskTemplate(param models.TaskTemplateDto) error {
 	return transaction(actions)
 }
 
-func getSimpleTaskTemplate(id, requestTemplate, proNodeId string) (result models.TaskTemplateTable, err error) {
+func getSimpleTaskTemplate(id, requestTemplate, proNodeId, nodeId string) (result models.TaskTemplateTable, err error) {
 	var taskTemplateTable []*models.TaskTemplateTable
 	baseSql := "select * from task_template where 1=1 "
 	var params []interface{}
@@ -113,6 +113,10 @@ func getSimpleTaskTemplate(id, requestTemplate, proNodeId string) (result models
 	if proNodeId != "" {
 		baseSql += " and node_def_id=?"
 		params = append(params, proNodeId)
+	}
+	if nodeId != "" {
+		baseSql += " and node_id=?"
+		params = append(params, nodeId)
 	}
 	err = x.SQL(baseSql, params...).Find(&taskTemplateTable)
 	if err != nil {

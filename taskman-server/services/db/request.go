@@ -2449,17 +2449,39 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 		return
 	}
 	if len(nodeList) > 0 {
+		// 通过 nodeDefId 和task_template匹配节点
 		for _, node := range nodeList {
-			dto, err := GetTaskTemplate(templateId, node.NodeDefId)
+			dto, err := GetTaskTemplate(templateId, node.NodeDefId, "")
 			if err != nil {
+				continue
+			}
+			if dto.Id == "" {
 				continue
 			}
 			rowsData = append(rowsData, &models.RequestProgressObj{
 				NodeDefId: dto.NodeDefId,
-				Node:      dto.Name,
+				Node:      node.NodeName,
 				Handler:   getTaskApproveHandler(dto),
 				Status:    int(NotStart),
 			})
+		}
+		// 由于编排的编辑会导致 nodeDefId匹配不上,则通过 nodeId 与task_template匹配一遍
+		if len(rowsData) == 0 {
+			for _, node := range nodeList {
+				dto, err := GetTaskTemplate(templateId, "", node.NodeId)
+				if err != nil {
+					continue
+				}
+				if dto.Id == "" {
+					continue
+				}
+				rowsData = append(rowsData, &models.RequestProgressObj{
+					NodeDefId: dto.NodeDefId,
+					Node:      node.NodeName,
+					Handler:   getTaskApproveHandler(dto),
+					Status:    int(NotStart),
+				})
+			}
 		}
 	}
 	rowsData = append(rowsData, &models.RequestProgressObj{

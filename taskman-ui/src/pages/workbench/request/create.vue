@@ -2,9 +2,12 @@
   <div class="workbench-request-create">
     <Row class="back-header">
       <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
-      <span class="name"
-        >{{ `${templateName}` }}<Tag size="medium">{{ version }}</Tag></span
-      >
+      <span v-if="isAdd" class="name">
+        {{ `${templateName}` }}<Tag size="medium">{{ version }}</Tag>
+      </span>
+      <span v-else class="name">
+        {{ `${detailInfo.name}` }}
+      </span>
     </Row>
     <Row class="w-header">
       <Col span="18" class="steps">
@@ -24,6 +27,9 @@
       <Col span="6" class="btn-group">
         <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
         <Button v-if="isAdd" type="primary" @click="handlePublish">发布</Button>
+        <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall"
+          >撤回</Button
+        >
       </Col>
     </Row>
     <div style="display:flex;" class="content">
@@ -376,7 +382,8 @@ import {
   getRequestInfo,
   updateRequestStatus,
   saveTaskData,
-  commitTaskData
+  commitTaskData,
+  recallRequest
 } from '@/api/server'
 import dayjs from 'dayjs'
 const statusIcon = {
@@ -602,7 +609,7 @@ export default {
           if (noJump) {
             return statusCode
           } else {
-            this.$router.push({ path: '/taskman/workbench?tabName=draft&actionName=1' })
+            this.$router.push({ path: '/taskman/workbench?tabName=draft&actionName=2' })
           }
         }
       } else {
@@ -624,7 +631,7 @@ export default {
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench?tabName=pending&actionName=1' })
+              this.$router.push({ path: '/taskman/workbench?tabName=pending&actionName=2' })
             }
           }
         },
@@ -688,7 +695,7 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed&actionName=1' })
+        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed&actionName=2' })
       }
     },
     paramsCheck (taskData) {
@@ -716,6 +723,26 @@ export default {
         })
       })
       return result
+    },
+    // 表格操作撤回
+    async handleRecall () {
+      this.$Modal.confirm({
+        title: this.$t('confirm') + '撤回',
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await recallRequest(this.requestId)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.$router.push({ path: '/taskman/workbench?tabName=submit&actionName=2' })
+          }
+        },
+        onCancel: () => {}
+      })
     }
   }
 }

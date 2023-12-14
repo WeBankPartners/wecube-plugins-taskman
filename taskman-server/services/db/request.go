@@ -2501,9 +2501,10 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 		}
 	}
 	rowsData = append(rowsData, &models.RequestProgressObj{
-		Node:    RequestComplete,
-		Handler: "",
-		Status:  int(NotStart),
+		Node:      RequestComplete,
+		Handler:   "",
+		Status:    int(NotStart),
+		OrderedNo: "9999",
 	})
 	return
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"strings"
+	"strconv"
 	"time"
 )
 
@@ -106,7 +106,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 			collectObj.UseRole = roleTemplateMap[collectObj.ParentId]
 			collectObj.Status = 1
 			// 判断 收藏模板是否被禁用. 禁用版本 大于等于当前模板版本表示禁用
-			if disableTemplateVersionMap[template.ParentId] != "" && strings.Compare(disableTemplateVersionMap[template.ParentId], template.Version) >= 0 {
+			if disableTemplateVersionMap[template.ParentId] != "" && compare(disableTemplateVersionMap[template.ParentId], template.Version) >= 0 {
 				collectObj.Status = 2
 			} else if !templateUserRoleMap[collectObj.UseRole] {
 				// 模板使用权限变更,导致收藏模板时候角色,没权限新建请求
@@ -122,6 +122,17 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		}
 	}
 	return
+}
+
+func compare(v1, v2 string) int {
+	tmpV1, _ := strconv.Atoi(v1[1:])
+	tmpV2, _ := strconv.Atoi(v2[1:])
+	if tmpV1 > tmpV2 {
+		return 1
+	} else if tmpV1 == tmpV2 {
+		return 0
+	}
+	return -1
 }
 
 func getAllDisableTemplateVersionMap() map[string]string {

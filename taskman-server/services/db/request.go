@@ -17,10 +17,12 @@ import (
 )
 
 const (
-	InProgress ProgressStatus = 1 // 进行中
-	NotStart   ProgressStatus = 2 // 未开始
-	Completed  ProgressStatus = 3 // 已完成
-	Fail       ProgressStatus = 4 // 报错失败,被拒绝了
+	InProgress                 ProgressStatus = 1 // 进行中
+	NotStart                   ProgressStatus = 2 // 未开始
+	Completed                  ProgressStatus = 3 // 已完成
+	Fail                       ProgressStatus = 4 // 报错失败,被拒绝了
+	AutoExitStatus             ProgressStatus = 5 // 自动退出
+	InternallyTerminatedStatus ProgressStatus = 6 // 自动退出
 )
 
 type ProgressStatus int
@@ -2422,10 +2424,12 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 			// 自动退出
 			if response.Data.Status == "Faulted" {
 				subRowsData[len(subRowsData)-1].Node = AutoExit
+				subRowsData[len(subRowsData)-1].Status = int(AutoExitStatus)
 			} else {
 				// 手动终止
 				if response.Data.Status == "InternallyTerminated" {
 					subRowsData[len(subRowsData)-1].Node = InternallyTerminated
+					subRowsData[len(subRowsData)-1].Status = int(InternallyTerminatedStatus)
 				}
 				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
 				var exist bool

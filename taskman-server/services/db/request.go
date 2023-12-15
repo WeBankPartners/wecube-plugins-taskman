@@ -26,11 +26,12 @@ const (
 type ProgressStatus int
 
 const (
-	WaitCommit      = "waitCommit"      // 等待提交
-	SendRequest     = "sendRequest"     // 发送请求
-	RequestPending  = "requestPending"  // 请求定版
-	RequestComplete = "requestComplete" // 请求完成
-	AutoExit        = " autoExit"       // 自动退出
+	WaitCommit           = "waitCommit"           // 等待提交
+	SendRequest          = "sendRequest"          // 发送请求
+	RequestPending       = "requestPending"       // 请求定版
+	RequestComplete      = "requestComplete"      // 请求完成
+	AutoExit             = "autoExit"             // 自动退出
+	InternallyTerminated = "internallyTerminated" // 手动终止
 )
 
 const (
@@ -2422,6 +2423,10 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 			if response.Data.Status == "Faulted" {
 				subRowsData[len(subRowsData)-1].Node = AutoExit
 			} else {
+				// 手动终止
+				if response.Data.Status == "InternallyTerminated" {
+					subRowsData[len(subRowsData)-1].Node = InternallyTerminated
+				}
 				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
 				var exist bool
 				for _, v := range response.Data.TaskNodeInstances {

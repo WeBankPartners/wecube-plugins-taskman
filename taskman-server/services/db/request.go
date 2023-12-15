@@ -30,6 +30,7 @@ const (
 	SendRequest     = "sendRequest"     // 发送请求
 	RequestPending  = "requestPending"  // 请求定版
 	RequestComplete = "requestComplete" // 请求完成
+	AutoExit        = " autoExit"       // 自动退出
 )
 
 const (
@@ -2416,18 +2417,35 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
-			// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
-			for _, v := range response.Data.TaskNodeInstances {
-				if v.Status == "Faulted" || v.Status == "Timeouted" {
-					subRowsData = append(subRowsData, &models.RequestProgressObj{
-						NodeDefId: v.NodeDefId,
-						Node:      v.NodeName,
-						Handler:   AutoNode,
-						Status:    int(Fail),
-						OrderedNo: v.OrderedNo,
-					})
-					sort.Sort(models.RequestProgressObjSort(subRowsData))
-					break
+
+			// 自动退出
+			if response.Data.Status == "Faulted" {
+				subRowsData[len(subRowsData)-1].Node = AutoExit
+			} else {
+				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
+				var exist bool
+				for _, v := range response.Data.TaskNodeInstances {
+					exist = false
+					if v.Status == "Faulted" || v.Status == "Timeouted" {
+						for _, rowData := range subRowsData {
+							if rowData.NodeDefId == v.NodeDefId {
+								exist = true
+								rowData.Status = int(Fail)
+								break
+							}
+						}
+						if !exist {
+							subRowsData = append(subRowsData, &models.RequestProgressObj{
+								NodeDefId: v.NodeDefId,
+								Node:      v.NodeName,
+								Handler:   AutoNode,
+								Status:    int(Fail),
+								OrderedNo: v.OrderedNo,
+							})
+							sort.Sort(models.RequestProgressObjSort(subRowsData))
+							break
+						}
+					}
 				}
 			}
 		} else {

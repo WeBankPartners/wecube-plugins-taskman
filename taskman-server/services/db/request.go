@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/tealeg/xlsx"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -312,25 +313,65 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 	where := transHistoryConditionToSQL(param)
 	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), false)
 	if len(rowsData) > 0 {
-		/*	f := excelize.NewFile()
-			// 将 Excel 文件保存到临时文件中
-			tempFile, err := os.CreateTemp("", "excel_*.xlsx")
-			if err != nil {
-				return err
-			}
-			defer os.Remove(tempFile.Name())
-			defer tempFile.Close()
+		titles, dataArr := getRequestExportData(rowsData)
+		file := xlsx.NewFile()
+		sheet, _ := file.AddSheet("Sheet1")
+		row := sheet.AddRow()
 
-			if err := f.Write(tempFile); err != nil {
-				return err
+		var cell *xlsx.Cell
+		// 列标题赋值
+		for _, title := range titles {
+			cell = row.AddCell()
+			cell.Value = title
+		}
+
+		for _, v := range dataArr {
+			row = sheet.AddRow()
+			for _, vv := range v {
+				cell = row.AddCell()
+				cell.Value = vv
 			}
-			// 设置 HTTP 响应头
-			w.Header().Set("Content-Disposition", "attachment; filename=xxx.xlsx")
-			w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-			err = f.Write(w)
-			if err != nil {
-				return
-			}*/
+		}
+
+		filename := time.Now().Format("20060102150405") + ".xlsx"
+		// 设置 HTTP 响应头
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+		w.Header().Set("Content-Transfer-Encoding", "binary")
+		err = file.Write(w)
+	}
+	return
+}
+
+func getRequestExportData(rowsData []*models.PlatformDataObj) (titles []string, dataArr [][]string) {
+	dataArr = make([][]string, len(rowsData))
+	titles = []string{
+		"ID",
+		"请求名称",
+		"使用模板",
+		"操作对象",
+		"使用编排",
+		"请求状态",
+		"进展",
+		"创建人",
+		"当前处理人",
+		"创建时间",
+		"期望完成时间",
+	}
+	for i, row := range rowsData {
+		dataArr[i] = []string{
+			row.Id,
+			row.Name,
+			row.TemplateName,
+			row.OperatorObj,
+			row.ProcDefName,
+			row.Status,
+			strconv.Itoa(row.Progress) + "%",
+			row.CreatedBy,
+			row.Handler,
+			row.CreatedTime,
+			row.ExpectTime,
+		}
 	}
 	return
 }

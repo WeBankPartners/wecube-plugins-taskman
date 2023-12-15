@@ -77,7 +77,7 @@ export default {
         },
         {
           title: '模板名称',
-          width: 250,
+          width: 200,
           key: 'name',
           render: (h, params) => {
             return (
@@ -96,14 +96,28 @@ export default {
         },
         {
           title: '使用编排',
-          minWidth: 200,
+          minWidth: 180,
           key: 'procDefName'
+        },
+        {
+          title: '模板状态',
+          minWidth: 120,
+          key: 'status',
+          render: (h, params) => {
+            const list = [
+              { label: '已创建', value: 1, color: '#19be6b' },
+              { label: '已禁用', value: 2, color: '#c5c8ce' },
+              { label: '权限已移除', value: 3, color: '#ed4014' }
+            ]
+            const item = list.find(i => i.value === params.row.status)
+            return item && <Tag color={item.color}>{item.label}</Tag>
+          }
         },
         {
           title: '属主角色',
           sortable: 'custom',
           key: 'manageRole',
-          minWidth: 120
+          minWidth: 130
         },
         {
           title: '属主',
@@ -114,12 +128,12 @@ export default {
         {
           title: '使用角色',
           sortable: 'custom',
-          minWidth: 120,
+          minWidth: 130,
           key: 'useRole'
         },
         {
           title: '标签',
-          minWidth: 160,
+          minWidth: 130,
           key: 'tags',
           render: (h, params) => {
             return params.row.tags && <Tag>{params.row.tags}</Tag>
@@ -141,7 +155,7 @@ export default {
         {
           title: '创建时间',
           sortable: 'custom',
-          minWidth: 160,
+          minWidth: 150,
           key: 'createdTime'
         },
         {
@@ -156,6 +170,7 @@ export default {
                 <Button
                   type="info"
                   size="small"
+                  disabled={params.row.status !== 1}
                   onClick={() => {
                     this.hanldeCreate(params.row)
                   }}
@@ -220,6 +235,17 @@ export default {
     },
     // 发起
     hanldeCreate (row) {
+      // if (row.status === 2) {
+      //   return this.$Notice.warning({
+      //     title: this.$t('warning'),
+      //     desc: '该模板已禁用'
+      //   })
+      // } else if (row.status === 3) {
+      //   return this.$Notice.warning({
+      //     title: this.$t('warning'),
+      //     desc: '该模板使用权限已移除'
+      //   })
+      // }
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({

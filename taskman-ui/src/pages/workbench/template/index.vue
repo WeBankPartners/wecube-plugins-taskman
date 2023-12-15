@@ -73,25 +73,39 @@
         </div>
       </div>
       <div class="list">
-        <Card style="width:350px;min-height:360px;">
+        <Card style="width:520px;min-height:600px;">
           <div class="w-header">
             我的收藏 <span>{{ collectList.length }}</span>
           </div>
-          <div v-for="i in collectList" :key="i.id" class="item">
-            <div class="template" @click="handleChooseTemplate(i, i.manageRole)">
-              {{ i.name }}
-              <Tag style="margin-left:5px">{{ i.version }}</Tag>
-            </div>
+          <!-- <div v-for="i in collectList" :key="i.id" class="item">
             <Tooltip content="取消收藏" placement="top-start">
               <Icon
-                style="cursor:pointer"
+                style="cursor:pointer;margin-right:5px;"
                 size="18"
                 type="ios-star"
                 color="#ebac42"
                 @click="handleStar({ ...i, collectFlag: 1 })"
               />
             </Tooltip>
-          </div>
+            <div class="template" @click="handleChooseTemplate(i, i.manageRole)">
+              {{ i.name }}
+              <Tag>{{ i.version }}</Tag>
+            </div>
+            <div>{{ i.useRole }}</div>
+          </div> -->
+          <Table
+            style="margin:20px 0;"
+            :show-header="true"
+            @on-row-click="
+              row => {
+                handleChooseTemplate(row, row.role)
+              }
+            "
+            size="small"
+            :columns="collectColumns"
+            :data="collectList"
+          >
+          </Table>
         </Card>
       </div>
     </div>
@@ -123,14 +137,10 @@ export default {
           render: (h, params) => {
             return (
               <div>
-                <span style="margin-right:2px">
-                  {params.row.name}
-                  <Tag style="margin-left:5px">{params.row.version}</Tag>
-                </span>
                 {params.row.collectFlag === 0 && this.activeName === 'confirm' && (
                   <Tooltip content="收藏" placement="top-start">
                     <Icon
-                      style="cursor:pointer"
+                      style="cursor:pointer;margin-right:5px;"
                       size="18"
                       type="ios-star-outline"
                       onClick={e => {
@@ -143,7 +153,7 @@ export default {
                 {params.row.collectFlag === 1 && this.activeName === 'confirm' && (
                   <Tooltip content="取消收藏" placement="top-start">
                     <Icon
-                      style="cursor:pointer"
+                      style="cursor:pointer;margin-right:5px;"
                       size="18"
                       type="ios-star"
                       color="#ebac42"
@@ -154,6 +164,10 @@ export default {
                     />
                   </Tooltip>
                 )}
+                <span style="margin-right:2px">
+                  {params.row.name}
+                  <Tag style="margin-left:5px">{params.row.version}</Tag>
+                </span>
               </div>
             )
           }
@@ -176,6 +190,53 @@ export default {
               </div>
             )
           }
+        }
+      ],
+      collectColumns: [
+        {
+          title: '模板名称',
+          key: 'name',
+          width: 230,
+          render: (h, params) => {
+            return (
+              <div>
+                <Tooltip content="取消收藏" placement="top-start">
+                  <Icon
+                    style="cursor:pointer;margin-right:5px;"
+                    size="18"
+                    type="ios-star"
+                    color="#ebac42"
+                    onClick={e => {
+                      e.stopPropagation()
+                      this.handleStar({ ...params.row, collectFlag: 1 })
+                    }}
+                  />
+                </Tooltip>
+                <span style="margin-right:2px">
+                  {params.row.name}
+                  <Tag style="margin-left:5px">{params.row.version}</Tag>
+                </span>
+              </div>
+            )
+          }
+        },
+        {
+          title: '模板状态',
+          width: 120,
+          key: 'status',
+          render: (h, params) => {
+            const list = [
+              { label: '已创建', value: 1, color: '#19be6b' },
+              { label: '已禁用', value: 2, color: '#c5c8ce' },
+              { label: '权限已移除', value: 3, color: '#ed4014' }
+            ]
+            const item = list.find(i => i.value === params.row.status)
+            return item && <Tag color={item.color}>{item.label}</Tag>
+          }
+        },
+        {
+          title: '角色',
+          key: 'useRole'
         }
       ]
     }
@@ -228,6 +289,17 @@ export default {
     },
     // 选中一条模板数据
     handleChooseTemplate (row, role) {
+      if (row.status === 2) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: '该模板已禁用'
+        })
+      } else if (row.status === 3) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: '该模板使用权限已移除'
+        })
+      }
       const path = row.type === 0 ? 'createRequest' : 'createPublish'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -327,7 +399,7 @@ export default {
   .wrapper {
     display: flex;
     .list {
-      width: 350px;
+      width: 520px;
       .w-header {
         font-size: 16px;
         font-weight: 700;
@@ -359,7 +431,7 @@ export default {
     }
     .template {
       padding: 0px 20px 0 0;
-      width: calc(100% - 370px);
+      width: calc(100% - 520px);
       .w-header {
         display: flex;
         align-items: center;

@@ -65,6 +65,7 @@ import {
   getPlatformList,
   getTemplateList,
   tansferToMe,
+  recallRequest,
   changeTaskStatus,
   deleteRequest,
   reRequest,
@@ -206,7 +207,7 @@ export default {
             return (
               <span
                 style="cursor:pointer;"
-                onDblclick={() => {
+                onClick={() => {
                   this.handleDbClick(params.row)
                 }}
               >
@@ -224,7 +225,7 @@ export default {
             return (
               <span
                 style="cursor:pointer;"
-                onDblclick={() => {
+                onClick={() => {
                   this.handleDbClick(params.row)
                 }}
               >
@@ -460,18 +461,30 @@ export default {
                     重新发起
                   </Button>
                 )}
-                {this.tabName === 'draft' && (
+                {params.row.status === 'Pending' && this.tabName === 'submit' && (
                   <Button
-                    type="success"
+                    type="error"
                     size="small"
                     onClick={() => {
-                      this.hanldeLaunch(params.row)
+                      this.handleRecall(params.row)
                     }}
-                    style="margin-right:5px;"
                   >
-                    去发起
+                    撤回
                   </Button>
                 )}
+                {this.tabName === 'draft' ||
+                  (this.tabName === 'submit' && params.row.status === 'Draft' && (
+                    <Button
+                      type="success"
+                      size="small"
+                      onClick={() => {
+                        this.hanldeLaunch(params.row)
+                      }}
+                      style="margin-right:5px;"
+                    >
+                      去发起
+                    </Button>
+                  ))}
                 {this.tabName === 'draft' && (
                   <Button
                     type="error"
@@ -529,6 +542,7 @@ export default {
         this.searchOptions[0].list = [
           { label: '所有', value: 0 },
           { label: '被退回', value: 1 },
+          { label: '本人撤回', value: 3 },
           { label: '其他', value: 2 }
         ]
       } else if (val === 'draft') {
@@ -691,7 +705,7 @@ export default {
           isCheck: 'Y',
           isHandle: 'N',
           enforceDisable: 'Y',
-          jumpFrom: 'group_handle'
+          jumpFrom: this.tabName
         }
       })
     },
@@ -760,6 +774,26 @@ export default {
           }
         })
       }
+    },
+    // 表格操作撤回
+    async handleRecall (row) {
+      this.$Modal.confirm({
+        title: this.$t('confirm') + '撤回',
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await recallRequest(row.id)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.getList()
+          }
+        },
+        onCancel: () => {}
+      })
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {

@@ -6,7 +6,8 @@
       <Col :span="3">处理角色</Col>
       <Col :span="3">处理人</Col>
       <Col :span="3">操作</Col>
-      <Col :span="8">备注</Col>
+      <Col :span="4">备注</Col>
+      <Col :span="4">附件</Col>
     </Row>
     <Row class="content">
       <Col :span="4">{{ data.handleTime }}</Col>
@@ -68,11 +69,12 @@ export default {
   .title {
     background: #f7f7f7;
     text-align: left;
-    margin-top: -30px;
-    height: 30px;
-    line-height: 30px;
+    margin-top: -36px;
+    height: 36px;
+    line-height: 36px;
     padding-left: 20px;
     font-size: 12px;
+    font-weight: bold;
   }
   .content {
     text-align: left;

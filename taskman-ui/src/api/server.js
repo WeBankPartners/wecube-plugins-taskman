@@ -113,6 +113,8 @@ export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform
 export const getPlatformFilter = params => req.post(`/taskman/api/v1/user/platform/filter-item`, params)
 // 工作台转给我
 export const tansferToMe = templateId => req.post(`/taskman/api/v1/request/handler/${templateId}`)
+// 工作台撤回
+export const recallRequest = id => req.post(`/taskman/api/v1/user/request/revoke/${id}`)
 // 新建发布-发布信息获取
 export const getCreateInfo = params => req.post(`/taskman/api/v2/request`, params)
 // 新建发布-请求进度

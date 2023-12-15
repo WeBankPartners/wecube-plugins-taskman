@@ -98,7 +98,7 @@
             :show-header="true"
             @on-row-click="
               row => {
-                handleChooseTemplate(row, row.role)
+                handleChooseTemplate(row, row.manageRole)
               }
             "
             size="small"
@@ -226,16 +226,16 @@ export default {
           key: 'status',
           render: (h, params) => {
             const list = [
-              { label: '已创建', value: 1, color: '#19be6b' },
+              { label: '可使用', value: 1, color: '#19be6b' },
               { label: '已禁用', value: 2, color: '#c5c8ce' },
-              { label: '权限已移除', value: 3, color: '#ed4014' }
+              { label: '权限被移除', value: 3, color: '#ed4014' }
             ]
             const item = list.find(i => i.value === params.row.status)
             return item && <Tag color={item.color}>{item.label}</Tag>
           }
         },
         {
-          title: '角色',
+          title: '我的使用角色',
           key: 'useRole'
         }
       ]
@@ -297,7 +297,7 @@ export default {
       } else if (row.status === 3) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: '该模板使用权限已移除'
+          desc: '该模板使用权限被移除'
         })
       }
       const path = row.type === 0 ? 'createRequest' : 'createPublish'

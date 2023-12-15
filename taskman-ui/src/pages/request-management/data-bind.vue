@@ -154,7 +154,7 @@ export default {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('go_back'),
         'z-index': 1000000,
-        loading: true,
+        loading: false,
         render: () => {
           return (
             <Input
@@ -167,14 +167,21 @@ export default {
           )
         },
         onOk: async () => {
-          this.$Modal.remove()
-          await this.saveRequest()
-          const params = {
-            description: this.backReason
-          }
-          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft', params)
-          if (statusCode === 'OK') {
-            this.$router.push({ path: '/taskman/request-mgmt' })
+          if (!this.backReason) {
+            this.$Notice.warning({
+              title: this.$t('warning'),
+              desc: '退回说明不能为空'
+            })
+          } else {
+            // this.$Modal.remove()
+            await this.saveRequest()
+            const params = {
+              description: this.backReason
+            }
+            const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft', params)
+            if (statusCode === 'OK') {
+              this.$router.push({ path: '/taskman/request-mgmt' })
+            }
           }
         },
         onCancel: () => {}

@@ -35,7 +35,7 @@
       </template>
     </Tabs>
     <div style="text-align: center;margin-top:12px">
-      <Button @click="saveRequest" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
+      <Button @click="saveRequest()" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="formDisable" v-if="isHandle">{{ $t('go_back') }}</Button>
       <Button @click="startRequest" :disabled="formDisable" v-if="isHandle">{{ $t('final_version') }}</Button>
       <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
@@ -55,6 +55,7 @@ import {
   startRequest,
   requestParent
 } from '@/api/server.js'
+import { deepClone } from '@/pages/util/index'
 export default {
   name: '',
   data () {
@@ -71,7 +72,22 @@ export default {
         taskNodeBindInfos: ''
       },
       requestHistory: false,
-      backReason: '' // 回退说明
+      backReason: '', // 回退说明
+      unCheckData: [], // 没有选中的数据
+      columns: [
+        {
+          title: '节点',
+          key: 'nodeName'
+        },
+        {
+          title: '数据类型',
+          key: 'entityName'
+        },
+        {
+          title: '数据项',
+          key: 'entityDisplayName'
+        }
+      ]
     }
   },
   props: {
@@ -131,10 +147,47 @@ export default {
       })
     },
     async startRequest () {
+      // 获取没有勾选的数据
+      this.unCheckData = []
+      this.copyNodes = deepClone(this.nodes)
+      this.copyNodes.forEach(n => {
+        if (n.bindOptions.length > 0) {
+          n.bindOptions = n.bindOptions.map(bData => {
+            bData.bindFlag = 'N'
+            return bData
+          })
+          n.bindData.forEach(b => {
+            let findData = n.bindOptions.find(bData => bData.oid === b)
+            findData.bindFlag = 'Y'
+          })
+        }
+      })
+      this.copyNodes.forEach(i => {
+        i.bindOptions.forEach(j => {
+          if (j.bindFlag === 'N') {
+            this.unCheckData.push({
+              nodeName: i.nodeName,
+              entityName: j.entityName,
+              entityDisplayName: j.entityDisplayName
+            })
+          }
+        })
+      })
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('final_version'),
         'z-index': 1000000,
+        width: 500,
         loading: true,
+        render: () => {
+          if (this.unCheckData.length) {
+            return (
+              <div style="width:450px;">
+                <span>你删除了以下节点的操作数据项，删除不可恢复，确认要删除吗？</span>
+                <Table style="margin:20px 0" size="small" columns={this.columns} data={this.unCheckData}></Table>
+              </div>
+            )
+          }
+        },
         onOk: async () => {
           this.$Modal.remove()
           await this.saveRequest()
@@ -177,7 +230,7 @@ export default {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('go_back'),
         'z-index': 1000000,
-        loading: true,
+        loading: false,
         render: () => {
           return (
             <Input
@@ -190,14 +243,21 @@ export default {
           )
         },
         onOk: async () => {
-          this.$Modal.remove()
-          await this.saveRequest()
-          const params = {
-            description: this.backReason
-          }
-          const { statusCode } = await updateRequestStatus(this.requestId, 'Draft', params)
-          if (statusCode === 'OK') {
-            this.$router.push({ path: '/taskman/request-mgmt' })
+          if (!this.backReason) {
+            this.$Notice.warning({
+              title: this.$t('warning'),
+              desc: '退回说明不能为空'
+            })
+          } else {
+            // this.$Modal.remove()
+            await this.saveRequest()
+            const params = {
+              description: this.backReason
+            }
+            const { statusCode } = await updateRequestStatus(this.requestId, 'Draft', params)
+            if (statusCode === 'OK') {
+              this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed' })
+            }
           }
         },
         onCancel: () => {}

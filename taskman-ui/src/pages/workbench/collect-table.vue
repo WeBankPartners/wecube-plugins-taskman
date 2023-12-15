@@ -105,9 +105,9 @@ export default {
           key: 'status',
           render: (h, params) => {
             const list = [
-              { label: '已创建', value: 1, color: '#19be6b' },
+              { label: '可使用', value: 1, color: '#19be6b' },
               { label: '已禁用', value: 2, color: '#c5c8ce' },
-              { label: '权限已移除', value: 3, color: '#ed4014' }
+              { label: '权限被移除', value: 3, color: '#ed4014' }
             ]
             const item = list.find(i => i.value === params.row.status)
             return item && <Tag color={item.color}>{item.label}</Tag>
@@ -170,7 +170,6 @@ export default {
                 <Button
                   type="info"
                   size="small"
-                  disabled={params.row.status !== 1}
                   onClick={() => {
                     this.hanldeCreate(params.row)
                   }}
@@ -200,9 +199,6 @@ export default {
         pageSize: 10
       }
     }
-  },
-  mounted () {
-    this.getList()
   },
   methods: {
     async getList () {
@@ -235,17 +231,17 @@ export default {
     },
     // 发起
     hanldeCreate (row) {
-      // if (row.status === 2) {
-      //   return this.$Notice.warning({
-      //     title: this.$t('warning'),
-      //     desc: '该模板已禁用'
-      //   })
-      // } else if (row.status === 3) {
-      //   return this.$Notice.warning({
-      //     title: this.$t('warning'),
-      //     desc: '该模板使用权限已移除'
-      //   })
-      // }
+      if (row.status === 2) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: '该模板已禁用'
+        })
+      } else if (row.status === 3) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: '该模板使用权限已移除'
+        })
+      }
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({

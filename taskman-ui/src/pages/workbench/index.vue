@@ -293,7 +293,7 @@ export default {
                 <Tag color={item.color}>
                   {// 已处理请求定版的草稿添加被退回说明
                     this.tabName === 'hasProcessed' && this.form.type === 1 && params.row.status === 'Draft'
-                      ? `${item.label}（被退回）`
+                      ? `${item.label}(被退回)`
                       : item.label}
                 </Tag>
               )
@@ -557,6 +557,7 @@ export default {
       } else {
         this.$nextTick(() => {
           this.$refs.collect.handleQuery()
+          this.$refs.dataCard.getData()
         })
       }
     },

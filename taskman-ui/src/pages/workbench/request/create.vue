@@ -23,6 +23,9 @@
             </div>
           </Step>
         </Steps>
+        <div v-if="errorNode" style="margin: 0 0 10px 20px">
+          <Alert type="error">{{ errorNode }}节点报错，流程已暂停，请复制请求ID，发送给wecube平台管理员处理</Alert>
+        </div>
       </Col>
       <Col span="6" class="btn-group">
         <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
@@ -387,16 +390,20 @@ import {
 } from '@/api/server'
 import dayjs from 'dayjs'
 const statusIcon = {
-  1: 'md-pin',
-  2: 'md-radio-button-on',
-  3: 'ios-checkmark-circle-outline',
-  4: 'ios-close-circle-outline'
+  1: 'md-pin', // 进行中
+  2: 'md-radio-button-on', // 未开始
+  3: 'ios-checkmark-circle-outline', // 已完成
+  4: 'ios-close-circle-outline', // 节点失败(包含超时)
+  5: 'md-exit', // 自动退出
+  6: 'md-exit' // 手动终止
 }
 const statusColor = {
   1: '#ffa500',
   2: '#8189a5',
   3: '#19be6b',
-  4: '#ed4014'
+  4: '#ed4014',
+  5: '#ed4014',
+  6: '#ed4014'
 }
 export default {
   components: {
@@ -433,7 +440,8 @@ export default {
       requestData: [], // 发布目标对象表格数据
       historyData: [], // 处理历史数据
       handleData: {},
-      activeStep: ''
+      activeStep: '', // 处理历史当前展开
+      errorNode: ''
     }
   },
   computed: {
@@ -513,9 +521,19 @@ export default {
             case 'requestComplete':
               item.name = '请求完成'
               break
+            case 'autoExit':
+              item.name = '自动退出'
+              break
+            case 'internallyTerminated':
+              item.name = '手动终止'
+              break
             default:
               item.name = item.node
               break
+          }
+          if (item.handler === 'autoNode') {
+            item.handler = '自动节点'
+            this.errorNode = item.name
           }
         })
       }

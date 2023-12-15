@@ -100,6 +100,16 @@ export default {
           key: 'procDefName'
         },
         {
+          title: '操作对象类型',
+          resizable: true,
+          sortable: 'custom',
+          minWidth: 140,
+          key: 'operatorObjType',
+          render: (h, params) => {
+            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+          }
+        },
+        {
           title: '模板状态',
           minWidth: 120,
           key: 'status',
@@ -157,6 +167,12 @@ export default {
           sortable: 'custom',
           minWidth: 150,
           key: 'createdTime'
+        },
+        {
+          title: '更新时间',
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'updatedTime'
         },
         {
           title: this.$t('t_action'),

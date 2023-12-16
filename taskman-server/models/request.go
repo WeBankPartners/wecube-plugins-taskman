@@ -33,7 +33,7 @@ type PlatformDataObj struct {
 	ReportTime       string `json:"reportTime" xorm:"report_time"`              // 请求提交时间
 	ExpectTime       string `json:"expectTime" xorm:"expect_time"`              // 期望完成时间
 	UpdatedTime      string `json:"updatedTime" xorm:"updated_time"`            // 期望完成时间
-	ApprovalTime     string `json:"ApprovalTime" xorm:"-"`                      // 请求处理时间
+	ApprovalTime     string `json:"ApprovalTime" xorm:"approval_time"`          // 请求处理时间
 	CollectFlag      int    `json:"collectFlag" xorm:"collect_flag"`            // 收藏标记,1表示已收藏
 	Role             string `json:"role" xorm:"role"`                           // 创建请求Role
 	HandleRole       string `json:"handleRole" xorm:"handle_role"`              // 处理role
@@ -82,6 +82,7 @@ type CollectDataObj struct {
 	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
 	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
 	CreatedTime       string   `json:"createdTime" xorm:"created_time"`              // 创建时间
+	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`              // 更新时间
 }
 
 type EntityQueryResult struct {

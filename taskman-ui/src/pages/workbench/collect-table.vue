@@ -4,7 +4,6 @@
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
     <!--表格分页-->
     <Table
-      border
       size="small"
       :loading="loading"
       :columns="tableColumns"
@@ -71,6 +70,7 @@ export default {
         {
           key: 'templateGroupId',
           placeholder: '模板组',
+          multiple: true,
           component: 'select',
           list: []
         },
@@ -243,6 +243,7 @@ export default {
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
+            const disableClass = `${[2, 3].includes(params.row.status) ? 'gray-button' : ''}`
             return (
               <div>
                 <Button
@@ -251,7 +252,8 @@ export default {
                   onClick={() => {
                     this.hanldeCreate(params.row)
                   }}
-                  style="margin-right:5px;"
+                  class={disableClass}
+                  style="margin-right: 5px"
                 >
                   发起
                 </Button>
@@ -468,3 +470,11 @@ export default {
 </script>
 
 <style lang="scss" scoped></style>
+<style lang="scss">
+.workbench-collect-table {
+  .gray-button {
+    background-color: #c5c8ce;
+    border-color: #c5c8ce;
+  }
+}
+</style>

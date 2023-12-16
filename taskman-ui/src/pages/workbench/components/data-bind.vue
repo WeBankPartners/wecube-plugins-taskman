@@ -34,7 +34,7 @@
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:12px">
+    <div v-if="showBtn" style="text-align: center;margin-top:12px">
       <Button @click="saveRequest()" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="formDisable" v-if="isHandle">{{ $t('go_back') }}</Button>
       <Button @click="startRequest" :disabled="formDisable" v-if="isHandle">{{ $t('final_version') }}</Button>
@@ -106,6 +106,10 @@ export default {
     requestTemplate: {
       type: String,
       default: ''
+    },
+    showBtn: {
+      type: Boolean,
+      default: true
     }
   },
   watch: {

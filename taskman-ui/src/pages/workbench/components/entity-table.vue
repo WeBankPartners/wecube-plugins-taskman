@@ -8,6 +8,7 @@
       </Radio>
     </RadioGroup>
     <Table size="small" :columns="tableColumns" :data="tableData" @on-selection-change="handleChooseData"></Table>
+    <Button v-if="isAdd && type === 'request'" size="small" style="margin-top: 10px;" @click="addRow">添加一行</Button>
     <EditDrawer
       v-if="editVisible"
       v-model="editData"
@@ -43,6 +44,10 @@ export default {
     formDisable: {
       type: Boolean,
       default: false
+    },
+    type: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -108,15 +113,15 @@ export default {
         if (val && val.length) {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
-            if (item.value.length === 0 && this.isAdd) {
-              this.handleAddRow(item)
-            }
             item.value.forEach(j => {
               if (this.formDisable) {
                 j.entityData._disabled = true
               }
               j.entityData._checked = true
             })
+            if (item.value.length === 0 && this.isAdd) {
+              this.handleAddRow(item)
+            }
           })
           this.activeTab = this.activeTab || this.requestData[0].entity || this.requestData[0].itemGroup
           this.initTableData()
@@ -256,7 +261,7 @@ export default {
         return v.entityData
       })
 
-      // 下拉类型数据初始化
+      // 下拉类型数据初始化(待优化，调用接口太多)
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
           const titleObj = data.title.find(f => f.name === rfk)
@@ -334,6 +339,17 @@ export default {
         onCancel: () => {}
       })
     },
+    // 手动添加一行数据
+    addRow () {
+      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+      this.handleAddRow(data)
+      const addRow = data.value[data.value.length - 1].entityData
+      this.tableData.push(addRow)
+      this.refKeys.forEach(rfk => {
+        const titleObj = data.title.find(f => f.name === rfk)
+        this.getRefOptions(titleObj, addRow, data.value.length - 1)
+      })
+    },
     // 添加一条行数据
     handleAddRow (data) {
       let entityData = {}
@@ -346,7 +362,7 @@ export default {
       let obj = {
         dataId: '',
         displayName: '',
-        entityData: entityData,
+        entityData: { ...entityData, _id: '' },
         entityName: data.entity,
         entityDataOp: 'create',
         fullDataId: '',

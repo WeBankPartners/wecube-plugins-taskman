@@ -365,7 +365,7 @@ export default {
       this.baseColumn.operatorObj,
       this.baseColumn.createdBy,
       {
-        title: '请求提交时间',
+        title: '任务提交时间',
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
@@ -498,7 +498,8 @@ export default {
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
-      }
+      },
+      this.baseColumn.action
     ]
 
     // 我提交的-其他、我撤回的
@@ -526,7 +527,8 @@ export default {
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
-      }
+      },
+      this.baseColumn.action
     ]
 
     // 我暂存的
@@ -565,7 +567,8 @@ export default {
         sortable: 'custom',
         minWidth: 150,
         key: 'updatedTime'
-      }
+      },
+      this.baseColumn.action
     ]
   }
 }

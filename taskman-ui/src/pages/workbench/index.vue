@@ -208,6 +208,7 @@ export default {
         currentPage: 1,
         pageSize: 10
       },
+      sorting: {}, // 表格默认排序
       username: window.localStorage.getItem('username')
     }
   },
@@ -268,6 +269,7 @@ export default {
         // 我提交的
       } else if (val === 'submit') {
         this.form.rollback = 0
+        // 表格列及排序初始化
         this.tableColumn = this.submitAllColumn
         this.form.type = 0
         this.searchOptions[0].key = 'rollback'
@@ -281,6 +283,7 @@ export default {
       } else if (val === 'draft') {
         this.form.type = 0
         this.form.rollback = 0
+        // 表格列及排序初始化
         this.tableColumn = this.draftColumn
         this.searchOptions[0].initValue = 0
         this.searchOptions[0].hidden = true
@@ -297,13 +300,13 @@ export default {
     },
     // 表格排序
     sortTable (col) {
-      const sorting = {
+      this.sorting = {
         asc: col.order === 'asc',
         field: col.key
       }
-      this.getList(sorting)
+      this.getList()
     },
-    async getList (sort = { asc: false, field: 'updatedTime' }) {
+    async getList () {
       this.loading = true
       const form = deepClone(this.form)
       if (form.type === '') {
@@ -331,8 +334,44 @@ export default {
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
       }
-      if (sort) {
-        params.sorting = sort
+      // 获取默认排序
+      if (this.tabName === 'pending') {
+        if (this.form.type === 1) {
+          this.sorting = {
+            asc: false,
+            field: 'reportTime'
+          }
+        } else if (this.form.type === 2) {
+          this.sorting = {
+            asc: false,
+            field: 'taskCreatedTime'
+          }
+        }
+      } else if (this.tabName === 'hasProcessed') {
+        if (this.form.type === 1) {
+          this.sorting = {
+            asc: false,
+            field: 'approvalTime'
+          }
+        } else if (this.form.type === 2) {
+          this.sorting = {
+            asc: false,
+            field: 'taskApprovalTime'
+          }
+        }
+      } else if (this.tabName === 'submit') {
+        this.sorting = {
+          asc: false,
+          field: 'reportTime'
+        }
+      } else if (this.tabName === 'draft') {
+        this.sorting = {
+          asc: false,
+          field: 'updatedTime'
+        }
+      }
+      if (this.sorting) {
+        params.sorting = this.sorting
       }
       const { statusCode, data } = await getPlatformList(params)
       if (statusCode === 'OK') {

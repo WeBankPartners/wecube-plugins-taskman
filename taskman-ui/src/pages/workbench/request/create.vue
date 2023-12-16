@@ -10,7 +10,7 @@
       </span>
     </Row>
     <Row class="w-header">
-      <Col span="18" class="steps">
+      <Col span="19" class="steps">
         <span class="title">请求进度：</span>
         <Steps :current="0" style="max-width:600px;">
           <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
@@ -23,11 +23,19 @@
             </div>
           </Step>
         </Steps>
-        <div v-if="errorNode" style="margin: 0 0 10px 20px">
-          <Alert type="error">{{ errorNode }}节点报错，流程已暂停，请复制请求ID，发送给wecube平台管理员处理</Alert>
+        <div v-if="errorNode" style="margin:0 0 10px 20px;max-width:500px;">
+          <Alert v-if="errorNode === 'autoExit'" type="error">
+            请求已终止，因为编排流程根据判断条件走到了退出节点，请复制请求ID，发送给wecube平台管理员处理
+          </Alert>
+          <Alert v-else-if="errorNode === 'internallyTerminated'" type="error">
+            请求已终止，因为编排执行已被管理员手动终止，请复制请求ID，发送给wecube平台管理员处理
+          </Alert>
+          <Alert v-else type="error">
+            {{ errorNode }}节点报错，流程已暂停，请复制请求ID，发送给wecube平台管理员处理
+          </Alert>
         </div>
       </Col>
-      <Col span="6" class="btn-group">
+      <Col span="5" class="btn-group">
         <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
         <Button v-if="isAdd" type="primary" @click="handlePublish">发布</Button>
         <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall"
@@ -41,7 +49,7 @@
           <template v-if="isAdd">
             <HeaderTitle title="发布信息">
               <FormItem label="请求名称" required>
-                <Input v-model="form.name" :maxlength="50" placeholder="请输入" style="width:100%;" />
+                <Input v-model="form.name" :maxlength="50" show-word-limit placeholder="请输入" style="width:100%;" />
               </FormItem>
               <FormItem label="发布描述">
                 <Input
@@ -81,7 +89,13 @@
                 </Select>
               </FormItem>
               <FormItem v-if="requestData.length" label="已选择">
-                <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" :isAdd="isAdd"></EntityTable>
+                <EntityTable
+                  ref="entityTable"
+                  :data="requestData"
+                  :requestId="requestId"
+                  :isAdd="isAdd"
+                  type="request"
+                ></EntityTable>
               </FormItem>
             </HeaderTitle>
           </template>
@@ -175,7 +189,8 @@
                         :isHandle="isHandle"
                         :requestTemplate="requestTemplate"
                         :requestId="requestId"
-                        :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                        :formDisable="true"
+                        :showBtn="false"
                       ></DataBind>
                     </div>
                   </template>
@@ -393,7 +408,7 @@ const statusIcon = {
   1: 'md-pin', // 进行中
   2: 'md-radio-button-on', // 未开始
   3: 'ios-checkmark-circle-outline', // 已完成
-  4: 'ios-close-circle-outline', // 节点失败(包含超时)
+  4: 'md-close-circle', // 节点失败(包含超时)
   5: 'md-exit', // 自动退出
   6: 'md-exit' // 手动终止
 }
@@ -523,9 +538,11 @@ export default {
               break
             case 'autoExit':
               item.name = '自动退出'
+              this.errorNode = item.node
               break
             case 'internallyTerminated':
               item.name = '手动终止'
+              this.errorNode = item.node
               break
             default:
               item.name = item.node
@@ -649,7 +666,7 @@ export default {
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench?tabName=pending&actionName=2' })
+              this.$router.push({ path: '/taskman/workbench?tabName=submit&actionName=2' })
             }
           }
         },

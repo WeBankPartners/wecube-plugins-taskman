@@ -3,7 +3,14 @@
     <!--搜索条件-->
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
     <!--表格分页-->
-    <Table border size="small" :loading="loading" :columns="tableColumns" :data="tableData"></Table>
+    <Table
+      border
+      size="small"
+      :loading="loading"
+      :columns="tableColumns"
+      :data="tableData"
+      @on-sort-change="sortTable"
+    ></Table>
     <Page
       style="float:right;margin-top:10px;"
       :total="pagination.total"
@@ -19,7 +26,8 @@
 
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
-import { collectTemplateList, uncollectTemplate } from '@/api/server'
+import { collectTemplateList, uncollectTemplate, getTemplateFilter } from '@/api/server'
+import { deepClone } from '@/pages/util/index'
 export default {
   components: {
     BaseSearch
@@ -37,36 +45,90 @@ export default {
   data () {
     return {
       form: {
-        query: '', // ID或名称模糊搜索
-        templateId: '', // 模板ID
-        status: [] // 状态
+        name: '',
+        id: '',
+        templateGroupId: [], // 模板组ID
+        operatorObjType: [], // 操作对象类型
+        procDefName: [], // 使用编排
+        manageRole: [], // 属主角色
+        owner: [], // 属主
+        useRole: [], // 使用角色
+        tags: [], // 标签
+        createdTime: [],
+        updatedTime: []
       },
       searchOptions: [
         {
-          key: 'query',
+          key: 'id',
+          placeholder: 'id',
+          component: 'input'
+        },
+        {
+          key: 'name',
           placeholder: '名称',
           component: 'input'
         },
         {
-          key: 'templateId',
-          placeholder: '模板',
-          component: 'remote-select',
-          remote: this.getTemplateList
+          key: 'templateGroupId',
+          placeholder: '模板组',
+          component: 'select',
+          list: []
         },
         {
-          key: 'status',
-          placeholder: '状态',
-          component: 'select',
+          key: 'operatorObjType',
+          placeholder: '操作对象类型',
           multiple: true,
-          list: [
-            { label: 'Pending', value: 'Pending' },
-            { label: 'InProgress', value: 'InProgress' },
-            { label: 'InProgress(Faulted)', value: 'InProgress(Faulted)' },
-            { label: 'Termination', value: 'Termination' },
-            { label: 'Completed', value: 'Completed' },
-            { label: 'InProgress(Timeouted)', value: 'InProgress(Timeouted)' },
-            { label: 'Faulted', value: 'Faulted' }
-          ]
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'procDefName',
+          placeholder: '使用编排',
+          multiple: true,
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'manageRole',
+          placeholder: '属主角色',
+          multiple: true,
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'owner',
+          placeholder: '属主',
+          multiple: true,
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'useRole',
+          placeholder: '使用角色',
+          multiple: true,
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'tags',
+          placeholder: '标签',
+          multiple: true,
+          component: 'select',
+          list: []
+        },
+        {
+          key: 'createdTime',
+          label: '创建时间',
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
+        },
+        {
+          key: 'updatedTime',
+          label: '更新时间',
+          dateType: 4,
+          labelWidth: 85,
+          component: 'custom-time'
         }
       ],
       tableColumns: [
@@ -216,14 +278,41 @@ export default {
       }
     }
   },
+  mounted () {
+    this.getFilterOptions()
+  },
   methods: {
-    async getList () {
+    // 表格排序
+    sortTable (col) {
+      const sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.getList(sorting)
+    },
+    async getList (sort = { asc: false, field: 'updatedTime' }) {
       this.loading = true
+      const form = deepClone(this.form)
+      const dateTransferArr = ['createdTime', 'updatedTime']
+      dateTransferArr.forEach(item => {
+        if (form[item] && form[item].length > 0) {
+          form[item + 'Start'] = form[item][0] + ' 00:00:00'
+          form[item + 'End'] = form[item][1] + ' 23:59:59'
+          delete form[item]
+        } else {
+          form[item + 'Start'] = ''
+          form[item + 'End'] = ''
+          delete form[item]
+        }
+      })
       const params = {
-        ...this.form,
+        ...form,
         action: Number(this.actionName),
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
+      }
+      if (sort) {
+        params.sorting = sort
       }
       const { statusCode, data } = await collectTemplateList(params)
       if (statusCode === 'OK') {
@@ -231,6 +320,88 @@ export default {
         this.pagination.total = data.pageInfo.totalRows
       }
       this.loading = false
+    },
+    // 获取搜索条件的下拉值
+    async getFilterOptions () {
+      const { statusCode, data } = await getTemplateFilter({ startTime: '' })
+      if (statusCode === 'OK') {
+        this.filterOptions = data
+        this.searchOptions.forEach(item => {
+          if (item.key === 'operatorObjType') {
+            item.list =
+              data.operatorObjTypeList &&
+              data.operatorObjTypeList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'templateGroupId') {
+            item.list =
+              data.templateList &&
+              data.templateList.map(item => {
+                return {
+                  label: item.templateName,
+                  value: item.templateId
+                }
+              })
+          } else if (item.key === 'procDefName') {
+            item.list =
+              data.procDefNameList &&
+              data.procDefNameList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'manageRole') {
+            item.list =
+              data.manageRoleList &&
+              data.manageRoleList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'owner') {
+            item.list =
+              data.ownerList &&
+              data.ownerList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'owner') {
+            item.list =
+              data.ownerList &&
+              data.ownerList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'useRole') {
+            item.list =
+              data.useRoleList &&
+              data.useRoleList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          } else if (item.key === 'tags') {
+            item.list =
+              data.tagList &&
+              data.tagList.map(item => {
+                return {
+                  label: item,
+                  value: item
+                }
+              })
+          }
+        })
+      }
     },
     handleQuery () {
       this.pagination.currentPage = 1

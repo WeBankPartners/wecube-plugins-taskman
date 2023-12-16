@@ -82,7 +82,7 @@ type CollectDataObj struct {
 	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
 	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
 	CreatedTime       string   `json:"createdTime" xorm:"created_time"`              // 创建时间
-	UpdateTime        string   `json:"updateTime" xorm:"updated_time"`               // 更新时间
+	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`              // 更新时间
 }
 
 type EntityQueryResult struct {

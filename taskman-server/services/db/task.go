@@ -367,7 +367,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	return
 }
 
-func GetTaskV2(taskId string, nodeDefIdMap, nodeIdMap map[string]string) (taskQueryList []*models.TaskQueryObj, err error) {
+func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) {
 	var taskObj models.TaskTable
 	var taskForm models.TaskQueryObj
 	taskObj, err = getSimpleTask(taskId)
@@ -423,7 +423,7 @@ func GetTaskV2(taskId string, nodeDefIdMap, nodeIdMap map[string]string) (taskQu
 	taskQueryList = append(taskQueryList, []*models.TaskQueryObj{&requestQuery, getPendingRequestData(requests[0])}...)
 	// get task list
 	var taskHandlerRows []*models.TaskHandlerQueryData
-	x.SQL("select t1.id,t2.handler,t2.node_id,t2.node_def_id,t4.display_name from task t1 left join task_template t2 on t1.task_template=t2.id left join task_template_role t3 on t1.task_template=t3.task_template left join `role` t4 on t3.`role`=t4.id where t1.request=?", taskObj.Request).Find(&taskHandlerRows)
+	x.SQL("select t1.id,t2.handler,t4.display_name from task t1 left join task_template t2 on t1.task_template=t2.id left join task_template_role t3 on t1.task_template=t3.task_template left join `role` t4 on t3.`role`=t4.id where t1.request=?", taskObj.Request).Find(&taskHandlerRows)
 	taskHandlerMap := make(map[string]*models.TaskHandlerQueryData)
 	for _, row := range taskHandlerRows {
 		taskHandlerMap[row.Id] = row
@@ -439,17 +439,13 @@ func GetTaskV2(taskId string, nodeDefIdMap, nodeIdMap map[string]string) (taskQu
 		if handlerObj, b := taskHandlerMap[tmpTaskForm.TaskId]; b {
 			tmpTaskForm.Handler = handlerObj.Handler
 			tmpTaskForm.HandleRoleName = handlerObj.DisplayName
-			//这个地方 任务名显示为编排节点的任务名称,首先通过 nodeDefId去匹配,如果匹配不上(由于编排的编辑,可能会导致nodeDefId匹配不上),则通过nodeId去匹配
-			if nodeIdMap[handlerObj.NodeId] != "" {
-				tmpTaskForm.TaskName = nodeIdMap[handlerObj.NodeId]
-			}
-			if nodeDefIdMap[handlerObj.NodeDefId] != "" {
-				tmpTaskForm.TaskName = nodeIdMap[handlerObj.NodeDefId]
-			}
 		}
 		if v.Status == "done" {
 			tmpTaskForm.Handler = v.UpdatedBy
 			tmpTaskForm.HandleTime = v.UpdatedTime
+		}
+		if len(strings.TrimSpace(v.NodeName)) > 0 {
+			tmpTaskForm.TaskName = v.NodeName
 		}
 		tmpTaskForm.CreatedTime = v.CreatedTime
 		taskQueryList = append(taskQueryList, &tmpTaskForm)

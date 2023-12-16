@@ -226,6 +226,4 @@ type TaskHandlerQueryData struct {
 	Id          string `xorm:"id"`
 	Handler     string `xorm:"handler"`
 	DisplayName string `xorm:"display_name"`
-	NodeId      string `xorm:"node_id"`
-	NodeDefId   string `xorm:"node_def_id"`
 }

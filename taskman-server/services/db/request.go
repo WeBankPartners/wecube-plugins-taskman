@@ -1711,24 +1711,14 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	return
 }
 
-func GetRequestTaskListV2(requestId, templateId, userToken string) (taskQueryList []*models.TaskQueryObj, err error) {
+func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryObj, err error) {
 	var taskTable []*models.TaskTable
-	var nodeList models.ProcNodeObjList
-	var nodeDefIdMap = make(map[string]string)
-	var nodeIdMap = make(map[string]string)
 	err = x.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
 	if err != nil {
 		return
 	}
 	if len(taskTable) > 0 {
-		nodeList, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: templateId}, userToken, "template")
-		if len(nodeList) > 0 {
-			for _, node := range nodeList {
-				nodeDefIdMap[node.NodeDefId] = node.NodeName
-				nodeIdMap[node.NodeId] = node.NodeName
-			}
-		}
-		taskQueryList, err = GetTaskV2(taskTable[0].Id, nodeDefIdMap, nodeIdMap)
+		taskQueryList, err = GetTaskV2(taskTable[0].Id)
 		return
 	}
 	// get request
@@ -1796,7 +1786,7 @@ func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetai
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
 	}
 	result.Request = getRequestForm(requests[0], userToken)
-	taskQueryList, err = GetRequestTaskListV2(requestId, requests[0].RequestTemplate, userToken)
+	taskQueryList, err = GetRequestTaskListV2(requestId)
 	if err != nil {
 		return
 	}

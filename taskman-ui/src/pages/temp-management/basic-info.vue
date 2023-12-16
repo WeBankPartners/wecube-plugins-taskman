@@ -9,7 +9,7 @@
             v-model="formConfig.values[item.value]"
             style="width: 90%"
             :type="item.type"
-            :disabled="$parent.isCheck === 'Y'"
+            :disabled="$parent.isCheck === 'Y' || (formConfig.values.modifyType === false && item.value === 'name')"
             :placeholder="item.placeholder"
           >
           </Input>

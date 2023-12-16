@@ -5,7 +5,13 @@
       <TabPane label="草稿箱" name="draft"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
-    <Table size="small" :columns="tableColumns" :data="tableData" :loading="loading"></Table>
+    <Table
+      size="small"
+      :columns="tableColumns"
+      :data="tableData"
+      :loading="loading"
+      @on-sort-change="sortTable"
+    ></Table>
     <Page
       style="float:right;margin-top:10px;"
       :total="pagination.total"
@@ -21,8 +27,9 @@
 
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
-import { getPublishList } from '@/api/server'
+import { getPublishList, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
+import dayjs from 'dayjs'
 export default {
   components: {
     BaseSearch
@@ -45,6 +52,10 @@ export default {
       },
       tableData: [],
       loading: false,
+      sorting: {
+        asc: false,
+        field: 'reportTime'
+      }, // 表格默认排序
       pagination: {
         total: 0,
         currentPage: 1,
@@ -136,20 +147,45 @@ export default {
       ],
       tableColumns: [
         {
-          title: '请求名称',
-          key: 'name',
-          minWidth: 200
+          title: '请求ID',
+          width: 140,
+          key: 'id',
+          render: (h, params) => {
+            return (
+              <span
+                style="cursor:pointer;"
+                onClick={() => {
+                  this.handleDbClick(params.row)
+                }}
+              >
+                {params.row.id}
+              </span>
+            )
+          }
         },
         {
-          title: '请求ID',
-          key: 'id',
-          minWidth: 100
+          title: '请求名称',
+          sortable: 'custom',
+          minWidth: 250,
+          key: 'name',
+          render: (h, params) => {
+            return (
+              <span
+                style="cursor:pointer;"
+                onClick={() => {
+                  this.handleDbClick(params.row)
+                }}
+              >
+                {params.row.name}
+              </span>
+            )
+          }
         },
         {
           title: '请求状态',
           sortable: 'custom',
           key: 'status',
-          minWidth: 120,
+          minWidth: 130,
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
@@ -162,7 +198,16 @@ export default {
               { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
             ]
             const item = list.find(i => i.value === params.row.status)
-            return item && <Tag color={item.color}>{item.label}</Tag>
+            return (
+              item && (
+                <Tag color={item.color}>
+                  {// 已处理请求定版的草稿添加被退回说明
+                    this.tabName === 'hasProcessed' && this.form.type === 1 && params.row.status === 'Draft'
+                      ? `${item.label}(被退回)`
+                      : item.label}
+                </Tag>
+              )
+            )
           }
         },
         {
@@ -171,11 +216,27 @@ export default {
           key: 'curNode',
           render: (h, params) => {
             const map = {
+              waitCommit: '等待提交',
               sendRequest: '提起请求',
               requestPending: '请求定版',
-              requestComplete: '请求完成'
+              requestComplete: '请求完成',
+              Completed: '请求完成'
             }
-            return <span>{map[params.row.curNode] || params.row.curNode}</span>
+            return <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
+          }
+        },
+        {
+          title: '当前处理人',
+          sortable: 'custom',
+          minWidth: 140,
+          key: 'handler',
+          render: (h, params) => {
+            return (
+              <div style="display:flex;flex-direction:column">
+                <span>{params.row.handler}</span>
+                <span>{params.row.handleRole}</span>
+              </div>
+            )
           }
         },
         {
@@ -191,6 +252,63 @@ export default {
           }
         },
         {
+          title: '请求停留时长',
+          minWidth: 140,
+          key: 'effectiveDays',
+          render: (h, params) => {
+            const diff = params.row.startTime ? dayjs(new Date()).diff(params.row.startTime, 'day') : 0
+            const percent = (diff / params.row.effectiveDays) * 100
+            const color = percent > 50 ? (percent > 80 ? '#bd3124' : '#ffbf6b') : '#81b337'
+            return (
+              <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>
+                <span>{`${diff}日/${params.row.effectiveDays}日`}</span>
+              </Progress>
+            )
+          }
+        },
+        {
+          title: '期望完成时间',
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'expectTime'
+        },
+        {
+          title: '退回原因',
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'rollbackDesc'
+        },
+        {
+          title: '使用模板',
+          sortable: 'custom',
+          minWidth: 200,
+          key: 'templateName',
+          render: (h, params) => {
+            return (
+              <span>
+                {params.row.templateName}
+                <Tag>{params.row.version}</Tag>
+              </span>
+            )
+          }
+        },
+        {
+          title: '使用编排',
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'procDefName'
+        },
+        {
+          title: '操作对象类型',
+          resizable: true,
+          sortable: 'custom',
+          minWidth: 150,
+          key: 'operatorObjType',
+          render: (h, params) => {
+            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+          }
+        },
+        {
           title: '操作对象',
           resizable: true,
           sortable: 'custom',
@@ -198,19 +316,9 @@ export default {
           key: 'operatorObj'
         },
         {
-          title: '部署实例',
-          key: 'example',
-          minWidth: 100
-        },
-        {
-          title: '部署包',
-          key: 'package',
-          minWidth: 100
-        },
-        {
           title: '创建人',
           sortable: 'custom',
-          minWidth: 160,
+          minWidth: 140,
           key: 'createdBy',
           render: (h, params) => {
             return (
@@ -222,15 +330,15 @@ export default {
           }
         },
         {
-          title: '创建时间',
+          title: '请求提交时间',
           sortable: 'custom',
           minWidth: 150,
-          key: 'createdTime'
+          key: 'reportTime'
         },
         {
           title: this.$t('t_action'),
           key: 'action',
-          width: 120,
+          width: 160,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
@@ -245,17 +353,42 @@ export default {
                 >
                   查看
                 </Button>
+                {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && (
+                  <Button
+                    type="primary"
+                    size="small"
+                    onClick={() => {
+                      this.handleRepub(params.row)
+                    }}
+                  >
+                    重新发起
+                  </Button>
+                )}
                 {
+                  // params.row.status === 'Pending' && this.tabName === 'submit' && (
                   // <Button
-                  //   type="primary"
+                  //   type="error"
                   //   size="small"
                   //   onClick={() => {
-                  //     this.handleRepub(params.row)
+                  //     this.handleRecall(params.row)
                   //   }}
                   // >
-                  //   重新发布
+                  //   撤回
                   // </Button>
+                  // )
                 }
+                {params.row.status === 'Draft' && (
+                  <Button
+                    type="success"
+                    size="small"
+                    onClick={() => {
+                      this.hanldeLaunch(params.row)
+                    }}
+                    style="margin-right:5px;"
+                  >
+                    去发起
+                  </Button>
+                )}
               </div>
             )
           }
@@ -267,6 +400,14 @@ export default {
     this.getList()
   },
   methods: {
+    // 表格排序
+    sortTable (col) {
+      this.sorting = {
+        asc: col.order === 'asc',
+        field: col.key
+      }
+      this.getList()
+    },
     async getList () {
       this.loading = true
       const form = deepClone(this.form)
@@ -288,6 +429,9 @@ export default {
         ...this.form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
+      }
+      if (this.sorting) {
+        params.sorting = this.sorting
       }
       const { statusCode, data } = await getPublishList(params)
       if (statusCode === 'OK') {
@@ -313,6 +457,7 @@ export default {
       this.activeTab = val
       this.handleQuery()
     },
+    handleDbClick (row) {},
     // 表格操作-查看
     hanldeView (row) {
       const url = `/taskman/workbench/createPublish`
@@ -329,8 +474,39 @@ export default {
         }
       })
     },
-    // 重新发布
-    handleRepub (row) {}
+    // 表格操作-重新发起
+    async handleRepub (row) {
+      const { statusCode, data } = await reRequest(row.id)
+      if (statusCode === 'OK') {
+        const url = `/taskman/workbench/createPublish`
+        this.$router.push({
+          path: url,
+          query: {
+            requestId: data.id,
+            requestTemplate: data.requestTemplate,
+            isAdd: 'Y',
+            isCheck: 'N',
+            isHandle: 'N',
+            jumpFrom: ''
+          }
+        })
+      }
+    },
+    // 表格操作-草稿去发起
+    hanldeLaunch (row) {
+      const url = `/taskman/workbench/createPublish`
+      this.$router.push({
+        path: url,
+        query: {
+          requestId: row.id,
+          requestTemplate: row.templateId,
+          isAdd: 'Y',
+          isCheck: 'N',
+          isHandle: 'N',
+          jumpFrom: ''
+        }
+      })
+    }
   }
 }
 </script>
@@ -338,5 +514,25 @@ export default {
 <style lang="scss" scoped>
 .workbench-publish-history {
   width: 100%;
+}
+</style>
+<style lang="scss">
+.workbench-publish-history {
+  .ivu-progress-outer {
+    width: 90px !important;
+    padding-right: 30px !important;
+    margin-right: -33px !important;
+  }
+  .ivu-progress-inner {
+    width: 60px !important;
+  }
+  .ivu-progress-text {
+    color: #515a6e !important;
+    min-width: 80px !important;
+  }
+  .ivu-progress {
+    display: flex;
+    // flex-direction: column;
+  }
 }
 </style>

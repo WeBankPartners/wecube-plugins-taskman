@@ -373,6 +373,7 @@ type KeyValuePair struct {
 }
 
 type FilterObj struct {
+	Id              string `json:"id" xorm:"id"`                             // requestID
 	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板IDa
 	TemplateName    string `json:"templateName" xorm:"template_name"`        // 模板名称
 	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型

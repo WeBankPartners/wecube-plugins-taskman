@@ -385,7 +385,7 @@ func getPlatRequestSQL(where, sql string) string {
 func getPlatTaskSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,"+
-		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.report_time as task_created_time,t.updated_time as task_approval_time,t.expire_time as task_expect_time,t.handler as task_handler "+
+		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.report_time as task_created_time,t.updated_time as task_approval_time,t.expire_time as task_expect_time,t.handler as handler "+
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }
 
@@ -2313,6 +2313,12 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.ExpectStartTime != "" && param.ExpectEndTime != "" {
 		where = where + " and expect_time >= ' " + param.ExpectStartTime + "' and expect_time <= ' " + param.ExpectEndTime + "'"
 	}
+	if param.TaskReportStartTime != "" && param.TaskReportEndTime != "" {
+		where = where + " and task_created_time >= ' " + param.TaskReportStartTime + "' and task_created_time <= ' " + param.TaskReportEndTime + "'"
+	}
+	if param.TaskApprovalStartTime != "" && param.TaskApprovalEndTime != "" {
+		where = where + " and task_approval_time >= ' " + param.TaskApprovalStartTime + "' and task_approval_time <= ' " + param.TaskApprovalEndTime + "'"
+	}
 	if param.TaskExpectStartTime != "" && param.TaskExpectEndTime != "" {
 		where = where + " and task_expect_time >= ' " + param.TaskExpectStartTime + "' and task_expect_time <= ' " + param.TaskExpectEndTime + "'"
 	}
@@ -2769,8 +2775,15 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	var sql = "select rt.id as template_id,rt.name as template_name,rt.operator_obj_type,rt.proc_def_name,r.created_by," +
 		"r.handler from request r join request_template rt on r.request_template = rt.id where r.created_time > ?"
 	err = x.SQL(sql, param.StartTime).Find(&dataList)
+	var handlerList []string
+	x.SQL("select handler from task_template").Find(&handlerList)
 	if err != nil {
 		return
+	}
+	if len(handlerList) > 0 {
+		for _, handler := range handlerList {
+			handlerMap[handler] = true
+		}
 	}
 	for _, item := range dataList {
 		templateMap[item.TemplateName] = item.TemplateId

@@ -80,27 +80,33 @@ type RequestHistoryParam struct {
 }
 
 type CommonRequestParam struct {
-	Id                  string               `json:"id"`                   // ID
-	Name                string               `json:"name"`                 // Name
-	TemplateId          []string             `json:"templateId"`           // 模版id
-	Status              []string             `json:"status"`               // 请求状态 Pending InProgress(Faulted)
-	OperatorObj         string               `json:"operatorObj"`          // 操作对象
-	CreatedBy           []string             `json:"createdBy"`            // 创建人
-	OperatorObjType     []string             `json:"operatorObjType"`      // 操作对象类型
-	ProcDefName         []string             `json:"procDefName"`          // 使用编排
-	Handler             []string             `json:"handler"`              // 当前处理人
-	CreatedStartTime    string               `json:"createdTimeStart" `    // 创建开始时间
-	CreatedEndTime      string               `json:"createdTimeEnd" `      // 创建结束时间
-	UpdatedStartTime    string               `json:"updatedTimeStart" `    // 更新开始时间
-	UpdatedEndTime      string               `json:"updatedTimeEnd" `      // 更新结束时间
-	ExpectStartTime     string               `json:"expectTimeStart" `     // 期望开始时间
-	ExpectEndTime       string               `json:"expectTimeEnd" `       // 期望结束时间
-	TaskName            string               `json:"taskName"`             // 任务名称
-	TaskExpectStartTime string               `json:"taskExpectTimeStart" ` // 期望开始时间
-	TaskExpectEndTime   string               `json:"taskExpectTimeEnd" `   // 期望结束时间
-	StartIndex          int                  `json:"startIndex"`
-	PageSize            int                  `json:"pageSize"`
-	Sorting             *QueryRequestSorting `json:"sorting"` // 排序字段
+	Id                    string               `json:"id"`                     // ID
+	Name                  string               `json:"name"`                   // Name
+	TemplateId            []string             `json:"templateId"`             // 模版id
+	Status                []string             `json:"status"`                 // 请求状态 Pending InProgress(Faulted)
+	OperatorObj           string               `json:"operatorObj"`            // 操作对象
+	CreatedBy             []string             `json:"createdBy"`              // 创建人
+	OperatorObjType       []string             `json:"operatorObjType"`        // 操作对象类型
+	ProcDefName           []string             `json:"procDefName"`            // 使用编排
+	Handler               []string             `json:"handler"`                // 当前处理人
+	CreatedStartTime      string               `json:"createdTimeStart" `      // 创建开始时间
+	CreatedEndTime        string               `json:"createdTimeEnd" `        // 创建结束时间
+	ReportStartTime       string               `json:"reportTimeStart" `       // 请求提交创建时间
+	ReportEndTime         string               `json:"reportTimeEnd" `         // 请求提交结束时间
+	UpdatedStartTime      string               `json:"updatedTimeStart" `      // 更新开始时间
+	UpdatedEndTime        string               `json:"updatedTimeEnd" `        // 更新结束时间
+	ExpectStartTime       string               `json:"expectTimeStart" `       // 期望开始时间
+	ExpectEndTime         string               `json:"expectTimeEnd" `         // 期望结束时间
+	TaskName              string               `json:"taskName"`               // 任务名称
+	TaskReportStartTime   string               `json:"taskReportTimeStart" `   // 任务提交开始时间
+	TaskReportEndTime     string               `json:"taskReportTimeEnd" `     // 任务提交结束时间
+	TaskApprovalStartTime string               `json:"taskApprovalTimeStart" ` // 任务审批开始时间
+	TaskApprovalEndTime   string               `json:"taskApprovalTimeEnd" `   // 任务审批结束时间
+	TaskExpectStartTime   string               `json:"taskExpectTimeStart" `   // 任务期望开始时间
+	TaskExpectEndTime     string               `json:"taskExpectTimeEnd" `     // 任务期望结束时间
+	StartIndex            int                  `json:"startIndex"`
+	PageSize              int                  `json:"pageSize"`
+	Sorting               *QueryRequestSorting `json:"sorting"` // 排序字段
 }
 
 type PlatDataParam struct {

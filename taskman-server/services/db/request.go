@@ -2307,11 +2307,17 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
 		where = where + " and created_time >= '" + param.CreatedStartTime + "' and created_time <= '" + param.CreatedEndTime + "'"
 	}
+	if param.ReportStartTime != "" && param.ReportEndTime != "" {
+		where = where + " and report_time >= '" + param.ReportStartTime + "' and report_time <= '" + param.ReportEndTime + "'"
+	}
 	if param.UpdatedStartTime != "" && param.UpdatedEndTime != "" {
 		where = where + " and updated_time >= '" + param.UpdatedStartTime + "' and updated_time <= '" + param.UpdatedEndTime + "'"
 	}
 	if param.ExpectStartTime != "" && param.ExpectEndTime != "" {
 		where = where + " and expect_time >= '" + param.ExpectStartTime + "' and expect_time <= '" + param.ExpectEndTime + "'"
+	}
+	if param.ApprovalStartTime != "" && param.ApprovalEndTime != "" {
+		where = where + " and approval_time >= '" + param.ApprovalStartTime + "' and approval_time <= '" + param.ApprovalEndTime + "'"
 	}
 	if param.TaskReportStartTime != "" && param.TaskReportEndTime != "" {
 		where = where + " and task_created_time >= '" + param.TaskReportStartTime + "' and task_created_time <= '" + param.TaskReportEndTime + "'"

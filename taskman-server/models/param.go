@@ -89,10 +89,12 @@ type CommonRequestParam struct {
 	OperatorObjType       []string             `json:"operatorObjType"`        // 操作对象类型
 	ProcDefName           []string             `json:"procDefName"`            // 使用编排
 	Handler               []string             `json:"handler"`                // 当前处理人
-	CreatedStartTime      string               `json:"createdTimeStart" `      // 创建开始时间
-	CreatedEndTime        string               `json:"createdTimeEnd" `        // 创建结束时间
-	ReportStartTime       string               `json:"reportTimeStart" `       // 请求提交创建时间
-	ReportEndTime         string               `json:"reportTimeEnd" `         // 请求提交结束时间
+	CreatedStartTime      string               `json:"createdTimeStart"`       // 创建开始时间
+	CreatedEndTime        string               `json:"createdTimeEnd"`         // 创建结束时间
+	ReportStartTime       string               `json:"reportTimeStart"`        // 请求提交开始时间
+	ReportEndTime         string               `json:"reportTimeEnd"`          // 请求提交结束时间
+	ApprovalStartTime     string               `json:"approvalTimeStart"`      // 请求审批开始时间
+	ApprovalEndTime       string               `json:"approvalTimeEnd" `       // 请求审批结束时间
 	UpdatedStartTime      string               `json:"updatedTimeStart" `      // 更新开始时间
 	UpdatedEndTime        string               `json:"updatedTimeEnd" `        // 更新结束时间
 	ExpectStartTime       string               `json:"expectTimeStart" `       // 期望开始时间

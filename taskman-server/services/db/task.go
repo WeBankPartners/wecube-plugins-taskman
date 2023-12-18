@@ -389,15 +389,18 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 		err = fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
 		return
 	}
+	// 当前请求可能是历史请求重新发起生成,则需要展示历史请求ID的请求和任务数据
 	if requests[0].Parent != "" {
-		if parentRequest, getParentErr := GetRequestTaskList(requests[0].Parent); getParentErr != nil {
+		if parentRequestTaskQueryList, getParentErr := GetRequestTaskListV2(requests[0].Parent); getParentErr != nil {
 			err = getParentErr
 			return
 		} else {
-			for _, v := range parentRequest.Data {
-				v.IsHistory = true
+			if len(parentRequestTaskQueryList) > 0 {
+				for _, taskQuery := range parentRequestTaskQueryList {
+					taskQuery.IsHistory = true
+				}
+				taskQueryList = parentRequestTaskQueryList
 			}
-			taskQueryList = parentRequest.Data
 		}
 	}
 	var requestCache models.RequestPreDataDto
@@ -443,6 +446,9 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 		if v.Status == "done" {
 			tmpTaskForm.Handler = v.UpdatedBy
 			tmpTaskForm.HandleTime = v.UpdatedTime
+		}
+		if len(strings.TrimSpace(v.NodeName)) > 0 {
+			tmpTaskForm.TaskName = v.NodeName
 		}
 		tmpTaskForm.CreatedTime = v.CreatedTime
 		taskQueryList = append(taskQueryList, &tmpTaskForm)

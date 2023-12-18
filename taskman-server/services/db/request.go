@@ -2305,22 +2305,22 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 		where = where + " and ( task_name like '%" + param.TaskName + "%') "
 	}
 	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
-		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"
+		where = where + " and created_time >= '" + param.CreatedStartTime + "' and created_time <= '" + param.CreatedEndTime + "'"
 	}
 	if param.UpdatedStartTime != "" && param.UpdatedEndTime != "" {
-		where = where + " and updated_time >= ' " + param.UpdatedStartTime + "' and updated_time <= ' " + param.UpdatedEndTime + "'"
+		where = where + " and updated_time >= '" + param.UpdatedStartTime + "' and updated_time <= '" + param.UpdatedEndTime + "'"
 	}
 	if param.ExpectStartTime != "" && param.ExpectEndTime != "" {
-		where = where + " and expect_time >= ' " + param.ExpectStartTime + "' and expect_time <= ' " + param.ExpectEndTime + "'"
+		where = where + " and expect_time >= '" + param.ExpectStartTime + "' and expect_time <= '" + param.ExpectEndTime + "'"
 	}
 	if param.TaskReportStartTime != "" && param.TaskReportEndTime != "" {
-		where = where + " and task_created_time >= ' " + param.TaskReportStartTime + "' and task_created_time <= ' " + param.TaskReportEndTime + "'"
+		where = where + " and task_created_time >= '" + param.TaskReportStartTime + "' and task_created_time <= '" + param.TaskReportEndTime + "'"
 	}
 	if param.TaskApprovalStartTime != "" && param.TaskApprovalEndTime != "" {
-		where = where + " and task_approval_time >= ' " + param.TaskApprovalStartTime + "' and task_approval_time <= ' " + param.TaskApprovalEndTime + "'"
+		where = where + " and task_approval_time >= '" + param.TaskApprovalStartTime + "' and task_approval_time <= '" + param.TaskApprovalEndTime + "'"
 	}
 	if param.TaskExpectStartTime != "" && param.TaskExpectEndTime != "" {
-		where = where + " and task_expect_time >= ' " + param.TaskExpectStartTime + "' and task_expect_time <= ' " + param.TaskExpectEndTime + "'"
+		where = where + " and task_expect_time >= '" + param.TaskExpectStartTime + "' and task_expect_time <= '" + param.TaskExpectEndTime + "'"
 	}
 	return
 }
@@ -2352,10 +2352,10 @@ func transCollectConditionToSQL(param *models.QueryCollectTemplateParam) (where 
 		where = where + " and tags in (" + getSQL(param.Tags) + ")"
 	}
 	if param.CreatedStartTime != "" && param.CreatedEndTime != "" {
-		where = where + " and created_time >= ' " + param.CreatedStartTime + "' and created_time <= ' " + param.CreatedEndTime + "'"
+		where = where + " and created_time >= '" + param.CreatedStartTime + "' and created_time <= '" + param.CreatedEndTime + "'"
 	}
 	if param.UpdatedStartTime != "" && param.UpdatedEndTime != "" {
-		where = where + " and updated_time >= ' " + param.UpdatedStartTime + "' and updated_time <= ' " + param.UpdatedEndTime + "'"
+		where = where + " and updated_time >= '" + param.UpdatedStartTime + "' and updated_time <= '" + param.UpdatedEndTime + "'"
 	}
 	if len(param.UseRole) > 0 {
 		var templateIdList []string

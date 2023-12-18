@@ -280,7 +280,7 @@ export default {
         'taskExpectTime'
       ]
       dateTransferArr.forEach(item => {
-        if (form[item] && form[item].length > 0) {
+        if (form[item] && form[item].length > 0 && form[item][0]) {
           form[item + 'Start'] = form[item][0] + ' 00:00:00'
           form[item + 'End'] = form[item][1] + ' 23:59:59'
           delete form[item]

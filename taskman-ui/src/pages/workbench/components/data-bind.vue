@@ -247,7 +247,7 @@ export default {
           )
         },
         onOk: async () => {
-          if (!this.backReason) {
+          if (!this.backReason.trim()) {
             this.$Notice.warning({
               title: this.$t('warning'),
               desc: '退回说明不能为空'

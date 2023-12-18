@@ -18,10 +18,30 @@
       <DataCard ref="dataCard" :initTab="initTab" :initAction="initAction" @fetchData="handleOverviewChange"></DataCard>
     </div>
     <div class="data-tabs">
-      <!-- <Tabs v-model="actionName">
-        <TabPane label="发布" name="1"></TabPane>
-        <TabPane label="请求" name="2"></TabPane>
-      </Tabs> -->
+      <Tabs
+        v-if="['pending', 'hasProcessed'].includes(tabName)"
+        v-model="type"
+        @on-click="
+          $refs.search.handleReset()
+          handleQuery()
+        "
+      >
+        <TabPane label="任务处理" name="2"></TabPane>
+        <TabPane label="请求定版" name="1"></TabPane>
+      </Tabs>
+      <Tabs
+        v-if="['submit'].includes(tabName)"
+        v-model="rollback"
+        @on-click="
+          $refs.search.handleReset()
+          handleQuery()
+        "
+      >
+        <TabPane label="所有" name="0"></TabPane>
+        <TabPane label="被退回" name="1"></TabPane>
+        <TabPane label="本人撤回" name="3"></TabPane>
+        <TabPane label="其他" name="2"></TabPane>
+      </Tabs>
       <CollectTable
         ref="collect"
         v-if="tabName === 'collect'"
@@ -30,7 +50,7 @@
       ></CollectTable>
       <template v-else>
         <!--搜索条件-->
-        <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
+        <BaseSearch ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
         <!--表格分页-->
         <Table
           :border="false"
@@ -74,6 +94,7 @@ import {
 } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 import column from './column.js'
+import search from './search.js'
 export default {
   components: {
     HotLink,
@@ -82,17 +103,18 @@ export default {
     WorkBench,
     CollectTable
   },
-  mixins: [column],
+  mixins: [column, search],
   data () {
     return {
       tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
       initTab: '',
       initAction: '',
+      type: '0', // 0所有,1请求定版,2任务处理
+      rollback: '0', // 0所有,1已退回,2其他,3被撤回
       form: {
-        type: 0, // 0所有,1请求定版,2任务处理
-        rollback: 0, // 0所有,1已退回,2其他,3被撤回
-        name: '', // ID或名称模糊搜索
+        name: '', // 请求名
+        taskName: '', // 任务名
         id: '',
         templateId: [], // 模板ID
         status: [], // 状态
@@ -102,104 +124,14 @@ export default {
         handler: [], // 当前处理人
         createdTime: [],
         updatedTime: [],
-        expectTime: []
+        expectTime: [], // 期望时间
+        reportTime: [], // 请求提交时间
+        approvalTime: [], // 请求处理时间
+        taskReportTime: [], // 任务提交时间
+        taskApprovalTime: [], // 任务审批时间
+        taskExpectTime: [] // 任务期望时间
       },
-      filterOptions: [],
-      searchOptions: [
-        {
-          key: 'type',
-          initValue: 0,
-          hidden: false,
-          component: 'radio-group',
-          list: [
-            { label: '所有', value: 0 },
-            { label: '请求定版', value: 1 },
-            { label: '任务处理', value: 2 }
-          ]
-        },
-        {
-          key: 'name',
-          placeholder: '名称',
-          component: 'input'
-        },
-        {
-          key: 'id',
-          placeholder: 'id',
-          component: 'input'
-        },
-        {
-          key: 'operatorObjType',
-          placeholder: '操作对象类型',
-          multiple: true,
-          component: 'select',
-          list: []
-        },
-        {
-          key: 'templateId',
-          placeholder: '模板',
-          multiple: true,
-          component: 'select',
-          list: []
-        },
-        {
-          key: 'procDefName',
-          placeholder: '使用编排',
-          multiple: true,
-          component: 'select',
-          list: []
-        },
-        {
-          key: 'status',
-          placeholder: '状态',
-          component: 'select',
-          multiple: true,
-          list: [
-            { label: this.$t('status_pending'), value: 'Pending' },
-            { label: this.$t('status_inProgress'), value: 'InProgress' },
-            { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
-            { label: this.$t('status_termination'), value: 'Termination' },
-            { label: this.$t('status_complete'), value: 'Completed' },
-            { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)' },
-            { label: this.$t('status_faulted'), value: 'Faulted' },
-            { label: this.$t('status_draft'), value: 'Draft' }
-          ]
-        },
-        {
-          key: 'createdBy',
-          placeholder: '创建人',
-          component: 'select',
-          multiple: true,
-          list: []
-        },
-        {
-          key: 'handler',
-          placeholder: '处理人',
-          component: 'select',
-          multiple: true,
-          list: []
-        },
-        {
-          key: 'createdTime',
-          label: '创建时间',
-          dateType: 4,
-          labelWidth: 85,
-          component: 'custom-time'
-        },
-        {
-          key: 'updatedTime',
-          label: '更新时间',
-          dateType: 4,
-          labelWidth: 85,
-          component: 'custom-time'
-        },
-        {
-          key: 'expectTime',
-          label: '期望时间',
-          dateType: 4,
-          labelWidth: 85,
-          component: 'custom-time'
-        }
-      ],
+      searchOptions: [], // 表格筛选配置
       tableColumn: [],
       tableData: [],
       loading: false,
@@ -213,31 +145,37 @@ export default {
     }
   },
   watch: {
-    'form.type': {
+    type: {
       handler (val) {
         if (this.tabName === 'pending') {
-          if (val === 1) {
+          if (val === '1') {
             this.tableColumn = this.pendingColumn
-          } else if (val === 2) {
+            this.searchOptions = this.pendingSearch
+          } else if (val === '2') {
             this.tableColumn = this.pendingTaskColumn
+            this.searchOptions = this.pendingTaskSearch
           }
         } else if (this.tabName === 'hasProcessed') {
-          if (val === 1) {
+          if (val === '1') {
             this.tableColumn = this.hasProcessedColumn
-          } else if (val === 2) {
+            this.searchOptions = this.hasProcessedSearch
+          } else if (val === '2') {
             this.tableColumn = this.hasProcessedTaskColumn
+            this.searchOptions = this.hasProcessedTaskSearch
           }
         }
       },
       immediate: true
     },
-    'form.rollback': {
+    rollback: {
       handler (val) {
         if (this.tabName === 'submit') {
-          if (val === 1 || val === 0) {
+          if (val === '1' || val === '0') {
             this.tableColumn = this.submitAllColumn
-          } else if (val === 2 || val === 3) {
+            this.searchOptions = this.submitSearch
+          } else if (val === '2' || val === '3') {
             this.tableColumn = this.submitColumn
+            this.searchOptions = this.submitSearch
           }
         }
       },
@@ -254,41 +192,25 @@ export default {
     handleOverviewChange (val, action) {
       this.tabName = val
       this.actionName = action || '1'
-
-      this.searchOptions[0].hidden = false
+      this.$refs.search && this.$refs.search.handleReset()
       // 待处理、进行中
       if (['pending', 'hasProcessed'].includes(val)) {
-        this.form.type = 2
-        this.form.rollback = 0
-        this.searchOptions[0].key = 'type'
-        this.searchOptions[0].initValue = 2
-        this.searchOptions[0].list = [
-          { label: '任务处理', value: 2 },
-          { label: '请求定版', value: 1 }
-        ]
+        this.type = '2'
+        this.rollback = '0'
         // 我提交的
       } else if (val === 'submit') {
-        this.form.rollback = 0
-        // 表格列及排序初始化
+        // 表格列及搜索初始化
         this.tableColumn = this.submitAllColumn
-        this.form.type = 0
-        this.searchOptions[0].key = 'rollback'
-        this.searchOptions[0].initValue = 0
-        this.searchOptions[0].list = [
-          { label: '所有', value: 0 },
-          { label: '被退回', value: 1 },
-          { label: '本人撤回', value: 3 },
-          { label: '其他', value: 2 }
-        ]
+        this.searchOptions = this.submitSearch
+        this.rollback = '0'
+        this.type = '0'
       } else if (val === 'draft') {
-        this.form.type = 0
-        this.form.rollback = 0
-        // 表格列及排序初始化
+        this.type = '0'
+        this.rollback = '0'
+        // 表格列及搜索初始化
         this.tableColumn = this.draftColumn
-        this.searchOptions[0].initValue = 0
-        this.searchOptions[0].hidden = true
+        this.searchOptions = this.draftSearch
       }
-
       if (val !== 'collect') {
         this.handleQuery()
       } else {
@@ -304,56 +226,29 @@ export default {
         asc: col.order === 'asc',
         field: col.key
       }
-      this.getList()
+      this.getList(true)
     },
-    async getList () {
-      this.loading = true
-      const form = deepClone(this.form)
-      if (form.type === '') {
-        form.type = 0
-      }
-      if (form.rollback === '') {
-        form.rollback = 0
-      }
-      const dateTransferArr = ['createdTime', 'updatedTime', 'expectTime']
-      dateTransferArr.forEach(item => {
-        if (form[item] && form[item].length > 0) {
-          form[item + 'Start'] = form[item][0] + ' 00:00:00'
-          form[item + 'End'] = form[item][1] + ' 23:59:59'
-          delete form[item]
-        } else {
-          form[item + 'Start'] = ''
-          form[item + 'End'] = ''
-          delete form[item]
-        }
-      })
-      const params = {
-        tab: this.tabName,
-        action: Number(this.actionName),
-        ...form,
-        startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
-        pageSize: this.pagination.pageSize
-      }
-      // 获取默认排序
+    // 表格默认排序
+    initSortTable () {
       if (this.tabName === 'pending') {
-        if (this.form.type === 1) {
+        if (this.type === '1') {
           this.sorting = {
             asc: false,
             field: 'reportTime'
           }
-        } else if (this.form.type === 2) {
+        } else if (this.type === '2') {
           this.sorting = {
             asc: false,
             field: 'taskCreatedTime'
           }
         }
       } else if (this.tabName === 'hasProcessed') {
-        if (this.form.type === 1) {
+        if (this.type === '1') {
           this.sorting = {
             asc: false,
             field: 'approvalTime'
           }
-        } else if (this.form.type === 2) {
+        } else if (this.type === '2') {
           this.sorting = {
             asc: false,
             field: 'taskApprovalTime'
@@ -369,6 +264,43 @@ export default {
           asc: false,
           field: 'updatedTime'
         }
+      }
+    },
+    async getList (dynamicSort) {
+      this.loading = true
+      const form = deepClone(this.form)
+      const dateTransferArr = [
+        'createdTime',
+        'updatedTime',
+        'expectTime',
+        'reportTime',
+        'approvalTime',
+        'taskReportTime',
+        'taskApprovalTime',
+        'taskExpectTime'
+      ]
+      dateTransferArr.forEach(item => {
+        if (form[item] && form[item].length > 0) {
+          form[item + 'Start'] = form[item][0] + ' 00:00:00'
+          form[item + 'End'] = form[item][1] + ' 23:59:59'
+          delete form[item]
+        } else {
+          form[item + 'Start'] = ''
+          form[item + 'End'] = ''
+          delete form[item]
+        }
+      })
+      const params = {
+        tab: this.tabName,
+        action: Number(this.actionName),
+        type: Number(this.type),
+        rollback: Number(this.rollback),
+        ...form,
+        startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
+        pageSize: this.pagination.pageSize
+      }
+      if (!dynamicSort) {
+        this.initSortTable()
       }
       if (this.sorting) {
         params.sorting = this.sorting
@@ -415,7 +347,6 @@ export default {
     async getFilterOptions () {
       const { statusCode, data } = await getPlatformFilter({ startTime: '' })
       if (statusCode === 'OK') {
-        this.filterOptions = data
         this.searchOptions.forEach(item => {
           if (item.key === 'operatorObjType') {
             item.list =
@@ -605,6 +536,7 @@ export default {
         onCancel: () => {}
       })
     },
+    // 点击名称，id，任务名快捷跳转
     handleDbClick (row) {
       if (
         this.username === row.handler &&
@@ -648,7 +580,7 @@ export default {
     margin-top: 24px;
   }
   .data-tabs {
-    margin-top: 24px;
+    margin-top: 10px;
   }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="header-tag">
-    <Row v-if="showHeader" class="title">
+    <Row v-if="showHeader" class="title" :gutter="10">
       <Col :span="4">处理时间</Col>
       <Col :span="3">耗时</Col>
       <Col :span="3">处理角色</Col>
@@ -9,7 +9,7 @@
       <Col :span="4">备注</Col>
       <Col :span="4">附件</Col>
     </Row>
-    <Row class="content">
+    <Row class="content" :gutter="10">
       <Col :span="4">{{ data.handleTime }}</Col>
       <Col :span="3">{{ getDiffTime }}</Col>
       <Col :span="3">{{ data.handleRoleName || '-' }}</Col>
@@ -81,6 +81,8 @@ export default {
     padding-left: 20px;
     background: #f0faff;
     font-size: 12px;
+    overflow: hidden;
+    word-break: break-all;
   }
 }
 </style>

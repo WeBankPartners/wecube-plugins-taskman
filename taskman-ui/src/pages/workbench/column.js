@@ -568,6 +568,12 @@ export default {
         minWidth: 150,
         key: 'updatedTime'
       },
+      {
+        title: '期望完成时间',
+        sortable: 'custom',
+        minWidth: 150,
+        key: 'expectTime'
+      },
       this.baseColumn.action
     ]
   }

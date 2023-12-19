@@ -2,11 +2,15 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
+
+const AcceptLanguageHeader = "Accept-Language"
 
 func ReturnPageData(c *gin.Context, pageInfo models.PageInfo, contents interface{}) {
 	if contents == nil {
@@ -53,30 +57,63 @@ func ReturnBatchUpdateError(c *gin.Context, data []*models.ResponseErrorObj) {
 }
 
 func ReturnParamValidateError(c *gin.Context, err error) {
-	ReturnError(c, "PARAM_VALIDATE_ERROR", err.Error(), nil)
+	if _, ok := err.(exterror.CustomError); !ok {
+		err = exterror.Catch(exterror.New().RequestParamValidateError, err)
+	}
+	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	ReturnError(c, errorKey, errorMessage, nil)
 }
 
 func ReturnParamEmptyError(c *gin.Context, paramName string) {
-	ReturnError(c, "PARAM_EMPTY_ERROR", paramName, nil)
+	ReturnParamValidateError(c, fmt.Errorf("param %s empty", paramName))
+	//ReturnError(c, "PARAM_EMPTY_ERROR", paramName, nil)
 }
 
 func ReturnServerHandleError(c *gin.Context, err error) {
-	log.Logger.Error("Request server handle error", log.Error(err))
-	ReturnError(c, "SERVER_HANDLE_ERROR", err.Error(), nil)
+	if _, ok := err.(exterror.CustomError); !ok {
+		err = exterror.Catch(exterror.New().ServerHandleError, err)
+	}
+	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	ReturnError(c, errorKey, errorMessage, nil)
+	//log.Logger.Error("Request server handle error", log.Error(err))
+	//ReturnError(c, "SERVER_HANDLE_ERROR", err.Error(), nil)
 }
 
 func ReturnTokenValidateError(c *gin.Context, err error) {
-	c.JSON(http.StatusUnauthorized, models.ResponseErrorJson{StatusCode: "TOKEN_VALIDATE_ERROR", StatusMessage: err.Error(), Data: nil})
+	if _, ok := err.(exterror.CustomError); !ok {
+		err = exterror.Catch(exterror.New().RequestTokenValidateError, err)
+	}
+	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	ReturnError(c, errorKey, errorMessage, nil)
+	//c.JSON(http.StatusUnauthorized, models.ResponseErrorJson{StatusCode: "TOKEN_VALIDATE_ERROR", StatusMessage: err.Error(), Data: nil})
 }
 
 func ReturnDataPermissionError(c *gin.Context, err error) {
-	ReturnError(c, "DATA_PERMISSION_ERROR", err.Error(), nil)
+	if _, ok := err.(exterror.CustomError); !ok {
+		err = exterror.Catch(exterror.New().DataPermissionDeny, err)
+	}
+	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	ReturnError(c, errorKey, errorMessage, nil)
+	//ReturnError(c, "DATA_PERMISSION_ERROR", err.Error(), nil)
 }
 
 func ReturnDataPermissionDenyError(c *gin.Context) {
-	ReturnError(c, "DATA_PERMISSION_DENY", "permission deny", nil)
+	err := exterror.New().DataPermissionDeny
+	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	ReturnError(c, errorKey, errorMessage, nil)
+	//ReturnError(c, "DATA_PERMISSION_DENY", "permission deny", nil)
 }
 
 func ReturnApiPermissionError(c *gin.Context) {
-	ReturnError(c, "API_PERMISSION_ERROR", "api permission deny", nil)
+	err := exterror.New().ApiPermissionDeny
+	_, errorKey, errorMessage := exterror.GetErrorResult(c.GetHeader(AcceptLanguageHeader), err)
+	ReturnError(c, errorKey, errorMessage, nil)
+	//ReturnError(c, "API_PERMISSION_ERROR", "api permission deny", nil)
+}
+
+func InitHttpError() {
+	err := exterror.InitErrorTemplateList(models.Config.HttpServer.ErrorTemplateDir, models.Config.HttpServer.ErrorDetailReturn)
+	if err != nil {
+		log.Logger.Error("Init error template list fail", log.Error(err))
+	}
 }

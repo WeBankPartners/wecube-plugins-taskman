@@ -12,8 +12,10 @@ import (
 )
 
 type HttpServerConfig struct {
-	Port  string `json:"port"`
-	Cross bool   `json:"cross"`
+	Port              string `json:"port"`
+	Cross             bool   `json:"cross"`
+	ErrorTemplateDir  string `json:"error_template_dir"`
+	ErrorDetailReturn bool   `json:"error_detail_return"`
 }
 
 type LogConfig struct {

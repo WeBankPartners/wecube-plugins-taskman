@@ -7,4 +7,5 @@ const (
 	RowDataPermissionErr = "Row data permission deny "
 	AdminRole            = "SUPER_ADMIN"
 	UploadFileMaxSize    = 10485760
+	DefaultHttpErrorCode = "ERROR"
 )

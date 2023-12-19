@@ -120,6 +120,7 @@ func init() {
 }
 
 func InitHttpServer() {
+	middleware.InitHttpError()
 	urlPrefix := models.UrlPrefix
 	r := gin.New()
 	// allow cross request

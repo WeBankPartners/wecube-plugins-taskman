@@ -28,13 +28,6 @@ export default {
             { label: this.$t('status_draft'), value: 'Draft' }
           ]
         },
-        handler: {
-          key: 'handler',
-          placeholder: '处理人',
-          component: 'select',
-          multiple: true,
-          list: []
-        },
         createdBy: {
           key: 'createdBy',
           placeholder: '创建人',
@@ -64,7 +57,7 @@ export default {
           list: []
         }
       },
-      // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
+      // 任务工作台
       pendingTaskSearch: [],
       pendingSearch: [],
       hasProcessedTaskSearch: [],
@@ -74,6 +67,7 @@ export default {
     }
   },
   mounted () {
+    this.getFilterOptions()
     // 待处理-任务处理
     this.pendingTaskSearch = [
       this.baseSearch.id,
@@ -84,7 +78,6 @@ export default {
       },
       this.baseSearch.name,
       this.baseSearch.status,
-      this.baseSearch.handler,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -110,7 +103,6 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
-      this.baseSearch.handler,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -141,7 +133,6 @@ export default {
       },
       this.baseSearch.name,
       this.baseSearch.status,
-      this.baseSearch.handler,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -174,7 +165,6 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
-      this.baseSearch.handler,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -207,7 +197,6 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
-      this.baseSearch.handler,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -233,7 +222,6 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
-      this.baseSearch.handler,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -260,5 +248,55 @@ export default {
         component: 'custom-time'
       }
     ]
+  },
+  methods: {
+    // 获取搜索条件的下拉值
+    async getFilterOptions () {
+      import('@/api/server').then(async ({ getPlatformFilter }) => {
+        const { statusCode, data } = await getPlatformFilter({ startTime: '' })
+        if (statusCode === 'OK') {
+          const keys = Object.keys(this.baseSearch)
+          for (let key of keys) {
+            if (key === 'operatorObjType') {
+              this.baseSearch[key].list =
+                data.operatorObjTypeList &&
+                data.operatorObjTypeList.map(item => {
+                  return {
+                    label: item,
+                    value: item
+                  }
+                })
+            } else if (key === 'templateId') {
+              this.baseSearch[key].list =
+                data.templateList &&
+                data.templateList.map(item => {
+                  return {
+                    label: item.templateName,
+                    value: item.templateId
+                  }
+                })
+            } else if (key === 'procDefName') {
+              this.baseSearch[key].list =
+                data.procDefNameList &&
+                data.procDefNameList.map(item => {
+                  return {
+                    label: item,
+                    value: item
+                  }
+                })
+            } else if (key === 'createdBy') {
+              this.baseSearch[key].list =
+                data.createdByList &&
+                data.createdByList.map(item => {
+                  return {
+                    label: item,
+                    value: item
+                  }
+                })
+            }
+          }
+        }
+      })
+    }
   }
 }

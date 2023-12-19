@@ -86,6 +86,12 @@ export default new Router({
           path: '/taskman/workbench/requestHistory',
           name: '/taskman/workbench/requestHistory',
           component: () => import('@/pages/workbench/request/list')
+        },
+        // 请求审计
+        {
+          path: '/taskman/workbench/requestAudit',
+          name: '/taskman/workbench/requestAudit',
+          component: () => import('@/pages/workbench/request-audit.vue')
         }
       ]
     }

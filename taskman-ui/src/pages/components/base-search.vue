@@ -239,6 +239,7 @@ export default {
   .form {
     flex: 1;
     transition: all 0.2s;
+    overflow: hidden;
   }
   .button-group {
     height: 30px;

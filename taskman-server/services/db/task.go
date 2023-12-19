@@ -389,7 +389,7 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 		err = fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
 		return
 	}
-	// 当前请求可能是历史请求重新发起生成,则需要展示历史请求ID的请求和任务数据
+	/*// 当前请求可能是历史请求重新发起生成,则需要展示历史请求ID的请求和任务数据
 	if requests[0].Parent != "" {
 		if parentRequestTaskQueryList, getParentErr := GetRequestTaskListV2(requests[0].Parent); getParentErr != nil {
 			err = getParentErr
@@ -402,7 +402,7 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 				taskQueryList = parentRequestTaskQueryList
 			}
 		}
-	}
+	}*/
 	var requestCache models.RequestPreDataDto
 	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
 	if err != nil {

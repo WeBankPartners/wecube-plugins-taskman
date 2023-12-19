@@ -37,7 +37,7 @@
       </Col>
       <Col span="5" class="btn-group">
         <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
-        <Button v-if="isAdd" type="primary" @click="handlePublish">发布</Button>
+        <Button v-if="isAdd" type="primary" @click="handlePublish">提交</Button>
         <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall"
           >撤回</Button
         >

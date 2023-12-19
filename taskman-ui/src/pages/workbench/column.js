@@ -59,7 +59,7 @@ export default {
               item && (
                 <Tag color={item.color}>
                   {// 已处理请求定版的草稿添加被退回说明
-                    this.tabName === 'hasProcessed' && this.form.type === 1 && params.row.status === 'Draft'
+                    this.tabName === 'hasProcessed' && this.type === 1 && params.row.status === 'Draft'
                       ? `${item.label}(被退回)`
                       : item.label}
                 </Tag>
@@ -110,7 +110,7 @@ export default {
         },
         effectiveDays: {
           renderHeader: () => {
-            return <span>{this.form.type === 2 ? '任务停留时长' : '请求停留时长'}</span>
+            return <span>{this.type === 2 ? '任务停留时长' : '请求停留时长'}</span>
           },
           minWidth: 140,
           key: 'effectiveDays',
@@ -179,7 +179,7 @@ export default {
         action: {
           title: this.$t('t_action'),
           key: 'action',
-          minWidth: 160,
+          minWidth: 150,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
@@ -325,22 +325,22 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '任务期望完成时间',
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'taskExpectTime'
-      },
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
-      this.baseColumn.createdBy,
-      {
         title: '任务提交时间',
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
+      {
+        title: '任务期望完成时间',
+        sortable: 'custom',
+        minWidth: 150,
+        key: 'taskExpectTime'
+      },
+      this.baseColumn.createdBy,
+      this.baseColumn.templateName,
+      this.baseColumn.procDefName,
+      this.baseColumn.operatorObjType,
+      this.baseColumn.operatorObj,
       this.baseColumn.action
     ]
 
@@ -354,22 +354,22 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '请求期望完成时间',
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'expectTime'
-      },
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
-      this.baseColumn.createdBy,
-      {
         title: '任务提交时间',
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
       },
+      {
+        title: '请求期望完成时间',
+        sortable: 'custom',
+        minWidth: 150,
+        key: 'expectTime'
+      },
+      this.baseColumn.createdBy,
+      this.baseColumn.templateName,
+      this.baseColumn.procDefName,
+      this.baseColumn.operatorObjType,
+      this.baseColumn.operatorObj,
       this.baseColumn.action
     ]
 
@@ -401,22 +401,22 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '任务期望完成时间',
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'taskExpectTime'
-      },
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
-      this.baseColumn.createdBy,
-      {
         title: '任务提交时间',
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
+      {
+        title: '任务期望完成时间',
+        sortable: 'custom',
+        minWidth: 150,
+        key: 'taskExpectTime'
+      },
+      this.baseColumn.createdBy,
+      this.baseColumn.templateName,
+      this.baseColumn.procDefName,
+      this.baseColumn.operatorObjType,
+      this.baseColumn.operatorObj,
       {
         title: '处理时间',
         sortable: 'custom',
@@ -436,11 +436,18 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
+        title: '任务提交时间',
+        sortable: 'custom',
+        minWidth: 150,
+        key: 'reportTime'
+      },
+      {
         title: '请求期望完成时间',
         sortable: 'custom',
         minWidth: 150,
         key: 'expectTime'
       },
+      this.baseColumn.createdBy,
       {
         title: '退回原因',
         sortable: 'custom',
@@ -451,13 +458,6 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
-      this.baseColumn.createdBy,
-      {
-        title: '任务提交时间',
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'reportTime'
-      },
       {
         title: '处理时间',
         sortable: 'custom',

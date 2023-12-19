@@ -28,7 +28,7 @@
 
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
-import { getPublishList, reRequest } from '@/api/server'
+import { getPublishList } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 import dayjs from 'dayjs'
 export default {
@@ -156,7 +156,7 @@ export default {
               <span
                 style="cursor:pointer;"
                 onClick={() => {
-                  this.handleDbClick(params.row)
+                  this.hanldeView(params.row)
                 }}
               >
                 {params.row.id}
@@ -174,7 +174,7 @@ export default {
               <span
                 style="cursor:pointer;"
                 onClick={() => {
-                  this.handleDbClick(params.row)
+                  this.hanldeView(params.row)
                 }}
               >
                 {params.row.name}
@@ -335,64 +335,6 @@ export default {
           sortable: 'custom',
           minWidth: 150,
           key: 'reportTime'
-        },
-        {
-          title: this.$t('t_action'),
-          key: 'action',
-          width: 160,
-          fixed: 'right',
-          align: 'center',
-          render: (h, params) => {
-            return (
-              <div>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    this.hanldeView(params.row)
-                  }}
-                  style="margin-right:5px;"
-                >
-                  查看
-                </Button>
-                {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && (
-                  <Button
-                    type="primary"
-                    size="small"
-                    onClick={() => {
-                      this.handleRepub(params.row)
-                    }}
-                  >
-                    重新发起
-                  </Button>
-                )}
-                {
-                  // params.row.status === 'Pending' && this.tabName === 'submit' && (
-                  // <Button
-                  //   type="error"
-                  //   size="small"
-                  //   onClick={() => {
-                  //     this.handleRecall(params.row)
-                  //   }}
-                  // >
-                  //   撤回
-                  // </Button>
-                  // )
-                }
-                {params.row.status === 'Draft' && (
-                  <Button
-                    type="success"
-                    size="small"
-                    onClick={() => {
-                      this.hanldeLaunch(params.row)
-                    }}
-                    style="margin-right:5px;"
-                  >
-                    去发起
-                  </Button>
-                )}
-              </div>
-            )
-          }
         }
       ]
     }
@@ -425,7 +367,7 @@ export default {
         }
       })
       const params = {
-        tab: '',
+        tab: 'commit', // 已提交数据，不包括草稿
         action: Number(this.activeTab),
         ...this.form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
@@ -458,7 +400,6 @@ export default {
       this.activeTab = val
       this.handleQuery()
     },
-    handleDbClick (row) {},
     // 表格操作-查看
     hanldeView (row) {
       const url = `/taskman/workbench/createRequest`
@@ -471,39 +412,6 @@ export default {
           isCheck: 'Y',
           isHandle: 'N',
           enforceDisable: 'Y',
-          jumpFrom: ''
-        }
-      })
-    },
-    // 表格操作-重新发起
-    async handleRepub (row) {
-      const { statusCode, data } = await reRequest(row.id)
-      if (statusCode === 'OK') {
-        const url = `/taskman/workbench/createRequest`
-        this.$router.push({
-          path: url,
-          query: {
-            requestId: data.id,
-            requestTemplate: data.requestTemplate,
-            isAdd: 'Y',
-            isCheck: 'N',
-            isHandle: 'N',
-            jumpFrom: ''
-          }
-        })
-      }
-    },
-    // 表格操作-草稿去发起
-    hanldeLaunch (row) {
-      const url = `/taskman/workbench/createRequest`
-      this.$router.push({
-        path: url,
-        query: {
-          requestId: row.id,
-          requestTemplate: row.templateId,
-          isAdd: 'Y',
-          isCheck: 'N',
-          isHandle: 'N',
           jumpFrom: ''
         }
       })
@@ -534,6 +442,9 @@ export default {
   .ivu-progress {
     display: flex;
     // flex-direction: column;
+  }
+  .ivu-btn-small {
+    font-size: 12px;
   }
 }
 </style>

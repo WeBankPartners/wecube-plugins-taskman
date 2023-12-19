@@ -173,6 +173,7 @@ export default {
   cursor: pointer;
 }
 #graphcontain {
+  position: relative;
   border: 1px solid #d3cece;
   border-radius: 3px;
   padding: 5px;
@@ -181,7 +182,7 @@ export default {
 .reset-button {
   position: absolute;
   right: 20px;
-  bottom: 5px;
+  bottom: 20px;
   font-size: 12px;
 }
 </style>

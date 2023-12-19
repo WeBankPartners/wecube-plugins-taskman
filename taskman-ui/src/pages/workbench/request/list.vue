@@ -534,5 +534,8 @@ export default {
     display: flex;
     // flex-direction: column;
   }
+  .ivu-btn-small {
+    font-size: 12px;
+  }
 }
 </style>

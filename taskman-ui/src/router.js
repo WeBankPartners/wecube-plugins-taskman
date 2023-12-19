@@ -89,8 +89,8 @@ export default new Router({
         },
         // 请求审计
         {
-          path: '/taskman/workbench/requestAudit',
-          name: '/taskman/workbench/requestAudit',
+          path: '/taskman/requestAudit',
+          name: '/taskman/requestAudit',
           component: () => import('@/pages/workbench/request-audit.vue')
         }
       ]

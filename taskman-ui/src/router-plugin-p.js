@@ -42,8 +42,8 @@ const routerP = [
   },
   // 请求审计
   {
-    path: '/taskman/workbench/requestAudit',
-    name: '/taskman/workbench/requestAudit'
+    path: '/taskman/requestAudit',
+    name: '/taskman/requestAudit'
   }
 ]
 export default routerP

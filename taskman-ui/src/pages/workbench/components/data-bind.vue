@@ -1,9 +1,9 @@
 <template>
-  <div style="margin: 0 auto;min-width: 700px">
+  <div class="workbench-data-bind" style="margin: 0 auto;min-width: 700px">
     <Tabs>
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
-          <ul>
+          <ul v-if="filterBindData(node).length">
             <CheckboxGroup v-model="node.bindData">
               <template v-for="(entity, entityIndex) in node.classification">
                 <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider>
@@ -31,6 +31,7 @@
               </template>
             </CheckboxGroup>
           </ul>
+          <div v-else>暂无数据</div>
         </TabPane>
       </template>
     </Tabs>
@@ -361,18 +362,22 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.ivu-checkbox-group-item {
-  width: 100%;
-}
-.ivu-tooltip {
-  width: 90%;
-}
 .text-ellipsis {
-  width: 90%;
+  width: 100%;
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
   text-overflow: ellipsis;
   vertical-align: bottom;
+}
+</style>
+<style lang="scss">
+.workbench-data-bind {
+  .ivu-checkbox-group-item {
+    width: 100%;
+  }
+  .ivu-tooltip {
+    width: 100% !important;
+  }
 }
 </style>

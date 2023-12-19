@@ -150,6 +150,7 @@ func ApproveTask(c *gin.Context) {
 		return
 	}
 	var err error
+	var operator = middleware.GetRequestUser(c)
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -164,7 +165,16 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err = db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	taskTable, err := db.GetSimpleTask(taskId)
+	if err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if taskTable.Handler != operator {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("handler %s not permission", operator))
+		return
+	}
+	err = db.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

@@ -838,3 +838,16 @@ func NotifyTaskMail(taskId string) error {
 	}
 	return nil
 }
+
+func GetSimpleTask(taskId string) (task models.TaskTable, err error) {
+	var taskTable []*models.TaskTable
+	err = x.SQL("select * from task where id=?", taskId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) == 0 {
+		return task, fmt.Errorf("Can not find any task with id:%s ", taskId)
+	}
+	task = *taskTable[0]
+	return
+}

@@ -284,17 +284,27 @@ func GetRequestCache(c *gin.Context) {
 func StartRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
 	var param models.RequestCacheData
+	var operator = middleware.GetRequestUser(c)
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	instanceId, err := db.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	request, err := db.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "start")
-		middleware.ReturnData(c, instanceId)
+		return
 	}
+	if request.Handler != operator {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
+		return
+	}
+	instanceId, err := db.StartRequest(requestId, operator, c.GetHeader("Authorization"), param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "start")
+	middleware.ReturnData(c, instanceId)
 }
 
 func UpdateRequestStatus(c *gin.Context) {

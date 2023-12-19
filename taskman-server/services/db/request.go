@@ -2504,9 +2504,8 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 								Status:    int(Fail),
 								OrderedNo: v.OrderedNo,
 							})
-							sort.Sort(models.RequestProgressObjSort(subRowsData))
-							break
 						}
+						sort.Sort(models.RequestProgressObjSort(subRowsData))
 					}
 				}
 			}

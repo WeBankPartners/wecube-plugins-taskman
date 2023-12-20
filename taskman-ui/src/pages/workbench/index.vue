@@ -42,12 +42,7 @@
         <TabPane label="本人撤回" name="3"></TabPane>
         <TabPane label="其他" name="2"></TabPane>
       </Tabs>
-      <CollectTable
-        ref="collect"
-        v-if="tabName === 'collect'"
-        :getTemplateList="getTemplateList"
-        :actionName="actionName"
-      ></CollectTable>
+      <CollectTable ref="collect" v-if="tabName === 'collect'" :actionName="actionName"></CollectTable>
       <template v-else>
         <!--搜索条件-->
         <BaseSearch ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
@@ -82,16 +77,7 @@ import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
-import {
-  getPlatformList,
-  getTemplateList,
-  tansferToMe,
-  recallRequest,
-  changeTaskStatus,
-  deleteRequest,
-  reRequest,
-  getPlatformFilter
-} from '@/api/server'
+import { getPlatformList, tansferToMe, recallRequest, changeTaskStatus, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 import column from './column.js'
 import search from './search.js'
@@ -325,77 +311,6 @@ export default {
       this.pagination.currentPage = 1
       this.pagination.pageSize = val
       this.getList()
-    },
-    // 获取下拉搜索模板列表
-    async getTemplateList () {
-      const params = {
-        filters: [],
-        paging: false
-      }
-      const { statusCode, data } = await getTemplateList(params)
-      if (statusCode === 'OK') {
-        const options = data.contents || []
-        return options.map(option => {
-          return {
-            label: `${option.name}(${option.version || '-'})`,
-            value: option.id
-          }
-        })
-      }
-    },
-    // 获取搜索条件的下拉值
-    async getFilterOptions () {
-      const { statusCode, data } = await getPlatformFilter({ startTime: '' })
-      if (statusCode === 'OK') {
-        this.searchOptions.forEach(item => {
-          if (item.key === 'operatorObjType') {
-            item.list =
-              data.operatorObjTypeList &&
-              data.operatorObjTypeList.map(item => {
-                return {
-                  label: item,
-                  value: item
-                }
-              })
-          } else if (item.key === 'templateId') {
-            item.list =
-              data.templateList &&
-              data.templateList.map(item => {
-                return {
-                  label: item.templateName,
-                  value: item.templateId
-                }
-              })
-          } else if (item.key === 'procDefName') {
-            item.list =
-              data.procDefNameList &&
-              data.procDefNameList.map(item => {
-                return {
-                  label: item,
-                  value: item
-                }
-              })
-          } else if (item.key === 'handler') {
-            item.list =
-              data.handlerList &&
-              data.handlerList.map(item => {
-                return {
-                  label: item,
-                  value: item
-                }
-              })
-          } else if (item.key === 'createdBy') {
-            item.list =
-              data.createdByList &&
-              data.createdByList.map(item => {
-                return {
-                  label: item,
-                  value: item
-                }
-              })
-          }
-        })
-      }
     },
     // 表格操作-查看
     hanldeView (row) {

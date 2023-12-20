@@ -32,10 +32,6 @@ export default {
     BaseSearch
   },
   props: {
-    getTemplateList: {
-      type: Function,
-      default: () => {}
-    },
     actionName: {
       type: String,
       default: '1'

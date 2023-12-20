@@ -84,7 +84,6 @@ export default {
         },
         handler: {
           title: '当前处理人',
-          sortable: 'custom',
           minWidth: 140,
           key: 'handler',
           render: (h, params) => {

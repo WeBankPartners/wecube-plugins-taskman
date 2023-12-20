@@ -77,11 +77,21 @@ func SaveRequestCache(c *gin.Context) {
 		}
 	} else {
 		var param models.RequestCacheData
+		var operator = middleware.GetRequestUser(c)
 		if err := c.ShouldBindJSON(&param); err != nil {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		err := db.SaveRequestBindCache(requestId, middleware.GetRequestUser(c), &param)
+		request, err := db.GetSimpleRequest(requestId)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		if request.Handler != operator {
+			middleware.ReturnParamValidateError(c, fmt.Errorf("not permission"))
+			return
+		}
+		err = db.SaveRequestBindCache(requestId, operator, &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {

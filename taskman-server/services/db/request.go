@@ -377,14 +377,14 @@ func getRequestExportData(rowsData []*models.PlatformDataObj) (titles []string, 
 }
 
 func getPlatRequestSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
-		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.type as template_type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 }
 
 func getPlatTaskSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.type,rt.parent_id,"+
-		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,"+
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,rt.type as template_type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,"+
 		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.report_time as task_created_time,t.updated_time as task_approval_time,t.expire_time as task_expect_time,t.handler as task_handler "+
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }

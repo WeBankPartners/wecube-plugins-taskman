@@ -50,7 +50,7 @@
 import {
   getTemplateNodesForRequest,
   getBindData,
-  saveRequest,
+  saveRequestNew,
   getBindRelate,
   updateRequestStatus,
   startRequestNew,
@@ -306,7 +306,7 @@ export default {
         }
       })
       this.finalData.taskNodeBindInfos = tmpData
-      const { statusCode } = await saveRequest(this.requestId, this.finalData)
+      const { statusCode } = await saveRequestNew(this.requestId, this.finalData)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),

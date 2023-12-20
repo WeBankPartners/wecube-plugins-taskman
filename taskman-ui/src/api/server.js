@@ -128,7 +128,10 @@ export const savePublishData = (requestId, params) =>
 export const getPublishInfo = requestId => req.get(`/taskman/api/v2/request/detail/${requestId}`)
 // 发布历史页面
 export const getPublishList = params => req.post(`/taskman/api/v1/request/history/list`, params)
+// 确认定版新接口
 export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/request/start/${requestId}`, data)
+// 定版暂存新接口
+export const saveRequestNew = (requestId, data) => req.post(`/taskman/api/v2/request-data/save/${requestId}/bing`, data)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

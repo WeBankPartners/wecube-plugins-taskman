@@ -85,14 +85,14 @@ export default {
       {
         key: 'taskExpectTime',
         label: '任务期望完成时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'taskReportTime',
         label: '任务提交时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -110,14 +110,14 @@ export default {
       {
         key: 'expectTime',
         label: '请求期望完成时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
         label: '任务提交时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -140,21 +140,21 @@ export default {
       {
         key: 'taskExpectTime',
         label: '任务期望完成时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'taskReportTime',
         label: '任务提交时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'taskApprovalTime',
         label: '处理时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 85,
         component: 'custom-time'
       }
@@ -172,21 +172,21 @@ export default {
       {
         key: 'expectTime',
         label: '请求期望完成时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
         label: '任务提交时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'approvalTime',
         label: '处理时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 85,
         component: 'custom-time'
       }
@@ -204,14 +204,14 @@ export default {
       {
         key: 'expectTime',
         label: '期望完成时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
         label: '请求提交时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -229,21 +229,21 @@ export default {
       {
         key: 'createdTime',
         label: '创建时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 85,
         component: 'custom-time'
       },
       {
         key: 'updatedTime',
         label: '更新时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 85,
         component: 'custom-time'
       },
       {
         key: 'expectTime',
         label: '期望完成时间',
-        dateType: 4,
+        dateType: 1,
         labelWidth: 110,
         component: 'custom-time'
       }

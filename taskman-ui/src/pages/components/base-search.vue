@@ -64,6 +64,8 @@
                 v-if="i.dateType !== 4"
                 v-model="i.dateType"
                 @on-change="handleDateTypeChange(i.key, i.dateType)"
+                type="button"
+                size="small"
                 style="margin-top:-2px;"
               >
                 <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
@@ -87,8 +89,8 @@
                   style="cursor:pointer;"
                   type="md-close-circle"
                   @click="
-                    i.dateType = ''
-                    formData[i.key] = []
+                    i.dateType = 1
+                    handleDateTypeChange(i.key, 1)
                   "
                 />
               </div>
@@ -141,9 +143,8 @@ export default {
   data () {
     return {
       expand: false,
-      dateType: '', // 1-近一个月2-近半年3-近一年4-自定义
       dateTypeList: [
-        { label: '近一个月', value: 1 },
+        { label: '近3个月', value: 1 },
         { label: '近半年', value: 2 },
         { label: '近一年', value: 3 },
         { label: '自定义', value: 4 }
@@ -167,6 +168,17 @@ export default {
         } else {
           resetObj[key] = ''
         }
+        // 处理时间类型默认值
+        this.options.forEach(i => {
+          if (i.dateType) {
+            i.dateType = 1
+            const cur = dayjs().format('YYYY-MM-DD')
+            const pre = dayjs()
+              .subtract(3, 'month')
+              .format('YYYY-MM-DD')
+            resetObj[i.key] = [pre, cur]
+          }
+        })
         // 点击清空按钮需要给默认值的表单选项
         const initOptions = this.options.filter(i => i.initValue !== undefined)
         initOptions.forEach(i => {
@@ -181,7 +193,7 @@ export default {
       const cur = dayjs().format('YYYY-MM-DD')
       if (dateType === 1) {
         const pre = dayjs()
-          .subtract(1, 'month')
+          .subtract(3, 'month')
           .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
       } else if (dateType === 2) {
@@ -194,6 +206,8 @@ export default {
           .subtract(1, 'year')
           .format('YYYY-MM-DD')
         this.formData[key] = [pre, cur]
+      } else if (dateType === 4) {
+        this.formData[key] = []
       }
       // 同步更新父组件form数据
       this.$emit('input', this.formData)
@@ -222,19 +236,19 @@ export default {
     display: none;
   }
   .ivu-radio-wrapper {
-    border-radius: 5px;
+    // border-radius: 5px;
     height: 30px !important;
     line-height: 30px !important;
-    padding: 0 10px;
-    font-size: 12px;
+    // padding: 0 10px;
+    font-size: 12px !important;
     color: #000;
-    background: #f5f8fa;
-    border: none;
+    // background: #f5f8fa;
+    // border: none;
   }
   .ivu-radio-wrapper-checked.ivu-radio-border {
     border-color: #2d8cf0;
-    background: #2d8cf0;
-    color: #fff;
+    // background: #2d8cf0;
+    color: #2d8cf0;
   }
   .form {
     flex: 1;

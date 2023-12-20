@@ -26,12 +26,9 @@ func AddTemplateCollect(c *gin.Context) {
 		// parentId为空说明 模板为老数据,需要更新该名称的模板
 		parentId = db.UpdateRequestTemplateParentId(requestTemplate)
 	}
+	// 判断模板是否已经收藏
 	if db.CheckUserCollectExist(parentId, middleware.GetRequestUser(c)) {
 		err = fmt.Errorf("repeate templateId:%s collect", parentId)
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
@@ -44,9 +41,9 @@ func AddTemplateCollect(c *gin.Context) {
 	err = db.AddTemplateCollect(collectTemplate)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnSuccess(c)
+		return
 	}
+	middleware.ReturnSuccess(c)
 }
 
 // CancelTemplateCollect  取消收藏模板

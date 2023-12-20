@@ -19,9 +19,9 @@ func GetEntityData(c *gin.Context) {
 	result, err := db.GetEntityData(id, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func ProcessDataPreview(c *gin.Context) {
@@ -34,9 +34,9 @@ func ProcessDataPreview(c *gin.Context) {
 	result, err := db.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -163,9 +163,9 @@ func GetRequest(c *gin.Context) {
 	result, err := db.GetRequestWithRoot(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func GetRequestDetail(c *gin.Context) {
@@ -202,10 +202,10 @@ func CreateRequest(c *gin.Context) {
 	err := db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(param.Id, param.CreatedBy, "create")
-		middleware.ReturnData(c, param)
+		return
 	}
+	db.RecordRequestLog(param.Id, param.CreatedBy, "create")
+	middleware.ReturnData(c, param)
 }
 
 func UpdateRequest(c *gin.Context) {
@@ -223,10 +223,10 @@ func UpdateRequest(c *gin.Context) {
 	err := db.UpdateRequest(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(param.Id, param.UpdatedBy, "update")
-		middleware.ReturnData(c, param)
+		return
 	}
+	db.RecordRequestLog(param.Id, param.UpdatedBy, "update")
+	middleware.ReturnData(c, param)
 }
 
 func DeleteRequest(c *gin.Context) {
@@ -234,10 +234,11 @@ func DeleteRequest(c *gin.Context) {
 	err := db.DeleteRequest(requestId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "delete")
-		middleware.ReturnSuccess(c)
+		return
 	}
+	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "delete")
+	middleware.ReturnSuccess(c)
+
 }
 
 func SaveRequestCache(c *gin.Context) {
@@ -284,21 +285,11 @@ func GetRequestCache(c *gin.Context) {
 func StartRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
 	var param models.RequestCacheData
-	var operator = middleware.GetRequestUser(c)
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	request, err := db.GetSimpleRequest(requestId)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	if request.Handler != operator {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
-		return
-	}
-	instanceId, err := db.StartRequest(requestId, operator, c.GetHeader("Authorization"), param)
+	instanceId, err := db.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

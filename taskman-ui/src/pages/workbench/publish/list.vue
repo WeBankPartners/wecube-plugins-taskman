@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-publish-history">
     <Tabs :value="activeTab" @on-click="handleChangeTab">
-      <TabPane label="已发布" name="commit"></TabPane>
+      <TabPane label="已提交" name="commit"></TabPane>
       <TabPane label="草稿箱" name="draft"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>

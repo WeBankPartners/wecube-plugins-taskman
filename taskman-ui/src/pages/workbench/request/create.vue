@@ -363,6 +363,7 @@
                       :requestTemplate="requestTemplate"
                       :requestId="requestId"
                       :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                      :actionName="actionName"
                     ></DataBind>
                   </div>
                 </Step>
@@ -431,6 +432,7 @@ export default {
   },
   data () {
     return {
+      actionName: '2', // 1发布,2请求(3问题,4事件,5变更)
       templateName: '',
       version: '', // 模板版本号
       enforceDisable: this.$route.query.enforceDisable === 'Y',
@@ -644,7 +646,7 @@ export default {
           if (noJump) {
             return statusCode
           } else {
-            this.$router.push({ path: '/taskman/workbench?tabName=draft&actionName=2' })
+            this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
           }
         }
       } else {
@@ -666,7 +668,7 @@ export default {
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench?tabName=submit&actionName=2' })
+              this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}` })
             }
           }
         },
@@ -730,7 +732,7 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed&actionName=2' })
+        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}` })
       }
     },
     paramsCheck (taskData) {
@@ -773,7 +775,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: '/taskman/workbench?tabName=submit&actionName=2' })
+            this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}` })
           }
         },
         onCancel: () => {}

@@ -15,7 +15,13 @@
       <HotLink></HotLink>
     </div>
     <div class="data-card">
-      <DataCard ref="dataCard" :initTab="initTab" :initAction="initAction" @fetchData="handleOverviewChange"></DataCard>
+      <DataCard
+        ref="dataCard"
+        :initTab="initTab"
+        :initAction="initAction"
+        @initFetch="initData"
+        @fetchData="handleOverviewChange"
+      ></DataCard>
     </div>
     <div class="data-tabs">
       <Tabs
@@ -171,13 +177,53 @@ export default {
   mounted () {
     this.initTab = this.$route.query.tabName || 'pending'
     this.initAction = this.$route.query.actionName || '1'
-    this.getFilterOptions()
   },
   methods: {
+    // 初始化加载数据
+    initData (val, action) {
+      this.tabName = val
+      this.actionName = action
+      const type = this.$route.query.type
+      const rollback = this.$route.query.rollback
+      // 待处理、进行中
+      if (['pending', 'hasProcessed'].includes(val)) {
+        if (['1', '2'].includes(type)) {
+          this.type = type
+        } else {
+          this.type = '2'
+        }
+        this.rollback = '0'
+        // 我提交的
+      } else if (val === 'submit') {
+        if (['1', '2', '3'].includes(rollback)) {
+          this.rollback = rollback
+        } else {
+          this.rollback = '0'
+        }
+        this.type = '0'
+        // 表格列及搜索初始化
+        this.tableColumn = this.submitAllColumn
+        this.searchOptions = this.submitSearch
+      } else if (val === 'draft') {
+        this.type = '0'
+        this.rollback = '0'
+        // 表格列及搜索初始化
+        this.tableColumn = this.draftColumn
+        this.searchOptions = this.draftSearch
+      }
+      if (val !== 'collect') {
+        this.handleQuery()
+      } else {
+        this.$nextTick(() => {
+          this.$refs.collect.handleQuery()
+          this.$refs.dataCard.getData()
+        })
+      }
+    },
     // 点击视图卡片触发查询
     handleOverviewChange (val, action) {
       this.tabName = val
-      this.actionName = action || '1'
+      this.actionName = action
       this.$refs.search && this.$refs.search.handleReset()
       // 待处理、进行中
       if (['pending', 'hasProcessed'].includes(val)) {

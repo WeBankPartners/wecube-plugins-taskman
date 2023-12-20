@@ -128,6 +128,7 @@ export const savePublishData = (requestId, params) =>
 export const getPublishInfo = requestId => req.get(`/taskman/api/v2/request/detail/${requestId}`)
 // 发布历史页面
 export const getPublishList = params => req.post(`/taskman/api/v1/request/history/list`, params)
+export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/request/start/${requestId}`, data)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

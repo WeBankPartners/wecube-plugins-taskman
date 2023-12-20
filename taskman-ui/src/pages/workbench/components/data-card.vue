@@ -122,7 +122,7 @@ export default {
         if (val) {
           this.action = val
           if (this.action && this.active) {
-            this.$emit('fetchData', this.active, this.action)
+            this.$emit('initFetch', this.active, this.action)
           }
         }
       },
@@ -133,7 +133,7 @@ export default {
         if (val) {
           this.active = val
           if (this.action && this.active) {
-            this.$emit('fetchData', this.active, this.action)
+            this.$emit('initFetch', this.active, this.action)
           }
         }
       },

@@ -25,7 +25,7 @@
               :placeholder="i.placeholder"
               clearable
               :multiple="i.multiple || false"
-              :filterable="i.filterable || false"
+              :filterable="i.filterable || true"
               :max-tag-count="1"
               :style="{ width: i.width || 200 + 'px' }"
             >
@@ -41,7 +41,7 @@
               :placeholder="i.placeholder"
               clearable
               :multiple="i.multiple || false"
-              :filterable="i.filterable || false"
+              :filterable="i.filterable || true"
               :max-tag-count="1"
               :style="{ width: i.width || 200 + 'px' }"
             >

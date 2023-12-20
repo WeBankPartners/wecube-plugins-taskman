@@ -53,7 +53,7 @@ import {
   saveRequest,
   getBindRelate,
   updateRequestStatus,
-  startRequest,
+  startRequestNew,
   requestParent
 } from '@/api/server.js'
 import { deepClone } from '@/pages/util/index'
@@ -111,6 +111,10 @@ export default {
     showBtn: {
       type: Boolean,
       default: true
+    },
+    actionName: {
+      type: String,
+      default: '1'
     }
   },
   watch: {
@@ -196,7 +200,7 @@ export default {
         onOk: async () => {
           this.$Modal.remove()
           await this.saveRequest()
-          const { statusCode } = await startRequest(this.requestId, this.finalData)
+          const { statusCode } = await startRequestNew(this.requestId, this.finalData)
           if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
@@ -261,7 +265,13 @@ export default {
             }
             const { statusCode } = await updateRequestStatus(this.requestId, 'Draft', params)
             if (statusCode === 'OK') {
-              this.$router.push({ path: '/taskman/workbench?tabName=hasProcessed' })
+              this.$Notice.success({
+                title: this.$t('successful'),
+                desc: this.$t('successful')
+              })
+              this.$router.push({
+                path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+              })
             }
           }
         },

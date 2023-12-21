@@ -112,7 +112,7 @@ func SaveTaskForm(c *gin.Context) {
 		return
 	}
 	if operator != task.Handler {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("handler %s not permission", operator))
+		middleware.ReturnTaskSaveNotPermissionError(c)
 		return
 	}
 	err = db.SaveTaskForm(taskId, operator, param)
@@ -182,7 +182,7 @@ func ApproveTask(c *gin.Context) {
 		return
 	}
 	if taskTable.Handler != operator {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("handler %s not permission", operator))
+		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}
 	err = db.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
@@ -197,15 +197,15 @@ func ChangeTaskStatus(c *gin.Context) {
 	taskId := c.Param("taskId")
 	operation := c.Param("operation")
 	if operation != "mark" && operation != "start" && operation != "quit" && operation != "give" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("operation illegal"))
+		middleware.ReturnChangeTaskStatusError(c)
 		return
 	}
 	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, taskObj)
+		return
 	}
+	middleware.ReturnData(c, taskObj)
 }
 
 func UploadTaskAttachFile(c *gin.Context) {
@@ -216,7 +216,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 		return
 	}
 	if file.Size > models.UploadFileMaxSize {
-		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File too large ", Data: nil})
+		middleware.ReturnUploadFileTooLargeError(c)
 		return
 	}
 	f, err := file.Open()

@@ -100,6 +100,46 @@ func ReturnApiPermissionError(c *gin.Context) {
 	//ReturnError(c, "API_PERMISSION_ERROR", "api permission deny", nil)
 }
 
+func ReturnTemplateAlreadyCollectError(c *gin.Context) {
+	ReturnError(c, exterror.New().TemplateAlreadyCollect)
+}
+
+func ReturnUploadFileTooLargeError(c *gin.Context) {
+	ReturnError(c, exterror.New().UploadFileTooLarge)
+}
+
+func ReturnChangeTaskStatusError(c *gin.Context) {
+	ReturnError(c, exterror.New().ChangeTaskStatusError)
+}
+
+func ReturnSubmitRequestNotPermissionError(c *gin.Context) {
+	ReturnError(c, exterror.New().SubmitRequestNotPermission)
+}
+
+func ReturnSaveRequestNotPermissionError(c *gin.Context) {
+	ReturnError(c, exterror.New().SaveRequestNotPermission)
+}
+
+func ReturnTaskApproveNotPermissionError(c *gin.Context) {
+	ReturnError(c, exterror.New().TaskApproveNotPermission)
+}
+
+func ReturnTaskSaveNotPermissionError(c *gin.Context) {
+	ReturnError(c, exterror.New().TaskSaveNotPermission)
+}
+
+func ReturnUpdateRequestHandlerStatusError(c *gin.Context) {
+	ReturnError(c, exterror.New().UpdateRequestHandlerStatusError)
+}
+
+func ReturnRevokeRequestErrorError(c *gin.Context) {
+	ReturnError(c, exterror.New().RevokeRequestError)
+}
+
+func ReturnGetRequestPreviewDataError(c *gin.Context) {
+	ReturnError(c, exterror.New().GetRequestPreviewDataError)
+}
+
 func InitHttpError() {
 	err := exterror.InitErrorTemplateList(models.Config.HttpServer.ErrorTemplateDir, models.Config.HttpServer.ErrorDetailReturn)
 	if err != nil {

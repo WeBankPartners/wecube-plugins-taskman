@@ -28,8 +28,7 @@ func AddTemplateCollect(c *gin.Context) {
 	}
 	// 判断模板是否已经收藏
 	if db.CheckUserCollectExist(parentId, middleware.GetRequestUser(c)) {
-		err = fmt.Errorf("repeate templateId:%s collect", parentId)
-		middleware.ReturnParamValidateError(c, err)
+		middleware.ReturnTemplateAlreadyCollectError(c)
 		return
 	}
 	collectTemplate := &models.CollectTemplateTable{

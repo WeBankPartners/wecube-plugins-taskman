@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/tealeg/xlsx"
@@ -750,7 +751,7 @@ func RevokeRequest(requestId, user string) (err error) {
 		return
 	}
 	if request.Status != "Pending" {
-		err = fmt.Errorf("request status:%s err", request.Status)
+		err = exterror.New().RevokeRequestError
 		return
 	}
 	if request.CreatedBy != user {
@@ -1059,7 +1060,8 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 		return
 	}
 	if len(items) == 0 {
-		return result, fmt.Errorf("RequestTemplate:%s have no task form items ", requestTemplateId)
+		err = exterror.New().GetRequestPreviewDataError
+		return
 	}
 	result = getItemTemplateTitle(items)
 	if entityDataId == "" {
@@ -1296,7 +1298,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 	} else if status == "Draft" {
 		request, err = GetSimpleRequest(requestId)
 		if request.Handler != operator {
-			return fmt.Errorf("handler %s not permission", operator)
+			err = exterror.New().UpdateRequestHandlerStatusError
 		}
 		_, err = x.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", status, description, operator, operator, nowTime, nowTime, requestId)
 	} else {

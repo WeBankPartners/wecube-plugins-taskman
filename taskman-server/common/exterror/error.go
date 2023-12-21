@@ -44,6 +44,26 @@ type ErrorTemplate struct {
 	// 业务报错
 	ApiPermissionDeny  CustomError `json:"api_permission_deny"`
 	DataPermissionDeny CustomError `json:"data_permission_deny"`
+	// TemplateAlreadyCollect 模板已收藏
+	TemplateAlreadyCollect CustomError `json:"template_already_collect"`
+	// UploadFileTooLarge 上传文件太大
+	UploadFileTooLarge CustomError `json:"upload_file_too_large"`
+	// ChangeTaskStatusError 任务状态修改失败
+	ChangeTaskStatusError CustomError `json:"change_task_status_error"`
+	// SubmitRequestNotPermission 请求提交没有权限
+	SubmitRequestNotPermission CustomError `json:"submit_request_not_permission"`
+	// SaveRequestNotPermission 请求保存没有权限
+	SaveRequestNotPermission CustomError `json:"save_request_not_permission"`
+	// TaskApproveNotPermission 任务审批没有权限
+	TaskApproveNotPermission CustomError `json:"task_approve_not_permission"`
+	// TaskSaveNotPermission 任务保存没有权限
+	TaskSaveNotPermission CustomError `json:"task_save_not_permission"`
+	// UpdateRequestHandlerStatusError 更新请求处理人失败
+	UpdateRequestHandlerStatusError CustomError `json:"update_request_handler_status_error"`
+	// RevokeRequestError 撤回请求失败
+	RevokeRequestError CustomError `json:"revoke_request_error"`
+	// GetRequestPreviewDataError 获取请求模板配置表单项
+	GetRequestPreviewDataError CustomError `json:"get_request_preview_data_error"`
 }
 
 var (

@@ -45,9 +45,9 @@ func GetRequestPreviewData(c *gin.Context) {
 	result, err := db.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
+		return
 	}
+	middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
 }
 
 // CountRequest 个人工作台统计
@@ -313,10 +313,10 @@ func UpdateRequestStatus(c *gin.Context) {
 	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), status)
-		middleware.ReturnSuccess(c)
+		return
 	}
+	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), status)
+	middleware.ReturnSuccess(c)
 }
 
 func TerminateRequest(c *gin.Context) {
@@ -370,7 +370,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 		return
 	}
 	if file.Size > models.UploadFileMaxSize {
-		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File too large ", Data: nil})
+		middleware.ReturnUploadFileTooLargeError(c)
 		return
 	}
 	f, err := file.Open()
@@ -417,7 +417,7 @@ func UpdateRequestHandler(c *gin.Context) {
 	}
 	// 请求在Pending状态才有转给我
 	if request.Status != "Pending" {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("request status invalid,requestId:%s ", requestId))
+		middleware.ReturnUpdateRequestHandlerStatusError(c)
 		return
 	}
 	err = db.UpdateRequestHandler(requestId, middleware.GetRequestUser(c))

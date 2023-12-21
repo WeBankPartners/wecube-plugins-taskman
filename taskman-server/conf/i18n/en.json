@@ -1,17 +1,87 @@
 {
   "success": "Success",
-  "request_param_validate_error": {"code": 10100001, "message":"Parameter validate fail"},
-  "request_read_body_error": {"code": 10100002, "message":"Failed to read request body data"},
-  "request_json_unmarshal_error": {"code": 10100003, "message":"Failed unmarshal request body in json"},
-  "request_token_validate_error": {"code": 10100004, "message":"Failed validate request token"},
-  "request_token_expire_error": {"code": 10100005, "message":"token expired"},
-
-  "database_query_error": {"code": 10100021, "message":"Failed to Query database fail"},
-  "database_query_empty_error": {"code": 10100022, "message":"Failed to get any rows with database query"},
-  "database_execute_error": {"code": 10100023, "message":"Failed to execute database sql"},
-
-  "server_handle_error": {"code": 10100031, "message":"Failed to handle request"},
-
-  "api_permission_deny": {"code": 20100001, "message":"Api Permission Deny"},
-  "data_permission_deny": {"code": 20100002, "message":"Data Permission Deny"}
+  "request_param_validate_error": {
+    "code": 10100001,
+    "message": "Parameter validate fail"
+  },
+  "request_read_body_error": {
+    "code": 10100002,
+    "message": "Failed to read request body data"
+  },
+  "request_json_unmarshal_error": {
+    "code": 10100003,
+    "message": "Failed unmarshal request body in json"
+  },
+  "request_token_validate_error": {
+    "code": 10100004,
+    "message": "Failed validate request token"
+  },
+  "request_token_expire_error": {
+    "code": 10100005,
+    "message": "token expired"
+  },
+  "database_query_error": {
+    "code": 10100021,
+    "message": "Failed to Query database fail"
+  },
+  "database_query_empty_error": {
+    "code": 10100022,
+    "message": "Failed to get any rows with database query"
+  },
+  "database_execute_error": {
+    "code": 10100023,
+    "message": "Failed to execute database sql"
+  },
+  "server_handle_error": {
+    "code": 10100031,
+    "message": "Failed to handle request"
+  },
+  "api_permission_deny": {
+    "code": 20100001,
+    "message": "Api Permission Deny"
+  },
+  "data_permission_deny": {
+    "code": 20100002,
+    "message": "Data Permission Deny"
+  },
+  "template_already_collect": {
+    "code": 20100003,
+    "message": "Template Already Favorited：please do not repeat this operation."
+  },
+  "upload_file_too_large": {
+    "code": 20100004,
+    "message": "File Upload Failed: Please ensure the file size is below 10MB and try again."
+  },
+  "change_task_status_error": {
+    "code": 20100005,
+    "message": "Failed to Modify Task Status: Parameter error."
+  },
+  "submit_request_not_permission": {
+    "code": 20100006,
+    "message": "Submit Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+  },
+  "save_request_not_permission": {
+    "code": 20100007,
+    "message": "Save Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+  },
+  "task_approve_not_permission": {
+    "code": 20100008,
+    "message": "Submit Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+  },
+  "task_save_not_permission": {
+    "code": 20100009,
+    "message": "Save Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+  },
+  "update_request_handler_status_error": {
+    "code": 20100010,
+    "message": "Process Task Failed: The current task has been handled by another team member. Please refresh and retry."
+  },
+  "revoke_request_error": {
+    "code": 20100011,
+    "message": "Withdrawal Request Failed: The request has already been processed by the  approver. Please refresh and try again."
+  },
+  "get_request_preview_data_error": {
+    "code": 20100012,
+    "message": "Create Request  Failed: Invalid template, form not configured. Please contact the template owner/Wecube administrator to update the template."
+  }
 }

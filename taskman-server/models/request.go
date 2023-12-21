@@ -17,7 +17,7 @@ type PlatformDataObj struct {
 	Name             string `json:"name" xorm:"name"`                           // 请求名称
 	TemplateId       string `json:"templateId" xorm:"template_id"`              // 模板ID
 	TemplateName     string `json:"templateName" xorm:"template_name"`          // 使用模板名称
-	TemplateType     int    `json:"templateType" xorm:"template_type"`          // 模板类型: 0表示请求,1表示发布
+	Type             int    `json:"type" xorm:"type"`                           // 模板类型: 0表示请求,1表示发布
 	Version          string `json:"version" xorm:"version"`                     // 模板版本
 	OperatorObj      string `json:"operatorObj" xorm:"operator_obj"`            // 操作对象
 	OperatorObjType  string `json:"operatorObjType" xorm:"operator_obj_type"`   // 操作对象类型

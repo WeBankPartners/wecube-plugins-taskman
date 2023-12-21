@@ -18,7 +18,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.publishNum || '' }}</span>
-            <span>发布</span>
+            <span>{{ $t('tw_publish') }}</span>
           </div>
           <div
             class="list"
@@ -31,7 +31,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.requestNum || '' }}</span>
-            <span>请求</span>
+            <span>{{ $t('tw_request') }}</span>
           </div>
         </div>
       </div>
@@ -60,35 +60,35 @@ export default {
       data: [
         {
           type: 'pending',
-          label: '待处理的',
+          label: this.$t('tw_pending'),
           icon: require('@/images/warning.png'),
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'hasProcessed',
-          label: '已处理的',
+          label: this.$t('tw_hasProcessed'),
           icon: require('@/images/checked.png'),
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'submit',
-          label: '我提交的',
+          label: this.$t('tw_submit'),
           icon: require('@/images/upload.png'),
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'draft',
-          label: '我暂存的',
+          label: this.$t('tw_draft'),
           icon: require('@/images/save.png'),
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'collect',
-          label: '收藏模板',
+          label: this.$t('tw_collect'),
           icon: require('@/images/star.png'),
           requestNum: 0,
           publishNum: 0

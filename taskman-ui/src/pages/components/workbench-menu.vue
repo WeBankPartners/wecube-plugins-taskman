@@ -9,7 +9,7 @@
     <div v-show="expand" style="height:100%;">
       <div class="home" @click="handleGoHome">
         <img style="width:23px;height:23px;margin-right:10px;" src="@/images/menu_desk.png" />
-        工作台
+        {{ $t('tw_workbench') }}
       </div>
       <Menu
         @on-select="handleSelectMenu"
@@ -56,21 +56,21 @@ export default {
       openNames: [],
       menuList: [
         {
-          title: '发布',
+          title: this.$t('tw_publish'),
           icon: require('@/images/menu_publish.png'),
           name: '1',
           children: [
-            { title: '新建发布', path: '/taskman/workbench/template?type=publish', name: '1-1' },
-            { title: '发布历史', path: '/taskman/workbench/publishHistory', name: '1-2' }
+            { title: this.$t('tw_new_publish'), path: '/taskman/workbench/template?type=publish', name: '1-1' },
+            { title: this.$t('tw_publish_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
           ]
         },
         {
-          title: '请求',
+          title: this.$t('tw_request'),
           icon: require('@/images/menu_request.png'),
           name: '2',
           children: [
-            { title: '新建请求', path: '/taskman/workbench/template?type=request', name: '2-1' },
-            { title: '请求历史', path: '/taskman/workbench/requestHistory', name: '2-2' }
+            { title: this.$t('tw_new_request'), path: '/taskman/workbench/template?type=request', name: '2-1' },
+            { title: this.$t('tw_request_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
           ]
         }
       ]

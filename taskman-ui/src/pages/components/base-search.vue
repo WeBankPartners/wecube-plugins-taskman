@@ -116,8 +116,8 @@
       style="cursor:pointer;margin-right:10px;"
     />
     <div class="button-group">
-      <Button @click="handleSearch" size="small" type="primary">查询</Button>
-      <Button @click="handleReset" size="small" style="margin-left:5px;">重置</Button>
+      <Button @click="handleSearch" size="small" type="primary">{{ $t('search') }}</Button>
+      <Button @click="handleReset" size="small" style="margin-left:5px;">{{ $t('reset') }}</Button>
     </div>
   </div>
 </template>
@@ -144,10 +144,10 @@ export default {
     return {
       expand: false,
       dateTypeList: [
-        { label: '近3个月', value: 1 },
-        { label: '近半年', value: 2 },
-        { label: '近一年', value: 3 },
-        { label: '自定义', value: 4 }
+        { label: this.$t('tw_recent_three_month'), value: 1 },
+        { label: this.$t('tw_recent_half_year'), value: 2 },
+        { label: this.$t('tw_recent_one_year'), value: 3 },
+        { label: this.$t('tw_auto'), value: 4 }
       ]
     }
   },

@@ -188,7 +188,6 @@ export default {
     },
     // 切换type
     handleTypeChange () {
-      console.log('11111111111', this.type)
       this.getTypeConfig()
       this.handleReset()
       this.handleQuery()

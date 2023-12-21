@@ -1,7 +1,7 @@
 <template>
   <div>
     <Drawer
-      title="编辑"
+      :title="$t('edit')"
       v-model="drawerVisible"
       width="720"
       :mask-closable="true"
@@ -65,8 +65,8 @@
         </Form>
       </div>
       <div v-if="!disabled" class="drawer-footer">
-        <Button style="margin-right: 8px" @click="handleCancel">取消</Button>
-        <Button type="primary" class="primary" @click="handleSubmit">确定</Button>
+        <Button style="margin-right: 8px" @click="handleCancel">{{ $t('cancel') }}</Button>
+        <Button type="primary" class="primary" @click="handleSubmit">{{ $t('confirm') }}</Button>
       </div>
     </Drawer>
   </div>

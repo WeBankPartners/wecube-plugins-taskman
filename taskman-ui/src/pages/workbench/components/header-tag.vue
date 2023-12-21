@@ -1,13 +1,13 @@
 <template>
   <div class="header-tag">
     <Row v-if="showHeader" class="title" :gutter="10">
-      <Col :span="4">处理时间</Col>
-      <Col :span="3">耗时</Col>
-      <Col :span="3">处理角色</Col>
-      <Col :span="3">处理人</Col>
-      <Col :span="3">操作</Col>
-      <Col :span="4">备注</Col>
-      <Col :span="4">附件</Col>
+      <Col :span="4">{{ $t('handle_time') }}</Col>
+      <Col :span="3">{{ $t('tw_assume') }}</Col>
+      <Col :span="3">{{ $t('handler_role') }}</Col>
+      <Col :span="3">{{ $t('handler') }}</Col>
+      <Col :span="3">{{ $t('t_action') }}</Col>
+      <Col :span="4">{{ $t('tw_note') }}</Col>
+      <Col :span="4">{{ $t('tw_attach') }}</Col>
     </Row>
     <Row class="content" :gutter="10">
       <Col :span="4">{{ data.handleTime }}</Col>
@@ -50,11 +50,11 @@ export default {
       let mins = parseInt((subtime % 3600) / 60)
       let secs = parseInt(subtime % 60)
       return (
-        (days > 0 ? days + '天' : '') +
-        (hours > 0 ? hours + '小时' : '') +
-        (mins > 0 ? mins + '分钟' : '') +
+        (days > 0 ? days + this.$t('tw_day') : '') +
+        (hours > 0 ? hours + this.$t('tw_hour') : '') +
+        (mins > 0 ? mins + this.$t('tw_minute') : '') +
         secs +
-        '秒'
+        this.$t('tw_second')
       )
     }
   },

@@ -88,7 +88,7 @@ func SaveRequestCache(c *gin.Context) {
 			return
 		}
 		if request.Handler != operator {
-			middleware.ReturnParamValidateError(c, fmt.Errorf("not permission"))
+			middleware.ReturnServerHandleError(c, fmt.Errorf("hanlder %s not permission", operator))
 			return
 		}
 		err = db.SaveRequestBindCache(requestId, operator, &param)

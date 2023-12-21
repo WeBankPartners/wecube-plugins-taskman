@@ -112,7 +112,7 @@ func SaveTaskForm(c *gin.Context) {
 		return
 	}
 	if operator != task.Handler {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("handler:%s not permission", operator))
+		middleware.ReturnServerHandleError(c, fmt.Errorf("handler %s not permission", operator))
 		return
 	}
 	err = db.SaveTaskForm(taskId, operator, param)

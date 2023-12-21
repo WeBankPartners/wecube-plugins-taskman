@@ -1,5 +1,5 @@
 <template>
-  <div class="workbench-request-history">
+  <div class="workbench-request-audit">
     <Tabs :value="activeTab" @on-click="handleChangeTab">
       <TabPane label="所有" name="0"></TabPane>
       <TabPane label="发布" name="1"></TabPane>
@@ -37,6 +37,7 @@ import { deepClone } from '@/pages/util/index'
 import { getCookie } from '@/pages/util/cookie'
 import column from './column'
 import search from './search'
+import dayjs from 'dayjs'
 export default {
   components: {
     BaseSearch
@@ -49,13 +50,23 @@ export default {
         name: '', // 请求名
         id: '',
         templateId: [], // 模板ID
-        status: [], // 状态
+        status: ['Completed', 'Termination', 'Faulted'], // 状态
         operatorObjType: [], // 操作对象类型
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
         handler: [], // 当前处理人
-        expectTime: [], // 期望时间
-        reportTime: [] // 请求提交时间
+        expectTime: [
+          dayjs()
+            .subtract(3, 'month')
+            .format('YYYY-MM-DD'),
+          dayjs().format('YYYY-MM-DD')
+        ], // 期望时间
+        reportTime: [
+          dayjs()
+            .subtract(3, 'month')
+            .format('YYYY-MM-DD'),
+          dayjs().format('YYYY-MM-DD')
+        ] // 请求提交时间
       },
       tableData: [],
       loading: false,

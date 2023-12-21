@@ -306,14 +306,14 @@ func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToke
 }
 
 // Export 数据导出
-func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken, user string) (err error) {
+func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken, language, user string) (err error) {
 	var rowsData []*models.PlatformDataObj
 	var sql = "select id from request"
 	var queryParam []interface{}
 	where := transHistoryConditionToSQL(param)
 	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), false)
 	if len(rowsData) > 0 {
-		titles, dataArr := getRequestExportData(rowsData)
+		fileName, titles, dataArr := getRequestExportData(language, rowsData)
 		file := xlsx.NewFile()
 		sheet, _ := file.AddSheet("Sheet1")
 		row := sheet.AddRow()
@@ -332,31 +332,47 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 				cell.Value = vv
 			}
 		}
-
-		filename := time.Now().Format("20060102150405") + ".xlsx"
 		// 设置 HTTP 响应头
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+		w.Header().Set("Content-Disposition", "attachment; filename="+fileName)
 		w.Header().Set("Content-Transfer-Encoding", "binary")
 		err = file.Write(w)
 	}
 	return
 }
 
-func getRequestExportData(rowsData []*models.PlatformDataObj) (titles []string, dataArr [][]string) {
+func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (fileName string, titles []string, dataArr [][]string) {
 	dataArr = make([][]string, len(rowsData))
-	titles = []string{
-		"ID",
-		"请求名称",
-		"使用模板",
-		"操作对象",
-		"使用编排",
-		"请求状态",
-		"进展",
-		"创建人",
-		"当前处理人",
-		"创建时间",
-		"期望完成时间",
+	if strings.Contains(language, "zh-CN") {
+		fileName = "wecube-请求审计导出-" + time.Now().Format("20060102150405") + ".xlsx"
+		titles = []string{
+			"ID",
+			"请求名称",
+			"使用模板",
+			"操作对象",
+			"使用编排",
+			"请求状态",
+			"进展",
+			"创建人",
+			"当前处理人",
+			"创建时间",
+			"期望完成时间",
+		}
+	} else {
+		fileName = "wecube-请求审计导出-" + time.Now().Format("20060102150405") + ".xlsx"
+		titles = []string{
+			"ID",
+			"请求名称",
+			"使用模板",
+			"操作对象",
+			"使用编排",
+			"请求状态",
+			"进展",
+			"创建人",
+			"当前处理人",
+			"创建时间",
+			"期望完成时间",
+		}
 	}
 	for i, row := range rowsData {
 		dataArr[i] = []string{
@@ -1264,6 +1280,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 
 func UpdateRequestStatus(requestId, status, operator, userToken, description string) error {
 	var err error
+	var request models.RequestTable
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if status == "Pending" {
 		bindData, bindErr := GetRequestPreBindData(requestId, userToken)
@@ -1277,6 +1294,10 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 			notifyRoleMail(requestId)
 		}
 	} else if status == "Draft" {
+		request, err = GetSimpleRequest(requestId)
+		if request.Handler != operator {
+			return fmt.Errorf("handler %s not permission", operator)
+		}
 		_, err = x.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", status, description, operator, operator, nowTime, nowTime, requestId)
 	} else {
 		_, err = x.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)

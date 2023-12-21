@@ -135,7 +135,7 @@ func Export(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.Export(c.Writer, &param, c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	err := db.Export(c.Writer, &param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -415,7 +415,7 @@ func UpdateRequestHandler(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	// @todo 需要添加转给人权限校验
+	// 请求在Pending状态才有转给我
 	if request.Status != "Pending" {
 		middleware.ReturnServerHandleError(c, fmt.Errorf("request status invalid,requestId:%s ", requestId))
 		return

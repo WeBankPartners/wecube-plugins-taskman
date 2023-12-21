@@ -85,6 +85,8 @@ func GetTask(c *gin.Context) {
 func SaveTaskForm(c *gin.Context) {
 	taskId := c.Param("taskId")
 	var param models.TaskApproveParam
+	var task models.TaskTable
+	var operator = middleware.GetRequestUser(c)
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -104,7 +106,16 @@ func SaveTaskForm(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err = db.SaveTaskForm(taskId, middleware.GetRequestUser(c), param)
+	task, err = db.GetSimpleTask(taskId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if operator != task.Handler {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("handler:%s not permission", operator))
+		return
+	}
+	err = db.SaveTaskForm(taskId, operator, param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

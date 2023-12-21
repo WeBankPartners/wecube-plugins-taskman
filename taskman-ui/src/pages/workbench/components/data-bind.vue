@@ -31,7 +31,7 @@
               </template>
             </CheckboxGroup>
           </ul>
-          <div v-else>暂无数据</div>
+          <div v-else>{{ $t('tw_no_data') }}</div>
         </TabPane>
       </template>
     </Tabs>
@@ -77,15 +77,15 @@ export default {
       unCheckData: [], // 没有选中的数据
       columns: [
         {
-          title: '节点',
+          title: this.$t('tw_tag'),
           key: 'nodeName'
         },
         {
-          title: '数据类型',
+          title: this.$t('tw_data_type'),
           key: 'entityName'
         },
         {
-          title: '数据项',
+          title: this.$t('tw_data'),
           key: 'entityDisplayName'
         }
       ]
@@ -191,7 +191,7 @@ export default {
           if (this.unCheckData.length) {
             return (
               <div style="width:450px;">
-                <span>你删除了以下节点的操作数据项，删除不可恢复，确认要删除吗？</span>
+                <span>{this.$t('tw_delete_bind_tips')}</span>
                 <Table style="margin:20px 0" size="small" columns={this.columns} data={this.unCheckData}></Table>
               </div>
             )
@@ -247,7 +247,7 @@ export default {
               maxlength={255}
               show-word-limit
               v-model={this.backReason}
-              placeholder="请输入退回说明"
+              placeholder={this.$t('tw_back_bind_placeholder')}
             ></Input>
           )
         },
@@ -255,7 +255,7 @@ export default {
           if (!this.backReason.trim()) {
             this.$Notice.warning({
               title: this.$t('warning'),
-              desc: '退回说明不能为空'
+              desc: this.$t('tw_back_bind_tips')
             })
           } else {
             // this.$Modal.remove()

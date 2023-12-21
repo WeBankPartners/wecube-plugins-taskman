@@ -8,7 +8,9 @@
       </Radio>
     </RadioGroup>
     <Table size="small" :columns="tableColumns" :data="tableData" @on-selection-change="handleChooseData"></Table>
-    <Button v-if="isAdd && type === 'request'" size="small" style="margin-top: 10px;" @click="addRow">添加一行</Button>
+    <Button v-if="isAdd && type === 'request'" size="small" style="margin-top: 10px;" @click="addRow">{{
+      $t('tw_add_row')
+    }}</Button>
     <EditDrawer
       v-if="editVisible"
       v-model="editData"
@@ -79,7 +81,7 @@ export default {
             return (
               <div style="display:flex;justify-content:space-around;">
                 {!this.formDisable && (
-                  <Tooltip content="编辑" placement="top-start">
+                  <Tooltip content={this.$t('edit')} placement="top-start">
                     <Icon
                       size="20"
                       type="md-create"
@@ -90,7 +92,7 @@ export default {
                     />
                   </Tooltip>
                 )}
-                <Tooltip content="查看" placement="top-start">
+                <Tooltip content={this.$t('detail')} placement="top-start">
                   <Icon
                     size="20"
                     type="md-eye"
@@ -178,7 +180,7 @@ export default {
             return (
               <span>
                 {`${column.title}`}
-                <span class="required">（必填）</span>
+                <span class="required">{`（${this.$t('required')}）`}</span>
               </span>
             )
           }
@@ -324,7 +326,7 @@ export default {
     // 删除行数据
     handleDeleteRow (row) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + '删除',
+        title: this.$t('confirm') + this.$t('delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

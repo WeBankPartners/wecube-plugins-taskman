@@ -11,7 +11,7 @@
     </Row>
     <Row class="w-header">
       <Col span="19" class="steps">
-        <span class="title">请求进度：</span>
+        <span class="title">{{ $t('tw_request_progress') }}：</span>
         <Steps :current="0" style="max-width:600px;">
           <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
             <template #icon>
@@ -25,42 +25,53 @@
         </Steps>
         <div v-if="errorNode" style="margin:0 0 10px 20px;max-width:500px;">
           <Alert v-if="errorNode === 'autoExit'" type="error">
-            请求已终止，因为编排流程根据判断条件走到了退出节点，请复制请求ID，发送给wecube平台管理员处理
+            {{ $t('tw_auto_exit_tips') }}
           </Alert>
           <Alert v-else-if="errorNode === 'internallyTerminated'" type="error">
-            请求已终止，因为编排执行已被管理员手动终止，请复制请求ID，发送给wecube平台管理员处理
+            {{ $t('tw_terminate_tips') }}
           </Alert>
-          <Alert v-else type="error">
-            {{ errorNode }}节点报错，流程已暂停，请复制请求ID，发送给wecube平台管理员处理
-          </Alert>
+          <Alert v-else type="error"> {{ errorNode }}{{ $t('tw_tag_error_tips') }} </Alert>
         </div>
       </Col>
       <Col span="5" class="btn-group">
-        <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
-        <Button v-if="isAdd" type="primary" @click="handlePublish">提交</Button>
-        <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall"
-          >撤回</Button
-        >
+        <!--保存草稿-->
+        <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
+        <!--提交-->
+        <Button v-if="isAdd" type="primary" @click="handlePublish">{{ $t('commit') }}</Button>
+        <!--撤回-->
+        <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall">{{
+          $t('tw_recall')
+        }}</Button>
       </Col>
     </Row>
     <div style="display:flex;" class="content">
       <div style="width:calc(100% - 420px)" class="split-line">
         <Form :model="form" label-position="right" :label-width="120">
           <template v-if="isAdd">
-            <HeaderTitle title="发布信息">
-              <FormItem label="请求名称" required>
-                <Input v-model="form.name" :maxlength="50" show-word-limit placeholder="请输入" style="width:100%;" />
+            <!--发布信息-->
+            <HeaderTitle :title="$t('tw_publish_title')">
+              <!--请求名-->
+              <FormItem :label="$t('request_name')" required>
+                <Input
+                  v-model="form.name"
+                  :maxlength="50"
+                  show-word-limit
+                  :placeholder="$t('request_name')"
+                  style="width:100%;"
+                />
               </FormItem>
-              <FormItem label="发布描述">
+              <!--发布描述-->
+              <FormItem :label="$t('tw_publish_des')">
                 <Input
                   v-model="form.description"
                   type="textarea"
                   :maxlength="100"
                   show-word-limit
-                  placeholder="请输入"
+                  :placeholder="$t('tw_publish_des')"
                   style="width:100%;"
                 />
               </FormItem>
+              <!--期望完成时间-->
               <FormItem :label="$t('expected_completion_time')">
                 <DatePicker
                   type="datetime"
@@ -80,70 +91,74 @@
                 ></DatePicker>
               </FormItem>
             </HeaderTitle>
-            <HeaderTitle title="发布目标对象">
-              <FormItem label="选择操作单元" required>
+            <!--发布目标对象-->
+            <HeaderTitle :title="$t('tw_publish_object')">
+              <!--选择操作单元-->
+              <FormItem :label="$t('tw_choose_object')" required>
                 <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
                   <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                     item.key_name
                   }}</Option>
                 </Select>
               </FormItem>
-              <FormItem v-if="requestData.length" label="已选择">
+              <FormItem v-if="requestData.length" :label="$t('tw_selected')">
                 <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" :isAdd="isAdd"></EntityTable>
               </FormItem>
             </HeaderTitle>
           </template>
           <template v-else>
-            <HeaderTitle title="请求信息">
+            <!--请求信息-->
+            <HeaderTitle :title="$t('tw_request_title')">
               <Row :gutter="20">
-                <Col :span="3">请求ID：</Col>
+                <Col :span="3">{{ $t('request_id') }}：</Col>
                 <Col :span="9">{{ detailInfo.id }}</Col>
-                <Col :span="3">请求类型：</Col>
-                <Col :span="9">{{ { 0: '请求', 1: '发布' }[detailInfo.requestType] }}</Col>
+                <Col :span="3">{{ $t('tw_request_type') }}：</Col>
+                <Col :span="9">{{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detailInfo.requestType] }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">创建时间：</Col>
+                <Col :span="3">{{ $t('createdTime') }}：</Col>
                 <Col :span="9">{{ detailInfo.createdTime }}</Col>
-                <Col :span="3">期望完成时间：</Col>
+                <Col :span="3">{{ $t('expected_completion_time') }}：</Col>
                 <Col :span="9">{{ detailInfo.expectTime }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">请求进度：</Col>
+                <Col :span="3">{{ $t('tw_request_progress') }}：</Col>
                 <Col :span="9">
                   <Progress :percent="detailInfo.progress" style="width:150px;" />
                 </Col>
-                <Col :span="3">请求状态：</Col>
+                <Col :span="3">{{ $t('tw_request_status') }}：</Col>
                 <Col :span="9">{{ getStatusName(detailInfo.status) }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">当前节点：</Col>
+                <!--当前节点-->
+                <Col :span="3">{{ $t('tw_cur_tag') }}：</Col>
                 <Col :span="9">{{
                   {
-                    waitCommit: '等待提交',
-                    sendRequest: '提起请求',
-                    requestPending: '请求定版',
-                    requestComplete: '请求完成'
+                    waitCommit: $t('tw_wait_commit'),
+                    sendRequest: $t('tw_commit_request'),
+                    requestPending: $t('tw_request_pending'),
+                    requestComplete: $t('tw_request_complete')
                   }[detailInfo.curNode] || detailInfo.curNode
                 }}</Col>
-                <Col :span="3">当前处理人：</Col>
+                <Col :span="3">{{ $t('tw_cur_handler') }}：</Col>
                 <Col :span="9">{{ detailInfo.handler }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">创建人：</Col>
+                <Col :span="3">{{ $t('createdBy') }}：</Col>
                 <Col :span="9">{{ detailInfo.createdBy }}</Col>
-                <Col :span="3">创建人角色：</Col>
+                <Col :span="3">{{ $t('tw_creatby_role') }}：</Col>
                 <Col :span="9">{{ detailInfo.role }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">使用模板：</Col>
+                <Col :span="3">{{ $t('tw_use_template') }}：</Col>
                 <Col :span="9"
                   >{{ detailInfo.templateName }}<Tag>{{ version }}</Tag></Col
                 >
-                <Col :span="3">模板组：</Col>
+                <Col :span="3">{{ $t('tm_template_group') }}：</Col>
                 <Col :span="9">{{ detailInfo.templateGroupName }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">请求描述：</Col>
+                <Col :span="3">{{ $t('tw_request_des') }}：</Col>
                 <Col :span="9">{{ detailInfo.description }}</Col>
               </Row>
             </HeaderTitle>

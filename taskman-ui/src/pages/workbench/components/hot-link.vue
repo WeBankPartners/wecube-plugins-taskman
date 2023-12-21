@@ -1,6 +1,6 @@
 <template>
   <div class="hot-link">
-    <span>常用入口：</span>
+    <span>{{ $t('tw_hot_menu') }}：</span>
     <a v-for="(i, index) in linkArr" :key="index" @click="jumpTo(i.path)">{{ i.name }}</a>
   </div>
 </template>

@@ -1,3 +1,5 @@
+import dayjs from 'dayjs'
+
 export default {
   data () {
     return {
@@ -63,10 +65,16 @@ export default {
       hasProcessedTaskSearch: [],
       hasProcessedSearch: [],
       submitSearch: [],
-      draftSearch: []
+      draftSearch: [],
+      initDate: []
     }
   },
   mounted () {
+    const cur = dayjs().format('YYYY-MM-DD')
+    const pre = dayjs()
+      .subtract(3, 'month')
+      .format('YYYY-MM-DD')
+    this.initDate = [pre, cur]
     this.getFilterOptions()
     // 待处理-任务处理
     this.pendingTaskSearch = [
@@ -86,6 +94,7 @@ export default {
         key: 'taskExpectTime',
         label: '任务期望完成时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 140,
         component: 'custom-time'
       },
@@ -93,6 +102,7 @@ export default {
         key: 'taskReportTime',
         label: '任务提交时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -111,6 +121,7 @@ export default {
         key: 'expectTime',
         label: '请求期望完成时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 140,
         component: 'custom-time'
       },
@@ -118,6 +129,7 @@ export default {
         key: 'reportTime',
         label: '任务提交时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -141,6 +153,7 @@ export default {
         key: 'taskExpectTime',
         label: '任务期望完成时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 140,
         component: 'custom-time'
       },
@@ -148,6 +161,7 @@ export default {
         key: 'taskReportTime',
         label: '任务提交时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       },
@@ -155,6 +169,7 @@ export default {
         key: 'taskApprovalTime',
         label: '处理时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 85,
         component: 'custom-time'
       }
@@ -173,6 +188,7 @@ export default {
         key: 'expectTime',
         label: '请求期望完成时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 140,
         component: 'custom-time'
       },
@@ -180,6 +196,7 @@ export default {
         key: 'reportTime',
         label: '任务提交时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       },
@@ -187,6 +204,7 @@ export default {
         key: 'approvalTime',
         label: '处理时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 85,
         component: 'custom-time'
       }
@@ -205,6 +223,7 @@ export default {
         key: 'expectTime',
         label: '期望完成时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       },
@@ -212,6 +231,7 @@ export default {
         key: 'reportTime',
         label: '请求提交时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -230,6 +250,7 @@ export default {
         key: 'createdTime',
         label: '创建时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 85,
         component: 'custom-time'
       },
@@ -237,6 +258,7 @@ export default {
         key: 'updatedTime',
         label: '更新时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 85,
         component: 'custom-time'
       },
@@ -244,6 +266,7 @@ export default {
         key: 'expectTime',
         label: '期望完成时间',
         dateType: 1,
+        initValue: this.initDate,
         labelWidth: 110,
         component: 'custom-time'
       }
@@ -252,8 +275,11 @@ export default {
   methods: {
     // 获取搜索条件的下拉值
     async getFilterOptions () {
+      const pre = dayjs()
+        .subtract(12, 'month')
+        .format('YYYY-MM-DD')
       import('@/api/server').then(async ({ getPlatformFilter }) => {
-        const { statusCode, data } = await getPlatformFilter({ startTime: '' })
+        const { statusCode, data } = await getPlatformFilter({ startTime: pre })
         if (statusCode === 'OK') {
           const keys = Object.keys(this.baseSearch)
           for (let key of keys) {

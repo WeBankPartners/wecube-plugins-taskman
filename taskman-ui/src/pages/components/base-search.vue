@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form" :style="{ maxHeight: expand ? '200px' : '46px' }">
+    <div class="form" :style="{ maxHeight: expand ? '200px' : '92px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem
@@ -126,13 +126,13 @@
 import dayjs from 'dayjs'
 export default {
   props: {
-    options: {
-      type: Array,
-      default: () => []
-    },
     value: {
       type: Object,
       default: () => {}
+    },
+    options: {
+      type: Array,
+      default: () => []
     }
   },
   computed: {
@@ -151,7 +151,6 @@ export default {
       ]
     }
   },
-  watch: {},
   methods: {
     handleExpand () {
       this.expand = !this.expand
@@ -170,13 +169,8 @@ export default {
         }
         // 处理时间类型默认值
         this.options.forEach(i => {
-          if (i.dateType) {
+          if (i.component === 'custom-time') {
             i.dateType = 1
-            const cur = dayjs().format('YYYY-MM-DD')
-            const pre = dayjs()
-              .subtract(3, 'month')
-              .format('YYYY-MM-DD')
-            resetObj[i.key] = [pre, cur]
           }
         })
         // 点击清空按钮需要给默认值的表单选项

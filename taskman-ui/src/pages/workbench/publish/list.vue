@@ -28,6 +28,7 @@
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
 import { getPublishList, reRequest, recallRequest } from '@/api/server'
+import dayjs from 'dayjs'
 import column from '../column'
 import search from '../search'
 import { deepClone } from '@/pages/util/index'
@@ -48,9 +49,18 @@ export default {
         operatorObjType: [], // 操作对象类型
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
-        handler: [], // 当前处理人
-        expectTime: [], // 期望时间
-        reportTime: [] // 请求提交时间
+        expectTime: [
+          dayjs()
+            .subtract(3, 'month')
+            .format('YYYY-MM-DD'),
+          dayjs().format('YYYY-MM-DD')
+        ], // 期望时间
+        reportTime: [
+          dayjs()
+            .subtract(3, 'month')
+            .format('YYYY-MM-DD'),
+          dayjs().format('YYYY-MM-DD')
+        ] // 请求提交时间
       },
       tableData: [],
       loading: false,

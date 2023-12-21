@@ -24,25 +24,11 @@
       ></DataCard>
     </div>
     <div class="data-tabs">
-      <Tabs
-        v-if="['pending', 'hasProcessed'].includes(tabName)"
-        v-model="type"
-        @on-click="
-          $refs.search.handleReset()
-          handleQuery()
-        "
-      >
+      <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
         <TabPane label="任务处理" name="2"></TabPane>
         <TabPane label="请求定版" name="1"></TabPane>
       </Tabs>
-      <Tabs
-        v-if="['submit'].includes(tabName)"
-        v-model="rollback"
-        @on-click="
-          $refs.search.handleReset()
-          handleQuery()
-        "
-      >
+      <Tabs v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
         <TabPane label="所有" name="0"></TabPane>
         <TabPane label="被退回" name="1"></TabPane>
         <TabPane label="本人撤回" name="3"></TabPane>
@@ -113,7 +99,6 @@ export default {
         operatorObjType: [], // 操作对象类型
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
-        handler: [], // 当前处理人
         createdTime: [],
         updatedTime: [],
         expectTime: [], // 期望时间
@@ -136,82 +121,39 @@ export default {
       username: window.localStorage.getItem('username')
     }
   },
-  watch: {
-    type: {
-      handler (val) {
-        if (this.tabName === 'pending') {
-          if (val === '1') {
-            this.tableColumn = this.pendingColumn
-            this.searchOptions = this.pendingSearch
-          } else if (val === '2') {
-            this.tableColumn = this.pendingTaskColumn
-            this.searchOptions = this.pendingTaskSearch
-          }
-        } else if (this.tabName === 'hasProcessed') {
-          if (val === '1') {
-            this.tableColumn = this.hasProcessedColumn
-            this.searchOptions = this.hasProcessedSearch
-          } else if (val === '2') {
-            this.tableColumn = this.hasProcessedTaskColumn
-            this.searchOptions = this.hasProcessedTaskSearch
-          }
-        }
-      },
-      immediate: true
-    },
-    rollback: {
-      handler (val) {
-        if (this.tabName === 'submit') {
-          if (val === '1' || val === '0') {
-            this.tableColumn = this.submitAllColumn
-            this.searchOptions = this.submitSearch
-          } else if (val === '2' || val === '3') {
-            this.tableColumn = this.submitColumn
-            this.searchOptions = this.submitSearch
-          }
-        }
-      },
-      immediate: true
-    }
-  },
   mounted () {
     this.initTab = this.$route.query.tabName || 'pending'
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
-    // 初始化加载数据
+    // 初始化加载数据(链接携带参数，调到指定页面)
     initData (val, action) {
       this.tabName = val
       this.actionName = action
       const type = this.$route.query.type
       const rollback = this.$route.query.rollback
-      // 待处理、进行中
       if (['pending', 'hasProcessed'].includes(val)) {
         if (['1', '2'].includes(type)) {
           this.type = type
         } else {
           this.type = '2'
         }
-        this.rollback = '0'
-        // 我提交的
+        this.getTypeConfig()
       } else if (val === 'submit') {
         if (['1', '2', '3'].includes(rollback)) {
           this.rollback = rollback
         } else {
           this.rollback = '0'
         }
-        this.type = '0'
-        // 表格列及搜索初始化
+        this.getRollbackConfig()
         this.tableColumn = this.submitAllColumn
         this.searchOptions = this.submitSearch
       } else if (val === 'draft') {
-        this.type = '0'
-        this.rollback = '0'
-        // 表格列及搜索初始化
         this.tableColumn = this.draftColumn
         this.searchOptions = this.draftSearch
       }
       if (val !== 'collect') {
+        this.handleReset()
         this.handleQuery()
       } else {
         this.$nextTick(() => {
@@ -224,26 +166,18 @@ export default {
     handleOverviewChange (val, action) {
       this.tabName = val
       this.actionName = action
-      this.$refs.search && this.$refs.search.handleReset()
-      // 待处理、进行中
       if (['pending', 'hasProcessed'].includes(val)) {
         this.type = '2'
-        this.rollback = '0'
-        // 我提交的
+        this.getTypeConfig()
       } else if (val === 'submit') {
-        // 表格列及搜索初始化
-        this.tableColumn = this.submitAllColumn
-        this.searchOptions = this.submitSearch
         this.rollback = '0'
-        this.type = '0'
+        this.getRollbackConfig()
       } else if (val === 'draft') {
-        this.type = '0'
-        this.rollback = '0'
-        // 表格列及搜索初始化
         this.tableColumn = this.draftColumn
         this.searchOptions = this.draftSearch
       }
       if (val !== 'collect') {
+        this.handleReset()
         this.handleQuery()
       } else {
         this.$nextTick(() => {
@@ -251,6 +185,72 @@ export default {
           this.$refs.dataCard.getData()
         })
       }
+    },
+    // 切换type
+    handleTypeChange () {
+      console.log('11111111111', this.type)
+      this.getTypeConfig()
+      this.handleReset()
+      this.handleQuery()
+    },
+    getTypeConfig () {
+      if (this.tabName === 'pending') {
+        if (this.type === '1') {
+          this.tableColumn = this.pendingColumn
+          this.searchOptions = this.pendingSearch
+        } else if (this.type === '2') {
+          this.tableColumn = this.pendingTaskColumn
+          this.searchOptions = this.pendingTaskSearch
+        }
+      } else if (this.tabName === 'hasProcessed') {
+        if (this.type === '1') {
+          this.tableColumn = this.hasProcessedColumn
+          this.searchOptions = this.hasProcessedSearch
+        } else if (this.type === '2') {
+          this.tableColumn = this.hasProcessedTaskColumn
+          this.searchOptions = this.hasProcessedTaskSearch
+        }
+      }
+    },
+    // 切换rollback
+    handleRollbackChange () {
+      this.getRollbackConfig()
+      this.handleReset()
+      this.handleQuery()
+    },
+    getRollbackConfig () {
+      if (this.tabName === 'submit') {
+        if (this.rollback === '1' || this.rollback === '0') {
+          this.tableColumn = this.submitAllColumn
+          this.searchOptions = this.submitSearch
+        } else if (this.rollback === '2' || this.rollback === '3') {
+          this.tableColumn = this.submitColumn
+          this.searchOptions = this.submitSearch
+        }
+      }
+    },
+    // 重置表单
+    handleReset () {
+      const resetObj = {}
+      Object.keys(this.form).forEach(key => {
+        if (Array.isArray(this.form[key])) {
+          resetObj[key] = []
+        } else {
+          resetObj[key] = ''
+        }
+        // 处理时间类型默认值
+        this.searchOptions.forEach(i => {
+          if (i.component === 'custom-time') {
+            i.dateType = 1
+          }
+        })
+        // 点击清空按钮需要给默认值的表单选项
+        const initOptions = this.searchOptions.filter(i => i.initValue !== undefined)
+        initOptions.forEach(i => {
+          resetObj[i.key] = i.initValue
+        })
+      })
+      this.form = resetObj
     },
     // 表格排序
     sortTable (col) {
@@ -301,16 +301,21 @@ export default {
     async getList (dynamicSort) {
       this.loading = true
       const form = deepClone(this.form)
-      const dateTransferArr = [
-        'createdTime',
-        'updatedTime',
-        'expectTime',
-        'reportTime',
-        'approvalTime',
-        'taskReportTime',
-        'taskApprovalTime',
-        'taskExpectTime'
-      ]
+      // 过滤掉多余时间
+      var dateTransferArr = []
+      if (this.tabName === 'pending' && this.type === '2') {
+        dateTransferArr = ['taskExpectTime', 'taskReportTime']
+      } else if (this.tabName === 'pending' && this.type === '1') {
+        dateTransferArr = ['expectTime', 'reportTime']
+      } else if (this.tabName === 'hasProcessed' && this.type === '2') {
+        dateTransferArr = ['taskExpectTime', 'taskReportTime', 'taskApprovalTime']
+      } else if (this.tabName === 'hasProcessed' && this.type === '1') {
+        dateTransferArr = ['expectTime', 'reportTime', 'approvalTime']
+      } else if (this.tabName === 'submit') {
+        dateTransferArr = ['expectTime', 'reportTime']
+      } else if (this.tabName === 'draft') {
+        dateTransferArr = ['createdTime', 'updatedTime', 'expectTime']
+      }
       dateTransferArr.forEach(item => {
         if (form[item] && form[item].length > 0 && form[item][0]) {
           form[item + 'Start'] = form[item][0] + ' 00:00:00'
@@ -331,11 +336,19 @@ export default {
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
       }
+      // 获取默认排序
       if (!dynamicSort) {
         this.initSortTable()
       }
       if (this.sorting) {
         params.sorting = this.sorting
+      }
+      // 过滤掉多余属性
+      if (!['pending', 'hasProcessed'].includes(this.tabName)) {
+        delete params.type
+      }
+      if (!['submit'].includes(this.tabName)) {
+        delete params.rollback
       }
       const { statusCode, data } = await getPlatformList(params)
       if (statusCode === 'OK') {

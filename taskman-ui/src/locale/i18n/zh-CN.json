@@ -1,4 +1,7 @@
 {
+  "tw_yes": "是",
+  "tw_no": "否",
+  "tw_default_empty": "默认清空",
   "add": "新增",
   "search": "搜索",
   "edit": "编辑",

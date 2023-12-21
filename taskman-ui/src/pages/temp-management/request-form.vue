@@ -184,33 +184,39 @@
                       placeholder="eg:a,b"
                     ></Input>
                   </FormItem>
-                  <FormItem :label="$t('defaults')">
-                    <Input
-                      v-model="editElement.defaultValue"
-                      :disabled="$parent.isCheck === 'Y'"
-                      placeholder=""
-                    ></Input>
-                  </FormItem>
                   <!-- <FormItem :label="$t('tags')">
                     <Input v-model="editElement.tag" placeholder=""></Input>
                   </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <Select v-model="editElement.inDisplayName" :disabled="$parent.isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.inDisplayName" :disabled="$parent.isCheck === 'Y'">
+                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <Select v-model="editElement.isEdit" :disabled="$parent.isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.isEdit" :disabled="$parent.isCheck === 'Y'">
+                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <Select v-model="editElement.required" :disabled="$parent.isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.required" :disabled="$parent.isCheck === 'Y'">
+                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                  <FormItem :label="$t('tw_default_empty')">
+                    <RadioGroup v-model="editElement.defaultClear" :disabled="$parent.isCheck === 'Y'">
+                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                  <FormItem :label="$t('defaults')">
+                    <Input
+                      v-model="editElement.defaultValue"
+                      :disabled="$parent.isCheck === 'Y' || editElement.defaultClear === 'yes'"
+                      placeholder=""
+                    ></Input>
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" :disabled="$parent.isCheck === 'Y'">
@@ -300,6 +306,7 @@ export default {
           title: 'Input',
           elementType: 'input',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -329,6 +336,7 @@ export default {
           title: 'Select',
           elementType: 'select',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -357,6 +365,7 @@ export default {
           name: 'textarea',
           title: 'Textarea',
           elementType: 'textarea',
+          defaultClear: 'no',
           defaultValue: '',
           // tag: '',
           itemGroup: '',
@@ -389,6 +398,7 @@ export default {
         attrDefId: '',
         attrDefName: '',
         defaultValue: '',
+        defaultClear: 'no',
         // tag: '',
         itemGroup: '',
         itemGroupName: '',
@@ -584,6 +594,7 @@ export default {
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
+          defaultClear: 'no',
           // tag: tag,
           itemGroup: itemGroup,
           itemGroupName: itemGroup,

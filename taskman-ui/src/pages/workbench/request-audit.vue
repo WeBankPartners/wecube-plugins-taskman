@@ -54,12 +54,7 @@ export default {
         operatorObjType: [], // 操作对象类型
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
-        expectTime: [
-          dayjs()
-            .subtract(3, 'month')
-            .format('YYYY-MM-DD'),
-          dayjs().format('YYYY-MM-DD')
-        ], // 期望时间
+        expectTime: [], // 期望时间
         reportTime: [
           dayjs()
             .subtract(3, 'month')

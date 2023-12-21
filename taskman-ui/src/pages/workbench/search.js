@@ -1,22 +1,21 @@
 import dayjs from 'dayjs'
-
 export default {
   data () {
     return {
       baseSearch: {
         id: {
           key: 'id',
-          placeholder: 'id',
+          placeholder: '请求ID',
           component: 'input'
         },
         name: {
           key: 'name',
-          placeholder: '名称',
+          placeholder: '请求名称',
           component: 'input'
         },
         status: {
           key: 'status',
-          placeholder: '状态',
+          placeholder: '请求状态',
           component: 'select',
           multiple: true,
           list: [
@@ -39,7 +38,7 @@ export default {
         },
         templateId: {
           key: 'templateId',
-          placeholder: '模板',
+          placeholder: '使用模板',
           multiple: true,
           component: 'select',
           list: []
@@ -93,8 +92,7 @@ export default {
       {
         key: 'taskExpectTime',
         label: '任务期望完成时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
@@ -120,8 +118,7 @@ export default {
       {
         key: 'expectTime',
         label: '请求期望完成时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
@@ -152,16 +149,14 @@ export default {
       {
         key: 'taskExpectTime',
         label: '任务期望完成时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'taskReportTime',
         label: '任务提交时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
@@ -187,16 +182,14 @@ export default {
       {
         key: 'expectTime',
         label: '请求期望完成时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
         label: '任务提交时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
@@ -222,8 +215,7 @@ export default {
       {
         key: 'expectTime',
         label: '期望完成时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
@@ -249,8 +241,7 @@ export default {
       {
         key: 'createdTime',
         label: '创建时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 85,
         component: 'custom-time'
       },
@@ -265,8 +256,7 @@ export default {
       {
         key: 'expectTime',
         label: '期望完成时间',
-        dateType: 1,
-        initValue: this.initDate,
+        dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       }

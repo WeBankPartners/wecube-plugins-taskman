@@ -206,7 +206,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: '/taskman/workbench?tabName=pending' })
+            this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1` })
           }
         },
         onCancel: () => {}
@@ -242,13 +242,18 @@ export default {
         loading: false,
         render: () => {
           return (
-            <Input
-              type="textarea"
-              maxlength={255}
-              show-word-limit
-              v-model={this.backReason}
-              placeholder={this.$t('tw_back_bind_placeholder')}
-            ></Input>
+            <div>
+              <div style="font-size:12px;margin-bottom:10px;">
+                如退回请求定版，请求将被退回到创建人处，变为草稿状态，需要等待创建人重新编辑发起。您可以在【已处理的-请求定版中】查看退回的请求（请求状态为：“草稿（被退回）“）
+              </div>
+              <Input
+                type="textarea"
+                maxlength={255}
+                show-word-limit
+                v-model={this.backReason}
+                placeholder={this.$t('tw_back_bind_placeholder')}
+              ></Input>
+            </div>
           )
         },
         onOk: async () => {

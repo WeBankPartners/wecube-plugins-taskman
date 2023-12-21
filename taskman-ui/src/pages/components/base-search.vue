@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form" :style="{ maxHeight: expand ? '200px' : '92px' }">
+    <div class="form" :style="{ maxHeight: expand ? '200px' : '100px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem
@@ -169,8 +169,10 @@ export default {
         }
         // 处理时间类型默认值
         this.options.forEach(i => {
-          if (i.component === 'custom-time') {
+          if (i.component === 'custom-time' && i.initValue) {
             i.dateType = 1
+          } else {
+            i.dateType = 4
           }
         })
         // 点击清空按钮需要给默认值的表单选项

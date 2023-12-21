@@ -594,7 +594,7 @@ export default {
         }
       }
     },
-    // 操作目标对象下拉值
+    // 操作目标对象
     async getEntity () {
       let params = {
         params: {
@@ -607,7 +607,7 @@ export default {
         // this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
       }
     },
-    // 获取目标对象对应数据
+    // 获取目标对象对应表单配置
     async getEntityData () {
       let params = {
         params: {
@@ -732,7 +732,7 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}` })
+        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
       }
     },
     paramsCheck (taskData) {
@@ -761,10 +761,12 @@ export default {
       })
       return result
     },
-    // 表格操作撤回
+    // 撤回
     async handleRecall () {
       this.$Modal.confirm({
         title: this.$t('confirm') + '撤回',
+        content:
+          '撤回请求，请求将回到草稿态，可以在【我提交的-本人撤回】中查看，点击【重新发起】按钮可以重新编辑发起。',
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

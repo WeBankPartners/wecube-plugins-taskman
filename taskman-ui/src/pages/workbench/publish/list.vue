@@ -49,12 +49,7 @@ export default {
         operatorObjType: [], // 操作对象类型
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
-        expectTime: [
-          dayjs()
-            .subtract(3, 'month')
-            .format('YYYY-MM-DD'),
-          dayjs().format('YYYY-MM-DD')
-        ], // 期望时间
+        expectTime: [], // 期望时间
         reportTime: [
           dayjs()
             .subtract(3, 'month')
@@ -196,6 +191,8 @@ export default {
     async handleRecall (row) {
       this.$Modal.confirm({
         title: this.$t('confirm') + '撤回',
+        content:
+          '撤回请求，请求将回到草稿态，可以在【我提交的-本人撤回】中查看，点击【重新发起】按钮可以重新编辑发起。',
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

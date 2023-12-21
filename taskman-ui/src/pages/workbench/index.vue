@@ -239,8 +239,10 @@ export default {
         }
         // 处理时间类型默认值
         this.searchOptions.forEach(i => {
-          if (i.component === 'custom-time') {
+          if (i.component === 'custom-time' && i.initValue) {
             i.dateType = 1
+          } else {
+            i.dateType = 4
           }
         })
         // 点击清空按钮需要给默认值的表单选项
@@ -411,7 +413,7 @@ export default {
     // 表格操作-转给我/认领
     async handleTransfer (row, type) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + '转给我',
+        title: this.$t('confirm'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
@@ -456,7 +458,9 @@ export default {
     // 表格操作撤回
     async handleRecall (row) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + '撤回',
+        title: this.$t('confirm'),
+        content:
+          '撤回请求，请求将回到草稿态，可以在【我提交的-本人撤回】中查看，点击【重新发起】按钮可以重新编辑发起。',
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

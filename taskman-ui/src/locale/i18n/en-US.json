@@ -1,4 +1,7 @@
 {
+  "tw_yes": "yes",
+  "tw_no": "no",
+  "tw_default_empty": "Default clear",
   "add": "Add",
   "search": "Search",
   "edit": "Edit",

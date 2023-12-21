@@ -237,7 +237,7 @@ export default {
                 )}
                 {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
                   <Button
-                    type="primary"
+                    type="success"
                     size="small"
                     onClick={() => {
                       this.handleRepub(params.row)
@@ -266,7 +266,7 @@ export default {
                     }}
                     style="margin-right:5px;"
                   >
-                    去发起
+                    {this.tabName === 'submit' ? '重新发起' : '去发起'}
                   </Button>
                 )}
                 {this.tabName === 'draft' && (

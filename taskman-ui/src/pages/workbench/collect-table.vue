@@ -55,12 +55,12 @@ export default {
       searchOptions: [
         {
           key: 'id',
-          placeholder: 'id',
+          placeholder: '模板ID',
           component: 'input'
         },
         {
           key: 'name',
-          placeholder: '名称',
+          placeholder: '模板名称',
           component: 'input'
         },
         {

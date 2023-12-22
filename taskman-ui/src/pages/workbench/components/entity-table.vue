@@ -47,6 +47,7 @@ export default {
       type: Boolean,
       default: false
     },
+    // 类型(request请求publish发布)
     type: {
       type: String,
       default: ''
@@ -62,7 +63,6 @@ export default {
       editVisible: false,
       editOptions: [],
       editData: {},
-      editIndex: 0,
       viewDisabled: false,
       initTableColumns: [
         {
@@ -115,15 +115,16 @@ export default {
         if (val && val.length) {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
+            // 新增时，没有配置数据，默认添加一行
+            if (item.value.length === 0 && this.isAdd) {
+              this.handleAddRow(item)
+            }
             item.value.forEach(j => {
               if (this.formDisable) {
                 j.entityData._disabled = true
               }
               j.entityData._checked = true
             })
-            if (item.value.length === 0 && this.isAdd) {
-              this.handleAddRow(item)
-            }
           })
           this.activeTab = this.activeTab || this.requestData[0].entity || this.requestData[0].itemGroup
           this.initTableData()
@@ -135,6 +136,15 @@ export default {
   },
   mounted () {},
   methods: {
+    validTable (index) {
+      if (index !== '') {
+        if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
+          return
+        }
+        this.activeTab = this.requestData[index].entity || this.requestData[index].itemGroup
+        this.initTableData()
+      }
+    },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function () {
       this.initTableData()
@@ -145,7 +155,7 @@ export default {
         if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
           for (let m of item.value) {
             for (let n of this.tableData) {
-              if ((m.id = n._id)) {
+              if (m.id === n._id) {
                 m.entityData = n
               }
             }
@@ -157,8 +167,6 @@ export default {
       // 当前选择tab数据
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.oriData = data
-      // 编辑表单的options配置
-      this.editOptions = data.title
       // select类型集合
       this.refKeys = []
       data.title.forEach(t => {
@@ -201,6 +209,8 @@ export default {
                     this.tableData[params.row._index][t.name] = v
                     this.refreshRequestData()
                   }}
+                  filterable
+                  clearable
                   multiple={t.multiple === 'Y'}
                   disabled={t.isEdit === 'no' || this.formDisable}
                 >
@@ -262,7 +272,6 @@ export default {
         }
         return v.entityData
       })
-
       // 下拉类型数据初始化(待优化，调用接口太多)
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
@@ -378,6 +387,10 @@ export default {
     handleEditRow (row) {
       this.viewDisabled = false
       this.editVisible = true
+      // 当前选择tab数据
+      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+      // 编辑表单的options配置
+      this.editOptions = data.title
       this.editData = deepClone(row)
     },
     submitEditRow () {

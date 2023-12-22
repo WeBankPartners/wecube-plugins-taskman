@@ -6,9 +6,7 @@
       <TabPane label="请求" name="2"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
-    <Button size="small" @click="handleExport" type="success" :loading="exportFlag" style="margin-bottom:10px;"
-      >导出</Button
-    >
+    <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">导出</Button>
     <Table
       size="small"
       :columns="tableColumns"
@@ -226,6 +224,14 @@ export default {
 <style lang="scss" scoped>
 .workbench-request-audit {
   width: 100%;
+  .export {
+    width: 50px;
+    height: 30px;
+    position: absolute;
+    right: 0px;
+    top: 35px;
+    font-size: 14px;
+  }
 }
 </style>
 <style lang="scss">

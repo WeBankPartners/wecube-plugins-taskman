@@ -438,7 +438,6 @@ export default {
   border: 1px solid #069cec;
   border-radius: 4px;
   color: #069cec;
-  cursor: pointer;
 }
 
 .header-icon {

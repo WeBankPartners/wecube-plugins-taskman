@@ -59,7 +59,7 @@ export default {
               item && (
                 <Tag color={item.color}>
                   {// 已处理请求定版的草稿添加被退回说明
-                    this.tabName === 'hasProcessed' && this.type === 1 && params.row.status === 'Draft'
+                    this.tabName === 'hasProcessed' && this.type === '1' && params.row.status === 'Draft'
                       ? `${item.label}(被退回)`
                       : item.label}
                 </Tag>
@@ -109,7 +109,7 @@ export default {
         },
         effectiveDays: {
           renderHeader: () => {
-            return <span>{this.type === 2 ? '任务停留时长' : '请求停留时长'}</span>
+            return <span>{this.type === '2' ? '任务停留时长' : '请求停留时长'}</span>
           },
           minWidth: 140,
           key: 'effectiveDays',

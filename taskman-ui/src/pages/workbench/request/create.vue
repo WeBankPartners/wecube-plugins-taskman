@@ -15,7 +15,7 @@
         <Steps :current="0" style="max-width:600px;">
           <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
             <template #icon>
-              <Icon size="24" :type="i.icon" :color="i.color" />
+              <Icon style="font:bold" size="24" :type="i.icon" :color="i.color" />
             </template>
             <div class="role" slot="content">
               <div class="word-eclipse">{{ i.name }}</div>
@@ -24,20 +24,22 @@
           </Step>
         </Steps>
         <div v-if="errorNode" style="margin:0 0 10px 20px;max-width:500px;">
-          <Alert v-if="errorNode === 'autoExit'" type="error">
+          <Alert v-if="errorNode === 'autoExit'" show-icon type="error">
             请求已终止，因为编排流程根据判断条件走到了退出节点，请复制请求ID，发送给wecube平台管理员处理
           </Alert>
-          <Alert v-else-if="errorNode === 'internallyTerminated'" type="error">
+          <Alert v-else-if="errorNode === 'internallyTerminated'" show-icon type="error">
             请求已终止，因为编排执行已被管理员手动终止，请复制请求ID，发送给wecube平台管理员处理
           </Alert>
-          <Alert v-else type="error">
+          <Alert v-else show-icon type="error">
             {{ errorNode }}节点报错，流程已暂停，请复制请求ID，发送给wecube平台管理员处理
           </Alert>
         </div>
       </Col>
       <Col span="5" class="btn-group">
-        <Button v-if="isAdd" @click="handleDraft(false)" style="margin-right:10px;">保存草稿</Button>
-        <Button v-if="isAdd" type="primary" @click="handlePublish">提交</Button>
+        <Button v-if="isAdd" :disabled="!requestData.length" @click="handleDraft(false)" style="margin-right:10px;"
+          >保存草稿</Button
+        >
+        <Button v-if="isAdd" :disabled="!requestData.length" type="primary" @click="handlePublish">提交</Button>
         <Button v-if="jumpFrom === 'submit' && detailInfo.status === 'Pending'" type="error" @click="handleRecall"
           >撤回</Button
         >
@@ -391,6 +393,7 @@ import StaticFlow from '../components/flow/static-flow.vue'
 import DynamicFlow from '../components/flow/dynamic-flow.vue'
 import EntityTable from '../components/entity-table.vue'
 import DataBind from '../components/data-bind.vue'
+import { deepClone } from '@/pages/util/index'
 import {
   getCreateInfo,
   getProgressInfo,
@@ -627,33 +630,41 @@ export default {
         return
       }
       // 提取表格勾选的数据
+      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
       this.form.data =
-        (this.$refs.entityTable &&
-          this.$refs.entityTable.requestData.map(item => {
-            if (Array.isArray(item.value)) {
-              item.value = item.value.filter(j => {
-                return j.entityData._checked
-              })
-            }
-            return item
-          })) ||
-        []
+        requestData.map(item => {
+          if (Array.isArray(item.value)) {
+            item.value = item.value.filter(j => {
+              return j.entityData._checked
+            })
+          }
+          return item
+        }) || []
+      // 获取发布目标对象entityName
       const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
       this.form.entityName = item.key_name
-      if (this.requestDataCheck()) {
-        const { statusCode } = await savePublishData(this.requestId, this.form)
-        if (statusCode === 'OK') {
-          if (noJump) {
-            return statusCode
-          } else {
-            this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
-          }
-        }
-      } else {
-        this.$Notice.warning({
+      // 必填项校验提示
+      if (!this.requiredCheck()) {
+        return this.$Notice.warning({
           title: this.$t('warning'),
           desc: this.$t('required_tip')
         })
+      }
+      // 表格至少勾选一条数据校验
+      const tabName = this.$refs.entityTable.activeTab
+      if (!this.noChooseCheck()) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】该表单未勾选数据，请至少勾选一条数据`
+        })
+      }
+      const { statusCode } = await savePublishData(this.requestId, this.form)
+      if (statusCode === 'OK') {
+        if (noJump) {
+          return statusCode
+        } else {
+          this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
+        }
       }
     },
     // 发布
@@ -676,9 +687,10 @@ export default {
       })
     },
     // 校验表格数据必填项
-    requestDataCheck () {
+    requiredCheck () {
+      let tabIndex = ''
       let result = true
-      this.form.data.forEach(requestData => {
+      this.form.data.forEach((requestData, index) => {
         let requiredName = []
         requestData.title.forEach(t => {
           if (t.required === 'yes') {
@@ -691,15 +703,34 @@ export default {
             if (Array.isArray(val)) {
               if (val.length === 0) {
                 result = false
+                if (tabIndex === '') {
+                  tabIndex = index
+                }
               }
             } else {
-              if (val === '') {
+              if (val === '' || val === undefined) {
                 result = false
+                if (tabIndex === '') {
+                  tabIndex = index
+                }
               }
             }
           })
         })
       })
+      this.$refs.entityTable.validTable(tabIndex)
+      return result
+    },
+    noChooseCheck () {
+      let tabIndex = ''
+      let result = true
+      this.form.data.forEach((requestData, index) => {
+        if (requestData.value && requestData.value.length === 0) {
+          tabIndex = index
+          result = false
+        }
+      })
+      this.$refs.entityTable.validTable(tabIndex)
       return result
     },
     // 任务审批保存
@@ -887,9 +918,6 @@ export default {
   }
   .ivu-collapse-content {
     padding: 0 0 0 16px;
-  }
-  .ivu-icon {
-    font-weight: bold;
   }
 }
 </style>

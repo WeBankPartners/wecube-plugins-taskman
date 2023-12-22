@@ -1,7 +1,4 @@
 {
-  "tw_yes": "是",
-  "tw_no": "否",
-  "tw_default_empty": "默认清空",
   "add": "新增",
   "search": "搜索",
   "edit": "编辑",
@@ -150,6 +147,9 @@
   "status_inProgress_timeouted": "节点超时",
   "status_faulted": "自动退出",
   "status_draft": "草稿",
+  "tw_yes": "是",
+  "tw_no": "否",
+  "tw_default_empty": "默认清空",
   "tw_recent_three_month": "近3个月",
   "tw_recent_half_year": "近半年",
   "tw_recent_one_year": "近一年",

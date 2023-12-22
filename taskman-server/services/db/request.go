@@ -344,53 +344,70 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 
 func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (fileName string, titles []string, dataArr [][]string) {
 	dataArr = make([][]string, len(rowsData))
+	var days string
+	fileName = "Wecube-RequestAudit-Export-" + time.Now().Format("20060102150405") + ".xlsx"
 	if strings.Contains(language, "zh-CN") {
-		fileName = "wecube-请求审计导出-" + time.Now().Format("20060102150405") + ".xlsx"
 		titles = []string{
-			"ID",
+			"请求ID",
 			"请求名称",
-			"使用模板",
-			"操作对象",
-			"使用编排",
 			"请求状态",
-			"进展",
-			"创建人",
+			"当前节点",
 			"当前处理人",
-			"创建时间",
+			"进展",
+			"请求停留时长",
 			"期望完成时间",
+			"使用模板",
+			"使用编排",
+			"操作对象类型",
+			"操作对象",
+			"创建人",
+			"请求提交时间",
 		}
+		days = "日"
 	} else {
-		fileName = "wecube-请求审计导出-" + time.Now().Format("20060102150405") + ".xlsx"
 		titles = []string{
-			"ID",
-			"请求名称",
-			"使用模板",
-			"操作对象",
-			"使用编排",
-			"请求状态",
-			"进展",
-			"创建人",
-			"当前处理人",
-			"创建时间",
-			"期望完成时间",
+			"Request ID",
+			"Request Name",
+			"Status",
+			"Current Node",
+			"Current Approver",
+			"progress",
+			"Request Elapsed Time",
+			"Expected Completion Time",
+			"Template",
+			"Process",
+			"Object Type",
+			"Operation Object",
+			"Creator",
+			"Submission Time",
 		}
+		days = "days"
 	}
 	for i, row := range rowsData {
 		dataArr[i] = []string{
 			row.Id,
 			row.Name,
-			row.TemplateName,
-			row.OperatorObj,
-			row.ProcDefName,
 			row.Status,
-			strconv.Itoa(row.Progress) + "%",
-			row.CreatedBy,
+			row.CurNode,
 			row.Handler,
-			row.CreatedTime,
+			strconv.Itoa(row.Progress) + "%",
+			getRequestRemainDays(row.CreatedTime, days, row.EffectiveDays),
 			row.ExpectTime,
+			row.TemplateName,
+			row.ProcDefName,
+			row.OperatorObjType,
+			row.OperatorObj,
+			row.CreatedBy,
+			row.ReportTime,
 		}
 	}
 	return
+}
+
+func getRequestRemainDays(createTime, format string, effectiveDays int) string {
+	t1, _ := time.Parse("2006-01-02 15:04:05", createTime)
+	diff := time.Now().Sub(t1).Hours() / 24
+	return fmt.Sprintf("%d%s/%d%s", diff, format, effectiveDays, format)
 }
 
 func getPlatRequestSQL(where, sql string) string {

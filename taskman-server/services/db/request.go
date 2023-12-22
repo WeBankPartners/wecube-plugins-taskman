@@ -353,6 +353,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"请求状态",
 			"当前节点",
 			"当前处理人",
+			"当前处理人角色",
 			"进展",
 			"请求停留时长",
 			"期望完成时间",
@@ -371,6 +372,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"Status",
 			"Current Node",
 			"Current Approver",
+			"Current Approver Role",
 			"progress",
 			"Request Elapsed Time",
 			"Expected Completion Time",
@@ -390,8 +392,9 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			row.Status,
 			row.CurNode,
 			row.Handler,
+			row.HandleRole,
 			strconv.Itoa(row.Progress) + "%",
-			getRequestRemainDays(row.CreatedTime, days, row.EffectiveDays),
+			getRequestRemainDays(row.StartTime, days, row.EffectiveDays),
 			row.ExpectTime,
 			row.TemplateName,
 			row.ProcDefName,
@@ -404,9 +407,9 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 	return
 }
 
-func getRequestRemainDays(createTime, format string, effectiveDays int) string {
-	t1, _ := time.Parse("2006-01-02 15:04:05", createTime)
-	diff := time.Now().Sub(t1).Hours() / 24
+func getRequestRemainDays(startTime, format string, effectiveDays int) string {
+	t1, _ := time.Parse("2006-01-02 15:04:05", startTime)
+	diff := int(time.Now().Sub(t1).Hours() / 24)
 	return fmt.Sprintf("%d%s/%d%s", diff, format, effectiveDays, format)
 }
 

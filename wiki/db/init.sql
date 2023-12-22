@@ -303,7 +303,7 @@ alter table form_item modify column value text default null;
 alter table request add column `rollback_desc` text  DEFAULT null;
 #@v0.1.2.16-end@;
 
-#@v0.1.3.12-begin@;
+#@v0.1.3.13-begin@;
 alter table request add column `type` tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';
 alter table request add column operator_obj varchar(255) default null DEFAULT NULL COMMENT '操作对象';
 alter table request add column description varchar(255) default null COMMENT '发布描述';
@@ -330,4 +330,4 @@ CREATE TABLE `collect_template` (
   KEY `fore_collect_request_template` (`request_template`),
   CONSTRAINT `fore_collect_request_template` FOREIGN KEY (`request_template`) REFERENCES `request_template` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏模板';
-#@v0.1.3.12-end@;
+#@v0.1.3.13-end@;

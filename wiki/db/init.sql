@@ -315,6 +315,7 @@ alter table request_template add column operator_obj_type varchar(255) default n
 alter table request_template add column parent_id varchar(64) default null DEFAULT NULL COMMENT '父类ID';
 
 alter table task add column template_type tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';
+alter table form_item_template add column  default_clear  varchar(16) default 'no' not null COMMENT '是否清空'
 
 DROP TABLE IF EXISTS `collect_template`;
 CREATE TABLE `collect_template` (

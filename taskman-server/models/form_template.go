@@ -51,6 +51,7 @@ type FormItemTemplateTable struct {
 	InDisplayName   string           `json:"inDisplayName" xorm:"in_display_name"`
 	IsRefInside     string           `json:"isRefInside" xorm:"is_ref_inside"`
 	Multiple        string           `json:"multiple" xorm:"multiple"`
+	DefaultClear    string           `json:"defaultClear" xorm:"default_clear"`
 	SelectList      []*EntityDataObj `json:"selectList" xorm:"-"`
 }
 

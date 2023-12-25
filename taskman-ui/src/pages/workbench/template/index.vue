@@ -114,6 +114,7 @@
 
 <script>
 import { getTemplateTree, collectTemplate, uncollectTemplate, collectTemplateList } from '@/api/server'
+import { debounce } from '@/pages/util'
 export default {
   data () {
     return {
@@ -315,7 +316,7 @@ export default {
       })
     },
     // 收藏or取消收藏模板
-    async handleStar ({ id, collectFlag, role }) {
+    handleStar: debounce(async function ({ id, collectFlag, role }) {
       const method = collectFlag ? uncollectTemplate : collectTemplate
       const params = collectFlag ? id : { templateId: id, role }
       const { statusCode } = await method(params)
@@ -327,7 +328,7 @@ export default {
         this.getTemplateData()
         this.getCollectTemplate()
       }
-    },
+    }, 300),
     // 收藏模板列表
     async getCollectTemplate () {
       const params = {

@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form" :style="{ maxHeight: expand ? '200px' : '100px' }">
+    <div class="form" :style="{ maxHeight: expand ? '200px' : '95px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem
@@ -27,7 +27,7 @@
               :multiple="i.multiple || false"
               :filterable="i.filterable || true"
               :max-tag-count="1"
-              :style="{ width: i.width || 200 + 'px' }"
+              :style="{ width: i.width || 210 + 'px' }"
             >
               <template v-for="(j, idx) in i.list">
                 <Option :key="idx" :value="j.value">{{ j.label }}</Option>
@@ -43,7 +43,7 @@
               :multiple="i.multiple || false"
               :filterable="i.filterable || true"
               :max-tag-count="1"
-              :style="{ width: i.width || 200 + 'px' }"
+              :style="{ width: i.width || 210 + 'px' }"
             >
               <template v-for="(j, idx) in i.list">
                 <Option :key="idx" :value="j.value">{{ j.label }}</Option>
@@ -245,6 +245,9 @@ export default {
     border-color: #2d8cf0;
     // background: #2d8cf0;
     color: #2d8cf0;
+  }
+  .ivu-select-multiple .ivu-tag {
+    max-width: 102px;
   }
   .form {
     flex: 1;

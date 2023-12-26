@@ -5,21 +5,23 @@
       :before-upload="handleUpload"
       :show-upload-list="false"
       with-credentials
-      style="display: inline-block;"
       :headers="headers"
       :on-success="uploadSucess"
       :on-error="uploadFailed"
     >
-      <Button type="success" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
+      <Button icon="md-cloud-upload" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
     </Upload>
-    <div v-for="file in attachFiles" style="display: inline-block" :key="file.id">
+    <div class="file-list">
       <Tag
+        v-for="file in attachFiles"
+        :key="file.id"
         type="border"
-        :closable="formDisable"
+        :closable="!formDisable"
         checkable
         @on-close="removeFile(file)"
         @on-change="downloadFile(file)"
         color="primary"
+        style="margin-right:15px;"
         >{{ file.name }}</Tag
       >
     </div>
@@ -45,7 +47,7 @@ export default {
       type: Boolean,
       default: false
     },
-    attachFiles: {
+    files: {
       type: Array,
       default: () => []
     }
@@ -53,7 +55,8 @@ export default {
   data () {
     return {
       uploadUrl: '',
-      headers: {}
+      headers: {},
+      attachFiles: []
     }
   },
   watch: {
@@ -73,6 +76,12 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+    files: {
+      handler (val) {
+        this.attachFiles = val
+      },
+      deep: true
     }
   },
   mounted () {},
@@ -150,9 +159,12 @@ export default {
 }
 </script>
 
-<style lang="scss"></style>
 <style lang="scss" scoped>
 .workbench-upload {
   width: 100%;
+  .file-list {
+    display: flex;
+    margin-top: 10px;
+  }
 }
 </style>

@@ -82,7 +82,7 @@
                 ></DatePicker>
               </FormItem>
               <FormItem label="附件">
-                <UploadFile :id="requestId" :attachFiles="attachFiles" type="request"></UploadFile>
+                <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
               </FormItem>
             </HeaderTitle>
             <HeaderTitle title="发布目标对象">
@@ -300,8 +300,9 @@
                       <FormItem label="附件">
                         <UploadFile
                           :id="handleData.taskId"
-                          :attachFiles="handleData.attachFiles"
+                          :files="handleData.attachFiles"
                           type="task"
+                          :formDisable="enforceDisable"
                         ></UploadFile>
                       </FormItem>
                     </Form>

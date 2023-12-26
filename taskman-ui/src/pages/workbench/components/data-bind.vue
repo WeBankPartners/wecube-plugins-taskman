@@ -3,7 +3,7 @@
     <Tabs>
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
-          <ul v-if="filterBindData(node).length">
+          <ul v-if="node.classification && node.classification.length > 0">
             <CheckboxGroup v-model="node.bindData">
               <template v-for="(entity, entityIndex) in node.classification">
                 <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider>

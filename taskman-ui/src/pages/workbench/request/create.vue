@@ -81,6 +81,9 @@
                   style="width:400px;"
                 ></DatePicker>
               </FormItem>
+              <FormItem label="附件">
+                <UploadFile :id="requestId" :attachFiles="attachFiles" type="request"></UploadFile>
+              </FormItem>
             </HeaderTitle>
             <HeaderTitle title="发布目标对象">
               <FormItem label="选择操作单元" required>
@@ -309,6 +312,13 @@
                           type="textarea"
                         />
                       </FormItem>
+                      <FormItem label="附件">
+                        <UploadFile
+                          :id="handleData.taskId"
+                          :attachFiles="handleData.attachFiles"
+                          type="task"
+                        ></UploadFile>
+                      </FormItem>
                     </Form>
                     <div style="text-align: center">
                       <Button v-if="handleData.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
@@ -393,6 +403,7 @@ import StaticFlow from '../components/flow/static-flow.vue'
 import DynamicFlow from '../components/flow/dynamic-flow.vue'
 import EntityTable from '../components/entity-table.vue'
 import DataBind from '../components/data-bind.vue'
+import UploadFile from '../components/upload.vue'
 import { deepClone } from '@/pages/util/index'
 import {
   getCreateInfo,
@@ -431,7 +442,8 @@ export default {
     StaticFlow,
     DynamicFlow,
     EntityTable,
-    DataBind
+    DataBind,
+    UploadFile
   },
   data () {
     return {
@@ -460,6 +472,7 @@ export default {
       requestData: [], // 发布目标对象表格数据
       historyData: [], // 处理历史数据
       handleData: {},
+      attachFiles: [], // 上传附件
       activeStep: '', // 处理历史当前展开
       errorNode: ''
     }
@@ -563,7 +576,7 @@ export default {
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.requestId)
       if (statusCode === 'OK') {
-        // this.attachFiles = data.attachFiles
+        this.attachFiles = data.attachFiles
         this.form.rootEntityId = data.cache
       }
     },
@@ -654,6 +667,10 @@ export default {
             item.value = item.value.filter(j => {
               return j.entityData._checked
             })
+            // 删除多余的属性
+            item.value.forEach(v => {
+              delete v.entityData._checked
+            })
           }
           return item
         }) || []
@@ -738,6 +755,7 @@ export default {
       this.$refs.entityTable.validTable(tabIndex)
       return result
     },
+    // 没有勾选数据校验
     noChooseCheck () {
       let tabIndex = ''
       let result = true

@@ -20,7 +20,7 @@
       >
       <Col :span="5" style="line-height:32px;">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
-          <Tag type="border" :closable="false" checkable @click="downloadFile(file)" color="primary">{{
+          <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
             file.name
           }}</Tag>
         </div>

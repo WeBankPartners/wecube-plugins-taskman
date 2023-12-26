@@ -81,7 +81,8 @@ export default {
       handler (val) {
         this.attachFiles = val
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   },
   mounted () {},

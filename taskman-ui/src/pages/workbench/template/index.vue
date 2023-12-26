@@ -77,25 +77,10 @@
           <div class="w-header">
             我的收藏 <span>{{ collectList.length }}</span>
           </div>
-          <!-- <div v-for="i in collectList" :key="i.id" class="item">
-            <Tooltip content="取消收藏" placement="top-start">
-              <Icon
-                style="cursor:pointer;margin-right:5px;"
-                size="18"
-                type="ios-star"
-                color="#ebac42"
-                @click="handleStar({ ...i, collectFlag: 1 })"
-              />
-            </Tooltip>
-            <div class="template" @click="handleChooseTemplate(i, i.manageRole)">
-              {{ i.name }}
-              <Tag>{{ i.version }}</Tag>
-            </div>
-            <div>{{ i.useRole }}</div>
-          </div> -->
           <Table
             style="margin:20px 0;"
             :show-header="true"
+            :disabled-hover="true"
             @on-row-click="
               row => {
                 handleChooseTemplate(row, row.manageRole)
@@ -213,7 +198,7 @@ export default {
                     }}
                   />
                 </Tooltip>
-                <span style="margin-right:2px">
+                <span class={{ 'active-link': params.row.status === 1, 'disabled-link': params.row.status !== 1 }}>
                   {params.row.name}
                   <Tag style="margin-left:5px">{params.row.version}</Tag>
                 </span>
@@ -236,7 +221,7 @@ export default {
           }
         },
         {
-          title: '我的使用角色',
+          title: '使用角色',
           key: 'useRole'
         }
       ]
@@ -382,12 +367,21 @@ export default {
     padding: 5px 10px;
     line-height: 1;
   }
-  .ivu-table-row {
+  .content .ivu-table-row {
     cursor: pointer;
   }
   .ivu-form-item {
     margin-bottom: 10px !important;
     display: inline-block !important;
+  }
+  .active-link:hover {
+    margin-right: 2px;
+    color: #2d8cf0;
+    cursor: pointer;
+  }
+  .disabled-link:hover {
+    margin-right: 2px;
+    cursor: not-allowed;
   }
 }
 </style>

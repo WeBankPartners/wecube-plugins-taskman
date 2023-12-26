@@ -450,7 +450,7 @@ export default {
             isAdd: 'Y',
             isCheck: 'N',
             isHandle: 'N',
-            jumpFrom: 'my_drafts'
+            jumpFrom: ''
           }
         })
       }

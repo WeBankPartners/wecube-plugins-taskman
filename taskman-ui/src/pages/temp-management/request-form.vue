@@ -188,27 +188,27 @@
                     <Input v-model="editElement.tag" placeholder=""></Input>
                   </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <RadioGroup v-model="editElement.inDisplayName" :disabled="$parent.isCheck === 'Y'">
-                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    <RadioGroup v-model="editElement.inDisplayName">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
                     </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <RadioGroup v-model="editElement.isEdit" :disabled="$parent.isCheck === 'Y'">
-                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    <RadioGroup v-model="editElement.isEdit">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
                     </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <RadioGroup v-model="editElement.required" :disabled="$parent.isCheck === 'Y'">
-                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    <RadioGroup v-model="editElement.required">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
                     </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('tw_default_empty')">
-                    <RadioGroup v-model="editElement.defaultClear" :disabled="$parent.isCheck === 'Y'">
-                      <Radio label="yes">{{ $t('tw_yes') }}</Radio>
-                      <Radio label="no">{{ $t('tw_no') }}</Radio>
+                    <RadioGroup v-model="editElement.defaultClear">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
                     </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('defaults')">

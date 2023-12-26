@@ -620,7 +620,24 @@ export default {
       }
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
-        this.requestData = data.data
+        const requestData = data.data || []
+        // 新建和重新发起，默认值逻辑
+        if (this.isAdd && this.jumpFrom !== 'my_drafts') {
+          requestData.forEach(i => {
+            i.value.forEach(v => {
+              i.title.forEach(t => {
+                // 默认清空标志为false, 且初始值为空，赋值默认值
+                if (t.defaultClear === 'no' && !v.entityData[t.name]) {
+                  v.entityData[t.name] = t.defaultValue || ''
+                }
+                if (t.defaultClear === 'yes') {
+                  v.entityData[t.name] = ''
+                }
+              })
+            })
+          })
+        }
+        this.requestData = requestData
       }
     },
     // 保存草稿

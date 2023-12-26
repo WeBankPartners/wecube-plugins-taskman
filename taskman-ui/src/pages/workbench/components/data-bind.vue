@@ -221,7 +221,7 @@ export default {
             if (!find) {
               node.bindData = []
               node.bindOptions = []
-              node.classification = []
+              this.$set(node, 'classification', [])
             } else {
               node.bindData = find.boundEntityValues.filter(bound => bound.bindFlag === 'Y').map(b => b.oid)
               node.bindOptions = find.boundEntityValues || []
@@ -229,7 +229,8 @@ export default {
               node.bindOptions.forEach(d => {
                 classification.add(d.entityName)
               })
-              node.classification = Array.from(classification)
+              // node.classification = Array.from(classification)
+              this.$set(node, 'classification', Array.from(classification))
             }
           })
         }

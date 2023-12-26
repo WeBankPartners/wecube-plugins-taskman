@@ -1,26 +1,37 @@
 <template>
-  <div class="header-tag">
+  <div class="workbench-header-tag">
     <Row v-if="showHeader" class="title" :gutter="10">
       <Col :span="4">{{ $t('handle_time') }}</Col>
       <Col :span="3">{{ $t('tw_assume') }}</Col>
       <Col :span="3">{{ $t('handler_role') }}</Col>
-      <Col :span="3">{{ $t('handler') }}</Col>
-      <Col :span="3">{{ $t('t_action') }}</Col>
-      <Col :span="4">{{ $t('tw_note') }}</Col>
-      <Col :span="4">{{ $t('tw_attach') }}</Col>
+      <Col :span="2">{{ $t('handler') }}</Col>
+      <Col :span="2">{{ $t('t_action') }}</Col>
+      <Col :span="5">{{ $t('tw_note') }}</Col>
+      <Col :span="5">{{ $t('tw_attach') }}</Col>
     </Row>
     <Row class="content" :gutter="10">
       <Col :span="4">{{ data.handleTime }}</Col>
       <Col :span="3">{{ getDiffTime }}</Col>
       <Col :span="3">{{ data.handleRoleName || '-' }}</Col>
-      <Col :span="3">{{ data.handler || '-' }}</Col>
-      <Col :span="3">{{ data.choseOption || operation }}</Col>
-      <Col :span="8">{{ data.comment }}</Col>
+      <Col :span="2">{{ data.handler || '-' }}</Col>
+      <Col :span="2">{{ data.choseOption || operation }}</Col>
+      <Col :span="5"
+        ><div class="text-overflow">{{ data.comment }}</div></Col
+      >
+      <Col :span="5" style="line-height:32px;">
+        <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
+          <Tag type="border" :closable="false" checkable @click="downloadFile(file)" color="primary">{{
+            file.name
+          }}</Tag>
+        </div>
+      </Col>
     </Row>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+import { getCookie } from '@/pages/util/cookie'
 import dayjs from 'dayjs'
 export default {
   props: {
@@ -38,7 +49,9 @@ export default {
     }
   },
   data () {
-    return {}
+    return {
+      headers: {}
+    }
   },
   computed: {
     getDiffTime () {
@@ -58,12 +71,55 @@ export default {
       )
     }
   },
-  methods: {}
+  mounted () {
+    const accessToken = getCookie('accessToken')
+    this.headers = {
+      Authorization: 'Bearer ' + accessToken
+    }
+  },
+  methods: {
+    async downloadFile (file) {
+      axios({
+        method: 'GET',
+        url: `/taskman/api/v1/request/attach-file/download/${file.id}`,
+        headers: this.headers,
+        responseType: 'blob'
+      })
+        .then(response => {
+          if (response.status < 400) {
+            let fileName = `${file.name}`
+            let blob = new Blob([response.data])
+            if ('msSaveOrOpenBlob' in navigator) {
+              window.navigator.msSaveOrOpenBlob(blob, fileName)
+            } else {
+              if ('download' in document.createElement('a')) {
+                // 非IE下载
+                let elink = document.createElement('a')
+                elink.download = fileName
+                elink.style.display = 'none'
+                elink.href = URL.createObjectURL(blob)
+                document.body.appendChild(elink)
+                elink.click()
+                URL.revokeObjectURL(elink.href) // 释放URL 对象
+                document.body.removeChild(elink)
+              } else {
+                // IE10+下载
+                navigator.msSaveOrOpenBlob(blob, fileName)
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.log(error)
+          this.$Message.warning('Error')
+        })
+    }
+  }
 }
 </script>
 
-<style lang="scss" scoped>
-.header-tag {
+<style lang="scss">
+.workbench-header-tag {
   width: calc(100% - 10px);
   margin-left: 10px;
   .title {
@@ -77,12 +133,19 @@ export default {
     font-weight: bold;
   }
   .content {
+    display: flex;
+    align-items: center;
     text-align: left;
     padding-left: 20px;
     background: #f0faff;
     font-size: 12px;
     overflow: hidden;
     word-break: break-all;
+    .text-overflow {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
   }
 }
 </style>

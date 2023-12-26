@@ -639,7 +639,7 @@ export default {
                 if (t.defaultClear === 'no' && !v.entityData[t.name]) {
                   v.entityData[t.name] = t.defaultValue || ''
                 }
-                if (t.defaultClear === 'yes') {
+                if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
                   v.entityData[t.name] = ''
                 }
               })

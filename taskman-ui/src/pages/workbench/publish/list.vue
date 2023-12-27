@@ -1,8 +1,8 @@
 <template>
   <div class="workbench-publish-history">
     <Tabs :value="activeTab" @on-click="handleChangeTab">
-      <TabPane label="已提交" name="commit"></TabPane>
-      <TabPane label="草稿箱" name="draft"></TabPane>
+      <TabPane :label="$t('tw_commit_tab')" name="commit"></TabPane>
+      <TabPane :label="$t('tw_draft_tab')" name="draft"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
     <Table
@@ -190,9 +190,8 @@ export default {
     // 表格操作撤回
     async handleRecall (row) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + '撤回',
-        content:
-          '撤回请求，请求将回到草稿态，可以在【我提交的-本人撤回】中查看，点击【重新发起】按钮可以重新编辑发起。',
+        title: this.$t('confirm') + this.$t('tw_recall'),
+        content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

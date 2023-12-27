@@ -25,14 +25,20 @@
     </div>
     <div class="data-tabs">
       <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
-        <TabPane label="任务处理" name="2"></TabPane>
-        <TabPane label="请求定版" name="1"></TabPane>
+        <!--任务处理-->
+        <TabPane :label="$t('tw_task_tab')" name="2"></TabPane>
+        <!--请求定版-->
+        <TabPane :label="$t('tw_pending_tab')" name="1"></TabPane>
       </Tabs>
       <Tabs v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
-        <TabPane label="所有" name="0"></TabPane>
-        <TabPane label="被退回" name="1"></TabPane>
-        <TabPane label="本人撤回" name="3"></TabPane>
-        <TabPane label="其他" name="2"></TabPane>
+        <!--所有-->
+        <TabPane :label="$t('tw_all_tab')" name="0"></TabPane>
+        <!--被退回-->
+        <TabPane :label="$t('tw_return_tab')" name="1"></TabPane>
+        <!--本人撤回-->
+        <TabPane :label="$t('tw_recall_tab')" name="3"></TabPane>
+        <!--其他-->
+        <TabPane :label="$t('tw_other_tab')" name="2"></TabPane>
       </Tabs>
       <CollectTable ref="collect" v-if="tabName === 'collect'" :actionName="actionName"></CollectTable>
       <template v-else>
@@ -459,8 +465,7 @@ export default {
     async handleRecall (row) {
       this.$Modal.confirm({
         title: this.$t('confirm'),
-        content:
-          '撤回请求，请求将回到草稿态，可以在【我提交的-本人撤回】中查看，点击【重新发起】按钮可以重新编辑发起。',
+        content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

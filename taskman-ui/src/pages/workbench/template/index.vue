@@ -2,20 +2,27 @@
   <div class="new-publish-template">
     <div class="search">
       <Form :model="form" inline label-position="left">
-        <FormItem label="模板名" :label-width="60">
-          <Input v-model="form.templateName" @on-change="filterData" style="width:300px" placeholder="请输入模板名">
+        <!--模板名-->
+        <FormItem :label="$t('tw_template_name')" :label-width="60">
+          <Input
+            v-model="form.templateName"
+            @on-change="filterData"
+            style="width:300px"
+            :placeholder="$t('tw_template_placeholder')"
+          >
             <template #suffix>
               <Icon type="ios-search" />
             </template>
           </Input>
         </FormItem>
-        <FormItem label="操作对象类型" :label-width="100">
+        <!--操作对象类型-->
+        <FormItem :label="$t('tw_operator_type')" :label-width="100">
           <Select
             v-model="form.operatorObjType"
             @on-change="filterData"
             clearable
             filterable
-            placeholder="请选择操作对象类型"
+            :placeholder="$t('tw_operator_placeholder')"
             style="width:300px;"
           >
             <Option v-for="(item, index) in operateOptions" :value="item" :key="index">{{ item }}</Option>
@@ -26,8 +33,10 @@
     <div class="wrapper">
       <div class="template">
         <Tabs v-model="activeName" @on-click="filterData" style="margin-bottom:10px;">
-          <TabPane label="已发布模板" name="confirm"></TabPane>
-          <TabPane label="我的草稿" name="created"></TabPane>
+          <!--已发布-->
+          <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
+          <!--我的草稿-->
+          <TabPane :label="$t('tw_template_draft_tab')" name="created"></TabPane>
         </Tabs>
         <template v-if="cardList.length">
           <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
@@ -69,13 +78,13 @@
           </Card>
         </template>
         <div v-else class="template-no-data">
-          暂无数据
+          {{ $t('tw_no_data') }}
         </div>
       </div>
       <div class="list">
         <Card style="width:520px;min-height:600px;">
           <div class="w-header">
-            我的收藏 <span>{{ collectList.length }}</span>
+            {{ $t('tw_my_collect') }} <span>{{ collectList.length }}</span>
           </div>
           <Table
             style="margin:20px 0;"
@@ -117,14 +126,14 @@ export default {
       originCardList: [],
       tableColumns: [
         {
-          title: '模板名称',
+          title: this.$t('tw_template_name'),
           key: 'name',
           minWidth: 250,
           render: (h, params) => {
             return (
               <div>
                 {params.row.collectFlag === 0 && this.activeName === 'confirm' && (
-                  <Tooltip content="收藏" placement="top-start">
+                  <Tooltip content={this.$t('tw_collec_tooltip')} placement="top-start">
                     <Icon
                       style="cursor:pointer;margin-right:5px;"
                       size="18"
@@ -137,7 +146,7 @@ export default {
                   </Tooltip>
                 )}
                 {params.row.collectFlag === 1 && this.activeName === 'confirm' && (
-                  <Tooltip content="取消收藏" placement="top-start">
+                  <Tooltip content={this.$t('tw_uncollec_tooltip')} placement="top-start">
                     <Icon
                       style="cursor:pointer;margin-right:5px;"
                       size="18"
@@ -159,14 +168,14 @@ export default {
           }
         },
         {
-          title: '操作对象类型',
+          title: this.$t('tw_operator_type'),
           key: 'operatorObjType',
           render: (h, params) => {
             return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
           }
         },
         {
-          title: '属主/角色',
+          title: this.$t('tw_owner_role'),
           key: 'updatedBy',
           render: (h, params) => {
             return (
@@ -180,13 +189,13 @@ export default {
       ],
       collectColumns: [
         {
-          title: '模板名称',
+          title: this.$t('tw_template_name'),
           key: 'name',
           width: 230,
           render: (h, params) => {
             return (
               <div>
-                <Tooltip content="取消收藏" placement="top-start">
+                <Tooltip content={this.$t('tw_uncollec_tooltip')} placement="top-start">
                   <Icon
                     style="cursor:pointer;margin-right:5px;"
                     size="18"
@@ -207,21 +216,21 @@ export default {
           }
         },
         {
-          title: '模板状态',
+          title: this.$t('tw_template_status'),
           width: 120,
           key: 'status',
           render: (h, params) => {
             const list = [
-              { label: '可使用', value: 1, color: '#19be6b' },
-              { label: '已禁用', value: 2, color: '#c5c8ce' },
-              { label: '权限被移除', value: 3, color: '#ed4014' }
+              { label: this.$t('tw_template_status_use'), value: 1, color: '#19be6b' },
+              { label: this.$t('tw_template_status_disable'), value: 2, color: '#c5c8ce' },
+              { label: this.$t('tw_template_status_role'), value: 3, color: '#ed4014' }
             ]
             const item = list.find(i => i.value === params.row.status)
             return item && <Tag color={item.color}>{item.label}</Tag>
           }
         },
         {
-          title: '使用角色',
+          title: this.$t('useRoles'),
           key: 'useRole'
         }
       ]
@@ -275,15 +284,17 @@ export default {
     },
     // 选中一条模板数据
     handleChooseTemplate (row, role) {
+      // 模板禁用提示
       if (row.status === 2) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: '该模板已禁用'
+          desc: this.$t('tw_template_disable_tips')
         })
+        // 模板权限移除提示
       } else if (row.status === 3) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: '该模板使用权限被移除'
+          desc: this.$t('tw_template_role_tips')
         })
       }
       const path = row.type === 0 ? 'createRequest' : 'createPublish'

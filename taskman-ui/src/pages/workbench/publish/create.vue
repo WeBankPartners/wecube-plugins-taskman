@@ -11,6 +11,7 @@
     </Row>
     <Row class="w-header">
       <Col span="19" class="steps">
+        <!--请求进度-->
         <span class="title">{{ $t('tw_request_progress') }}：</span>
         <Steps :current="0" style="max-width:600px;">
           <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
@@ -94,7 +95,8 @@
                   style="width:400px;"
                 ></DatePicker>
               </FormItem>
-              <FormItem label="附件">
+              <!--附件-->
+              <FormItem :label="$t('tw_attach')">
                 <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
               </FormItem>
             </HeaderTitle>
@@ -170,19 +172,19 @@
               </Row>
             </HeaderTitle>
             <!--处理历史-->
-            <HeaderTitle title="处理历史">
+            <HeaderTitle :title="$t('tw_handle_history')">
               <Collapse v-model="activeStep" simple style="margin-top:30px;">
                 <Panel v-for="(data, index) in historyData" :name="index + ''" :key="index">
                   <!--提交请求-->
                   <template v-if="index === 0">
                     <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;">提交请求</div>
+                      <div style="width:70px;font-weight:bold;">{{ $t('tw_submit_request') }}</div>
                       <div style="width:calc(100% - 70px)">
-                        <HeaderTag :showHeader="true" :data="data" operation="提交审批"></HeaderTag>
+                        <HeaderTag :showHeader="true" :data="data" :operation="$t('tw_submit_approval')"></HeaderTag>
                       </div>
                     </div>
                     <div slot="content" class="history">
-                      <FormItem label="选择操作单元" required>
+                      <FormItem :label="$t('tw_choose_object')" required>
                         <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
                           <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                             item.key_name
@@ -195,9 +197,9 @@
                   <!--请求定版-->
                   <template v-else-if="index === 1">
                     <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;">请求定版</div>
+                      <div style="width:70px;font-weight:bold;">{{ $t('tw_request_pending') }}</div>
                       <div style="width:calc(100% - 70px)">
-                        <HeaderTag :data="data" operation="确认定版"></HeaderTag>
+                        <HeaderTag :data="data" :operation="$t('final_version')"></HeaderTag>
                       </div>
                     </div>
                     <div slot="content" class="history">
@@ -260,14 +262,14 @@
             <!--当前处理-任务审批-->
             <HeaderTitle
               v-if="isHandle && detailInfo.status === 'InProgress'"
-              title="当前处理"
+              :title="$t('tw_cur_handle')"
               :subTitle="handleData.taskName"
             >
               <Steps :current="1" direction="vertical">
                 <Step>
                   <div slot="title" class="task-step">
-                    <div>第一步：填写任务表单</div>
-                    <div>（请按格式填写任务表单）</div>
+                    <div>{{ $t('tw_approval_step1') }}</div>
+                    <div>{{ $t('tw_approval_step1_tips') }}</div>
                   </div>
                   <div slot="content" style="padding:20px 0px;">
                     <EntityTable
@@ -279,8 +281,8 @@
                 </Step>
                 <Step>
                   <div slot="title" class="task-step">
-                    <div>第二步：填写反馈结果</div>
-                    <div>（默认为同意，支持修改，支持附件上传）</div>
+                    <div>{{ $t('tw_approval_step2') }}</div>
+                    <div>{{ $t('tw_approval_step2_tips') }}</div>
                   </div>
                   <div slot="content" style="padding:20px 0px;">
                     <Form :label-width="80" style="margin: 16px 0">
@@ -308,7 +310,7 @@
                           type="textarea"
                         />
                       </FormItem>
-                      <FormItem label="附件">
+                      <FormItem :label="$t('tw_attach')">
                         <UploadFile
                           :id="handleData.taskId"
                           :files="handleData.attachFiles"
@@ -339,15 +341,19 @@
               </Steps>
             </HeaderTitle>
             <!--当前处理-请求定版-->
-            <HeaderTitle v-if="isHandle && detailInfo.status === 'Pending'" title="当前处理" subTitle="请求定版">
+            <HeaderTitle
+              v-if="isHandle && detailInfo.status === 'Pending'"
+              :title="$t('tw_cur_handle')"
+              :subTitle="$t('tw_request_pending')"
+            >
               <Steps :current="1" direction="vertical">
                 <Step>
                   <div slot="title" class="task-step">
-                    <div>第一步：表单填写审核</div>
-                    <div>（确认表单填写格式、数据正确不可修改）</div>
+                    <div>{{ $t('tw_pending_step1') }}</div>
+                    <div>{{ $t('tw_pending_step1_tips') }}</div>
                   </div>
                   <div slot="content" style="padding:20px 0px;">
-                    <FormItem label="选择操作单元" required>
+                    <FormItem :label="$t('tw_choose_object')" required>
                       <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
                         <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                           item.key_name
@@ -363,8 +369,8 @@
                 </Step>
                 <Step>
                   <div slot="title" class="task-step">
-                    <div>第二步：编排节点使用数据确认</div>
-                    <div>（确认编排的自动节点绑定的对象可以修改）</div>
+                    <div>{{ $t('tw_pending_step2') }}</div>
+                    <div>{{ $t('tw_pending_step2_tips') }}</div>
                   </div>
                   <div slot="content" style="padding:20px 0px;">
                     <DataBind
@@ -543,20 +549,20 @@ export default {
           item.color = statusColor[item.status]
           switch (item.node) {
             case 'sendRequest':
-              item.name = '提起请求'
+              item.name = this.$t('tw_commit_request') // 提交请求
               break
             case 'requestPending':
-              item.name = '请求定版'
+              item.name = this.$t('tw_request_pending') // 请求定版
               break
             case 'requestComplete':
-              item.name = '请求完成'
+              item.name = this.$t('tw_request_complete') // 请求完成
               break
             case 'autoExit':
-              item.name = '自动退出'
+              item.name = this.$t('status_faulted') // 自动退出
               this.errorNode = item.node
               break
             case 'internallyTerminated':
-              item.name = '手动终止'
+              item.name = this.$t('status_termination') // 手动终止
               this.errorNode = item.node
               break
             default:
@@ -564,7 +570,7 @@ export default {
               break
           }
           if (item.handler === 'autoNode') {
-            item.handler = '自动节点'
+            item.handler = this.$t('tw_auto_tag') // 自动节点
             this.errorNode = item.name
           }
         })
@@ -686,7 +692,7 @@ export default {
       if (!this.noChooseCheck()) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: `【${tabName}】表单未勾选数据，请至少勾选一条数据`
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
         })
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
@@ -826,9 +832,8 @@ export default {
     // 撤回
     async handleRecall () {
       this.$Modal.confirm({
-        title: this.$t('confirm') + '撤回',
-        content:
-          '撤回请求，请求将回到草稿态，可以在【我提交的-本人撤回】中查看，点击【重新发起】按钮可以重新编辑发起。',
+        title: this.$t('confirm') + this.$t('tw_recall'),
+        content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

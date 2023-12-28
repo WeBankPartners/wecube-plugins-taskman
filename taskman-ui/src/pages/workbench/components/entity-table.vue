@@ -297,6 +297,7 @@ export default {
       //   return
       // }
       let cache = JSON.parse(JSON.stringify(row))
+      cache[titleObj.name] = ''
       const keys = Object.keys(cache)
       keys.forEach(key => {
         if (Array.isArray(cache[key])) {
@@ -307,8 +308,11 @@ export default {
           })
           cache[key] = JSON.stringify(cache[key])
         }
+        // 删除掉值为空的数据
+        if (!cache[key] || (Array.isArray(cache[key]) && cache[key].length === 0)) {
+          delete cache[key]
+        }
       })
-      cache[titleObj.name] = ''
       this.refKeys.forEach(k => {
         delete cache[k + 'Options']
       })

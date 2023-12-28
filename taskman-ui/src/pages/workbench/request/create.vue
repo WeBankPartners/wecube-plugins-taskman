@@ -3,10 +3,10 @@
     <Row class="back-header">
       <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
       <span v-if="isAdd" class="name">
-        {{ `${templateName}` }}<Tag size="medium">{{ version }}</Tag>
+        {{ `${templateName || ''}` }}<Tag size="medium">{{ version }}</Tag>
       </span>
       <span v-else class="name">
-        {{ `${detailInfo.name}` }}
+        {{ `${detailInfo.name || ''}` }}
       </span>
     </Row>
     <Row class="w-header">
@@ -490,10 +490,10 @@ export default {
       }
     }
   },
-  async mounted () {
-    // 路由有requestId详情接口，无requestId创建接口
+  async created () {
+    // 新建请求无requestid, 调用创建接口
     if (this.requestId) {
-      await this.getPublishInfo()
+      this.getPublishInfo()
       this.getRequestInfo()
     } else {
       await this.getCreateInfo()
@@ -653,6 +653,12 @@ export default {
       const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
       this.form.data =
         requestData.map(item => {
+          let refKeys = []
+          item.title.forEach(t => {
+            if (t.elementType === 'select') {
+              refKeys.push(t.name)
+            }
+          })
           if (Array.isArray(item.value)) {
             item.value = item.value.filter(j => {
               return j.entityData._checked
@@ -660,6 +666,9 @@ export default {
             // 删除多余的属性
             item.value.forEach(v => {
               delete v.entityData._checked
+              refKeys.forEach(ref => {
+                delete v.entityData[ref + 'Options']
+              })
             })
           }
           return item

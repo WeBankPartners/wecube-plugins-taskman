@@ -73,7 +73,7 @@ type AddCollectTemplateParam struct {
 }
 
 type RequestHistoryParam struct {
-	Tab        string `json:"tab"`        // 标签,取值有: draft 暂存  commit 已经提交
+	Tab        string `json:"tab"`        // 标签,取值有: draft 暂存(不包含被退回和撤回)  commit 已经提交  rollback 被退回  revoke 撤回
 	Permission string `json:"permission"` // 权限,取值有: group 本组,  all 表示所有
 	Action     int    `json:"action"`     // 行为: 0表示所有,1表示发布行为,2请求
 	CommonRequestParam

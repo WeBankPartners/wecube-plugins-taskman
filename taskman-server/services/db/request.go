@@ -2320,7 +2320,11 @@ func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string
 	if param.Tab == "commit" {
 		where = where + " and status <> 'Draft'"
 	} else if param.Tab == "draft" {
-		where = where + " and status = 'Draft'"
+		where = where + " and status = 'Draft' and rollback_desc is  null and revoke_flag = 0"
+	} else if param.Tab == "rollback" {
+		where = where + " and status = 'Draft' and rollback_desc is  not null "
+	} else if param.Tab == "revoke" {
+		where = where + " and status = 'Draft' and revoke_flag = 1"
 	}
 	if param.Action == 1 {
 		where = where + " and type = 1"

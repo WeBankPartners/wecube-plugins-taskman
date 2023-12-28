@@ -362,6 +362,8 @@ type RequestForm struct {
 
 type FilterItem struct {
 	TemplateList        []KeyValuePair `json:"templateList"`        // 模板列表
+	RequestTemplateList []KeyValuePair `json:"requestTemplateList"` // 请求模板列表
+	ReleaseTemplateList []KeyValuePair `json:"releaseTemplateList"` // 发布模板列表
 	OperatorObjTypeList []string       `json:"operatorObjTypeList"` // 操作对象类型列表
 	ProcDefNameList     []string       `json:"procDefNameList"`     // 使用编排
 	CreatedByList       []string       `json:"createdByList"`       // 创建人列表
@@ -381,6 +383,7 @@ type FilterObj struct {
 	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`              // 创建人
 	Handler         string `json:"handler" xorm:"handler"`                   // 处理人
+	TemplateType    int    `json:"-" xorm:"template_type"`                   // 模板类型
 }
 
 type RequestDetail struct {

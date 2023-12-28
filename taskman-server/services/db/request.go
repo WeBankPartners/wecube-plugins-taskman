@@ -2817,15 +2817,18 @@ func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) 
 }
 
 func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, err error) {
-	data = &models.FilterItem{}
+	data = &models.FilterItem{
+		RequestTemplateList: make([]models.KeyValuePair, 0),
+		ReleaseTemplateList: make([]models.KeyValuePair, 0),
+	}
 	var pairList []models.KeyValuePair
 	var dataList []*models.FilterObj
-	var templateMap = make(map[string]string)
+	var templateMap = make(map[string]*models.FilterObj)
 	var operatorObjTypeMap = make(map[string]bool)
 	var procDefNameMap = make(map[string]bool)
 	var createdByMap = make(map[string]bool)
 	var handlerMap = make(map[string]bool)
-	var sql = "select rt.id as template_id,rt.name as template_name,rt.operator_obj_type,rt.proc_def_name,r.created_by," +
+	var sql = "select rt.id as template_id,rt.name as template_name,rt.type as template_type,rt.operator_obj_type,rt.proc_def_name,r.created_by," +
 		"r.handler from request r join request_template rt on r.request_template = rt.id where r.created_time > ?"
 	err = x.SQL(sql, param.StartTime).Find(&dataList)
 	var handlerList []string
@@ -2839,14 +2842,20 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 		}
 	}
 	for _, item := range dataList {
-		templateMap[item.TemplateName] = item.TemplateId
+		templateMap[item.TemplateName] = item
 		operatorObjTypeMap[item.OperatorObjType] = true
 		procDefNameMap[item.ProcDefName] = true
 		createdByMap[item.CreatedBy] = true
 		handlerMap[item.Handler] = true
 	}
 	for key, value := range templateMap {
-		pairList = append(pairList, models.KeyValuePair{TemplateId: value, TemplateName: key})
+		m := models.KeyValuePair{TemplateId: value.TemplateId, TemplateName: key}
+		pairList = append(pairList, m)
+		if value.TemplateType == 0 {
+			data.RequestTemplateList = append(data.RequestTemplateList, m)
+		} else {
+			data.ReleaseTemplateList = append(data.ReleaseTemplateList, m)
+		}
 	}
 	data.TemplateList = pairList
 	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)

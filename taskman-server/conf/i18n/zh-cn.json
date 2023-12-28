@@ -46,7 +46,7 @@
   },
   "template_already_collect": {
     "code": 20100003,
-    "message": "当前模版已被收藏，请勿重复操作"
+    "message": "当前模板已被收藏，请勿重复操作"
   },
   "upload_file_too_large": {
     "code": 20100004,
@@ -82,6 +82,6 @@
   },
   "get_request_preview_data_error": {
     "code": 20100012,
-    "message": "新建请求失败：模版无效，未配置表单，请联系模版属主/Wecube管理员更新模版"
+    "message": "新建请求失败：模版无效，未配置表单，请联系模板属主/Wecube管理员更新模版"
   }
 }

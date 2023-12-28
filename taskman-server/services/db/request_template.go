@@ -1104,6 +1104,8 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
 	var roleList []string
 	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
+	var requestTemplateRoleTable []*models.RequestTemplateRoleTable
+	var ownerRoleMap = make(map[string]string)
 	result = []*models.UserRequestTemplateQueryObjNew{}
 	useGroupMap, _ := getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
@@ -1114,6 +1116,13 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	}
 	if len(requestTemplateTable) == 0 {
 		return
+	}
+	err = x.SQL("select * from request_template_role where role_type='MGMT'").Find(&requestTemplateRoleTable)
+	if err != nil {
+		return
+	}
+	for _, requestTemplateRole := range requestTemplateRoleTable {
+		ownerRoleMap[requestTemplateRole.RequestTemplate] = requestTemplateRole.Role
 	}
 	recordIdMap := make(map[string]int)
 	disableNameMap := make(map[string]int)
@@ -1201,7 +1210,7 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 					Status:          template.Status,
 					UpdatedBy:       template.UpdatedBy,
 					Handler:         template.Handler,
-					Role:            role,
+					Role:            ownerRoleMap[template.Id],
 					UpdatedTime:     template.UpdatedTime,
 					CollectFlag:     collectFlag,
 					Type:            template.Type,

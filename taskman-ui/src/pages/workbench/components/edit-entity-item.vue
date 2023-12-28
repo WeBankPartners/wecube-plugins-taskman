@@ -1,7 +1,7 @@
 <template>
   <div>
     <Drawer
-      :title="$t('edit')"
+      :title="disabled ? $t('detail') : $t('edit')"
       v-model="drawerVisible"
       width="720"
       :mask-closable="true"

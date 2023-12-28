@@ -132,8 +132,8 @@ export default {
           render: (h, params) => {
             return (
               <span>
-                {params.row.templateName}
-                <Tag>{params.row.version}</Tag>
+                {`${params.row.templateName}【${params.row.version}】`}
+                {/* <Tag>{params.row.version}</Tag> */}
               </span>
             )
           }

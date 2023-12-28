@@ -1,12 +1,17 @@
 <template>
   <div class="workbench-request-audit">
     <Tabs :value="activeTab" @on-click="handleChangeTab">
-      <TabPane label="所有" name="0"></TabPane>
-      <TabPane label="发布" name="1"></TabPane>
-      <TabPane label="请求" name="2"></TabPane>
+      <!--所有-->
+      <TabPane :label="$t('tw_all_tab')" name="0"></TabPane>
+      <!--发布-->
+      <TabPane :label="$t('tw_publish')" name="1"></TabPane>
+      <!--请求-->
+      <TabPane :label="$t('tw_request')" name="2"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
-    <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">导出</Button>
+    <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">{{
+      $t('download')
+    }}</Button>
     <Table
       size="small"
       :columns="tableColumns"

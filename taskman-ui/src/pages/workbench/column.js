@@ -4,7 +4,7 @@ export default {
     return {
       baseColumn: {
         id: {
-          title: '请求ID',
+          title: this.$t('request_id'),
           width: 140,
           key: 'id',
           render: (h, params) => {
@@ -21,7 +21,7 @@ export default {
           }
         },
         name: {
-          title: '请求名称',
+          title: this.$t('request_name'),
           sortable: 'custom',
           minWidth: 250,
           key: 'name',
@@ -39,7 +39,7 @@ export default {
           }
         },
         status: {
-          title: '请求状态',
+          title: this.$t('tw_request_status'),
           sortable: 'custom',
           key: 'status',
           minWidth: 130,
@@ -60,7 +60,7 @@ export default {
                 <Tag color={item.color}>
                   {// 已处理请求定版的草稿添加被退回说明
                     this.tabName === 'hasProcessed' && this.type === '1' && params.row.status === 'Draft'
-                      ? `${item.label}(被退回)`
+                      ? `${item.label}(${this.$t('tw_returned_tips')})`
                       : item.label}
                 </Tag>
               )
@@ -68,22 +68,22 @@ export default {
           }
         },
         curNode: {
-          title: '当前节点',
+          title: this.$t('tw_cur_tag'),
           minWidth: 120,
           key: 'curNode',
           render: (h, params) => {
             const map = {
-              waitCommit: '等待提交',
-              sendRequest: '提起请求',
-              requestPending: '请求定版',
-              requestComplete: '请求完成',
-              Completed: '请求完成'
+              waitCommit: this.$t('tw_wait_commit'),
+              sendRequest: this.$t('tw_commit_request'),
+              requestPending: this.$t('tw_request_pending'),
+              requestComplete: this.$t('tw_request_complete'),
+              Completed: this.$t('tw_request_complete')
             }
             return <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
           }
         },
         handler: {
-          title: '当前处理人',
+          title: this.$t('tw_cur_handler'),
           minWidth: 140,
           key: 'handler',
           render: (h, params) => {
@@ -96,7 +96,7 @@ export default {
           }
         },
         progress: {
-          title: '进展',
+          title: this.$t('tw_progress'),
           width: 120,
           key: 'progress',
           render: (h, params) => {
@@ -109,7 +109,7 @@ export default {
         },
         effectiveDays: {
           renderHeader: () => {
-            return <span>{this.type === '2' ? '任务停留时长' : '请求停留时长'}</span>
+            return <span>{this.type === '2' ? this.$t('tw_task_stay_time') : this.$t('tw_request_stay_time')}</span>
           },
           minWidth: 140,
           key: 'effectiveDays',
@@ -119,33 +119,33 @@ export default {
             const color = percent > 50 ? (percent > 80 ? '#bd3124' : '#ffbf6b') : '#81b337'
             return (
               <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>
-                <span>{`${diff}日/${params.row.effectiveDays}日`}</span>
+                <span>{`${diff}${this.$t('tw_days')}/${params.row.effectiveDays}${this.$t('tw_days')}`}</span>
               </Progress>
             )
           }
         },
         templateName: {
-          title: '使用模板',
+          title: this.$t('tw_use_template'),
           sortable: 'custom',
           minWidth: 200,
           key: 'templateName',
           render: (h, params) => {
             return (
               <span>
-                {params.row.templateName}
-                <Tag>{params.row.version}</Tag>
+                {`${params.row.templateName}【${params.row.version}】`}
+                {/* <Tag>{params.row.version}</Tag> */}
               </span>
             )
           }
         },
         procDefName: {
-          title: '使用编排',
+          title: this.$t('tw_template_flow'),
           sortable: 'custom',
           minWidth: 150,
           key: 'procDefName'
         },
         operatorObjType: {
-          title: '操作对象类型',
+          title: this.$t('tw_operator_type'),
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
@@ -155,14 +155,14 @@ export default {
           }
         },
         operatorObj: {
-          title: '操作对象',
+          title: this.$t('tw_operator'),
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
           key: 'operatorObj'
         },
         createdBy: {
-          title: '创建人',
+          title: this.$t('createdBy'),
           sortable: 'custom',
           minWidth: 140,
           key: 'createdBy',
@@ -192,7 +192,8 @@ export default {
                     }}
                     style="margin-right:5px;"
                   >
-                    查看
+                    {// 查看
+                      this.$t('tw_action_view')}
                   </Button>
                 )}
                 {this.username === params.row.handler &&
@@ -205,7 +206,8 @@ export default {
                       this.handleEdit(params.row)
                     }}
                   >
-                      处理
+                    {// 处理
+                      this.$t('tw_action_handle')}
                   </Button>
                 )}
                 {!params.row.handler &&
@@ -218,7 +220,8 @@ export default {
                       this.handleTransfer(params.row, 'mark')
                     }}
                   >
-                      认领
+                    {// 认领
+                      this.$t('tw_action_claim')}
                   </Button>
                 )}
                 {params.row.handler &&
@@ -232,7 +235,8 @@ export default {
                       this.handleTransfer(params.row, 'give')
                     }}
                   >
-                      转给我
+                    {// 转给我
+                      this.$t('tw_action_give')}
                   </Button>
                 )}
                 {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
@@ -243,7 +247,8 @@ export default {
                       this.handleRepub(params.row)
                     }}
                   >
-                    重新发起
+                    {// 重新发起
+                      this.$t('tw_action_relaunch')}
                   </Button>
                 )}
                 {params.row.status === 'Pending' && this.tabName === 'submit' && (
@@ -254,7 +259,8 @@ export default {
                       this.handleRecall(params.row)
                     }}
                   >
-                    撤回
+                    {// 撤回
+                      this.$t('tw_recall')}
                   </Button>
                 )}
                 {params.row.status === 'Draft' && (
@@ -266,7 +272,8 @@ export default {
                     }}
                     style="margin-right:5px;"
                   >
-                    {this.tabName === 'submit' ? '重新发起' : '去发起'}
+                    {// 去发起
+                      this.tabName === 'submit' ? this.$t('tw_action_relaunch') : this.$t('tw_action_launch')}
                   </Button>
                 )}
                 {this.tabName === 'draft' && (
@@ -277,7 +284,8 @@ export default {
                       this.handleDeleteDraft(params.row)
                     }}
                   >
-                    删除
+                    {// 删除
+                      this.$t('delete')}
                   </Button>
                 )}
               </div>
@@ -300,7 +308,7 @@ export default {
     this.pendingTaskColumn = [
       this.baseColumn.id,
       {
-        title: '任务名称',
+        title: this.$t('task_name'),
         sortable: 'custom',
         minWidth: 120,
         key: 'taskName',
@@ -324,13 +332,13 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '任务提交时间',
+        title: this.$t('tw_task_commit_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: '任务期望完成时间',
+        title: this.$t('tw_task_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
@@ -353,13 +361,13 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '任务提交时间',
+        title: this.$t('tw_task_commit_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
       },
       {
-        title: '请求期望完成时间',
+        title: this.$t('tw_request_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'expectTime'
@@ -376,7 +384,7 @@ export default {
     this.hasProcessedTaskColumn = [
       this.baseColumn.id,
       {
-        title: '任务名称',
+        title: this.$t('task_name'),
         sortable: 'custom',
         minWidth: 120,
         key: 'taskName',
@@ -400,13 +408,13 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '任务提交时间',
+        title: this.$t('tw_task_commit_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: '任务期望完成时间',
+        title: this.$t('tw_task_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
@@ -417,7 +425,7 @@ export default {
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
       {
-        title: '处理时间',
+        title: this.$t('handle_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskApprovalTime'
@@ -435,20 +443,20 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '任务提交时间',
+        title: this.$t('tw_task_commit_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
       },
       {
-        title: '请求期望完成时间',
+        title: this.$t('tw_request_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'expectTime'
       },
       this.baseColumn.createdBy,
       {
-        title: '退回原因',
+        title: this.$t('tw_rollback_reason'),
         sortable: 'custom',
         minWidth: 150,
         key: 'rollbackDesc'
@@ -458,7 +466,7 @@ export default {
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
       {
-        title: '处理时间',
+        title: this.$t('handle_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'approvalTime'
@@ -476,13 +484,13 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '期望完成时间',
+        title: this.$t('tw_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'expectTime'
       },
       {
-        title: '退回原因',
+        title: this.$t('tw_rollback_reason'),
         sortable: 'custom',
         minWidth: 150,
         key: 'rollbackDesc'
@@ -493,7 +501,7 @@ export default {
       this.baseColumn.operatorObj,
       this.baseColumn.createdBy,
       {
-        title: '请求提交时间',
+        title: this.$t('tw_request_commit_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
@@ -511,7 +519,7 @@ export default {
       this.baseColumn.progress,
       this.baseColumn.effectiveDays,
       {
-        title: '期望完成时间',
+        title: this.$t('tw_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'expectTime'
@@ -522,7 +530,7 @@ export default {
       this.baseColumn.operatorObj,
       this.baseColumn.createdBy,
       {
-        title: '请求提交时间',
+        title: this.$t('tw_request_commit_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'reportTime'
@@ -541,7 +549,7 @@ export default {
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
       {
-        title: '定版处理人',
+        title: this.$t('tw_pending_handler'),
         sortable: 'custom',
         minWidth: 140,
         key: 'handler',
@@ -556,19 +564,19 @@ export default {
       },
       this.baseColumn.createdBy,
       {
-        title: '创建时间',
+        title: this.$t('tw_created_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'createdTime'
       },
       {
-        title: '更新时间',
+        title: this.$t('tw_update_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'updatedTime'
       },
       {
-        title: '期望完成时间',
+        title: this.$t('tw_expect_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'expectTime'

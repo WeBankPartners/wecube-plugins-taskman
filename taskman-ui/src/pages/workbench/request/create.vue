@@ -512,7 +512,7 @@ export default {
         this.requestId = data.id
         this.templateName = data.requestTemplateName
         this.version = data.templateVersion
-        this.form.name = data.name
+        this.form.name = (data.name && data.name.substr(0, 50)) || ''
         this.form.expectTime = dayjs()
           .add(data.expireDay || 0, 'day')
           .format('YYYY-MM-DD HH:mm:ss')
@@ -641,6 +641,10 @@ export default {
     },
     // 保存草稿
     async handleDraft (noJump) {
+      if (!this.form.name) {
+        this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
+        return
+      }
       if (!this.form.rootEntityId) {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
@@ -876,7 +880,8 @@ export default {
       }
     }
     .btn-group {
-      text-align: right;
+      display: flex;
+      justify-content: flex-end;
     }
   }
   .content {

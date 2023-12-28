@@ -5,17 +5,17 @@ export default {
       baseSearch: {
         id: {
           key: 'id',
-          placeholder: '请求ID',
+          placeholder: this.$t('tw_request_id'),
           component: 'input'
         },
         name: {
           key: 'name',
-          placeholder: '请求名称',
+          placeholder: this.$t('request_name'),
           component: 'input'
         },
         status: {
           key: 'status',
-          placeholder: '请求状态',
+          placeholder: this.$t('tw_request_status'),
           component: 'select',
           multiple: true,
           list: [
@@ -31,28 +31,28 @@ export default {
         },
         createdBy: {
           key: 'createdBy',
-          placeholder: '创建人',
+          placeholder: this.$t('createdBy'),
           component: 'select',
           multiple: true,
           list: []
         },
         templateId: {
           key: 'templateId',
-          placeholder: '使用模板',
+          placeholder: this.$t('tw_use_template'),
           multiple: true,
           component: 'select',
           list: []
         },
         procDefName: {
           key: 'procDefName',
-          placeholder: '使用编排',
+          placeholder: this.$t('tw_template_flow'),
           multiple: true,
           component: 'select',
           list: []
         },
         operatorObjType: {
           key: 'operatorObjType',
-          placeholder: '操作对象类型',
+          placeholder: this.$t('tw_operator_type'),
           multiple: true,
           component: 'select',
           list: []
@@ -80,7 +80,7 @@ export default {
       this.baseSearch.id,
       {
         key: 'taskName',
-        placeholder: '任务名称',
+        placeholder: this.$t('task_name'),
         component: 'input'
       },
       this.baseSearch.name,
@@ -91,14 +91,14 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'taskExpectTime',
-        label: '任务期望完成时间',
+        label: this.$t('tw_task_expect_time'),
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'taskReportTime',
-        label: '任务提交时间',
+        label: this.$t('tw_task_commit_time'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
@@ -117,14 +117,14 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'expectTime',
-        label: '请求期望完成时间',
+        label: this.$t('tw_request_expect_time'),
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
-        label: '任务提交时间',
+        label: this.$t('tw_task_commit_time'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
@@ -137,7 +137,7 @@ export default {
       this.baseSearch.id,
       {
         key: 'taskName',
-        placeholder: '任务名称',
+        placeholder: this.$t('task_name'),
         component: 'input'
       },
       this.baseSearch.name,
@@ -148,21 +148,21 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'taskExpectTime',
-        label: '任务期望完成时间',
+        label: this.$t('tw_task_expect_time'),
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'taskReportTime',
-        label: '任务提交时间',
+        label: this.$t('tw_task_commit_time'),
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'taskApprovalTime',
-        label: '处理时间',
+        label: this.$t('handle_time'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 85,
@@ -181,21 +181,21 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'expectTime',
-        label: '请求期望完成时间',
+        label: this.$t('tw_request_expect_time'),
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
-        label: '任务提交时间',
+        label: this.$t('tw_task_commit_time'),
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'approvalTime',
-        label: '处理时间',
+        label: this.$t('handle_time'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 85,
@@ -214,14 +214,14 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'expectTime',
-        label: '期望完成时间',
+        label: this.$t('tw_expect_time'),
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'reportTime',
-        label: '请求提交时间',
+        label: this.$t('tw_request_commit_time'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
@@ -240,14 +240,14 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'createdTime',
-        label: '创建时间',
+        label: this.$t('tw_created_time'),
         dateType: 4,
         labelWidth: 85,
         component: 'custom-time'
       },
       {
         key: 'updatedTime',
-        label: '更新时间',
+        label: this.$t('tw_update_time'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 85,
@@ -255,7 +255,7 @@ export default {
       },
       {
         key: 'expectTime',
-        label: '期望完成时间',
+        label: this.$t('tw_expect_time'),
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'

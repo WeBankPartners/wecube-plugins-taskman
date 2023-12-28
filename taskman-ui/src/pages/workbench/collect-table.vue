@@ -55,73 +55,73 @@ export default {
       searchOptions: [
         {
           key: 'id',
-          placeholder: '模板ID',
+          placeholder: this.$t('tw_template_id'),
           component: 'input'
         },
         {
           key: 'name',
-          placeholder: '模板名称',
+          placeholder: this.$t('tw_template_name'),
           component: 'input'
         },
         {
           key: 'templateGroupId',
-          placeholder: '模板组',
+          placeholder: this.$t('tm_template_group'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'operatorObjType',
-          placeholder: '操作对象类型',
+          placeholder: this.$t('tw_operator_type'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'procDefName',
-          placeholder: '使用编排',
+          placeholder: this.$t('tw_template_flow'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'manageRole',
-          placeholder: '属主角色',
+          placeholder: this.$t('tw_template_owner_role'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'owner',
-          placeholder: '属主',
+          placeholder: this.$t('tw_template_owner'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'useRole',
-          placeholder: '使用角色',
+          placeholder: this.$t('useRoles'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'tags',
-          placeholder: '标签',
+          placeholder: this.$t('tags'),
           multiple: true,
           component: 'select',
           list: []
         },
         {
           key: 'createdTime',
-          label: '创建时间',
+          label: this.$t('tw_created_time'),
           dateType: 4,
           labelWidth: 85,
           component: 'custom-time'
         },
         {
           key: 'updatedTime',
-          label: '更新时间',
+          label: this.$t('tw_update_time'),
           dateType: 4,
           labelWidth: 85,
           component: 'custom-time'
@@ -129,36 +129,36 @@ export default {
       ],
       tableColumns: [
         {
-          title: '模板ID',
+          title: this.$t('tw_template_id'),
           minWidth: 150,
           key: 'parentId'
         },
         {
-          title: '模板名称',
+          title: this.$t('tw_template_name'),
           width: 200,
           key: 'name',
           render: (h, params) => {
             return (
               <span>
-                {params.row.name}
-                <Tag>{params.row.version}</Tag>
+                {`${params.row.name}【${params.row.version}】`}
+                {/* <Tag>{params.row.version}</Tag> */}
               </span>
             )
           }
         },
         {
-          title: '模板组',
+          title: this.$t('tm_template_group'),
           sortable: 'custom',
           minWidth: 120,
           key: 'templateGroup'
         },
         {
-          title: '使用编排',
+          title: this.$t('tw_template_flow'),
           minWidth: 180,
           key: 'procDefName'
         },
         {
-          title: '操作对象类型',
+          title: this.$t('tw_operator_type'),
           resizable: true,
           sortable: 'custom',
           minWidth: 140,
@@ -168,39 +168,39 @@ export default {
           }
         },
         {
-          title: '模板状态',
+          title: this.$t('tw_template_status'),
           minWidth: 120,
           key: 'status',
           render: (h, params) => {
             const list = [
-              { label: '可使用', value: 1, color: '#19be6b' },
-              { label: '已禁用', value: 2, color: '#c5c8ce' },
-              { label: '权限被移除', value: 3, color: '#ed4014' }
+              { label: this.$t('tw_template_status_use'), value: 1, color: '#19be6b' },
+              { label: this.$t('tw_template_status_disable'), value: 2, color: '#c5c8ce' },
+              { label: this.$t('tw_template_status_role'), value: 3, color: '#ed4014' }
             ]
             const item = list.find(i => i.value === params.row.status)
             return item && <Tag color={item.color}>{item.label}</Tag>
           }
         },
         {
-          title: '属主角色',
+          title: this.$t('tw_template_owner_role'),
           sortable: 'custom',
           key: 'manageRole',
           minWidth: 130
         },
         {
-          title: '属主',
+          title: this.$t('tw_template_owner'),
           sortable: 'custom',
           minWidth: 120,
           key: 'owner'
         },
         {
-          title: '使用角色',
+          title: this.$t('useRoles'),
           sortable: 'custom',
           minWidth: 130,
           key: 'useRole'
         },
         {
-          title: '标签',
+          title: this.$t('tags'),
           minWidth: 130,
           key: 'tags',
           render: (h, params) => {
@@ -208,7 +208,7 @@ export default {
           }
         },
         {
-          title: '人工任务',
+          title: this.$t('tw_human_task'),
           minWidth: 160,
           key: 'workNode',
           render: (h, params) => {
@@ -221,13 +221,13 @@ export default {
           }
         },
         {
-          title: '创建时间',
+          title: this.$t('tw_created_time'),
           sortable: 'custom',
           minWidth: 150,
           key: 'createdTime'
         },
         {
-          title: '更新时间',
+          title: this.$t('tw_update_time'),
           sortable: 'custom',
           minWidth: 150,
           key: 'updatedTime'
@@ -251,7 +251,7 @@ export default {
                   class={disableClass}
                   style="margin-right: 5px"
                 >
-                  发起
+                  {this.$t('tw_launch')}
                 </Button>
                 <Button
                   type="warning"
@@ -260,7 +260,7 @@ export default {
                     this.handleUnStar(params.row)
                   }}
                 >
-                  取消收藏
+                  {this.$t('tw_uncollec_tooltip')}
                 </Button>
               </div>
             )
@@ -416,15 +416,17 @@ export default {
     },
     // 发起
     hanldeCreate (row) {
+      // 模板禁用提示
       if (row.status === 2) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: '该模板已禁用'
+          desc: this.$t('tw_template_disable_tips')
         })
+        // 模板权限移除提示
       } else if (row.status === 3) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: '该模板使用权限已移除'
+          desc: this.$t('tw_template_role_tips')
         })
       }
       const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
@@ -444,7 +446,7 @@ export default {
     // 取消收藏
     handleUnStar (row) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + '取消收藏',
+        title: this.$t('confirm') + this.$t('tw_uncollec_tooltip'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

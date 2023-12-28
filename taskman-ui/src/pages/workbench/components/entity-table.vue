@@ -265,7 +265,10 @@ export default {
       // table数据初始化
       this.tableData = data.value.map(v => {
         this.refKeys.forEach(rfk => {
-          v.entityData[rfk + 'Options'] = []
+          // 缓存RefOptions数据，不需要每次调用
+          if (!(v.entityData[rfk + 'Options'] && v.entityData[rfk + 'Options'].length > 0)) {
+            v.entityData[rfk + 'Options'] = []
+          }
         })
         if (!v.entityData._id) {
           v.entityData._id = v.id
@@ -275,8 +278,10 @@ export default {
       // 下拉类型数据初始化(待优化，调用接口太多)
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
-          const titleObj = data.title.find(f => f.name === rfk)
-          this.getRefOptions(titleObj, row, index)
+          if (!(row[rfk + 'Options'] && row[rfk + 'Options'].length > 0)) {
+            const titleObj = data.title.find(f => f.name === rfk)
+            this.getRefOptions(titleObj, row, index)
+          }
         })
       })
     },
@@ -407,6 +412,10 @@ export default {
     handleViewRow (row) {
       this.viewDisabled = true
       this.editVisible = true
+      // 当前选择tab数据
+      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+      // 编辑表单的options配置
+      this.editOptions = data.title
       this.editData = deepClone(row)
     },
     // 给勾选的表格数据设置_checked属性

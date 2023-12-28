@@ -477,6 +477,16 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 			if platformDataObj.ProcInstanceId != "" {
 				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken)
 			}
+			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
+				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken)
+				if newStatus == "InternallyTerminated" {
+					newStatus = "Termination"
+				}
+				if newStatus != "" && newStatus != platformDataObj.Status {
+					actions = append(actions, &execAction{Sql: "update request set status=? where id=?", Param: []interface{}{newStatus, platformDataObj.Id}})
+					platformDataObj.Status = newStatus
+				}
+			}
 			if collectMap[platformDataObj.ParentId] {
 				platformDataObj.CollectFlag = 1
 			}

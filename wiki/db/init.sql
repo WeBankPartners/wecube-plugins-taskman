@@ -315,7 +315,7 @@ alter table request_template add column operator_obj_type varchar(255) default n
 alter table request_template add column parent_id varchar(64) default null DEFAULT NULL COMMENT '父类ID';
 
 alter table task add column template_type tinyint  NOT NULL DEFAULT 0 COMMENT '模板类型:0表示请求 1表示发布';
-alter table form_item_template add column  default_clear  varchar(16) default 'no' not null COMMENT '是否清空'
+
 
 DROP TABLE IF EXISTS `collect_template`;
 CREATE TABLE `collect_template` (
@@ -332,3 +332,7 @@ CREATE TABLE `collect_template` (
   CONSTRAINT `fore_collect_request_template` FOREIGN KEY (`request_template`) REFERENCES `request_template` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏模板';
 #@v0.1.3.13-end@;
+
+#@v0.1.3.14-begin@;
+alter table form_item_template add column  default_clear  varchar(16) default 'no' not null COMMENT '是否清空';
+#@v0.1.3.14-end@;

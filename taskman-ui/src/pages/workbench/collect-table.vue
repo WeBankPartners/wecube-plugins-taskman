@@ -164,7 +164,13 @@ export default {
           minWidth: 140,
           key: 'operatorObjType',
           render: (h, params) => {
-            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+            return (
+              params.row.operatorObjType && (
+                <Tooltip content={params.row.operatorObjType} placement="top">
+                  <Tag>{params.row.operatorObjType}</Tag>
+                </Tooltip>
+              )
+            )
           }
         },
         {
@@ -204,7 +210,13 @@ export default {
           minWidth: 130,
           key: 'tags',
           render: (h, params) => {
-            return params.row.tags && <Tag>{params.row.tags}</Tag>
+            return (
+              params.row.tags && (
+                <Tooltip content={params.row.tags} placement="top">
+                  <Tag>{params.row.tags}</Tag>
+                </Tooltip>
+              )
+            )
           }
         },
         {

@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import { Tooltip } from 'view-design'
 export default {
   data () {
     return {
@@ -55,14 +56,16 @@ export default {
               { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
             ]
             const item = list.find(i => i.value === params.row.status)
+            // 已处理请求定版的草稿添加被退回说明
+            const tagName =
+              this.tabName === 'hasProcessed' && this.type === '1' && params.row.status === 'Draft'
+                ? `${item.label}(${this.$t('tw_returned_tips')})`
+                : item.label
             return (
               item && (
-                <Tag color={item.color}>
-                  {// 已处理请求定版的草稿添加被退回说明
-                    this.tabName === 'hasProcessed' && this.type === '1' && params.row.status === 'Draft'
-                      ? `${item.label}(${this.$t('tw_returned_tips')})`
-                      : item.label}
-                </Tag>
+                <Tooltip content={tagName} placement="top">
+                  <Tag color={item.color}>{tagName}</Tag>
+                </Tooltip>
               )
             )
           }
@@ -71,6 +74,7 @@ export default {
           title: this.$t('tw_cur_tag'),
           minWidth: 120,
           key: 'curNode',
+          tooltip: true,
           render: (h, params) => {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
@@ -79,7 +83,11 @@ export default {
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
             }
-            return <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
+            return (
+              <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
+                <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
+              </Tooltip>
+            )
           }
         },
         handler: {
@@ -151,7 +159,13 @@ export default {
           minWidth: 150,
           key: 'operatorObjType',
           render: (h, params) => {
-            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+            return (
+              params.row.operatorObjType && (
+                <Tooltip content={params.row.operatorObjType} placement="top">
+                  <Tag>{params.row.operatorObjType}</Tag>
+                </Tooltip>
+              )
+            )
           }
         },
         operatorObj: {

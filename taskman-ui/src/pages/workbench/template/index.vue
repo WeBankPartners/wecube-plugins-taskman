@@ -84,7 +84,7 @@
       <div class="list">
         <Card style="width:520px;min-height:600px;">
           <div class="w-header">
-            {{ $t('tw_my_collect') }} <span>{{ collectList.length }}</span>
+            {{ $t('tw_my_collect') }} <span>{{ collectList.length || 0 }}</span>
           </div>
           <Table
             style="margin:20px 0;"

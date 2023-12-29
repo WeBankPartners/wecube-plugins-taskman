@@ -260,6 +260,7 @@
                   </div>
                   <div slot="content" style="padding:20px 0px;">
                     <EntityTable
+                      ref="entityTable"
                       :data="handleData.formData"
                       :requestId="requestId"
                       :formDisable="!handleData.editable || enforceDisable"
@@ -677,7 +678,7 @@ export default {
       const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
       this.form.entityName = item.key_name
       // 必填项校验提示
-      if (!this.requiredCheck()) {
+      if (!this.requiredCheck(this.form.data)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
           desc: this.$t('required_tip')
@@ -685,10 +686,10 @@ export default {
       }
       // 表格至少勾选一条数据校验
       const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck()) {
+      if (!this.noChooseCheck(this.form.data)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: `【${tabName}】该表单未勾选数据，请至少勾选一条数据`
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
         })
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
@@ -720,10 +721,10 @@ export default {
       })
     },
     // 校验表格数据必填项
-    requiredCheck () {
+    requiredCheck (data) {
       let tabIndex = ''
       let result = true
-      this.form.data.forEach((requestData, index) => {
+      data.forEach((requestData, index) => {
         let requiredName = []
         requestData.title.forEach(t => {
           if (t.required === 'yes') {
@@ -754,11 +755,10 @@ export default {
       this.$refs.entityTable.validTable(tabIndex)
       return result
     },
-    // 没有勾选数据校验
-    noChooseCheck () {
+    noChooseCheck (data) {
       let tabIndex = ''
       let result = true
-      this.form.data.forEach((requestData, index) => {
+      data.forEach((requestData, index) => {
         if (requestData.value && requestData.value.length === 0) {
           tabIndex = index
           result = false
@@ -769,29 +769,95 @@ export default {
     },
     // 任务审批保存
     async saveTaskData () {
-      // const taskData = this.historyData.find(d => d.editable === true)
-      const taskData = this.handleData
-      const result = this.paramsCheck(taskData)
-      if (result) {
-        const { statusCode } = await saveTaskData(taskData.taskId, taskData)
-        if (statusCode === 'OK') {
-          this.$Notice.success({
-            title: this.$t('successful'),
-            desc: this.$t('successful')
+      // 提取表格勾选的数据
+      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
+      this.handleData.formData =
+        requestData.map(item => {
+          let refKeys = []
+          item.title.forEach(t => {
+            if (t.elementType === 'select') {
+              refKeys.push(t.name)
+            }
           })
-        }
-      } else {
-        this.$Notice.warning({
+          if (Array.isArray(item.value)) {
+            item.value = item.value.filter(j => {
+              return j.entityData._checked
+            })
+            // 删除多余的属性
+            item.value.forEach(v => {
+              delete v.entityData._checked
+              refKeys.forEach(ref => {
+                delete v.entityData[ref + 'Options']
+              })
+            })
+          }
+          return item
+        }) || []
+      // 必填项校验提示
+      if (!this.requiredCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
           title: this.$t('warning'),
           desc: this.$t('required_tip')
+        })
+      }
+      // 表格至少勾选一条数据校验
+      const tabName = this.$refs.entityTable.activeTab
+      if (!this.noChooseCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
+      const { statusCode } = await saveTaskData(this.handleData.taskId, this.handleData)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
         })
       }
     },
     // 任务审批提交
     async commitTaskData () {
-      // const taskData = this.historyData.find(d => d.editable === true)
-      const taskData = this.handleData
-      const { statusCode } = await commitTaskData(taskData.taskId, taskData)
+      // 提取表格勾选的数据
+      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
+      this.handleData.formData =
+        requestData.map(item => {
+          let refKeys = []
+          item.title.forEach(t => {
+            if (t.elementType === 'select') {
+              refKeys.push(t.name)
+            }
+          })
+          if (Array.isArray(item.value)) {
+            item.value = item.value.filter(j => {
+              return j.entityData._checked
+            })
+            // 删除多余的属性
+            item.value.forEach(v => {
+              delete v.entityData._checked
+              refKeys.forEach(ref => {
+                delete v.entityData[ref + 'Options']
+              })
+            })
+          }
+          return item
+        }) || []
+      // 必填项校验提示
+      if (!this.requiredCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
+      // 表格至少勾选一条数据校验
+      const tabName = this.$refs.entityTable.activeTab
+      if (!this.noChooseCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
+      const { statusCode } = await commitTaskData(this.handleData.taskId, this.handleData)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -799,32 +865,6 @@ export default {
         })
         this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
       }
-    },
-    paramsCheck (taskData) {
-      let result = true
-      taskData.formData.forEach(requestData => {
-        let requiredName = []
-        requestData.title.forEach(t => {
-          if (t.required === 'yes') {
-            requiredName.push(t.name)
-          }
-        })
-        requestData.value.forEach(v => {
-          requiredName.forEach(key => {
-            let val = v.entityData[key]
-            if (Array.isArray(val)) {
-              if (val.length === 0) {
-                result = false
-              }
-            } else {
-              if (val === '') {
-                result = false
-              }
-            }
-          })
-        })
-      })
-      return result
     },
     // 撤回
     async handleRecall () {

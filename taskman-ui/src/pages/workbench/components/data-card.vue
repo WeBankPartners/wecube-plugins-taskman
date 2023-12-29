@@ -4,7 +4,7 @@
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
           <img :src="i.icon" />
-          <span>{{ `${i.label}(${i.total || ''})` }}</span>
+          <span>{{ `${i.label}(${i.total || 0})` }}</span>
         </div>
         <div class="data">
           <div

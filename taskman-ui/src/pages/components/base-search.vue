@@ -27,7 +27,7 @@
               :multiple="i.multiple || false"
               :filterable="i.filterable || true"
               :max-tag-count="1"
-              :style="{ width: i.width || 210 + 'px' }"
+              :style="{ width: i.width || 200 + 'px' }"
             >
               <template v-for="(j, idx) in i.list">
                 <Option :key="idx" :value="j.value">{{ j.label }}</Option>
@@ -43,7 +43,7 @@
               :multiple="i.multiple || false"
               :filterable="i.filterable || true"
               :max-tag-count="1"
-              :style="{ width: i.width || 210 + 'px' }"
+              :style="{ width: i.width || 200 + 'px' }"
             >
               <template v-for="(j, idx) in i.list">
                 <Option :key="idx" :value="j.value">{{ j.label }}</Option>

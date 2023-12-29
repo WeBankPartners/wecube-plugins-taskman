@@ -127,6 +127,11 @@ export default {
       username: window.localStorage.getItem('username')
     }
   },
+  watch: {
+    actionName () {
+      this.getFilterOptions()
+    }
+  },
   mounted () {
     this.initTab = this.$route.query.tabName || 'pending'
     this.initAction = this.$route.query.actionName || '1'

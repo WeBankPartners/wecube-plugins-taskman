@@ -247,7 +247,7 @@ export default {
     color: #2d8cf0;
   }
   .ivu-select-multiple .ivu-tag {
-    max-width: 102px;
+    max-width: 92px;
   }
   .form {
     flex: 1;

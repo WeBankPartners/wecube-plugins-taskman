@@ -41,6 +41,7 @@ export default {
     return {
       activeTab: 'commit',
       tabName: 'submit',
+      actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
       form: {
         name: '', // 请求名
         id: '',
@@ -103,7 +104,7 @@ export default {
       })
       const params = {
         tab: this.activeTab,
-        action: 1,
+        action: Number(this.actionName),
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize

@@ -283,14 +283,37 @@ export default {
                   }
                 })
             } else if (key === 'templateId') {
-              this.baseSearch[key].list =
-                data.templateList &&
-                data.templateList.map(item => {
-                  return {
-                    label: item.templateName,
-                    value: item.templateId
-                  }
-                })
+              // 获取发布模板
+              if (this.actionName === '1') {
+                this.baseSearch[key].list =
+                  data.releaseTemplateList &&
+                  data.releaseTemplateList.map(item => {
+                    return {
+                      label: item.templateName,
+                      value: item.templateId
+                    }
+                  })
+                // 获取请求模板
+              } else if (this.actionName === '2') {
+                this.baseSearch[key].list =
+                  data.requestTemplateList &&
+                  data.requestTemplateList.map(item => {
+                    return {
+                      label: item.templateName,
+                      value: item.templateId
+                    }
+                  })
+                // 获取全部模板
+              } else {
+                this.baseSearch[key].list =
+                  data.templateList &&
+                  data.templateList.map(item => {
+                    return {
+                      label: item.templateName,
+                      value: item.templateId
+                    }
+                  })
+              }
             } else if (key === 'procDefName') {
               this.baseSearch[key].list =
                 data.procDefNameList &&

@@ -26,9 +26,11 @@
 import { getRefOptions } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import EditDrawer from './edit-entity-item.vue'
+import limitSelect from '@/pages/components/limit-select.vue'
 export default {
   components: {
-    EditDrawer
+    EditDrawer,
+    limitSelect
   },
   props: {
     data: {
@@ -203,24 +205,42 @@ export default {
                 {t.name === 'deploy_package' && t.required === 'yes' && params.row[t.name] && (
                   <Icon size="24" color="#19be6b" type="md-apps" />
                 )}
-                <Select
-                  value={params.row[t.name]}
-                  on-on-change={v => {
-                    this.tableData[params.row._index][t.name] = v
-                    this.refreshRequestData()
-                  }}
-                  filterable
-                  clearable
-                  multiple={t.multiple === 'Y'}
-                  disabled={t.isEdit === 'no' || this.formDisable}
-                >
-                  {Array.isArray(params.row[t.name + 'Options']) &&
-                    params.row[t.name + 'Options'].map(i => (
-                      <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
-                        {t.entity ? i.key_name : i}
-                      </Option>
-                    ))}
-                </Select>
+                {
+                  // <limitSelect
+                  //   value={params.row[t.name]}
+                  //   on-on-change={ v => {
+                  //     this.tableData[params.row._index][t.name] = v
+                  //     this.refreshRequestData()
+                  //   }}
+                  //   displayName="key_name"
+                  //   displayValue="guid"
+                  //   objectOption={!!t.entity}
+                  //   options={params.row[t.name + 'Options']}
+                  //   width={250}
+                  //   disabled={t.isEdit === 'no' || this.formDisable}
+                  //   multiple={t.multiple === 'Y'}
+                  // />
+                }
+                {
+                  <Select
+                    value={params.row[t.name]}
+                    on-on-change={v => {
+                      this.tableData[params.row._index][t.name] = v
+                      this.refreshRequestData()
+                    }}
+                    filterable
+                    clearable
+                    multiple={t.multiple === 'Y'}
+                    disabled={t.isEdit === 'no' || this.formDisable}
+                  >
+                    {Array.isArray(params.row[t.name + 'Options']) &&
+                      params.row[t.name + 'Options'].map(i => (
+                        <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
+                          {t.entity ? i.key_name : i}
+                        </Option>
+                      ))}
+                  </Select>
+                }
               </div>
             )
           }

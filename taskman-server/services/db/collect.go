@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -162,7 +163,7 @@ func QueryAllTemplateCollect(user string) (collectMap map[string]bool, err error
 
 func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *models.CollectFilterItem, err error) {
 	data = &models.CollectFilterItem{}
-	var pairList []models.KeyValuePair
+	var pairList []*models.KeyValuePair
 	var rowsData []*models.CollectDataObj
 	var templateGroupMap = make(map[string]string)
 	var operatorObjTypeMap = make(map[string]bool)
@@ -196,15 +197,36 @@ func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *
 		}
 	}
 	for key, value := range templateGroupMap {
-		pairList = append(pairList, models.KeyValuePair{TemplateId: value, TemplateName: key})
+		pairList = append(pairList, &models.KeyValuePair{TemplateId: value, TemplateName: key})
 	}
 	data.TemplateGroupList = pairList
+	if len(data.TemplateGroupList) > 0 {
+		sort.Sort(models.KeyValueSort(data.TemplateGroupList))
+	}
 	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)
+	if len(data.OperatorObjTypeList) > 0 {
+		sort.Strings(data.OperatorObjTypeList)
+	}
 	data.ProcDefNameList = convertMap2Array(procDefNameMap)
+	if len(data.ProcDefNameList) > 0 {
+		sort.Strings(data.ProcDefNameList)
+	}
 	data.OwnerList = convertMap2Array(ownerMap)
+	if len(data.OwnerList) > 0 {
+		sort.Strings(data.OwnerList)
+	}
 	data.TagList = convertMap2Array(tagMap)
+	if len(data.TagList) > 0 {
+		sort.Strings(data.TagList)
+	}
 	data.ManageRoleList = convertMap2Array(manageRoleMap)
+	if len(data.ManageRoleList) > 0 {
+		sort.Strings(data.ManageRoleList)
+	}
 	data.UseRoleList = convertMap2Array(useRoleMap)
+	if len(data.UseRoleList) > 0 {
+		sort.Strings(data.UseRoleList)
+	}
 	return
 }
 

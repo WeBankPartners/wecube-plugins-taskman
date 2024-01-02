@@ -361,18 +361,36 @@ type RequestForm struct {
 }
 
 type FilterItem struct {
-	TemplateList        []KeyValuePair `json:"templateList"`        // 模板列表
-	RequestTemplateList []KeyValuePair `json:"requestTemplateList"` // 请求模板列表
-	ReleaseTemplateList []KeyValuePair `json:"releaseTemplateList"` // 发布模板列表
-	OperatorObjTypeList []string       `json:"operatorObjTypeList"` // 操作对象类型列表
-	ProcDefNameList     []string       `json:"procDefNameList"`     // 使用编排
-	CreatedByList       []string       `json:"createdByList"`       // 创建人列表
-	HandlerList         []string       `json:"handlerList"`         // 处理人列表
+	TemplateList        []*KeyValuePair `json:"templateList"`        // 模板列表
+	RequestTemplateList []*KeyValuePair `json:"requestTemplateList"` // 请求模板列表
+	ReleaseTemplateList []*KeyValuePair `json:"releaseTemplateList"` // 发布模板列表
+	OperatorObjTypeList []string        `json:"operatorObjTypeList"` // 操作对象类型列表
+	ProcDefNameList     []string        `json:"procDefNameList"`     // 使用编排
+	CreatedByList       []string        `json:"createdByList"`       // 创建人列表
+	HandlerList         []string        `json:"handlerList"`         // 处理人列表
 }
 
 type KeyValuePair struct {
 	TemplateId   string `json:"templateId"`   // 使用模板
 	TemplateName string `json:"templateName"` // 使用模板
+}
+
+type KeyValueSort []*KeyValuePair
+
+func (q KeyValueSort) Len() int {
+	return len(q)
+}
+
+func (q KeyValueSort) Less(i, j int) bool {
+	t := strings.Compare(q[i].TemplateName, q[j].TemplateName)
+	if t < 0 {
+		return true
+	}
+	return false
+}
+
+func (q KeyValueSort) Swap(i, j int) {
+	q[i], q[j] = q[j], q[i]
 }
 
 type FilterObj struct {

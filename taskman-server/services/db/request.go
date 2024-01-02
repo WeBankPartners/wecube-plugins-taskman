@@ -650,17 +650,21 @@ func getInstanceStatus(instanceId, userToken string) string {
 }
 
 func getCurNodeName(instanceId, userToken string) (progress int, curNode string) {
+	var total int
 	response, err := getProcessInstances(instanceId, userToken)
 	if err != nil || len(response.Data.TaskNodeInstances) == 0 {
 		return
 	}
-	// 统计完成进度 ,已完成/总数
+	// 统计完成进度 ,已完成/总数, 编号不为空
 	for _, v := range response.Data.TaskNodeInstances {
-		if v.Status == "Completed" {
-			progress++
+		if v.OrderedNo != "" {
+			if v.Status == "Completed" {
+				progress++
+			}
+			total++
 		}
 	}
-	progress = int(float64(progress) / float64(len(response.Data.TaskNodeInstances)) * 100)
+	progress = int(float64(progress) / float64(total) * 100)
 	switch response.Data.Status {
 	case "Completed":
 		curNode = "Completed"
@@ -2200,10 +2204,10 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	parentRequest = requestTable[0]
-	if !strings.Contains(parentRequest.Status, "Faulted") && parentRequest.Status != "Termination" {
+	/*	if !strings.Contains(parentRequest.Status, "Faulted") && parentRequest.Status != "Termination" {
 		err = fmt.Errorf("Only Faulted request can copy ")
 		return
-	}
+	}*/
 	result = *parentRequest
 	var formTable []*models.FormTable
 	err = x.SQL("select * from form where id=?", parentRequest.Form).Find(&formTable)
@@ -2832,10 +2836,10 @@ func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) 
 
 func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, err error) {
 	data = &models.FilterItem{
-		RequestTemplateList: make([]models.KeyValuePair, 0),
-		ReleaseTemplateList: make([]models.KeyValuePair, 0),
+		RequestTemplateList: make([]*models.KeyValuePair, 0),
+		ReleaseTemplateList: make([]*models.KeyValuePair, 0),
 	}
-	var pairList []models.KeyValuePair
+	var pairList []*models.KeyValuePair
 	var dataList []*models.FilterObj
 	var templateMap = make(map[string]*models.FilterObj)
 	var operatorObjTypeMap = make(map[string]bool)
@@ -2863,7 +2867,7 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 		handlerMap[item.Handler] = true
 	}
 	for key, value := range templateMap {
-		m := models.KeyValuePair{TemplateId: value.TemplateId, TemplateName: key}
+		m := &models.KeyValuePair{TemplateId: value.TemplateId, TemplateName: key}
 		pairList = append(pairList, m)
 		if value.TemplateType == 0 {
 			data.RequestTemplateList = append(data.RequestTemplateList, m)
@@ -2872,10 +2876,31 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 		}
 	}
 	data.TemplateList = pairList
+	if len(data.TemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.TemplateList))
+	}
+	if len(data.RequestTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.RequestTemplateList))
+	}
+	if len(data.ReleaseTemplateList) > 0 {
+		sort.Sort(models.KeyValueSort(data.ReleaseTemplateList))
+	}
 	data.OperatorObjTypeList = convertMap2Array(operatorObjTypeMap)
+	if len(data.OperatorObjTypeList) > 0 {
+		sort.Strings(data.OperatorObjTypeList)
+	}
 	data.ProcDefNameList = convertMap2Array(procDefNameMap)
+	if len(data.ProcDefNameList) > 0 {
+		sort.Strings(data.ProcDefNameList)
+	}
 	data.CreatedByList = convertMap2Array(createdByMap)
+	if len(data.CreatedByList) > 0 {
+		sort.Strings(data.CreatedByList)
+	}
 	data.HandlerList = convertMap2Array(handlerMap)
+	if len(data.HandlerList) > 0 {
+		sort.Strings(data.HandlerList)
+	}
 	return
 }
 

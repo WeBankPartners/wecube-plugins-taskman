@@ -198,7 +198,7 @@ export default {
           render: (h, params) => {
             return (
               <div>
-                {['pending', 'hasProcessed', 'submit'].includes(this.tabName) && params.row.status !== 'Draft' && (
+                {['pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
                   <Button
                     size="small"
                     onClick={() => {
@@ -277,7 +277,7 @@ export default {
                       this.$t('tw_recall')}
                   </Button>
                 )}
-                {params.row.status === 'Draft' && (
+                {params.row.status === 'Draft' && this.tabName !== 'hasProcessed' && (
                   <Button
                     type="success"
                     size="small"

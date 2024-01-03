@@ -385,14 +385,13 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isAdd: 'N',
           isCheck: 'Y',
           isHandle: 'N',
           enforceDisable: 'Y',
@@ -406,14 +405,13 @@ export default {
       if (row.status === 'InProgress') {
         await changeTaskStatus('start', row.taskId)
       }
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isAdd: 'N',
           isCheck: 'N',
           isHandle: 'Y',
           enforceDisable: 'N',
@@ -458,9 +456,6 @@ export default {
           query: {
             requestId: data.id,
             requestTemplate: data.requestTemplate,
-            isAdd: 'Y',
-            isCheck: 'N',
-            isHandle: 'N',
             jumpFrom: ''
           }
         })
@@ -496,9 +491,6 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isAdd: 'Y',
-          isCheck: 'N',
-          isHandle: 'N',
           jumpFrom: 'my_drafts'
         }
       })

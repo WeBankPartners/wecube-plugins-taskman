@@ -68,6 +68,11 @@ const implicitRoute = {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
     childBreadcrumb: { 'zh-CN': '新建发布', 'en-US': 'New Publish' }
   },
+  // 发布详情
+  'taskman/workbench/detailPublish': {
+    parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
+    childBreadcrumb: { 'zh-CN': '发布详情', 'en-US': 'Publish Detail' }
+  },
   // 发布历史
   'taskman/workbench/publishHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
@@ -77,6 +82,11 @@ const implicitRoute = {
   'taskman/workbench/createRequest': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
     childBreadcrumb: { 'zh-CN': '新建请求', 'en-US': 'New Request' }
+  },
+  // 请求详情
+  'taskman/workbench/detailRequest': {
+    parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
+    childBreadcrumb: { 'zh-CN': '请求详情', 'en-US': 'Request Detail' }
   },
   // 请求历史
   'taskman/workbench/requestHistory': {

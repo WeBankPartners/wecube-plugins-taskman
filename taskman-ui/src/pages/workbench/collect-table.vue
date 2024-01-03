@@ -448,9 +448,6 @@ export default {
         query: {
           requestTemplate: row.id,
           role: row.manageRole,
-          isAdd: 'Y',
-          isCheck: 'N',
-          isHandle: 'N',
           jumpFrom: ''
         }
       })

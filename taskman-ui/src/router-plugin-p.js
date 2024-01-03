@@ -25,6 +25,11 @@ const routerP = [
     path: '/taskman/workbench/createPublish',
     name: '/taskman/workbench/createPublish'
   },
+  // 新建详情
+  {
+    path: '/taskman/workbench/detailPublish',
+    name: '/taskman/workbench/detailPublish'
+  },
   // 发布历史
   {
     path: '/taskman/workbench/publishHistory',
@@ -34,6 +39,11 @@ const routerP = [
   {
     path: '/taskman/workbench/createRequest',
     name: '/taskman/workbench/createRequest'
+  },
+  // 请求详情
+  {
+    path: '/taskman/workbench/detailRequest',
+    name: '/taskman/workbench/detailRequest'
   },
   // 请求历史
   {

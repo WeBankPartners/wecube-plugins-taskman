@@ -98,7 +98,9 @@ export default {
   watch: {
     value: {
       handler (val) {
-        this.data = val
+        if (val) {
+          this.data = val
+        }
       },
       immediate: true,
       deep: true
@@ -106,30 +108,31 @@ export default {
     options: {
       handler (val) {
         if (val) {
+          // 下拉默认选项值置顶
           let initOptions = deepClone(val)
           if (Array.isArray(this.value)) {
             if (this.objectOption) {
               this.value.forEach(i => {
                 const index = initOptions.findIndex(j => j[this.displayValue] === i)
                 const item = initOptions.splice(index, 1)
-                initOptions.unshift(item)
+                initOptions.unshift(...item)
               })
             } else {
               this.value.forEach(i => {
                 const index = initOptions.findIndex(j => j === i)
                 const item = initOptions.splice(index, 1)
-                initOptions.unshift(item)
+                initOptions.unshift(...item)
               })
             }
           } else {
             if (this.objectOption) {
               const index = initOptions.findIndex(j => j[this.displayValue] === this.value)
               const item = initOptions.splice(index, 1)
-              initOptions.unshift(item)
+              initOptions.unshift(...item)
             } else {
               const index = initOptions.findIndex(j => j === this.value)
               const item = initOptions.splice(index, 1)
-              initOptions.unshift(item)
+              initOptions.unshift(...item)
             }
           }
           this.optionsData = initOptions.slice(0, 1 * this.pageSize)

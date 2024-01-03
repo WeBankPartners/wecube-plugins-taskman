@@ -304,9 +304,6 @@ export default {
         query: {
           requestTemplate: row.id,
           role: role,
-          isAdd: 'Y',
-          isCheck: 'N',
-          isHandle: 'N',
           jumpFrom: ''
         }
       })

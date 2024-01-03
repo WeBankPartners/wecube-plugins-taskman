@@ -206,6 +206,7 @@
   "tw_creatby_role": "创建人角色",
   "tw_use_template": "使用模板",
   "tw_request_des": "请求描述",
+  "tw_upload_10_error": "文件上传失败，请上传大小小于10M的文件",
 
   "tw_handle_history": "处理历史",
   "tw_submit_request": "提交请求",

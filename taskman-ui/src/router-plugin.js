@@ -71,6 +71,12 @@ const router = [
         name: '/taskman/workbench/createPublish',
         component: () => import('@/pages/workbench/publish/create')
       },
+      // 发布详情
+      {
+        path: '/taskman/workbench/detailPublish',
+        name: '/taskman/workbench/detailPublish',
+        component: () => import('@/pages/workbench/publish/detail')
+      },
       // 发布历史
       {
         path: '/taskman/workbench/publishHistory',
@@ -82,6 +88,12 @@ const router = [
         path: '/taskman/workbench/createRequest',
         name: '/taskman/workbench/createRequest',
         component: () => import('@/pages/workbench/request/create')
+      },
+      // 请求详情
+      {
+        path: '/taskman/workbench/detailRequest',
+        name: '/taskman/workbench/detailRequest',
+        component: () => import('@/pages/workbench/request/detail')
       },
       // 请求历史
       {

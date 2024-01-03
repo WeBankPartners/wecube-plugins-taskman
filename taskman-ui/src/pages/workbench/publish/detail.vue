@@ -1,14 +1,14 @@
 <template>
   <div>
-    <BaseCreate actionName="1"></BaseCreate>
+    <BaseDetail actionName="1"></BaseDetail>
   </div>
 </template>
 
 <script>
-import BaseCreate from './components/base-create.vue'
+import BaseDetail from './components/base-detail.vue'
 export default {
   components: {
-    BaseCreate
+    BaseDetail
   }
 }
 </script>

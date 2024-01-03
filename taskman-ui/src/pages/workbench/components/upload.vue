@@ -5,6 +5,8 @@
       :before-upload="handleUpload"
       :show-upload-list="false"
       with-credentials
+      :max-size="10240"
+      :on-exceeded-size="handleMaxSize"
       :headers="headers"
       :on-success="uploadSucess"
       :on-error="uploadFailed"
@@ -155,6 +157,12 @@ export default {
         desc: 'Successful'
       })
       this.attachFiles = item.data
+    },
+    handleMaxSize () {
+      this.$Notice.error({
+        title: 'Error',
+        desc: this.$t('tw_upload_10_error')
+      })
     }
   }
 }

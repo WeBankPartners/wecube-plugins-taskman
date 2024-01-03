@@ -53,6 +53,7 @@ export default {
     return {
       activeTab: 'commit', // commit已提交,draft我暂存草稿,rollback我退回,revoke本人撤回
       tabName: 'submit',
+      rollback: '0', // 0所有,1已退回,2其他,3被撤回
       form: {
         name: '', // 请求名
         id: '',
@@ -85,7 +86,13 @@ export default {
   methods: {
     // 切换类型
     handleChangeTab (val) {
-      if (val === 'commit' || val === 'rollback') {
+      if (val === 'commit') {
+        this.rollback = '0'
+        this.tabName = 'submit'
+        this.tableColumns = deepClone(this.submitAllColumn)
+        this.searchOptions = this.submitSearch
+      } else if (val === 'rollback') {
+        this.rollback = '1'
         this.tabName = 'submit'
         this.tableColumns = deepClone(this.submitAllColumn)
         this.searchOptions = this.submitSearch
@@ -94,6 +101,7 @@ export default {
         this.tableColumns = deepClone(this.draftColumn)
         this.searchOptions = this.draftSearch
       } else if (val === 'revoke') {
+        this.rollback = '3'
         this.tabName = 'submit'
         this.tableColumns = deepClone(this.submitColumn)
         this.searchOptions = this.submitSearch

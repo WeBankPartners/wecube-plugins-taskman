@@ -46,15 +46,15 @@
             <HeaderTitle :title="$t('tw_request_title')">
               <Row :gutter="20">
                 <Col :span="3">{{ $t('request_id') }}：</Col>
-                <Col :span="9">{{ detailInfo.id }}</Col>
+                <Col :span="9">{{ detailInfo.id || '--' }}</Col>
                 <Col :span="3">{{ $t('tw_request_type') }}：</Col>
-                <Col :span="9">{{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detailInfo.requestType] }}</Col>
+                <Col :span="9">{{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detailInfo.requestType] || '--' }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">{{ $t('createdTime') }}：</Col>
-                <Col :span="9">{{ detailInfo.createdTime }}</Col>
+                <Col :span="9">{{ detailInfo.createdTime || '--' }}</Col>
                 <Col :span="3">{{ $t('expected_completion_time') }}：</Col>
-                <Col :span="9">{{ detailInfo.expectTime }}</Col>
+                <Col :span="9">{{ detailInfo.expectTime || '--' }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">{{ $t('tw_request_progress') }}：</Col>
@@ -62,7 +62,7 @@
                   <Progress :percent="detailInfo.progress" style="width:150px;" />
                 </Col>
                 <Col :span="3">{{ $t('tw_request_status') }}：</Col>
-                <Col :span="9">{{ getStatusName(detailInfo.status) }}</Col>
+                <Col :span="9">{{ getStatusName(detailInfo.status) || '--' }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <!--当前节点-->
@@ -73,16 +73,20 @@
                     sendRequest: $t('tw_commit_request'),
                     requestPending: $t('tw_request_pending'),
                     requestComplete: $t('tw_request_complete')
-                  }[detailInfo.curNode] || detailInfo.curNode
+                  }[detailInfo.curNode] ||
+                    detailInfo.curNode ||
+                    '--'
                 }}</Col>
-                <Col :span="3">{{ $t('tw_cur_handler') }}：</Col>
-                <Col :span="9">{{ detailInfo.handler }}</Col>
+                <Col :span="3"
+                  >{{ detailInfo.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：</Col
+                >
+                <Col :span="9">{{ detailInfo.handler || '--' }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">{{ $t('createdBy') }}：</Col>
-                <Col :span="9">{{ detailInfo.createdBy }}</Col>
+                <Col :span="9">{{ detailInfo.createdBy || '--' }}</Col>
                 <Col :span="3">{{ $t('tw_creatby_role') }}：</Col>
-                <Col :span="9">{{ detailInfo.role }}</Col>
+                <Col :span="9">{{ detailInfo.role || '--' }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">{{ $t('tw_use_template') }}：</Col>
@@ -90,11 +94,11 @@
                   >{{ detailInfo.templateName }}<Tag>{{ detailInfo.version }}</Tag></Col
                 >
                 <Col :span="3">{{ $t('tm_template_group') }}：</Col>
-                <Col :span="9">{{ detailInfo.templateGroupName }}</Col>
+                <Col :span="9">{{ detailInfo.templateGroupName || '--' }}</Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <Col :span="3">{{ $t('tw_request_des') }}：</Col>
-                <Col :span="9">{{ detailInfo.description }}</Col>
+                <Col :span="9">{{ detailInfo.description || '--' }}</Col>
               </Row>
             </HeaderTitle>
             <!--处理历史-->

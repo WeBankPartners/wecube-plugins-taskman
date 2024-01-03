@@ -91,7 +91,15 @@ export default {
           }
         },
         handler: {
-          title: this.$t('tw_cur_handler'),
+          renderHeader: () => {
+            return (
+              <span>
+                {this.tabName === 'draft' || (this.tabName === 'submit' && ['1', '3'].includes(this.rollback))
+                  ? this.$t('tw_pending_handler')
+                  : this.$t('tw_cur_handler')}
+              </span>
+            )
+          },
           minWidth: 140,
           key: 'handler',
           render: (h, params) => {
@@ -562,20 +570,7 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
-      {
-        title: this.$t('tw_pending_handler'),
-        sortable: 'custom',
-        minWidth: 140,
-        key: 'handler',
-        render: (h, params) => {
-          return (
-            <div style="display:flex;flex-direction:column">
-              <span>{params.row.handler}</span>
-              <span>{params.row.handleRole}</span>
-            </div>
-          )
-        }
-      },
+      this.baseColumn.handler,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_created_time'),

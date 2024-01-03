@@ -10,6 +10,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/tealeg/xlsx"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -664,7 +665,7 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 			total++
 		}
 	}
-	progress = int(float64(progress) / float64(total) * 100)
+	progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
 	switch response.Data.Status {
 	case "Completed":
 		curNode = "Completed"

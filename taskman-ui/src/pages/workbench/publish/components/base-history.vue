@@ -77,7 +77,6 @@ export default {
     }
   },
   mounted () {
-    console.log('111111111111', this.actionName)
     this.tableColumns = deepClone(this.submitAllColumn)
     this.searchOptions = this.submitSearch
     this.handleReset()
@@ -200,12 +199,20 @@ export default {
       this.pagination.pageSize = val
       this.getList()
     },
+    // 点击名称，id快捷跳转
     handleDbClick (row) {
-      this.hanldeView(row)
+      if (row.status === 'Draft') {
+        this.hanldeLaunch(row)
+      } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
+        this.handleRepub(row)
+      } else {
+        this.hanldeView(row)
+      }
     },
     // 表格操作-查看
     hanldeView (row) {
-      const url = `/taskman/workbench/createPublish`
+      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
@@ -222,7 +229,8 @@ export default {
     async handleRepub (row) {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
-        const url = `/taskman/workbench/createPublish`
+        const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        const url = `/taskman/workbench/${path}`
         this.$router.push({
           path: url,
           query: {
@@ -235,7 +243,8 @@ export default {
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
-      const url = `/taskman/workbench/createPublish`
+      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {

@@ -43,7 +43,7 @@ export default {
             if (flag) {
               binding.value()
             }
-          }, 300)
+          }, 50)
         )
       }
     }
@@ -82,17 +82,18 @@ export default {
     },
     width: {
       type: Number,
-      default: 250
+      default: 220
     }
   },
   data () {
     return {
-      data: '',
-      optionsData: [], // 下拉数据
-      sourceDataFilter: [], // 过滤后数据
+      data: '', // 绑定值
+      optionsData: [], // 当前下拉数据
+      sourceData: [], // 备份原始下拉数据
+      sourceDataFilter: [], // 模糊搜索过滤数据
       currentPage: 1,
       pageSize: 20,
-      query: ''
+      query: '' // 模糊搜索条件
     }
   },
   watch: {
@@ -109,33 +110,41 @@ export default {
       handler (val) {
         if (val) {
           // 下拉默认选项值置顶
-          let initOptions = deepClone(val)
+          this.sourceData = deepClone(val)
           if (Array.isArray(this.value)) {
             if (this.objectOption) {
               this.value.forEach(i => {
-                const index = initOptions.findIndex(j => j[this.displayValue] === i)
-                const item = initOptions.splice(index, 1)
-                initOptions.unshift(...item)
+                const index = this.sourceData.findIndex(j => j[this.displayValue] === i)
+                if (index > 0) {
+                  const item = this.sourceData.splice(index, 1)
+                  this.sourceData.unshift(...item)
+                }
               })
             } else {
               this.value.forEach(i => {
-                const index = initOptions.findIndex(j => j === i)
-                const item = initOptions.splice(index, 1)
-                initOptions.unshift(...item)
+                const index = this.sourceData.findIndex(j => j === i)
+                if (index > 0) {
+                  const item = this.sourceData.splice(index, 1)
+                  this.sourceData.unshift(...item)
+                }
               })
             }
           } else {
             if (this.objectOption) {
-              const index = initOptions.findIndex(j => j[this.displayValue] === this.value)
-              const item = initOptions.splice(index, 1)
-              initOptions.unshift(...item)
+              const index = this.sourceData.findIndex(j => j[this.displayValue] === this.value)
+              if (index > 0) {
+                const item = this.sourceData.splice(index, 1)
+                this.sourceData.unshift(...item)
+              }
             } else {
-              const index = initOptions.findIndex(j => j === this.value)
-              const item = initOptions.splice(index, 1)
-              initOptions.unshift(...item)
+              const index = this.sourceData.findIndex(j => j === this.value)
+              if (index > 0) {
+                const item = this.sourceData.splice(index, 1)
+                this.sourceData.unshift(...item)
+              }
             }
           }
-          this.optionsData = initOptions.slice(0, 1 * this.pageSize)
+          this.optionsData = this.sourceData.slice(0, 1 * this.pageSize)
         }
       },
       immediate: true,
@@ -149,9 +158,9 @@ export default {
     },
     getList () {
       if (this.query) {
-        this.sourceDataFilter = this.options.filter(item => item[this.displayName].includes(this.query))
+        this.sourceDataFilter = this.sourceData.filter(item => item[this.displayName].includes(this.query))
       } else {
-        this.sourceDataFilter = this.options
+        this.sourceDataFilter = this.sourceData
       }
       this.optionsData = this.sourceDataFilter.slice(0, this.currentPage * this.pageSize)
     },

@@ -183,7 +183,7 @@ export default {
           title: t.title,
           key: t.name,
           align: 'left',
-          minWidth: 200
+          minWidth: 240
         }
         if (t.required === 'yes') {
           column.renderHeader = (h, { column }) => {
@@ -216,7 +216,6 @@ export default {
                     displayValue="guid"
                     objectOption={!!t.entity}
                     options={params.row[t.name + 'Options']}
-                    width={250}
                     disabled={t.isEdit === 'no' || this.formDisable}
                     multiple={t.multiple === 'Y'}
                   />

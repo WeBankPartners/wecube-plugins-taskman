@@ -525,6 +525,8 @@ export default {
         this.handleEdit(row)
       } else if (row.status === 'Draft') {
         this.hanldeLaunch(row)
+      } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
+        this.handleRepub(row)
       } else {
         this.hanldeView(row)
       }

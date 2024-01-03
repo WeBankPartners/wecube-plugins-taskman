@@ -182,6 +182,7 @@ export default {
         })
       })
       this.$emit('input', resetObj)
+      this.handleSearch()
     },
     // 自定义时间控件转化时间格式值
     handleDateTypeChange (key, dateType) {

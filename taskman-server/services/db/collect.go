@@ -52,7 +52,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	// 遍历模板id,查询 当前最新的发布模板id
 	for _, collectTemplate := range collectTemplateList {
 		var tempList []string
-		x.SQL("select id from request_template where status='confirm' and parent_id = ? order by created_time desc limit 0,1", collectTemplate.RequestTemplate).Find(&tempList)
+		x.SQL("select id from request_template where (status='confirm' or status='disable') and parent_id = ? order by created_time desc limit 0,1", collectTemplate.RequestTemplate).Find(&tempList)
 		resultList = append(resultList, tempList...)
 		roleTemplateMap[collectTemplate.RequestTemplate] = collectTemplate.Role
 	}

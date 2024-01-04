@@ -24,6 +24,7 @@
               :disabled="isCheck === 'Y'"
               style="width: 85%"
               filterable
+              clearable
             >
               <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                 item.displayName

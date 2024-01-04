@@ -84,6 +84,14 @@ export default {
         component: 'input'
       },
       this.baseSearch.name,
+      {
+        key: 'taskReportTime',
+        label: this.$t('tw_task_commit_time'),
+        dateType: 1,
+        initValue: this.initDate,
+        labelWidth: 110,
+        component: 'custom-time'
+      },
       this.baseSearch.status,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
@@ -95,14 +103,6 @@ export default {
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
-      },
-      {
-        key: 'taskReportTime',
-        label: this.$t('tw_task_commit_time'),
-        dateType: 1,
-        initValue: this.initDate,
-        labelWidth: 110,
-        component: 'custom-time'
       }
     ]
 
@@ -111,6 +111,14 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
+      {
+        key: 'reportTime',
+        label: this.$t('tw_task_commit_time'),
+        dateType: 1,
+        initValue: this.initDate,
+        labelWidth: 110,
+        component: 'custom-time'
+      },
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -120,14 +128,6 @@ export default {
         label: this.$t('tw_request_expect_time'),
         dateType: 4,
         labelWidth: 140,
-        component: 'custom-time'
-      },
-      {
-        key: 'reportTime',
-        label: this.$t('tw_task_commit_time'),
-        dateType: 1,
-        initValue: this.initDate,
-        labelWidth: 110,
         component: 'custom-time'
       }
     ]
@@ -141,6 +141,14 @@ export default {
         component: 'input'
       },
       this.baseSearch.name,
+      {
+        key: 'taskApprovalTime',
+        label: this.$t('handle_time'),
+        dateType: 1,
+        initValue: this.initDate,
+        labelWidth: 85,
+        component: 'custom-time'
+      },
       this.baseSearch.status,
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
@@ -159,14 +167,6 @@ export default {
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
-      },
-      {
-        key: 'taskApprovalTime',
-        label: this.$t('handle_time'),
-        dateType: 1,
-        initValue: this.initDate,
-        labelWidth: 85,
-        component: 'custom-time'
       }
     ]
 
@@ -175,6 +175,14 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
+      {
+        key: 'approvalTime',
+        label: this.$t('handle_time'),
+        dateType: 1,
+        initValue: this.initDate,
+        labelWidth: 85,
+        component: 'custom-time'
+      },
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -192,14 +200,6 @@ export default {
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
-      },
-      {
-        key: 'approvalTime',
-        label: this.$t('handle_time'),
-        dateType: 1,
-        initValue: this.initDate,
-        labelWidth: 85,
-        component: 'custom-time'
       }
     ]
 
@@ -208,6 +208,14 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
+      {
+        key: 'reportTime',
+        label: this.$t('tw_request_commit_time'),
+        dateType: 1,
+        initValue: this.initDate,
+        labelWidth: 110,
+        component: 'custom-time'
+      },
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -218,14 +226,6 @@ export default {
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
-      },
-      {
-        key: 'reportTime',
-        label: this.$t('tw_request_commit_time'),
-        dateType: 1,
-        initValue: this.initDate,
-        labelWidth: 110,
-        component: 'custom-time'
       }
     ]
 
@@ -234,6 +234,14 @@ export default {
       this.baseSearch.id,
       this.baseSearch.name,
       this.baseSearch.status,
+      {
+        key: 'updatedTime',
+        label: this.$t('tw_update_time'),
+        dateType: 1,
+        initValue: this.initDate,
+        labelWidth: 85,
+        component: 'custom-time'
+      },
       this.baseSearch.createdBy,
       this.baseSearch.templateId,
       this.baseSearch.procDefName,
@@ -242,14 +250,6 @@ export default {
         key: 'createdTime',
         label: this.$t('tw_created_time'),
         dateType: 4,
-        labelWidth: 85,
-        component: 'custom-time'
-      },
-      {
-        key: 'updatedTime',
-        label: this.$t('tw_update_time'),
-        dateType: 1,
-        initValue: this.initDate,
         labelWidth: 85,
         component: 'custom-time'
       },

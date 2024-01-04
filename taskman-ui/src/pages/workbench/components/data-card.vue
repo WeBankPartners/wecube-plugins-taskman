@@ -186,7 +186,7 @@ export default {
         color: rgba(16, 16, 16, 1);
         font-size: 14px;
         font-family: PingFangSC-regular;
-        font-weight: 500;
+        font-weight: bold;
       }
     }
     .data {

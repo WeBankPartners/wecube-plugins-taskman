@@ -93,6 +93,7 @@ export default {
         handler: {
           renderHeader: () => {
             return (
+              // 我暂存的，我提交的(被退回、本人撤回)显示为定版处理人，其余为当前处理人
               <span>
                 {this.tabName === 'draft' || (this.tabName === 'submit' && ['1', '3'].includes(this.rollback))
                   ? this.$t('tw_pending_handler')
@@ -206,110 +207,113 @@ export default {
           render: (h, params) => {
             return (
               <div>
-                {['pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      this.hanldeView(params.row)
-                    }}
-                    style="margin-right:5px;"
-                  >
-                    {// 查看
-                      this.$t('tw_action_view')}
-                  </Button>
-                )}
-                {this.username === params.row.handler &&
+                {// 查看
+                  ['pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        this.hanldeView(params.row)
+                      }}
+                      style="margin-right:5px;"
+                    >
+                      {this.$t('tw_action_view')}
+                    </Button>
+                  )}
+                {// 处理
+                  this.username === params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
-                  <Button
-                    type="warning"
-                    size="small"
-                    onClick={() => {
-                      this.handleEdit(params.row)
-                    }}
-                  >
-                    {// 处理
-                      this.$t('tw_action_handle')}
-                  </Button>
-                )}
-                {!params.row.handler &&
+                    <Button
+                      type="warning"
+                      size="small"
+                      onClick={() => {
+                        this.handleEdit(params.row)
+                      }}
+                    >
+                      {this.$t('tw_action_handle')}
+                    </Button>
+                  )}
+                {// 认领
+                  !params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
-                  <Button
-                    type="info"
-                    size="small"
-                    onClick={() => {
-                      this.handleTransfer(params.row, 'mark')
-                    }}
-                  >
-                    {// 认领
-                      this.$t('tw_action_claim')}
-                  </Button>
-                )}
-                {params.row.handler &&
+                    <Button
+                      type="info"
+                      size="small"
+                      onClick={() => {
+                        this.handleTransfer(params.row, 'mark')
+                      }}
+                    >
+                      {this.$t('tw_action_claim')}
+                    </Button>
+                  )}
+                {// 转给我
+                  params.row.handler &&
                   this.username !== params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
-                  <Button
-                    type="success"
-                    size="small"
-                    onClick={() => {
-                      this.handleTransfer(params.row, 'give')
-                    }}
-                  >
-                    {// 转给我
-                      this.$t('tw_action_give')}
-                  </Button>
-                )}
-                {['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
-                  <Button
-                    type="success"
-                    size="small"
-                    onClick={() => {
-                      this.handleRepub(params.row)
-                    }}
-                  >
-                    {// 重新发起
-                      this.$t('tw_action_relaunch')}
-                  </Button>
-                )}
-                {params.row.status === 'Pending' && this.tabName === 'submit' && (
-                  <Button
-                    type="error"
-                    size="small"
-                    onClick={() => {
-                      this.handleRecall(params.row)
-                    }}
-                  >
-                    {// 撤回
-                      this.$t('tw_recall')}
-                  </Button>
-                )}
-                {params.row.status === 'Draft' && this.tabName !== 'hasProcessed' && (
-                  <Button
-                    type="success"
-                    size="small"
-                    onClick={() => {
-                      this.hanldeLaunch(params.row)
-                    }}
-                    style="margin-right:5px;"
-                  >
-                    {// 去发起
-                      this.tabName === 'submit' ? this.$t('tw_action_relaunch') : this.$t('tw_action_launch')}
-                  </Button>
-                )}
-                {this.tabName === 'draft' && (
-                  <Button
-                    type="error"
-                    size="small"
-                    onClick={() => {
-                      this.handleDeleteDraft(params.row)
-                    }}
-                  >
-                    {// 删除
-                      this.$t('delete')}
-                  </Button>
-                )}
+                    <Button
+                      type="success"
+                      size="small"
+                      onClick={() => {
+                        this.handleTransfer(params.row, 'give')
+                      }}
+                    >
+                      {this.$t('tw_action_give')}
+                    </Button>
+                  )}
+                {// 重新发起
+                  ['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
+                    <Button
+                      type="success"
+                      size="small"
+                      onClick={() => {
+                        this.handleRepub(params.row)
+                      }}
+                    >
+                      {this.$t('tw_action_relaunch')}
+                    </Button>
+                  )}
+                {// 撤回
+                  params.row.status === 'Pending' && this.tabName === 'submit' && (
+                    <Button
+                      type="error"
+                      size="small"
+                      onClick={() => {
+                        this.handleRecall(params.row)
+                      }}
+                    >
+                      {this.$t('tw_recall')}
+                    </Button>
+                  )}
+                {// 去发起
+                // 草稿类（不包括已处理的，并且是本人发起的才展示）
+                  params.row.status === 'Draft' &&
+                  params.row.createdBy === this.username &&
+                  this.tabName !== 'hasProcessed' && (
+                    <Button
+                      type="success"
+                      size="small"
+                      onClick={() => {
+                        this.hanldeLaunch(params.row)
+                      }}
+                      style="margin-right:5px;"
+                    >
+                      {this.tabName === 'submit' ? this.$t('tw_action_relaunch') : this.$t('tw_action_launch')}
+                    </Button>
+                  )}
+                {// 删除
+                  this.tabName === 'draft' && params.row.createdBy === this.username && (
+                    <Button
+                      type="error"
+                      size="small"
+                      onClick={() => {
+                        this.handleDeleteDraft(params.row)
+                      }}
+                    >
+                      {this.$t('delete')}
+                    </Button>
+                  )}
               </div>
             )
           }
@@ -322,7 +326,8 @@ export default {
       hasProcessedColumn: [],
       submitAllColumn: [],
       submitColumn: [],
-      draftColumn: []
+      draftColumn: [],
+      username: window.localStorage.getItem('username')
     }
   },
   mounted () {
@@ -481,7 +486,16 @@ export default {
         title: this.$t('tw_rollback_reason'),
         sortable: 'custom',
         minWidth: 150,
-        key: 'rollbackDesc'
+        key: 'rollbackDesc',
+        render: (h, params) => {
+          return (
+            <Tooltip content={params.row.rollbackDesc}>
+              <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                {params.row.rollbackDesc}
+              </span>
+            </Tooltip>
+          )
+        }
       },
       this.baseColumn.templateName,
       this.baseColumn.procDefName,
@@ -515,7 +529,16 @@ export default {
         title: this.$t('tw_rollback_reason'),
         sortable: 'custom',
         minWidth: 150,
-        key: 'rollbackDesc'
+        key: 'rollbackDesc',
+        render: (h, params) => {
+          return (
+            <Tooltip content={params.row.rollbackDesc}>
+              <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                {params.row.rollbackDesc}
+              </span>
+            </Tooltip>
+          )
+        }
       },
       this.baseColumn.templateName,
       this.baseColumn.procDefName,

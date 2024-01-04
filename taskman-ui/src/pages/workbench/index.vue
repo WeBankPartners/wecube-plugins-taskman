@@ -123,8 +123,7 @@ export default {
         currentPage: 1,
         pageSize: 10
       },
-      sorting: {}, // 表格默认排序
-      username: window.localStorage.getItem('username')
+      sorting: {} // 表格默认排序
     }
   },
   watch: {

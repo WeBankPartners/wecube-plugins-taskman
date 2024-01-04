@@ -81,6 +81,7 @@
           {{ $t('tw_no_data') }}
         </div>
       </div>
+      <!--收藏列表-->
       <div class="list">
         <Card style="width:520px;min-height:600px;">
           <div class="w-header">
@@ -297,7 +298,7 @@ export default {
           desc: this.$t('tw_template_role_tips')
         })
       }
-      const path = row.type === 0 ? 'createRequest' : 'createPublish'
+      const path = this.type === 'request' ? 'createRequest' : 'createPublish'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,

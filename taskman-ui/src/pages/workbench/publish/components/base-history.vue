@@ -33,7 +33,7 @@
 
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
-import { getPublishList, reRequest, recallRequest } from '@/api/server'
+import { getPublishList, reRequest, recallRequest, deleteRequest } from '@/api/server'
 import column from '../../column'
 import search from '../../search'
 import { deepClone } from '@/pages/util/index'
@@ -210,6 +210,9 @@ export default {
     // 点击名称，id快捷跳转
     handleDbClick (row) {
       if (row.status === 'Draft') {
+        if (row.createdBy !== this.username) {
+          return
+        }
         this.hanldeLaunch(row)
       } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
         this.handleRepub(row)
@@ -273,6 +276,26 @@ export default {
           this.$Modal.remove()
           const { statusCode } = await recallRequest(row.id)
           if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.getList()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    // 删除草稿
+    handleDeleteDraft (row) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          let res = await deleteRequest(row.id)
+          if (res.statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
               desc: this.$t('successful')

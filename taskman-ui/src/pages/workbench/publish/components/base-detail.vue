@@ -16,7 +16,9 @@
               <Icon style="font-weight:bold" size="24" :type="i.icon" :color="i.color" />
             </template>
             <div class="role" slot="content">
-              <div class="word-eclipse">{{ i.name }}</div>
+              <Tooltip :content="i.name">
+                <div class="word-eclipse">{{ i.name }}</div>
+              </Tooltip>
               <span>{{ i.handler }}</span>
             </div>
           </Step>
@@ -744,7 +746,7 @@ export default {
         flex-direction: column;
       }
       .word-eclipse {
-        max-width: 100px;
+        max-width: 180px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;

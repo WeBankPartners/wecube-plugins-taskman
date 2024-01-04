@@ -3,7 +3,7 @@
     <div class="search">
       <Form :model="form" inline label-position="left">
         <!--模板名-->
-        <FormItem :label="$t('tw_template_name')" :label-width="60">
+        <FormItem :label="$t('tw_template_name')" :label-width="lang === 'zh-CN' ? 60 : 115">
           <Input
             v-model="form.templateName"
             @on-change="filterData"
@@ -16,7 +16,7 @@
           </Input>
         </FormItem>
         <!--操作对象类型-->
-        <FormItem :label="$t('tw_operator_type')" :label-width="100">
+        <FormItem :label="$t('tw_operator_type')" :label-width="lang === 'zh-CN' ? 100 : 155">
           <Select
             v-model="form.operatorObjType"
             @on-change="filterData"
@@ -234,7 +234,8 @@ export default {
           title: this.$t('useRoles'),
           key: 'useRole'
         }
-      ]
+      ],
+      lang: window.localStorage.getItem('lang')
     }
   },
   watch: {
@@ -266,6 +267,7 @@ export default {
             i.expand = true
             i.groups.forEach(j => {
               j.templates.forEach(m => {
+                m.manageRole = i.manageRole
                 if (m.operatorObjType && typeMap[m.type] === this.type) {
                   this.operateOptions.push(m.operatorObjType)
                 }
@@ -310,9 +312,9 @@ export default {
       })
     },
     // 收藏or取消收藏模板
-    handleStar: debounce(async function ({ id, collectFlag, role }) {
+    handleStar: debounce(async function ({ id, collectFlag, manageRole }) {
       const method = collectFlag ? uncollectTemplate : collectTemplate
-      const params = collectFlag ? id : { templateId: id, role }
+      const params = collectFlag ? id : { templateId: id, role: manageRole }
       const { statusCode } = await method(params)
       if (statusCode === 'OK') {
         this.$Notice.success({

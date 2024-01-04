@@ -56,12 +56,12 @@ const implicitRoute = {
   // 个人工作台
   'taskman/workbench': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Dashboard' }
   },
   // 模板选择
   'taskman/workbench/template': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '模板选择', 'en-US': 'Workbench' }
+    childBreadcrumb: { 'zh-CN': '模板选择', 'en-US': 'Template selection' }
   },
   // 新建发布
   'taskman/workbench/createPublish': {

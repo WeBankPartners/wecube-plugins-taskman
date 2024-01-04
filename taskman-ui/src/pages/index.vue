@@ -81,5 +81,11 @@ export default {
   .ivu-table-wrapper {
     z-index: 100;
   }
+  .ivu-tag {
+    display: inline-block;
+    line-height: 11px;
+    height: auto;
+    padding: 5px 6px;
+  }
 }
 </style>

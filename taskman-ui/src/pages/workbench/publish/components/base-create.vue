@@ -16,7 +16,9 @@
               <Icon style="font-weight:bold" size="24" :type="i.icon" :color="i.color" />
             </template>
             <div class="role" slot="content">
-              <div class="word-eclipse">{{ i.name }}</div>
+              <Tooltip :content="i.name">
+                <div class="word-eclipse">{{ i.name }}</div>
+              </Tooltip>
               <span>{{ i.handler }}</span>
             </div>
           </Step>
@@ -35,8 +37,8 @@
       <div style="width:calc(100% - 420px)" class="split-line">
         <Form :model="form" label-position="right" :label-width="120">
           <template>
-            <!--发布信息-->
-            <HeaderTitle :title="$t('tw_publish_title')">
+            <!--请求信息-->
+            <HeaderTitle :title="$t('tw_request_title')">
               <!--请求名-->
               <FormItem :label="$t('request_name')" required>
                 <Input
@@ -47,7 +49,7 @@
                   style="width:100%;"
                 />
               </FormItem>
-              <!--发布描述-->
+              <!--请求描述-->
               <FormItem :label="$t('tw_publish_des')">
                 <Input
                   v-model="form.description"
@@ -82,9 +84,9 @@
                 <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
               </FormItem>
             </HeaderTitle>
-            <!--发布目标对象-->
+            <!--目标对象-->
             <HeaderTitle :title="$t('tw_publish_object')">
-              <!--选择操作单元-->
+              <!--选择目标对象-->
               <FormItem :label="$t('tw_choose_object')" required>
                 <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
                   <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
@@ -507,7 +509,7 @@ export default {
         flex-direction: column;
       }
       .word-eclipse {
-        max-width: 100px;
+        max-width: 180px;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;

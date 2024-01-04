@@ -3,96 +3,93 @@
     <div class="form" :style="{ maxHeight: expand ? '200px' : '45px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
-          <FormItem
-            v-if="!i.hidden"
-            :label="i.label ? `${i.label}：` : ''"
-            :prop="i.key"
-            :label-width="i.labelWidth || 0"
-            :key="index"
-          >
-            <!--输入框-->
-            <Input
-              v-if="i.component === 'input'"
-              v-model="value[i.key]"
-              :placeholder="i.placeholder"
-              clearable
-              :style="{ width: i.width || 200 + 'px' }"
-            ></Input>
-            <!--下拉选择-->
-            <Select
-              v-else-if="i.component === 'select'"
-              v-model="value[i.key]"
-              :placeholder="i.placeholder"
-              clearable
-              :multiple="i.multiple || false"
-              :filterable="i.filterable || true"
-              :max-tag-count="1"
-              :style="{ width: i.width || 200 + 'px' }"
-            >
-              <template v-for="(j, idx) in i.list">
-                <Option :key="idx" :value="j.value">{{ j.label }}</Option>
-              </template>
-            </Select>
-            <!--获取接口的下拉选择-->
-            <Select
-              v-else-if="i.component === 'remote-select'"
-              v-model="value[i.key]"
-              @on-open-change="getRemoteData(i)"
-              :placeholder="i.placeholder"
-              clearable
-              :multiple="i.multiple || false"
-              :filterable="i.filterable || true"
-              :max-tag-count="1"
-              :style="{ width: i.width || 200 + 'px' }"
-            >
-              <template v-for="(j, idx) in i.list">
-                <Option :key="idx" :value="j.value">{{ j.label }}</Option>
-              </template>
-            </Select>
-            <!--标签组-->
-            <RadioGroup
-              v-else-if="i.component === 'radio-group'"
-              v-model="value[i.key]"
-              @on-change="$emit('search')"
-              style="margin-right:32px;"
-            >
-              <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
-            </RadioGroup>
-            <!--自定义时间选择器-->
-            <div v-else-if="i.component === 'custom-time'" class="custom-time">
-              <RadioGroup
-                v-if="i.dateType !== 4"
-                v-model="i.dateType"
-                @on-change="handleDateTypeChange(i.key, i.dateType)"
-                type="button"
-                size="small"
-                style="margin-top:-2px;"
+          <FormItem v-if="!i.hidden" :prop="i.key" :key="index">
+            <div style="display:flex;align-items:center;">
+              <!--输入框-->
+              <span v-if="i.label">{{ i.label }}：</span>
+              <Input
+                v-if="i.component === 'input'"
+                v-model="value[i.key]"
+                :placeholder="i.placeholder"
+                clearable
+                :style="{ width: i.width || 200 + 'px' }"
+              ></Input>
+              <!--下拉选择-->
+              <Select
+                v-else-if="i.component === 'select'"
+                v-model="value[i.key]"
+                :placeholder="i.placeholder"
+                clearable
+                :multiple="i.multiple || false"
+                :filterable="i.filterable || true"
+                :max-tag-count="1"
+                :style="{ width: i.width || 200 + 'px' }"
               >
-                <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
+                <template v-for="(j, idx) in i.list">
+                  <Option :key="idx" :value="j.value">{{ j.label }}</Option>
+                </template>
+              </Select>
+              <!--获取接口的下拉选择-->
+              <Select
+                v-else-if="i.component === 'remote-select'"
+                v-model="value[i.key]"
+                @on-open-change="getRemoteData(i)"
+                :placeholder="i.placeholder"
+                clearable
+                :multiple="i.multiple || false"
+                :filterable="i.filterable || true"
+                :max-tag-count="1"
+                :style="{ width: i.width || 200 + 'px' }"
+              >
+                <template v-for="(j, idx) in i.list">
+                  <Option :key="idx" :value="j.value">{{ j.label }}</Option>
+                </template>
+              </Select>
+              <!--标签组-->
+              <RadioGroup
+                v-else-if="i.component === 'radio-group'"
+                v-model="value[i.key]"
+                @on-change="$emit('search')"
+                style="margin-right:32px;"
+              >
+                <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
               </RadioGroup>
-              <div v-else>
-                <DatePicker
-                  :value="value[i.key]"
-                  @on-change="
-                    val => {
-                      handleDateRange(val, i.key)
-                    }
-                  "
-                  type="daterange"
-                  placement="bottom-end"
-                  format="yyyy-MM-dd"
-                  :placeholder="i.label"
-                  style="width: 200px"
-                />
-                <Icon
-                  size="18"
-                  style="cursor:pointer;"
-                  type="md-close-circle"
-                  @click="
-                    i.dateType = 1
-                    handleDateTypeChange(i.key, 1)
-                  "
-                />
+              <!--自定义时间选择器-->
+              <div v-else-if="i.component === 'custom-time'" class="custom-time">
+                <RadioGroup
+                  v-if="i.dateType !== 4"
+                  v-model="i.dateType"
+                  @on-change="handleDateTypeChange(i.key, i.dateType)"
+                  type="button"
+                  size="small"
+                  style="margin-top:-2px;"
+                >
+                  <Radio v-for="(j, idx) in dateTypeList" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
+                </RadioGroup>
+                <div v-else>
+                  <DatePicker
+                    :value="value[i.key]"
+                    @on-change="
+                      val => {
+                        handleDateRange(val, i.key)
+                      }
+                    "
+                    type="daterange"
+                    placement="bottom-end"
+                    format="yyyy-MM-dd"
+                    :placeholder="i.label"
+                    style="width: 200px"
+                  />
+                  <Icon
+                    size="18"
+                    style="cursor:pointer;"
+                    type="md-close-circle"
+                    @click="
+                      i.dateType = 1
+                      handleDateTypeChange(i.key, 1)
+                    "
+                  />
+                </div>
               </div>
             </div>
           </FormItem>

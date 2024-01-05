@@ -1334,6 +1334,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 		request, err = GetSimpleRequest(requestId)
 		if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError
+			return err
 		}
 		_, err = x.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", status, description, operator, operator, nowTime, nowTime, requestId)
 	} else {

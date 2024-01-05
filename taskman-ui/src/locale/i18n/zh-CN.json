@@ -275,5 +275,7 @@
   "tw_all_tab": "所有",
   "tw_return_tab": "被退回",
   "tw_recall_tab": "本人撤回",
-  "tw_other_tab": "其他"
+  "tw_other_tab": "其他",
+  "tw_please_select": "请选择",
+  "tw_recall_reason": "请求表单填写不符合规范，请检查修正之后重新发起"
 }

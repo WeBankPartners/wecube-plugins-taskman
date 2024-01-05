@@ -1,6 +1,6 @@
 <template>
   <div class="workbench-request-audit">
-    <Tabs :value="activeTab" @on-click="handleChangeTab">
+    <Tabs :value="actionName" @on-click="handleChangeTab">
       <!--所有-->
       <TabPane :label="$t('tw_all_tab')" name="0"></TabPane>
       <!--发布-->
@@ -40,7 +40,6 @@ import { deepClone } from '@/pages/util/index'
 import { getCookie } from '@/pages/util/cookie'
 import column from './column'
 import search from './search'
-import dayjs from 'dayjs'
 export default {
   components: {
     BaseSearch
@@ -48,7 +47,7 @@ export default {
   mixins: [column, search],
   data () {
     return {
-      activeTab: '0',
+      actionName: '0', // 0所有、1发布、2请求
       form: {
         name: '', // 请求名
         id: '',
@@ -58,12 +57,7 @@ export default {
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
         expectTime: [], // 期望时间
-        reportTime: [
-          dayjs()
-            .subtract(3, 'month')
-            .format('YYYY-MM-DD'),
-          dayjs().format('YYYY-MM-DD')
-        ] // 请求提交时间
+        reportTime: [] // 请求提交时间
       },
       tableData: [],
       loading: false,
@@ -80,6 +74,12 @@ export default {
       tableColumns: [],
       headers: {},
       exportFlag: false
+    }
+  },
+  watch: {
+    // 切换请求发布，重新获取筛选条件配置
+    actionName () {
+      this.getFilterOptions()
     }
   },
   mounted () {
@@ -117,7 +117,7 @@ export default {
       })
       const params = {
         tab: 'commit', // 已提交数据，不包括草稿
-        action: Number(this.activeTab),
+        action: Number(this.actionName),
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
@@ -151,7 +151,7 @@ export default {
       this.getList()
     },
     handleChangeTab (val) {
-      this.activeTab = val
+      this.actionName = val
       this.handleQuery()
     },
     // 点击名称，id，任务名快捷跳转
@@ -160,13 +160,13 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      const url = `/taskman/workbench/createRequest`
+      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isAdd: 'N',
           isCheck: 'Y',
           isHandle: 'N',
           enforceDisable: 'Y',
@@ -233,8 +233,8 @@ export default {
     width: 50px;
     height: 30px;
     position: absolute;
-    right: 0px;
-    top: 35px;
+    right: 30px;
+    top: 95px;
     font-size: 14px;
   }
 }

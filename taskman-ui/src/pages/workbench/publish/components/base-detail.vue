@@ -508,6 +508,7 @@ export default {
             this.handleData = this.historyData[1]
             this.historyData.splice(1, 1)
           }
+          // 任务处理-当前处理数据
         } else if (this.detailInfo.status === 'InProgress') {
           const index = this.historyData.findIndex(item => item.editable)
           this.handleData = this.historyData[index]

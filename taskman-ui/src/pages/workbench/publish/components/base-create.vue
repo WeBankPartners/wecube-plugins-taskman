@@ -70,7 +70,7 @@
                       form.expectTime = val
                     }
                   "
-                  placeholder="Select date"
+                  :placeholder="$t('tw_please_select')"
                   :options="{
                     disabledDate(date) {
                       return date && date.valueOf() < Date.now() - 86400000

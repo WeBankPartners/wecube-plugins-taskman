@@ -127,6 +127,7 @@ export default {
     }
   },
   watch: {
+    // 切换请求发布，重新获取筛选条件配置
     actionName () {
       this.getFilterOptions()
     }

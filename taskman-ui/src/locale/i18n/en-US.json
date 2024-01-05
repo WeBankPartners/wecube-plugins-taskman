@@ -275,5 +275,7 @@
   "tw_all_tab": "All",
   "tw_return_tab": "Returned",
   "tw_recall_tab": "Recalled",
-  "tw_other_tab": "Other"
+  "tw_other_tab": "Other",
+  "tw_please_select": "Please Select",
+  "tw_recall_reason": "The request form is improperly filled. Please correct and relaunch."
 }

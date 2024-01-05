@@ -52,7 +52,7 @@ export default {
   data () {
     return {
       activeTab: 'commit', // commit已提交,draft我暂存草稿,rollback我退回,revoke本人撤回
-      tabName: 'submit',
+      tabName: 'submit', // 采用我提交的表格配置(草稿箱采用我暂存的表格配置)
       rollback: '0', // 0所有,1已退回,2其他,3被撤回
       form: {
         name: '', // 请求名

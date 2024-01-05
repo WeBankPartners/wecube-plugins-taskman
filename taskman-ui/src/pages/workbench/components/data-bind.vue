@@ -39,9 +39,9 @@
       <Button @click="saveRequest()" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="formDisable" v-if="isHandle">{{ $t('go_back') }}</Button>
       <Button @click="startRequest" :disabled="formDisable" v-if="isHandle">{{ $t('final_version') }}</Button>
-      <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
+      <!-- <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
         $t('pr-vision')
-      }}</Button>
+      }}</Button> -->
     </div>
   </div>
 </template>
@@ -73,7 +73,7 @@ export default {
         taskNodeBindInfos: ''
       },
       requestHistory: false,
-      backReason: '', // 回退说明
+      backReason: this.$t('tw_recall_reason'), // 回退说明
       unCheckData: [], // 没有选中的数据
       columns: [
         {
@@ -236,6 +236,7 @@ export default {
         }
       }
     },
+    // 定版退回操作
     async rollbackRequest () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('go_back'),

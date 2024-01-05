@@ -287,13 +287,12 @@ export default {
                     </Button>
                   )}
                 {// 去发起
-                // 草稿类（不包括已处理的，并且是本人发起的才展示）
-                  params.row.status === 'Draft' &&
-                  params.row.createdBy === this.username &&
-                  this.tabName !== 'hasProcessed' && (
+                // 草稿类（不包括已处理的）
+                  params.row.status === 'Draft' && this.tabName !== 'hasProcessed' && (
                     <Button
                       type="success"
                       size="small"
+                      disabled={this.tabName === 'draft' && params.row.createdBy !== this.username}
                       onClick={() => {
                         this.hanldeLaunch(params.row)
                       }}
@@ -303,10 +302,11 @@ export default {
                     </Button>
                   )}
                 {// 删除
-                  this.tabName === 'draft' && params.row.createdBy === this.username && (
+                  this.tabName === 'draft' && (
                     <Button
                       type="error"
                       size="small"
+                      disabled={params.row.createdBy !== this.username}
                       onClick={() => {
                         this.handleDeleteDraft(params.row)
                       }}

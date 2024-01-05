@@ -205,6 +205,7 @@ type TaskQueryObj struct {
 	IsHistory       bool                      `json:"isHistory"`
 	HandleRoleName  string                    `json:"handleRoleName"`
 	CreatedTime     string                    `json:"createTime"`
+	RollbackDesc    string                    `json:"rollbackDesc"`
 }
 
 type TaskApproveParam struct {

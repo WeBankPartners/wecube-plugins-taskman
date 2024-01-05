@@ -410,7 +410,7 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 	}
 	var requestTemplateTable []*models.RequestTemplateTable
 	x.SQL("select * from request_template where id in (select request_template from request where id=?)", taskObj.Request).Find(&requestTemplateTable)
-	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
+	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false, RollbackDesc: requests[0].RollbackDesc}
 	requestQuery.AttachFiles = GetRequestAttachFileList(taskObj.Request)
 	requestQuery.ExpireTime = requests[0].ExpireTime
 	requestQuery.ExpectTime = requests[0].ExpectTime

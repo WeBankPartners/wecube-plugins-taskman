@@ -1792,7 +1792,7 @@ func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryOb
 		err = fmt.Errorf("Can not find request with id:%s ", requestId)
 		return
 	}
-	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
+	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false, RollbackDesc: requests[0].RollbackDesc}
 	if requests[0].Cache != "" {
 		var requestCache models.RequestPreDataDto
 		err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
@@ -1834,6 +1834,7 @@ func getPendingRequestData(request *models.RequestTable) *models.TaskQueryObj {
 		IsHistory:      false,
 		HandleRoleName: role,
 		CreatedTime:    request.ReportTime,
+		RollbackDesc:   request.RollbackDesc,
 	}
 	if request.Status != "Draft" && request.Status != "Pending" {
 		taskQueryObj.HandleTime = request.UpdatedTime

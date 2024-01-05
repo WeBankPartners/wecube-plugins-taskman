@@ -1476,7 +1476,7 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (backToken string, err error) {
 	var actions []*execAction
 	if confirmToken == "" {
-		/*existFlag, err := checkImportExist(input.RequestTemplate.Id)
+		existFlag, err := checkImportExist(input.RequestTemplate.Id)
 		if err != nil {
 			return backToken, err
 		}
@@ -1484,11 +1484,11 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 			backToken = guid.CreateGuid()
 			models.RequestTemplateImportMap[backToken] = input
 			return backToken, nil
-		}*/
-		input.RequestTemplate.Id = guid.CreateGuid()
-		input.RequestTemplate.Version = ""
-		input.RequestTemplate.RecordId = ""
-		backToken = input.RequestTemplate.Id
+		}
+		/*		input.RequestTemplate.Id = guid.CreateGuid()
+				input.RequestTemplate.Version = ""
+				input.RequestTemplate.RecordId = ""
+				backToken = input.RequestTemplate.Id*/
 	} else {
 		if inputCache, b := models.RequestTemplateImportMap[confirmToken]; b {
 			input = inputCache

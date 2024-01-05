@@ -199,14 +199,18 @@ export default {
         },
         onOk: async () => {
           this.$Modal.remove()
-          await this.saveRequest()
-          const { statusCode } = await startRequestNew(this.requestId, this.finalData)
-          if (statusCode === 'OK') {
-            this.$Notice.success({
-              title: this.$t('successful'),
-              desc: this.$t('successful')
-            })
-            this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1` })
+          const flag = await this.saveRequest()
+          if (flag) {
+            const { statusCode } = await startRequestNew(this.requestId, this.finalData)
+            if (statusCode === 'OK') {
+              this.$Notice.success({
+                title: this.$t('successful'),
+                desc: this.$t('successful')
+              })
+              this.$router.push({
+                path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+              })
+            }
           }
         },
         onCancel: () => {}
@@ -266,19 +270,21 @@ export default {
             })
           } else {
             // this.$Modal.remove()
-            await this.saveRequest()
-            const params = {
-              description: this.backReason
-            }
-            const { statusCode } = await updateRequestStatus(this.requestId, 'Draft', params)
-            if (statusCode === 'OK') {
-              this.$Notice.success({
-                title: this.$t('successful'),
-                desc: this.$t('successful')
-              })
-              this.$router.push({
-                path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
-              })
+            const flag = await this.saveRequest()
+            if (flag) {
+              const params = {
+                description: this.backReason
+              }
+              const { statusCode } = await updateRequestStatus(this.requestId, 'Draft', params)
+              if (statusCode === 'OK') {
+                this.$Notice.success({
+                  title: this.$t('successful'),
+                  desc: this.$t('successful')
+                })
+                this.$router.push({
+                  path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=1`
+                })
+              }
             }
           }
         },
@@ -319,6 +325,9 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
+        return true
+      } else {
+        return false
       }
     },
     async getTemplateNodesForRequest () {

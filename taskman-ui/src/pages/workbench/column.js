@@ -275,7 +275,8 @@ export default {
                     </Button>
                   )}
                 {// 撤回
-                  params.row.status === 'Pending' && this.tabName === 'submit' && (
+                // 我提交的定版状态可退回（本人创建的）
+                  params.row.status === 'Pending' && this.tabName === 'submit' && params.row.createdBy === this.username && (
                     <Button
                       type="error"
                       size="small"

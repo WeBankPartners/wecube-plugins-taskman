@@ -128,7 +128,6 @@ import {
   getRequestInfo,
   updateRequestStatus
 } from '@/api/server'
-import dayjs from 'dayjs'
 const statusIcon = {
   1: 'md-pin', // 进行中
   2: 'md-radio-button-on', // 未开始
@@ -238,9 +237,10 @@ export default {
         this.templateName = data.requestTemplateName
         this.version = data.templateVersion
         this.form.name = (data.name && data.name.substr(0, 50)) || ''
-        this.form.expectTime = dayjs()
-          .add(data.expireDay || 0, 'day')
-          .format('YYYY-MM-DD HH:mm:ss')
+        // this.form.expectTime = dayjs()
+        //   .add(data.expireDay || 0, 'day')
+        //   .format('YYYY-MM-DD HH:mm:ss')
+        this.form.expectTime = data.expectTime || ''
       }
     },
     // 获取请求进度

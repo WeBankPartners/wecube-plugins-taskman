@@ -1,3 +1,4 @@
+<!--工作台-->
 <template>
   <div class="workbench">
     <!-- <div class="header">
@@ -40,7 +41,7 @@
         <!--其他-->
         <TabPane :label="$t('tw_other_tab')" name="2"></TabPane>
       </Tabs>
-      <CollectTable ref="collect" v-if="tabName === 'collect'" :actionName="actionName"></CollectTable>
+      <CollectTable v-if="tabName === 'collect'" ref="collect" :actionName="actionName"></CollectTable>
       <template v-else>
         <!--搜索条件-->
         <BaseSearch ref="search" :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>

@@ -46,6 +46,8 @@ func CreateRequest(c *gin.Context) {
 	param.CreatedBy = middleware.GetRequestUser(c)
 	param.ExpireDay = template.ExpireDay
 	param.RequestTemplateName = template.Name
+	d, _ := time.ParseDuration(fmt.Sprintf("%dh", 24*param.ExpireDay))
+	param.ExpectTime = time.Now().Add(d).Format(models.DateTimeFormat)
 	if template.Status != "confirm" {
 		param.TemplateVersion = "beta"
 	} else {

@@ -1103,13 +1103,19 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
 	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
 	var roleList []string
-	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
+	var requestTemplateTable, allTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
 	var requestTemplateRoleTable []*models.RequestTemplateRoleTable
 	var ownerRoleMap = make(map[string]string)
+	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
+	var requestTemplateMap = make(map[string]*models.RequestTemplateTable)
 	result = []*models.UserRequestTemplateQueryObjNew{}
 	useGroupMap, _ := getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
 	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
+	err = x.SQL("select * from request_template ").Find(&allTemplateTable)
+	if err != nil {
+		return
+	}
 	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+"))) order by `group`,tags,status,id", queryParam...).Find(&requestTemplateTable)
 	if err != nil {
 		return
@@ -1117,6 +1123,8 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	if len(requestTemplateTable) == 0 {
 		return
 	}
+	requestTemplateMap = convertRequestTemplateList2Map(requestTemplateTable)
+	requestTemplateLatestMap = getLatestVersionTemplate(requestTemplateTable, allTemplateTable)
 	err = x.SQL("select * from request_template_role where role_type='MGMT'").Find(&requestTemplateRoleTable)
 	if err != nil {
 		return
@@ -1157,6 +1165,16 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 				}
 			}
 			v.Version = "beta"
+		}
+		// 此处需要查询db判断 用户是否有当前模板的最新发布的权限
+		if _, ok := recordIdMap[v.Id]; !ok {
+			// 获取最新模板Id
+			if latestTemplate, ok := requestTemplateLatestMap[v.Id]; ok && latestTemplate.Id != v.Id {
+				// 最新模板禁用 或者 当前用户没有最新模板的使用权限,则记录在 recordIdMap中
+				if latestTemplate.Status == "disable" || requestTemplateMap[latestTemplate.Id] == nil {
+					recordIdMap[v.Id] = 1
+				}
+			}
 		}
 	}
 	for _, v := range requestTemplateTable {
@@ -1252,6 +1270,54 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 		result = append(result, resultMap[role])
 	}
 	return
+}
+
+func convertRequestTemplateList2Map(list []*models.RequestTemplateTable) map[string]*models.RequestTemplateTable {
+	hashMap := make(map[string]*models.RequestTemplateTable)
+	for _, requestTemplate := range list {
+		hashMap[requestTemplate.Id] = requestTemplate
+	}
+	return hashMap
+}
+
+// getLatestVersionTemplate 获取requestTemplateList每个模板的最新版本模板
+func getLatestVersionTemplate(requestTemplateList, allRequestTemplateList []*models.RequestTemplateTable) map[string]*models.RequestTemplateTable {
+	allTemplateMap := make(map[string]*models.RequestTemplateTable)
+	allTemplateRecordMap := make(map[string]*models.RequestTemplateTable)
+	resultMap := make(map[string]*models.RequestTemplateTable)
+	for _, requestTemplate := range allRequestTemplateList {
+		allTemplateMap[requestTemplate.Id] = requestTemplate
+	}
+	for _, requestTemplate := range allRequestTemplateList {
+		if requestTemplate.RecordId != "" {
+			allTemplateRecordMap[requestTemplate.RecordId] = requestTemplate
+		}
+	}
+	for _, requestTemplate := range requestTemplateList {
+		var latestTemplate *models.RequestTemplateTable
+		// 有 recordId指向当前模板,需要一直遍历找到最新版本模板
+		if v, ok := allTemplateRecordMap[requestTemplate.Id]; ok && v != nil {
+			temp := v
+			for {
+				if t, ok := allTemplateRecordMap[temp.Id]; ok && t != nil {
+					temp = t
+				} else {
+					latestTemplate = temp
+					break
+				}
+			}
+		} else {
+			// 没有 recordId指向当前模板,表示当前模板就是最新版本模板
+			latestTemplate = requestTemplate
+		}
+		if latestTemplate == nil {
+			// 找不到兜底默认值
+			log.Logger.Warn("latestTemplate is empty", log.String("requestTemplateId", requestTemplate.Id))
+			latestTemplate = requestTemplate
+		}
+		resultMap[requestTemplate.Id] = latestTemplate
+	}
+	return resultMap
 }
 
 func compareUpdateConfirmTime(updatedTime, confirmTime string) bool {
@@ -1410,7 +1476,7 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (backToken string, err error) {
 	var actions []*execAction
 	if confirmToken == "" {
-		existFlag, err := checkImportExist(input.RequestTemplate.Id)
+		/*existFlag, err := checkImportExist(input.RequestTemplate.Id)
 		if err != nil {
 			return backToken, err
 		}
@@ -1418,7 +1484,11 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 			backToken = guid.CreateGuid()
 			models.RequestTemplateImportMap[backToken] = input
 			return backToken, nil
-		}
+		}*/
+		input.RequestTemplate.Id = guid.CreateGuid()
+		input.RequestTemplate.Version = ""
+		input.RequestTemplate.RecordId = ""
+		backToken = input.RequestTemplate.Id
 	} else {
 		if inputCache, b := models.RequestTemplateImportMap[confirmToken]; b {
 			input = inputCache
@@ -1611,6 +1681,18 @@ func UpdateRequestTemplateParentId(requestTemplate models.RequestTemplateTable) 
 		updateErr := transaction(actions)
 		if updateErr != nil {
 			log.Logger.Error("Try to update request_template parent_id fail", log.Error(updateErr))
+		}
+	}
+	return
+}
+
+func UpdateRequestTemplateParentIdById(templateId, parentId string) (err error) {
+	var actions []*execAction
+	actions = append(actions, &execAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{parentId, templateId}})
+	if len(actions) > 0 {
+		err = transaction(actions)
+		if err != nil {
+			log.Logger.Error("Try to update request_template parent_id fail", log.Error(err))
 		}
 	}
 	return

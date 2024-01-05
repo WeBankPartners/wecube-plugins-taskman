@@ -2,6 +2,9 @@ package api
 
 import (
 	"bytes"
+	"io/ioutil"
+	"time"
+
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
@@ -11,8 +14,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"time"
 )
 
 type handlerFuncObj struct {

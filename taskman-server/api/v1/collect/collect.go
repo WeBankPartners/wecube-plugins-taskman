@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 // AddTemplateCollect 添加模板收藏,需要区分新老数据.之前旧模板,需要先更新数据
@@ -15,16 +16,30 @@ func AddTemplateCollect(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	if strings.TrimSpace(param.TemplateId) == "" {
+		err := fmt.Errorf("templateId is empty")
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
 	var parentId string
 	requestTemplate, err := db.GetSimpleRequestTemplate(param.TemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	parentId = requestTemplate.ParentId
+	parentId = strings.TrimSpace(requestTemplate.ParentId)
 	if parentId == "" {
 		// parentId为空说明 模板为老数据,需要更新该名称的模板
 		parentId = db.UpdateRequestTemplateParentId(requestTemplate)
+		// 可能由于到导入到模板,模板的 recordId值是错误的,导致parentId 还是空,此处直接更新当前模板parentId值
+		if parentId == "" {
+			parentId = param.TemplateId
+			err = db.UpdateRequestTemplateParentIdById(param.TemplateId, parentId)
+			if err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+		}
 	}
 	// 判断模板是否已经收藏
 	if db.CheckUserCollectExist(parentId, middleware.GetRequestUser(c)) {

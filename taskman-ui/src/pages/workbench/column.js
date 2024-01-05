@@ -208,7 +208,7 @@ export default {
             return (
               <div>
                 {// 查看
-                  ['pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
+                  ['pending', 'hasProcessed', 'submit'].includes(this.tabName) && params.row.status !== 'Draft' && (
                     <Button
                       size="small"
                       onClick={() => {

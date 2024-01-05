@@ -524,11 +524,11 @@ export default {
         this.tabName === 'pending'
       ) {
         this.handleEdit(row)
-      } else if (row.status === 'Draft') {
+      } else if (row.status === 'Draft' && this.tabName !== 'hasProcessed') {
         this.hanldeLaunch(row)
       } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
         this.handleRepub(row)
-      } else {
+      } else if (row.status !== 'Draft') {
         this.hanldeView(row)
       }
     }

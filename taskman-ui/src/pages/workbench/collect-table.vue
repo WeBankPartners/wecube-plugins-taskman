@@ -467,6 +467,7 @@ export default {
               desc: this.$t('successful')
             })
             this.getList()
+            this.$parent.$refs.dataCard.getData()
           }
         },
         onCancel: () => {}

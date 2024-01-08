@@ -1107,7 +1107,6 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	var requestTemplateRoleTable []*models.RequestTemplateRoleTable
 	var ownerRoleMap = make(map[string]string)
 	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
-	var requestTemplateMap = make(map[string]*models.RequestTemplateTable)
 	result = []*models.UserRequestTemplateQueryObjNew{}
 	useGroupMap, _ := getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
@@ -1123,7 +1122,6 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	if len(requestTemplateTable) == 0 {
 		return
 	}
-	requestTemplateMap = convertRequestTemplateList2Map(requestTemplateTable)
 	requestTemplateLatestMap = getLatestVersionTemplate(requestTemplateTable, allTemplateTable)
 	err = x.SQL("select * from request_template_role where role_type='MGMT'").Find(&requestTemplateRoleTable)
 	if err != nil {
@@ -1168,12 +1166,9 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 		}
 		// 此处需要查询db判断 用户是否有当前模板的最新发布的权限
 		if _, ok := recordIdMap[v.Id]; !ok {
-			// 获取最新模板Id
+			// 获取最新模板Id,当前模板不是最新模板,直接加入 recordIdMap
 			if latestTemplate, ok := requestTemplateLatestMap[v.Id]; ok && latestTemplate.Id != v.Id {
-				// 最新模板禁用 或者 当前用户没有最新模板的使用权限,则记录在 recordIdMap中
-				if latestTemplate.Status == "disable" || requestTemplateMap[latestTemplate.Id] == nil {
-					recordIdMap[v.Id] = 1
-				}
+				recordIdMap[v.Id] = 1
 			}
 		}
 	}
@@ -1270,14 +1265,6 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 		result = append(result, resultMap[role])
 	}
 	return
-}
-
-func convertRequestTemplateList2Map(list []*models.RequestTemplateTable) map[string]*models.RequestTemplateTable {
-	hashMap := make(map[string]*models.RequestTemplateTable)
-	for _, requestTemplate := range list {
-		hashMap[requestTemplate.Id] = requestTemplate
-	}
-	return hashMap
 }
 
 // getLatestVersionTemplate 获取requestTemplateList每个模板的最新版本模板

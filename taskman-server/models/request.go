@@ -58,6 +58,7 @@ type RequestQueryParam struct {
 }
 
 type RequestProgressObj struct {
+	NodeId    string `json:"nodeId" xorm:"node_id"`
 	NodeDefId string `json:"nodeDefId" xorm:"node_def_id"`
 	Node      string `json:"node" xorm:"node"`
 	Handler   string `json:"handler" xorm:"handler"`

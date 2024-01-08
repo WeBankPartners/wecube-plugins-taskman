@@ -390,8 +390,8 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 		dataArr[i] = []string{
 			row.Id,
 			row.Name,
-			row.Status,
-			row.CurNode,
+			getInternationalizationStatus(language, row.Status),
+			getInternationalizationCurNode(language, row.CurNode),
 			row.Handler,
 			row.HandleRole,
 			strconv.Itoa(row.Progress) + "%",
@@ -406,6 +406,46 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 		}
 	}
 	return
+}
+
+func getInternationalizationCurNode(language, node string) string {
+	if strings.Contains(language, "zh-CN") {
+		switch node {
+		case WaitCommit:
+			return "等待提交"
+		case SendRequest:
+			return "发送请求"
+		case RequestPending:
+			return "请求定版"
+		case RequestComplete:
+			return "请求完成"
+		}
+	}
+	return node
+}
+
+func getInternationalizationStatus(language string, status string) string {
+	if strings.Contains(language, "zh-CN") {
+		switch status {
+		case string(models.Draft):
+			return "草稿"
+		case string(models.Pending):
+			return "等待定版"
+		case string(models.InProgress):
+			return "执行中"
+		case string(models.InProgressFaulted):
+			return "节点报错"
+		case string(models.Termination):
+			return "手动终止"
+		case string(models.Completed):
+			return "成功"
+		case string(models.InProgressTimeOuted):
+			return "节点超时"
+		case string(models.Faulted):
+			return "自动退出"
+		}
+	}
+	return status
 }
 
 func getRequestRemainDays(startTime, format string, effectiveDays int) string {
@@ -2569,7 +2609,7 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 					exist = false
 					if v.Status == "Faulted" || v.Status == "Timeouted" {
 						for _, rowData := range subRowsData {
-							if rowData.NodeDefId == v.NodeDefId {
+							if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
 								exist = true
 								rowData.Status = int(Fail)
 								break
@@ -2577,6 +2617,7 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 						}
 						if !exist {
 							subRowsData = append(subRowsData, &models.RequestProgressObj{
+								NodeId:    v.NodeId,
 								NodeDefId: v.NodeDefId,
 								Node:      v.NodeName,
 								Handler:   AutoNode,
@@ -2631,6 +2672,7 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 				continue
 			}
 			rowsData = append(rowsData, &models.RequestProgressObj{
+				NodeId:    node.NodeId,
 				OrderedNo: node.OrderedNo,
 				NodeDefId: node.NodeDefId,
 				Node:      node.NodeName,
@@ -2649,6 +2691,7 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 					continue
 				}
 				rowsData = append(rowsData, &models.RequestProgressObj{
+					NodeId:    node.NodeId,
 					OrderedNo: node.OrderedNo,
 					NodeDefId: node.NodeDefId,
 					Node:      node.NodeName,

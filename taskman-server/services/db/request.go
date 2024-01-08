@@ -34,6 +34,7 @@ const (
 	WaitCommit           = "waitCommit"           // 等待提交
 	SendRequest          = "sendRequest"          // 发送请求
 	RequestPending       = "requestPending"       // 请求定版
+	CurNodeCompleted     = "Completed"            // 完成
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出
 	InternallyTerminated = "internallyTerminated" // 手动终止
@@ -411,6 +412,8 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 func getInternationalizationCurNode(language, node string) string {
 	if strings.Contains(language, "zh-CN") {
 		switch node {
+		case CurNodeCompleted:
+			return "请求完成"
 		case WaitCommit:
 			return "等待提交"
 		case SendRequest:
@@ -708,7 +711,7 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 	progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
 	switch response.Data.Status {
 	case "Completed":
-		curNode = "Completed"
+		curNode = CurNodeCompleted
 		return
 	case "InProgress":
 		for _, v := range response.Data.TaskNodeInstances {

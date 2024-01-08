@@ -1267,7 +1267,7 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	return
 }
 
-// getLatestVersionTemplate 获取requestTemplateList每个模板的最新版本模板
+// getLatestVersionTemplate 获取requestTemplateList每个模板的最新发布或者禁用版本模板)
 func getLatestVersionTemplate(requestTemplateList, allRequestTemplateList []*models.RequestTemplateTable) map[string]*models.RequestTemplateTable {
 	allTemplateMap := make(map[string]*models.RequestTemplateTable)
 	allTemplateRecordMap := make(map[string]*models.RequestTemplateTable)
@@ -1303,6 +1303,10 @@ func getLatestVersionTemplate(requestTemplateList, allRequestTemplateList []*mod
 			latestTemplate = requestTemplate
 		}
 		resultMap[requestTemplate.Id] = latestTemplate
+		// 如果最新版本是创建状态,需要记录上一个版本模板
+		if latestTemplate.Status == "created" && latestTemplate.RecordId != "" {
+			resultMap[latestTemplate.RecordId] = allTemplateMap[latestTemplate.RecordId]
+		}
 	}
 	return resultMap
 }

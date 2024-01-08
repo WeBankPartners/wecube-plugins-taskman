@@ -2198,6 +2198,7 @@ func notifyRoleMail(requestId string) error {
 func CopyRequest(requestId, createdBy string) (result models.RequestTable, err error) {
 	parentRequest := &models.RequestTable{}
 	var requestTable []*models.RequestTable
+	var requestTemplate models.RequestTemplateTable
 	err = x.SQL("select * from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
@@ -2211,6 +2212,15 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		err = fmt.Errorf("Only Faulted request can copy ")
 		return
 	}*/
+	requestTemplate, err = GetSimpleRequestTemplate(parentRequest.RequestTemplate)
+	if err != nil {
+		return
+	}
+	// 重新设置请求名称
+	parentRequest.Name = fmt.Sprintf("%s-%s-%s", parentRequest.Name, requestTemplate.OperatorObjType, time.Now().Format("060102150405"))
+	// 重新设置期望时间
+	d, _ := time.ParseDuration(fmt.Sprintf("%dh", 24*requestTemplate.ExpireDay))
+	parentRequest.ExpectTime = time.Now().Add(d).Format(models.DateTimeFormat)
 	result = *parentRequest
 	var formTable []*models.FormTable
 	err = x.SQL("select * from form where id=?", parentRequest.Form).Find(&formTable)

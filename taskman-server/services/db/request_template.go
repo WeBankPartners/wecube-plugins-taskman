@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
@@ -1466,32 +1467,58 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 
 func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (backToken string, err error) {
 	var actions []*execAction
+	var inputVersion = getTemplateVersion(&input.RequestTemplate)
+	var templateList []*models.RequestTemplateTable
+	// 记录重复并且是草稿态的Id
+	var repeatTemplateIdList []string
 	if confirmToken == "" {
-		existFlag, err := checkImportExist(input.RequestTemplate.Id)
+		// 1.判断名称是否重复
+		templateList, err = getTemplateListByName(input.RequestTemplate.Name)
 		if err != nil {
 			return backToken, err
 		}
-		if existFlag {
-			backToken = guid.CreateGuid()
-			models.RequestTemplateImportMap[backToken] = input
-			return backToken, nil
-		}
-		/*		input.RequestTemplate.Id = guid.CreateGuid()
-				input.RequestTemplate.Version = ""
-				input.RequestTemplate.RecordId = ""
-				backToken = input.RequestTemplate.Id*/
-	} else {
-		if inputCache, b := models.RequestTemplateImportMap[confirmToken]; b {
-			input = inputCache
+		if len(templateList) > 0 {
+			// 有名称重复数据,判断导入版本是否高于所有模板版本
+			for _, template := range templateList {
+				// 导入版本 低于同名版本,直接报错
+				if inputVersion < getTemplateVersion(template) {
+					return backToken, exterror.New().ImportTemplateVersionConflictError
+				}
+				if template.Status == string(models.Draft) {
+					repeatTemplateIdList = append(repeatTemplateIdList, template.Id)
+					models.RequestTemplateImportMap[template.Id] = input
+				}
+			}
+			if len(repeatTemplateIdList) > 0 {
+				backToken = strings.Join(repeatTemplateIdList, ",")
+				err = exterror.New().ImportTemplateHighVersionCoverAlert
+				return
+			} else {
+				// 有重复数据,但是新导入模板版本最高,直接当成新建处理
+				input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
+			}
 		} else {
-			return backToken, fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+			// 无名称重复数据，新建模板id以及模板关联表id都新建
+			input = createNewImportTemplate(input, "")
 		}
-		delete(models.RequestTemplateImportMap, confirmToken)
-		delActions, delErr := DeleteRequestTemplate(input.RequestTemplate.Id, true)
-		if delErr != nil {
-			return backToken, delErr
+	} else {
+		// 删除冲突模板数据
+		confirmTokenList := strings.Split(confirmToken, ",")
+		for _, ct := range confirmTokenList {
+			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
+				input = inputCache
+			} else {
+				return backToken, fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+			}
+			delete(models.RequestTemplateImportMap, ct)
+			delActions, delErr := DeleteRequestTemplate(ct, true)
+			if delErr != nil {
+				return backToken, delErr
+			}
+			actions = append(actions, delActions...)
 		}
-		actions = append(actions, delActions...)
+		// 新建模板&模板相关表属性
+		input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
 	}
 	if input.RequestTemplate.Id == "" {
 		return backToken, fmt.Errorf("RequestTemplate id illegal ")
@@ -1581,17 +1608,64 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 	return backToken, transaction(actions)
 }
 
-func checkImportExist(requestTemplateId string) (exist bool, err error) {
-	exist = false
-	var requestTemplateTable []*models.RequestTemplateTable
-	x.SQL("select id,name,version,status from request_template where id=?", requestTemplateId).Find(&requestTemplateTable)
-	if len(requestTemplateTable) == 0 {
-		return
+func createNewImportTemplate(input models.RequestTemplateExport, recordId string) models.RequestTemplateExport {
+	var historyTemplateId = input.RequestTemplate.Id
+	input.RequestTemplate.Id = guid.CreateGuid()
+	input.RequestTemplate.RecordId = recordId
+	// 修改模板角色中模板id,新建角色id
+	for _, requestTemplateRole := range input.RequestTemplateRole {
+		requestTemplateRole.Id = guid.CreateGuid()
+		requestTemplateRole.RequestTemplate = input.RequestTemplate.Id
 	}
-	exist = true
-	if requestTemplateTable[0].Status == "confirm" {
-		err = fmt.Errorf("RequestTemplate:%s %s already confirm ", requestTemplateTable[0].Name, requestTemplateTable[0].Version)
+	// 修改 formTemplate
+	for _, formTemplate := range input.FormTemplate {
+		historyFormTemplateId := formTemplate.Id
+		formTemplate.Id = guid.CreateGuid()
+		// 修改模板里面的 formTemplateId
+		if input.RequestTemplate.FormTemplate == historyFormTemplateId {
+			input.RequestTemplate.FormTemplate = formTemplate.Id
+		}
+		for _, formItemTemplate := range input.FormItemTemplate {
+			formItemTemplate.Id = guid.CreateGuid()
+			if formItemTemplate.FormTemplate == historyFormTemplateId {
+				formItemTemplate.FormTemplate = formTemplate.Id
+			}
+		}
+		// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
+		for _, taskTemplate := range input.TaskTemplate {
+			historyTaskTemplateId := taskTemplate.Id
+			taskTemplate.Id = guid.CreateGuid()
+			if taskTemplate.FormTemplate == historyFormTemplateId {
+				taskTemplate.FormTemplate = formTemplate.Id
+			}
+			if taskTemplate.RequestTemplate == historyTemplateId {
+				taskTemplate.RequestTemplate = input.RequestTemplate.Id
+			}
+			for _, taskTemplateRole := range input.TaskTemplateRole {
+				taskTemplateRole.Id = guid.CreateGuid()
+				if taskTemplateRole.TaskTemplate == historyTaskTemplateId {
+					taskTemplateRole.TaskTemplate = taskTemplate.Id
+				}
+			}
+		}
 	}
+
+	return input
+}
+
+func getTemplateVersion(template *models.RequestTemplateTable) int {
+	var version int
+	if template == nil {
+		return 0
+	}
+	if len(template.Version) > 1 {
+		version, _ = strconv.Atoi(template.Version[1:])
+	}
+	return version
+}
+
+func getTemplateListByName(templateName string) (requestTemplateTable []*models.RequestTemplateTable, err error) {
+	err = x.SQL("select id,name,version,status from request_template where name=?", templateName).Find(&requestTemplateTable)
 	return
 }
 

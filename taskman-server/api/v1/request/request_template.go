@@ -3,14 +3,15 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	"github.com/gin-gonic/gin"
 )
 
 func QueryRequestTemplateGroup(c *gin.Context) {

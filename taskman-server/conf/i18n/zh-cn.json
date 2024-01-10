@@ -83,5 +83,13 @@
   "get_request_preview_data_error": {
     "code": 20100012,
     "message": "新建请求失败：模版无效，未配置表单，请联系模板属主/Wecube管理员更新模版"
+  },
+  "import_template_version_conflict_error": {
+    "code": 20100013,
+    "message": "版本冲突"
+  },
+  "import_template_high_version_cover_alert": {
+    "code": 20100014,
+    "message": "导入的高版本是否覆盖低版本?"
   }
 }

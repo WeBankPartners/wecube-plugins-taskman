@@ -58,19 +58,19 @@
   },
   "submit_request_not_permission": {
     "code": 20100006,
-    "message": "Submit Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+    "message": "Submit Task Failed: The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
   },
   "save_request_not_permission": {
     "code": 20100007,
-    "message": "Save Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+    "message": "Save Task Failed: The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
   },
   "task_approve_not_permission": {
     "code": 20100008,
-    "message": "Submit Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+    "message": "Submit Task Failed: The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
   },
   "task_save_not_permission": {
     "code": 20100009,
-    "message": "Save Task Failed:  The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
+    "message": "Save Task Failed: The task has been claimed by another team member . Please go to the dashboard and click \"Take Over\" to claim the task and continue to submit this request."
   },
   "update_request_handler_status_error": {
     "code": 20100010,
@@ -82,10 +82,10 @@
   },
   "get_request_preview_data_error": {
     "code": 20100012,
-    "message": "Create Request  Failed: Invalid template, form not configured. Please contact the template owner/Wecube administrator to update the template."
+    "message": "Create Request Failed: Invalid template, form not configured. Please contact the template owner/Wecube administrator to update the template."
   },
   "import_template_version_conflict_error": {
     "code": 20100013,
-    "message": "版本冲突"
+    "message": "Import Failed: The imported template version is lower than the platform version, which does not support importing"
   }
 }

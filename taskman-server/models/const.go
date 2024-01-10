@@ -23,3 +23,12 @@ const (
 	InProgressTimeOuted Status = "InProgress(Timeouted)" // 节点超时
 	Faulted             Status = "Faulted"               // 自动退出
 )
+
+// TemplateType 模板类型
+type TemplateType string
+
+const (
+	RequestType TemplateType = "request" // 请求
+	ReleaseType TemplateType = "release" // 发布
+	OtherType   TemplateType = "other"   // 其他
+)

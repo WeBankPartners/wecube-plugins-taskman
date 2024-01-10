@@ -66,8 +66,6 @@ type ErrorTemplate struct {
 	GetRequestPreviewDataError CustomError `json:"get_request_preview_data_error"`
 	// ImportTemplateVersionConflictError 模板导入版本冲突
 	ImportTemplateVersionConflictError CustomError `json:"import_template_version_conflict_error"`
-	// importTemplateHighVersionCoverAlert 模板导入高版本覆盖弹窗提示
-	ImportTemplateHighVersionCoverAlert CustomError `json:"import_template_high_version_cover_alert"`
 }
 
 var (

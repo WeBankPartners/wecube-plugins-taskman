@@ -1481,17 +1481,16 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 			// 有名称重复数据,判断导入版本是否高于所有模板版本
 			for _, template := range templateList {
 				// 导入版本 低于同名版本,直接报错
-				if inputVersion < getTemplateVersion(template) {
+				if inputVersion <= getTemplateVersion(template) {
 					return backToken, exterror.New().ImportTemplateVersionConflictError
 				}
-				if template.Status == string(models.Draft) {
+				if template.Status == "created" {
 					repeatTemplateIdList = append(repeatTemplateIdList, template.Id)
 					models.RequestTemplateImportMap[template.Id] = input
 				}
 			}
 			if len(repeatTemplateIdList) > 0 {
 				backToken = strings.Join(repeatTemplateIdList, ",")
-				err = exterror.New().ImportTemplateHighVersionCoverAlert
 				return
 			} else {
 				// 有重复数据,但是新导入模板版本最高,直接当成新建处理

@@ -87,9 +87,5 @@
   "import_template_version_conflict_error": {
     "code": 20100013,
     "message": "版本冲突"
-  },
-  "import_template_high_version_cover_alert": {
-    "code": 20100014,
-    "message": "导入的高版本是否覆盖低版本?"
   }
 }

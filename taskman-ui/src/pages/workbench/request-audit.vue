@@ -53,7 +53,7 @@ export default {
         name: '', // 请求名
         id: '',
         templateId: [], // 模板ID
-        status: ['Completed', 'Termination', 'Faulted'], // 状态
+        status: [], // 状态
         operatorObjType: [], // 操作对象类型
         procDefName: [], // 使用编排
         createdBy: [], // 创建人
@@ -91,6 +91,13 @@ export default {
     this.tableColumns = deepClone(this.submitAllColumn)
     this.tableColumns = this.tableColumns.filter(item => item.key !== 'rollbackDesc' && item.key !== 'action')
     this.searchOptions = this.submitSearch
+    this.searchOptions.forEach(item => {
+      // 请求状态设置默认值
+      if (item.key === 'status') {
+        item.initValue = ['Completed', 'Termination', 'Faulted']
+      }
+    })
+    this.handleReset()
     this.getList()
   },
   methods: {
@@ -101,6 +108,31 @@ export default {
         field: col.key
       }
       this.getList()
+    },
+    // 重置表单
+    handleReset () {
+      const resetObj = {}
+      Object.keys(this.form).forEach(key => {
+        if (Array.isArray(this.form[key])) {
+          resetObj[key] = []
+        } else {
+          resetObj[key] = ''
+        }
+        // 处理时间类型默认值
+        this.searchOptions.forEach(i => {
+          if (i.component === 'custom-time' && i.initValue) {
+            i.dateType = 1
+          } else {
+            i.dateType = 4
+          }
+        })
+        // 点击清空按钮需要给默认值的表单选项
+        const initOptions = this.searchOptions.filter(i => i.initValue !== undefined)
+        initOptions.forEach(i => {
+          resetObj[i.key] = i.initValue
+        })
+      })
+      this.form = resetObj
     },
     getParams () {
       const form = deepClone(this.form)
@@ -153,6 +185,7 @@ export default {
     },
     handleChangeTab (val) {
       this.actionName = val
+      this.handleReset()
       this.handleQuery()
     },
     // 点击名称，id，任务名快捷跳转
@@ -243,6 +276,8 @@ export default {
 <style lang="scss">
 .workbench-request-audit {
   .ivu-progress-outer {
+    display: flex;
+    align-items: center;
     width: 90px !important;
     padding-right: 30px !important;
     margin-right: -33px !important;

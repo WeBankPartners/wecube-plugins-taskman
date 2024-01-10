@@ -110,7 +110,7 @@
                   <!--提交请求-->
                   <template v-if="index === 0">
                     <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;">{{ $t('tw_submit_request') }}</div>
+                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ $t('tw_submit_request') }}</div>
                       <div style="width:calc(100% - 70px)">
                         <HeaderTag :showHeader="true" :data="data" :operation="$t('tw_submit_approval')"></HeaderTag>
                       </div>
@@ -129,7 +129,7 @@
                   <!--请求定版-->
                   <template v-else-if="index === 1">
                     <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;">{{ $t('tw_request_pending') }}</div>
+                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ $t('tw_request_pending') }}</div>
                       <div style="width:calc(100% - 70px)">
                         <HeaderTag :data="data" :operation="$t('final_version')"></HeaderTag>
                       </div>
@@ -147,7 +147,7 @@
                   <!--任务审批-->
                   <template v-else>
                     <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;">{{ data.taskName }}</div>
+                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ data.taskName }}</div>
                       <div style="width:calc(100% - 70px)">
                         <HeaderTag :data="data"></HeaderTag>
                       </div>
@@ -386,7 +386,6 @@ export default {
   },
   data () {
     return {
-      // actionName: this.$route.query.action, // 1发布,2请求(3问题,4事件,5变更)
       enforceDisable: this.$route.query.enforceDisable === 'Y',
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志(用于请求定版)
       formDisable: this.$route.query.isCheck === 'Y', // 查看标志

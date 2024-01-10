@@ -318,6 +318,8 @@ export default {
 <style lang="scss">
 .workbench-publish-history {
   .ivu-progress-outer {
+    display: flex;
+    align-items: center;
     width: 90px !important;
     padding-right: 30px !important;
     margin-right: -33px !important;

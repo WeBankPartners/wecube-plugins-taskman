@@ -405,7 +405,14 @@ export default {
         if (noJump) {
           return statusCode
         } else {
-          this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
+          if (this.jumpFrom === 'my_submit') {
+            const rollback = this.$route.query.rollback
+            this.$router.push({
+              path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=${rollback}`
+            })
+          } else {
+            this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
+          }
         }
       }
     },

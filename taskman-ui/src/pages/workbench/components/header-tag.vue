@@ -1,24 +1,24 @@
 <template>
   <div class="workbench-header-tag">
     <Row v-if="showHeader" class="title" :gutter="10">
-      <Col :span="4">{{ $t('handle_time') }}</Col>
-      <Col :span="3">{{ $t('tw_assume') }}</Col>
-      <Col :span="3">{{ $t('handler_role') }}</Col>
-      <Col :span="2">{{ $t('handler') }}</Col>
-      <Col :span="2">{{ $t('t_action') }}</Col>
-      <Col :span="5">{{ $t('tw_note') }}</Col>
-      <Col :span="5">{{ $t('tw_attach') }}</Col>
+      <Col :span="4" class="line">{{ $t('handle_time') }}</Col>
+      <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
+      <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
+      <Col :span="2" class="line">{{ $t('handler') }}</Col>
+      <Col :span="2" class="line">{{ $t('t_action') }}</Col>
+      <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
+      <Col :span="5" class="line">{{ $t('tw_attach') }}</Col>
     </Row>
     <Row class="content" :gutter="10">
-      <Col :span="4">{{ data.handleTime }}</Col>
-      <Col :span="3">{{ getDiffTime }}</Col>
-      <Col :span="3">{{ data.handleRoleName || '-' }}</Col>
-      <Col :span="2">{{ data.handler || '-' }}</Col>
-      <Col :span="2">{{ data.choseOption || operation }}</Col>
-      <Col :span="5"
+      <Col :span="4" class="line">{{ data.handleTime }}</Col>
+      <Col :span="3" class="line">{{ getDiffTime }}</Col>
+      <Col :span="3" class="line">{{ data.handleRoleName || '-' }}</Col>
+      <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
+      <Col :span="2" class="line">{{ data.choseOption || operation }}</Col>
+      <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
       >
-      <Col :span="5" style="line-height:32px;">
+      <Col :span="5" class="line">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
           <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
             file.name
@@ -146,6 +146,9 @@ export default {
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+  }
+  .line {
+    line-height: 32px;
   }
 }
 </style>

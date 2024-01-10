@@ -28,14 +28,19 @@ export default {
           key: 'name',
           render: (h, params) => {
             return (
-              <span
-                style="cursor:pointer;"
-                onClick={() => {
-                  this.handleDbClick(params.row)
-                }}
-              >
-                {params.row.name}
-              </span>
+              <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                <span
+                  style="cursor:pointer;"
+                  onClick={() => {
+                    this.handleDbClick(params.row)
+                  }}
+                >
+                  {params.row.name}
+                </span>
+                {this.username === params.row.handler &&
+                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  this.tabName === 'pending' && <Tag color="#f26161">{this.$t('仅本人处理')}</Tag>}
+              </div>
             )
           }
         },
@@ -135,9 +140,17 @@ export default {
             const percent = (diff / params.row.effectiveDays) * 100
             const color = percent > 50 ? (percent > 80 ? '#bd3124' : '#ffbf6b') : '#81b337'
             return (
-              <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>
-                <span>{`${diff}${this.$t('tw_days')}/${params.row.effectiveDays}${this.$t('tw_days')}`}</span>
-              </Progress>
+              <div>
+                <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>
+                  <span>{`${diff}${this.$t('tw_days')}/${params.row.effectiveDays}${this.$t('tw_days')}`}</span>
+                </Progress>
+                {percent > 100 && (
+                  <span style="color:#bd3124;display:flex;align-items:center;">
+                    <Icon type="md-warning" color="#bd3124" />
+                    {`${this.$t('tw_exceed')}${diff - params.row.effectiveDays}${this.$t('tw_days')}`}
+                  </span>
+                )}
+              </div>
             )
           }
         },
@@ -275,11 +288,13 @@ export default {
                     </Button>
                   )}
                 {// 撤回
-                // 我提交的定版状态可退回（本人创建的）
-                  params.row.status === 'Pending' && this.tabName === 'submit' && params.row.createdBy === this.username && (
+                // 我提交的定版状态可退回
+                  params.row.status === 'Pending' && this.tabName === 'submit' && (
                     <Button
                       type="error"
                       size="small"
+                      // 非本人创建禁用
+                      disabled={params.row.createdBy !== this.username}
                       onClick={() => {
                         this.handleRecall(params.row)
                       }}
@@ -293,7 +308,8 @@ export default {
                     <Button
                       type="success"
                       size="small"
-                      disabled={this.tabName === 'draft' && params.row.createdBy !== this.username}
+                      // 非本人创建禁用
+                      disabled={params.row.createdBy !== this.username}
                       onClick={() => {
                         this.hanldeLaunch(params.row)
                       }}
@@ -307,6 +323,7 @@ export default {
                     <Button
                       type="error"
                       size="small"
+                      // 非本人创建禁用
                       disabled={params.row.createdBy !== this.username}
                       onClick={() => {
                         this.handleDeleteDraft(params.row)

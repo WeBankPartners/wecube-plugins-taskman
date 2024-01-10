@@ -178,10 +178,10 @@
   "tw_assume": "Time Consumed",
   "tw_note": "Note",
   "tw_attach": "Attachment",
-  "tw_day": "Days",
-  "tw_hour": "Hours",
-  "tw_minute": "Minutes",
-  "tw_second": "Seconds",
+  "tw_day": "d",
+  "tw_hour": "h",
+  "tw_minute": "m",
+  "tw_second": "s",
   "tw_hot_menu": "Frequently Used",
   "tw_request_progress": "Request Progress",
   "tw_auto_exit_tips": "The request has been terminated because the orchestration process reached an exit node based on judgment conditions. Please copy the request ID and send it to the wecube platform administrator for handling.",
@@ -255,7 +255,7 @@
   "tw_progress": "Progress",
   "tw_task_stay_time": "Task Stay Duration",
   "tw_request_stay_time": "Request Stay Duration",
-  "tw_days": "Days",
+  "tw_days": "D",
   "tw_operator": "Target Object",
   "tw_action_view": "View",
   "tw_action_handle": "Approve",
@@ -277,5 +277,7 @@
   "tw_recall_tab": "Recalled",
   "tw_other_tab": "Other",
   "tw_please_select": "Please Select",
-  "tw_recall_reason": "The request form is improperly filled. Please correct and relaunch."
+  "tw_recall_reason": "The request form is improperly filled. Please correct and relaunch.",
+  "tw_rollback_tips": "If return the request,it will be sent back to the creator as a draft.,and wait for them to relaunch,You can find this request in [Processed - Owner Approval] with status 'Draft (Returned).'",
+  "tw_exceed": "Exceed"
 }

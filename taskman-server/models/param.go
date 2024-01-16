@@ -45,7 +45,7 @@ type FilterRequestParam struct {
 	StartTime string `json:"startTime"` //开始时间
 }
 
-// QueryCollectTemplateObj 模板查询条件
+// QueryCollectTemplateParam 模板查询条件
 type QueryCollectTemplateParam struct {
 	Action           int                  `json:"action"`           // 1表示发布,2表示请求
 	Id               string               `json:"id"`               // ID

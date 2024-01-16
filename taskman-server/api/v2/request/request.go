@@ -65,6 +65,7 @@ func CreateRequest(c *gin.Context) {
 func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
 	cacheType := c.Param("cacheType")
+	event := c.Param("event")
 	if cacheType == "data" {
 		var param models.RequestProDataV2Dto
 		if err := c.ShouldBindJSON(&param); err != nil {
@@ -90,8 +91,16 @@ func SaveRequestCache(c *gin.Context) {
 			return
 		}
 		if request.Handler != operator {
-			middleware.ReturnSaveRequestNotPermissionError(c)
-			return
+			switch event {
+			// 暂存
+			case "save":
+				middleware.ReturnSaveRequestNotPermissionError(c)
+				return
+				//退回 or 确认定版
+			case "submit":
+				middleware.ReturnSubmitRequestNotPermissionError(c)
+				return
+			}
 		}
 		err = db.SaveRequestBindCache(requestId, operator, &param)
 		if err != nil {

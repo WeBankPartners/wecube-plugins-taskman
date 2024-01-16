@@ -2508,10 +2508,10 @@ func getSQL(status []string) string {
 }
 
 // getTaskApproveHandler 获取任务审批人,有人返回人,没人返回审批角色
-func getTaskApproveHandler(result models.TaskTemplateDto) string {
+func getTaskApproveHandler(requestId string, result models.TaskTemplateDto) string {
 	// 审批人以 任务表审批人为主,任务可以认领转给我会修改任务审批人
 	var taskList []*models.TaskTable
-	x.SQL("select name,handler,node_def_id,node_name from task where request = ?", result.RequestTemplateId).Find(&taskList)
+	x.SQL("select name,handler,node_def_id,node_name from task where request = ?", requestId).Find(&taskList)
 	if len(taskList) > 0 {
 		for _, task := range taskList {
 			if task.NodeDefId == result.NodeDefId && task.Handler != "" {
@@ -2545,7 +2545,7 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 	} else {
 		pendingHandler = GetRequestTemplateManageRole(request.RequestTemplate)
 	}
-	subRowsData := getCommonRequestProgress(request.RequestTemplate, userToken)
+	subRowsData := getCommonRequestProgress(requestId, request.RequestTemplate, userToken)
 	switch request.Status {
 	case "Draft":
 		status = int(NotStart)
@@ -2651,7 +2651,7 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 	return
 }
 
-func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.RequestProgressObj) {
+func getCommonRequestProgress(requestId, templateId, userToken string) (rowsData []*models.RequestProgressObj) {
 	var nodeList models.ProcNodeObjList
 	var err error
 	nodeList, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: templateId}, userToken, "template")
@@ -2679,7 +2679,7 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 				OrderedNo: node.OrderedNo,
 				NodeDefId: node.NodeDefId,
 				Node:      node.NodeName,
-				Handler:   getTaskApproveHandler(dto),
+				Handler:   getTaskApproveHandler(requestId, dto),
 				Status:    int(NotStart),
 			})
 		}
@@ -2698,7 +2698,7 @@ func getCommonRequestProgress(templateId, userToken string) (rowsData []*models.
 					OrderedNo: node.OrderedNo,
 					NodeDefId: node.NodeDefId,
 					Node:      node.NodeName,
-					Handler:   getTaskApproveHandler(dto),
+					Handler:   getTaskApproveHandler(requestId, dto),
 					Status:    int(NotStart),
 				})
 			}
@@ -2900,12 +2900,11 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	}
 	var pairList []*models.KeyValuePair
 	var dataList []*models.FilterObj
-	var templateMap = make(map[string]*models.FilterObj)
 	var operatorObjTypeMap = make(map[string]bool)
 	var procDefNameMap = make(map[string]bool)
 	var createdByMap = make(map[string]bool)
 	var handlerMap = make(map[string]bool)
-	var sql = "select rt.id as template_id,rt.name as template_name,rt.type as template_type,rt.operator_obj_type,rt.proc_def_name,r.created_by," +
+	var sql = "select rt.id as template_id,rt.name as template_name,rt.version,rt.type as template_type,rt.operator_obj_type,rt.proc_def_name,r.created_by," +
 		"r.handler from request r join request_template rt on r.request_template = rt.id where r.created_time > ?"
 	err = x.SQL(sql, param.StartTime).Find(&dataList)
 	var handlerList []string
@@ -2919,16 +2918,16 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 		}
 	}
 	for _, item := range dataList {
-		templateMap[item.TemplateName] = item
 		operatorObjTypeMap[item.OperatorObjType] = true
 		procDefNameMap[item.ProcDefName] = true
 		createdByMap[item.CreatedBy] = true
 		handlerMap[item.Handler] = true
-	}
-	for key, value := range templateMap {
-		m := &models.KeyValuePair{TemplateId: value.TemplateId, TemplateName: key}
+		m := &models.KeyValuePair{TemplateId: item.TemplateId, TemplateName: item.TemplateName, Version: item.Version}
+		if m.Version == "" {
+			m.Version = "beta"
+		}
 		pairList = append(pairList, m)
-		if value.TemplateType == 0 {
+		if item.TemplateType == 0 {
 			data.RequestTemplateList = append(data.RequestTemplateList, m)
 		} else {
 			data.ReleaseTemplateList = append(data.ReleaseTemplateList, m)
@@ -2970,6 +2969,14 @@ func convertMap2Array(hashMap map[string]bool) (arr []string) {
 		}
 	}
 	return
+}
+
+func convertArray2Map(arr []string) map[string]bool {
+	hashMap := make(map[string]bool, 0)
+	for _, str := range arr {
+		hashMap[str] = true
+	}
+	return hashMap
 }
 
 func getAllCoreProcess(userToken string) map[string]string {

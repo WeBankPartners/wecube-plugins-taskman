@@ -1108,15 +1108,15 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	var requestTemplateRoleTable []*models.RequestTemplateRoleTable
 	var ownerRoleMap = make(map[string]string)
 	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
+	var userRoleMap = convertArray2Map(userRoles)
 	result = []*models.UserRequestTemplateQueryObjNew{}
 	useGroupMap, _ := getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
-	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
 	err = x.SQL("select * from request_template ").Find(&allTemplateTable)
 	if err != nil {
 		return
 	}
-	err = x.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+"))) order by `group`,tags,status,id", queryParam...).Find(&requestTemplateTable)
+	err = x.SQL("select * from request_template where del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))  order by `group`,tags,status,id", userRolesFilterParam...).Find(&requestTemplateTable)
 	if err != nil {
 		return
 	}
@@ -1198,10 +1198,17 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	if len(requestTemplateTable) > 0 {
 		for _, template := range requestTemplateTable {
 			collectFlag = 0
-			var roleArr []string
-			err = x.SQL("SELECT role FROM request_template_role WHERE request_template = ?  AND role_type = 'USE' ", template.Id).Find(&roleArr)
+			var tempRoleArr, roleArr []string
+			err = x.SQL("SELECT role FROM request_template_role WHERE request_template = ?  AND role_type = 'USE' ", template.Id).Find(&tempRoleArr)
 			if err != nil {
 				continue
+			}
+			if len(tempRoleArr) > 0 {
+				for _, role := range tempRoleArr {
+					if userRoleMap[role] {
+						roleArr = append(roleArr, role)
+					}
+				}
 			}
 			if len(collectMap) > 0 && collectMap[template.ParentId] {
 				collectFlag = 1

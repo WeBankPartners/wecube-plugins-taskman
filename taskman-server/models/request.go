@@ -374,6 +374,7 @@ type FilterItem struct {
 type KeyValuePair struct {
 	TemplateId   string `json:"templateId"`   // 使用模板
 	TemplateName string `json:"templateName"` // 使用模板
+	Version      string `json:"version"`      // 模板版本
 }
 
 type KeyValueSort []*KeyValuePair
@@ -398,6 +399,7 @@ type FilterObj struct {
 	Id              string `json:"id" xorm:"id"`                             // requestID
 	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板IDa
 	TemplateName    string `json:"templateName" xorm:"template_name"`        // 模板名称
+	Version         string `json:"version" xorm:"version"`                   // 模板版本
 	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
 	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`         // 使用编排
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`              // 创建人

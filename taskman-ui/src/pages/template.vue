@@ -314,6 +314,7 @@ export default {
       if (val.statusCode === 'CONFIRM') {
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
+          content: this.$t('tw_template_cover_tips_l') + `"${val.templateName}"` + this.$t('tw_template_cover_tips_r'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {

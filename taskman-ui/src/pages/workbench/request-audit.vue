@@ -88,6 +88,12 @@ export default {
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }
+    const lang = localStorage.getItem('lang') || 'zh-CN'
+    if (lang === 'zh-CN') {
+      this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
+    } else {
+      this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+    }
     this.tableColumns = deepClone(this.submitAllColumn)
     this.tableColumns = this.tableColumns.filter(item => item.key !== 'rollbackDesc' && item.key !== 'action')
     this.searchOptions = this.submitSearch
@@ -151,6 +157,7 @@ export default {
       const params = {
         tab: 'commit', // 已提交数据，不包括草稿
         action: Number(this.actionName),
+        permission: 'all',
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
@@ -264,7 +271,7 @@ export default {
 .workbench-request-audit {
   width: 100%;
   .export {
-    width: 50px;
+    width: auto;
     height: 30px;
     position: absolute;
     right: 30px;
@@ -295,6 +302,12 @@ export default {
   }
   .ivu-btn-small {
     font-size: 12px;
+  }
+  .ivu-tag {
+    display: inline-block;
+    line-height: 16px;
+    height: auto;
+    padding: 5px 6px;
   }
 }
 </style>

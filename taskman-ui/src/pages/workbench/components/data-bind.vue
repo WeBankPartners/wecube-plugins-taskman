@@ -36,7 +36,7 @@
       </template>
     </Tabs>
     <div v-if="showBtn" style="text-align: center;margin-top:12px">
-      <Button @click="saveRequest()" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
+      <Button @click="saveRequest('save')" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
       <Button @click="rollbackRequest" type="error" :disabled="formDisable" v-if="isHandle">{{ $t('go_back') }}</Button>
       <Button @click="startRequest" :disabled="formDisable" v-if="isHandle">{{ $t('final_version') }}</Button>
       <!-- <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
@@ -199,7 +199,7 @@ export default {
         },
         onOk: async () => {
           this.$Modal.remove()
-          const flag = await this.saveRequest()
+          const flag = await this.saveRequest('submit')
           if (flag) {
             const { statusCode } = await startRequestNew(this.requestId, this.finalData)
             if (statusCode === 'OK') {
@@ -268,7 +268,7 @@ export default {
             })
           } else {
             // this.$Modal.remove()
-            const flag = await this.saveRequest()
+            const flag = await this.saveRequest('submit')
             if (flag) {
               const params = {
                 description: this.backReason
@@ -295,7 +295,7 @@ export default {
       const res = this.bindData.filter(bData => oid.includes(bData.id))
       return res
     },
-    async saveRequest () {
+    async saveRequest (type) {
       let tmpData = []
       this.nodes.forEach(n => {
         let params = {
@@ -317,12 +317,14 @@ export default {
         }
       })
       this.finalData.taskNodeBindInfos = tmpData
-      const { statusCode } = await saveRequestNew(this.requestId, this.finalData)
+      // type为save(暂存)、submit(撤回、确认定版)
+      const { statusCode } = await saveRequestNew(this.requestId, type, this.finalData)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        type === 'save' &&
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
         return true
       } else {
         return false

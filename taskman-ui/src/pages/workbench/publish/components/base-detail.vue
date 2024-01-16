@@ -266,7 +266,7 @@
                         "
                         @click="commitTaskData"
                         type="primary"
-                        >{{ $t('commit') }}</Button
+                        >{{ $t('tw_commit') }}</Button
                       >
                     </div>
                   </div>

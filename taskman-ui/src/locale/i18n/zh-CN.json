@@ -53,6 +53,7 @@
   "validation_rules": "校验规则",
   "only_supports_regular": "仅支持正则",
   "data_item": "数据项",
+  "save_data_item": "保存数据项",
   "no_data_item": "没有数据项",
   "warning": "警告",
   "can_not_be_empty": " 不能为空",
@@ -279,5 +280,10 @@
   "tw_please_select": "请选择",
   "tw_recall_reason": "请求表单填写不符合规范，请检查修正之后重新发起",
   "tw_rollback_tips": "如退回请求定版，请求将被退回到创建人处，变为草稿状态，需要等待创建人重新编辑发起。您可以在【已处理的-请求定版中】查看退回的请求（请求状态为：“草稿（被退回）“）",
-  "tw_exceed": "超期"
+  "tw_exceed": "超期",
+  "tw_template_cover_tips_l": "确认覆盖:模板草稿中已存在重名模板",
+  "tw_template_cover_tips_r": ",执行导入会删除已有的模板和由模板发起的请求,确认导入吗?",
+  "tw_only_me": "仅本人处理",
+  "tw_commit": "提交",
+  "tw_confirm_commit": "确认提交"
 }

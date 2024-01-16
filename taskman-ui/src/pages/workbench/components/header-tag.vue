@@ -66,8 +66,7 @@ export default {
         (days > 0 ? days + this.$t('tw_day') : '') +
         (hours > 0 ? hours + this.$t('tw_hour') : '') +
         (mins > 0 ? mins + this.$t('tw_minute') : '') +
-        secs +
-        this.$t('tw_second')
+        (secs > 0 ? secs + this.$t('tw_second') : '')
       )
     }
   },

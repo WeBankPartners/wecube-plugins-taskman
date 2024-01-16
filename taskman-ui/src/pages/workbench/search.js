@@ -289,7 +289,7 @@ export default {
                   data.releaseTemplateList &&
                   data.releaseTemplateList.map(item => {
                     return {
-                      label: item.templateName,
+                      label: `${item.templateName}【${item.version}】`,
                       value: item.templateId
                     }
                   })
@@ -299,7 +299,7 @@ export default {
                   data.requestTemplateList &&
                   data.requestTemplateList.map(item => {
                     return {
-                      label: item.templateName,
+                      label: `${item.templateName}【${item.version}】`,
                       value: item.templateId
                     }
                   })
@@ -309,7 +309,7 @@ export default {
                   data.templateList &&
                   data.templateList.map(item => {
                     return {
-                      label: item.templateName,
+                      label: `${item.templateName}【${item.version}】`,
                       value: item.templateId
                     }
                   })

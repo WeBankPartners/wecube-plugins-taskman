@@ -83,7 +83,7 @@ export default {
   }
   .ivu-tag {
     display: inline-block;
-    line-height: 11px;
+    line-height: 16px;
     height: auto;
     padding: 5px 6px;
   }

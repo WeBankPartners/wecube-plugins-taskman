@@ -166,6 +166,7 @@ export default {
       const params = {
         tab: this.activeTab,
         action: Number(this.actionName),
+        permission: 'group',
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize

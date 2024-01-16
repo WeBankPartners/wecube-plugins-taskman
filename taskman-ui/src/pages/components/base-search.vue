@@ -259,7 +259,7 @@ export default {
     padding-left: 20px;
     box-sizing: content-box;
     button {
-      width: 50px;
+      width: auto;
       height: 28px;
       line-height: 28px;
       font-size: 13px;

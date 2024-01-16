@@ -138,7 +138,7 @@ export default {
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
-    // 初始化加载数据(链接携带参数，调到指定页面)
+    // 初始化加载数据(链接携带参数，跳转到指定标签)
     initData (val, action) {
       this.tabName = val
       this.actionName = action
@@ -589,6 +589,9 @@ export default {
   }
   .ivu-btn-small {
     font-size: 12px;
+  }
+  .ivu-tooltip-inner {
+    max-width: 1000px;
   }
 }
 </style>

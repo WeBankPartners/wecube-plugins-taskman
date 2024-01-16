@@ -6,7 +6,6 @@
           ref="select"
           :value="data"
           @on-change="handleSelect"
-          v-loadmore="hanldeLoadMore"
           @on-query-change="handleQuery"
           clearable
           filterable
@@ -22,6 +21,18 @@
             >
             </Option>
           </template>
+          <!--加载更多-->
+          <Option style="padding:0px;" label="" value="">
+            <div style="width:100%;height:30px;" @click.stop>
+              <Icon
+                type="ios-more"
+                color="#2d8cf0"
+                size="24"
+                style="margin-right:12px;float:right"
+                @click="handleLoadMore()"
+              />
+            </div>
+          </Option>
         </Select>
       </Col>
     </Row>
@@ -164,7 +175,7 @@ export default {
       }
       this.optionsData = this.sourceDataFilter.slice(0, this.currentPage * this.pageSize)
     },
-    hanldeLoadMore () {
+    handleLoadMore () {
       if (this.sourceDataFilter.length === this.optionsData.length) return
       this.currentPage++
       this.getList()

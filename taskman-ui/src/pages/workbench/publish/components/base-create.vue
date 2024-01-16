@@ -30,7 +30,7 @@
           $t('tw_save_draft')
         }}</Button>
         <!--提交-->
-        <Button :disabled="!requestData.length" type="primary" @click="handlePublish">{{ $t('commit') }}</Button>
+        <Button :disabled="!requestData.length" type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
       </Col>
     </Row>
     <div style="display:flex;" class="content">
@@ -43,7 +43,7 @@
               <FormItem :label="$t('request_name')" required>
                 <Input
                   v-model="form.name"
-                  :maxlength="50"
+                  :maxlength="70"
                   show-word-limit
                   :placeholder="$t('request_name')"
                   style="width:100%;"
@@ -54,7 +54,7 @@
                 <Input
                   v-model="form.description"
                   type="textarea"
-                  :maxlength="100"
+                  :maxlength="200"
                   show-word-limit
                   :placeholder="$t('tw_publish_des')"
                   style="width:100%;"
@@ -236,7 +236,7 @@ export default {
         this.requestId = data.id
         this.templateName = data.requestTemplateName
         this.version = data.templateVersion
-        this.form.name = (data.name && data.name.substr(0, 50)) || ''
+        this.form.name = (data.name && data.name.substr(0, 70)) || ''
         // this.form.expectTime = dayjs()
         //   .add(data.expireDay || 0, 'day')
         //   .format('YYYY-MM-DD HH:mm:ss')
@@ -405,21 +405,21 @@ export default {
         if (noJump) {
           return statusCode
         } else {
-          if (this.jumpFrom === 'my_submit') {
-            const rollback = this.$route.query.rollback
-            this.$router.push({
-              path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=${rollback}`
-            })
-          } else {
-            this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
-          }
+          // if (this.jumpFrom === 'my_submit') {
+          //   const rollback = this.$route.query.rollback
+          //   this.$router.push({
+          //     path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=${rollback}`
+          //   })
+          // } else {
+          //   this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
+          // }
         }
       }
     },
     // 发布
     async handlePublish () {
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('commit'),
+        title: this.$t('tw_confirm_commit'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

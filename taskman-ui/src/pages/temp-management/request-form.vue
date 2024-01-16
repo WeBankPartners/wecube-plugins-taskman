@@ -261,9 +261,7 @@
       </Col>
     </Row>
     <div style="text-align: center; margin-top: 8px">
-      <Button type="primary" @click="saveForm" :disabled="$parent.isCheck === 'Y'"
-        >{{ $t('save') }}{{ $t('data_item') }}</Button
-      >
+      <Button type="primary" @click="saveForm" :disabled="$parent.isCheck === 'Y'">{{ $t('save_data_item') }}</Button>
       <Button @click="next">{{ $t('next') }}</Button>
     </div>
   </div>

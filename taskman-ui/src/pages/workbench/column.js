@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import { Tooltip } from 'view-design'
 export default {
   data () {
     return {
@@ -39,7 +38,7 @@ export default {
                 </span>
                 {this.username === params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && <Tag color="#f26161">{this.$t('仅本人处理')}</Tag>}
+                  this.tabName === 'pending' && <Tag color="#f26161">{this.$t('tw_only_me')}</Tag>}
               </div>
             )
           }
@@ -61,9 +60,9 @@ export default {
               { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
             ]
             const item = list.find(i => i.value === params.row.status)
-            // 已处理请求定版的草稿添加被退回说明
+            // 被退回的草稿添加标签
             const tagName =
-              this.tabName === 'hasProcessed' && this.type === '1' && params.row.status === 'Draft'
+              params.row.rollbackDesc && params.row.status === 'Draft'
                 ? `${item.label}(${this.$t('tw_returned_tips')})`
                 : item.label
             return (
@@ -79,7 +78,6 @@ export default {
           title: this.$t('tw_cur_tag'),
           minWidth: 120,
           key: 'curNode',
-          tooltip: true,
           render: (h, params) => {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
@@ -129,6 +127,7 @@ export default {
             )
           }
         },
+        // 任务停留时长
         effectiveDays: {
           renderHeader: () => {
             return <span>{this.type === '2' ? this.$t('tw_task_stay_time') : this.$t('tw_request_stay_time')}</span>
@@ -507,7 +506,7 @@ export default {
         key: 'rollbackDesc',
         render: (h, params) => {
           return (
-            <Tooltip content={params.row.rollbackDesc}>
+            <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
                 {params.row.rollbackDesc}
               </span>
@@ -550,7 +549,7 @@ export default {
         key: 'rollbackDesc',
         render: (h, params) => {
           return (
-            <Tooltip content={params.row.rollbackDesc}>
+            <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
                 {params.row.rollbackDesc}
               </span>

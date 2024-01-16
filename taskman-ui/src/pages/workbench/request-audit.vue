@@ -303,11 +303,5 @@ export default {
   .ivu-btn-small {
     font-size: 12px;
   }
-  .ivu-tag {
-    display: inline-block;
-    line-height: 16px;
-    height: auto;
-    padding: 5px 6px;
-  }
 }
 </style>

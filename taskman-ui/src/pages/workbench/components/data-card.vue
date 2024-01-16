@@ -3,8 +3,9 @@
     <Card v-for="(i, index) in data" :key="index" border :style="activeStyles(i)">
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
-          <img :src="i.icon" />
-          <span>{{ `${i.label}(${i.total || 0})` }}</span>
+          <!-- <img :src="i.icon" /> -->
+          <Icon :type="i.icon" :color="i.color" size="26"></Icon>
+          <span style="margin-left:5px;">{{ `${i.label}(${i.total || 0})` }}</span>
         </div>
         <div class="data">
           <div
@@ -61,35 +62,40 @@ export default {
         {
           type: 'pending',
           label: this.$t('tw_pending'),
-          icon: require('@/images/warning.png'),
+          icon: 'ios-alert',
+          color: '#ed4014',
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'hasProcessed',
           label: this.$t('tw_hasProcessed'),
-          icon: require('@/images/checked.png'),
+          icon: 'ios-checkmark-circle',
+          color: '#19be6b',
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'submit',
           label: this.$t('tw_submit'),
-          icon: require('@/images/upload.png'),
+          icon: 'ios-cloud-upload',
+          color: '#1990ff',
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'draft',
           label: this.$t('tw_draft'),
-          icon: require('@/images/save.png'),
+          icon: 'ios-archive',
+          color: '#b886f8',
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'collect',
           label: this.$t('tw_collect'),
-          icon: require('@/images/star.png'),
+          icon: 'ios-star',
+          color: '#ff9900',
           requestNum: 0,
           publishNum: 0
         }
@@ -176,7 +182,7 @@ export default {
   .content {
     .w-header {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       img {
         width: 24px;
         height: 24px;

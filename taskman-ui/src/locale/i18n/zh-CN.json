@@ -285,5 +285,6 @@
   "tw_template_cover_tips_r": ",执行导入会删除已有的模板和由模板发起的请求,确认导入吗?",
   "tw_only_me": "仅本人处理",
   "tw_commit": "提交",
-  "tw_confirm_commit": "确认提交"
+  "tw_confirm_commit": "确认提交",
+  "tw_confirm": "确认 "
 }

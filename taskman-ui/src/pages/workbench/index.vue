@@ -12,9 +12,9 @@
         <Icon @click="expand = !expand"  class='ml' size="32" type="ios-refresh" />
       </div>
     </div> -->
-    <div class="hot-link">
+    <!-- <div class="hot-link">
       <HotLink></HotLink>
-    </div>
+    </div> -->
     <div class="data-card">
       <DataCard
         ref="dataCard"

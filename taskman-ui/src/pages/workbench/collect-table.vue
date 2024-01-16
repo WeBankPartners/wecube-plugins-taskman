@@ -254,26 +254,30 @@ export default {
             const disableClass = `${[2, 3].includes(params.row.status) ? 'gray-button' : ''}`
             return (
               <div>
-                <Button
-                  type="info"
-                  size="small"
-                  onClick={() => {
-                    this.hanldeCreate(params.row)
-                  }}
-                  class={disableClass}
-                  style="margin-right: 5px"
-                >
-                  {this.$t('tw_launch')}
-                </Button>
-                <Button
-                  type="warning"
-                  size="small"
-                  onClick={() => {
-                    this.handleUnStar(params.row)
-                  }}
-                >
-                  {this.$t('tw_uncollec_tooltip')}
-                </Button>
+                <Tooltip content={this.$t('tw_launch')} placement="top">
+                  <Button
+                    type="success"
+                    size="small"
+                    onClick={() => {
+                      this.hanldeCreate(params.row)
+                    }}
+                    class={disableClass}
+                    style="margin-right: 5px"
+                  >
+                    <Icon type="ios-send" size="16"></Icon>
+                  </Button>
+                </Tooltip>
+                <Tooltip content={this.$t('tw_uncollec_tooltip')} placement="top">
+                  <Button
+                    type="warning"
+                    size="small"
+                    onClick={() => {
+                      this.handleUnStar(params.row)
+                    }}
+                  >
+                    <Icon type="ios-star-half" size="16"></Icon>
+                  </Button>
+                </Tooltip>
               </div>
             )
           }
@@ -455,7 +459,7 @@ export default {
     // 取消收藏
     handleUnStar (row) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('tw_uncollec_tooltip'),
+        title: this.$t('tw_confirm') + this.$t('tw_uncollec_tooltip'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

@@ -269,7 +269,7 @@ export default {
     // 表格操作撤回
     async handleRecall (row) {
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('tw_recall'),
+        title: this.$t('tw_confirm') + this.$t('tw_recall'),
         content: this.actionName === '1' ? this.$t('tw_recall_publish_tips') : this.$t('tw_recall_request_tips'),
         'z-index': 1000000,
         loading: true,

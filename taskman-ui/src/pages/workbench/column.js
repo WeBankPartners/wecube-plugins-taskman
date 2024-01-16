@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 export default {
   data () {
     return {
@@ -38,7 +37,7 @@ export default {
                 </span>
                 {this.username === params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && <Tag color="#f26161">{this.$t('tw_only_me')}</Tag>}
+                  this.tabName === 'pending' && <Tag color="#ed4014">{this.$t('tw_only_me')}</Tag>}
               </div>
             )
           }
@@ -52,10 +51,10 @@ export default {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
               { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
-              { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
+              { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
               { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
-              { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
+              { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#ed4014' },
               { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
               { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
             ]
@@ -135,18 +134,26 @@ export default {
           minWidth: 140,
           key: 'effectiveDays',
           render: (h, params) => {
-            const diff = params.row.startTime ? dayjs(new Date()).diff(params.row.startTime, 'day') : 0
-            const percent = (diff / params.row.effectiveDays) * 100
-            const color = percent > 50 ? (percent > 80 ? '#bd3124' : '#ffbf6b') : '#81b337'
+            let stayTime = '' // 停留时长
+            let totalTime = '' // 预期停留时长
+            if (this.type === '2') {
+              stayTime = params.row.taskStayTime
+              totalTime = params.row.taskStayTimeTotal
+            } else {
+              stayTime = params.row.requestStayTime
+              totalTime = params.row.requestStayTimeTotal
+            }
+            const percent = (stayTime / totalTime) * 100
+            const color = percent > 50 ? (percent > 80 ? '#ed4014' : '#ffbf6b') : '#19be6b'
             return (
               <div>
                 <Progress stroke-color={color} percent={percent > 100 ? 100 : percent}>
-                  <span>{`${diff}${this.$t('tw_days')}/${params.row.effectiveDays}${this.$t('tw_days')}`}</span>
+                  <span>{`${stayTime}${this.$t('tw_days')}/${totalTime}${this.$t('tw_days')}`}</span>
                 </Progress>
                 {percent > 100 && (
-                  <span style="color:#bd3124;display:flex;align-items:center;">
-                    <Icon type="md-warning" color="#bd3124" />
-                    {`${this.$t('tw_exceed')}${diff - params.row.effectiveDays}${this.$t('tw_days')}`}
+                  <span style="color:#ed4014;display:flex;align-items:center;">
+                    <Icon type="md-warning" color="#ed4014" />
+                    {`${this.$t('tw_exceed')}${stayTime - totalTime}${this.$t('tw_days')}`}
                   </span>
                 )}
               </div>
@@ -213,123 +220,142 @@ export default {
         action: {
           title: this.$t('t_action'),
           key: 'action',
-          minWidth: 150,
+          minWidth: 120,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
             return (
-              <div>
+              <div style="display:flex;align-items:center;justify-content:center;">
                 {// 查看
                   ['pending', 'hasProcessed', 'submit'].includes(this.tabName) && params.row.status !== 'Draft' && (
-                    <Button
-                      size="small"
-                      onClick={() => {
-                        this.hanldeView(params.row)
-                      }}
-                      style="margin-right:5px;"
-                    >
-                      {this.$t('tw_action_view')}
-                    </Button>
+                    <Tooltip content={this.$t('tw_action_view')} placement="top">
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          this.hanldeView(params.row)
+                        }}
+                        style="margin-right:5px;"
+                      >
+                        <Icon type="md-eye" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 处理
                   this.username === params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
-                    <Button
-                      type="warning"
-                      size="small"
-                      onClick={() => {
-                        this.handleEdit(params.row)
-                      }}
-                    >
-                      {this.$t('tw_action_handle')}
-                    </Button>
+                    <Tooltip content={this.$t('tw_action_handle')} placement="top">
+                      <Button
+                        type="warning"
+                        size="small"
+                        onClick={() => {
+                          this.handleEdit(params.row)
+                        }}
+                      >
+                        <Icon type="ios-hammer" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 认领
                   !params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
-                    <Button
-                      type="info"
-                      size="small"
-                      onClick={() => {
-                        this.handleTransfer(params.row, 'mark')
-                      }}
-                    >
-                      {this.$t('tw_action_claim')}
-                    </Button>
+                    <Tooltip content={this.$t('tw_action_claim')} placement="top">
+                      <Button
+                        type="info"
+                        size="small"
+                        onClick={() => {
+                          this.handleTransfer(params.row, 'mark')
+                        }}
+                      >
+                        <Icon type="ios-hand" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 转给我
                   params.row.handler &&
                   this.username !== params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
-                    <Button
-                      type="success"
-                      size="small"
-                      onClick={() => {
-                        this.handleTransfer(params.row, 'give')
-                      }}
-                    >
-                      {this.$t('tw_action_give')}
-                    </Button>
+                    <Tooltip content={this.$t('tw_action_give')} placement="top">
+                      <Button
+                        type="success"
+                        size="small"
+                        onClick={() => {
+                          this.handleTransfer(params.row, 'give')
+                        }}
+                      >
+                        <Icon type="ios-hand" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 重新发起
                   ['Termination', 'Completed', 'Faulted'].includes(params.row.status) && this.tabName === 'submit' && (
-                    <Button
-                      type="success"
-                      size="small"
-                      onClick={() => {
-                        this.handleRepub(params.row)
-                      }}
-                    >
-                      {this.$t('tw_action_relaunch')}
-                    </Button>
+                    <Tooltip content={this.$t('tw_action_relaunch')} placement="top">
+                      <Button
+                        type="success"
+                        size="small"
+                        onClick={() => {
+                          this.handleRepub(params.row)
+                        }}
+                      >
+                        <Icon type="ios-refresh" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 撤回
                 // 我提交的定版状态可退回
                   params.row.status === 'Pending' && this.tabName === 'submit' && (
-                    <Button
-                      type="error"
-                      size="small"
-                      // 非本人创建禁用
-                      disabled={params.row.createdBy !== this.username}
-                      onClick={() => {
-                        this.handleRecall(params.row)
-                      }}
-                    >
-                      {this.$t('tw_recall')}
-                    </Button>
+                    <Tooltip content={this.$t('tw_recall')} placement="top">
+                      <Button
+                        type="error"
+                        size="small"
+                        // 非本人创建禁用
+                        disabled={params.row.createdBy !== this.username}
+                        onClick={() => {
+                          this.handleRecall(params.row)
+                        }}
+                      >
+                        <Icon type="ios-redo" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 去发起
                 // 草稿类（不包括已处理的）
                   params.row.status === 'Draft' && this.tabName !== 'hasProcessed' && (
-                    <Button
-                      type="success"
-                      size="small"
-                      // 非本人创建禁用
-                      disabled={params.row.createdBy !== this.username}
-                      onClick={() => {
-                        this.hanldeLaunch(params.row)
-                      }}
-                      style="margin-right:5px;"
+                    <Tooltip
+                      content={this.tabName === 'submit' ? this.$t('tw_action_relaunch') : this.$t('tw_action_launch')}
+                      placement="top"
                     >
-                      {this.tabName === 'submit' ? this.$t('tw_action_relaunch') : this.$t('tw_action_launch')}
-                    </Button>
+                      <Button
+                        type="success"
+                        size="small"
+                        // 非本人创建禁用
+                        disabled={params.row.createdBy !== this.username}
+                        onClick={() => {
+                          this.hanldeLaunch(params.row)
+                        }}
+                        style="margin-right:5px;"
+                      >
+                        <Icon type="ios-send" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
                 {// 删除
                   this.tabName === 'draft' && (
-                    <Button
-                      type="error"
-                      size="small"
-                      // 非本人创建禁用
-                      disabled={params.row.createdBy !== this.username}
-                      onClick={() => {
-                        this.handleDeleteDraft(params.row)
-                      }}
-                    >
-                      {this.$t('delete')}
-                    </Button>
+                    <Tooltip content={this.$t('delete')} placement="top">
+                      <Button
+                        type="error"
+                        size="small"
+                        // 非本人创建禁用
+                        disabled={params.row.createdBy !== this.username}
+                        onClick={() => {
+                          this.handleDeleteDraft(params.row)
+                        }}
+                      >
+                        <Icon type="md-trash" size="16"></Icon>
+                      </Button>
+                    </Tooltip>
                   )}
               </div>
             )

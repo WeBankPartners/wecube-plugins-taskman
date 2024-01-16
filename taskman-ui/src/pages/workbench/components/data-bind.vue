@@ -183,7 +183,7 @@ export default {
         })
       })
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('final_version'),
+        title: this.$t('tw_confirm') + this.$t('final_version'),
         'z-index': 1000000,
         width: 500,
         loading: true,
@@ -243,7 +243,7 @@ export default {
     // 定版退回操作
     async rollbackRequest () {
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('go_back'),
+        title: this.$t('tw_confirm') + this.$t('go_back'),
         'z-index': 1000000,
         loading: false,
         render: () => {

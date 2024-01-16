@@ -77,6 +77,7 @@
                     }
                   }"
                   style="width:400px;"
+                  :clearable="false"
                 ></DatePicker>
               </FormItem>
               <!--附件-->

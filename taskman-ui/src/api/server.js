@@ -123,7 +123,7 @@ export const getCreateInfo = params => req.post(`/taskman/api/v2/request`, param
 export const getProgressInfo = params => req.post(`/taskman/api/v1/request/progress`, params)
 // 新建发布-保存数据
 export const savePublishData = (requestId, params) =>
-  req.post(`/taskman/api/v2/request-data/save/${requestId}/data`, params)
+  req.post(`/taskman/api/v2/request-data/save/${requestId}/data/save`, params)
 // 新建发布详情数据
 export const getPublishInfo = requestId => req.get(`/taskman/api/v2/request/detail/${requestId}`)
 // 发布历史页面

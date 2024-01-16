@@ -694,7 +694,7 @@ export default {
     // 撤回
     async handleRecall () {
       this.$Modal.confirm({
-        title: this.$t('confirm') + this.$t('tw_recall'),
+        title: this.$t('tw_confirm') + this.$t('tw_recall'),
         content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,

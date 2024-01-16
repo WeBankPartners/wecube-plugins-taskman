@@ -340,13 +340,13 @@ func ImportRequestTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
 		return
 	}
-	backToken, importErr := db.RequestTemplateImport(paramObj, c.GetHeader("Authorization"), "", middleware.GetRequestUser(c))
+	templateName, backToken, importErr := db.RequestTemplateImport(paramObj, c.GetHeader("Authorization"), "", middleware.GetRequestUser(c))
 	if importErr != nil {
 		middleware.ReturnServerHandleError(c, importErr)
 		return
 	}
 	if backToken != "" {
-		c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: backToken})
+		c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: "{\"token\":\"+backToken +\",\"templateName\":" + templateName + "}"})
 		return
 	}
 	middleware.ReturnSuccess(c)
@@ -354,7 +354,7 @@ func ImportRequestTemplate(c *gin.Context) {
 
 func ConfirmImportRequestTemplate(c *gin.Context) {
 	confirmToken := c.Param("confirmToken")
-	_, err := db.RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), confirmToken, middleware.GetRequestUser(c))
+	_, _, err := db.RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), confirmToken, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

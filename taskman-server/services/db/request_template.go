@@ -1472,7 +1472,7 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 	return
 }
 
-func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (backToken string, err error) {
+func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (templateName, backToken string, err error) {
 	var actions []*execAction
 	var inputVersion = getTemplateVersion(&input.RequestTemplate)
 	var templateList []*models.RequestTemplateTable
@@ -1480,16 +1480,18 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 	var repeatTemplateIdList []string
 	if confirmToken == "" {
 		// 1.判断名称是否重复
+		templateName = input.RequestTemplate.Name
 		templateList, err = getTemplateListByName(input.RequestTemplate.Name)
 		if err != nil {
-			return backToken, err
+			return templateName, backToken, err
 		}
 		if len(templateList) > 0 {
 			// 有名称重复数据,判断导入版本是否高于所有模板版本
 			for _, template := range templateList {
 				// 导入版本 低于同名版本,直接报错
 				if inputVersion <= getTemplateVersion(template) {
-					return backToken, exterror.New().ImportTemplateVersionConflictError
+					err = exterror.New().ImportTemplateVersionConflictError
+					return
 				}
 				if template.Status == "created" {
 					repeatTemplateIdList = append(repeatTemplateIdList, template.Id)
@@ -1514,12 +1516,14 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
 				input = inputCache
 			} else {
-				return backToken, fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+				err = fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+				return
 			}
 			delete(models.RequestTemplateImportMap, ct)
 			delActions, delErr := DeleteRequestTemplate(ct, true)
 			if delErr != nil {
-				return backToken, delErr
+				err = delErr
+				return
 			}
 			actions = append(actions, delActions...)
 		}
@@ -1527,11 +1531,13 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
 	}
 	if input.RequestTemplate.Id == "" {
-		return backToken, fmt.Errorf("RequestTemplate id illegal ")
+		err = fmt.Errorf("RequestTemplate id illegal ")
+		return
 	}
 	allProcessList, processErr := GetCoreProcessListAll(userToken)
 	if processErr != nil {
-		return backToken, fmt.Errorf("Get core process list fail,%s ", processErr.Error())
+		err = fmt.Errorf("Get core process list fail,%s ", processErr.Error())
+		return
 	}
 	processExistFlag := false
 	for _, v := range allProcessList {
@@ -1542,7 +1548,8 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		}
 	}
 	if !processExistFlag {
-		return backToken, fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+		err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+		return
 	}
 	nodeList, _ := GetProcessNodesByProc(input.RequestTemplate, userToken, "template")
 	for i, v := range input.TaskTemplate {
@@ -1560,7 +1567,7 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		}
 	}
 	if err != nil {
-		return backToken, err
+		return
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	for _, v := range input.FormTemplate {
@@ -1611,7 +1618,8 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 			actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{v.Id, v.TaskTemplate, v.Role, v.RoleType}})
 		}
 	}
-	return backToken, transaction(actions)
+	err = transaction(actions)
+	return
 }
 
 func createNewImportTemplate(input models.RequestTemplateExport, recordId string) models.RequestTemplateExport {

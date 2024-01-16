@@ -347,6 +347,7 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (fileName string, titles []string, dataArr [][]string) {
 	dataArr = make([][]string, len(rowsData))
 	var days string
+	var version string
 	fileName = "Wecube-RequestAudit-Export-" + time.Now().Format("20060102150405") + ".xlsx"
 	if strings.Contains(language, "zh-CN") {
 		titles = []string{
@@ -364,6 +365,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			"操作对象类型",
 			"操作对象",
 			"创建人",
+			"创建人角色",
 			"请求提交时间",
 		}
 		days = "日"
@@ -371,23 +373,28 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 		titles = []string{
 			"Request ID",
 			"Request Name",
-			"Status",
+			"Request Status",
 			"Current Node",
 			"Current Approver",
 			"Current Approver Role",
 			"progress",
-			"Request Elapsed Time",
-			"Expected Completion Time",
-			"Template",
-			"Process",
-			"Object Type",
+			"Request Stay Duration",
+			"Expected Completion",
+			"Using Template",
+			"Using Process",
+			"Target Object Type",
 			"Operation Object",
 			"Creator",
-			"Submission Time",
+			"Creator Role",
+			"Request Submission",
 		}
 		days = "days"
 	}
 	for i, row := range rowsData {
+		version = row.Version
+		if version == "" {
+			version = "beta"
+		}
 		dataArr[i] = []string{
 			row.Id,
 			row.Name,
@@ -396,13 +403,14 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			row.Handler,
 			row.HandleRole,
 			strconv.Itoa(row.Progress) + "%",
-			getRequestRemainDays(row.StartTime, days, row.EffectiveDays),
+			getRequestStayTime(row, days),
 			row.ExpectTime,
-			row.TemplateName,
+			row.TemplateName + "【" + version + "】",
 			row.ProcDefName,
 			row.OperatorObjType,
 			row.OperatorObj,
 			row.CreatedBy,
+			row.Role,
 			row.ReportTime,
 		}
 	}
@@ -451,10 +459,49 @@ func getInternationalizationStatus(language string, status string) string {
 	return status
 }
 
-func getRequestRemainDays(startTime, format string, effectiveDays int) string {
-	t1, _ := time.Parse("2006-01-02 15:04:05", startTime)
-	diff := int(time.Now().Sub(t1).Hours() / 24)
-	return fmt.Sprintf("%d%s/%d%s", diff, format, effectiveDays, format)
+func getRequestStayTime(dataObject *models.PlatformDataObj, format string) string {
+	return fmt.Sprintf("%d%s/%d%s", dataObject.RequestStayTime, format, dataObject.RequestStayTimeTotal, format)
+}
+
+// calcRequestStayTime 计算请求/任务停留时长
+func calcRequestStayTime(dataObject *models.PlatformDataObj) {
+	var err error
+	var reportTime, requestExpectTime, taskCreateTime, taskExpectTime, taskApprovalTime time.Time
+	if dataObject.Status == string(models.Draft) {
+		return
+	}
+	reportTime, err = time.Parse(models.DateTimeFormat, dataObject.ReportTime)
+	if err != nil {
+		log.Logger.Error("getRequestRemainDays ReportTime err", log.Error(err))
+		return
+	}
+	requestExpectTime, err = time.Parse(models.DateTimeFormat, dataObject.ExpectTime)
+	if err != nil {
+		log.Logger.Error("getRequestRemainDays ExpectTime err", log.Error(err))
+		return
+	}
+	if dataObject.Status == string(models.Completed) || dataObject.Status == string(models.Termination) || dataObject.Status == string(models.Faulted) {
+		updateTime, err := time.Parse(models.DateTimeFormat, dataObject.UpdatedTime)
+		if err != nil {
+			log.Logger.Error("getRequestRemainDays UpdatedTime err", log.Error(err))
+			return
+		}
+		dataObject.RequestStayTime = int(updateTime.Sub(reportTime).Hours() / 24)
+	} else {
+		dataObject.RequestStayTime = int(time.Now().Sub(reportTime).Hours() / 24)
+	}
+	dataObject.RequestStayTimeTotal = int(requestExpectTime.Sub(reportTime).Hours() / 24)
+	if dataObject.TaskId != "" && dataObject.TaskExpectTime != "" && dataObject.TaskCreatedTime != "" {
+		taskExpectTime, _ = time.Parse(models.DateTimeFormat, dataObject.TaskExpectTime)
+		taskCreateTime, _ = time.Parse(models.DateTimeFormat, dataObject.TaskCreatedTime)
+		if dataObject.TaskApprovalTime != "" {
+			taskApprovalTime, _ = time.Parse(models.DateTimeFormat, dataObject.TaskApprovalTime)
+			dataObject.TaskStayTime = int(taskApprovalTime.Sub(taskCreateTime).Hours() / 24)
+		} else {
+			dataObject.TaskStayTime = int(time.Now().Sub(taskCreateTime).Hours() / 24)
+		}
+		dataObject.TaskStayTimeTotal = int(taskExpectTime.Sub(taskCreateTime).Hours() / 24)
+	}
 }
 
 func getPlatRequestSQL(where, sql string) string {
@@ -527,7 +574,8 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 					newStatus = "Termination"
 				}
 				if newStatus != "" && newStatus != platformDataObj.Status {
-					actions = append(actions, &execAction{Sql: "update request set status=? where id=?", Param: []interface{}{newStatus, platformDataObj.Id}})
+					actions = append(actions, &execAction{Sql: "update request set status=?,updated_time=? where id=?",
+						Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
 					platformDataObj.Status = newStatus
 				}
 			}
@@ -551,7 +599,8 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 				}
 			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
-			platformDataObj.StartTime, platformDataObj.EffectiveDays = getRequestRemainTime(platformDataObj.Id)
+			// 计算请求/任务停留时长
+			calcRequestStayTime(platformDataObj)
 		}
 		if len(actions) > 0 {
 			updateRequestErr := transaction(actions)

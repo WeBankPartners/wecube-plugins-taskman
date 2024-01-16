@@ -2898,6 +2898,7 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 		RequestTemplateList: make([]*models.KeyValuePair, 0),
 		ReleaseTemplateList: make([]*models.KeyValuePair, 0),
 	}
+	var templateMap = make(map[string]bool, 0)
 	var pairList []*models.KeyValuePair
 	var dataList []*models.FilterObj
 	var operatorObjTypeMap = make(map[string]bool)
@@ -2925,6 +2926,11 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 		m := &models.KeyValuePair{TemplateId: item.TemplateId, TemplateName: item.TemplateName, Version: item.Version}
 		if m.Version == "" {
 			m.Version = "beta"
+		}
+		if templateMap[m.TemplateId+m.TemplateName+m.Version] {
+			continue
+		} else {
+			templateMap[m.TemplateId+m.TemplateName+m.Version] = true
 		}
 		pairList = append(pairList, m)
 		if item.TemplateType == 0 {

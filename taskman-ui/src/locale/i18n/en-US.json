@@ -22,7 +22,7 @@
   "group": "Template Group",
   "scene_type": "Template Scene Type",
   "procDefId": "Process",
-  "mgmtRoles": "MGMT Roles",
+  "mgmtRoles": "MGMT Role",
   "mgmtRolesNew": "Template Owner Role",
   "processing_role": "Handle Role",
   "useRoles": "User Role",
@@ -132,7 +132,7 @@
   "enable": "Enable",
   "confirm_disable": "Disable Confirm?",
   "updatedBy": "Updated By",
-  "createdBy": "Created By",
+  "createdBy": "Creator",
   "createdTime": "Created Time",
   "rollback_desc": "Rollback Cause",
   "workflow_name": "Workflow",
@@ -285,6 +285,6 @@
   "tw_template_cover_tips_r": "already exists in the draft. Executing the import will delete the existing template and requests initiated by this. Are you sure to import?",
   "tw_only_me": "Only Myself",
   "tw_commit": "Submit",
-  "tw_confirm_commit": "Confirm Submission?",
+  "tw_confirm_commit": "Confirm Submission",
   "tw_confirm": "Confirm "
 }

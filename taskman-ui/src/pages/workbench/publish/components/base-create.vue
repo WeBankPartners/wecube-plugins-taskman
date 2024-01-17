@@ -61,7 +61,7 @@
                 />
               </FormItem>
               <!--期望完成时间-->
-              <FormItem :label="$t('expected_completion_time')">
+              <FormItem :label="$t('expected_completion_time')" required>
                 <DatePicker
                   type="datetime"
                   :value="form.expectTime"

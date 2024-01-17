@@ -35,9 +35,9 @@ export default {
                 >
                   {params.row.name}
                 </span>
-                {this.username === params.row.handler &&
+                {/* {this.username === params.row.handler &&
                   ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && <Tag color="#ed4014">{this.$t('tw_only_me')}</Tag>}
+                  this.tabName === 'pending' && <Tag color="#ed4014">{this.$t('tw_only_me')}</Tag>} */}
               </div>
             )
           }
@@ -46,7 +46,7 @@ export default {
           title: this.$t('tw_request_status'),
           sortable: 'custom',
           key: 'status',
-          minWidth: 130,
+          minWidth: 160,
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
@@ -75,7 +75,7 @@ export default {
         },
         curNode: {
           title: this.$t('tw_cur_tag'),
-          minWidth: 120,
+          minWidth: 165,
           key: 'curNode',
           render: (h, params) => {
             const map = {
@@ -231,6 +231,7 @@ export default {
                     <Tooltip content={this.$t('tw_action_view')} placement="top">
                       <Button
                         size="small"
+                        type="info"
                         onClick={() => {
                           this.hanldeView(params.row)
                         }}

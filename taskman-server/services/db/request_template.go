@@ -115,9 +115,12 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
-func GetCoreProcessListAll(userToken string) (processList []*models.ProcAllDefObj, err error) {
+func GetCoreProcessListAll(userToken, permission, tags string) (processList []*models.ProcAllDefObj, err error) {
+	if permission == "" {
+		permission = "USE"
+	}
 	processList = []*models.ProcAllDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/process/definitions?includeDraft=0&permission=USE", nil)
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+fmt.Sprintf("/platform/v1/process/definitions?permission=%s&tags=%s", permission, tags), nil)
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
 		return
@@ -543,7 +546,7 @@ func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist boo
 			}
 		}
 	} else {
-		allProcessList, tmpErr := GetCoreProcessListAll(userToken)
+		allProcessList, tmpErr := GetCoreProcessListAll(userToken, "", "")
 		if tmpErr != nil {
 			err = tmpErr
 		} else {
@@ -720,8 +723,8 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*execAction
 		for _, v := range formTable {
 			formIds = append(formIds, v.Id)
 		}
-		actions = append(actions, &execAction{Sql: "delete from operation_log where task in (select id from task where task_template in (select id from task_template where request_template=?))", Param: []interface{}{id}})
-		actions = append(actions, &execAction{Sql: "delete from operation_log where request in (select id from request where request_template=?)", Param: []interface{}{id}})
+		//actions = append(actions, &execAction{Sql: "delete from operation_log where task in (select id from task where task_template in (select id from task_template where request_template=?))", Param: []interface{}{id}})
+		//actions = append(actions, &execAction{Sql: "delete from operation_log where request in (select id from request where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})
@@ -1534,7 +1537,7 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		err = fmt.Errorf("RequestTemplate id illegal ")
 		return
 	}
-	allProcessList, processErr := GetCoreProcessListAll(userToken)
+	allProcessList, processErr := GetCoreProcessListAll(userToken, "", "")
 	if processErr != nil {
 		err = fmt.Errorf("Get core process list fail,%s ", processErr.Error())
 		return

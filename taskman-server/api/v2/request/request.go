@@ -58,7 +58,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(param.Id, param.CreatedBy, "create")
+	db.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -133,6 +133,6 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "start")
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }

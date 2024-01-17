@@ -85,10 +85,25 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 }
 
 func GetCoreProcessList(c *gin.Context) {
-	result, err := db.GetCoreProcessListNew(c.GetHeader("Authorization"))
+	//result, err := db.GetCoreProcessListNew(c.GetHeader("Authorization"))
+	procList, err := db.GetCoreProcessListAll(c.GetHeader("Authorization"), "MGMT", models.ProcessFetchTabs)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
+	}
+	result := []*models.ProcDefObj{}
+	for _, v := range procList {
+		tmpData := models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefKey: v.ProcDefKey, ProcDefName: v.ProcDefName, Status: v.Status, CreatedTime: v.CreatedTime, RootEntity: models.ProcEntity{}}
+		tmpEntity := v.RootEntity
+		if filterIndex := strings.Index(tmpEntity, "{"); filterIndex > 0 {
+			tmpEntity = tmpEntity[:filterIndex]
+		}
+		if strings.Contains(tmpEntity, ":") {
+			tmpEntitySplit := strings.Split(tmpEntity, ":")
+			tmpData.RootEntity.PackageName = tmpEntitySplit[0]
+			tmpData.RootEntity.Name = tmpEntitySplit[1]
+		}
+		result = append(result, &tmpData)
 	}
 	middleware.ReturnData(c, result)
 }
@@ -164,6 +179,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "createRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, result)
 }
 
@@ -191,6 +207,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "updateRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, result)
 }
 
@@ -269,6 +286,7 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		return
 	}
 	db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateRequestTemplateAttr", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnSuccess(c)
 }
 
@@ -288,6 +306,7 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "forkRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
@@ -369,6 +388,7 @@ func DisableRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "disableRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
@@ -379,5 +399,6 @@ func EnableRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "enableRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }

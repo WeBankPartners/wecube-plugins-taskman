@@ -1821,8 +1821,25 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData
 	return
 }
 
-func RecordRequestLog(requestId, operator, operation string) {
-	_, err := x.Exec("insert into operation_log(id,request,operation,operator,op_time) value (?,?,?,?,?)", guid.CreateGuid(), requestId, operation, operator, time.Now().Format(models.DateTimeFormat))
+func RecordRequestTemplateLog(requestTemplateId, requestTemplateName, operator, operation, uri, content string) {
+	_, err := x.Exec("insert into operation_log(id,request_template,request_template_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
+		guid.CreateGuid(), requestTemplateId, requestTemplateName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
+	if err != nil {
+		log.Logger.Error("Record request operation log fail", log.Error(err))
+	}
+}
+
+func RecordRequestLog(requestId, requestName, operator, operation, uri, content string) {
+	_, err := x.Exec("insert into operation_log(id,request,request_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
+		guid.CreateGuid(), requestId, requestName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
+	if err != nil {
+		log.Logger.Error("Record request operation log fail", log.Error(err))
+	}
+}
+
+func RecordTaskLog(taskId, taskName, operator, operation, uri, content string) {
+	_, err := x.Exec("insert into operation_log(id,task,task_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
+		guid.CreateGuid(), taskId, taskName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
 	if err != nil {
 		log.Logger.Error("Record request operation log fail", log.Error(err))
 	}

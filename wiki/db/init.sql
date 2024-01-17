@@ -336,3 +336,14 @@ CREATE TABLE `collect_template` (
 #@v0.1.3.14-begin@;
 alter table form_item_template add column  default_clear  varchar(16) default 'no' not null COMMENT '是否清空';
 #@v0.1.3.14-end@;
+
+#@v0.1.3.45-begin@;
+alter table operation_log drop FOREIGN KEY fore_operation_log_request;
+alter table operation_log drop FOREIGN KEY fore_operation_log_task;
+alter table operation_log add column `request_template` varchar(64) DEFAULT null;
+alter table operation_log add column `request_template_name` varchar(255) DEFAULT null;
+alter table operation_log add column `content` text DEFAULT null;
+alter table operation_log add column `uri` varchar(255) DEFAULT null;
+alter table operation_log add column `request_name` varchar(255) DEFAULT null;
+alter table operation_log add column `task_name` varchar(255) DEFAULT null;
+#@v0.1.3.45-end@;

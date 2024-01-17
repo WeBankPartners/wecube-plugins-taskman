@@ -43,6 +43,7 @@ func UpdateTaskTemplate(c *gin.Context) {
 		return
 	}
 	db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	result, _ := db.GetTaskTemplate(id, param.NodeDefId, "")
 	middleware.ReturnData(c, result)
 }

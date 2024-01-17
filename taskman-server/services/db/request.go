@@ -301,7 +301,7 @@ func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToke
 	// 查看本组数据
 	if param.Permission == "group" {
 		userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
-		sql = "select id from request where request_template in (select id from request_template where id in (select request_template from request_template_role where role_type='USE' and `role` in (" + userRolesFilterSql + ")))"
+		sql = "select id from request where  `role` in (" + userRolesFilterSql + ")"
 		queryParam = append(queryParam, userRolesFilterParam...)
 	}
 	pageInfo, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), true)
@@ -486,9 +486,10 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 			log.Logger.Error("getRequestRemainDays UpdatedTime err", log.Error(err))
 			return
 		}
-		dataObject.RequestStayTime = int(updateTime.Sub(reportTime).Hours() / 24)
+		// 向上取整
+		dataObject.RequestStayTime = int(math.Ceil(updateTime.Sub(reportTime).Hours() * 1.00 / 24.00))
 	} else {
-		dataObject.RequestStayTime = int(time.Now().Sub(reportTime).Hours() / 24)
+		dataObject.RequestStayTime = int(math.Ceil(time.Now().Sub(reportTime).Hours() * 1.00 / 24.00))
 	}
 	dataObject.RequestStayTimeTotal = int(requestExpectTime.Sub(reportTime).Hours() / 24)
 	if dataObject.TaskId != "" && dataObject.TaskExpectTime != "" && dataObject.TaskCreatedTime != "" {
@@ -2300,16 +2301,12 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	parentRequest = requestTable[0]
-	/*	if !strings.Contains(parentRequest.Status, "Faulted") && parentRequest.Status != "Termination" {
-		err = fmt.Errorf("Only Faulted request can copy ")
-		return
-	}*/
 	requestTemplate, err = GetSimpleRequestTemplate(parentRequest.RequestTemplate)
 	if err != nil {
 		return
 	}
 	// 重新设置请求名称
-	parentRequest.Name = fmt.Sprintf("%s-%s-%s", parentRequest.Name, requestTemplate.OperatorObjType, time.Now().Format("060102150405"))
+	parentRequest.Name = fmt.Sprintf("%s-%s-%s", requestTemplate.Name, requestTemplate.OperatorObjType, time.Now().Format("060102150405"))
 	// 重新设置期望时间
 	d, _ := time.ParseDuration(fmt.Sprintf("%dh", 24*requestTemplate.ExpireDay))
 	parentRequest.ExpectTime = time.Now().Add(d).Format(models.DateTimeFormat)
@@ -2824,7 +2821,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	}
 	var tmpTemplate []*models.RequestTemplateTmp
 	var version string
-	err := x.SQL("select rt.name as  template_name,rt.status,rtg.name as template_group_name,rt.version,rt.proc_def_id from request_template rt join "+
+	err := x.SQL("select rt.name as  template_name,rt.status,rtg.name as template_group_name,rt.version,rt.proc_def_id,rt.expire_day from request_template rt join "+
 		"request_template_group rtg on rt.group = rtg.id where rt.id= ?", request.RequestTemplate).Find(&tmpTemplate)
 	if err != nil {
 		return
@@ -2844,6 +2841,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 	form.Description = request.Description
 	form.Status = request.Status
 	form.ProcInstanceId = request.ProcInstanceId
+	form.ExpireDay = template.ExpireDay
 	if template.Status != "confirm" {
 		version = "beta"
 	} else {

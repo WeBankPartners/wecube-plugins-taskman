@@ -363,6 +363,7 @@ type RequestForm struct {
 	ExpectTime        string `json:"expectTime" `       // 期望时间
 	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
 	ProcInstanceId    string `json:"procInstanceId"`    // 编排实例ID
+	ExpireDay         int    `json:"expireDay"`         // 模板过期时间
 }
 
 type FilterItem struct {

@@ -319,6 +319,7 @@ type RequestTemplateTmp struct {
 	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
 	Version           string `json:"version" xorm:"version"`
 	Status            string `json:"status" xorm:"status"`
+	ExpireDay         int    `json:"expireDay" xorm:"expire_day"`
 }
 
 type ImportData struct {

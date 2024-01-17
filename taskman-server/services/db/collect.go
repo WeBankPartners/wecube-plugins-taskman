@@ -29,12 +29,13 @@ func DeleteTemplateCollect(templateId, user string) error {
 }
 
 // QueryTemplateCollect 查询模板收藏
-func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
+func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string, userRoles []string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
 	var collectTemplateList []*models.CollectTemplateTable
 	var disableTemplateVersionMap = getAllDisableTemplateVersionMap()
 	var roleTemplateMap = make(map[string]string)
 	var templateUserRoleMap = make(map[string]bool)
+	var userRoleMap = convertArray2Map(userRoles)
 	var resultList []string
 	var templateType int
 	if param.Action == 1 {
@@ -101,7 +102,9 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 				if requestTemplateRole.RoleType == "MGMT" {
 					collectObj.ManageRole = requestTemplateRole.Role
 				} else if requestTemplateRole.RoleType == "USE" {
-					templateUserRoleMap[requestTemplateRole.Role] = true
+					if userRoleMap[requestTemplateRole.Role] {
+						templateUserRoleMap[requestTemplateRole.Role] = true
+					}
 				}
 			}
 			collectObj.UseRole = roleTemplateMap[collectObj.ParentId]

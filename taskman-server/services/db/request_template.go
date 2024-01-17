@@ -120,7 +120,7 @@ func GetCoreProcessListAll(userToken, permission, tags string) (processList []*m
 		permission = "USE"
 	}
 	processList = []*models.ProcAllDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+fmt.Sprintf("/platform/v1/process/definitions?permission=%s&tags=%s", permission, tags), nil)
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+fmt.Sprintf("/platform/v1/process/definitions?includeDraft=0&permission=%s&tags=%s", permission, tags), nil)
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
 		return

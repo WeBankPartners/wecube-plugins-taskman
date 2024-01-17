@@ -321,6 +321,11 @@ type RequestTemplateTmp struct {
 	Status            string `json:"status" xorm:"status"`
 }
 
+type ImportData struct {
+	Token        string `json:"token"`
+	TemplateName string `json:"templateName"`
+}
+
 type TemplateGroupSort []*TemplateGroupObj
 
 func (s TemplateGroupSort) Len() int {

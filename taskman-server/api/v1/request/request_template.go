@@ -346,7 +346,7 @@ func ImportRequestTemplate(c *gin.Context) {
 		return
 	}
 	if backToken != "" {
-		c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: "{\"token\":" + backToken + ",\"templateName\":" + templateName + "}"})
+		c.JSON(http.StatusOK, models.ResponseJson{StatusCode: "CONFIRM", Data: models.ImportData{Token: backToken, TemplateName: templateName}})
 		return
 	}
 	middleware.ReturnSuccess(c)

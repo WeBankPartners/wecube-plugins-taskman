@@ -129,6 +129,7 @@ import {
   getRequestInfo,
   updateRequestStatus
 } from '@/api/server'
+import dayjs from 'dayjs'
 const statusIcon = {
   1: 'md-pin', // 进行中
   2: 'md-radio-button-on', // 未开始
@@ -180,6 +181,8 @@ export default {
         rootEntityId: '', // 目标对象
         data: []
       },
+      initExpectTime: '', // 记录初始期望完成时间
+      expireDay: '',
       rootEntityOptions: [],
       progressList: [],
       requestData: [], // 发布目标对象表格数据
@@ -238,9 +241,6 @@ export default {
         this.templateName = data.requestTemplateName
         this.version = data.templateVersion
         this.form.name = (data.name && data.name.substr(0, 70)) || ''
-        // this.form.expectTime = dayjs()
-        //   .add(data.expireDay || 0, 'day')
-        //   .format('YYYY-MM-DD HH:mm:ss')
         this.form.expectTime = data.expectTime || ''
       }
     },
@@ -296,12 +296,16 @@ export default {
     async getPublishInfo () {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
-        const { name, description, expectTime } = data.request || {}
+        const { name, description, expireDay } = data.request || {}
         this.form = Object.assign({}, this.form, {
           name,
-          description,
-          expectTime
+          description
         })
+        this.expireDay = expireDay
+        this.form.expectTime = dayjs()
+          .add(this.expireDay || 0, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+        this.initExpectTime = this.form.expectTime
         this.templateName = data.request.templateName
         this.version = data.request.version
       }
@@ -386,6 +390,12 @@ export default {
       // 获取发布目标对象entityName
       const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
       this.form.entityName = item.key_name
+      // 如果期望时间没有手动更改，提交时自动获取最新的
+      if (this.initExpectTime === this.form.expectTime) {
+        this.form.expectTime = dayjs()
+          .add(this.expireDay || 0, 'day')
+          .format('YYYY-MM-DD HH:mm:ss')
+      }
       // 必填项校验提示
       if (!this.requiredCheck(this.form.data)) {
         return this.$Notice.warning({

@@ -64,7 +64,7 @@
                 <Table
                   @on-row-click="
                     row => {
-                      handleChooseTemplate(row, row.role)
+                      handleChooseTemplate(row, row.manageRole)
                     }
                   "
                   size="small"
@@ -93,7 +93,7 @@
             :disabled-hover="true"
             @on-row-click="
               row => {
-                handleChooseTemplate(row, row.manageRole)
+                handleChooseTemplate(row, row.useRole)
               }
             "
             size="small"
@@ -285,7 +285,7 @@ export default {
     handleExpand (item) {
       item.expand = !item.expand
     },
-    // 选中一条模板数据
+    // 发起操作
     handleChooseTemplate (row, role) {
       // 模板禁用提示
       if (row.status === 2) {

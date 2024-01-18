@@ -242,6 +242,8 @@ export default {
         this.version = data.templateVersion
         this.form.name = (data.name && data.name.substr(0, 70)) || ''
         this.form.expectTime = data.expectTime || ''
+        this.expireDay = data.expireDay
+        this.initExpectTime = this.form.expectTime
       }
     },
     // 获取请求进度
@@ -297,10 +299,8 @@ export default {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
         const { name, description, expireDay } = data.request || {}
-        this.form = Object.assign({}, this.form, {
-          name,
-          description
-        })
+        this.form.name = (name && name.substr(0, 70)) || ''
+        this.form.description = description
         this.expireDay = expireDay
         this.form.expectTime = dayjs()
           .add(this.expireDay || 0, 'day')
@@ -395,6 +395,7 @@ export default {
         this.form.expectTime = dayjs()
           .add(this.expireDay || 0, 'day')
           .format('YYYY-MM-DD HH:mm:ss')
+        this.initExpectTime = this.form.expectTime
       }
       // 必填项校验提示
       if (!this.requiredCheck(this.form.data)) {

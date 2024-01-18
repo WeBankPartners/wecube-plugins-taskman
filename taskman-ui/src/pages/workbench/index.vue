@@ -150,6 +150,7 @@ export default {
         } else {
           this.type = '2'
         }
+        this.rollback = ''
         this.getTypeConfig()
       } else if (val === 'submit') {
         if (['1', '2', '3'].includes(rollback)) {
@@ -157,6 +158,7 @@ export default {
         } else {
           this.rollback = '0'
         }
+        this.type = ''
         this.getRollbackConfig()
         this.tableColumn = this.submitAllColumn
         this.searchOptions = this.submitSearch
@@ -180,9 +182,11 @@ export default {
       this.actionName = action
       if (['pending', 'hasProcessed'].includes(val)) {
         this.type = '2'
+        this.rollback = ''
         this.getTypeConfig()
       } else if (val === 'submit') {
         this.rollback = '0'
+        this.type = ''
         this.getRollbackConfig()
       } else if (val === 'draft') {
         this.tableColumn = this.draftColumn
@@ -404,7 +408,7 @@ export default {
     async handleEdit (row) {
       // 处理任务需要更新任务状态
       if (row.status === 'InProgress') {
-        await changeTaskStatus('start', row.taskId)
+        await changeTaskStatus('start', row.taskId, new Date(row.taskUpdatedTime).getTime())
       }
       const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const url = `/taskman/workbench/${path}`
@@ -431,9 +435,9 @@ export default {
           // 请求定版的新接口，任务处理的老接口
           let res = null
           if (row.status === 'Pending') {
-            res = await tansferToMe(row.id)
+            res = await tansferToMe(row.id, new Date(row.updatedTime).getTime())
           } else if (row.status === 'InProgress') {
-            res = await changeTaskStatus(type, row.taskId)
+            res = await changeTaskStatus(type, row.taskId, new Date(row.taskUpdatedTime).getTime())
           }
           if (res.statusCode === 'OK') {
             this.$Notice.success({

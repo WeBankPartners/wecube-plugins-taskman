@@ -83,7 +83,8 @@ export const getRefOptions = (requestId, attr, params) =>
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)
 export const saveTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/save/${taskId}`, data)
-export const changeTaskStatus = (operation, taskId) => req.post(`/taskman/api/v1/task/status/${operation}/${taskId}`)
+export const changeTaskStatus = (operation, taskId, timestamp) =>
+  req.post(`/taskman/api/v1/task/status/${operation}/${taskId}/${timestamp}`)
 export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)
 export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/detail/${requestId}`)
 export const getHandlerRoles = params => req.get(`/taskman/api/v1/role/user/list`, params)
@@ -114,7 +115,8 @@ export const getPlatformFilter = params => req.post(`/taskman/api/v1/user/platfo
 // 获取模板收藏列表筛选数据集合
 export const getTemplateFilter = params => req.post(`/taskman/api/v1/user/template/filter-item`, params)
 // 工作台转给我
-export const tansferToMe = templateId => req.post(`/taskman/api/v1/request/handler/${templateId}`)
+export const tansferToMe = (templateId, timestamp) =>
+  req.post(`/taskman/api/v1/request/handler/${templateId}/${timestamp}`)
 // 工作台撤回
 export const recallRequest = id => req.post(`/taskman/api/v1/user/request/revoke/${id}`)
 // 新建发布-发布信息获取

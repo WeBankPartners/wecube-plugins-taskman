@@ -475,7 +475,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	if dataObject.TaskId != "" && dataObject.TaskExpectTime != "" && dataObject.TaskCreatedTime != "" {
 		taskExpectTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskExpectTime, loc)
 		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
-		if dataObject.TaskApprovalTime != "" {
+		if dataObject.TaskApprovalTime != "" && dataObject.TaskStatus == "done" {
 			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
 			dataObject.TaskStayTime = int(math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
 		} else {
@@ -517,7 +517,7 @@ func getPlatRequestSQL(where, sql string) string {
 func getPlatTaskSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,"+
-		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.report_time as task_created_time,t.updated_time as task_approval_time,t.updated_time as task_updated_time,t.expire_time as task_expect_time,t.handler as task_handler "+
+		"r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.report_time as task_created_time,t.updated_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.handler as task_handler "+
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }
 

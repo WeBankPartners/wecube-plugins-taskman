@@ -3,12 +3,12 @@ package request
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
-	"time"
 )
 
 func GetEntityData(c *gin.Context) {
@@ -411,15 +411,12 @@ func DownloadAttachFile(c *gin.Context) {
 func UpdateRequestHandler(c *gin.Context) {
 	requestId := c.Param("requestId")
 	lastedUpdateTime := c.Param("latestUpdateTime")
-	var updateTime time.Time
 	request, err := db.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	loc, _ := time.LoadLocation("Local")
-	updateTime, _ = time.ParseInLocation(models.DateTimeFormat, request.UpdatedTime, loc)
-	if fmt.Sprintf("%d", updateTime.UnixMilli()) != lastedUpdateTime {
+	if common.GetLowVersionUnixMillis(request.UpdatedTime) != lastedUpdateTime {
 		middleware.ReturnDealWithAtTheSameTimeError(c)
 		return
 	}

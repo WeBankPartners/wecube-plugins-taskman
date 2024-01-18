@@ -471,6 +471,18 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	if dataObject.Status == string(models.Draft) {
 		return
 	}
+	// 计算任务停留时长
+	if dataObject.TaskId != "" && dataObject.TaskExpectTime != "" && dataObject.TaskCreatedTime != "" {
+		taskExpectTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskExpectTime, loc)
+		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
+		if dataObject.TaskApprovalTime != "" {
+			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
+			dataObject.TaskStayTime = int(math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+		} else {
+			dataObject.TaskStayTime = int(math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+		}
+		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+	}
 	reportTime, err = time.ParseInLocation(models.DateTimeFormat, dataObject.ReportTime, loc)
 	if err != nil {
 		log.Logger.Error("getRequestRemainDays ReportTime err", log.Error(err))
@@ -481,6 +493,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		log.Logger.Error("getRequestRemainDays ExpectTime err", log.Error(err))
 		return
 	}
+	// 计算请求停留时长
 	if dataObject.Status == string(models.Completed) || dataObject.Status == string(models.Termination) || dataObject.Status == string(models.Faulted) {
 		updateTime, err := time.ParseInLocation(models.DateTimeFormat, dataObject.UpdatedTime, loc)
 		if err != nil {
@@ -493,17 +506,6 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		dataObject.RequestStayTime = int(math.Ceil(time.Now().Local().Sub(reportTime).Hours() * 1.00 / 24.00))
 	}
 	dataObject.RequestStayTimeTotal = int(math.Ceil(requestExpectTime.Sub(reportTime).Hours() * 1.00 / 24.00))
-	if dataObject.TaskId != "" && dataObject.TaskExpectTime != "" && dataObject.TaskCreatedTime != "" {
-		taskExpectTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskExpectTime, loc)
-		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
-		if dataObject.TaskApprovalTime != "" {
-			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
-			dataObject.TaskStayTime = int(math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
-		} else {
-			dataObject.TaskStayTime = int(math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours() * 1.00 / 24.00))
-		}
-		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
-	}
 }
 
 func getPlatRequestSQL(where, sql string) string {

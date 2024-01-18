@@ -85,26 +85,26 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 }
 
 func GetCoreProcessList(c *gin.Context) {
-	//result, err := db.GetCoreProcessListNew(c.GetHeader("Authorization"))
-	procList, err := db.GetCoreProcessListAll(c.GetHeader("Authorization"), "MGMT", models.ProcessFetchTabs)
+	result, err := db.GetCoreProcessListNew(c.GetHeader("Authorization"))
+	//procList, err := db.GetCoreProcessListAll(c.GetHeader("Authorization"), "MGMT", models.ProcessFetchTabs)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	result := []*models.ProcDefObj{}
-	for _, v := range procList {
-		tmpData := models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefKey: v.ProcDefKey, ProcDefName: v.ProcDefName, Status: v.Status, CreatedTime: v.CreatedTime, RootEntity: models.ProcEntity{}}
-		tmpEntity := v.RootEntity
-		if filterIndex := strings.Index(tmpEntity, "{"); filterIndex > 0 {
-			tmpEntity = tmpEntity[:filterIndex]
-		}
-		if strings.Contains(tmpEntity, ":") {
-			tmpEntitySplit := strings.Split(tmpEntity, ":")
-			tmpData.RootEntity.PackageName = tmpEntitySplit[0]
-			tmpData.RootEntity.Name = tmpEntitySplit[1]
-		}
-		result = append(result, &tmpData)
-	}
+	//result := []*models.ProcDefObj{}
+	//for _, v := range procList {
+	//	tmpData := models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefKey: v.ProcDefKey, ProcDefName: v.ProcDefName, Status: v.Status, CreatedTime: v.CreatedTime, RootEntity: models.ProcEntity{}}
+	//	tmpEntity := v.RootEntity
+	//	if filterIndex := strings.Index(tmpEntity, "{"); filterIndex > 0 {
+	//		tmpEntity = tmpEntity[:filterIndex]
+	//	}
+	//	if strings.Contains(tmpEntity, ":") {
+	//		tmpEntitySplit := strings.Split(tmpEntity, ":")
+	//		tmpData.RootEntity.PackageName = tmpEntitySplit[0]
+	//		tmpData.RootEntity.Name = tmpEntitySplit[1]
+	//	}
+	//	result = append(result, &tmpData)
+	//}
 	middleware.ReturnData(c, result)
 }
 

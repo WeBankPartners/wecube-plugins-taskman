@@ -119,6 +119,7 @@ func SaveTaskForm(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordTaskLog(taskId, task.Name, operator, "saveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -189,6 +190,7 @@ func ApproveTask(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordTaskLog(taskId, taskTable.Name, operator, "approveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -206,6 +208,7 @@ func ChangeTaskStatus(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, operation)
 	middleware.ReturnData(c, taskObj)
 }
 
@@ -235,6 +238,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
 		middleware.ReturnData(c, db.GetTaskAttachFileList(taskId))
 	}
 }

@@ -55,6 +55,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 

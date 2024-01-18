@@ -205,7 +205,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(param.Id, param.CreatedBy, "create")
+	db.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -226,7 +226,7 @@ func UpdateRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(param.Id, param.UpdatedBy, "update")
+	db.RecordRequestLog(param.Id, param.Name, param.UpdatedBy, "updateRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -237,9 +237,8 @@ func DeleteRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "delete")
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "deleteRequest", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
-
 }
 
 func SaveRequestCache(c *gin.Context) {
@@ -295,7 +294,7 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "start")
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }
 
@@ -316,7 +315,7 @@ func UpdateRequestStatus(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, middleware.GetRequestUser(c), status)
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "setRequestStatus", c.Request.RequestURI, status)
 	middleware.ReturnSuccess(c)
 }
 
@@ -468,7 +467,7 @@ func CopyRequest(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		db.RecordRequestLog(requestId, createdBy, "copy")
+		db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "copyRequest", c.Request.RequestURI, "")
 		middleware.ReturnData(c, result)
 	}
 }

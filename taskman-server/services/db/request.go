@@ -477,9 +477,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
 		if dataObject.TaskApprovalTime != "" && dataObject.TaskStatus == "done" {
 			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
-			dataObject.TaskStayTime = int(math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+			dataObject.TaskStayTime = int(taskApprovalTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00)
 		} else {
-			dataObject.TaskStayTime = int(math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+			dataObject.TaskStayTime = int(time.Now().Local().Sub(taskCreateTime).Hours() * 1.00 / 24.00)
 		}
 		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
 	}
@@ -501,9 +501,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 			return
 		}
 		// 向上取整
-		dataObject.RequestStayTime = int(math.Ceil(updateTime.Sub(reportTime).Hours() * 1.00 / 24.00))
+		dataObject.RequestStayTime = int(updateTime.Sub(reportTime).Hours() * 1.00 / 24.00)
 	} else {
-		dataObject.RequestStayTime = int(math.Ceil(time.Now().Local().Sub(reportTime).Hours() * 1.00 / 24.00))
+		dataObject.RequestStayTime = int(time.Now().Local().Sub(reportTime).Hours() * 1.00 / 24.00)
 	}
 	dataObject.RequestStayTimeTotal = int(math.Ceil(requestExpectTime.Sub(reportTime).Hours() * 1.00 / 24.00))
 }

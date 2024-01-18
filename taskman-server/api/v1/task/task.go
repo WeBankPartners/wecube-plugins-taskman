@@ -196,11 +196,12 @@ func ApproveTask(c *gin.Context) {
 func ChangeTaskStatus(c *gin.Context) {
 	taskId := c.Param("taskId")
 	operation := c.Param("operation")
+	lastedUpdateTime := c.Param("latestUpdateTime")
 	if operation != "mark" && operation != "start" && operation != "quit" && operation != "give" {
 		middleware.ReturnChangeTaskStatusError(c)
 		return
 	}
-	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation)
+	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation, lastedUpdateTime)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

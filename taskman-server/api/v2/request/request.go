@@ -66,13 +66,23 @@ func SaveRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
 	cacheType := c.Param("cacheType")
 	event := c.Param("event")
+	user := middleware.GetRequestUser(c)
 	if cacheType == "data" {
 		var param models.RequestProDataV2Dto
 		if err := c.ShouldBindJSON(&param); err != nil {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		err := db.SaveRequestCacheV2(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), &param)
+		request, err := db.GetSimpleRequest(requestId)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		if request.CreatedBy != user {
+			middleware.ReturnReportRequestNotPermissionError(c)
+			return
+		}
+		err = db.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {

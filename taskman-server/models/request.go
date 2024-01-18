@@ -50,6 +50,7 @@ type PlatformDataObj struct {
 	TaskApprovalTime     string `json:"taskApprovalTime" xorm:"task_approval_time"` // 任务处理时间
 	TaskExpectTime       string `json:"taskExpectTime" xorm:"task_expect_time"`     // 任务期望完成时间
 	TaskHandler          string `json:"taskHandler" xorm:"task_handler"`            // 任务审批人
+	TaskUpdatedTime      string `json:"taskUpdatedTime" xorm:"task_updated_time"`   // 任务更新时间
 	RequestStayTime      int    `json:"requestStayTime" xorm:"-"`                   // 请求停留时长
 	RequestStayTimeTotal int    `json:"requestStayTimeTotal" xorm:"-"`              // 请求停留时长总数
 	TaskStayTime         int    `json:"taskStayTime" xorm:"-"`                      // 任务停留时长

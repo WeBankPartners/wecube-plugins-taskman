@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
@@ -737,9 +738,16 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	return transaction(actions)
 }
 
-func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTable, err error) {
+func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (taskObj models.TaskTable, err error) {
+	var updateTime time.Time
+	loc, _ := time.LoadLocation("Local")
 	taskObj, err = getSimpleTask(taskId)
 	if err != nil {
+		return
+	}
+	updateTime, _ = time.ParseInLocation(models.DateTimeFormat, taskObj.UpdatedTime, loc)
+	if fmt.Sprintf("%d", updateTime.UnixNano()) != lastedUpdateTime {
+		err = exterror.New().DealWithAtTheSameTimeError
 		return
 	}
 	if taskObj.Status == "done" {

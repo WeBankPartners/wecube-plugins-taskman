@@ -66,6 +66,10 @@ type ErrorTemplate struct {
 	GetRequestPreviewDataError CustomError `json:"get_request_preview_data_error"`
 	// ImportTemplateVersionConflictError 模板导入版本冲突
 	ImportTemplateVersionConflictError CustomError `json:"import_template_version_conflict_error"`
+	// 保存草稿，提交草稿没权限
+	ReportRequestNotPermission CustomError `json:"report_request_not_permission"`
+	// 同时处理报错
+	DealWithAtTheSameTimeError CustomError `json:"deal_with_at_the_same_time_error"`
 }
 
 var (

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func GetEntityData(c *gin.Context) {
@@ -410,9 +411,17 @@ func DownloadAttachFile(c *gin.Context) {
 // UpdateRequestHandler 更新请求处理人,包括认领&转给我逻辑
 func UpdateRequestHandler(c *gin.Context) {
 	requestId := c.Param("requestId")
+	lastedUpdateTime := c.Param("latestUpdateTime")
+	var updateTime time.Time
 	request, err := db.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	loc, _ := time.LoadLocation("Local")
+	updateTime, _ = time.ParseInLocation(models.DateTimeFormat, request.UpdatedTime, loc)
+	if fmt.Sprintf("%d", updateTime.UnixNano()) != lastedUpdateTime {
+		middleware.ReturnDealWithAtTheSameTimeError(c)
 		return
 	}
 	// 请求在Pending状态才有转给我

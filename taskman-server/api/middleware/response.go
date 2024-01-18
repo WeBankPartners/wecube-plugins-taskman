@@ -140,6 +140,14 @@ func ReturnGetRequestPreviewDataError(c *gin.Context) {
 	ReturnError(c, exterror.New().GetRequestPreviewDataError)
 }
 
+func ReturnReportRequestNotPermissionError(c *gin.Context) {
+	ReturnError(c, exterror.New().ReportRequestNotPermission)
+}
+
+func ReturnDealWithAtTheSameTimeError(c *gin.Context) {
+	ReturnError(c, exterror.New().DealWithAtTheSameTimeError)
+}
+
 func InitHttpError() {
 	err := exterror.InitErrorTemplateList(models.Config.HttpServer.ErrorTemplateDir, models.Config.HttpServer.ErrorDetailReturn)
 	if err != nil {

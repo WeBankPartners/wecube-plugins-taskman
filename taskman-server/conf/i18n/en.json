@@ -86,6 +86,14 @@
   },
   "import_template_version_conflict_error": {
     "code": 20100013,
-    "message": "Import Failed: The imported template version is lower than the platform version, which does not support importing"
+    "message": "Import Failed: The imported template version is lower than the platform version, which does not support importing."
+  },
+  "report_request_not_permission": {
+    "code": 20100014,
+    "message": "Operation Failed: You are not the creator of this request and do not have permission to modify or submit it."
+  },
+  "deal_with_at_the_same_time_error": {
+    "code": 20100015,
+    "message": "Operation Failed: The current request is being processed by another user. Multi-user simultaneous operation is not supported currently."
   }
 }

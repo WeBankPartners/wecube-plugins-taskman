@@ -87,5 +87,13 @@
   "import_template_version_conflict_error": {
     "code": 20100013,
     "message": "导入失败:导入的模板版本低于平台版本,暂不支持导入"
+  },
+  "report_request_not_permission": {
+    "code": 20100014,
+    "message": "操作失败：您不是该请求的创建人，没有权限修改请求草稿、提起请求"
+  },
+  "deal_with_at_the_same_time_error": {
+    "code": 20100015,
+    "message": "操作失败：当前请求正在被其他用户处理，暂不支持多用户同时操作同一请求"
   }
 }

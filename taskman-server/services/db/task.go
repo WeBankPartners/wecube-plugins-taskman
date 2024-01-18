@@ -746,7 +746,7 @@ func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (tas
 		return
 	}
 	updateTime, _ = time.ParseInLocation(models.DateTimeFormat, taskObj.UpdatedTime, loc)
-	if fmt.Sprintf("%d", updateTime.UnixNano()) != lastedUpdateTime {
+	if fmt.Sprintf("%d", updateTime.UnixMilli()) != lastedUpdateTime {
 		err = exterror.New().DealWithAtTheSameTimeError
 		return
 	}

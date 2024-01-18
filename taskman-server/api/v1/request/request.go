@@ -419,7 +419,7 @@ func UpdateRequestHandler(c *gin.Context) {
 	}
 	loc, _ := time.LoadLocation("Local")
 	updateTime, _ = time.ParseInLocation(models.DateTimeFormat, request.UpdatedTime, loc)
-	if fmt.Sprintf("%d", updateTime.UnixNano()) != lastedUpdateTime {
+	if fmt.Sprintf("%d", updateTime.UnixMilli()) != lastedUpdateTime {
 		middleware.ReturnDealWithAtTheSameTimeError(c)
 		return
 	}

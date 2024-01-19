@@ -8,7 +8,7 @@
       </Radio>
     </RadioGroup>
     <Table size="small" :columns="tableColumns" :data="tableData" @on-selection-change="handleChooseData"></Table>
-    <Button v-if="isAdd && type === 'request'" size="small" style="margin-top: 10px;" @click="addRow">{{
+    <Button v-if="isAdd && type === '2'" size="small" style="margin-top: 10px;" @click="addRow">{{
       $t('tw_add_row')
     }}</Button>
     <EditDrawer
@@ -55,7 +55,7 @@ export default {
       type: Boolean,
       default: false
     },
-    // 类型(request请求publish发布)
+    // 类型(1发布2请求)
     type: {
       type: String,
       default: ''
@@ -399,19 +399,20 @@ export default {
     addRow () {
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
       this.handleAddRow(data)
-      const addRow = data.value[data.value.length - 1].entityData
-      this.tableData.push(addRow)
-      this.refKeys.forEach(rfk => {
-        const titleObj = data.title.find(f => f.name === rfk)
-        this.getRefOptions(titleObj, addRow, data.value.length - 1)
-      })
+      this.initTableData()
+      // const addRow = data.value[data.value.length - 1].entityData
+      // this.tableData.push(addRow)
+      // this.refKeys.forEach(rfk => {
+      //   const titleObj = data.title.find(f => f.name === rfk)
+      //   this.getRefOptions(titleObj, addRow, data.value.length - 1)
+      // })
     },
     // 添加一条行数据
     handleAddRow (data) {
       let entityData = {}
       data.title.forEach(item => {
         entityData[item.name] = ''
-        if (item.elementType === 'select') {
+        if (item.elementType === 'select' || item.elementType === 'wecmdbEntity') {
           entityData[item.name + 'Options'] = []
         }
       })

@@ -601,7 +601,7 @@ export default {
         requestData.map(item => {
           let refKeys = []
           item.title.forEach(t => {
-            if (t.elementType === 'select') {
+            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
               refKeys.push(t.name)
             }
           })
@@ -650,7 +650,7 @@ export default {
         requestData.map(item => {
           let refKeys = []
           item.title.forEach(t => {
-            if (t.elementType === 'select') {
+            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
               refKeys.push(t.name)
             }
           })

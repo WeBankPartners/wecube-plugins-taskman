@@ -108,7 +108,7 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="Wecmdb数据项"></Select>
+              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
                 <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
@@ -224,7 +224,7 @@
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
-                      <Option value="wecmdbEntity">Wecmdb数据项</Option>
+                      <Option value="wecmdbEntity">模型数据项</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -235,7 +235,7 @@
                   </FormItem>
                   <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
                   <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
-                    <Select v-model="editElement.dataOptions" :disabled="isCheck === 'Y'">
+                    <Select v-model="editElement.dataOptions" filterable :disabled="isCheck === 'Y'">
                       <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
                     </Select>
                   </FormItem>

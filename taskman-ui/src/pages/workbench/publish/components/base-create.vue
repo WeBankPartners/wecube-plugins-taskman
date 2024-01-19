@@ -100,6 +100,7 @@
                   ref="entityTable"
                   :data="requestData"
                   :requestId="requestId"
+                  :type="actionName"
                   :isAdd="true"
                   :isAddRow="true"
                 ></EntityTable>
@@ -375,7 +376,7 @@ export default {
         requestData.map(item => {
           let refKeys = []
           item.title.forEach(t => {
-            if (t.elementType === 'select') {
+            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
               refKeys.push(t.name)
             }
           })
@@ -423,14 +424,10 @@ export default {
         if (noJump) {
           return statusCode
         } else {
-          // if (this.jumpFrom === 'my_submit') {
-          //   const rollback = this.$route.query.rollback
-          //   this.$router.push({
-          //     path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=${rollback}`
-          //   })
-          // } else {
-          //   this.$router.push({ path: `/taskman/workbench?tabName=draft&actionName=${this.actionName}` })
-          // }
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
         }
       }
     },
@@ -446,6 +443,10 @@ export default {
           if (draftResult === 'OK') {
             const { statusCode } = await updateRequestStatus(this.requestId, 'Pending')
             if (statusCode === 'OK') {
+              this.$Notice.success({
+                title: this.$t('successful'),
+                desc: this.$t('successful')
+              })
               this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}` })
             }
           }

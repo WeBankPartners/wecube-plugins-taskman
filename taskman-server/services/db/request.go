@@ -1959,9 +1959,27 @@ func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetai
 	// get request
 	var requests []*models.RequestTable
 	var taskQueryList []*models.TaskQueryObj
+	var actions []*execAction
 	x.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
+	}
+	if strings.Contains(requests[0].Status, "InProgress") && requests[0].ProcInstanceId != "" {
+		newStatus := getInstanceStatus(requests[0].ProcInstanceId, userToken)
+		if newStatus == "InternallyTerminated" {
+			newStatus = "Termination"
+		}
+		if newStatus != "" && newStatus != requests[0].Status {
+			actions = append(actions, &execAction{Sql: "update request set status=?,updated_time=? where id=?",
+				Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), requests[0].Id}})
+			requests[0].Status = newStatus
+		}
+		if len(actions) > 0 {
+			updateRequestErr := transaction(actions)
+			if updateRequestErr != nil {
+				log.Logger.Error("Try to update request status fail", log.Error(updateRequestErr))
+			}
+		}
 	}
 	result.Request = getRequestForm(requests[0], userToken)
 	taskQueryList, err = GetRequestTaskListV2(requestId)

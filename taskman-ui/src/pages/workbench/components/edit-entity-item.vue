@@ -33,7 +33,7 @@
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width: calc(100% - 30px)"
               ></Input>
-              <!--下拉选择-->
+              <!--下拉entity类型-->
               <Select
                 v-else-if="i.elementType === 'select' && i.entity"
                 v-model="value[i.name]"
@@ -47,6 +47,7 @@
                   <Option :key="item.guid" :value="item.guid">{{ item.key_name }}</Option>
                 </template>
               </Select>
+              <!--下拉非entity类型-->
               <Select
                 v-else-if="i.elementType === 'select' && !i.entity"
                 v-model="value[i.name]"
@@ -58,6 +59,20 @@
               >
                 <template v-for="item in value[i.name + 'Options']">
                   <Option :key="item" :value="item">{{ item }}</Option>
+                </template>
+              </Select>
+              <!--下拉wecmdbEntity类型-->
+              <Select
+                v-else-if="i.elementType === 'wecmdbEntity'"
+                v-model="value[i.name]"
+                :multiple="i.multiple === 'Y'"
+                filterable
+                clearable
+                :disabled="i.isEdit === 'no' || disabled"
+                style="width: calc(100% - 30px)"
+              >
+                <template v-for="item in value[i.name + 'Options']">
+                  <Option :key="item.id" :value="item.id">{{ item.displayName }}</Option>
                 </template>
               </Select>
             </FormItem>

@@ -30,7 +30,7 @@ export default {
   computed: {
     workbenchStyle () {
       return {
-        paddingLeft: this.expand ? '180px' : '0px'
+        paddingLeft: this.expand ? '140px' : '0px'
       }
     }
   },

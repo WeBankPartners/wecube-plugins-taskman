@@ -80,6 +80,9 @@ export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${re
 export const getRefOptions = (requestId, attr, params) =>
   req.post(`/taskman/api/v1/request-data/reference/query/${attr}/${requestId}`, params)
 
+export const getWeCmdbOptions = (packageName, ciType, params) =>
+  req.post(`/${packageName}/entities/${ciType}/query`, params)
+
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)
 export const saveTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/save/${taskId}`, data)
@@ -141,3 +144,5 @@ export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/reques
 export const getFlowByInstanceId = instanceId => req.get(`/taskman/api/v1/request/process/instances/${instanceId}`)
 export const getNodeContextByNodeId = (instanceId, nodeId) =>
   req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)
+
+export const getAllDataModels = () => req.get(`/platform/v1/models`)

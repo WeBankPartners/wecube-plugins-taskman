@@ -96,7 +96,13 @@
                 </Select>
               </FormItem>
               <FormItem v-if="requestData.length" :label="$t('tw_selected')">
-                <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" :isAdd="true"></EntityTable>
+                <EntityTable
+                  ref="entityTable"
+                  :data="requestData"
+                  :requestId="requestId"
+                  :isAdd="true"
+                  :isAddRow="true"
+                ></EntityTable>
               </FormItem>
             </HeaderTitle>
           </template>

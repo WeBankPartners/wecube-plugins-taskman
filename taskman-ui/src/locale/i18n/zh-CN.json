@@ -21,7 +21,7 @@
   "tm_template_group": "模板组",
   "group": "模板组",
   "scene_type": "模板场景类型",
-  "procDefId": "流程",
+  "procDefId": "编排",
   "mgmtRoles": "管理角色",
   "mgmtRolesNew": "模板属主角色",
   "processing_role": "处理角色",

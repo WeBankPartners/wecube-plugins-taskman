@@ -21,7 +21,7 @@
   "tm_template_group": "Template Group",
   "group": "Template Group",
   "scene_type": "Template Scene Type",
-  "procDefId": "Process",
+  "procDefId": "Workflow",
   "mgmtRoles": "MGMT Role",
   "mgmtRolesNew": "Template Owner Role",
   "processing_role": "Handle Role",

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { getRefOptions } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import EditDrawer from './edit-entity-item.vue'
 import limitSelect from '@/pages/components/limit-select.vue'
@@ -41,7 +41,13 @@ export default {
       type: String,
       default: ''
     },
+    // 是否创建页面
     isAdd: {
+      type: Boolean,
+      default: false
+    },
+    // 无数据时，是否默认添加一行
+    isAddRow: {
       type: Boolean,
       default: false
     },
@@ -118,7 +124,7 @@ export default {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
             // 新增时，没有配置数据，默认添加一行
-            if (item.value.length === 0 && this.isAdd) {
+            if (item.value.length === 0 && this.isAddRow) {
               this.handleAddRow(item)
             }
             item.value.forEach(j => {
@@ -172,7 +178,7 @@ export default {
       // select类型集合
       this.refKeys = []
       data.title.forEach(t => {
-        if (t.elementType === 'select') {
+        if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
           this.refKeys.push(t.name)
         }
       })
@@ -195,7 +201,7 @@ export default {
             )
           }
         }
-        if (t.elementType === 'select') {
+        if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
           column.render = (h, params) => {
             return (
               <div style="display:flex;align-items:center">
@@ -212,9 +218,9 @@ export default {
                       this.tableData[params.row._index][t.name] = v
                       this.refreshRequestData()
                     }}
-                    displayName="key_name"
-                    displayValue="guid"
-                    objectOption={!!t.entity}
+                    displayName={t.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'}
+                    displayValue={t.elementType === 'wecmdbEntity' ? 'id' : 'guid'}
+                    objectOption={!!t.entity || t.elementType === 'wecmdbEntity'}
                     options={params.row[t.name + 'Options']}
                     disabled={t.isEdit === 'no' || this.formDisable}
                     multiple={t.multiple === 'Y'}
@@ -305,9 +311,20 @@ export default {
       })
     },
     async getRefOptions (titleObj, row, index) {
+      // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
-        row[titleObj.name + 'Options'] = titleObj.dataOptions.split(',')
+        row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
         this.$set(this.tableData, index, row)
+        return
+      }
+      // taskman模板管理配置的引用下拉类型
+      if (titleObj.elementType === 'wecmdbEntity') {
+        const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
+        const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
+        if (status === 'OK') {
+          row[titleObj.name + 'Options'] = data
+          this.$set(this.tableData, index, row)
+        }
         return
       }
       // if (titleObj.refEntity === '') {

@@ -209,6 +209,7 @@
                       :data="handleData.formData"
                       :requestId="requestId"
                       :formDisable="!handleData.editable || enforceDisable"
+                      :isAddRow="true"
                     ></EntityTable>
                   </div>
                 </Step>

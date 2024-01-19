@@ -2,7 +2,7 @@
   <div
     class="workbench-menu"
     :style="{
-      width: expand ? '180px' : '0px',
+      width: expand ? '140px' : '0px',
       top: scrollTop > 50 ? '0px' : 50 - scrollTop + 'px'
     }"
   >
@@ -16,7 +16,7 @@
         theme="dark"
         :active-name="activeName"
         :open-names="openNames"
-        style="width:180px;height:100%;"
+        style="width:140px;height:100%;"
       >
         <Submenu v-for="(i, index) in menuList" :key="index" :name="i.name">
           <template #title>
@@ -39,7 +39,7 @@
         <span>{{ i.title }}</span>
       </div>
     </div> -->
-    <div class="expand" :style="{ left: expand ? '180px' : '0px' }">
+    <div class="expand" :style="{ left: expand ? '140px' : '0px' }">
       <Icon v-if="expand" @click="handleExpand" type="ios-arrow-dropleft" size="28" />
       <Icon v-else @click="handleExpand" type="ios-arrow-dropright" size="28" />
     </div>
@@ -127,6 +127,10 @@ export default {
   .ivu-menu-dark.ivu-menu-vertical .ivu-menu-item,
   .ivu-menu-dark.ivu-menu-vertical .ivu-menu-submenu-title {
     background: #10192b;
+    padding: 10px;
+  }
+  .ivu-menu-item {
+    padding-left: 32px !important;
   }
 }
 </style>
@@ -139,8 +143,8 @@ export default {
   .home {
     display: flex;
     align-items: center;
-    padding: 20px 20px 10px 20px;
-    width: 180px;
+    padding: 20px 12px 10px 12px;
+    width: 140px;
     background: #002140;
     color: #fff;
     font-size: 14px;

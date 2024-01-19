@@ -36,7 +36,7 @@
           <!--已发布-->
           <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
           <!--我的草稿-->
-          <TabPane :label="$t('tw_template_draft_tab')" name="created"></TabPane>
+          <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
         </Tabs>
         <template v-if="cardList.length">
           <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
@@ -109,7 +109,7 @@
 
 <script>
 import { getTemplateTree, collectTemplate, uncollectTemplate, collectTemplateList } from '@/api/server'
-import { debounce } from '@/pages/util'
+import { debounce, deepClone } from '@/pages/util'
 export default {
   data () {
     return {
@@ -120,11 +120,10 @@ export default {
         operatorObjType: '' // 操作对象类型
       },
       operateOptions: [],
-      // 收藏列表
-      collectList: [],
-      // 模板数据
-      cardList: [],
+      collectList: [], // 收藏列表
+      cardList: [], // 模板数据
       originCardList: [],
+      draftCardList: [], // 草稿页签数据
       tableColumns: [
         {
           title: this.$t('tw_template_name'),
@@ -279,6 +278,25 @@ export default {
         // 数据去重
         this.operateOptions = Array.from(new Set(this.operateOptions))
         this.filterData()
+        // 获取草稿态数据，没有则隐藏草稿标签
+        const cardList = deepClone(this.cardList)
+        this.draftCardList = cardList.filter(i => {
+          i.groups =
+            (Array.isArray(i.groups) &&
+              i.groups.filter(j => {
+                j.templates =
+                  (Array.isArray(j.templates) &&
+                    j.templates.filter(k => {
+                      return k.status === 'created'
+                    })) ||
+                  []
+                // 没有模板的组不显示
+                return j.templates.length
+              })) ||
+            []
+          // 没有组的角色不显示
+          return i.groups.length
+        })
       }
     },
     // 展开收缩卡片
@@ -340,7 +358,7 @@ export default {
     // 搜索过滤模板数据
     filterData () {
       const { templateName, operatorObjType } = this.form
-      this.cardList = JSON.parse(JSON.stringify(this.originCardList))
+      this.cardList = deepClone(this.originCardList)
       this.cardList = this.cardList.filter(i => {
         i.groups =
           (Array.isArray(i.groups) &&

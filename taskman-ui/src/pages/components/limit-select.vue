@@ -22,7 +22,7 @@
             </Option>
           </template>
           <!--加载更多-->
-          <Option style="padding:0px;" label="" value="">
+          <Option v-if="optionsData.length >= 20" style="padding:0px;" label="" value="">
             <div style="width:100%;height:30px;" @click.stop>
               <Icon
                 type="ios-more"
@@ -169,7 +169,11 @@ export default {
     },
     getList () {
       if (this.query) {
-        this.sourceDataFilter = this.sourceData.filter(item => item[this.displayName].includes(this.query))
+        if (this.objectOption) {
+          this.sourceDataFilter = this.sourceData.filter(item => item[this.displayName].includes(this.query))
+        } else {
+          this.sourceDataFilter = this.sourceData.filter(item => item.includes(this.query))
+        }
       } else {
         this.sourceDataFilter = this.sourceData
       }

@@ -348,14 +348,14 @@ alter table operation_log add column `request_name` varchar(255) DEFAULT null;
 alter table operation_log add column `task_name` varchar(255) DEFAULT null;
 
 alter table request add index request_status (status);
-alter table request add index request_created_by (created_by);
+alter table request add index request_created_by (created_by(191));
 alter table request add index request_handler (handler);
 alter table request add index request_expect_time (expect_time);
 alter table request add index request_report_time (report_time);
 alter table request add index request_confirm_time (confirm_time);
 alter table request add index request_created_time (created_time);
 alter table request add index request_updated_time (updated_time);
-alter table request add index request_template_type (type);
+alter table request add index request_template_type (`type`);
 alter table request add index request_del_flag (del_flag);
 
 alter table task add index task_status (status);

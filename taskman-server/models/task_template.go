@@ -18,6 +18,12 @@ type TaskTemplateTable struct {
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 }
 
+type TaskTemplateVo struct {
+	Id      string `json:"id" xorm:"id"`
+	Handler string `json:"handler" xorm:"handler"`
+	Role    string `json:"role" xorm:"role"`
+}
+
 type TaskTemplateRoleTable struct {
 	Id           string `json:"id" xorm:"id"`
 	TaskTemplate string `json:"taskTemplate" xorm:"task_template"`
@@ -26,19 +32,20 @@ type TaskTemplateRoleTable struct {
 }
 
 type TaskTemplateDto struct {
-	Id           string                   `json:"id"`
-	NodeId       string                   `json:"nodeId"`
-	NodeDefId    string                   `json:"nodeDefId"`
-	NodeDefName  string                   `json:"nodeDefName"`
-	Name         string                   `json:"name"`
-	Description  string                   `json:"description"`
-	ExpireDay    int                      `json:"expireDay"`
-	Handler      string                   `json:"handler"`
-	UpdatedTime  string                   `json:"updatedTime"`
-	UpdatedBy    string                   `json:"updatedBy"`
-	MGMTRoles    []string                 `json:"mgmtRoles"`
-	USERoles     []string                 `json:"useRoles"`
-	MGMTRoleObjs []*RoleTable             `json:"mgmtRoleObjs"`
-	USERoleObjs  []*RoleTable             `json:"useRoleObjs"`
-	Items        []*FormItemTemplateTable `json:"items"`
+	Id                string                   `json:"id"`
+	NodeId            string                   `json:"nodeId"`
+	NodeDefId         string                   `json:"nodeDefId"`
+	NodeDefName       string                   `json:"nodeDefName"`
+	Name              string                   `json:"name"`
+	Description       string                   `json:"description"`
+	ExpireDay         int                      `json:"expireDay"`
+	Handler           string                   `json:"handler"`
+	UpdatedTime       string                   `json:"updatedTime"`
+	UpdatedBy         string                   `json:"updatedBy"`
+	MGMTRoles         []string                 `json:"mgmtRoles"`
+	USERoles          []string                 `json:"useRoles"`
+	MGMTRoleObjs      []*RoleTable             `json:"mgmtRoleObjs"`
+	USERoleObjs       []*RoleTable             `json:"useRoleObjs"`
+	Items             []*FormItemTemplateTable `json:"items"`
+	RequestTemplateId string                   `json:"requestTemplateId"`
 }

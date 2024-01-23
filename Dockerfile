@@ -9,6 +9,7 @@ ADD build/stop.sh $BASE_HOME/
 ADD build/default.json $BASE_HOME/conf/
 ADD taskman-server/taskman-server $BASE_HOME/
 ADD taskman-server/public/index.html $BASE_HOME/public/
+ADD taskman-server/conf/i18n $BASE_HOME/conf/i18n/
 
 WORKDIR $BASE_HOME
 ENTRYPOINT ["/bin/sh", "start.sh"]

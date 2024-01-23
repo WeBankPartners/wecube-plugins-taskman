@@ -1,0 +1,99 @@
+{
+  "success": "成功",
+  "request_param_validate_error": {
+    "code": 10100001,
+    "message": "请求参数校验失败"
+  },
+  "request_read_body_error": {
+    "code": 10100002,
+    "message": "读取请求体body数据错误"
+  },
+  "request_json_unmarshal_error": {
+    "code": 10100003,
+    "message": "json反格式化请求体内容错误"
+  },
+  "request_token_validate_error": {
+    "code": 10100004,
+    "message": "请求认证校验失败"
+  },
+  "request_token_expire_error": {
+    "code": 10100005,
+    "message": "请求token已过期"
+  },
+  "database_query_error": {
+    "code": 10100021,
+    "message": "查询数据库失败"
+  },
+  "database_query_empty_error": {
+    "code": 10100022,
+    "message": "获取数据库数据失败,返回数据为空"
+  },
+  "database_execute_error": {
+    "code": 10100023,
+    "message": "执行数据库语句报错"
+  },
+  "server_handle_error": {
+    "code": 10100031,
+    "message": "服务请求处理失败"
+  },
+  "api_permission_deny": {
+    "code": 20100001,
+    "message": "无接口访问权限"
+  },
+  "data_permission_deny": {
+    "code": 20100002,
+    "message": "无数据权限"
+  },
+  "template_already_collect": {
+    "code": 20100003,
+    "message": "当前模板已被收藏，请勿重复操作"
+  },
+  "upload_file_too_large": {
+    "code": 20100004,
+    "message": "文件上传失败，请上传大小小于10M的文件"
+  },
+  "change_task_status_error": {
+    "code": 20100005,
+    "message": "参数错误，任务状态修改失败"
+  },
+  "submit_request_not_permission": {
+    "code": 20100006,
+    "message": "提交定版失败，您当前没有操作权限：任务已被本组其他成员认领，请先去工作台点击“转给我”重新认领任务之后重新提交"
+  },
+  "save_request_not_permission": {
+    "code": 20100007,
+    "message": "保存定版失败：您暂无操作权限，任务已被本组其他成员认领，请先去工作台点击“转给我”重新认领任务之后重新提交"
+  },
+  "task_approve_not_permission": {
+    "code": 20100008,
+    "message": "提交审批失败：您暂无操作权限，任务已被本组其他成员认领，请先去工作台点击“转给我”重新认领任务之后重新提交"
+  },
+  "task_save_not_permission": {
+    "code": 20100009,
+    "message": "保存审批失败：您暂无操作权限，任务已被本组其他成员认领，请先去工作台点击“转给我”，重新认领任务之后继续处理"
+  },
+  "update_request_handler_status_error": {
+    "code": 20100010,
+    "message": "处理请求失败，当前请求已被其他组员处理，请刷新重试"
+  },
+  "revoke_request_error": {
+    "code": 20100011,
+    "message": "撤回请求失败：请求已被定版人处理，无法撤回，请刷新重试"
+  },
+  "get_request_preview_data_error": {
+    "code": 20100012,
+    "message": "新建请求失败：模版无效，未配置表单，请联系模板属主/Wecube管理员更新模版"
+  },
+  "import_template_version_conflict_error": {
+    "code": 20100013,
+    "message": "导入失败:导入的模板版本低于平台版本,暂不支持导入"
+  },
+  "report_request_not_permission": {
+    "code": 20100014,
+    "message": "操作失败：您不是该请求的创建人，没有权限修改请求草稿、提起请求"
+  },
+  "deal_with_at_the_same_time_error": {
+    "code": 20100015,
+    "message": "操作失败：当前请求正在被其他用户处理，暂不支持多用户同时操作同一请求"
+  }
+}

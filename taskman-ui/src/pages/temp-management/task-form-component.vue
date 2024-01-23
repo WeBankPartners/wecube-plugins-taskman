@@ -24,6 +24,7 @@
               :disabled="isCheck === 'Y'"
               style="width: 85%"
               filterable
+              clearable
             >
               <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                 item.displayName
@@ -107,6 +108,7 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
+              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
                 <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
@@ -180,6 +182,12 @@
                     v-model="element.defaultValue"
                     style="width: calc(100% - 30px)"
                   ></Select>
+                  <Select
+                    v-if="element.elementType === 'wecmdbEntity'"
+                    :disabled="element.isEdit === 'no'"
+                    v-model="element.defaultValue"
+                    style="width: calc(100% - 30px)"
+                  ></Select>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
@@ -210,12 +218,13 @@
                   <FormItem :label="$t('data_type')">
                     <Select
                       v-model="editElement.elementType"
-                      :disabled="isCheck === 'Y'"
+                      :disabled="true"
                       @on-change="editElement.defaultValue = ''"
                     >
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
+                      <Option value="wecmdbEntity">模型数据项</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -224,29 +233,45 @@
                   >
                     <Input v-model="editElement.dataOptions" :disabled="isCheck === 'Y'" placeholder="eg:a,b"></Input>
                   </FormItem>
-                  <FormItem :label="$t('defaults')">
-                    <Input v-model="editElement.defaultValue" :disabled="isCheck === 'Y'" placeholder=""></Input>
+                  <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
+                  <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
+                    <Select v-model="editElement.dataOptions" filterable :disabled="isCheck === 'Y'">
+                      <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
+                    </Select>
                   </FormItem>
                   <!-- <FormItem label="标签">
                     <Input v-model="editElement.tag" placeholder=""></Input>
                   </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <Select v-model="editElement.inDisplayName" :disabled="isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.inDisplayName">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <Select v-model="editElement.isEdit" :disabled="isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.isEdit">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <Select v-model="editElement.required" :disabled="isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.required">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                  <FormItem :label="$t('tw_default_empty')">
+                    <RadioGroup v-model="editElement.defaultClear">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                  <FormItem :label="$t('defaults')">
+                    <Input
+                      v-model="editElement.defaultValue"
+                      :disabled="isCheck === 'Y' || editElement.defaultClear === 'yes'"
+                      placeholder=""
+                    ></Input>
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" :disabled="isCheck === 'Y'">
@@ -297,7 +322,14 @@
 </template>
 
 <script>
-import { getSelectedForm, getUserRoles, saveTaskForm, getTaskFormDataByNodeId, getHandlerRoles } from '@/api/server.js'
+import {
+  getSelectedForm,
+  getUserRoles,
+  saveTaskForm,
+  getTaskFormDataByNodeId,
+  getHandlerRoles,
+  getAllDataModels
+} from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 80
 export default {
@@ -346,6 +378,7 @@ export default {
           title: 'Input',
           elementType: 'input',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -375,6 +408,7 @@ export default {
           title: 'Select',
           elementType: 'select',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -404,6 +438,37 @@ export default {
           title: 'Textarea',
           elementType: 'textarea',
           defaultValue: '',
+          defaultClear: 'no',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
+          width: 24,
+          dataOptions: '',
+          regular: '',
+          inDisplayName: 'yes',
+          isEdit: 'yes',
+          multiple: 'N',
+          selectList: [],
+          isRefInside: 'no',
+          required: 'no',
+          isView: 'yes',
+          isOutput: 'no',
+          sort: 0,
+          attrDefId: '',
+          attrDefName: '',
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
+        },
+        {
+          id: 5,
+          name: 'wecmdbEntity',
+          title: 'WecmdbEntity',
+          elementType: 'wecmdbEntity',
+          defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -435,6 +500,7 @@ export default {
         attrDefId: '',
         attrDefName: '',
         defaultValue: '',
+        defaultClear: 'no',
         // tag: '',
         itemGroup: '',
         itemGroupName: '',
@@ -463,7 +529,8 @@ export default {
         itemGroupIndex: -1,
         attrIndex: -1
       },
-      specialId: ''
+      specialId: '',
+      allEntityList: []
     }
   },
   props: ['currentNode', 'node', 'requestTemplateId'],
@@ -472,6 +539,7 @@ export default {
     this.nodeId = this.currentNode
     this.nodeData = this.node
     this.initPage()
+    this.getAllDataModels()
   },
   watch: {
     selectedEntities: function (val) {
@@ -485,6 +553,29 @@ export default {
     }
   },
   methods: {
+    // 获取wecmdb下拉类型entity值
+    async getAllDataModels () {
+      const { data, status } = await getAllDataModels()
+      if (status === 'OK') {
+        this.allEntityList = []
+        const sortData = data.map(_ => {
+          return {
+            ..._,
+            entities: _.entities.sort(function (a, b) {
+              var s = a.name.toLowerCase()
+              var t = b.name.toLowerCase()
+              if (s < t) return -1
+              if (s > t) return 1
+            })
+          }
+        })
+        sortData.forEach(i => {
+          i.entities.forEach(j => {
+            this.allEntityList.push(`${j.packageName}:${j.name}`)
+          })
+        })
+      }
+    },
     selectAll (type) {
       if (type === 'input') {
         this.formItemOptions.forEach(itemOptions => {
@@ -697,6 +788,7 @@ export default {
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
+          defaultClear: 'no',
           // tag: tag,
           itemGroup: itemGroup,
           itemGroupName: itemGroup,
@@ -769,6 +861,7 @@ export default {
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
+          defaultClear: 'no',
           // tag: tag,
           itemGroup: itemGroup,
           itemGroupName: itemGroup,
@@ -810,7 +903,7 @@ export default {
       })
     },
     cloneDog (val) {
-      if (this.$parent.isCheck === 'Y') return
+      if (this.isCheck === 'Y') return
       if (val.elementType === 'group') {
         this.finalElement.push({
           itemGroup: 'itemGroup' + idGlobal++,

@@ -39,6 +39,7 @@ type TaskTable struct {
 	OperationOptions  []string `json:"operationOptions" xorm:"-"`
 	ExpireTime        string   `json:"expireTime" xorm:"expire_time"`
 	NotifyCount       int      `json:"notifyCount" xorm:"notify_count"`
+	TemplateType      int      `json:"templateType" xorm:"template_type"` // 请求模板类型 0表示请求,1表示发布
 }
 
 type TaskListObj struct {
@@ -203,6 +204,8 @@ type TaskQueryObj struct {
 	FormData        []*RequestPreDataTableObj `json:"formData"`
 	IsHistory       bool                      `json:"isHistory"`
 	HandleRoleName  string                    `json:"handleRoleName"`
+	CreatedTime     string                    `json:"createTime"`
+	RollbackDesc    string                    `json:"rollbackDesc"`
 }
 
 type TaskApproveParam struct {

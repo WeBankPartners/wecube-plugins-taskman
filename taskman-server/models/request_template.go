@@ -1,29 +1,32 @@
 package models
 
 type RequestTemplateTable struct {
-	Id           string `json:"id" xorm:"id"`
-	Group        string `json:"group" xorm:"group"`
-	Name         string `json:"name" xorm:"name"`
-	Description  string `json:"description" xorm:"description"`
-	FormTemplate string `json:"formTemplate" xorm:"form_template"`
-	Tags         string `json:"tags" xorm:"tags"`
-	Status       string `json:"status" xorm:"status"`
-	RecordId     string `json:"recordId" xorm:"record_id"`
-	Version      string `json:"version" xorm:"version"`
-	ConfirmTime  string `json:"confirmTime" xorm:"confirm_time"`
-	PackageName  string `json:"packageName" xorm:"package_name"`
-	EntityName   string `json:"entityName" xorm:"entity_name"`
-	ProcDefKey   string `json:"procDefKey" xorm:"proc_def_key"`
-	ProcDefId    string `json:"procDefId" xorm:"proc_def_id"`
-	ProcDefName  string `json:"procDefName" xorm:"proc_def_name"`
-	CreatedBy    string `json:"createdBy" xorm:"created_by"`
-	CreatedTime  string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy    string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime  string `json:"updatedTime" xorm:"updated_time"`
-	EntityAttrs  string `json:"entityAttrs" xorm:"entity_attrs"`
-	ExpireDay    int    `json:"expireDay" xorm:"expire_day"`
-	Handler      string `json:"handler" xorm:"handler"`
-	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
+	Id              string `json:"id" xorm:"id"`
+	Group           string `json:"group" xorm:"group"`
+	Name            string `json:"name" xorm:"name"`
+	Description     string `json:"description" xorm:"description"`
+	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
+	Tags            string `json:"tags" xorm:"tags"`
+	Status          string `json:"status" xorm:"status"`
+	RecordId        string `json:"recordId" xorm:"record_id"`
+	Version         string `json:"version" xorm:"version"`
+	ConfirmTime     string `json:"confirmTime" xorm:"confirm_time"`
+	PackageName     string `json:"packageName" xorm:"package_name"`
+	EntityName      string `json:"entityName" xorm:"entity_name"`
+	ProcDefKey      string `json:"procDefKey" xorm:"proc_def_key"`
+	ProcDefId       string `json:"procDefId" xorm:"proc_def_id"`
+	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`
+	CreatedBy       string `json:"createdBy" xorm:"created_by"`
+	CreatedTime     string `json:"createdTime" xorm:"created_time"`
+	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
+	EntityAttrs     string `json:"entityAttrs" xorm:"entity_attrs"`
+	ExpireDay       int    `json:"expireDay" xorm:"expire_day"`
+	Handler         string `json:"handler" xorm:"handler"`
+	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
+	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
+	ParentId        string `json:"parentId" xorm:"parent_id"`                // 父类ID
 }
 
 type RequestTemplateGroupTable struct {
@@ -72,12 +75,27 @@ type CodeProcessQueryObj struct {
 	CreatedUnixTime int64  `json:"-"`
 	Tags            string `json:"tags"`
 }
+type RequestTemplateTableObj struct {
+	Id              string `json:"id" xorm:"id"`
+	Name            string `json:"name" xorm:"name"`
+	Version         string `json:"version" xorm:"version"`
+	Tags            string `json:"tags" xorm:"tags"`
+	Status          string `json:"status" xorm:"status"`
+	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
+	Handler         string `json:"handler" xorm:"handler"`
+	Role            string `json:"role" xorm:"role"`
+	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
+	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 是否收藏 1表示已收藏
+	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
+	OperatorObjType string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
+}
 
 type RequestTemplateQueryObj struct {
 	RequestTemplateTable
 	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
 	USERoles       []*RoleTable `json:"useRoles"`
 	OperateOptions []string     `json:"operateOptions"`
+	ModifyType     bool         `json:"modifyType"` // 是否能够修改模板类型
 }
 
 type RequestTemplateUpdateParam struct {
@@ -172,6 +190,19 @@ type UserRequestTemplateQueryObj struct {
 	Tags             []*UserRequestTemplateTagObj `json:"tags"`
 }
 
+type TemplateGroupObj struct {
+	GroupId     string                     `json:"groupId"`
+	GroupName   string                     `json:"groupName"`
+	CreatedTime string                     `json:"createdTime"`
+	UpdatedTime string                     `json:"updatedTime"`
+	Templates   []*RequestTemplateTableObj `json:"templates"`
+}
+
+type UserRequestTemplateQueryObjNew struct {
+	ManageRole string              `json:"manageRole"` //管理角色
+	Groups     []*TemplateGroupObj `json:"groups"`
+}
+
 type UserRequestTemplateTagObj struct {
 	Tag       string                  `json:"tag"`
 	Templates []*RequestTemplateTable `json:"templates"`
@@ -219,4 +250,107 @@ type RequestTemplateExport struct {
 	TaskTemplate         []*TaskTemplateTable        `json:"taskTemplate"`
 	TaskTemplateRole     []*TaskTemplateRoleTable    `json:"taskTemplateRole"`
 	RequestTemplateGroup RequestTemplateGroupTable   `json:"requestTemplateGroup"`
+}
+
+type WorkflowRsp struct {
+	Status  string   `json:"status"`
+	Message string   `json:"message"`
+	Data    Workflow `json:"data"`
+}
+
+type Workflow struct {
+	Status          string           `json:"status"`
+	DefinitionsInfo *DefinitionsInfo `json:"define_data"`
+	InstancesInfo   *InstancesInfo   `json:"instance_data"`
+}
+
+type DefinitionsInfo struct {
+	ProcDefId        string          `json:"procDefId"`
+	ProcDefKey       string          `json:"procDefKey"`
+	ProcDefName      string          `json:"procDefName"`
+	ProcDefVersion   string          `json:"procDefVersion"`
+	Status           string          `json:"status"`
+	ProcDefData      string          `json:"procDefData"`
+	CreatedTime      string          `json:"createdTime"`
+	ExcludeMode      string          `json:"excludeMode"`
+	Tags             string          `json:"tags"`
+	PermissionToRole string          `json:"permissionToRole"`
+	FlowNodes        []*WorkflowNode `json:"flowNodes"`
+}
+
+type InstancesInfo struct {
+	Id           int             `json:"id"`
+	ProcInstKey  string          `json:"procInstKey"`
+	ProcInstName string          `json:"procInstName"`
+	CreatedTime  string          `json:"createdTime"`
+	Operator     string          `json:"operator"`
+	Status       string          `json:"status"`
+	ProcDefId    string          `json:"procDefId"`
+	EntityTypeId string          `json:"entityTypeId"`
+	EntityDataId string          `json:"entityDataId"`
+	TaskNodes    []*WorkflowNode `json:"taskNodeInstances"`
+}
+
+// WorkflowNode 任务编排节点
+type WorkflowNode struct {
+	Id                int      `json:"id"`
+	ProInstId         int      `json:"proInstId"`
+	ProInstKey        string   `json:"proInstKey"`
+	NodeId            string   `json:"nodeId"`
+	NodeName          string   `json:"nodeName"`
+	NodeType          string   `json:"nodeType"`
+	NodeDefId         string   `json:"nodeDefId"`
+	Status            string   `json:"status"`
+	OrderedNo         string   `json:"orderedNo"`
+	ProcDefId         string   `json:"procDefId"`
+	ProcDefKey        string   `json:"procDefKey"`
+	RoutineExpression string   `json:"routineExpression"`
+	TaskCategory      string   `json:"taskCategory"`
+	ServiceId         string   `json:"serviceId"`
+	DynamicBind       string   `json:"dynamicBind"`
+	Description       string   `json:"description"`
+	PreviousNodeIds   []string `json:"previousNodeIds"`
+	SucceedingNodeIds []string `json:"succeedingNodeIds"`
+}
+
+type RequestTemplateTmp struct {
+	ProcDefId         string `json:"procDefId" xorm:"proc_def_id`
+	TemplateName      string `json:"templateName" xorm:"template_name`
+	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
+	Version           string `json:"version" xorm:"version"`
+	Status            string `json:"status" xorm:"status"`
+	ExpireDay         int    `json:"expireDay" xorm:"expire_day"`
+}
+
+type ImportData struct {
+	Token        string `json:"token"`
+	TemplateName string `json:"templateName"`
+}
+
+type TemplateGroupSort []*TemplateGroupObj
+
+func (s TemplateGroupSort) Len() int {
+	return len(s)
+}
+
+func (s TemplateGroupSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s TemplateGroupSort) Less(i, j int) bool {
+	return s[i].UpdatedTime > s[j].UpdatedTime
+}
+
+type RequestTemplateSort []*RequestTemplateTableObj
+
+func (s RequestTemplateSort) Len() int {
+	return len(s)
+}
+
+func (s RequestTemplateSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s RequestTemplateSort) Less(i, j int) bool {
+	return s[i].UpdatedTime > s[j].UpdatedTime
 }

@@ -288,6 +288,12 @@ export default {
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }
+    const lang = localStorage.getItem('lang') || 'zh-CN'
+    if (lang === 'zh-CN') {
+      this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
+    } else {
+      this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+    }
     this.MODALHEIGHT = document.body.scrollHeight - 200
     this.getTemplateList()
   },
@@ -314,11 +320,13 @@ export default {
       if (val.statusCode === 'CONFIRM') {
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
+          content:
+            this.$t('tw_template_cover_tips_l') + `"${val.data.templateName}"` + this.$t('tw_template_cover_tips_r'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {
             this.$Modal.remove()
-            const { statusCode } = await confirmUploadTemplate(val.data)
+            const { statusCode } = await confirmUploadTemplate(val.data.token)
             if (statusCode === 'OK') {
               this.$Notice.success({
                 title: 'Successful',

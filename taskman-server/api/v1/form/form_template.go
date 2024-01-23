@@ -9,16 +9,24 @@ import (
 
 func GetRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
+	if id == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
 	result, err := db.GetRequestFormTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func UpdateRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
+	if id == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
 	var param models.FormTemplateDto
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
@@ -33,11 +41,11 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-		result, _ := db.GetRequestFormTemplate(id)
-		middleware.ReturnData(c, result)
+		return
 	}
+	db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	result, _ := db.GetRequestFormTemplate(id)
+	middleware.ReturnData(c, result)
 }
 
 func ConfirmRequestFormTemplate(c *gin.Context) {
@@ -45,9 +53,10 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 	err := db.ConfirmRequestTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnSuccess(c)
+		return
 	}
+	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
+	middleware.ReturnSuccess(c)
 }
 
 func DeleteRequestFormTemplate(c *gin.Context) {

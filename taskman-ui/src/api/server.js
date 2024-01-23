@@ -80,10 +80,14 @@ export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${re
 export const getRefOptions = (requestId, attr, params) =>
   req.post(`/taskman/api/v1/request-data/reference/query/${attr}/${requestId}`, params)
 
+export const getWeCmdbOptions = (packageName, ciType, params) =>
+  req.post(`/${packageName}/entities/${ciType}/query`, params)
+
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)
 export const saveTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/save/${taskId}`, data)
-export const changeTaskStatus = (operation, taskId) => req.post(`/taskman/api/v1/task/status/${operation}/${taskId}`)
+export const changeTaskStatus = (operation, taskId, timestamp) =>
+  req.post(`/taskman/api/v1/task/status/${operation}/${taskId}/${timestamp}`)
 export const commitTaskData = (taskId, data) => req.post(`/taskman/api/v1/task/approve/${taskId}`, data)
 export const getRequestDetail = requestId => req.get(`/taskman/api/v1/request/detail/${requestId}`)
 export const getHandlerRoles = params => req.get(`/taskman/api/v1/role/user/list`, params)
@@ -96,3 +100,49 @@ export const reRequest = fileId => req.post(`/taskman/api/v1/request/copy/${file
 export const requestParent = requestId => req.get(`/taskman/api/v1/request-parent/get?requestId=${requestId}`)
 export const enableTemplate = templateId => req.post(`/taskman/api/v1/request-template/enable/${templateId}`)
 export const disableTemplate = templateId => req.post(`/taskman/api/v1/request-template/disable/${templateId}`)
+// taskman重构
+// 选择模板列表
+export const getTemplateTree = () => req.get('/taskman/api/v2/user/request-template')
+// 模板收藏
+export const collectTemplate = params => req.post(`/taskman/api/v1/user/template/collect`, params)
+// 取消模板收藏
+export const uncollectTemplate = templateId => req.delete(`/taskman/api/v1/user/template/collect/${templateId}`)
+// 模板收藏列表
+export const collectTemplateList = params => req.post(`/taskman/api/v1/user/template/collect/query`, params)
+// 工作台看板数量
+export const overviewData = () => req.post(`/taskman/api/v1/user/platform`)
+// 工作台列表
+export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform/list`, params)
+// 获取工作台筛选数据集合
+export const getPlatformFilter = params => req.post(`/taskman/api/v1/user/platform/filter-item`, params)
+// 获取模板收藏列表筛选数据集合
+export const getTemplateFilter = params => req.post(`/taskman/api/v1/user/template/filter-item`, params)
+// 工作台转给我
+export const tansferToMe = (templateId, timestamp) =>
+  req.post(`/taskman/api/v1/request/handler/${templateId}/${timestamp}`)
+// 工作台撤回
+export const recallRequest = id => req.post(`/taskman/api/v1/user/request/revoke/${id}`)
+// 新建发布-发布信息获取
+export const getCreateInfo = params => req.post(`/taskman/api/v2/request`, params)
+// 新建发布-请求进度
+export const getProgressInfo = params => req.post(`/taskman/api/v1/request/progress`, params)
+// 新建发布-保存数据
+export const savePublishData = (requestId, params) =>
+  req.post(`/taskman/api/v2/request-data/save/${requestId}/data/save`, params)
+// 新建发布详情数据
+export const getPublishInfo = requestId => req.get(`/taskman/api/v2/request/detail/${requestId}`)
+// 发布历史页面
+export const getPublishList = params => req.post(`/taskman/api/v1/request/history/list`, params)
+// 确认定版新接口
+export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/request/start/${requestId}`, data)
+// 定版暂存新接口
+export const saveRequestNew = (requestId, type, data) =>
+  req.post(`/taskman/api/v2/request-data/save/${requestId}/bing/${type}`, data)
+
+// 查询流程图
+export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)
+export const getFlowByInstanceId = instanceId => req.get(`/taskman/api/v1/request/process/instances/${instanceId}`)
+export const getNodeContextByNodeId = (instanceId, nodeId) =>
+  req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)
+
+export const getAllDataModels = () => req.get(`/platform/v1/models`)

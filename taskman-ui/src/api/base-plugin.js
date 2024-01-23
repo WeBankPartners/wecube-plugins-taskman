@@ -1,6 +1,6 @@
 export const pluginErrorMessage = async r => {
   const res = await r
-  if (res.statusCode !== 'OK') {
+  if (res.statusCode && res.statusCode !== 'OK') {
     const errorMes = res.statusMessage
     window.vm &&
       window.vm.$Notice.error({

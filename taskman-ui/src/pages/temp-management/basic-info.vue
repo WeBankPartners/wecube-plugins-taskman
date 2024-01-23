@@ -9,7 +9,7 @@
             v-model="formConfig.values[item.value]"
             style="width: 90%"
             :type="item.type"
-            :disabled="$parent.isCheck === 'Y'"
+            :disabled="$parent.isCheck === 'Y' || (formConfig.values.modifyType === false && item.value === 'name')"
             :placeholder="item.placeholder"
           >
           </Input>
@@ -36,12 +36,13 @@
           ></InputNumber>
           <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
+        <!--编辑模板，modifyType返回false，禁用模板使用场景-->
         <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Select
             v-model="formConfig.values[item.value]"
             clearable
             filterable
-            :disabled="$parent.isCheck === 'Y'"
+            :disabled="$parent.isCheck === 'Y' || (formConfig.values.modifyType === false && item.value === 'type')"
             @on-open-change="execut(item.onOpenChange)"
             style="width: 90%"
             :multiple="item.multiple"
@@ -118,6 +119,18 @@ export default {
             placeholder: ''
           },
           {
+            label: 'scene_type',
+            value: 'type',
+            rules: 'required',
+            onOpenChange: '',
+            options: 'typeOptions',
+            labelKey: 'label',
+            valueKey: 'value',
+            multiple: false,
+            type: 'select',
+            placeholder: ''
+          },
+          {
             label: 'procDefId',
             value: 'procDefId',
             rules: 'required',
@@ -130,7 +143,7 @@ export default {
             placeholder: ''
           },
           {
-            label: 'mgmtRoles',
+            label: 'mgmtRolesNew',
             value: 'mgmtRoles',
             rules: 'required',
             onOpenChange: 'getManagementRoles',
@@ -142,7 +155,7 @@ export default {
             placeholder: ''
           },
           {
-            label: 'handler',
+            label: 'handlerNew',
             value: 'handler',
             rules: '',
             onOpenChange: 'getHandlerRoles',
@@ -193,6 +206,10 @@ export default {
         },
         handlerRolesOptions: [],
         groupOptions: [],
+        typeOptions: [
+          { label: this.$t('request'), value: 0 },
+          { label: this.$t('publish'), value: 1 }
+        ],
         procOptions: [],
         mgmtRolesOptions: [],
         useRolesOptions: [],
@@ -300,6 +317,8 @@ export default {
       cacheFromValue.entityName = process.rootEntity.name
       cacheFromValue.procDefKey = process.procDefKey
       cacheFromValue.procDefName = process.procDefName
+      // 传入操作对象类型
+      cacheFromValue.OperatorObjType = process.rootEntity.displayName
       cacheFromValue.mgmtRoles = [cacheFromValue.mgmtRoles]
       const { statusCode, data } = await method(cacheFromValue)
       if (statusCode === 'OK') {

@@ -796,7 +796,7 @@ export default {
     background: #8189a5;
   }
   .ivu-form-item {
-    margin-bottom: 25px;
+    margin-bottom: 25px !important;
   }
   .ivu-form-item-content {
     line-height: 20px;

@@ -390,6 +390,12 @@ export default {
               refKeys.forEach(ref => {
                 delete v.entityData[ref + 'Options']
               })
+              // 前端添加一行数据，删除多余属性
+              if (v.addFlag) {
+                delete v.addFlag
+                v.id = ''
+                v.entityData._id = ''
+              }
             })
           }
           return item
@@ -584,7 +590,7 @@ export default {
     background: #8189a5;
   }
   .ivu-form-item {
-    margin-bottom: 25px;
+    margin-bottom: 25px !important;
   }
   .ivu-form-item-content {
     line-height: 20px;

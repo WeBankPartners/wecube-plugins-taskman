@@ -416,6 +416,7 @@ export default {
           entityData[item.name + 'Options'] = []
         }
       })
+      const idStr = new Date().getTime().toString()
       let obj = {
         dataId: '',
         displayName: '',
@@ -423,10 +424,11 @@ export default {
         entityName: data.entity,
         entityDataOp: 'create',
         fullDataId: '',
-        id: '',
+        id: idStr,
         packageName: data.packageName,
         previousIds: [],
-        succeedingIds: []
+        succeedingIds: [],
+        addFlag: true // 前端添加一行标识，提交时需删除
       }
       data.value.push(obj)
     },

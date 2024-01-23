@@ -39,7 +39,6 @@
                 v-model="value[i.name]"
                 :multiple="i.multiple === 'Y'"
                 filterable
-                clearable
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width: calc(100% - 30px)"
               >
@@ -53,7 +52,6 @@
                 v-model="value[i.name]"
                 :multiple="i.multiple === 'Y'"
                 filterable
-                clearable
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width: calc(100% - 30px)"
               >
@@ -67,7 +65,6 @@
                 v-model="value[i.name]"
                 :multiple="i.multiple === 'Y'"
                 filterable
-                clearable
                 :disabled="i.isEdit === 'no' || disabled"
                 style="width: calc(100% - 30px)"
               >

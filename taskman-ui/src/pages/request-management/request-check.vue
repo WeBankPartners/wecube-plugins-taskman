@@ -3,7 +3,7 @@
     <Button @click="backToRequest" icon="ios-undo-outline" style="margin-bottom: 8px">{{
       $t('back_to_template')
     }}</Button>
-    <div style="width: 84%;margin: 0 auto;">
+    <div style="width: 84%; margin: 0 auto">
       <div>
         <Steps :current="activeStep">
           <template v-for="(step, stepIndex) in timeStep">
@@ -14,51 +14,52 @@
       <div class="task-form">
         <Collapse simple v-model="openPanel">
           <template v-for="(data, dataIndex) in dataInfo">
-            <Panel :name="dataIndex + ''" :key="dataIndex">
-              <template v-if="dataIndex === 0">
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+            <Panel :name="dataIndex + ''" :key="dataIndex" :if-history="data.isHistory ? 'history' : 'current'">
+              <!--请求-->
+              <div v-if="!data.taskId">
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
+                  >{{ $t('request_id') }}:{{ data.requestId }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="orange"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="green"
+                  >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('reporter') }}:{{ data.reporter }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
-              </template>
-              <template v-else-if="dataIndex < dataInfo.length - 1">
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+              </div>
+              <!--任务-->
+              <div v-else>
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                  >{{ $t('handler') }}:{{ data.reporter }}</Tag
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                  >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="cyan"
+                  >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
+                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
+                >
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
-              </template>
-              <template v-else>
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
-                  >{{ $t('task_name') }}:{{ data.taskName }}</Tag
+                <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
+                  ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
                 >
-                <template v-if="data.status === 'done'">
-                  <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.reporter }}</Tag
-                  >
-                  <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.reportTime }}</Tag
-                  >
-                  <Tag style="font-size:14px" type="border" size="medium" color="blue"
-                    >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
-                  >
-                </template>
-              </template>
+              </div>
               <p slot="content">
                 <Tag
                   type="border"
@@ -80,7 +81,11 @@
                 <span>
                   <div v-if="dataIndex !== 0">
                     <Form :label-width="80" style="margin: 16px 0">
-                      <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
+                      <FormItem :label="$t('process_result')" v-if="data.nextOption && data.nextOption.length !== 0">
+                        <span slot="label">
+                          {{ $t('process_result') }}
+                          <span style="color: #ed4014"> * </span>
+                        </span>
                         <Select v-model="data.choseOption" disabled>
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>
@@ -140,9 +145,8 @@ export default {
         .then(response => {
           this.isExport = false
           if (response.status < 400) {
-            let content = JSON.stringify(response.data)
             let fileName = `${file.name}`
-            let blob = new Blob([content])
+            let blob = new Blob([response.data])
             if ('msSaveOrOpenBlob' in navigator) {
               window.navigator.msSaveOrOpenBlob(blob, fileName)
             } else {
@@ -206,5 +210,19 @@ export default {
   height: calc(100vh - 100px);
   margin-top: 24px;
   overflow: auto;
+}
+</style>
+
+<style scoped>
+.task-form >>> .ivu-collapse-header {
+  height: auto !important;
+  display: flex;
+  align-items: center;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] {
+  background: #ddd;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] .ivu-collapse-content {
+  background: #ddd;
 }
 </style>

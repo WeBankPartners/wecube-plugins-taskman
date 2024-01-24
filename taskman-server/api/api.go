@@ -2,13 +2,15 @@ package api
 
 import (
 	"bytes"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
 	"io/ioutil"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
+	requestNew "github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v2/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/gin-gonic/gin"
@@ -22,7 +24,8 @@ type handlerFuncObj struct {
 }
 
 var (
-	httpHandlerFuncList []*handlerFuncObj
+	httpHandlerFuncList   []*handlerFuncObj
+	httpHandlerFuncV2List []*handlerFuncObj
 )
 
 func init() {
@@ -49,14 +52,20 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: request.ExportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: request.ImportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: request.ConfirmImportRequestTemplate},
-
+		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: request.DisableRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: request.EnableRequestTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
 
+		&handlerFuncObj{Url: "/user/template/collect", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
+		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
+		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
+		&handlerFuncObj{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem},
 		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: request.GetRequestTemplateByUser},
+
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: request.GetEntityData},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
 
@@ -64,12 +73,18 @@ func init() {
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: request.CreateRequest},
 		&handlerFuncObj{Url: "/request/:requestId", Method: "PUT", HandlerFunc: request.UpdateRequest},
 		&handlerFuncObj{Url: "/request/:requestId", Method: "DELETE", HandlerFunc: request.DeleteRequest},
+		&handlerFuncObj{Url: "/request-parent/get", Method: "GET", HandlerFunc: request.GetRequestParent},
+		&handlerFuncObj{Url: "/request/copy/:requestId", Method: "POST", HandlerFunc: request.CopyRequest},
 		&handlerFuncObj{Url: "/request-root/:requestId", Method: "GET", HandlerFunc: request.GetRequestRootForm},
 		&handlerFuncObj{Url: "/request-data/preview", Method: "GET", HandlerFunc: request.GetRequestPreviewData},
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType", Method: "POST", HandlerFunc: request.SaveRequestCache},
 		&handlerFuncObj{Url: "/request-data/get/:requestId/:cacheType", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
 		&handlerFuncObj{Url: "/request-data/reference/query/:attrId/:requestId", Method: "POST", HandlerFunc: request.GetReferenceData},
+		&handlerFuncObj{Url: "/user/platform", Method: "POST", HandlerFunc: request.CountRequest},
+		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},
+		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
+		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
@@ -77,6 +92,13 @@ func init() {
 		&handlerFuncObj{Url: "/request/attach-file/upload/:requestId", Method: "POST", HandlerFunc: request.UploadRequestAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/download/:fileId", Method: "GET", HandlerFunc: request.DownloadAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/remove/:fileId", Method: "DELETE", HandlerFunc: request.RemoveAttachFile},
+		&handlerFuncObj{Url: "/request/handler/:requestId/:latestUpdateTime", Method: "POST", HandlerFunc: request.UpdateRequestHandler},
+		&handlerFuncObj{Url: "/request/progress", Method: "POST", HandlerFunc: request.GetRequestProgress},
+		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: request.GetProcessDefinitions},
+		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: request.GetProcessInstance},
+		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: request.GetExecutionNodes},
+		&handlerFuncObj{Url: "/request/history/list", Method: "POST", HandlerFunc: request.HistoryList},
+		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},
 		&handlerFuncObj{Url: "/plugin/task/create", Method: "POST", HandlerFunc: task.CreateTask},
@@ -85,12 +107,22 @@ func init() {
 		&handlerFuncObj{Url: "/task/detail/:taskId", Method: "GET", HandlerFunc: task.GetTask},
 		&handlerFuncObj{Url: "/task/save/:taskId", Method: "POST", HandlerFunc: task.SaveTaskForm},
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
-		&handlerFuncObj{Url: "/task/status/:operation/:taskId", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
+		&handlerFuncObj{Url: "/task/status/:operation/:taskId/:latestUpdateTime", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
 		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
+	)
+
+	// v2 版本
+	httpHandlerFuncV2List = append(httpHandlerFuncV2List,
+		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: requestNew.GetRequestTemplateByUser},
+		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestDetail},
+		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: requestNew.CreateRequest},
+		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
+		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: requestNew.StartRequest},
 	)
 }
 
 func InitHttpServer() {
+	middleware.InitHttpError()
 	urlPrefix := models.UrlPrefix
 	r := gin.New()
 	// allow cross request
@@ -119,6 +151,25 @@ func InitHttpServer() {
 			break
 		}
 	}
+
+	authRouterV2 := r.Group(urlPrefix+"/api/v2", middleware.AuthCoreRequestToken())
+	for _, funcObj := range httpHandlerFuncV2List {
+		switch funcObj.Method {
+		case "GET":
+			authRouterV2.GET(funcObj.Url, funcObj.HandlerFunc)
+			break
+		case "POST":
+			authRouterV2.POST(funcObj.Url, funcObj.HandlerFunc)
+			break
+		case "PUT":
+			authRouterV2.PUT(funcObj.Url, funcObj.HandlerFunc)
+			break
+		case "DELETE":
+			authRouterV2.DELETE(funcObj.Url, funcObj.HandlerFunc)
+			break
+		}
+	}
+
 	// entity query
 	r.POST(urlPrefix+"/entities/request/query", request.QueryWorkflowEntity)
 	r.Run(":" + models.Config.HttpServer.Port)

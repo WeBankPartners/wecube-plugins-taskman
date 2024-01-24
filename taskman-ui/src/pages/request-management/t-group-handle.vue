@@ -2,40 +2,54 @@
   <div>
     <div>
       <Row>
-        <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+        <Col span="3">
+          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
-        <Col span="4">
+        <Col span="3">
           <Select
             v-model="requestTemplate"
             @on-open-change="getTemplateList"
             clearable
             filterable
-            style="width:90%"
+            style="width: 90%"
             :placeholder="$t('template')"
           >
             <template v-for="option in templateOptions">
-              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
+              <Option :label="`${option.name}(${option.version || '-'})`" :value="option.id" :key="option.id"> </Option>
             </template>
           </Select>
         </Col>
-        <Col span="4">
-          <Select v-model="status" multiple clearable filterable style="width:90%" :placeholder="$t('status')">
+        <Col span="3">
+          <Select v-model="status" multiple clearable filterable style="width: 90%" :placeholder="$t('status')">
             <template v-for="option in requestStatus">
               <Option :label="option" :value="option" :key="option"> </Option>
             </template>
           </Select>
         </Col>
-        <Col span="4">
-          <Input v-model="handler" style="width:90%" type="text" :placeholder="$t('handler')"> </Input>
+        <Col span="3">
+          <Input v-model="handler" style="width: 90%" type="text" :placeholder="$t('handler')"> </Input>
+        </Col>
+        <Col span="3">
+          <Input v-model="reporter" clearable style="width: 90%" type="text" :placeholder="$t('report_man')"> </Input>
         </Col>
         <Col span="4">
-          <Button @click="requestListForHandle" type="primary">{{ $t('search') }}</Button>
+          <DatePicker
+            :value="createdTime"
+            @on-change="createTimeSelect"
+            format="yyyy-MM-dd"
+            type="daterange"
+            split-panels
+            :placeholder="$t('created_time')"
+            style="width: 220px"
+          ></DatePicker>
+        </Col>
+        <Col span="4">
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
     <Table
-      style="margin: 24px 0;"
+      style="margin: 24px 0"
       border
       size="small"
       @on-sort-change="sortTable"
@@ -44,7 +58,7 @@
       :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float:right"
+      style="float: right"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -65,6 +79,8 @@ export default {
       MODALHEIGHT: 500,
       name: '',
       handler: '',
+      reporter: '', // 提单人
+      createdTime: [], // 提单日期
       requestTemplate: '',
       status: ['Pending'],
       tags: '',
@@ -116,7 +132,6 @@ export default {
         {
           title: this.$t('priority'),
           width: 80,
-          sortable: 'custom',
           minWidth: 100,
           key: 'emergency',
           render: (h, params) => {
@@ -135,6 +150,18 @@ export default {
           key: 'requestTemplateName'
         },
         {
+          title: this.$t('createdBy'),
+          sortable: 'createdBy',
+          minWidth: 140,
+          key: 'createdBy'
+        },
+        {
+          title: this.$t('createdTime'),
+          sortable: 'createdTime',
+          minWidth: 140,
+          key: 'createdTime'
+        },
+        {
           title: this.$t('handle_role'),
           sortable: 'custom',
           minWidth: 140,
@@ -149,6 +176,12 @@ export default {
           sortable: 'custom',
           minWidth: 140,
           key: 'handler'
+        },
+        {
+          title: this.$t('report_man'),
+          sortable: 'custom',
+          minWidth: 140,
+          key: 'reporter'
         },
         {
           title: this.$t('status'),
@@ -167,6 +200,12 @@ export default {
           sortable: 'custom',
           minWidth: 130,
           key: 'expectTime'
+        },
+        {
+          title: this.$t('actual_completion_time'),
+          sortable: 'custom',
+          minWidth: 130,
+          key: 'completedTime'
         },
         {
           title: this.$t('report_time'),
@@ -251,6 +290,9 @@ export default {
     window.clearInterval(this.timer)
   },
   methods: {
+    createTimeSelect (val) {
+      this.createdTime = [...val]
+    },
     sortTable (col) {
       const sorting = {
         asc: col.order === 'asc',
@@ -319,7 +361,12 @@ export default {
         }
       })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.requestListForHandle()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.requestListForHandle()
     },
@@ -342,6 +389,27 @@ export default {
           operator: 'contains',
           value: this.handler
         })
+      }
+      if (this.reporter) {
+        this.payload.filters.push({
+          name: 'reporter',
+          operator: 'contains',
+          value: this.reporter
+        })
+      }
+      if (this.createdTime && this.createdTime.length) {
+        this.createdTime[0] &&
+          this.payload.filters.push({
+            name: 'createdTime',
+            operator: 'gt',
+            value: this.createdTime[0] + ' 00:00:00'
+          })
+        this.createdTime[1] &&
+          this.payload.filters.push({
+            name: 'createdTime',
+            operator: 'lt',
+            value: this.createdTime[1] + ' 23:59:59'
+          })
       }
       if (this.requestTemplate) {
         this.payload.filters.push({

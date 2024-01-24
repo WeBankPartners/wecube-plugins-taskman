@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
@@ -85,7 +86,7 @@ func CheckRequestTemplateGroupRoles(id string, roles []string) error {
 
 func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, err error) {
 	processList = []*models.ProcDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions", nil)
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions?tags="+models.ProcessFetchTabs, nil)
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
 		return
@@ -114,9 +115,12 @@ func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, 
 	return
 }
 
-func GetCoreProcessListAll(userToken string) (processList []*models.ProcAllDefObj, err error) {
+func GetCoreProcessListAll(userToken, permission, tags string) (processList []*models.ProcAllDefObj, err error) {
+	if permission == "" {
+		permission = "USE"
+	}
 	processList = []*models.ProcAllDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/process/definitions?includeDraft=0&permission=USE", nil)
+	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+fmt.Sprintf("/platform/v1/process/definitions?includeDraft=0&permission=%s&tags=%s", permission, tags), nil)
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
 		return
@@ -147,7 +151,7 @@ func GetCoreProcessListAll(userToken string) (processList []*models.ProcAllDefOb
 
 func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userToken string, filterType string) (nodeList models.ProcNodeObjList, err error) {
 	if requestTemplateObj.ProcDefId == "" {
-		requestTemplateObj, err = getSimpleRequestTemplate(requestTemplateObj.Id)
+		requestTemplateObj, err = GetSimpleRequestTemplate(requestTemplateObj.Id)
 		if err != nil {
 			return
 		}
@@ -172,6 +176,7 @@ func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userT
 	var respObj models.ProcNodeQueryResponse
 	respBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
+	log.Logger.Debug("platform process task node return", log.String("body", string(respBytes)))
 	err = json.Unmarshal(respBytes, &respObj)
 	if err != nil {
 		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
@@ -494,13 +499,24 @@ func QueryRequestTemplate(param *models.QueryRequestParam, userToken string, use
 			tmpObj.USERoles = useRoleMap[v.Id]
 		}
 		if v.Status == "confirm" {
-			tmpObj.OperateOptions = []string{"query", "fork", "export"}
+			tmpObj.OperateOptions = []string{"query", "fork", "export", "disable"}
 		} else if v.Status == "created" {
 			tmpObj.OperateOptions = []string{"edit", "delete"}
+		} else if v.Status == "disable" {
+			tmpObj.OperateOptions = []string{"query", "enable"}
 		}
+		tmpObj.ModifyType = getRequestTemplateModifyType(v)
 		result = append(result, &tmpObj)
 	}
 	return
+}
+
+// getRequestTemplateModifyType 模板版本 > v1表示 模板有多个版本,不允许多个版本都去修改模板类型,要求保持一致
+func getRequestTemplateModifyType(requestTemplate *models.RequestTemplateTable) bool {
+	if strings.Compare(requestTemplate.Version, "v1") > 0 {
+		return false
+	}
+	return true
 }
 
 func CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) error {
@@ -530,7 +546,7 @@ func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist boo
 			}
 		}
 	} else {
-		allProcessList, tmpErr := GetCoreProcessListAll(userToken)
+		allProcessList, tmpErr := GetCoreProcessListAll(userToken, "", "")
 		if tmpErr != nil {
 			err = tmpErr
 		} else {
@@ -648,8 +664,8 @@ func CreateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	result.Id = newGuid
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime}
+	insertAction := execAction{Sql: "insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	insertAction.Param = []interface{}{newGuid, param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.CreatedBy, nowTime, param.CreatedBy, nowTime, param.Type, param.OperatorObjType, newGuid}
 	actions = append(actions, &insertAction)
 	for _, v := range param.MGMTRoles {
 		result.MGMTRoles = append(result.MGMTRoles, &models.RoleTable{Id: v})
@@ -667,8 +683,8 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
-	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,handler=?,updated_by=?,updated_time=? where id=?"}
-	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.UpdatedBy, nowTime, param.Id}
+	updateAction := execAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?,proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,handler=?,updated_by=?,updated_time=?,type=? where id=?"}
+	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey, param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.UpdatedBy, nowTime, param.Type, param.Id}
 	actions = append(actions, &updateAction)
 	actions = append(actions, &execAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{param.Id}})
 	for _, v := range param.MGMTRoles {
@@ -684,7 +700,7 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*execAction, err error) {
-	rtObj, err := getSimpleRequestTemplate(id)
+	rtObj, err := GetSimpleRequestTemplate(id)
 	if err != nil {
 		return actions, err
 	}
@@ -707,8 +723,8 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*execAction
 		for _, v := range formTable {
 			formIds = append(formIds, v.Id)
 		}
-		actions = append(actions, &execAction{Sql: "delete from operation_log where task in (select id from task where task_template in (select id from task_template where request_template=?))", Param: []interface{}{id}})
-		actions = append(actions, &execAction{Sql: "delete from operation_log where request in (select id from request where request_template=?)", Param: []interface{}{id}})
+		//actions = append(actions, &execAction{Sql: "delete from operation_log where task in (select id from task where task_template in (select id from task_template where request_template=?))", Param: []interface{}{id}})
+		//actions = append(actions, &execAction{Sql: "delete from operation_log where request in (select id from request where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
 		actions = append(actions, &execAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})
@@ -733,6 +749,9 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 		err = getNodesErr
 		return
 	}
+	if len(nodes) == 0 {
+		return
+	}
 	entityMap := make(map[string]int)
 	existAttrMap := make(map[string]int)
 	existAttrs, _ := GetRequestTemplateEntityAttrs(id)
@@ -740,7 +759,13 @@ func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.Proc
 		existAttrMap[attr.Id] = 1
 	}
 	for _, node := range nodes {
+		if node == nil {
+			continue
+		}
 		for _, entity := range node.BoundEntities {
+			if entity == nil {
+				continue
+			}
 			if _, b := entityMap[entity.Id]; b {
 				continue
 			}
@@ -789,7 +814,7 @@ func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttri
 	return err
 }
 
-func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
+func GetSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
 	err = x.SQL("select * from request_template where id=?", id).Find(&requestTemplateTable)
 	if err != nil {
@@ -805,8 +830,44 @@ func getSimpleRequestTemplate(id string) (result models.RequestTemplateTable, er
 	return
 }
 
+func GetRequestTemplateManageRole(id string) (role string) {
+	var roleList []string
+	err := x.SQL("select role from request_template_role where request_template=? and role_type='MGMT'", id).Find(&roleList)
+	if err != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		return
+	}
+	if len(roleList) > 0 {
+		role = roleList[0]
+	}
+	return
+}
+
+func getRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
+	err = x.SQL("select * from request_template_role where request_template=?", templateId).Find(&requestTemplateRoleList)
+	if err != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		return
+	}
+	return
+}
+
+func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTable, err error) {
+	templateMap = make(map[string]*models.RequestTemplateTable)
+	var requestTemplateTable []*models.RequestTemplateTable
+	err = x.SQL("select * from request_template").Find(&requestTemplateTable)
+	if err != nil {
+		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		return
+	}
+	for _, template := range requestTemplateTable {
+		templateMap[template.Id] = template
+	}
+	return
+}
+
 func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -822,7 +883,23 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 	newRequestTemplateId := guid.CreateGuid()
 	newRequestFormTemplateId := guid.CreateGuid()
 	var actions []*execAction
-	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,entity_attrs,record_id,`version`,confirm_time,expire_day,handler) select '%s' as id,`group`,name,description,'%s' as form_template,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator, nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id)})
+	if requestTemplateObj.ParentId == "" {
+		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,"+
+			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type) select '%s' as id,`group`,name,description,'%s' as form_template,"+
+			"tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,"+
+			"'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler, "+
+			"type,operator_obj_type from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator, nowTime, operator, nowTime,
+			requestTemplateObj.Id, version, requestTemplateObj.Id)})
+	} else {
+		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,"+
+			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id) select '%s' as id,`group`,name,"+
+			"description,'%s' as form_template,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,"+
+			"'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,"+
+			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator,
+			nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id, requestTemplateObj.ParentId)})
+	}
 	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
@@ -860,7 +937,8 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 }
 
 func ConfirmRequestTemplate(requestTemplateId string) error {
-	requestTemplateObj, err := getSimpleRequestTemplate(requestTemplateId)
+	var parentId string
+	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -875,12 +953,16 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 		return err
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
+	if requestTemplateObj.RecordId != "" {
+		prevRequestTemplateObj, _ := GetSimpleRequestTemplate(requestTemplateObj.RecordId)
+		parentId = prevRequestTemplateObj.ParentId
+	}
 	version := requestTemplateObj.Version
 	if version == "" {
 		version = "v1"
 	}
 	var actions []*execAction
-	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2 where id=?", Param: []interface{}{version, nowTime, requestTemplateObj.Id}})
+	actions = append(actions, &execAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=? where id=?", Param: []interface{}{version, nowTime, parentId, requestTemplateObj.Id}})
 	return transaction(actions)
 }
 
@@ -893,7 +975,7 @@ func getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []
 	actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,created_by,created_time,updated_by,updated_time from form_template where id='%s'", newFormTemplateId, oldFormTemplateId)})
 	newGuidList := guid.CreateGuidList(len(itemRows))
 	for i, item := range itemRows {
-		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple from form_item_template where id='%s'", newGuidList[i], newFormTemplateId, item.Id)})
+		actions = append(actions, &execAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear from form_item_template where id='%s'", newGuidList[i], newFormTemplateId, item.Id)})
 	}
 	return
 }
@@ -941,7 +1023,27 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		return
 	}
 	recordIdMap := make(map[string]int)
+	disableNameMap := make(map[string]int)
 	for _, v := range requestTemplateTable {
+		if v.Status == "disable" {
+			if v.Version == "" {
+				disableNameMap[v.Name] = 1
+			} else {
+				tmpV, _ := strconv.Atoi(v.Version[1:])
+				disableNameMap[v.Name] = tmpV
+			}
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
+		}
 		if v.Status == "confirm" {
 			if v.RecordId != "" {
 				recordIdMap[v.RecordId] = 1
@@ -960,6 +1062,15 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 	for _, v := range requestTemplateTable {
 		if _, b := recordIdMap[v.Id]; b {
 			continue
+		}
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
 		}
 		tmpTemplateTable = append(tmpTemplateTable, v)
 	}
@@ -988,6 +1099,227 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 		v.Tags = groupRequestTemplateByTags(v.Templates)
 	}
 	return
+}
+
+// GetRequestTemplateByUserV2  新的选择模板接口
+func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
+	var operatorObjTypeMap = make(map[string]string)
+	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
+	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
+	var roleList []string
+	var requestTemplateTable, allTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
+	var requestTemplateRoleTable []*models.RequestTemplateRoleTable
+	var ownerRoleMap = make(map[string]string)
+	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
+	var userRoleMap = convertArray2Map(userRoles)
+	result = []*models.UserRequestTemplateQueryObjNew{}
+	useGroupMap, _ := getAllRequestTemplateGroup()
+	userRolesFilterSql, userRolesFilterParam := createListParams(userRoles, "")
+	err = x.SQL("select * from request_template ").Find(&allTemplateTable)
+	if err != nil {
+		return
+	}
+	err = x.SQL("select * from request_template where del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))  order by `group`,tags,status,id", userRolesFilterParam...).Find(&requestTemplateTable)
+	if err != nil {
+		return
+	}
+	if len(requestTemplateTable) == 0 {
+		return
+	}
+	requestTemplateLatestMap = getLatestVersionTemplate(requestTemplateTable, allTemplateTable)
+	err = x.SQL("select * from request_template_role where role_type='MGMT'").Find(&requestTemplateRoleTable)
+	if err != nil {
+		return
+	}
+	for _, requestTemplateRole := range requestTemplateRoleTable {
+		ownerRoleMap[requestTemplateRole.RequestTemplate] = requestTemplateRole.Role
+	}
+	recordIdMap := make(map[string]int)
+	disableNameMap := make(map[string]int)
+	for _, v := range requestTemplateTable {
+		if v.Status == "disable" {
+			if v.Version == "" {
+				disableNameMap[v.Name] = 1
+			} else {
+				tmpV, _ := strconv.Atoi(v.Version[1:])
+				disableNameMap[v.Name] = tmpV
+			}
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
+		}
+		if v.Status == "confirm" {
+			if v.RecordId != "" {
+				recordIdMap[v.RecordId] = 1
+			}
+		} else {
+			if v.ConfirmTime != "" {
+				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
+					recordIdMap[v.Id] = 1
+				}
+			}
+			v.Version = "beta"
+		}
+		// 此处需要查询db判断 用户是否有当前模板的最新发布的权限
+		if _, ok := recordIdMap[v.Id]; !ok {
+			// 获取最新模板Id,当前模板不是最新模板,直接加入 recordIdMap
+			if latestTemplate, ok := requestTemplateLatestMap[v.Id]; ok && latestTemplate.Id != v.Id {
+				recordIdMap[v.Id] = 1
+			}
+		}
+	}
+	for _, v := range requestTemplateTable {
+		if _, b := recordIdMap[v.Id]; b {
+			continue
+		}
+		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
+			if v.Version == "" {
+				continue
+			}
+			tmpV, _ := strconv.Atoi(v.Version[1:])
+			if tmpV <= disVersion {
+				continue
+			}
+		}
+		tmpTemplateTable = append(tmpTemplateTable, v)
+	}
+	requestTemplateTable = tmpTemplateTable
+	// 查询当前用户所有收藏模板记录
+	collectMap, _ := QueryAllTemplateCollect(user)
+	var collectFlag int
+	// 组装数据
+	// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
+	operatorObjTypeMap = getAllCoreProcess(userToken)
+	if len(requestTemplateTable) > 0 {
+		for _, template := range requestTemplateTable {
+			collectFlag = 0
+			var tempRoleArr, roleArr []string
+			err = x.SQL("SELECT role FROM request_template_role WHERE request_template = ?  AND role_type = 'USE' ", template.Id).Find(&tempRoleArr)
+			if err != nil {
+				continue
+			}
+			if len(tempRoleArr) > 0 {
+				for _, role := range tempRoleArr {
+					if userRoleMap[role] {
+						roleArr = append(roleArr, role)
+					}
+				}
+			}
+			if len(collectMap) > 0 && collectMap[template.ParentId] {
+				collectFlag = 1
+			}
+			for _, role := range roleArr {
+				if _, ok := roleTemplateGroupMap[role]; !ok {
+					roleTemplateGroupMap[role] = make(map[string][]*models.RequestTemplateTableObj)
+				}
+				if _, ok := roleTemplateGroupMap[role][template.Group]; !ok {
+					roleTemplateGroupMap[role][template.Group] = make([]*models.RequestTemplateTableObj, 0)
+				}
+				if template.OperatorObjType == "" {
+					template.OperatorObjType = operatorObjTypeMap[template.ProcDefKey]
+				}
+				roleTemplateGroupMap[role][template.Group] = append(roleTemplateGroupMap[role][template.Group], &models.RequestTemplateTableObj{
+					Id:              template.Id,
+					Name:            template.Name,
+					Version:         template.Version,
+					Tags:            template.Tags,
+					Status:          template.Status,
+					UpdatedBy:       template.UpdatedBy,
+					Handler:         template.Handler,
+					Role:            ownerRoleMap[template.Id],
+					UpdatedTime:     template.UpdatedTime,
+					CollectFlag:     collectFlag,
+					Type:            template.Type,
+					OperatorObjType: template.OperatorObjType,
+				})
+			}
+		}
+	}
+	for role, roleGroupMap := range roleTemplateGroupMap {
+		groups := make([]*models.TemplateGroupObj, 0)
+		for groupId, templateArr := range roleGroupMap {
+			useGroup := useGroupMap[groupId]
+			groups = append(groups, &models.TemplateGroupObj{
+				GroupId:     groupId,
+				GroupName:   useGroup.Name,
+				CreatedTime: useGroup.CreatedTime,
+				UpdatedTime: useGroup.UpdatedTime,
+				Templates:   templateArr,
+			})
+		}
+		resultMap[role] = &models.UserRequestTemplateQueryObjNew{
+			ManageRole: role,
+			Groups:     groups,
+		}
+		roleList = append(roleList, role)
+	}
+	// 角色排序
+	sort.Strings(roleList)
+	for _, role := range roleList {
+		group := resultMap[role].Groups
+		if len(group) > 0 {
+			// 模版组排序
+			sort.Sort(models.TemplateGroupSort(group))
+			for _, templateObj := range group {
+				//模板排序
+				sort.Sort(models.RequestTemplateSort(templateObj.Templates))
+			}
+		}
+		result = append(result, resultMap[role])
+	}
+	return
+}
+
+// getLatestVersionTemplate 获取requestTemplateList每个模板的最新发布或者禁用版本模板)
+func getLatestVersionTemplate(requestTemplateList, allRequestTemplateList []*models.RequestTemplateTable) map[string]*models.RequestTemplateTable {
+	allTemplateMap := make(map[string]*models.RequestTemplateTable)
+	allTemplateRecordMap := make(map[string]*models.RequestTemplateTable)
+	resultMap := make(map[string]*models.RequestTemplateTable)
+	for _, requestTemplate := range allRequestTemplateList {
+		allTemplateMap[requestTemplate.Id] = requestTemplate
+	}
+	for _, requestTemplate := range allRequestTemplateList {
+		if requestTemplate.RecordId != "" {
+			allTemplateRecordMap[requestTemplate.RecordId] = requestTemplate
+		}
+	}
+	for _, requestTemplate := range requestTemplateList {
+		var latestTemplate *models.RequestTemplateTable
+		// 有 recordId指向当前模板,需要一直遍历找到最新版本模板
+		if v, ok := allTemplateRecordMap[requestTemplate.Id]; ok && v != nil {
+			temp := v
+			for {
+				if t, ok := allTemplateRecordMap[temp.Id]; ok && t != nil {
+					temp = t
+				} else {
+					latestTemplate = temp
+					break
+				}
+			}
+		} else {
+			// 没有 recordId指向当前模板,表示当前模板就是最新版本模板
+			latestTemplate = requestTemplate
+		}
+		if latestTemplate == nil {
+			// 找不到兜底默认值
+			log.Logger.Warn("latestTemplate is empty", log.String("requestTemplateId", requestTemplate.Id))
+			latestTemplate = requestTemplate
+		}
+		resultMap[requestTemplate.Id] = latestTemplate
+		// 如果最新版本是创建状态,需要记录上一个版本模板
+		if latestTemplate.Status == "created" && latestTemplate.RecordId != "" {
+			resultMap[latestTemplate.RecordId] = allTemplateMap[latestTemplate.RecordId]
+		}
+	}
+	return resultMap
 }
 
 func compareUpdateConfirmTime(updatedTime, confirmTime string) bool {
@@ -1031,6 +1363,16 @@ func getRequestTemplateRoles(requestTemplateId, roleType string) []string {
 		result = append(result, v.Role)
 	}
 	return result
+}
+
+func getMGmtRequestTemplateRoles() map[string]string {
+	var roleMap = make(map[string]string, 0)
+	var rtRoles []*models.RequestTemplateRoleTable
+	x.SQL("select * from request_template_role where  role_type='MGMT'").Find(&rtRoles)
+	for _, v := range rtRoles {
+		roleMap[v.RequestTemplate] = v.Role
+	}
+	return roleMap
 }
 
 func QueryUserByRoles(roles []string, userToken string) (result []string, err error) {
@@ -1133,37 +1475,72 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 	return
 }
 
-func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (backToken string, err error) {
+func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (templateName, backToken string, err error) {
 	var actions []*execAction
+	var inputVersion = getTemplateVersion(&input.RequestTemplate)
+	var templateList []*models.RequestTemplateTable
+	// 记录重复并且是草稿态的Id
+	var repeatTemplateIdList []string
 	if confirmToken == "" {
-		existFlag, err := checkImportExist(input.RequestTemplate.Id)
+		// 1.判断名称是否重复
+		templateName = input.RequestTemplate.Name
+		templateList, err = getTemplateListByName(input.RequestTemplate.Name)
 		if err != nil {
-			return backToken, err
+			return templateName, backToken, err
 		}
-		if existFlag {
-			backToken = guid.CreateGuid()
-			models.RequestTemplateImportMap[backToken] = input
-			return backToken, nil
+		if len(templateList) > 0 {
+			// 有名称重复数据,判断导入版本是否高于所有模板版本
+			for _, template := range templateList {
+				// 导入版本 低于同名版本,直接报错
+				if inputVersion <= getTemplateVersion(template) {
+					err = exterror.New().ImportTemplateVersionConflictError
+					return
+				}
+				if template.Status == "created" {
+					repeatTemplateIdList = append(repeatTemplateIdList, template.Id)
+					models.RequestTemplateImportMap[template.Id] = input
+				}
+			}
+			if len(repeatTemplateIdList) > 0 {
+				backToken = strings.Join(repeatTemplateIdList, ",")
+				return
+			} else {
+				// 有重复数据,但是新导入模板版本最高,直接当成新建处理
+				input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
+			}
+		} else {
+			// 无名称重复数据，新建模板id以及模板关联表id都新建
+			input = createNewImportTemplate(input, "")
 		}
 	} else {
-		if inputCache, b := models.RequestTemplateImportMap[confirmToken]; b {
-			input = inputCache
-		} else {
-			return backToken, fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+		// 删除冲突模板数据
+		confirmTokenList := strings.Split(confirmToken, ",")
+		for _, ct := range confirmTokenList {
+			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
+				input = inputCache
+			} else {
+				err = fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+				return
+			}
+			delete(models.RequestTemplateImportMap, ct)
+			delActions, delErr := DeleteRequestTemplate(ct, true)
+			if delErr != nil {
+				err = delErr
+				return
+			}
+			actions = append(actions, delActions...)
 		}
-		delete(models.RequestTemplateImportMap, confirmToken)
-		delActions, delErr := DeleteRequestTemplate(input.RequestTemplate.Id, true)
-		if delErr != nil {
-			return backToken, delErr
-		}
-		actions = append(actions, delActions...)
+		// 新建模板&模板相关表属性
+		input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
 	}
 	if input.RequestTemplate.Id == "" {
-		return backToken, fmt.Errorf("RequestTemplate id illegal ")
+		err = fmt.Errorf("RequestTemplate id illegal ")
+		return
 	}
-	allProcessList, processErr := GetCoreProcessListAll(userToken)
+	allProcessList, processErr := GetCoreProcessListAll(userToken, "", "")
 	if processErr != nil {
-		return backToken, fmt.Errorf("Get core process list fail,%s ", processErr.Error())
+		err = fmt.Errorf("Get core process list fail,%s ", processErr.Error())
+		return
 	}
 	processExistFlag := false
 	for _, v := range allProcessList {
@@ -1174,7 +1551,8 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		}
 	}
 	if !processExistFlag {
-		return backToken, fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+		err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+		return
 	}
 	nodeList, _ := GetProcessNodesByProc(input.RequestTemplate, userToken, "template")
 	for i, v := range input.TaskTemplate {
@@ -1192,15 +1570,15 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		}
 	}
 	if err != nil {
-		return backToken, err
+		return
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	for _, v := range input.FormTemplate {
 		actions = append(actions, &execAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)", Param: []interface{}{v.Id, v.Name, v.Description, operator, nowTime, operator, nowTime}})
 	}
 	for _, v := range input.FormItemTemplate {
-		tmpAction := execAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple}
+		tmpAction := execAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		tmpAction.Param = []interface{}{v.Id, v.FormTemplate, v.Name, v.Description, v.ItemGroup, v.ItemGroupName, v.DefaultValue, v.Sort, v.PackageName, v.Entity, v.AttrDefId, v.AttrDefName, v.AttrDefDataType, v.ElementType, v.Title, v.Width, v.RefPackageName, v.RefEntity, v.DataOptions, v.Required, v.Regular, v.IsEdit, v.IsView, v.IsOutput, v.InDisplayName, v.IsRefInside, v.Multiple, v.DefaultClear}
 		actions = append(actions, &tmpAction)
 	}
 	var roleTable []*models.RoleTable
@@ -1219,9 +1597,9 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 	}
 	input.RequestTemplate.Status = "created"
 	input.RequestTemplate.ConfirmTime = ""
-	rtAction := execAction{Sql: "insert into request_template(id,`group`,name,description,form_template,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	rtAction := execAction{Sql: "insert into request_template(id,`group`,name,description,form_template,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler,type,operator_obj_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	rtAction.Param = []interface{}{input.RequestTemplate.Id, input.RequestTemplate.Group, input.RequestTemplate.Name, input.RequestTemplate.Description, input.RequestTemplate.FormTemplate, input.RequestTemplate.Tags, input.RequestTemplate.RecordId, input.RequestTemplate.Version, input.RequestTemplate.ConfirmTime, input.RequestTemplate.Status, input.RequestTemplate.PackageName, input.RequestTemplate.EntityName,
-		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, operator, nowTime, operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler}
+		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, operator, nowTime, operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler, input.RequestTemplate.Type, input.RequestTemplate.OperatorObjType}
 	actions = append(actions, &rtAction)
 	for _, v := range input.TaskTemplate {
 		tmpAction := execAction{Sql: "insert into task_template(id,name,description,form_template,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
@@ -1243,19 +1621,161 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 			actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{v.Id, v.TaskTemplate, v.Role, v.RoleType}})
 		}
 	}
-	return backToken, transaction(actions)
+	err = transaction(actions)
+	return
 }
 
-func checkImportExist(requestTemplateId string) (exist bool, err error) {
-	exist = false
-	var requestTemplateTable []*models.RequestTemplateTable
-	x.SQL("select id,name,version,status from request_template where id=?", requestTemplateId).Find(&requestTemplateTable)
-	if len(requestTemplateTable) == 0 {
+func createNewImportTemplate(input models.RequestTemplateExport, recordId string) models.RequestTemplateExport {
+	var historyTemplateId = input.RequestTemplate.Id
+	input.RequestTemplate.Id = guid.CreateGuid()
+	input.RequestTemplate.RecordId = recordId
+	// 修改模板角色中模板id,新建角色id
+	for _, requestTemplateRole := range input.RequestTemplateRole {
+		requestTemplateRole.Id = guid.CreateGuid()
+		requestTemplateRole.RequestTemplate = input.RequestTemplate.Id
+	}
+	// 修改 formTemplate
+	for _, formTemplate := range input.FormTemplate {
+		historyFormTemplateId := formTemplate.Id
+		formTemplate.Id = guid.CreateGuid()
+		// 修改模板里面的 formTemplateId
+		if input.RequestTemplate.FormTemplate == historyFormTemplateId {
+			input.RequestTemplate.FormTemplate = formTemplate.Id
+		}
+		for _, formItemTemplate := range input.FormItemTemplate {
+			formItemTemplate.Id = guid.CreateGuid()
+			if formItemTemplate.FormTemplate == historyFormTemplateId {
+				formItemTemplate.FormTemplate = formTemplate.Id
+			}
+		}
+		// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
+		for _, taskTemplate := range input.TaskTemplate {
+			historyTaskTemplateId := taskTemplate.Id
+			taskTemplate.Id = guid.CreateGuid()
+			if taskTemplate.FormTemplate == historyFormTemplateId {
+				taskTemplate.FormTemplate = formTemplate.Id
+			}
+			if taskTemplate.RequestTemplate == historyTemplateId {
+				taskTemplate.RequestTemplate = input.RequestTemplate.Id
+			}
+			for _, taskTemplateRole := range input.TaskTemplateRole {
+				taskTemplateRole.Id = guid.CreateGuid()
+				if taskTemplateRole.TaskTemplate == historyTaskTemplateId {
+					taskTemplateRole.TaskTemplate = taskTemplate.Id
+				}
+			}
+		}
+	}
+
+	return input
+}
+
+func getTemplateVersion(template *models.RequestTemplateTable) int {
+	var version int
+	if template == nil {
+		return 0
+	}
+	if len(template.Version) > 1 {
+		version, _ = strconv.Atoi(template.Version[1:])
+	}
+	return version
+}
+
+func getTemplateListByName(templateName string) (requestTemplateTable []*models.RequestTemplateTable, err error) {
+	err = x.SQL("select id,name,version,status from request_template where name=?", templateName).Find(&requestTemplateTable)
+	return
+}
+
+func DisableRequestTemplate(requestTemplateId, operator string) (err error) {
+	queryRows, queryErr := x.QueryString("select status from request_template where id=?", requestTemplateId)
+	if queryErr != nil {
+		err = queryErr
 		return
 	}
-	exist = true
-	if requestTemplateTable[0].Status == "confirm" {
-		err = fmt.Errorf("RequestTemplate:%s %s already confirm ", requestTemplateTable[0].Name, requestTemplateTable[0].Version)
+	if len(queryRows) == 0 {
+		err = fmt.Errorf("can not find template with id: %s ", requestTemplateId)
+		return
+	}
+	if queryRows[0]["status"] != "confirm" {
+		err = fmt.Errorf("only confirm status template can disable")
+		return
+	}
+	_, err = x.Exec("update request_template set status='disable' where id=?", requestTemplateId)
+	return
+}
+
+func EnableRequestTemplate(requestTemplateId, operator string) (err error) {
+	queryRows, queryErr := x.QueryString("select status from request_template where id=?", requestTemplateId)
+	if queryErr != nil {
+		err = queryErr
+		return
+	}
+	if len(queryRows) == 0 {
+		err = fmt.Errorf("can not find template with id: %s ", requestTemplateId)
+		return
+	}
+	if queryRows[0]["status"] != "disable" {
+		err = fmt.Errorf("only disable status template can enable")
+		return
+	}
+	_, err = x.Exec("update request_template set status='confirm' where id=?", requestTemplateId)
+	return
+}
+
+func getAllRequestTemplateGroup() (groupMap map[string]*models.RequestTemplateGroupTable, err error) {
+	groupMap = make(map[string]*models.RequestTemplateGroupTable)
+	var allGroupTable []*models.RequestTemplateGroupTable
+	err = x.SQL("select id,name,description,manage_role,created_time,updated_time from request_template_group").Find(&allGroupTable)
+	if err != nil {
+		return
+	}
+	for _, group := range allGroupTable {
+		groupMap[group.Id] = group
+	}
+	return
+}
+
+func UpdateRequestTemplateParentId(requestTemplate models.RequestTemplateTable) (parentId string) {
+	var actions []*execAction
+	var templateIds []string
+	// 老模板有多个版本,需要更新所有版本,并找到 recordId为空的记录
+	requestTemplateMap, _ := getAllRequestTemplate()
+	if len(requestTemplateMap) > 0 {
+		temp := &requestTemplate
+		for {
+			if temp == nil {
+				break
+			}
+			templateIds = append(templateIds, temp.Id)
+			if temp.RecordId == "" {
+				parentId = temp.Id
+				break
+			}
+			temp = requestTemplateMap[temp.RecordId]
+		}
+	}
+	if len(templateIds) > 0 && parentId != "" {
+		for _, templateId := range templateIds {
+			actions = append(actions, &execAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{parentId, templateId}})
+		}
+	}
+	if len(actions) > 0 {
+		updateErr := transaction(actions)
+		if updateErr != nil {
+			log.Logger.Error("Try to update request_template parent_id fail", log.Error(updateErr))
+		}
+	}
+	return
+}
+
+func UpdateRequestTemplateParentIdById(templateId, parentId string) (err error) {
+	var actions []*execAction
+	actions = append(actions, &execAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{parentId, templateId}})
+	if len(actions) > 0 {
+		err = transaction(actions)
+		if err != nil {
+			log.Logger.Error("Try to update request_template parent_id fail", log.Error(err))
+		}
 	}
 	return
 }

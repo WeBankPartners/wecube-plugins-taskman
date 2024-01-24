@@ -49,8 +49,10 @@ export default {
         this.nodes = data.filter(item => item.taskCategory === 'SUTN')
         // this.nodes = data
         this.$nextTick(() => {
-          this.currentNode = this.nodes[0].nodeId
-          this.initTab(this.currentNode, this.nodes[0])
+          if (this.nodes[0]) {
+            this.currentNode = this.nodes[0].nodeId
+            this.initTab(this.currentNode, this.nodes[0])
+          }
         })
         // this.$refs[this.currentNode].initData(data[0])
       }

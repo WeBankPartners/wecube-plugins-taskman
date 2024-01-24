@@ -3,7 +3,17 @@
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr>
         <td width="5%" class="padding-style" style="text-align: center">{{ $t('index') }}</td>
-        <td width="95%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
+        <td width="85%" class="padding-style" style="text-align: center">{{ $t('form') }}</td>
+        <td
+          v-if="!isDisabled && !enforceDisable && ifEntity ? true : false"
+          @click="addForm"
+          width="10%"
+          class="padding-style"
+          style="text-align: center;color: #2d8cf0;cursor: pointer"
+        >
+          <Icon type="md-add" />
+          {{ $t('add') }}
+        </td>
       </tr>
       <template v-for="(data, dataIndex) in tableData">
         <tr :key="data.id">
@@ -53,6 +63,14 @@
               </Select>
             </div>
           </td>
+          <td
+            v-if="!isDisabled && !enforceDisable && ifEntity ? true : false"
+            @click="delForm(dataIndex)"
+            style="text-align: center;color: #2d8cf0;cursor: pointer"
+          >
+            <Icon type="md-close" />
+            {{ $t('delete') }}
+          </td>
         </tr>
       </template>
     </table>
@@ -68,12 +86,28 @@ export default {
       oriData: null,
       form: {},
       tableData: [],
+      valueTemplate: {
+        dataId: '',
+        displayName: '',
+        entityData: {},
+        entityDataOp: '',
+        entityName: '',
+        fullDataId: null,
+        id: '',
+        packageName: '',
+        previousIds: null,
+        succeedingIds: null
+      },
+      ifEntity: false,
       refKeys: [] // 引用类型字段集合
     }
   },
   props: ['data', 'isDisabled', 'enforceDisable', 'requestId'],
   mounted () {
     this.initData(this.data)
+    if (this.data.entity === '' || this.data.entity.includes('taskman')) {
+      this.ifEntity = true
+    }
   },
   methods: {
     async getRefOptions (formItem, formData, index) {
@@ -129,11 +163,23 @@ export default {
         }
         return t
       })
-      this.tableData = await data.value.map(v => {
+      await this.initTableData()
+      if (data.value[0]) {
+        this.valueTemplate = JSON.parse(JSON.stringify(data.value[0]))
+      }
+      this.valueTemplate.dataId = ''
+      this.valueTemplate.id = ''
+      this.valueTemplate.entityData = {}
+      if (!data.value[0]) {
+        this.data.value.push(JSON.parse(JSON.stringify(this.valueTemplate)))
+        this.initTableData()
+      }
+    },
+    initTableData () {
+      this.tableData = this.data.value.map(v => {
         this.refKeys.forEach(async rfk => {
           v.entityData[rfk + 'Options'] = []
         })
-        v.entityData._id = v.id
         return v.entityData
       })
       this.tableData.forEach((data, index) => {
@@ -142,6 +188,16 @@ export default {
           this.getRefOptions(formItem, data, index)
         })
       })
+    },
+    addForm () {
+      this.data.value.push(JSON.parse(JSON.stringify(this.valueTemplate)))
+      this.initTableData()
+    },
+    delForm (index) {
+      if (this.data.value.length > 1) {
+        this.data.value.splice(index, 1)
+        this.initTableData()
+      }
     }
   },
   components: {}

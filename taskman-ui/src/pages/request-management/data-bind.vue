@@ -42,6 +42,9 @@
       <Button @click="startRequest" :disabled="$parent.formDisable" v-if="$parent.isHandle">{{
         $t('final_version')
       }}</Button>
+      <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
+        $t('pr-vision')
+      }}</Button>
     </div>
   </div>
 </template>
@@ -53,7 +56,8 @@ import {
   saveRequest,
   getBindRelate,
   updateRequestStatus,
-  startRequest
+  startRequest,
+  requestParent
 } from '@/api/server.js'
 export default {
   name: '',
@@ -69,7 +73,9 @@ export default {
           oid: ''
         },
         taskNodeBindInfos: ''
-      }
+      },
+      requestHistory: false,
+      backReason: '' // 回退说明
     }
   },
   mounted () {
@@ -77,8 +83,30 @@ export default {
     this.finalData.procDefKey = this.$parent.procDefKey
     this.getTemplateNodesForRequest()
     this.getBindData()
+    this.requestParent()
   },
   methods: {
+    async requestParent () {
+      const { data } = await requestParent(this.$parent.requestId)
+      if (data) {
+        this.requestHistory = data
+      } else {
+        this.requestHistory = false
+      }
+    },
+    checkHistory () {
+      this.$router.push({
+        path: '/requestCheck',
+        query: {
+          requestId: this.requestHistory,
+          requestTemplate: null,
+          isAdd: 'N',
+          isCheck: 'Y',
+          isHandle: 'N',
+          jumpFrom: 'group_initiated'
+        }
+      })
+    },
     async startRequest () {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('final_version'),
@@ -126,13 +154,34 @@ export default {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('go_back'),
         'z-index': 1000000,
-        loading: true,
+        loading: false,
+        render: () => {
+          return (
+            <Input
+              type="textarea"
+              maxlength={255}
+              show-word-limit
+              v-model={this.backReason}
+              placeholder="请输入退回说明"
+            ></Input>
+          )
+        },
         onOk: async () => {
-          this.$Modal.remove()
-          await this.saveRequest()
-          const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft')
-          if (statusCode === 'OK') {
-            this.$router.push({ path: '/taskman/request-mgmt' })
+          if (!this.backReason.trim()) {
+            this.$Notice.warning({
+              title: this.$t('warning'),
+              desc: '退回说明不能为空'
+            })
+          } else {
+            // this.$Modal.remove()
+            await this.saveRequest()
+            const params = {
+              description: this.backReason
+            }
+            const { statusCode } = await updateRequestStatus(this.$parent.requestId, 'Draft', params)
+            if (statusCode === 'OK') {
+              this.$router.push({ path: '/taskman/request-mgmt' })
+            }
           }
         },
         onCancel: () => {}

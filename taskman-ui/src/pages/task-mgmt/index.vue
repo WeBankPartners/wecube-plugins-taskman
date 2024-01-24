@@ -1,7 +1,7 @@
 <template>
   <div>
     <Button @click="backToTask" icon="ios-undo-outline" style="margin-bottom: 8px">{{ $t('back_to_template') }}</Button>
-    <div style="width: 84%;margin: 0 auto;">
+    <div style="width: 84%; margin: 0 auto">
       <div>
         <Steps :current="activeStep">
           <template v-for="(step, stepIndex) in timeStep">
@@ -12,79 +12,67 @@
       <div class="task-form">
         <Collapse simple v-model="openPanel">
           <template v-for="(data, dataIndex) in dataInfo">
-            <Panel :name="dataIndex + ''" :key="dataIndex">
-              <template v-if="dataIndex === 0">
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+            <Panel :name="dataIndex + ''" :key="dataIndex" :if-history="data.isHistory ? 'history' : 'current'">
+              <div v-if="!data.taskId">
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('request_id') }}:{{ data.requestId }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="orange"
+                <Tag style="font-size: 14px" type="border" size="medium" color="orange"
                   >{{ $t('request_name') }}:{{ data.requestName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="green"
+                <Tag style="font-size: 14px" type="border" size="medium" color="green"
                   >{{ $t('template') }}:{{ data.requestTemplate }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('reporter') }}:{{ data.reporter }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expected_completion_time') }}:{{ data.expectTime }}</Tag
                 >
-              </template>
-              <template v-else-if="dataIndex < dataInfo.length - 1">
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
+              </div>
+              <div v-else>
+                <Tag style="font-size: 14px" type="border" size="medium" color="primary"
                   >{{ $t('task_name') }}:{{ data.taskName }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="warning"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
                   >{{ $t('handler') }}:{{ data.handler }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="warning"
+                  >{{ $t('handler_role') }}:{{ data.handleRoleName }}</Tag
+                >
+                <Tag v-if="data.status === 'done'" style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
+                <Tag style="font-size: 14px" type="border" size="medium" color="cyan"
                   >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
                 >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
+                <Tag style="font-size: 14px" type="border" size="medium" color="blue"
                   >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
                 >
-              </template>
-              <template v-else>
-                <Tag style="font-size:14px" type="border" size="medium" color="primary"
-                  >{{ $t('task_name') }}:{{ data.taskName }}</Tag
+                <Tag v-if="data.isHistory" style="font-size: 14px;" type="border" size="medium" color="magenta"
+                  ><span class="history-comment">{{ $t('process_comments') }}: {{ data.comment }}</span></Tag
                 >
-                <template v-if="data.status === 'done'">
-                  <Tag style="font-size:14px" type="border" size="medium" color="warning"
-                    >{{ $t('handler') }}:{{ data.handler }}</Tag
-                  >
-                  <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                    >{{ $t('handle_time') }}:{{ data.handleTime }}</Tag
-                  >
-                </template>
-                <Tag style="font-size:14px" type="border" size="medium" color="cyan"
-                  >{{ $t('report_time') }}:{{ data.reportTime }}</Tag
-                >
-                <Tag style="font-size:14px" type="border" size="medium" color="blue"
-                  >{{ $t('expire_time') }}:{{ data.expireTime }}</Tag
-                >
-              </template>
+              </div>
               <p slot="content">
                 <template v-if="dataIndex === dataInfo.length - 1 && !enforceDisable">
                   <Upload
                     :action="uploadUrl"
+                    :before-upload="handleUpload"
                     :show-upload-list="false"
                     with-credentials
-                    style="display:inline-block;margin-left:32px"
+                    style="display: inline-block; margin-left: 32px"
                     :headers="headers"
-                    :on-success="uploadSucess"
+                    :on-success="res => uploadSucess(res, dataIndex)"
                     :on-error="uploadFailed"
                   >
                     <Button size="small" type="success">{{ $t('upload_attachment') }}</Button>
                   </Upload>
                 </template>
                 <template v-else>
-                  <div style="display:inline-block;width:30px"></div>
+                  <div style="display: inline-block; width: 30px"></div>
                 </template>
                 <Tag
                   type="border"
@@ -92,7 +80,7 @@
                   :closable="dataIndex === dataInfo.length - 1 && !enforceDisable"
                   checkable
                   :key="file.id"
-                  @on-close="removeFile(file)"
+                  @on-close="removeFile(file, dataIndex)"
                   @on-change="downloadFile(file)"
                   color="primary"
                   >{{ file.name }}</Tag
@@ -117,7 +105,11 @@
                       <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
                         <Input disabled v-model="data.description" type="textarea" />
                       </FormItem>
-                      <FormItem :label="$t('process_result')" v-if="data.nextOption.length !== 0">
+                      <FormItem :label="$t('process_result')" v-if="data.nextOption && data.nextOption.length !== 0">
+                        <span slot="label">
+                          {{ $t('process_result') }}
+                          <span style="color: #ed4014"> * </span>
+                        </span>
                         <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
                           <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
                         </Select>
@@ -126,13 +118,19 @@
                         <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
                       </FormItem>
                     </Form>
-                    <div style="text-align:center">
+                    <div style="text-align: center">
                       <Button v-if="data.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
                         $t('save')
                       }}</Button>
-                      <Button v-if="data.editable" :disabled="enforceDisable" @click="commitTaskData" type="primary">{{
-                        $t('commit')
-                      }}</Button>
+                      <Button
+                        v-if="data.editable"
+                        :disabled="
+                          enforceDisable || (data.nextOption && data.nextOption.length !== 0 && data.choseOption === '')
+                        "
+                        @click="commitTaskData"
+                        type="primary"
+                        >{{ $t('commit') }}</Button
+                      >
                     </div>
                   </div>
                 </span>
@@ -178,16 +176,20 @@ export default {
     this.getTaskDetail()
   },
   methods: {
-    removeFile (file) {
+    handleUpload (file) {
+      this.$Message.info(this.$t('upload_tip'))
+      return true
+    },
+    removeFile (file, index) {
       this.$Modal.confirm({
         title: this.$t('confirm_to_delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteAttach(file.id)
+          const { statusCode, data } = await deleteAttach(file.id)
           if (statusCode === 'OK') {
-            this.getTaskDetail()
+            this.dataInfo[index].attachFiles = data
           }
         },
         onCancel: () => {}
@@ -203,9 +205,9 @@ export default {
         .then(response => {
           this.isExport = false
           if (response.status < 400) {
-            let content = JSON.stringify(response.data)
+            // let content = JSON.stringify(response.data)
             let fileName = `${file.name}`
-            let blob = new Blob([content])
+            let blob = new Blob([response.data])
             if ('msSaveOrOpenBlob' in navigator) {
               window.navigator.msSaveOrOpenBlob(blob, fileName)
             } else {
@@ -237,12 +239,12 @@ export default {
         desc: response.statusMessage
       })
     },
-    async uploadSucess () {
+    async uploadSucess (item, index) {
       this.$Notice.success({
         title: 'Successful',
         desc: 'Successful'
       })
-      this.getTaskDetail()
+      this.dataInfo[index].attachFiles = item.data
     },
     backToTask () {
       this.$router.push({ path: '/taskman/task-mgmt' })
@@ -329,8 +331,29 @@ export default {
 
 <style scoped lang="scss">
 .task-form {
-  height: calc(100vh - 100px);
+  height: calc(100vh - 200px);
   margin-top: 24px;
-  overflow: auto;
+}
+.history-comment {
+  display: inline-block;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  white-space: nowrap;
+}
+</style>
+
+<style scoped>
+.task-form >>> .ivu-collapse-header {
+  height: auto !important;
+  display: flex;
+  align-items: center;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] {
+  background: #ddd;
+}
+.task-form >>> .ivu-collapse-item[if-history='history'] .ivu-collapse-content {
+  background: #ddd;
 }
 </style>

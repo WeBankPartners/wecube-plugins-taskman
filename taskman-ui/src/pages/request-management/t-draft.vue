@@ -2,30 +2,44 @@
   <div>
     <div>
       <Row>
-        <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+        <Col span="3">
+          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
-        <Col span="4">
+        <Col span="3">
           <Select
             v-model="requestTemplate"
             @on-open-change="getTemplateList"
             clearable
             filterable
-            style="width:90%"
+            style="width: 90%"
             :placeholder="$t('template')"
           >
             <template v-for="option in templateOptions">
-              <Option :label="option.name" :value="option.id" :key="option.id"> </Option>
+              <Option :label="`${option.name}(${option.version || '-'})`" :value="option.id" :key="option.id"> </Option>
             </template>
           </Select>
         </Col>
+        <!-- <Col span="3">
+          <DatePicker type="datetime"
+            :value="startTime"
+            @on-change="(val)=>changeExpectTime('startTime', val)"
+            format="yyyy-MM-dd HH:mm:ss"
+            placeholder="开始时间" />
+        </Col>
+        <Col span="3">
+          <DatePicker type="datetime"
+            :value="endTime"
+            @on-change="(val)=>changeExpectTime('endTime', val)"
+            format="yyyy-MM-dd HH:mm:ss"
+            placeholder="结束时间" />
+        </Col> -->
         <Col span="4">
-          <Button @click="requestListForDraftInitiated" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
     <Table
-      style="margin: 24px 0;"
+      style="margin: 24px 0"
       border
       size="small"
       @on-sort-change="sortTable"
@@ -34,7 +48,7 @@
       :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float:right"
+      style="float: right"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -73,6 +87,8 @@ export default {
           field: 'updatedTime'
         }
       },
+      startTime: '',
+      endTime: '',
       tableColumns: [
         {
           title: 'ID',
@@ -115,6 +131,18 @@ export default {
           key: 'status'
         },
         {
+          title: this.$t('createdBy'),
+          sortable: 'createdBy',
+          minWidth: 140,
+          key: 'createdBy'
+        },
+        {
+          title: this.$t('createdTime'),
+          sortable: 'createdTime',
+          minWidth: 140,
+          key: 'createdTime'
+        },
+        {
           title: this.$t('handler'),
           sortable: 'custom',
           minWidth: 140,
@@ -139,9 +167,24 @@ export default {
           key: 'expireTime'
         },
         {
+          title: this.$t('rollback_desc'),
+          sortable: 'custom',
+          width: 180,
+          key: 'rollbackDesc',
+          render: (h, params) => {
+            return (
+              <Tooltip max-width="600" placement="top" content={params.row.rollbackDesc}>
+                <div style="width:170px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                  {params.row.rollbackDesc}
+                </div>
+              </Tooltip>
+            )
+          }
+        },
+        {
           title: this.$t('t_action'),
           key: 'action',
-          width: 200,
+          width: 140,
           fixed: 'right',
           align: 'center',
           render: (h, params) => {
@@ -177,6 +220,9 @@ export default {
     this.requestListForDraftInitiated()
   },
   methods: {
+    changeExpectTime (type, val) {
+      this[type] = val
+    },
     sortTable (col) {
       const sorting = {
         asc: col.order === 'asc',
@@ -236,7 +282,12 @@ export default {
         }
       })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.requestListForDraftInitiated()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.requestListForDraftInitiated()
     },
@@ -260,6 +311,21 @@ export default {
           value: this.requestTemplate
         })
       }
+      if (this.startTime) {
+        this.payload.filters.push({
+          name: 'createdTime',
+          operator: 'eq',
+          value: this.startTime
+        })
+      }
+      if (this.endTime) {
+        this.payload.filters.push({
+          name: 'createdTime',
+          operator: 'eq',
+          value: this.endTime
+        })
+      }
+
       if (sorting) {
         this.payload.sorting = sorting
       }

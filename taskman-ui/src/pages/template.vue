@@ -3,10 +3,10 @@
     <div>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width:90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
         <Col span="4">
-          <Input v-model="tags" style="width:90%" type="text" :placeholder="$t('tags')"> </Input>
+          <Input v-model="tags" style="width: 90%" type="text" :placeholder="$t('tags')"> </Input>
         </Col>
         <Col span="4">
           <Select
@@ -15,20 +15,22 @@
             clearable
             filterable
             multiple
+            :max-tag-count="3"
             :placeholder="$t('manageRole')"
-            style="width:90%"
+            style="width: 90%"
           >
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </Col>
-        <Col span="2">
-          <Select v-model="status" clearable :placeholder="$t('status')" style="width:90%">
+        <Col span="4">
+          <Select multiple v-model="status" clearable :placeholder="$t('status')" style="width: 90%">
             <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
             <Option value="created" key="created">{{ this.$t('status_created') }}</Option>
+            <Option value="disable" key="disable">{{ this.$t('disable') }}</Option>
           </Select>
         </Col>
         <Col span="4">
-          <Button @click="getTemplateList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
         </Col>
         <Upload
@@ -36,7 +38,7 @@
           :before-upload="handleUpload"
           :show-upload-list="false"
           with-credentials
-          style="display:inline-block;float:right;margin-right:16px"
+          style="display: inline-block; float: right; margin-right: 16px"
           :headers="headers"
           :on-success="uploadSucess"
           :on-error="uploadFailed"
@@ -46,7 +48,7 @@
       </Row>
     </div>
     <Table
-      style="margin: 24px 0;"
+      style="margin: 24px 0"
       border
       @on-sort-change="sortTable"
       size="small"
@@ -55,7 +57,7 @@
       :max-height="MODALHEIGHT"
     ></Table>
     <Page
-      style="float:right"
+      style="float: right"
       :total="pagination.total"
       @on-change="changPage"
       show-sizer
@@ -64,22 +66,37 @@
       @on-page-size-change="changePageSize"
       show-total
     />
+    <Modal v-model="modalShow" width="300">
+      <p>{{ $t('confirm_disable') }}</p>
+      <template #footer>
+        <Button type="error" size="large" long @click="disableInit">{{ $t('confirm') }}</Button>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 import { getCookie } from '@/pages/util/cookie'
-import { getTemplateList, deleteTemplate, forkTemplate, getManagementRoles, confirmUploadTemplate } from '@/api/server'
+import {
+  getTemplateList,
+  deleteTemplate,
+  forkTemplate,
+  getManagementRoles,
+  confirmUploadTemplate,
+  enableTemplate,
+  disableTemplate
+} from '@/api/server'
 export default {
   name: '',
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
-      status: '',
+      status: ['confirm', 'created'],
       mgmtRoles: [],
       tags: '',
+      modalShow: false,
       pagination: {
         pageSize: 10,
         currentPage: 1,
@@ -113,6 +130,12 @@ export default {
           key: 'version'
         },
         {
+          title: this.$t('procDefId'),
+          minWidth: 80,
+          sortable: 'custom',
+          key: 'procDefName'
+        },
+        {
           title: this.$t('tags'),
           sortable: 'custom',
           minWidth: 130,
@@ -126,7 +149,8 @@ export default {
           render: (h, params) => {
             const statusArray = {
               confirm: this.$t('status_confirm'),
-              created: this.$t('status_created')
+              created: this.$t('status_created'),
+              disable: this.$t('disable')
             }
             return <span>{statusArray[params.row.status]}</span>
           }
@@ -134,7 +158,7 @@ export default {
         {
           title: this.$t('description'),
           resizable: true,
-          width: 300,
+          width: 100,
           sortable: 'custom',
           key: 'description'
         },
@@ -157,6 +181,12 @@ export default {
           }
         },
         {
+          title: this.$t('updatedBy'),
+          sortable: 'updatedBy',
+          minWidth: 100,
+          key: 'updatedBy'
+        },
+        {
           title: this.$t('tm_updated_time'),
           sortable: 'custom',
           minWidth: 130,
@@ -166,7 +196,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 180,
+          width: 220,
           align: 'center',
           render: (h, params) => {
             const operationOptions = params.row.operateOptions
@@ -222,6 +252,26 @@ export default {
                     {this.$t('download')}
                   </Button>
                 )}
+                {operationOptions.includes('disable') && (
+                  <Button
+                    onClick={() => this.disableTemplate(params.row)}
+                    style="margin-left: 6px"
+                    type="error"
+                    size="small"
+                  >
+                    {this.$t('disable')}
+                  </Button>
+                )}
+                {operationOptions.includes('enable') && (
+                  <Button
+                    onClick={() => this.enableTemplate(params.row)}
+                    style="margin-left: 6px"
+                    type="success"
+                    size="small"
+                  >
+                    {this.$t('enable')}
+                  </Button>
+                )}
               </div>
             )
           }
@@ -238,6 +288,12 @@ export default {
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }
+    const lang = localStorage.getItem('lang') || 'zh-CN'
+    if (lang === 'zh-CN') {
+      this.headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
+    } else {
+      this.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
+    }
     this.MODALHEIGHT = document.body.scrollHeight - 200
     this.getTemplateList()
   },
@@ -250,6 +306,7 @@ export default {
         })
         return false
       }
+      this.$Message.info(this.$t('upload_tip'))
       return true
     },
     uploadFailed (val, response) {
@@ -263,11 +320,13 @@ export default {
       if (val.statusCode === 'CONFIRM') {
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
+          content:
+            this.$t('tw_template_cover_tips_l') + `"${val.data.templateName}"` + this.$t('tw_template_cover_tips_r'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {
             this.$Modal.remove()
-            const { statusCode } = await confirmUploadTemplate(val.data)
+            const { statusCode } = await confirmUploadTemplate(val.data.token)
             if (statusCode === 'OK') {
               this.$Notice.success({
                 title: 'Successful',
@@ -390,7 +449,12 @@ export default {
     addTemplate () {
       this.$router.push({ path: '/templateManagementIndex', params: { requestTemplateId: '', isCheck: 'N' } })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.getTemplateList()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.getTemplateList()
     },
@@ -414,10 +478,10 @@ export default {
           value: this.tags
         })
       }
-      if (this.status) {
+      if (this.status.length > 0) {
         this.payload.filters.push({
           name: 'status',
-          operator: 'eq',
+          operator: 'in',
           value: this.status
         })
       }
@@ -438,6 +502,18 @@ export default {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows
       }
+    },
+    disableTemplate (row) {
+      this.modalShow = row.id
+    },
+    async disableInit () {
+      await disableTemplate(this.modalShow)
+      this.modalShow = false
+      this.getTemplateList()
+    },
+    async enableTemplate (row) {
+      await enableTemplate(row.id)
+      this.getTemplateList()
     }
   },
   components: {}

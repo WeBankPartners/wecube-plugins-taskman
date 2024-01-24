@@ -18,7 +18,7 @@
           </Select>
         </Col>
         <Col span="4">
-          <Button @click="getTempGroupList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
           <Button @click="addTempGroup" type="success">{{ $t('add') }}</Button>
         </Col>
       </Row>
@@ -248,7 +248,12 @@ export default {
       this.modalConfig.isAdd = false
       this.getRole()
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.getTempGroupList()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.getTempGroupList()
     },

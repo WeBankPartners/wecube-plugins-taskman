@@ -1,24 +1,24 @@
 <template>
-  <div style="width:40%;margin: 0 auto;min-width: 700px">
+  <div style="width: 40%; margin: 0 auto; min-width: 700px">
     <Form :label-width="100">
       <template v-for="item in formConfig.itemConfigs">
         <FormItem v-if="['text', 'password'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Input
             v-model="formConfig.values[item.value]"
-            style="width:90%"
+            style="width: 90%"
             :type="item.type"
             :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
             :placeholder="item.placeholder"
           >
           </Input>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+          <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
         <FormItem v-if="['select'].includes(item.type)" :label="$t(item.label)" :key="item.value">
           <Select
             v-model="formConfig.values[item.value]"
             filterable
             clearable
-            style="width:90%"
+            style="width: 90%"
             :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
             :multiple="item.multiple"
             :placeholder="item.placeholder"
@@ -32,7 +32,7 @@
               </Option>
             </template>
           </Select>
-          <Icon v-if="item.rules" size="10" style="color:#ed4014" type="ios-medical" />
+          <Icon v-if="item.rules" size="10" style="color: #ed4014" type="ios-medical" />
         </FormItem>
       </template>
       <FormItem :label="$t('expected_completion_time')">
@@ -42,11 +42,12 @@
           :value="formConfig.values.expectTime"
           @on-change="changeExpectTime"
           placeholder="Select date"
+          :options="options3"
           style="width: 90%"
         ></DatePicker>
       </FormItem>
 
-      <FormItem style="text-align:center">
+      <FormItem style="text-align: center">
         <Button @click="createRequest" type="primary">{{ $t('next') }}</Button>
       </FormItem>
     </Form>
@@ -59,6 +60,11 @@ export default {
   name: 'BasicInfo',
   data () {
     return {
+      options3: {
+        disabledDate (date) {
+          return date && date.valueOf() < Date.now() - 86400000
+        }
+      },
       formConfig: {
         isAdd: true,
         itemConfigs: [

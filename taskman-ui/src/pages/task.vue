@@ -16,7 +16,7 @@
           <Input v-model="handler" style="width:90%" type="text" :placeholder="$t('handler')"> </Input>
         </Col>
         <Col span="4">
-          <Button @click="taskList" type="primary">{{ $t('search') }}</Button>
+          <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
         </Col>
       </Row>
     </div>
@@ -208,7 +208,7 @@ export default {
       })
     },
     async markTask (row) {
-      const { statusCode } = await changeTaskStatus('mark', row.id)
+      const { statusCode } = await changeTaskStatus('mark', row.id, new Date(row.updatedTime).getTime())
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -218,13 +218,18 @@ export default {
       }
     },
     async startTask (row) {
-      await changeTaskStatus('start', row.id)
+      await changeTaskStatus('start', row.id, new Date(row.updatedTime).getTime())
       this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: 'N' } })
     },
     async checkTask (row) {
       this.$router.push({ path: '/taskMgmtIndex', query: { taskId: row.id, enforceDisable: 'Y' } })
     },
+    onSearch () {
+      this.pagination.currentPage = 1
+      this.taskList()
+    },
     changePageSize (pageSize) {
+      this.pagination.currentPage = 1
       this.pagination.pageSize = pageSize
       this.taskList()
     },

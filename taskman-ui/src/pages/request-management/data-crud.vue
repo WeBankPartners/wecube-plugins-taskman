@@ -1,13 +1,17 @@
 <template>
   <div class=" ">
-    <Form :label-width="100">
+    <Form :label-width="100" @submit.native.prevent>
       <FormItem :label="$t('root_entity')">
+        <span slot="label">
+          <span style="color: #ed4014"> * </span>
+          {{ $t('root_entity') }}
+        </span>
         <Select
           v-model="rootEntityId"
           filterable
           clearable
           :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'"
-          style="width:300px"
+          style="width: 300px"
         >
           <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
         </Select>
@@ -17,20 +21,23 @@
           type="primary"
           >{{ $t('search') }}</Button
         >
-        <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')">
-          <Upload
-            :action="uploadUrl"
-            :show-upload-list="false"
-            with-credentials
-            style="display:inline-block;margin-left:32px"
-            :headers="headers"
-            :on-success="uploadSucess"
-            :on-error="uploadFailed"
-          >
-            <Button type="success">{{ $t('upload_attachment') }}</Button>
-          </Upload>
-        </template>
-        <div v-for="file in attachFiles" style="display:inline-block" :key="file.id">
+        <!-- <template v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"> -->
+        <Upload
+          :action="uploadUrl"
+          :before-upload="handleUpload"
+          :show-upload-list="false"
+          with-credentials
+          style="display: inline-block; margin-left: 32px"
+          :headers="headers"
+          :on-success="uploadSucess"
+          :on-error="uploadFailed"
+        >
+          <Button type="success" :disabled="$parent.formDisable || $parent.jumpFrom === 'group_handle'">{{
+            $t('upload_attachment')
+          }}</Button>
+        </Upload>
+        <!-- </template> -->
+        <div v-for="file in attachFiles" style="display: inline-block" :key="file.id">
           <Tag
             type="border"
             :closable="!($parent.formDisable || $parent.jumpFrom === 'group_handle')"
@@ -50,7 +57,7 @@
         </TabPane>
       </template>
     </Tabs>
-    <div style="text-align: center;margin-top:24px">
+    <div style="text-align: center; margin-top: 24px">
       <Button @click="saveData" v-if="!($parent.formDisable || $parent.jumpFrom === 'group_handle')" type="primary">{{
         $t('save')
       }}</Button>
@@ -107,6 +114,10 @@ export default {
     }
   },
   methods: {
+    handleUpload (file) {
+      this.$Message.info(this.$t('upload_tip'))
+      return true
+    },
     removeFile (file) {
       this.$Modal.confirm({
         title: this.$t('confirm_to_delete'),
@@ -114,9 +125,9 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteAttach(file.id)
+          const { statusCode, data } = await deleteAttach(file.id)
           if (statusCode === 'OK') {
-            this.getRequestInfo()
+            this.attachFiles = data
           }
         },
         onCancel: () => {}
@@ -165,17 +176,21 @@ export default {
         desc: response.statusMessage
       })
     },
-    async uploadSucess () {
+    async uploadSucess (item) {
       this.$Notice.success({
         title: 'Successful',
         desc: 'Successful'
       })
-      this.getRequestInfo()
+      this.attachFiles = item.data
     },
     backData (data) {
       this.requestData = data
     },
     async commitRequest () {
+      if (this.rootEntityId === '') {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('commit'),
         'z-index': 1000000,
@@ -193,8 +208,10 @@ export default {
       })
     },
     async confirmCommitRequest () {
+      const find = this.rootEntityOptions.find(item => item.guid === this.rootEntityId)
       const params = {
         rootEntityId: this.rootEntityId,
+        entityName: find.key_name,
         data: this.requestData
       }
       const result = this.paramsCheck()
@@ -228,8 +245,14 @@ export default {
       this.$emit('nextStep')
     },
     async saveData () {
+      if (this.rootEntityId === '') {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
+      const find = this.rootEntityOptions.find(item => item.guid === this.rootEntityId)
       const params = {
         rootEntityId: this.rootEntityId,
+        entityName: find.key_name,
         data: this.requestData
       }
       const result = this.paramsCheck()
@@ -318,6 +341,12 @@ export default {
         this.$parent.formDisable,
         this.$parent.jumpFrom
       )
+      // 编辑无数据时，初始化默认新增一行
+      if (Array.isArray(find.value) && find.value.length === 0) {
+        if (!(this.$parent.formDisable || this.$parent.jumpFrom === 'group_handle')) {
+          this.$refs.dataMgmt[index].addRow()
+        }
+      }
     }
   }
 }

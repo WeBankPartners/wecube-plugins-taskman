@@ -10,7 +10,10 @@ import (
 
 func ValidateRequestForm(param []*models.RequestPreDataTableObj, userToken string) (err error) {
 	for _, entityData := range param {
-		if len(entityData.Value) == 0 {
+		if entityData.PackageName == "" || entityData.Entity == "" || len(entityData.Value) == 0 {
+			continue
+		}
+		if !strings.HasPrefix(entityData.PackageName, "wecmdb") {
 			continue
 		}
 		err = validateFormDataRegular(entityData, userToken)

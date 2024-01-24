@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTemplateDto, err error) {
+func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models.TaskTemplateDto, err error) {
 	result = models.TaskTemplateDto{}
-	taskTemplate, getTaskErr := getSimpleTaskTemplate("", requestTemplateId, proNodeId)
+	taskTemplate, getTaskErr := getSimpleTaskTemplate("", requestTemplateId, proNodeId, nodeId)
 	if getTaskErr != nil {
 		log.Logger.Warn("GetTaskTemplate warning", log.Error(getTaskErr))
 		return
@@ -24,6 +24,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 	result.MGMTRoles = []string{}
 	result.USERoleObjs = []*models.RoleTable{}
 	result.USERoles = []string{}
+	result.RequestTemplateId = requestTemplateId
 	var formTemplateTable []*models.FormTemplateTable
 	err = x.SQL("select * from form_template where id=?", taskTemplate.FormTemplate).Find(&formTemplateTable)
 	if err != nil {
@@ -57,7 +58,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId string) (result models.TaskTem
 }
 
 func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) error {
-	_, checkExistErr := getSimpleTaskTemplate("", requestTemplateId, param.NodeDefId)
+	_, checkExistErr := getSimpleTaskTemplate("", requestTemplateId, param.NodeDefId, "")
 	if checkExistErr == nil {
 		return fmt.Errorf("RequestTemplate:%s nodeDefId:%s already have task form,please reload ", requestTemplateId, param.NodeDefId)
 	}
@@ -76,7 +77,7 @@ func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) 
 }
 
 func UpdateTaskTemplate(param models.TaskTemplateDto) error {
-	taskTemplate, err := getSimpleTaskTemplate(param.Id, "", "")
+	taskTemplate, err := getSimpleTaskTemplate(param.Id, "", "", "")
 	if err != nil {
 		return err
 	}
@@ -97,7 +98,7 @@ func UpdateTaskTemplate(param models.TaskTemplateDto) error {
 	return transaction(actions)
 }
 
-func getSimpleTaskTemplate(id, requestTemplate, proNodeId string) (result models.TaskTemplateTable, err error) {
+func getSimpleTaskTemplate(id, requestTemplate, proNodeId, nodeId string) (result models.TaskTemplateTable, err error) {
 	var taskTemplateTable []*models.TaskTemplateTable
 	baseSql := "select * from task_template where 1=1 "
 	var params []interface{}
@@ -112,6 +113,10 @@ func getSimpleTaskTemplate(id, requestTemplate, proNodeId string) (result models
 	if proNodeId != "" {
 		baseSql += " and node_def_id=?"
 		params = append(params, proNodeId)
+	}
+	if nodeId != "" {
+		baseSql += " and node_id=?"
+		params = append(params, nodeId)
 	}
 	err = x.SQL(baseSql, params...).Find(&taskTemplateTable)
 	if err != nil {
@@ -136,6 +141,32 @@ func getRoleMap() (result map[string]*models.RoleTable, err error) {
 	}
 	for _, v := range roleTable {
 		result[v.Id] = v
+	}
+	return
+}
+
+func getTaskTemplateHandler(requestTemplate string) (taskTemplateMap map[string]*models.TaskTemplateVo, err error) {
+	taskTemplateMap = make(map[string]*models.TaskTemplateVo)
+	var taskTemplateList []*models.TaskTemplateVo
+	err = x.SQL("select  t.id,t.handler,tr.role from task_template t join task_template_role tr on  "+
+		"t.id=tr.task_template where t.request_template = ?", requestTemplate).Find(&taskTemplateList)
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			taskTemplateMap[taskTemplate.Id] = taskTemplate
+		}
+	}
+	return
+}
+
+func GetTaskTemplateMapByRequestTemplate(requestTemplate string) (taskTemplateMap map[string]int, err error) {
+	taskTemplateMap = make(map[string]int)
+	var rowsData []*models.TaskTemplateTable
+	sql := "select * from task_template where request_template = ?"
+	err = x.SQL(sql, requestTemplate).Find(&rowsData)
+	if len(rowsData) > 0 {
+		for _, row := range rowsData {
+			taskTemplateMap[row.Name] = row.ExpireDay
+		}
 	}
 	return
 }

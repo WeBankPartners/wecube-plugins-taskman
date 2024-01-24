@@ -81,6 +81,7 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
+        this.$router.push({ path: '/taskman/template-mgmt' })
       }
     },
     changeStep (val) {

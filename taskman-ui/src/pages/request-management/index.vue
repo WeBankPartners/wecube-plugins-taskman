@@ -1,11 +1,11 @@
 <template>
   <div>
-    <Button @click="backToTemplate" icon="ios-undo-outline" style="margin-bottom: 8px">{{
-      $t('back_to_template')
-    }}</Button>
-
+    <div style="margin-bottom: 8px">
+      <Button @click="backToTemplate" icon="ios-undo-outline">{{ $t('back_to_template') }}</Button>
+      <Input v-if="currentStep === -1" v-model="filterWord" style="width: 200px" :placeholder="$t('search')" />
+    </div>
     <template v-if="currentStep === -1">
-      <TemplateSelect @choiceTemp="choiceTemp"></TemplateSelect>
+      <TemplateSelect @choiceTemp="choiceTemp" :filterWord="filterWord"></TemplateSelect>
     </template>
     <template v-else>
       <div style="width: 84%;margin: 0 auto;">
@@ -22,8 +22,11 @@
         </Steps>
       </div>
       <div v-if="currentStep !== -1" style="margin-top:12px;">
+        <!--基础信息-->
         <BasicForm @basicForm="basicForm" v-if="currentStep === 0"></BasicForm>
+        <!--表单填写-->
         <DataCrud @nextStep="nextStep" v-if="currentStep === 1"></DataCrud>
+        <!--数据绑定-->
         <DataBind v-if="currentStep === 2"></DataBind>
       </div>
     </template>
@@ -47,7 +50,8 @@ export default {
       requestTemplate: '',
       procDefId: '',
       procDefKey: '',
-      requestId: ''
+      requestId: '',
+      filterWord: ''
     }
   },
   mounted () {

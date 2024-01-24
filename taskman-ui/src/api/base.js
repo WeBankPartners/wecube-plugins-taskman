@@ -44,7 +44,7 @@ req.interceptors.request.use(
 req.interceptors.response.use(
   res => {
     if (res.status === 200) {
-      if (res.data.statusCode !== 'OK') {
+      if (res.data.statusCode && res.data.statusCode !== 'OK') {
         const errorMes = res.data.statusMessage
         Vue.prototype.$Notice.error({
           title: 'Error',

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
@@ -40,7 +42,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 	log.Logger.Debug("task create", log.JsonObj("input", input))
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
-	err = x.SQL("select id,form,request_template,emergency from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
+	err = x.SQL("select id,form,request_template,emergency,type from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
 	if err != nil {
 		return result, taskId, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
 	}
@@ -79,6 +81,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 		newTaskObj.Request = requestTable[0].Id
 		newTaskObj.NodeDefId = taskFormInput.TaskNodeDefId
 		newTaskObj.Emergency = requestTable[0].Emergency
+		newTaskObj.TemplateType = requestTable[0].Type
 		var taskTemplateTable []*models.TaskTemplateTable
 		x.SQL("select * from task_template where request_template=? and node_def_id=?", requestTable[0].RequestTemplate, taskFormInput.TaskNodeDefId).Find(&taskTemplateTable)
 		if len(taskTemplateTable) > 0 {
@@ -98,8 +101,14 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 		}
 	}
 	log.Logger.Debug("debug1", log.JsonObj("newTaskFormObj", newTaskFormObj))
-	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status, newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency, input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, "system", nowTime, "system", nowTime}
+	taskInsertAction := execAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id," +
+		"node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time," +
+		"handler,created_by,created_time,updated_by,updated_time,template_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status,
+		newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName,
+		newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency,
+		input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, "system", nowTime, "system",
+		nowTime, newTaskObj.TemplateType}
 	actions = append(actions, &taskInsertAction)
 	actions = append(actions, &execAction{Sql: "insert into form(id,name,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.Name, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {
@@ -272,6 +281,7 @@ func getTaskTemplateRoles() map[string][]string {
 }
 
 func GetTask(taskId string) (result models.TaskQueryResult, err error) {
+	result = models.TaskQueryResult{}
 	taskObj, tmpErr := getSimpleTask(taskId)
 	if tmpErr != nil {
 		return result, tmpErr
@@ -291,6 +301,17 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
 	}
+	if requests[0].Parent != "" {
+		if parentRequest, getParentErr := GetRequestTaskList(requests[0].Parent); getParentErr != nil {
+			err = getParentErr
+			return
+		} else {
+			for _, v := range parentRequest.Data {
+				v.IsHistory = true
+			}
+			result.Data = parentRequest.Data
+		}
+	}
 	var requestCache models.RequestPreDataDto
 	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
 	if err != nil {
@@ -307,12 +328,18 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	if len(requestTemplateTable) > 0 {
 		requestQuery.RequestTemplate = requestTemplateTable[0].Name
 	}
-	result.Data = []*models.TaskQueryObj{&requestQuery}
+	result.Data = append(result.Data, &requestQuery)
 	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
 	if err != nil {
-		return result, err
+		return
 	}
 	// get task list
+	var taskHandlerRows []*models.TaskHandlerQueryData
+	x.SQL("select t1.id,t2.handler,t4.display_name from task t1 left join task_template t2 on t1.task_template=t2.id left join task_template_role t3 on t1.task_template=t3.task_template left join `role` t4 on t3.`role`=t4.id where t1.request=?", taskObj.Request).Find(&taskHandlerRows)
+	taskHandlerMap := make(map[string]*models.TaskHandlerQueryData)
+	for _, row := range taskHandlerRows {
+		taskHandlerMap[row.Id] = row
+	}
 	var taskList []*models.TaskTable
 	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
 	for _, v := range taskList {
@@ -320,6 +347,13 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 		if tmpErr != nil {
 			err = tmpErr
 			break
+		}
+		if handlerObj, b := taskHandlerMap[tmpTaskForm.TaskId]; b {
+			tmpTaskForm.Handler = handlerObj.Handler
+			tmpTaskForm.HandleRoleName = handlerObj.DisplayName
+		}
+		if v.Status == "done" {
+			tmpTaskForm.Handler = v.UpdatedBy
 		}
 		result.Data = append(result.Data, &tmpTaskForm)
 	}
@@ -331,6 +365,95 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 			v.Active = true
 			break
 		}
+	}
+	return
+}
+
+func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) {
+	var taskObj models.TaskTable
+	var taskForm models.TaskQueryObj
+	taskObj, err = getSimpleTask(taskId)
+	if err != nil {
+		return
+	}
+	if taskObj.Request == "" {
+		taskForm, err = queryTaskForm(&taskObj)
+		if err != nil {
+			return
+		}
+		taskQueryList = []*models.TaskQueryObj{&taskForm}
+		return
+	}
+	// get request
+	var requests []*models.RequestTable
+	x.SQL("select * from request where id=?", taskObj.Request).Find(&requests)
+	if len(requests) == 0 {
+		err = fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
+		return
+	}
+	/*// 当前请求可能是历史请求重新发起生成,则需要展示历史请求ID的请求和任务数据
+	if requests[0].Parent != "" {
+		if parentRequestTaskQueryList, getParentErr := GetRequestTaskListV2(requests[0].Parent); getParentErr != nil {
+			err = getParentErr
+			return
+		} else {
+			if len(parentRequestTaskQueryList) > 0 {
+				for _, taskQuery := range parentRequestTaskQueryList {
+					taskQuery.IsHistory = true
+				}
+				taskQueryList = parentRequestTaskQueryList
+			}
+		}
+	}*/
+	var requestCache models.RequestPreDataDto
+	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
+	if err != nil {
+		return
+	}
+	var requestTemplateTable []*models.RequestTemplateTable
+	x.SQL("select * from request_template where id in (select request_template from request where id=?)", taskObj.Request).Find(&requestTemplateTable)
+	requestQuery := models.TaskQueryObj{RequestId: taskObj.Request, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false, RollbackDesc: requests[0].RollbackDesc}
+	requestQuery.AttachFiles = GetRequestAttachFileList(taskObj.Request)
+	requestQuery.ExpireTime = requests[0].ExpireTime
+	requestQuery.ExpectTime = requests[0].ExpectTime
+	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
+	requestQuery.FormData = requestCache.Data
+	requestQuery.CreatedTime = requests[0].CreatedTime
+	requestQuery.HandleTime = requests[0].ReportTime
+	requestQuery.Handler = requests[0].CreatedBy
+	requestQuery.HandleRoleName = requests[0].Role
+	if len(requestTemplateTable) > 0 {
+		requestQuery.RequestTemplate = requestTemplateTable[0].Name
+	}
+	taskQueryList = append(taskQueryList, []*models.TaskQueryObj{&requestQuery, getPendingRequestData(requests[0])}...)
+	// get task list
+	var taskHandlerRows []*models.TaskHandlerQueryData
+	x.SQL("select t1.id,t2.handler,t4.display_name from task t1 left join task_template t2 on t1.task_template=t2.id left join task_template_role t3 on t1.task_template=t3.task_template left join `role` t4 on t3.`role`=t4.id where t1.request=?", taskObj.Request).Find(&taskHandlerRows)
+	taskHandlerMap := make(map[string]*models.TaskHandlerQueryData)
+	for _, row := range taskHandlerRows {
+		taskHandlerMap[row.Id] = row
+	}
+	var taskList []*models.TaskTable
+	x.SQL("select * from task where request=? and report_time<='"+taskObj.ReportTime+"' order by created_time", taskObj.Request).Find(&taskList)
+	for _, v := range taskList {
+		tmpTaskForm, tmpErr := queryTaskForm(v)
+		if tmpErr != nil {
+			err = tmpErr
+			break
+		}
+		if handlerObj, b := taskHandlerMap[tmpTaskForm.TaskId]; b {
+			tmpTaskForm.Handler = handlerObj.Handler
+			tmpTaskForm.HandleRoleName = handlerObj.DisplayName
+		}
+		if v.Status == "done" {
+			tmpTaskForm.Handler = v.UpdatedBy
+			tmpTaskForm.HandleTime = v.UpdatedTime
+		}
+		if len(strings.TrimSpace(v.NodeName)) > 0 {
+			tmpTaskForm.TaskName = v.NodeName
+		}
+		tmpTaskForm.CreatedTime = v.CreatedTime
+		taskQueryList = append(taskQueryList, &tmpTaskForm)
 	}
 	return
 }
@@ -449,6 +572,23 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 	return
 }
 
+func getTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTable, err error) {
+	taskMap = make(map[string]*models.TaskTable)
+	var taskTable []*models.TaskTable
+	err = x.SQL("select * from task where request = ?", requestId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) == 0 {
+		err = fmt.Errorf("Can not find any task with request:%s ", requestId)
+		return
+	}
+	for _, task := range taskTable {
+		taskMap[task.NodeDefId] = task
+	}
+	return
+}
+
 func ApproveTask(taskId, operator, userToken string, param models.TaskApproveParam) error {
 	err := SaveTaskForm(taskId, operator, param)
 	if err != nil {
@@ -545,6 +685,7 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 	var existFormItemTable []*models.FormItemTable
 	x.SQL("select * from form_item where form in (select form from task where id=?)", taskId).Find(&existFormItemTable)
 	existFormItemMap := make(map[string]int)
+	inputItemMap := make(map[string]int)
 	for _, v := range existFormItemTable {
 		existFormItemMap[fmt.Sprintf("%s^%s^%s", v.ItemGroup, v.Name, v.RowDataId)] = 1
 	}
@@ -561,9 +702,13 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 				}
 			}
 			for _, valueObj := range tableForm.Value {
+				if valueObj.Id == "" {
+					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
+				}
 				for k, v := range valueObj.EntityData {
 					if titleId, b := tmpColumnMap[k]; b {
 						tmpExistKey := fmt.Sprintf("%s^%s^%s", tableForm.ItemGroup, k, valueObj.Id)
+						inputItemMap[tmpExistKey] = 1
 						if _, bb := tmpMultiMap[k]; bb {
 							tmpV := []string{}
 							for _, interfaceV := range v.([]interface{}) {
@@ -585,13 +730,22 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 				}
 			}
 		}
+		for _, row := range existFormItemTable {
+			if _, ok := inputItemMap[fmt.Sprintf("%s^%s^%s", row.ItemGroup, row.Name, row.RowDataId)]; !ok {
+				actions = append(actions, &execAction{Sql: "delete from form_item where id=?", Param: []interface{}{row.Id}})
+			}
+		}
 	}
 	return transaction(actions)
 }
 
-func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTable, err error) {
+func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (taskObj models.TaskTable, err error) {
 	taskObj, err = getSimpleTask(taskId)
 	if err != nil {
+		return
+	}
+	if common.GetLowVersionUnixMillis(taskObj.UpdatedTime) != lastedUpdateTime {
+		err = exterror.New().DealWithAtTheSameTimeError
 		return
 	}
 	if taskObj.Status == "done" {
@@ -600,9 +754,6 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 	var actions []*execAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if operation == "mark" {
-		//if taskObj.Status == "doing" {
-		//	return taskObj, fmt.Errorf("Task doing with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
-		//}
 		actions = append(actions, &execAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
 		if operator != taskObj.Handler {
@@ -614,8 +765,13 @@ func ChangeTaskStatus(taskId, operator, operation string) (taskObj models.TaskTa
 			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &execAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
+	} else if operation == "give" {
+		// 转给我
+		if taskObj.Status == "done" {
+			return taskObj, fmt.Errorf("Task status:%s is not marked ", taskObj.Status)
+		}
+		actions = append(actions, &execAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	}
-	actions = append(actions, &execAction{Sql: "insert into operation_log(id,task,operation,operator,op_time) value (?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskId, operation, operator, nowTime}})
 	err = transaction(actions)
 	if err != nil {
 		return taskObj, err
@@ -686,4 +842,17 @@ func NotifyTaskMail(taskId string) error {
 		return fmt.Errorf("send notify email fail:%s ", err.Error())
 	}
 	return nil
+}
+
+func GetSimpleTask(taskId string) (task models.TaskTable, err error) {
+	var taskTable []*models.TaskTable
+	err = x.SQL("select * from task where id=?", taskId).Find(&taskTable)
+	if err != nil {
+		return
+	}
+	if len(taskTable) == 0 {
+		return task, fmt.Errorf("Can not find any task with id:%s ", taskId)
+	}
+	task = *taskTable[0]
+	return
 }

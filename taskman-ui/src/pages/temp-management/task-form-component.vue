@@ -4,16 +4,16 @@
       <Form :label-width="100">
         <Col :span="4">
           <FormItem :label="$t('name')">
-            <Input v-model="formData.name" :disabled="isCheck === 'Y'" style="width:85%" type="text"> </Input>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+            <Input v-model="formData.name" :disabled="isCheck === 'Y'" style="width: 85%" type="text"> </Input>
+            <Icon size="10" style="color: #ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="4">
           <FormItem :label="$t('processing_role')">
-            <Select v-model="formData.useRoles" :disabled="isCheck === 'Y'" style="width:85%" filterable>
+            <Select v-model="formData.useRoles" :disabled="isCheck === 'Y'" style="width: 85%" filterable>
               <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
             </Select>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+            <Icon size="10" style="color: #ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="4">
@@ -22,8 +22,9 @@
               v-model="formData.handler"
               @on-open-change="getHandlerRoles"
               :disabled="isCheck === 'Y'"
-              style="width:85%"
+              style="width: 85%"
               filterable
+              clearable
             >
               <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                 item.displayName
@@ -33,10 +34,10 @@
         </Col>
         <Col :span="3">
           <FormItem :label="$t('task_time_limit')">
-            <Select v-model="formData.expireDay" :disabled="isCheck === 'Y'" style="width:80%" filterable>
+            <Select v-model="formData.expireDay" :disabled="isCheck === 'Y'" style="width: 80%" filterable>
               <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
             </Select>
-            <Icon size="10" style="color:#ed4014" type="ios-medical" />
+            <Icon size="10" style="color: #ed4014" type="ios-medical" />
           </FormItem>
         </Col>
         <Col :span="5">
@@ -48,14 +49,14 @@
         </Col>
         <Col :span="4">
           <FormItem :label="$t('description')">
-            <Input v-model="formData.description" :disabled="isCheck === 'Y'" style="width:90%" type="text"> </Input>
+            <Input v-model="formData.description" :disabled="isCheck === 'Y'" style="width: 90%" type="text"> </Input>
           </FormItem>
         </Col>
       </Form>
     </Row>
     <Divider plain>{{ $t('form_settings') }}</Divider>
     <Row>
-      <Col span="6" style="border: 1px solid #dcdee2;padding: 0 16px;">
+      <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Divider plain>{{ $t('preset') }}{{ $t('input_items') }}</Divider>
           <Select
@@ -103,23 +104,22 @@
             :group="{ name: 'people', pull: 'clone', put: false }"
             :clone="cloneDog"
           >
-            <div class="list-group-item-" style="width:100%" v-for="element in customElement" :key="element.id">
+            <div class="list-group-item-" style="width: 100%" v-for="element in customElement" :key="element.id">
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <div v-if="element.elementType === 'group'" style="width:100%;height: 80px;border:1px solid #5ea7f4">
-                <span style="margin: 8px;color:#bbbbbb">
-                  Item Group
-                </span>
+              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
+                <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
             </div>
           </draggable>
         </div>
       </Col>
-      <Col span="12" style="border: 1px solid #dcdee2;padding: 16px;width:48%; margin: 0 4px">
+      <Col span="12" style="border: 1px solid #dcdee2; padding: 16px; width: 48%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto', border: '1px solid #dcdee2;' }">
           <template v-for="(item, itemIndex) in finalElement">
-            <div :key="itemIndex" style="border: 1px solid #dcdee2;margin-bottom: 8px;padding: 8px;">
+            <div :key="itemIndex" style="border: 1px solid #dcdee2; margin-bottom: 8px; padding: 8px">
               <span v-if="itemIndex !== editItemGroupNameIndex">
                 {{ item.itemGroupName }}
                 <Button
@@ -132,13 +132,13 @@
                 ></Button>
               </span>
               <span v-else>
-                <p>GroupName &nbsp;<Input v-model="item.itemGroupName" style="width: 300px;"></Input></p>
-                <p style="display:inline-block">
+                <p>GroupName &nbsp;<Input v-model="item.itemGroupName" style="width: 300px"></Input></p>
+                <p style="display: inline-block">
                   GroupId &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                   <Input
                     :disabled="!(item.attrs.length === 0 || item.attrs[0].entity === '')"
                     v-model="item.itemGroup"
-                    style="width: 300px;"
+                    style="width: 300px"
                   ></Input>
                 </p>
                 <Button
@@ -159,7 +159,7 @@
                   :key="element.id"
                 >
                   <div>
-                    <Icon v-if="element.required === 'yes'" size="8" style="color:#ed4014" type="ios-medical" />
+                    <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
                     {{ element.title }}:
                   </div>
                   <Input
@@ -167,20 +167,26 @@
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width: calc(100% - 30px);"
+                    style="width: calc(100% - 30px)"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width: calc(100% - 30px);"
+                    style="width: calc(100% - 30px)"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
-                    style="width: calc(100% - 30px);"
+                    style="width: calc(100% - 30px)"
+                  ></Select>
+                  <Select
+                    v-if="element.elementType === 'wecmdbEntity'"
+                    :disabled="element.isEdit === 'no'"
+                    v-model="element.defaultValue"
+                    style="width: calc(100% - 30px)"
                   ></Select>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
@@ -196,7 +202,7 @@
           </template>
         </div>
       </Col>
-      <Col span="6" style="border: 1px solid #dcdee2;">
+      <Col span="6" style="border: 1px solid #dcdee2">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Collapse v-model="openPanel">
             <Panel name="1">
@@ -212,12 +218,13 @@
                   <FormItem :label="$t('data_type')">
                     <Select
                       v-model="editElement.elementType"
-                      :disabled="isCheck === 'Y'"
+                      :disabled="true"
                       @on-change="editElement.defaultValue = ''"
                     >
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
+                      <Option value="wecmdbEntity">模型数据项</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -226,29 +233,45 @@
                   >
                     <Input v-model="editElement.dataOptions" :disabled="isCheck === 'Y'" placeholder="eg:a,b"></Input>
                   </FormItem>
-                  <FormItem :label="$t('defaults')">
-                    <Input v-model="editElement.defaultValue" :disabled="isCheck === 'Y'" placeholder=""></Input>
+                  <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
+                  <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
+                    <Select v-model="editElement.dataOptions" filterable :disabled="isCheck === 'Y'">
+                      <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
+                    </Select>
                   </FormItem>
                   <!-- <FormItem label="标签">
                     <Input v-model="editElement.tag" placeholder=""></Input>
                   </FormItem> -->
                   <FormItem :label="$t('display')">
-                    <Select v-model="editElement.inDisplayName" :disabled="isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.inDisplayName">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('editable')">
-                    <Select v-model="editElement.isEdit" :disabled="isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.isEdit">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('required')">
-                    <Select v-model="editElement.required" :disabled="isCheck === 'Y'">
-                      <Option value="yes">yes</Option>
-                      <Option value="no">no</Option>
-                    </Select>
+                    <RadioGroup v-model="editElement.required">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                  <FormItem :label="$t('tw_default_empty')">
+                    <RadioGroup v-model="editElement.defaultClear">
+                      <Radio label="yes" :disabled="isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
+                  <FormItem :label="$t('defaults')">
+                    <Input
+                      v-model="editElement.defaultValue"
+                      :disabled="isCheck === 'Y' || editElement.defaultClear === 'yes'"
+                      placeholder=""
+                    ></Input>
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" :disabled="isCheck === 'Y'">
@@ -292,16 +315,23 @@
         </div>
       </Col>
     </Row>
-    <div style="text-align:center; margin-top: 8px">
+    <div style="text-align: center; margin-top: 8px">
       <Button type="primary" @click="saveForm" :disabled="isCheck === 'Y'">{{ $t('save') }}</Button>
     </div>
   </div>
 </template>
 
 <script>
-import { getSelectedForm, getUserRoles, saveTaskForm, getTaskFormDataByNodeId, getHandlerRoles } from '@/api/server.js'
+import {
+  getSelectedForm,
+  getUserRoles,
+  saveTaskForm,
+  getTaskFormDataByNodeId,
+  getHandlerRoles,
+  getAllDataModels
+} from '@/api/server.js'
 import draggable from 'vuedraggable'
-let idGlobal = 8
+let idGlobal = 80
 export default {
   name: '',
   data () {
@@ -348,6 +378,7 @@ export default {
           title: 'Input',
           elementType: 'input',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -356,7 +387,7 @@ export default {
           width: 24,
           dataOptions: '',
           regular: '',
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -377,6 +408,7 @@ export default {
           title: 'Select',
           elementType: 'select',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -385,7 +417,7 @@ export default {
           width: 24,
           dataOptions: '',
           regular: '',
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -406,6 +438,7 @@ export default {
           title: 'Textarea',
           elementType: 'textarea',
           defaultValue: '',
+          defaultClear: 'no',
           // tag: '',
           itemGroup: '',
           itemGroupName: '',
@@ -414,7 +447,37 @@ export default {
           width: 24,
           dataOptions: '',
           regular: '',
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
+          isEdit: 'yes',
+          multiple: 'N',
+          selectList: [],
+          isRefInside: 'no',
+          required: 'no',
+          isView: 'yes',
+          isOutput: 'no',
+          sort: 0,
+          attrDefId: '',
+          attrDefName: '',
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
+        },
+        {
+          id: 5,
+          name: 'wecmdbEntity',
+          title: 'WecmdbEntity',
+          elementType: 'wecmdbEntity',
+          defaultValue: '',
+          defaultClear: 'no',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
+          width: 24,
+          dataOptions: '',
+          regular: '',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -437,6 +500,7 @@ export default {
         attrDefId: '',
         attrDefName: '',
         defaultValue: '',
+        defaultClear: 'no',
         // tag: '',
         itemGroup: '',
         itemGroupName: '',
@@ -444,7 +508,7 @@ export default {
         entity: '',
         elementType: 'input',
         id: 0,
-        inDisplayName: 'no',
+        inDisplayName: 'yes',
         isEdit: 'yes',
         multiple: 'N',
         selectList: [],
@@ -464,7 +528,9 @@ export default {
       activeTag: {
         itemGroupIndex: -1,
         attrIndex: -1
-      }
+      },
+      specialId: '',
+      allEntityList: []
     }
   },
   props: ['currentNode', 'node', 'requestTemplateId'],
@@ -473,6 +539,7 @@ export default {
     this.nodeId = this.currentNode
     this.nodeData = this.node
     this.initPage()
+    this.getAllDataModels()
   },
   watch: {
     selectedEntities: function (val) {
@@ -486,6 +553,29 @@ export default {
     }
   },
   methods: {
+    // 获取wecmdb下拉类型entity值
+    async getAllDataModels () {
+      const { data, status } = await getAllDataModels()
+      if (status === 'OK') {
+        this.allEntityList = []
+        const sortData = data.map(_ => {
+          return {
+            ..._,
+            entities: _.entities.sort(function (a, b) {
+              var s = a.name.toLowerCase()
+              var t = b.name.toLowerCase()
+              if (s < t) return -1
+              if (s > t) return 1
+            })
+          }
+        })
+        sortData.forEach(i => {
+          i.entities.forEach(j => {
+            this.allEntityList.push(`${j.packageName}:${j.name}`)
+          })
+        })
+      }
+    },
     selectAll (type) {
       if (type === 'input') {
         this.formItemOptions.forEach(itemOptions => {
@@ -523,6 +613,10 @@ export default {
         l.attrs.forEach(attr => {
           attr.itemGroup = l.itemGroup
           attr.itemGroupName = l.itemGroupName
+          if (attr.id === this.specialId) {
+            this.editElement = attr
+            this.openPanel = '1'
+          }
         })
       })
     },
@@ -539,8 +633,8 @@ export default {
         this.formData.nodeDefName = this.nodeData.nodeName
         this.getUserRoles()
         this.getHandlerRoles()
-        await this.getTaskFormDataByNodeId()
-        this.getSelectedForm()
+        await this.getSelectedForm()
+        this.getTaskFormDataByNodeId()
       }
     },
     async getHandlerRoles () {
@@ -694,6 +788,7 @@ export default {
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
+          defaultClear: 'no',
           // tag: tag,
           itemGroup: itemGroup,
           itemGroupName: itemGroup,
@@ -701,7 +796,7 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: 'c_' + seleted.id,
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'no',
           multiple: seleted.multiple,
           selectList: [],
@@ -766,6 +861,7 @@ export default {
           attrDefId: seleted.id,
           attrDefName: seleted.name,
           defaultValue: '',
+          defaultClear: 'no',
           // tag: tag,
           itemGroup: itemGroup,
           itemGroupName: itemGroup,
@@ -773,7 +869,7 @@ export default {
           entity: seleted.entityName,
           elementType: elementType[seleted.dataType],
           id: seleted.id,
-          inDisplayName: 'no',
+          inDisplayName: 'yes',
           isEdit: 'yes',
           multiple: 'N',
           selectList: [],
@@ -807,7 +903,7 @@ export default {
       })
     },
     cloneDog (val) {
-      if (this.$parent.isCheck === 'Y') return
+      if (this.isCheck === 'Y') return
       if (val.elementType === 'group') {
         this.finalElement.push({
           itemGroup: 'itemGroup' + idGlobal++,
@@ -819,6 +915,8 @@ export default {
       let newItem = JSON.parse(JSON.stringify(val))
       newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
+      newItem.name = newItem.name + idGlobal
+      this.specialId = newItem.id
       return newItem
     },
     selectElement (itemIndex, eleIndex) {
@@ -830,7 +928,7 @@ export default {
         attrIndex: eleIndex
       }
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
-      this.editElement.inDisplayName = this.editElement.inDisplayName || 'no'
+      this.editElement.inDisplayName = this.editElement.inDisplayName || 'yes'
       this.editElement.isActive = true
       this.openPanel = '1'
     },
@@ -846,6 +944,10 @@ export default {
       if (inputIndex > -1) {
         const index = this.selectedInputFormItem.findIndex(inputItem => inputItem === element.attrDefId)
         this.selectedInputFormItem.splice(index, 1)
+      }
+
+      if (element.id === this.editElement.id) {
+        this.openPanel = ''
       }
     },
     async getSelectedForm () {

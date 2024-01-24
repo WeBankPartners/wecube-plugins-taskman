@@ -85,6 +85,8 @@ func GetTask(c *gin.Context) {
 func SaveTaskForm(c *gin.Context) {
 	taskId := c.Param("taskId")
 	var param models.TaskApproveParam
+	var task models.TaskTable
+	var operator = middleware.GetRequestUser(c)
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -104,10 +106,20 @@ func SaveTaskForm(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err = db.SaveTaskForm(taskId, middleware.GetRequestUser(c), param)
+	task, err = db.GetSimpleTask(taskId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if operator != task.Handler {
+		middleware.ReturnTaskSaveNotPermissionError(c)
+		return
+	}
+	err = db.SaveTaskForm(taskId, operator, param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordTaskLog(taskId, task.Name, operator, "saveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -150,6 +162,7 @@ func ApproveTask(c *gin.Context) {
 		return
 	}
 	var err error
+	var operator = middleware.GetRequestUser(c)
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -164,10 +177,20 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err = db.ApproveTask(taskId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	taskTable, err := db.GetSimpleTask(taskId)
+	if err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if taskTable.Handler != operator {
+		middleware.ReturnTaskApproveNotPermissionError(c)
+		return
+	}
+	err = db.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
+		db.RecordTaskLog(taskId, taskTable.Name, operator, "approveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -175,16 +198,18 @@ func ApproveTask(c *gin.Context) {
 func ChangeTaskStatus(c *gin.Context) {
 	taskId := c.Param("taskId")
 	operation := c.Param("operation")
-	if operation != "mark" && operation != "start" && operation != "quit" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("operation illegal"))
+	lastedUpdateTime := c.Param("latestUpdateTime")
+	if operation != "mark" && operation != "start" && operation != "quit" && operation != "give" {
+		middleware.ReturnChangeTaskStatusError(c)
 		return
 	}
-	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation)
+	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation, lastedUpdateTime)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, taskObj)
+		return
 	}
+	db.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, operation)
+	middleware.ReturnData(c, taskObj)
 }
 
 func UploadTaskAttachFile(c *gin.Context) {
@@ -195,7 +220,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 		return
 	}
 	if file.Size > models.UploadFileMaxSize {
-		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File too large ", Data: nil})
+		middleware.ReturnUploadFileTooLargeError(c)
 		return
 	}
 	f, err := file.Open()
@@ -213,6 +238,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		db.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
+		middleware.ReturnData(c, db.GetTaskAttachFileList(taskId))
 	}
 }

@@ -11,12 +11,12 @@ import (
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
 	proNodeId := c.Param("proNodeId")
-	result, err := db.GetTaskTemplate(requestTemplateId, proNodeId)
+	result, err := db.GetTaskTemplate(requestTemplateId, proNodeId, "")
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func UpdateTaskTemplate(c *gin.Context) {
@@ -40,11 +40,12 @@ func UpdateTaskTemplate(c *gin.Context) {
 	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-		result, _ := db.GetTaskTemplate(id, param.NodeDefId)
-		middleware.ReturnData(c, result)
+		return
 	}
+	db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+	result, _ := db.GetTaskTemplate(id, param.NodeDefId, "")
+	middleware.ReturnData(c, result)
 }
 
 func validateTaskTemplateParam(param models.TaskTemplateDto) error {

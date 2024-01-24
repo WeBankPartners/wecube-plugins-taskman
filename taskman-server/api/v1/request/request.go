@@ -3,6 +3,7 @@ package request
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
 	"github.com/gin-gonic/gin"
@@ -19,9 +20,9 @@ func GetEntityData(c *gin.Context) {
 	result, err := db.GetEntityData(id, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func ProcessDataPreview(c *gin.Context) {
@@ -34,9 +35,9 @@ func ProcessDataPreview(c *gin.Context) {
 	result, err := db.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -45,9 +46,102 @@ func GetRequestPreviewData(c *gin.Context) {
 	result, err := db.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
+		return
 	}
+	middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
+}
+
+// CountRequest 个人工作台统计
+func CountRequest(c *gin.Context) {
+	platformData, err := db.GetRequestCount(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, platformData)
+}
+
+// FilterItem 过滤数据
+func FilterItem(c *gin.Context) {
+	var param models.FilterRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	data, err := db.GetFilterItem(param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, data)
+}
+
+// DataList  工作台数据列表
+func DataList(c *gin.Context) {
+	var param models.PlatformRequestParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.Tab == "" {
+		param.Tab = "pending"
+	}
+	if param.Action == 0 {
+		param.Action = 1
+	}
+	if param.PageSize == 0 {
+		param.PageSize = 10
+	}
+	pageInfo, rowData, err := db.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
+// RevokeRequest 撤回请求
+func RevokeRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	err := db.RevokeRequest(requestId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// HistoryList 发布/请求历史
+func HistoryList(c *gin.Context) {
+	var param models.RequestHistoryParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.PageSize == 0 {
+		param.PageSize = 10
+	}
+	pageInfo, rowData, err := db.HistoryList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnPageData(c, pageInfo, rowData)
+}
+
+// Export 请求导出
+func Export(c *gin.Context) {
+	var param models.RequestHistoryParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := db.Export(c.Writer, &param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
 }
 
 func ListRequest(c *gin.Context) {
@@ -70,9 +164,9 @@ func GetRequest(c *gin.Context) {
 	result, err := db.GetRequestWithRoot(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
+		return
 	}
+	middleware.ReturnData(c, result)
 }
 
 func GetRequestDetail(c *gin.Context) {
@@ -109,10 +203,10 @@ func CreateRequest(c *gin.Context) {
 	err := db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(param.Id, param.CreatedBy, "create")
-		middleware.ReturnData(c, param)
+		return
 	}
+	db.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	middleware.ReturnData(c, param)
 }
 
 func UpdateRequest(c *gin.Context) {
@@ -130,10 +224,10 @@ func UpdateRequest(c *gin.Context) {
 	err := db.UpdateRequest(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(param.Id, param.UpdatedBy, "update")
-		middleware.ReturnData(c, param)
+		return
 	}
+	db.RecordRequestLog(param.Id, param.Name, param.UpdatedBy, "updateRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	middleware.ReturnData(c, param)
 }
 
 func DeleteRequest(c *gin.Context) {
@@ -141,10 +235,10 @@ func DeleteRequest(c *gin.Context) {
 	err := db.DeleteRequest(requestId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "delete")
-		middleware.ReturnSuccess(c)
+		return
 	}
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "deleteRequest", c.Request.RequestURI, "")
+	middleware.ReturnSuccess(c)
 }
 
 func SaveRequestCache(c *gin.Context) {
@@ -198,22 +292,31 @@ func StartRequest(c *gin.Context) {
 	instanceId, err := db.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), "start")
-		middleware.ReturnData(c, instanceId)
+		return
 	}
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	middleware.ReturnData(c, instanceId)
 }
 
 func UpdateRequestStatus(c *gin.Context) {
 	requestId := c.Param("requestId")
 	status := c.Param("status")
-	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	if requestId == "" || status == "" {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("url param can not empty"))
+		return
+	}
+	var description string
+	var param models.UpdateRequestStatusParam
+	if bindErr := c.ShouldBindJSON(&param); bindErr == nil {
+		description = param.Description
+	}
+	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		db.RecordRequestLog(requestId, middleware.GetRequestUser(c), status)
-		middleware.ReturnSuccess(c)
+		return
 	}
+	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "setRequestStatus", c.Request.RequestURI, status)
+	middleware.ReturnSuccess(c)
 }
 
 func TerminateRequest(c *gin.Context) {
@@ -267,7 +370,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 		return
 	}
 	if file.Size > models.UploadFileMaxSize {
-		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File too large ", Data: nil})
+		middleware.ReturnUploadFileTooLargeError(c)
 		return
 	}
 	f, err := file.Open()
@@ -285,7 +388,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		middleware.ReturnData(c, db.GetRequestAttachFileList(requestId))
 	}
 }
 
@@ -304,17 +407,47 @@ func DownloadAttachFile(c *gin.Context) {
 	}
 }
 
+// UpdateRequestHandler 更新请求处理人,包括认领&转给我逻辑
+func UpdateRequestHandler(c *gin.Context) {
+	requestId := c.Param("requestId")
+	lastedUpdateTime := c.Param("latestUpdateTime")
+	request, err := db.GetSimpleRequest(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if common.GetLowVersionUnixMillis(request.UpdatedTime) != lastedUpdateTime {
+		middleware.ReturnDealWithAtTheSameTimeError(c)
+		return
+	}
+	// 请求在Pending状态才有转给我
+	if request.Status != "Pending" {
+		middleware.ReturnUpdateRequestHandlerStatusError(c)
+		return
+	}
+	err = db.UpdateRequestHandler(requestId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func RemoveAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
 	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
-	err := db.RemoveAttachFile(fileId)
+	fileObj, err := db.RemoveAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnSuccess(c)
+		if fileObj.Request != "" {
+			middleware.ReturnData(c, db.GetRequestAttachFileList(fileObj.Request))
+		} else {
+			middleware.ReturnData(c, db.GetTaskAttachFileList(fileObj.Task))
+		}
 	}
 }
 
@@ -322,4 +455,89 @@ func QueryWorkflowEntity(c *gin.Context) {
 	result := models.WorkflowEntityQuery{Status: "OK", Message: "Success", Data: []*models.WorkflowEntityDataObj{}}
 	result.Data = append(result.Data, &models.WorkflowEntityDataObj{Id: "taskman_request_id", DisplayName: "request"})
 	c.JSON(http.StatusOK, result)
+}
+
+func CopyRequest(c *gin.Context) {
+	requestId := c.Param("requestId")
+	createdBy := middleware.GetRequestUser(c)
+	result, err := db.CopyRequest(requestId, createdBy)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "copyRequest", c.Request.RequestURI, "")
+		middleware.ReturnData(c, result)
+	}
+}
+
+func GetRequestParent(c *gin.Context) {
+	requestId := c.Query("requestId")
+	result, err := db.GetRequestParent(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, result)
+	}
+}
+
+// GetRequestProgress  获取请求进度
+func GetRequestProgress(c *gin.Context) {
+	var param models.RequestQueryParam
+	var rowsData []*models.RequestProgressObj
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	rowsData, err = db.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowsData)
+}
+
+// GetProcessInstance 获取请求工作流
+func GetProcessInstance(c *gin.Context) {
+	var rowData *models.ProcessInstance
+	var err error
+	instanceId := c.Param("instanceId")
+	if instanceId == "" {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	rowData, err = db.GetProcessInstance(instanceId, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowData)
+}
+
+// ProcessDefinitions 流程定义
+func GetProcessDefinitions(c *gin.Context) {
+	var rowData *models.DefinitionsData
+	var err error
+	templateId := c.Param("templateId")
+	if templateId == "" {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	rowData, err = db.GetProcessDefinitions(templateId, c.GetHeader("Authorization"))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowData)
+}
+
+// GetWorkFlowNodes 获取工作流执行节点
+func GetExecutionNodes(c *gin.Context) {
+	procInstanceId := c.Param("procInstanceId")
+	nodeInstanceId := c.Param("nodeInstanceId")
+	rowData, err := db.GetExecutionNodes(c.GetHeader("Authorization"), procInstanceId, nodeInstanceId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, rowData)
 }

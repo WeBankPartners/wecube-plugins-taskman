@@ -1,4 +1,4 @@
-package db
+package dao
 
 import (
 	"fmt"
@@ -16,20 +16,18 @@ import (
 	xorm_log "xorm.io/xorm/log"
 )
 
-const HistoryTablePrefix = "history_"
-
 var (
-	x *xorm.Engine
 	_ xorm_log.Logger = &dbLogger{}
+	X *xorm.Engine
 )
 
-func InitDatabase() error {
+func InitDatabase() (engine *xorm.Engine, err error) {
 	connStr := fmt.Sprintf("%s:%s@%s(%s)/%s?collation=utf8mb4_unicode_ci&allowNativePasswords=true",
 		models.Config.Database.User, models.Config.Database.Password, "tcp", fmt.Sprintf("%s:%s", models.Config.Database.Server, models.Config.Database.Port), models.Config.Database.DataBase)
-	engine, err := xorm.NewEngine("mysql", connStr)
+	engine, err = xorm.NewEngine("mysql", connStr)
 	if err != nil {
 		log.Logger.Error("Init database connect fail", log.Error(err))
-		return err
+		return nil, err
 	}
 	engine.SetMaxIdleConns(models.Config.Database.MaxIdle)
 	engine.SetMaxOpenConns(models.Config.Database.MaxOpen)
@@ -39,9 +37,9 @@ func InitDatabase() error {
 	}
 	// 使用驼峰式映射
 	engine.SetMapper(core.SnakeMapper{})
-	x = engine
 	log.Logger.Info("Success init database connect !!")
-	return nil
+	X = engine
+	return
 }
 
 type dbLogger struct {
@@ -119,10 +117,10 @@ func (d *dbLogger) IsShowSQL() bool {
 	return d.ShowSql
 }
 
-func queryCount(sql string, params ...interface{}) int {
+func QueryCount(sql string, params ...interface{}) int {
 	sql = "SELECT COUNT(1) FROM ( " + sql + " ) sub_query"
 	params = append([]interface{}{sql}, params...)
-	queryRows, err := x.QueryString(params...)
+	queryRows, err := X.QueryString(params...)
 	if err != nil || len(queryRows) == 0 {
 		log.Logger.Error("Query sql count message fail", log.Error(err))
 		return 0
@@ -134,7 +132,7 @@ func queryCount(sql string, params ...interface{}) int {
 	return 0
 }
 
-func getJsonToXormMap(input interface{}) (resultMap map[string]string, idKeyName string) {
+func GetJsonToXormMap(input interface{}) (resultMap map[string]string, idKeyName string) {
 	resultMap = make(map[string]string)
 	t := reflect.TypeOf(input)
 	for i := 0; i < t.NumField(); i++ {
@@ -146,12 +144,12 @@ func getJsonToXormMap(input interface{}) (resultMap map[string]string, idKeyName
 	return resultMap, idKeyName
 }
 
-func transFiltersToSQL(queryParam *models.QueryRequestParam, transParam *models.TransFiltersParam) (filterSql, queryColumn string, param []interface{}) {
+func TransFiltersToSQL(queryParam *models.QueryRequestParam, transParam *models.TransFiltersParam) (filterSql, queryColumn string, param []interface{}) {
 	if transParam.Prefix != "" && !strings.HasSuffix(transParam.Prefix, ".") {
 		transParam.Prefix = transParam.Prefix + "."
 	}
 	if transParam.IsStruct {
-		transParam.KeyMap, transParam.PrimaryKey = getJsonToXormMap(transParam.StructObj)
+		transParam.KeyMap, transParam.PrimaryKey = GetJsonToXormMap(transParam.StructObj)
 	}
 	for _, filter := range queryParam.Filters {
 		if transParam.KeyMap[filter.Name] == "" || transParam.KeyMap[filter.Name] == "-" {
@@ -173,7 +171,7 @@ func transFiltersToSQL(queryParam *models.QueryRequestParam, transParam *models.
 					inValueStringList = append(inValueStringList, inValueInterfaceObj.(string))
 				}
 			}
-			tmpSpecSql, tmpListParams := createListParams(inValueStringList, "")
+			tmpSpecSql, tmpListParams := CreateListParams(inValueStringList, "")
 			filterSql += fmt.Sprintf(" AND %s%s in (%s) ", transParam.Prefix, transParam.KeyMap[filter.Name], tmpSpecSql)
 			param = append(param, tmpListParams...)
 		} else if filter.Operator == "lt" {
@@ -219,19 +217,19 @@ func transFiltersToSQL(queryParam *models.QueryRequestParam, transParam *models.
 	return
 }
 
-func transPageInfoToSQL(pageInfo models.PageInfo) (pageSql string, param []interface{}) {
+func TransPageInfoToSQL(pageInfo models.PageInfo) (pageSql string, param []interface{}) {
 	pageSql = " LIMIT ?,? "
 	param = append(param, pageInfo.StartIndex)
 	param = append(param, pageInfo.PageSize)
 	return
 }
 
-type execAction struct {
+type ExecAction struct {
 	Sql   string
 	Param []interface{}
 }
 
-func transaction(actions []*execAction) error {
+func Transaction(actions []*ExecAction) error {
 	if len(actions) == 0 {
 		log.Logger.Warn("Transaction is empty,nothing to do")
 		return fmt.Errorf("SQL exec transaction is empty,nothing to do,please check server log ")
@@ -241,7 +239,7 @@ func transaction(actions []*execAction) error {
 			return fmt.Errorf("SQL exec transaction index%d is nill error,please check server log", i)
 		}
 	}
-	session := x.NewSession()
+	session := X.NewSession()
 	err := session.Begin()
 	for _, action := range actions {
 		params := make([]interface{}, 0)
@@ -286,7 +284,7 @@ func getDefaultInsertSqlByStruct(obj interface{}, tableName string, ignoreColumn
 	return fmt.Sprintf("INSERT INTO %s(%s) VALUE (%s)", tableName, strings.Join(columnList, ","), strings.Join(valueList, ","))
 }
 
-func transactionWithoutForeignCheck(actions []*execAction) error {
+func TransactionWithoutForeignCheck(actions []*ExecAction) error {
 	if len(actions) == 0 {
 		log.Logger.Warn("Transaction is empty,nothing to do")
 		return fmt.Errorf("SQL exec transaction is empty,nothing to do,please check server log ")
@@ -296,7 +294,7 @@ func transactionWithoutForeignCheck(actions []*execAction) error {
 			return fmt.Errorf("SQL exec transaction index%d is nill error,please check server log", i)
 		}
 	}
-	session := x.NewSession()
+	session := X.NewSession()
 	err := session.Begin()
 	if err != nil {
 		return err
@@ -322,7 +320,7 @@ func transactionWithoutForeignCheck(actions []*execAction) error {
 	return err
 }
 
-func createListParams(inputList []string, prefix string) (specSql string, paramList []interface{}) {
+func CreateListParams(inputList []string, prefix string) (specSql string, paramList []interface{}) {
 	if len(inputList) > 0 {
 		var specList []string
 		for _, v := range inputList {

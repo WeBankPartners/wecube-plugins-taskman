@@ -1,13 +1,18 @@
-package db
+package service
 
 import (
 	"context"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/file_server"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"time"
 )
+
+type AttachFileService struct {
+	attachFileDao dao.AttachFileDao
+}
 
 func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent []byte) error {
 	if requestId == "" && taskId == "" {
@@ -34,13 +39,47 @@ func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent 
 		return err
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	var actions []*execAction
+	var actions []*dao.ExecAction
 	if requestId != "" {
-		actions = append(actions, &execAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, requestId, operator, nowTime, operator, nowTime}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, requestId, operator, nowTime, operator, nowTime}})
 	} else if taskId != "" {
-		actions = append(actions, &execAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,task,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, taskId, operator, nowTime, operator, nowTime}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,task,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, taskId, operator, nowTime, operator, nowTime}})
 	}
-	return transaction(actions)
+	return dao.Transaction(actions)
+}
+
+func (s AttachFileService) UploadAttachFile(requestId, taskId, fileName, operator string, fileContent []byte) error {
+	if requestId == "" && taskId == "" {
+		return fmt.Errorf("requestId or taskId can not empty ")
+	}
+	ms, err := getMinioServerObj()
+	if err != nil {
+		return err
+	}
+	fileGuid := guid.CreateGuid()
+	uploadParam := file_server.MinioParam{Ctx: context.Background(), Bucket: models.Config.AttachFile.Bucket}
+	uploadParam.FileContent = fileContent
+	requestTemplateId := getAttachFileRequestTemplate(requestId, taskId)
+	if requestTemplateId != "" {
+		requestTemplateId = requestTemplateId + "/"
+	}
+	if requestId != "" {
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, requestId)
+	} else {
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, taskId)
+	}
+	err = ms.Upload(uploadParam)
+	if err != nil {
+		return err
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	var actions []*dao.ExecAction
+	if requestId != "" {
+		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, requestId, operator, nowTime, operator, nowTime}})
+	} else if taskId != "" {
+		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,task,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, taskId, operator, nowTime, operator, nowTime}})
+	}
+	return dao.Transaction(actions)
 }
 
 func DownloadAttachFile(fileId string) (fileContent []byte, fileName string, err error) {
@@ -77,13 +116,13 @@ func RemoveAttachFile(fileId string) (fileObj models.AttachFileTable, err error)
 	if err != nil {
 		return
 	}
-	_, err = x.Exec("delete from attach_file where id=?", fileId)
+	_, err = dao.X.Exec("delete from attach_file where id=?", fileId)
 	return
 }
 
 func getAttachFileInfo(fileId string) (fileObj models.AttachFileTable, err error) {
 	var attachFileTable []*models.AttachFileTable
-	err = x.SQL("select * from attach_file where id=?", fileId).Find(&attachFileTable)
+	err = dao.X.SQL("select * from attach_file where id=?", fileId).Find(&attachFileTable)
 	if err != nil {
 		return fileObj, err
 	}
@@ -96,13 +135,13 @@ func getAttachFileInfo(fileId string) (fileObj models.AttachFileTable, err error
 
 func GetRequestAttachFileList(requestId string) []*models.AttachFileTable {
 	attachFileTable := []*models.AttachFileTable{}
-	x.SQL("select id,name from attach_file where request=?", requestId).Find(&attachFileTable)
+	dao.X.SQL("select id,name from attach_file where request=?", requestId).Find(&attachFileTable)
 	return attachFileTable
 }
 
 func GetTaskAttachFileList(taskId string) []*models.AttachFileTable {
 	attachFileTable := []*models.AttachFileTable{}
-	x.SQL("select id,name from attach_file where task=?", taskId).Find(&attachFileTable)
+	dao.X.SQL("select id,name from attach_file where task=?", taskId).Find(&attachFileTable)
 	return attachFileTable
 }
 
@@ -121,19 +160,19 @@ func CheckAttachFilePermission(fileId, operator, operation string, roles []strin
 	if fileObj.Request != "" {
 		var requestTemplateRoles []*models.RequestTemplateRoleTable
 		if operation == "download" {
-			x.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id=?)) union select `role` from request_template_role where request_template in (select request_template from request where id=?)) t1", fileObj.Request, fileObj.Request).Find(&requestTemplateRoles)
+			dao.X.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id=?)) union select `role` from request_template_role where request_template in (select request_template from request where id=?)) t1", fileObj.Request, fileObj.Request).Find(&requestTemplateRoles)
 			for _, v := range requestTemplateRoles {
 				legalRoles = append(legalRoles, v.Role)
 			}
 		} else {
 			var requestTable []*models.RequestTable
-			x.SQL("select id,created_by from request where id=?", fileObj.Request).Find(&requestTable)
+			dao.X.SQL("select id,created_by from request where id=?", fileObj.Request).Find(&requestTable)
 			if len(requestTable) > 0 {
 				if requestTable[0].CreatedBy == operator {
 					return nil
 				}
 			}
-			x.SQL("select * from request_template_role where request_template in (select request_template from request where id=?)", fileObj.Request).Find(&requestTemplateRoles)
+			dao.X.SQL("select * from request_template_role where request_template in (select request_template from request where id=?)", fileObj.Request).Find(&requestTemplateRoles)
 			for _, v := range requestTemplateRoles {
 				if v.RoleType == "USE" {
 					legalRoles = append(legalRoles, v.Role)
@@ -144,12 +183,12 @@ func CheckAttachFilePermission(fileId, operator, operation string, roles []strin
 	if fileObj.Task != "" {
 		var taskTemplateRoles []*models.TaskTemplateRoleTable
 		if operation == "download" {
-			x.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id in (select request from task where id=?))) union select `role` from request_template_role where request_template in (select request_template from request where id in (select request from task where id=?))) t1", fileObj.Task, fileObj.Task).Find(&taskTemplateRoles)
+			dao.X.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id in (select request from task where id=?))) union select `role` from request_template_role where request_template in (select request_template from request where id in (select request from task where id=?))) t1", fileObj.Task, fileObj.Task).Find(&taskTemplateRoles)
 			for _, v := range taskTemplateRoles {
 				legalRoles = append(legalRoles, v.Role)
 			}
 		} else {
-			x.SQL("select * from task_template_role where task_template in (select task_template from task where id=?)", fileObj.Task).Find(&taskTemplateRoles)
+			dao.X.SQL("select * from task_template_role where task_template in (select task_template from task where id=?)", fileObj.Task).Find(&taskTemplateRoles)
 			for _, v := range taskTemplateRoles {
 				legalRoles = append(legalRoles, v.Role)
 			}
@@ -176,9 +215,9 @@ func CheckAttachFilePermission(fileId, operator, operation string, roles []strin
 func getAttachFileRequestTemplate(requestId, taskId string) string {
 	var requestTable []*models.RequestTable
 	if requestId != "" {
-		x.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
+		dao.X.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
 	} else {
-		x.SQL("select request_template from request where id in (select request from task where id=?)", taskId).Find(&requestTable)
+		dao.X.SQL("select request_template from request where id in (select request from task where id=?)", taskId).Find(&requestTable)
 	}
 	if len(requestTable) > 0 {
 		return requestTable[0].RequestTemplate

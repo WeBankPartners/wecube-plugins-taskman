@@ -1,12 +1,17 @@
-package db
+package service
 
 import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"time"
 )
+
+type TaskTemplateService struct {
+	taskTemplateDao dao.TaskTemplateRoleDao
+}
 
 func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models.TaskTemplateDto, err error) {
 	result = models.TaskTemplateDto{}
@@ -26,7 +31,7 @@ func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models
 	result.USERoles = []string{}
 	result.RequestTemplateId = requestTemplateId
 	var formTemplateTable []*models.FormTemplateTable
-	err = x.SQL("select * from form_template where id=?", taskTemplate.FormTemplate).Find(&formTemplateTable)
+	err = dao.X.SQL("select * from form_template where id=?", taskTemplate.FormTemplate).Find(&formTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
 		return
@@ -40,11 +45,11 @@ func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models
 	result.UpdatedTime = formTemplateTable[0].UpdatedTime
 	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where form_template=?", taskTemplate.FormTemplate).Find(&formItemTemplate)
+	dao.X.SQL("select * from form_item_template where form_template=?", taskTemplate.FormTemplate).Find(&formItemTemplate)
 	result.Items = formItemTemplate
 	roleMap, _ := getRoleMap()
 	var taskRoleTable []*models.TaskTemplateRoleTable
-	x.SQL("select `role`,role_type from task_template_role where task_template=?", taskTemplate.Id).Find(&taskRoleTable)
+	dao.X.SQL("select `role`,role_type from task_template_role where task_template=?", taskTemplate.Id).Find(&taskRoleTable)
 	for _, role := range taskRoleTable {
 		if role.RoleType == "MGMT" {
 			result.MGMTRoleObjs = append(result.MGMTRoleObjs, roleMap[role.Role])
@@ -66,14 +71,14 @@ func CreateTaskTemplate(param models.TaskTemplateDto, requestTemplateId string) 
 	formCreateParam := models.FormTemplateDto{Name: param.Name, Description: param.Description, UpdatedBy: param.UpdatedBy, Items: param.Items, NowTime: nowTime}
 	actions, formId := getFormTemplateCreateActions(formCreateParam)
 	taskTemplateId := guid.CreateGuid()
-	actions = append(actions, &execAction{Sql: "insert into task_template(id,name,description,form_template,request_template,node_id,node_def_id,node_name,expire_day,handler) value (?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{taskTemplateId, param.Name, param.Description, formId, requestTemplateId, param.NodeId, param.NodeDefId, param.NodeDefName, param.ExpireDay, param.Handler}})
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,description,form_template,request_template,node_id,node_def_id,node_name,expire_day,handler) value (?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{taskTemplateId, param.Name, param.Description, formId, requestTemplateId, param.NodeId, param.NodeDefId, param.NodeDefName, param.ExpireDay, param.Handler}})
 	for _, v := range param.MGMTRoles {
-		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{taskTemplateId + models.SysTableIdConnector + v + models.SysTableIdConnector + "MGMT", taskTemplateId, v, "MGMT"}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{taskTemplateId + models.SysTableIdConnector + v + models.SysTableIdConnector + "MGMT", taskTemplateId, v, "MGMT"}})
 	}
 	for _, v := range param.USERoles {
-		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{taskTemplateId + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", taskTemplateId, v, "USE"}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{taskTemplateId + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", taskTemplateId, v, "USE"}})
 	}
-	return transactionWithoutForeignCheck(actions)
+	return dao.TransactionWithoutForeignCheck(actions)
 }
 
 func UpdateTaskTemplate(param models.TaskTemplateDto) error {
@@ -87,15 +92,15 @@ func UpdateTaskTemplate(param models.TaskTemplateDto) error {
 	if getActionErr != nil {
 		return getActionErr
 	}
-	actions = append(actions, &execAction{Sql: "delete from task_template_role where task_template=?", Param: []interface{}{param.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template_role where task_template=?", Param: []interface{}{param.Id}})
 	for _, v := range param.MGMTRoles {
-		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "MGMT", param.Id, v, "MGMT"}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "MGMT", param.Id, v, "MGMT"}})
 	}
 	for _, v := range param.USERoles {
-		actions = append(actions, &execAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", param.Id, v, "USE"}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", param.Id, v, "USE"}})
 	}
-	actions = append(actions, &execAction{Sql: "update task_template set name=?,description=?,expire_day=?,handler=? where id=?", Param: []interface{}{param.Name, param.Description, param.ExpireDay, param.Handler, param.Id}})
-	return transaction(actions)
+	actions = append(actions, &dao.ExecAction{Sql: "update task_template set name=?,description=?,expire_day=?,handler=? where id=?", Param: []interface{}{param.Name, param.Description, param.ExpireDay, param.Handler, param.Id}})
+	return dao.Transaction(actions)
 }
 
 func getSimpleTaskTemplate(id, requestTemplate, proNodeId, nodeId string) (result models.TaskTemplateTable, err error) {
@@ -118,7 +123,7 @@ func getSimpleTaskTemplate(id, requestTemplate, proNodeId, nodeId string) (resul
 		baseSql += " and node_id=?"
 		params = append(params, nodeId)
 	}
-	err = x.SQL(baseSql, params...).Find(&taskTemplateTable)
+	err = dao.X.SQL(baseSql, params...).Find(&taskTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
 		return
@@ -135,7 +140,7 @@ func getSimpleTaskTemplate(id, requestTemplate, proNodeId, nodeId string) (resul
 func getRoleMap() (result map[string]*models.RoleTable, err error) {
 	result = make(map[string]*models.RoleTable)
 	var roleTable []*models.RoleTable
-	err = x.SQL("select id,display_name from `role`").Find(&roleTable)
+	err = dao.X.SQL("select id,display_name from `role`").Find(&roleTable)
 	if err != nil {
 		return
 	}
@@ -148,7 +153,7 @@ func getRoleMap() (result map[string]*models.RoleTable, err error) {
 func getTaskTemplateHandler(requestTemplate string) (taskTemplateMap map[string]*models.TaskTemplateVo, err error) {
 	taskTemplateMap = make(map[string]*models.TaskTemplateVo)
 	var taskTemplateList []*models.TaskTemplateVo
-	err = x.SQL("select  t.id,t.handler,tr.role from task_template t join task_template_role tr on  "+
+	err = dao.X.SQL("select  t.id,t.handler,tr.role from task_template t join task_template_role tr on  "+
 		"t.id=tr.task_template where t.request_template = ?", requestTemplate).Find(&taskTemplateList)
 	if len(taskTemplateList) > 0 {
 		for _, taskTemplate := range taskTemplateList {
@@ -162,7 +167,7 @@ func GetTaskTemplateMapByRequestTemplate(requestTemplate string) (taskTemplateMa
 	taskTemplateMap = make(map[string]int)
 	var rowsData []*models.TaskTemplateTable
 	sql := "select * from task_template where request_template = ?"
-	err = x.SQL(sql, requestTemplate).Find(&rowsData)
+	err = dao.X.SQL(sql, requestTemplate).Find(&rowsData)
 	if len(rowsData) > 0 {
 		for _, row := range rowsData {
 			taskTemplateMap[row.Name] = row.ExpireDay

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 )
 
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
 	proNodeId := c.Param("proNodeId")
-	result, err := db.GetTaskTemplate(requestTemplateId, proNodeId, "")
+	result, err := service.GetTaskTemplate(requestTemplateId, proNodeId, "")
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -34,17 +34,17 @@ func UpdateTaskTemplate(c *gin.Context) {
 		return
 	}
 	if param.Id != "" {
-		err = db.UpdateTaskTemplate(param)
+		err = service.UpdateTaskTemplate(param)
 	} else {
-		err = db.CreateTaskTemplate(param, id)
+		err = service.CreateTaskTemplate(param, id)
 	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
-	result, _ := db.GetTaskTemplate(id, param.NodeDefId, "")
+	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	service.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
 	middleware.ReturnData(c, result)
 }
 

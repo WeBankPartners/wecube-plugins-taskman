@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"time"
 )
@@ -12,7 +12,7 @@ import (
 // GetRequestDetail 新版请求详情
 func GetRequestDetail(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := db.GetRequestDetailV2(requestId, c.GetHeader("Authorization"))
+	result, err := service.GetRequestDetailV2(requestId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -34,7 +34,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param role can not empty "))
 		return
 	}
-	template, err := db.GetSimpleRequestTemplate(param.RequestTemplate)
+	template, err := service.GetSimpleRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -53,12 +53,12 @@ func CreateRequest(c *gin.Context) {
 	} else {
 		param.TemplateVersion = template.Version
 	}
-	err = db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
+	err = service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -73,7 +73,7 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		request, err := db.GetSimpleRequest(requestId)
+		request, err := service.GetSimpleRequest(requestId)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
@@ -82,7 +82,7 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
 		}
-		err = db.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
+		err = service.SaveRequestCacheV2(requestId, user, c.GetHeader("Authorization"), &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {
@@ -95,7 +95,7 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		request, err := db.GetSimpleRequest(requestId)
+		request, err := service.GetSimpleRequest(requestId)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
@@ -112,7 +112,7 @@ func SaveRequestCache(c *gin.Context) {
 				return
 			}
 		}
-		err = db.SaveRequestBindCache(requestId, operator, &param)
+		err = service.SaveRequestBindCache(requestId, operator, &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {
@@ -129,7 +129,7 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	request, err := db.GetSimpleRequest(requestId)
+	request, err := service.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -138,11 +138,11 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
 		return
 	}
-	instanceId, err := db.StartRequest(requestId, operator, c.GetHeader("Authorization"), param)
+	instanceId, err := service.StartRequest(requestId, operator, c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }

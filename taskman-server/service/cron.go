@@ -1,7 +1,8 @@
-package db
+package service
 
 import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"time"
 )
@@ -22,7 +23,7 @@ func startNotifyCronJob() {
 func notifyAction() {
 	log.Logger.Info("Start notify action")
 	var taskTable []*models.TaskTable
-	err := x.SQL("select id,created_time,expire_time,notify_count from task where status<>'done'").Find(&taskTable)
+	err := dao.X.SQL("select id,created_time,expire_time,notify_count from task where status<>'done'").Find(&taskTable)
 	if err != nil {
 		log.Logger.Error("notify action fail,query task error", log.Error(err))
 		return
@@ -41,7 +42,7 @@ func notifyAction() {
 			if tmpErr != nil {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			} else {
-				x.Exec("update task set notify_count=? where id=?", v.NotifyCount+1, v.Id)
+				dao.X.Exec("update task set notify_count=? where id=?", v.NotifyCount+1, v.Id)
 			}
 		}
 	}

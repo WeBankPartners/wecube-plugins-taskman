@@ -170,6 +170,10 @@ type RequestTable struct {
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
 }
 
+func (RequestTable) TableName() string {
+	return "request"
+}
+
 type ExpireObj struct {
 	Percent    float64 `json:"percent"`
 	ReportTime string  `json:"reportTime"`

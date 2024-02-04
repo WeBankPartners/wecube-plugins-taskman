@@ -1,8 +1,9 @@
-package db
+package service
 
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"regexp"
 	"strings"
@@ -75,7 +76,7 @@ func validateFormDataRegular(input *models.RequestPreDataTableObj, userToken str
 func getFormItemTemplateNameMap(idList []string) map[string]*models.FormItemTemplateTable {
 	resultMap := make(map[string]*models.FormItemTemplateTable)
 	var itemTemplateTable []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where id in ('" + strings.Join(idList, "','") + "')").Find(&itemTemplateTable)
+	dao.X.SQL("select * from form_item_template where id in ('" + strings.Join(idList, "','") + "')").Find(&itemTemplateTable)
 	for _, v := range itemTemplateTable {
 		resultMap[v.Name] = v
 	}

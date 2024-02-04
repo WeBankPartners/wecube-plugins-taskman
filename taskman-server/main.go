@@ -6,7 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 )
 
 // @title Taskman Server New
@@ -20,10 +20,10 @@ func main() {
 		return
 	}
 	log.InitLogger()
-	if initDbError := db.InitDatabase(); initDbError != nil {
-		return
+	if err := service.New(); err != nil {
+		panic(fmt.Errorf("service new err:%+v", err))
 	}
-	go db.StartCornJob()
+	go service.StartCornJob()
 	//start http
 	api.InitHttpServer()
 }

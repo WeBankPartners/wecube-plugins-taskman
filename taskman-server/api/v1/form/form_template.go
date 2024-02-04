@@ -3,7 +3,7 @@ package form
 import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +13,7 @@ func GetRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	result, err := db.GetRequestFormTemplate(id)
+	result, err := service.GetRequestFormTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -35,33 +35,33 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	var err error
 	param.UpdatedBy = middleware.GetRequestUser(c)
 	if param.Id != "" {
-		err = db.UpdateRequestFormTemplate(param)
+		err = service.UpdateRequestFormTemplate(param)
 	} else {
-		err = db.CreateRequestFormTemplate(param, id)
+		err = service.CreateRequestFormTemplate(param, id)
 	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-	result, _ := db.GetRequestFormTemplate(id)
+	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	result, _ := service.GetRequestFormTemplate(id)
 	middleware.ReturnData(c, result)
 }
 
 func ConfirmRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
-	err := db.ConfirmRequestTemplate(id)
+	err := service.ConfirmRequestTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
+	service.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
 func DeleteRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
-	err := db.DeleteRequestFormTemplate(id)
+	err := service.DeleteRequestFormTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

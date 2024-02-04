@@ -6,7 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	service "github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -15,7 +15,7 @@ import (
 func GetTaskFormStruct(c *gin.Context) {
 	procInstId := c.Query("procInstId")
 	nodeDefId := c.Query("nodeDefId")
-	result, err := db.GetTaskFormStruct(procInstId, nodeDefId)
+	result, err := service.GetTaskFormStruct(procInstId, nodeDefId)
 	if err != nil {
 		result.Status = "ERROR"
 		result.Message = err.Error()
@@ -43,13 +43,13 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 	for _, input := range param.Inputs {
-		output, taskId, tmpErr := db.PluginTaskCreate(input, param.RequestId, param.DueDate, param.AllowedOptions)
+		output, taskId, tmpErr := service.PluginTaskCreate(input, param.RequestId, param.DueDate, param.AllowedOptions)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
 		} else {
-			notifyErr := db.NotifyTaskMail(taskId)
+			notifyErr := service.NotifyTaskMail(taskId)
 			if notifyErr != nil {
 				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
 			}
@@ -64,7 +64,7 @@ func ListTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.ListTask(&param, middleware.GetRequestRoles(c), middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.ListTask(&param, middleware.GetRequestRoles(c), middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -74,7 +74,7 @@ func ListTask(c *gin.Context) {
 
 func GetTask(c *gin.Context) {
 	taskId := c.Param("taskId")
-	result, err := db.GetTask(taskId)
+	result, err := service.GetTask(taskId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -100,13 +100,13 @@ func SaveTaskForm(c *gin.Context) {
 		}
 	}
 	if err == nil {
-		err = db.ValidateRequestForm(param.FormData, c.GetHeader("Authorization"))
+		err = service.ValidateRequestForm(param.FormData, c.GetHeader("Authorization"))
 	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	task, err = db.GetSimpleTask(taskId)
+	task, err = service.GetSimpleTask(taskId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -115,11 +115,11 @@ func SaveTaskForm(c *gin.Context) {
 		middleware.ReturnTaskSaveNotPermissionError(c)
 		return
 	}
-	err = db.SaveTaskForm(taskId, operator, param)
+	err = service.SaveTaskForm(taskId, operator, param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		db.RecordTaskLog(taskId, task.Name, operator, "saveTask", c.Request.RequestURI, c.GetString("requestBody"))
+		service.RecordTaskLog(taskId, task.Name, operator, "saveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -171,13 +171,13 @@ func ApproveTask(c *gin.Context) {
 		}
 	}
 	if err == nil {
-		err = db.ValidateRequestForm(param.FormData, c.GetHeader("Authorization"))
+		err = service.ValidateRequestForm(param.FormData, c.GetHeader("Authorization"))
 	}
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	taskTable, err := db.GetSimpleTask(taskId)
+	taskTable, err := service.GetSimpleTask(taskId)
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -186,11 +186,11 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}
-	err = db.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
+	err = service.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		db.RecordTaskLog(taskId, taskTable.Name, operator, "approveTask", c.Request.RequestURI, c.GetString("requestBody"))
+		service.RecordTaskLog(taskId, taskTable.Name, operator, "approveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -203,12 +203,12 @@ func ChangeTaskStatus(c *gin.Context) {
 		middleware.ReturnChangeTaskStatusError(c)
 		return
 	}
-	taskObj, err := db.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation, lastedUpdateTime)
+	taskObj, err := service.ChangeTaskStatus(taskId, middleware.GetRequestUser(c), operation, lastedUpdateTime)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, operation)
+	service.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, operation)
 	middleware.ReturnData(c, taskObj)
 }
 
@@ -234,11 +234,11 @@ func UploadTaskAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
 		return
 	}
-	err = db.UploadAttachFile("", taskId, file.Filename, middleware.GetRequestUser(c), b)
+	err = service.UploadAttachFile("", taskId, file.Filename, middleware.GetRequestUser(c), b)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		db.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
-		middleware.ReturnData(c, db.GetTaskAttachFileList(taskId))
+		service.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
+		middleware.ReturnData(c, service.GetTaskAttachFileList(taskId))
 	}
 }

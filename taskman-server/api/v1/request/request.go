@@ -5,7 +5,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/services/db"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -17,7 +17,7 @@ func GetEntityData(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestId can not empty "))
 		return
 	}
-	result, err := db.GetEntityData(id, c.GetHeader("Authorization"))
+	result, err := service.GetEntityData(id, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -32,7 +32,7 @@ func ProcessDataPreview(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestTemplateId or entityDataId can not empty "))
 		return
 	}
-	result, err := db.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"))
+	result, err := service.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -43,7 +43,7 @@ func ProcessDataPreview(c *gin.Context) {
 func GetRequestPreviewData(c *gin.Context) {
 	requestId := c.Query("requestId")
 	entityDataId := c.Query("rootEntityId")
-	result, err := db.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"))
+	result, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -53,7 +53,7 @@ func GetRequestPreviewData(c *gin.Context) {
 
 // CountRequest 个人工作台统计
 func CountRequest(c *gin.Context) {
-	platformData, err := db.GetRequestCount(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	platformData, err := service.GetRequestCount(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -68,7 +68,7 @@ func FilterItem(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	data, err := db.GetFilterItem(param)
+	data, err := service.GetFilterItem(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -92,7 +92,7 @@ func DataList(c *gin.Context) {
 	if param.PageSize == 0 {
 		param.PageSize = 10
 	}
-	pageInfo, rowData, err := db.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -103,7 +103,7 @@ func DataList(c *gin.Context) {
 // RevokeRequest 撤回请求
 func RevokeRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
-	err := db.RevokeRequest(requestId, middleware.GetRequestUser(c))
+	err := service.RevokeRequest(requestId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -121,7 +121,7 @@ func HistoryList(c *gin.Context) {
 	if param.PageSize == 0 {
 		param.PageSize = 10
 	}
-	pageInfo, rowData, err := db.HistoryList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.HistoryList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -136,7 +136,7 @@ func Export(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := db.Export(c.Writer, &param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestUser(c))
+	err := service.Export(c.Writer, &param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -151,7 +151,7 @@ func ListRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := db.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission, middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -161,7 +161,7 @@ func ListRequest(c *gin.Context) {
 
 func GetRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := db.GetRequestWithRoot(requestId)
+	result, err := service.GetRequestWithRoot(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -171,7 +171,7 @@ func GetRequest(c *gin.Context) {
 
 func GetRequestDetail(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := db.GetRequestTaskList(requestId)
+	result, err := service.GetRequestTaskList(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -181,7 +181,7 @@ func GetRequestDetail(c *gin.Context) {
 
 func GetRequestRootForm(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := db.GetRequestRootForm(requestId)
+	result, err := service.GetRequestRootForm(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -200,12 +200,12 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	err := db.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
+	err := service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -221,23 +221,23 @@ func UpdateRequest(c *gin.Context) {
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
-	err := db.UpdateRequest(&param)
+	err := service.UpdateRequest(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(param.Id, param.Name, param.UpdatedBy, "updateRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.RecordRequestLog(param.Id, param.Name, param.UpdatedBy, "updateRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
 func DeleteRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
-	err := db.DeleteRequest(requestId, middleware.GetRequestUser(c))
+	err := service.DeleteRequest(requestId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "deleteRequest", c.Request.RequestURI, "")
+	service.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "deleteRequest", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
@@ -250,7 +250,7 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		err := db.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), &param)
+		err := service.SaveRequestCacheNew(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {
@@ -262,7 +262,7 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		err := db.SaveRequestBindCache(requestId, middleware.GetRequestUser(c), &param)
+		err := service.SaveRequestBindCache(requestId, middleware.GetRequestUser(c), &param)
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 		} else {
@@ -274,7 +274,7 @@ func SaveRequestCache(c *gin.Context) {
 func GetRequestCache(c *gin.Context) {
 	requestId := c.Param("requestId")
 	cacheType := c.Param("cacheType")
-	result, err := db.GetRequestCache(requestId, cacheType)
+	result, err := service.GetRequestCache(requestId, cacheType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -289,12 +289,12 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	instanceId, err := db.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	instanceId, err := service.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }
 
@@ -310,18 +310,18 @@ func UpdateRequestStatus(c *gin.Context) {
 	if bindErr := c.ShouldBindJSON(&param); bindErr == nil {
 		description = param.Description
 	}
-	err := db.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
+	err := service.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "setRequestStatus", c.Request.RequestURI, status)
+	service.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "setRequestStatus", c.Request.RequestURI, status)
 	middleware.ReturnSuccess(c)
 }
 
 func TerminateRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
-	err := db.RequestTermination(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	err := service.RequestTermination(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -336,7 +336,7 @@ func GetCmdbReferenceData(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	resultBytes, statusCode, err := db.GetCmdbReferenceData(attrId, c.GetHeader("Authorization"), param)
+	resultBytes, statusCode, err := service.GetCmdbReferenceData(attrId, c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -353,11 +353,11 @@ func GetReferenceData(c *gin.Context) {
 		return
 	}
 	input := models.RefSelectParam{AttrId: attrId, RequestId: requestId, Param: &param, UserToken: c.GetHeader("Authorization")}
-	result, err := db.GetCMDBRefSelectResult(&input)
+	result, err := service.GetCMDBRefSelectResult(&input)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		result = db.FilterInSideData(result, attrId, requestId)
+		result = service.FilterInSideData(result, attrId, requestId)
 		middleware.ReturnData(c, result)
 	}
 }
@@ -384,21 +384,21 @@ func UploadRequestAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
 		return
 	}
-	err = db.UploadAttachFile(requestId, "", file.Filename, middleware.GetRequestUser(c), b)
+	err = service.UploadAttachFile(requestId, "", file.Filename, middleware.GetRequestUser(c), b)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		middleware.ReturnData(c, db.GetRequestAttachFileList(requestId))
+		middleware.ReturnData(c, service.GetRequestAttachFileList(requestId))
 	}
 }
 
 func DownloadAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
-	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
+	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
-	fileContent, fileName, err := db.DownloadAttachFile(fileId)
+	fileContent, fileName, err := service.DownloadAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -411,7 +411,7 @@ func DownloadAttachFile(c *gin.Context) {
 func UpdateRequestHandler(c *gin.Context) {
 	requestId := c.Param("requestId")
 	lastedUpdateTime := c.Param("latestUpdateTime")
-	request, err := db.GetSimpleRequest(requestId)
+	request, err := service.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -425,7 +425,7 @@ func UpdateRequestHandler(c *gin.Context) {
 		middleware.ReturnUpdateRequestHandlerStatusError(c)
 		return
 	}
-	err = db.UpdateRequestHandler(requestId, middleware.GetRequestUser(c))
+	err = service.UpdateRequestHandler(requestId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -435,18 +435,18 @@ func UpdateRequestHandler(c *gin.Context) {
 
 func RemoveAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
-	if err := db.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
+	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
-	fileObj, err := db.RemoveAttachFile(fileId)
+	fileObj, err := service.RemoveAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		if fileObj.Request != "" {
-			middleware.ReturnData(c, db.GetRequestAttachFileList(fileObj.Request))
+			middleware.ReturnData(c, service.GetRequestAttachFileList(fileObj.Request))
 		} else {
-			middleware.ReturnData(c, db.GetTaskAttachFileList(fileObj.Task))
+			middleware.ReturnData(c, service.GetTaskAttachFileList(fileObj.Task))
 		}
 	}
 }
@@ -460,18 +460,18 @@ func QueryWorkflowEntity(c *gin.Context) {
 func CopyRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
 	createdBy := middleware.GetRequestUser(c)
-	result, err := db.CopyRequest(requestId, createdBy)
+	result, err := service.CopyRequest(requestId, createdBy)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		db.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "copyRequest", c.Request.RequestURI, "")
+		service.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "copyRequest", c.Request.RequestURI, "")
 		middleware.ReturnData(c, result)
 	}
 }
 
 func GetRequestParent(c *gin.Context) {
 	requestId := c.Query("requestId")
-	result, err := db.GetRequestParent(requestId)
+	result, err := service.GetRequestParent(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -488,7 +488,7 @@ func GetRequestProgress(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowsData, err = db.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
+	rowsData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -505,7 +505,7 @@ func GetProcessInstance(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowData, err = db.GetProcessInstance(instanceId, c.GetHeader("Authorization"))
+	rowData, err = service.GetProcessInstance(instanceId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -522,7 +522,7 @@ func GetProcessDefinitions(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowData, err = db.GetProcessDefinitions(templateId, c.GetHeader("Authorization"))
+	rowData, err = service.GetProcessDefinitions(templateId, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -534,7 +534,7 @@ func GetProcessDefinitions(c *gin.Context) {
 func GetExecutionNodes(c *gin.Context) {
 	procInstanceId := c.Param("procInstanceId")
 	nodeInstanceId := c.Param("nodeInstanceId")
-	rowData, err := db.GetExecutionNodes(c.GetHeader("Authorization"), procInstanceId, nodeInstanceId)
+	rowData, err := service.GetExecutionNodes(c.GetHeader("Authorization"), procInstanceId, nodeInstanceId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

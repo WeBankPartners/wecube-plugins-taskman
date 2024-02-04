@@ -1,18 +1,23 @@
-package db
+package service
 
 import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"sort"
 	"strconv"
 	"time"
 )
 
+type CollectTemplateService struct {
+	collectTemplateDao dao.CollectTemplateDao
+}
+
 func AddTemplateCollect(param *models.CollectTemplateTable) error {
 	param.Id = guid.CreateGuid()
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := x.Exec("insert into collect_template(id,request_template,type,user,role,created_time) value (?,?,?,?,?,?)",
+	_, err := dao.X.Exec("insert into collect_template(id,request_template,type,user,role,created_time) value (?,?,?,?,?,?)",
 		param.Id, param.RequestTemplate, param.Type, param.User, param.Role, nowTime)
 	if err != nil {
 		err = fmt.Errorf("Insert database error:%s ", err.Error())
@@ -21,7 +26,7 @@ func AddTemplateCollect(param *models.CollectTemplateTable) error {
 }
 
 func DeleteTemplateCollect(templateId, user string) error {
-	_, err := x.Exec("delete from collect_template where request_template = ? and user = ?", templateId, user)
+	_, err := dao.X.Exec("delete from collect_template where request_template = ? and user = ?", templateId, user)
 	if err != nil {
 		err = fmt.Errorf("Delete database error:%s ", err.Error())
 	}
@@ -46,14 +51,14 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		templateType = 0
 	}
 	// 查询该用户收藏的所有模板id
-	err = x.SQL("select * from collect_template where user = ? and type = ?", user, templateType).Find(&collectTemplateList)
+	err = dao.X.SQL("select * from collect_template where user = ? and type = ?", user, templateType).Find(&collectTemplateList)
 	if err != nil {
 		return
 	}
 	// 遍历模板id,查询 当前最新的发布模板id
 	for _, collectTemplate := range collectTemplateList {
 		var tempList []string
-		x.SQL("select id from request_template where (status='confirm' or status='disable') and parent_id = ? order by created_time desc limit 0,1", collectTemplate.RequestTemplate).Find(&tempList)
+		dao.X.SQL("select id from request_template where (status='confirm' or status='disable') and parent_id = ? order by created_time desc limit 0,1", collectTemplate.RequestTemplate).Find(&tempList)
 		resultList = append(resultList, tempList...)
 		roleTemplateMap[collectTemplate.RequestTemplate] = collectTemplate.Role
 	}
@@ -65,7 +70,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		"join request_template_group rtg on rt.group= rtg.id where rt.id in ("+getSQL(resultList)+")) t %s", transCollectConditionToSQL(param))
 	// 排序处理
 	if param.Sorting != nil {
-		hashMap, _ := getJsonToXormMap(models.CollectDataObj{})
+		hashMap, _ := dao.GetJsonToXormMap(models.CollectDataObj{})
 		if len(hashMap) > 0 {
 			if param.Sorting.Asc {
 				sql += fmt.Sprintf(" ORDER BY %s ASC", hashMap[param.Sorting.Field])
@@ -77,8 +82,8 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	// 分页处理
 	pageInfo.PageSize = param.PageSize
 	pageInfo.StartIndex = param.StartIndex
-	pageInfo.TotalRows = queryCount(sql)
-	err = x.SQL(sql+" limit ?,?", param.StartIndex, param.PageSize).Find(&rowData)
+	pageInfo.TotalRows = dao.QueryCount(sql)
+	err = dao.X.SQL(sql+" limit ?,?", param.StartIndex, param.PageSize).Find(&rowData)
 	if err != nil {
 		return
 	}
@@ -142,7 +147,7 @@ func compare(v1, v2 string) int {
 func getAllDisableTemplateVersionMap() map[string]string {
 	var hashMap = make(map[string]string)
 	var list []*models.RequestTemplateTable
-	x.SQL("select * from request_template where status = 'disable'").Find(&list)
+	dao.X.SQL("select * from request_template where status = 'disable'").Find(&list)
 	if len(list) > 0 {
 		for _, requestTemplate := range list {
 			hashMap[requestTemplate.ParentId] = requestTemplate.Version
@@ -154,7 +159,7 @@ func getAllDisableTemplateVersionMap() map[string]string {
 func QueryAllTemplateCollect(user string) (collectMap map[string]bool, err error) {
 	collectMap = make(map[string]bool)
 	var idList []string
-	err = x.SQL("select request_template from collect_template where user = ?", user).Find(&idList)
+	err = dao.X.SQL("select request_template from collect_template where user = ?", user).Find(&idList)
 	if err != nil {
 		return
 	}
@@ -177,7 +182,7 @@ func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *
 	var useRoleMap = make(map[string]bool)
 	var sql = "select rt.id,rt.name,rtg.id as template_group_id,rtg.name  as template_group ,rt.operator_obj_type,rt.proc_def_name,rtg.manage_role,rt.handler as owner,rt.tags,rt.created_time from request_template rt " +
 		"join request_template_group rtg on rt.group= rtg.id where rt.id in (select request_template from collect_template where user = ?) and rt.created_time > ?"
-	err = x.SQL(sql, user, param.StartTime).Find(&rowsData)
+	err = dao.X.SQL(sql, user, param.StartTime).Find(&rowsData)
 	if err != nil {
 		return
 	}
@@ -190,7 +195,7 @@ func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *
 			tagMap[row.Tags] = true
 			manageRoleMap[row.ManageRole] = true
 			var roleList []string
-			err = x.SQL("select role from request_template_role where role_type='USE' and request_template= ?", row.Id).Find(&roleList)
+			err = dao.X.SQL("select role from request_template_role where role_type='USE' and request_template= ?", row.Id).Find(&roleList)
 			if err != nil || len(roleList) == 0 {
 				continue
 			}
@@ -236,7 +241,7 @@ func GetCollectFilterItem(param *models.FilterRequestParam, user string) (data *
 // CheckUserCollectExist 检查用户模板id是否收藏
 func CheckUserCollectExist(templateId, user string) bool {
 	var idList []string
-	err := x.SQL("select id from collect_template where request_template=? and user=?", templateId, user).Find(&idList)
+	err := dao.X.SQL("select id from collect_template where request_template=? and user=?", templateId, user).Find(&idList)
 	if err != nil {
 		return true
 	}

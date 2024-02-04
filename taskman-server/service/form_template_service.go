@@ -1,13 +1,18 @@
-package db
+package service
 
 import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"strconv"
 	"time"
 )
+
+type FormTemplateService struct {
+	formTemplateDao dao.FormTemplateDao
+}
 
 func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error) {
 	result = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
@@ -17,7 +22,7 @@ func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error
 		return
 	}
 	var formTemplateTable []*models.FormTemplateTable
-	err = x.SQL("select * from form_template where id=?", requestTemplate.FormTemplate).Find(&formTemplateTable)
+	err = dao.X.SQL("select * from form_template where id=?", requestTemplate.FormTemplate).Find(&formTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
 		return
@@ -33,7 +38,7 @@ func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error
 	result.UpdatedTime = formTemplateTable[0].UpdatedTime
 	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where form_template=?", requestTemplate.FormTemplate).Find(&formItemTemplate)
+	dao.X.SQL("select * from form_item_template where form_template=?", requestTemplate.FormTemplate).Find(&formItemTemplate)
 	result.Items = formItemTemplate
 	return
 }
@@ -41,19 +46,19 @@ func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error
 func CreateRequestFormTemplate(param models.FormTemplateDto, requestTemplateId string) error {
 	param.NowTime = time.Now().Format(models.DateTimeFormat)
 	insertFormActions, formId := getFormTemplateCreateActions(param)
-	insertFormActions = append(insertFormActions, &execAction{Sql: "update request_template set form_template=?,expire_day=?,description=? where id=?", Param: []interface{}{formId, param.ExpireDay, param.Description, requestTemplateId}})
-	return transactionWithoutForeignCheck(insertFormActions)
+	insertFormActions = append(insertFormActions, &dao.ExecAction{Sql: "update request_template set form_template=?,expire_day=?,description=? where id=?", Param: []interface{}{formId, param.ExpireDay, param.Description, requestTemplateId}})
+	return dao.TransactionWithoutForeignCheck(insertFormActions)
 }
 
-func getFormTemplateCreateActions(param models.FormTemplateDto) (actions []*execAction, id string) {
+func getFormTemplateCreateActions(param models.FormTemplateDto) (actions []*dao.ExecAction, id string) {
 	param.Id = guid.CreateGuid()
 	id = param.Id
 	itemIds := guid.CreateGuidList(len(param.Items))
-	insertAction := execAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)"}
+	insertAction := dao.ExecAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)"}
 	insertAction.Param = []interface{}{param.Id, param.Name, param.Description, param.UpdatedBy, param.NowTime, param.UpdatedBy, param.NowTime}
 	actions = append(actions, &insertAction)
 	for i, item := range param.Items {
-		tmpAction := execAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 		tmpAction.Param = []interface{}{itemIds[i], id, item.Name, item.Description, item.ItemGroup, item.ItemGroupName, item.DefaultValue, item.Sort, item.PackageName, item.Entity, item.AttrDefId, item.AttrDefName, item.AttrDefDataType, item.ElementType, item.Title, item.Width, item.RefPackageName, item.RefEntity, item.DataOptions, item.Required, item.Regular, item.IsEdit, item.IsView, item.IsOutput, item.InDisplayName, item.IsRefInside, item.Multiple, item.DefaultClear}
 		actions = append(actions, &tmpAction)
 	}
@@ -66,13 +71,13 @@ func UpdateRequestFormTemplate(param models.FormTemplateDto) error {
 	if err != nil {
 		return err
 	}
-	updateActions = append(updateActions, &execAction{Sql: "update request_template set expire_day=?,description=? where form_template=?", Param: []interface{}{param.ExpireDay, param.Description, param.Id}})
-	return transaction(updateActions)
+	updateActions = append(updateActions, &dao.ExecAction{Sql: "update request_template set expire_day=?,description=? where form_template=?", Param: []interface{}{param.ExpireDay, param.Description, param.Id}})
+	return dao.Transaction(updateActions)
 }
 
-func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*execAction, err error) {
+func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*dao.ExecAction, err error) {
 	var formTemplateTable []*models.FormTemplateTable
-	err = x.SQL("select id,updated_time from form_template where id=?", param.Id).Find(&formTemplateTable)
+	err = dao.X.SQL("select id,updated_time from form_template where id=?", param.Id).Find(&formTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
 		return
@@ -85,14 +90,14 @@ func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*exec
 		err = fmt.Errorf("Update time validate fail,please refersh data ")
 		return
 	}
-	updateAction := execAction{Sql: "update form_template set name=?,description=?,updated_by=?,updated_time=? where id=?"}
+	updateAction := dao.ExecAction{Sql: "update form_template set name=?,description=?,updated_by=?,updated_time=? where id=?"}
 	updateAction.Param = []interface{}{param.Name, param.Description, param.UpdatedBy, param.NowTime, param.Id}
 	actions = append(actions, &updateAction)
 	newItemGuidList := guid.CreateGuidList(len(param.Items))
 	var formItemTemplate []*models.FormItemTemplateTable
-	x.SQL("select id from form_item_template where form_template=?", param.Id).Find(&formItemTemplate)
+	dao.X.SQL("select id from form_item_template where form_template=?", param.Id).Find(&formItemTemplate)
 	for i, inputItem := range param.Items {
-		tmpAction := execAction{}
+		tmpAction := dao.ExecAction{}
 		if inputItem.Id == "" {
 			inputItem.Id = newItemGuidList[i]
 			tmpAction.Sql = "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
@@ -112,15 +117,15 @@ func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*exec
 			}
 		}
 		if !existFlag {
-			actions = append(actions, &execAction{Sql: "delete from form_item where form_item_template=?", Param: []interface{}{existItem.Id}})
-			actions = append(actions, &execAction{Sql: "delete from form_item_template where id=?", Param: []interface{}{existItem.Id}})
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form_item_template=?", Param: []interface{}{existItem.Id}})
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where id=?", Param: []interface{}{existItem.Id}})
 		}
 	}
 	return
 }
 
 func DeleteRequestFormTemplate(id string) error {
-	_, err := x.Exec("update form_template set del_flag=1 where id=?", id)
+	_, err := dao.X.Exec("update form_template set del_flag=1 where id=?", id)
 	return err
 }
 

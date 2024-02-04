@@ -1,15 +1,19 @@
-package db
+package service
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
+
+type RefSelectService struct {
+}
 
 func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
 	result = []*models.EntityDataObj{}
@@ -55,7 +59,7 @@ func checkIfNeedAnalyze(input *models.RefSelectParam) (refFlag int, options []*m
 	}
 	var formItemTemplates []*models.FormItemTemplateTable
 	//x.SQL("select id,name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
-	x.SQL("select distinct name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?) union select form_template from task_template where id in (select task_template from task where request=?))", entity, input.RequestId, input.RequestId).Find(&formItemTemplates)
+	dao.X.SQL("select distinct name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?) union select form_template from task_template where id in (select task_template from task where request=?))", entity, input.RequestId, input.RequestId).Find(&formItemTemplates)
 	refColumnMap := make(map[string]int)
 	for _, v := range formItemTemplates {
 		if v.Name == attrName {
@@ -173,7 +177,7 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 func getRefSelectEntity(requestId, attrId string) (refEntity string, err error) {
 	var formItemTemplates []*models.FormItemTemplateTable
 	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
-	x.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?)  union select form_template from task_template where request_template in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId, requestId).Find(&formItemTemplates)
+	dao.X.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?)  union select form_template from task_template where request_template in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId, requestId).Find(&formItemTemplates)
 	if len(formItemTemplates) == 0 {
 		return refEntity, fmt.Errorf("Can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
 	}
@@ -541,7 +545,7 @@ func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (
 	output = input
 	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
 	var formItemTemplate []*models.FormItemTemplateTable
-	x.SQL("select * from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplate)
+	dao.X.SQL("select * from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplate)
 	if len(formItemTemplate) == 0 {
 		return output
 	}
@@ -549,7 +553,7 @@ func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (
 		return output
 	}
 	var formItems []*models.FormItemTable
-	x.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
+	dao.X.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
 	rowDataMap := make(map[string]int)
 	for _, v := range formItems {
 		tmpV := v.RowDataId

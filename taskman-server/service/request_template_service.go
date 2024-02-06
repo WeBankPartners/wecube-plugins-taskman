@@ -8,6 +8,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/remote"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -18,6 +19,188 @@ import (
 
 type RequestTemplateService struct {
 	requestTemplateDao dao.RequestTemplateDao
+}
+
+func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, userToken, language string, userRoles []string) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
+	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
+	extFilterSql := ""
+	result = []*models.RequestTemplateQueryObj{}
+	isQueryMessage := false
+	if len(param.Filters) > 0 {
+		var newFilters []*models.QueryRequestFilterObj
+		for _, v := range param.Filters {
+			if v.Name == "id" {
+				isQueryMessage = true
+			}
+			if v.Name == "mgmtRoles" || v.Name == "useRoles" {
+				inValueList := v.Value.([]interface{})
+				var inValueStringList []string
+				for _, inValueInterfaceObj := range inValueList {
+					if inValueInterfaceObj == nil {
+						inValueStringList = append(inValueStringList, "")
+					} else {
+						inValueStringList = append(inValueStringList, inValueInterfaceObj.(string))
+					}
+				}
+				if len(inValueStringList) == 0 {
+					continue
+				}
+				var tmpIds []string
+				var tmpErr error
+				roleFilterSql, roleFilterParam := dao.CreateListParams(inValueStringList, "")
+				if v.Name == "mgmtRoles" {
+					tmpIds, tmpErr = getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='MGMT' and t2.role in ("+roleFilterSql+")", roleFilterParam)
+				} else {
+					tmpIds, tmpErr = getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='USE' and t2.role in ("+roleFilterSql+")", roleFilterParam)
+				}
+				if tmpErr != nil {
+					err = fmt.Errorf("Try to query filter role id fail,%s ", tmpErr.Error())
+					break
+				}
+				extFilterSql += " and id in ('" + strings.Join(tmpIds, "','") + "') "
+			} else {
+				newFilters = append(newFilters, v)
+			}
+		}
+		if err != nil {
+			return models.PageInfo{}, nil, err
+		}
+		param.Filters = newFilters
+	}
+	var rowData []*models.RequestTemplateTable
+	filterSql, queryColumn, queryParam := dao.TransFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
+	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
+	queryParam = append(userRolesFilterParam, queryParam...)
+	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
+	if param.Paging {
+		pageInfo.StartIndex = param.Pageable.StartIndex
+		pageInfo.PageSize = param.Pageable.PageSize
+		pageInfo.TotalRows = dao.QueryCount(baseSql, queryParam...)
+		pageSql, pageParam := dao.TransPageInfoToSQL(*param.Pageable)
+		baseSql += pageSql
+		queryParam = append(queryParam, pageParam...)
+	}
+	err = dao.X.SQL(baseSql, queryParam...).Find(&rowData)
+	if len(rowData) == 0 || err != nil {
+		return
+	}
+	var rtIds []string
+	for _, row := range rowData {
+		rtIds = append(rtIds, row.Id)
+	}
+	queryRoleSql := "select t4.id,GROUP_CONCAT(t4.role_obj) as 'role','mgmt' as 'role_type' from ("
+	queryRoleSql += "select t1.id,CONCAT(t2.role,'::',t3.display_name) as 'role_obj' from request_template t1 left join request_template_role t2 on t1.id=t2.request_template left join role t3 on t2.role=t3.id where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='MGMT'"
+	queryRoleSql += ") t4 group by t4.id"
+	queryRoleSql += " UNION "
+	queryRoleSql += "select t4.id,GROUP_CONCAT(t4.role_obj) as 'role','use' as 'role_type' from ("
+	queryRoleSql += "select t1.id,CONCAT(t2.role,'::',t3.display_name) as 'role_obj' from request_template t1 left join request_template_role t2 on t1.id=t2.request_template left join role t3 on t2.role=t3.id where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='USE'"
+	queryRoleSql += ") t4 group by t4.id"
+	var requestTemplateRows []*models.RequestTemplateRoleTable
+	err = dao.X.SQL(queryRoleSql).Find(&requestTemplateRows)
+	if err != nil {
+		return
+	}
+	var mgmtRoleMap = make(map[string][]*models.RoleTable)
+	var useRoleMap = make(map[string][]*models.RoleTable)
+	for _, v := range requestTemplateRows {
+		var tmpRoles []*models.RoleTable
+		for _, vv := range strings.Split(v.Role, ",") {
+			tmpSplit := strings.Split(vv, "::")
+			tmpRoles = append(tmpRoles, &models.RoleTable{Id: tmpSplit[0], DisplayName: tmpSplit[1]})
+		}
+		if v.RoleType == "mgmt" {
+			mgmtRoleMap[v.Id] = tmpRoles
+		} else {
+			useRoleMap[v.Id] = tmpRoles
+		}
+	}
+	if isQueryMessage {
+		for _, v := range rowData {
+			tmpErr := SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, userToken)
+			if tmpErr != nil {
+				err = fmt.Errorf("Try to sync proDefId fail,%s ", tmpErr.Error())
+				break
+			}
+		}
+		if err != nil {
+			return
+		}
+	}
+	roleMap, err = remote.QueryAllRoles("Y", userToken, language)
+	if err != nil {
+		return
+	}
+	for _, v := range rowData {
+		tmpObj := models.RequestTemplateQueryObj{RequestTemplateTable: *v, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
+		if _, b := mgmtRoleMap[v.Id]; b {
+			tmpObj.MGMTRoles = mgmtRoleMap[v.Id]
+		}
+		if _, b := useRoleMap[v.Id]; b {
+			tmpObj.USERoles = useRoleMap[v.Id]
+		}
+		if v.Status == "confirm" {
+			tmpObj.OperateOptions = []string{"query", "fork", "export", "disable"}
+		} else if v.Status == "created" {
+			tmpObj.OperateOptions = []string{"edit", "delete"}
+		} else if v.Status == "disable" {
+			tmpObj.OperateOptions = []string{"query", "enable"}
+		}
+		tmpObj.ModifyType = getRequestTemplateModifyType(v)
+		// 模板管理角色收敛,只能唯一,读取角色管理员
+		if len(tmpObj.MGMTRoles) > 0 && roleMap[tmpObj.MGMTRoles[0].Id] != nil {
+			tmpObj.Administrator = roleMap[tmpObj.MGMTRoles[0].Id].Administrator
+		}
+		result = append(result, &tmpObj)
+	}
+	return
+}
+
+func (s RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId, handler string) (err error) {
+	return s.requestTemplateDao.Update(models.RequestTemplateTable{Id: requestTemplateId, Handler: handler, UpdatedBy: handler,
+		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
+}
+
+func (s RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, user, status, reason string) (err error) {
+	requestTemplate := models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
+		UpdatedTime: time.Now().Format(models.DateTimeFormat)}
+	// 状态更新到草稿,需要退回
+	if status == string(models.Draft) {
+		requestTemplate.RollbackDesc = reason
+	}
+	return s.requestTemplateDao.Update(requestTemplate)
+}
+
+func (s RequestTemplateService) GetRequestTemplate(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
+	return s.requestTemplateDao.Get(requestTemplateId)
+}
+
+func (s RequestTemplateService) GetCoreProcessListNew(userToken, language string) (processList []*models.ProcDefObj, err error) {
+	var procDefDtoList []*models.ProcDefDto
+	var nodesList []*models.DataModel
+	var entityMap = make(map[string]models.ProcEntity)
+	processList = make([]*models.ProcDefObj, 0)
+	procDefDtoList, err = remote.QueryProcessDefinitionList(userToken, language, models.QueryProcessDefinitionParam{Plugins: []string{"taskman"}, Status: "deployed"})
+	if err != nil {
+		return
+	}
+	nodesList, err = remote.QueryAllModels(userToken, language)
+	if err != nil {
+		return
+	}
+	entityMap = models.ConvertModelsList2Map(nodesList)
+	if len(procDefDtoList) > 0 {
+		for _, dto := range procDefDtoList {
+			processList = append(processList, &models.ProcDefObj{
+				ProcDefId:   dto.Id,
+				ProcDefKey:  dto.Key,
+				ProcDefName: dto.Name,
+				Status:      dto.Status,
+				RootEntity:  entityMap[dto.RootEntity],
+				CreatedTime: dto.CreatedTime,
+			})
+		}
+	}
+	return
 }
 
 func QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {

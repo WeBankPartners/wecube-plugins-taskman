@@ -43,6 +43,8 @@ func init() {
 		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: request.CreateRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "PUT", HandlerFunc: request.UpdateRequestTemplate},
 		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/handler/update", Method: "POST", HandlerFunc: request.UpdateRequestTemplateHandler},
+		&handlerFuncObj{Url: "/request-template/status/update", Method: "POST", HandlerFunc: request.UpdateRequestTemplateStatus},
 		&handlerFuncObj{Url: "/request-template/:id/attrs/update", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateEntityAttrs},
 		&handlerFuncObj{Url: "/request-template/:id/attrs/get", Method: "GET", HandlerFunc: request.GetRequestTemplateEntityAttrs},
 		&handlerFuncObj{Url: "/request-template/:id/attrs/list", Method: "GET", HandlerFunc: request.ListRequestTemplateEntityAttrs},

@@ -39,3 +39,29 @@ type SysLogTable struct {
 	DataKeyName string `json:"dataKeyName" xorm:"data_key_name"`
 	Response    string `json:"response" xorm:"response"`
 }
+
+type HttpResponseMeta struct {
+	Code    int    `json:"-"`
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type QueryRolesResponse struct {
+	HttpResponseMeta
+	Data []*SimpleLocalRoleDto `json:"data"`
+}
+
+type QueryUserResponse struct {
+	HttpResponseMeta
+	Data []*UserDto `json:"data"`
+}
+
+type QueryProcessDefinitionResponse struct {
+	HttpResponseMeta
+	Data []*ProcDefQueryDto `json:"data"`
+}
+
+type QueryAllModelsResponse struct {
+	HttpResponseMeta
+	Data []*DataModel `json:"data"`
+}

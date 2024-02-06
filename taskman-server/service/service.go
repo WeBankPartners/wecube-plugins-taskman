@@ -34,9 +34,11 @@ func New() (err error) {
 	// 初始化Dao
 	requestDao := dao.RequestDao{DB: engine}
 	attachFileDao := dao.AttachFileDao{DB: engine}
+	requestTemplateDao := dao.RequestTemplateDao{DB: engine}
 	// 初始化Service
 	requestService = RequestService{requestDao: requestDao}
 	attachFileService = AttachFileService{attachFileDao: attachFileDao}
+	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao}
 	db = engine
 	return
 }
@@ -44,6 +46,11 @@ func New() (err error) {
 // GetRequestService 获取请求service
 func GetRequestService() RequestService {
 	return requestService
+}
+
+// GetRequestTemplateService 获取请求模板 service
+func GetRequestTemplateService() RequestTemplateService {
+	return requestTemplateService
 }
 
 // transaction 事务处理

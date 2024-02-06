@@ -1,0 +1,99 @@
+package models
+
+import (
+	"time"
+)
+
+type ProcDefQueryDto struct {
+	ManageRole  string        `json:"manageRole"` //管理角色
+	ProcDefList []*ProcDefDto `json:"dataList"`   // 编排列表
+}
+
+type QueryProcessDefinitionParam struct {
+	ProcDefId        string   `json:"procDefId"`        // 编排Id
+	ProcDefName      string   `json:"procDefName"`      // 编排名称
+	Plugins          []string `json:"plugins"`          // 授权插件
+	UpdatedTimeStart string   `json:"updatedTimeStart"` // 更新时间开始
+	UpdatedTimeEnd   string   `json:"updatedTimeEnd"`   // 更新时间结束
+	Status           string   `json:"status"`           // disabled 禁用 draft草稿 deployed 发布状态
+	CreatedBy        string   `json:"createdBy"`        // 创建人
+	UpdatedBy        string   `json:"updatedBy"`        // 更新人
+	Scene            string   `json:"scene"`            // 使用场景
+	UserRoles        []string // 用户角色
+}
+
+type ProcDefDto struct {
+	Id               string   `json:"id"`               // 唯一标识
+	Key              string   `json:"key"`              // 编排key
+	Name             string   `json:"name"`             // 编排名称
+	Version          string   `json:"version"`          // 版本
+	RootEntity       string   `json:"rootEntity"`       // 根节点
+	Status           string   `json:"status"`           // 状态
+	Tags             string   `json:"tags"`             // 标签
+	AuthPlugins      []string `json:"authPlugins"`      // 授权插件
+	Scene            string   `json:"scene"`            // 使用场景
+	ConflictCheck    bool     `json:"conflictCheck"`    // 冲突检测
+	CreatedBy        string   `json:"createdBy"`        // 创建人
+	CreatedTime      string   `json:"createdTime"`      // 创建时间
+	UpdatedBy        string   `json:"updatedBy"`        // 更新人
+	UpdatedTime      string   `json:"updatedTime"`      // 更新时间
+	EnableCreated    bool     `json:"enableCreated"`    // 能否创建新版本
+	EnableModifyName bool     `json:"enableModifyName"` // 能否修改名称
+	UseRoles         []string `json:"userRoles"`        // 使用角色
+}
+
+type EntityProDefDto struct {
+	Id          string `json:"id"`          // 唯一标识
+	PackageName string `json:"packageName"` // 包名称
+	Name        string `json:"name"`        // 名称
+	DisplayName string `json:"displayName"` // 显示名称
+	Description string `json:"description"` // 描述
+}
+
+type DataModel struct {
+	PluginPackageDataModel
+	Entities []*DataModelEntity `json:"entities"`
+}
+
+type DataModelEntity struct {
+	Id               string `json:"id"`               // 唯一标识
+	DataModelId      string `json:"dataModelId"`      // 所属数据模型
+	DataModelVersion int    `json:"dataModelVersion"` // 版本
+	PackageName      string `json:"packageName"`      // 包名
+	Name             string `json:"name"`             // 模型名
+	DisplayName      string `json:"displayName"`      // 显示名
+	Description      string `json:"description"`      // 描述
+}
+
+type PluginPackageDataModel struct {
+	Id           string    `json:"id"`           // 唯一标识
+	Version      int       `json:"version"`      // 版本
+	PackageName  string    `json:"packageName"`  // 包名
+	IsDynamic    bool      `json:"dynamic"`      // 是否动态
+	UpdatePath   string    `json:"updatePath"`   // 请求路径
+	UpdateMethod string    `json:"updateMethod"` // 请求方法
+	UpdateSource string    `json:"updateSource"` // 来源
+	UpdatedTime  time.Time `json:"updatedTime"`  // 更新时间
+	UpdateTime   int64     `json:"updateTime"`   // 旧更新时间,毫秒时间戳
+}
+
+func ConvertModelsList2Map(nodesList []*DataModel) map[string]ProcEntity {
+	var entityMap = make(map[string]ProcEntity)
+	if len(nodesList) > 0 {
+		for _, model := range nodesList {
+			for _, entity := range model.Entities {
+				if entity.PackageName != "" && entity.Name != "" {
+					entityMap[entity.PackageName+":"+entity.Name] = ProcEntity{
+						Id:          entity.DataModelId,
+						PackageName: entity.PackageName,
+						Name:        entity.Name,
+						Description: entity.Description,
+						DisplayName: entity.DisplayName,
+						Attributes:  nil,
+					}
+				}
+			}
+		}
+	}
+	return entityMap
+}

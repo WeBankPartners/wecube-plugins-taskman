@@ -3,15 +3,21 @@ package request
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
+)
+
+var (
+	requestTemplateService = service.GetRequestTemplateService()
 )
 
 func QueryRequestTemplateGroup(c *gin.Context) {
@@ -85,26 +91,11 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 }
 
 func GetCoreProcessList(c *gin.Context) {
-	result, err := service.GetCoreProcessListNew(c.GetHeader("Authorization"))
-	//procList, err := service.GetCoreProcessListAll(c.GetHeader("Authorization"), "MGMT", models.ProcessFetchTabs)
+	result, err := requestTemplateService.GetCoreProcessListNew(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	//result := []*models.ProcDefObj{}
-	//for _, v := range procList {
-	//	tmpData := models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefKey: v.ProcDefKey, ProcDefName: v.ProcDefName, Status: v.Status, CreatedTime: v.CreatedTime, RootEntity: models.ProcEntity{}}
-	//	tmpEntity := v.RootEntity
-	//	if filterIndex := strings.Index(tmpEntity, "{"); filterIndex > 0 {
-	//		tmpEntity = tmpEntity[:filterIndex]
-	//	}
-	//	if strings.Contains(tmpEntity, ":") {
-	//		tmpEntitySplit := strings.Split(tmpEntity, ":")
-	//		tmpData.RootEntity.PackageName = tmpEntitySplit[0]
-	//		tmpData.RootEntity.Name = tmpEntitySplit[1]
-	//	}
-	//	result = append(result, &tmpData)
-	//}
 	middleware.ReturnData(c, result)
 }
 
@@ -155,7 +146,7 @@ func QueryRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := service.QueryRequestTemplate(&param, c.GetHeader("Authorization"), middleware.GetRequestRoles(c))
+	pageInfo, rowData, err := requestTemplateService.QueryRequestTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -181,6 +172,76 @@ func CreateRequestTemplate(c *gin.Context) {
 	}
 	service.RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "createRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, result)
+}
+
+// UpdateRequestTemplateHandler 请求模板处理:转给我
+func UpdateRequestTemplateHandler(c *gin.Context) {
+	var param models.RequestTemplateHandlerDto
+	var requestTemplate *models.RequestTemplateTable
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.RequestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "requestTemplateId")
+		return
+	}
+	requestTemplate, err = requestTemplateService.GetRequestTemplate(param.RequestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if requestTemplate == nil {
+		middleware.ReturnError(c, fmt.Errorf("requestTemplateId not exist"))
+		return
+	}
+	// 处理时间校验
+	if common.GetLowVersionUnixMillis(requestTemplate.UpdatedTime) != param.LatestUpdateTime {
+		err = exterror.New().DealWithAtTheSameTimeError
+		middleware.ReturnError(c, err)
+		return
+	}
+	if requestTemplate.Status == string(models.RequestTemplateStatusConfirm) {
+		middleware.ReturnError(c, fmt.Errorf("request template has deployed"))
+		return
+	}
+	err = requestTemplateService.UpdateRequestTemplateHandler(requestTemplate.Id, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// UpdateRequestTemplateStatus 更新请求模板状态
+func UpdateRequestTemplateStatus(c *gin.Context) {
+	var param models.RequestTemplateStatusUpdateParam
+	var requestTemplate *models.RequestTemplateTable
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	requestTemplate, err = requestTemplateService.GetRequestTemplate(param.RequestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if requestTemplate == nil {
+		middleware.ReturnError(c, fmt.Errorf("requestTemplateId not exist"))
+		return
+	}
+	if requestTemplate.Status != param.Status {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param status invalid"))
+		return
+	}
+	err = requestTemplateService.UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
 }
 
 func UpdateRequestTemplate(c *gin.Context) {

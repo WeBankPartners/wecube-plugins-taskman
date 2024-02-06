@@ -32,3 +32,14 @@ const (
 	ReleaseType TemplateType = "release" // 发布
 	OtherType   TemplateType = "other"   // 其他
 )
+
+// RequestTemplateStatus 请求模板状态
+type RequestTemplateStatus string
+
+const (
+	RequestTemplateStatusCreated  RequestTemplateStatus = "created"  // 创建
+	RequestTemplateStatusDisabled RequestTemplateStatus = "disabled" // 禁用
+	RequestTemplateStatusPending  RequestTemplateStatus = "pending"  // 待发布
+	RequestTemplateStatusConfirm  RequestTemplateStatus = "confirm"  // 已发布
+
+)

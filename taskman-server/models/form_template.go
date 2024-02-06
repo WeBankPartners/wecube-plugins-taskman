@@ -11,6 +11,10 @@ type FormTemplateTable struct {
 	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
 }
 
+func (FormTemplateTable) TableName() string {
+	return "form_template"
+}
+
 type FormTable struct {
 	Id           string `json:"id" xorm:"id"`
 	Name         string `json:"name" xorm:"name"`
@@ -23,11 +27,16 @@ type FormTable struct {
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
 }
 
+func (FormTable) TableName() string {
+	return "form"
+}
+
 type FormItemTemplateTable struct {
 	Id              string           `json:"id" xorm:"id"`
 	Name            string           `json:"name" xorm:"name"`
 	Description     string           `json:"description" xorm:"description"`
 	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`
+	ItemGroupType   string           `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义,request 请求信息
 	ItemGroupName   string           `json:"itemGroupName" xorm:"item_group_name"`
 	FormTemplate    string           `json:"formTemplate" xorm:"form_template"`
 	DefaultValue    string           `json:"defaultValue" xorm:"default_value"`
@@ -55,6 +64,10 @@ type FormItemTemplateTable struct {
 	SelectList      []*EntityDataObj `json:"selectList" xorm:"-"`
 }
 
+func (FormItemTemplateTable) TableName() string {
+	return "form_item_template"
+}
+
 type FormItemTable struct {
 	Id               string `json:"id" xorm:"id"`
 	Form             string `json:"form" xorm:"form"`
@@ -63,6 +76,10 @@ type FormItemTable struct {
 	Value            string `json:"value" xorm:"value"`
 	ItemGroup        string `json:"itemGroup" xorm:"item_group"`
 	RowDataId        string `json:"rowDataId" xorm:"row_data_id"`
+}
+
+func (FormItemTable) TableName() string {
+	return "form_item"
 }
 
 type FormTemplateDto struct {

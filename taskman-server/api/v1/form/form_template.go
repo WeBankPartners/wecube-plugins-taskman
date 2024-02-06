@@ -10,6 +10,7 @@ import (
 
 var (
 	requestTemplateService = service.GetRequestTemplateService()
+	operationLogService    = service.GetOperationLogService()
 )
 
 func GetRequestFormTemplate(c *gin.Context) {
@@ -76,7 +77,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
+	operationLogService.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 

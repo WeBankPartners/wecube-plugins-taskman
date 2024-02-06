@@ -117,3 +117,13 @@ type PlatDataParam struct {
 	User       string
 	UserToken  string
 }
+
+type RequestQueryParam struct {
+	TemplateId string `json:"templateId"` // 模板id
+	RequestId  string `json:"requestId"`  // 请求id
+}
+
+type TerminateInstanceParam struct {
+	ProcInstId  string `json:"procInstId"`
+	ProcInstKey string `json:"procInstKey"`
+}

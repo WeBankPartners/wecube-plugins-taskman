@@ -41,5 +41,12 @@ const (
 	RequestTemplateStatusDisabled RequestTemplateStatus = "disabled" // 禁用
 	RequestTemplateStatusPending  RequestTemplateStatus = "pending"  // 待发布
 	RequestTemplateStatusConfirm  RequestTemplateStatus = "confirm"  // 已发布
+)
 
+// RolePermission 角色权限
+type RolePermission string
+
+const (
+	RolePermissionUse  RolePermission = "USE"
+	RolePermissionMGMT RolePermission = "MGMT"
 )

@@ -2,6 +2,49 @@ package models
 
 import "strings"
 
+type RequestTable struct {
+	Id                  string             `json:"id" xorm:"id"`
+	Name                string             `json:"name" xorm:"name"`
+	Form                string             `json:"form" xorm:"form"`
+	RequestTemplate     string             `json:"requestTemplate" xorm:"request_template"`
+	RequestTemplateName string             `json:"requestTemplateName" xorm:"-"`
+	ProcInstanceId      string             `json:"procInstanceId" xorm:"proc_instance_id"`
+	ProcInstanceKey     string             `json:"procInstanceKey" xorm:"proc_instance_key"`
+	Reporter            string             `json:"reporter" xorm:"reporter"`
+	Handler             string             `json:"handler" xorm:"handler"`
+	ReportTime          string             `json:"reportTime" xorm:"report_time"`
+	Emergency           int                `json:"emergency" xorm:"emergency"`
+	ReportRole          string             `json:"reportRole" xorm:"report_role"`
+	Status              string             `json:"status" xorm:"status"`
+	Cache               string             `json:"cache" xorm:"cache"`
+	BindCache           string             `json:"bindCache" xorm:"bind_cache"`
+	Result              string             `json:"result" xorm:"result"`
+	ExpireTime          string             `json:"expireTime" xorm:"expire_time"`
+	ExpectTime          string             `json:"expectTime" xorm:"expect_time"`
+	ConfirmTime         string             `json:"confirmTime" xorm:"confirm_time"`
+	CreatedBy           string             `json:"createdBy" xorm:"created_by"`
+	CreatedTime         string             `json:"createdTime" xorm:"created_time"`
+	UpdatedBy           string             `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime         string             `json:"updatedTime" xorm:"updated_time"`
+	DelFlag             int                `json:"delFlag" xorm:"del_flag"`
+	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
+	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
+	Parent              string             `json:"parent" xorm:"parent"`
+	CompletedTime       string             `json:"completedTime" xorm:"-"`
+	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
+	Type                int                `json:"type" xorm:"type"`
+	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
+	Description         string             `json:"description" xorm:"description"` // 请求描述
+	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
+	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`  // 撤回标志 0表示没被撤回,1表示撤回
+	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
+	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
+}
+
+func (RequestTable) TableName() string {
+	return "request"
+}
+
 // PlatformData  工作台数据
 type PlatformData struct {
 	Pending      string `json:"pending"`      // 待处理, eg:7;2 使用;分割开 7表示发布个数,2表示请求个数
@@ -58,11 +101,6 @@ type PlatformDataObj struct {
 	TaskStayTimeTotal    int    `json:"taskStayTimeTotal" xorm:"-"`                 // 任务停留时长总数
 }
 
-type RequestQueryParam struct {
-	TemplateId string `json:"templateId"` // 模板id
-	RequestId  string `json:"requestId"`  // 请求id
-}
-
 type RequestProgressObj struct {
 	NodeId    string `json:"nodeId" xorm:"node_id"`
 	NodeDefId string `json:"nodeDefId" xorm:"node_def_id"`
@@ -70,108 +108,6 @@ type RequestProgressObj struct {
 	Handler   string `json:"handler" xorm:"handler"`
 	Status    int    `json:"status" xorm:"status"` // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
 	OrderedNo string `json:"orderNo" xorm:"-"`     // 排序字段
-}
-
-// CollectDataObj 收藏数据项
-type CollectDataObj struct {
-	ParentId          string   `json:"parentId" xorm:"parent_id"`                    // 父类ID
-	Id                string   `json:"id" xorm:"id"`                                 // 模版ID
-	Name              string   `json:"name" xorm:"name"`                             // 模版名称
-	Version           string   `json:"version" xorm:"version"`                       // 模版名称
-	Status            int      `json:"status" xorm:"status"`                         // 模版状态: 1可使用 2已禁用 3权限被移除
-	TemplateGroupId   string   `json:"templateGourpId" xorm:"template_group_id"`     // 模版组ID
-	TemplateGroup     string   `json:"templateGroup" xorm:"template_group"`          // 模版组
-	TemplateGroupRole string   `json:"templateGroupRole" xorm:"template_group_role"` // 模版组角色
-	OperatorObjType   string   `json:"operatorObjType" xorm:"operator_obj_type"`     // 操作对象类型
-	ProcDefName       string   `json:"procDefName" xorm:"proc_def_name"`             // 使用编排
-	ManageRole        string   `json:"manageRole" xorm:"manage_role"`                // 属主角色
-	Owner             string   `json:"owner" xorm:"owner"`                           // 属主
-	UseRole           string   `json:"useRole" xorm:"use_role"`                      // 使用角色
-	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
-	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
-	CreatedTime       string   `json:"createdTime" xorm:"created_time"`              // 创建时间
-	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`              // 更新时间
-}
-
-type EntityQueryResult struct {
-	Status  string           `json:"status"`
-	Message string           `json:"message"`
-	Data    []*EntityDataObj `json:"data"`
-}
-
-type EntityDataObj struct {
-	Id          string `json:"guid"`
-	DisplayName string `json:"key_name"`
-	IsNew       bool   `json:"isNew"`
-	PackageName string `json:"package_name"`
-	Entity      string `json:"entity"`
-}
-
-type EntityTreeResult struct {
-	Status  string         `json:"status"`
-	Message string         `json:"message"`
-	Data    EntityTreeData `json:"data"`
-}
-
-type EntityTreeData struct {
-	EntityTreeNodes  []*EntityTreeObj `json:"entityTreeNodes"`
-	ProcessSessionId string           `json:"processSessionId"`
-}
-
-type EntityTreeObj struct {
-	PackageName   string                 `json:"packageName"`
-	EntityName    string                 `json:"entityName"`
-	DataId        string                 `json:"dataId"`
-	DisplayName   string                 `json:"displayName"`
-	FullDataId    interface{}            `json:"fullDataId"`
-	Id            string                 `json:"id"`
-	EntityData    map[string]interface{} `json:"entityData"`
-	PreviousIds   []string               `json:"previousIds"`
-	SucceedingIds []string               `json:"succeedingIds"`
-	EntityDataOp  string                 `json:"entityDataOp"`
-}
-
-type RequestTable struct {
-	Id                  string             `json:"id" xorm:"id"`
-	Name                string             `json:"name" xorm:"name"`
-	Form                string             `json:"form" xorm:"form"`
-	RequestTemplate     string             `json:"requestTemplate" xorm:"request_template"`
-	RequestTemplateName string             `json:"requestTemplateName" xorm:"-"`
-	ProcInstanceId      string             `json:"procInstanceId" xorm:"proc_instance_id"`
-	ProcInstanceKey     string             `json:"procInstanceKey" xorm:"proc_instance_key"`
-	Reporter            string             `json:"reporter" xorm:"reporter"`
-	Handler             string             `json:"handler" xorm:"handler"`
-	ReportTime          string             `json:"reportTime" xorm:"report_time"`
-	Emergency           int                `json:"emergency" xorm:"emergency"`
-	ReportRole          string             `json:"reportRole" xorm:"report_role"`
-	Status              string             `json:"status" xorm:"status"`
-	Cache               string             `json:"cache" xorm:"cache"`
-	BindCache           string             `json:"bindCache" xorm:"bind_cache"`
-	Result              string             `json:"result" xorm:"result"`
-	ExpireTime          string             `json:"expireTime" xorm:"expire_time"`
-	ExpectTime          string             `json:"expectTime" xorm:"expect_time"`
-	ConfirmTime         string             `json:"confirmTime" xorm:"confirm_time"`
-	CreatedBy           string             `json:"createdBy" xorm:"created_by"`
-	CreatedTime         string             `json:"createdTime" xorm:"created_time"`
-	UpdatedBy           string             `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime         string             `json:"updatedTime" xorm:"updated_time"`
-	DelFlag             int                `json:"delFlag" xorm:"del_flag"`
-	HandleRoles         []string           `json:"handleRoles" xorm:"-"`
-	AttachFiles         []*AttachFileTable `json:"attachFiles" xorm:"-"`
-	Parent              string             `json:"parent" xorm:"parent"`
-	CompletedTime       string             `json:"completedTime" xorm:"-"`
-	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
-	Type                int                `json:"type" xorm:"type"`
-	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
-	Description         string             `json:"description" xorm:"description"` // 请求描述
-	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
-	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`  // 撤回标志 0表示没被撤回,1表示撤回
-	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
-	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
-}
-
-func (RequestTable) TableName() string {
-	return "request"
 }
 
 type ExpireObj struct {
@@ -182,16 +118,6 @@ type ExpireObj struct {
 	TotalDay   float64 `json:"totalDay"`
 	LeftDay    float64 `json:"leftDay"`
 	UseDay     float64 `json:"useDay"`
-}
-
-type AttachFileTable struct {
-	Id           string `json:"id" xorm:"id"`
-	Name         string `json:"name" xorm:"name"`
-	S3BucketName string `json:"s3BucketName" xorm:"s3_bucket_name"`
-	S3KeyName    string `json:"s3KeyName" xorm:"s3_key_name"`
-	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
-	Request      string `json:"request" xorm:"request"`
-	Task         string `json:"task" xorm:"task"`
 }
 
 type RequestCacheData struct {
@@ -232,6 +158,22 @@ type RequestCacheEntityAttrValue struct {
 	DataValue interface{} `json:"dataValue"`
 }
 
+type RequestProcessData struct {
+	ProcDefId     string                           `json:"procDefId"`
+	ProcDefKey    string                           `json:"procDefKey"`
+	RootEntityOid string                           `json:"rootEntityOid"`
+	Entities      []*RequestCacheEntityValue       `json:"entities"`
+	Bindings      []*RequestProcessTaskNodeBindObj `json:"bindings"`
+}
+
+type RequestProcessTaskNodeBindObj struct {
+	NodeId       string `json:"nodeId"`
+	NodeDefId    string `json:"nodeDefId"`
+	Oid          string `json:"oid"`
+	EntityDataId string `json:"entityDataId"`
+	BindFlag     string `json:"bindFlag"`
+}
+
 type RequestPreDataTableObj struct {
 	PackageName   string                   `json:"packageName"`
 	Entity        string                   `json:"entity"`
@@ -241,20 +183,6 @@ type RequestPreDataTableObj struct {
 	SortLevel     int                      `json:"-"`
 	Title         []*FormItemTemplateTable `json:"title"`
 	Value         []*EntityTreeObj         `json:"value"`
-}
-
-type StartInstanceResult struct {
-	Status  string                  `json:"status"`
-	Message string                  `json:"message"`
-	Data    StartInstanceResultData `json:"data"`
-}
-
-type StartInstanceResultData struct {
-	Id          int    `json:"id"`
-	ProcInstKey string `json:"procInstKey"`
-	ProcDefId   string `json:"procDefId"`
-	ProcDefKey  string `json:"procDefKey"`
-	Status      string `json:"status"`
 }
 
 type RequestPreDataSort []*RequestPreDataTableObj
@@ -287,57 +215,6 @@ type RequestProDataV2Dto struct {
 	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
-}
-
-type TerminateInstanceParam struct {
-	ProcInstId  string `json:"procInstId"`
-	ProcInstKey string `json:"procInstKey"`
-}
-
-type EntityNodeBindQueryObj struct {
-	NodeDefId string `xorm:"node_def_id"`
-	ItemGroup string `xorm:"item_group"`
-}
-
-type InstanceStatusQuery struct {
-	Status  string                 `json:"status"`
-	Message string                 `json:"message"`
-	Data    InstanceStatusQueryObj `json:"data"`
-}
-
-type InstanceStatusQueryObj struct {
-	Id                int                        `json:"id"`
-	ProcDefId         string                     `json:"procDefId"`
-	ProcInstKey       string                     `json:"procInstKey"`
-	ProcInstName      string                     `json:"procInstName"`
-	Status            string                     `json:"status"`
-	TaskNodeInstances []*InstanceStatusQueryNode `json:"taskNodeInstances"`
-}
-
-type InstanceStatusQueryNode struct {
-	Id        int    `json:"id"`
-	NodeId    string `json:"nodeId"`
-	NodeDefId string `json:"nodeDefId"`
-	NodeName  string `json:"nodeName"`
-	NodeType  string `json:"nodeType"`
-	Status    string `json:"status"`
-	OrderedNo string `json:"orderedNo"`
-}
-
-type RequestProcessData struct {
-	ProcDefId     string                           `json:"procDefId"`
-	ProcDefKey    string                           `json:"procDefKey"`
-	RootEntityOid string                           `json:"rootEntityOid"`
-	Entities      []*RequestCacheEntityValue       `json:"entities"`
-	Bindings      []*RequestProcessTaskNodeBindObj `json:"bindings"`
-}
-
-type RequestProcessTaskNodeBindObj struct {
-	NodeId       string `json:"nodeId"`
-	NodeDefId    string `json:"nodeDefId"`
-	Oid          string `json:"oid"`
-	EntityDataId string `json:"entityDataId"`
-	BindFlag     string `json:"bindFlag"`
 }
 
 type WorkflowEntityQuery struct {

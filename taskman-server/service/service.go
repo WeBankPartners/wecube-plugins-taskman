@@ -22,6 +22,8 @@ var (
 	requestTemplateService RequestTemplateService
 	// 任务 service
 	taskService TaskService
+	// 记录 service
+	operationLogService OperationLogService
 )
 
 func New() (err error) {
@@ -35,10 +37,13 @@ func New() (err error) {
 	requestDao := dao.RequestDao{DB: engine}
 	attachFileDao := dao.AttachFileDao{DB: engine}
 	requestTemplateDao := dao.RequestTemplateDao{DB: engine}
+	requestTemplateRoleDao := dao.RequestTemplateRoleDao{DB: engine}
+	operationLogDao := dao.OperationLogDao{DB: engine}
 	// 初始化Service
 	requestService = RequestService{requestDao: requestDao}
 	attachFileService = AttachFileService{attachFileDao: attachFileDao}
-	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao}
+	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, requestTemplateRoleDao: requestTemplateRoleDao, operationLogDao: operationLogDao}
+	operationLogService = OperationLogService{operationLogDao: operationLogDao}
 	db = engine
 	return
 }
@@ -51,6 +56,11 @@ func GetRequestService() RequestService {
 // GetRequestTemplateService 获取请求模板 service
 func GetRequestTemplateService() RequestTemplateService {
 	return requestTemplateService
+}
+
+// GetOperationLogService 获取记录日志 service
+func GetOperationLogService() OperationLogService {
+	return operationLogService
 }
 
 // transaction 事务处理

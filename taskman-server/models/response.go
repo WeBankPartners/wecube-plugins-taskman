@@ -65,3 +65,38 @@ type QueryAllModelsResponse struct {
 	HttpResponseMeta
 	Data []*DataModel `json:"data"`
 }
+
+type ProcNodeQueryResponse struct {
+	HttpResponseMeta
+	Data []*ProcNodeObj `json:"data"`
+}
+
+type CoreProcessQueryResponse struct {
+	HttpResponseMeta
+	Data []*CodeProcessQueryObj `json:"data"`
+}
+
+type ProcessDefinitionsResponse struct {
+	HttpResponseMeta
+	Data *DefinitionsData `json:"data"`
+}
+
+type ProcessInstanceResponse struct {
+	HttpResponseMeta
+	Data *ProcessInstance `json:"data"`
+}
+
+type ExecutionResponse struct {
+	HttpResponseMeta
+	Data interface{} `json:"data"`
+}
+
+type ProcQueryResponse struct {
+	HttpResponseMeta
+	Data []*ProcDefObj `json:"data"`
+}
+
+type StartInstanceResponse struct {
+	HttpResponseMeta
+	Data StartInstanceResultData `json:"data"`
+}

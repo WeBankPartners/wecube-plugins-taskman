@@ -1397,7 +1397,7 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
 		return
 	}
-	var respResult models.StartInstanceResult
+	var respResult models.StartInstanceResponse
 	b, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	err = json.Unmarshal(b, &respResult)
@@ -1681,7 +1681,7 @@ func RequestTermination(requestId, operator, userToken string) error {
 	if respErr != nil {
 		return fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
 	}
-	var respResult models.StartInstanceResult
+	var respResult models.StartInstanceResponse
 	b, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	err = json.Unmarshal(b, &respResult)
@@ -1827,30 +1827,6 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData
 		}
 	}
 	return
-}
-
-func RecordRequestTemplateLog(requestTemplateId, requestTemplateName, operator, operation, uri, content string) {
-	_, err := dao.X.Exec("insert into operation_log(id,request_template,request_template_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
-		guid.CreateGuid(), requestTemplateId, requestTemplateName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
-	if err != nil {
-		log.Logger.Error("Record request operation log fail", log.Error(err))
-	}
-}
-
-func RecordRequestLog(requestId, requestName, operator, operation, uri, content string) {
-	_, err := dao.X.Exec("insert into operation_log(id,request,request_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
-		guid.CreateGuid(), requestId, requestName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
-	if err != nil {
-		log.Logger.Error("Record request operation log fail", log.Error(err))
-	}
-}
-
-func RecordTaskLog(taskId, taskName, operator, operation, uri, content string) {
-	_, err := dao.X.Exec("insert into operation_log(id,task,task_name,operation,uri,content,operator,op_time) values (?,?,?,?,?,?,?,?)",
-		guid.CreateGuid(), taskId, taskName, operation, uri, content, operator, time.Now().Format(models.DateTimeFormat))
-	if err != nil {
-		log.Logger.Error("Record request operation log fail", log.Error(err))
-	}
 }
 
 func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err error) {

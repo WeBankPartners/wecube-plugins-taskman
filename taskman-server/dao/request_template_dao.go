@@ -9,13 +9,16 @@ type RequestTemplateDao struct {
 	DB *xorm.Engine
 }
 
-func (d RequestTemplateDao) Update(requestTemplate models.RequestTemplateTable) (err error) {
-	_, err = d.DB.ID(requestTemplate.Id).Update(&requestTemplate)
-	return
+func (d RequestTemplateDao) Add(session *xorm.Session, requestTemplate *models.RequestTemplateTable) (affected int64, err error) {
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	return session.Insert(requestTemplate)
 }
 
-func (d RequestTemplateDao) UpdateByTransaction(session *xorm.Session, requestTemplate models.RequestTemplateTable) (err error) {
-	_, err = session.ID(requestTemplate.Id).Update(&requestTemplate)
+func (d RequestTemplateDao) Update(requestTemplate models.RequestTemplateTable) (err error) {
+	_, err = d.DB.ID(requestTemplate.Id).Update(&requestTemplate)
 	return
 }
 

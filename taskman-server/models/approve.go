@@ -19,29 +19,3 @@ type RequestApproveTable struct {
 func (RequestApproveTable) TableName() string {
 	return "request_approve"
 }
-
-// RequestApproveRoleTable 请求审批角色表
-type RequestApproveRoleTable struct {
-	Id             string `json:"id" xorm:"id"`
-	RequestApprove string `json:"requestApprove" xorm:"request_approve"` // 请求审批ID
-	Role           string `json:"role" xorm:"role"`                      // 角色
-	handler        string `json:"handler" xorm:"handler"`                // 处理人
-	CreatedTime    string `json:"createdTime" xorm:"created_time"`
-}
-
-func (RequestApproveRoleTable) TableName() string {
-	return "request_approve_role"
-}
-
-// TaskApproveRoleTable 任务审批表
-type TaskApproveRoleTable struct {
-	Id          string `json:"id" xorm:"id"`
-	Task        string `json:"task" xorm:"task"`       // 任务审批ID
-	Role        string `json:"role" xorm:"role"`       // 角色
-	handler     string `json:"handler" xorm:"handler"` // 处理人
-	CreatedTime string `json:"createdTime" xorm:"created_time"`
-}
-
-func (TaskApproveRoleTable) TableName() string {
-	return "task_approve_role"
-}

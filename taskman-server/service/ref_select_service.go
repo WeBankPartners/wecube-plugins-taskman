@@ -17,7 +17,7 @@ type RefSelectService struct {
 
 func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
 	result = []*models.EntityDataObj{}
-	// if param map data have no new data -> get remote data + same entity new data
+	// if param map data have no new data -> get rpc data + same entity new data
 	refFlag, options, tmpErr := checkIfNeedAnalyze(input)
 	log.Logger.Info("isContainNewMap", log.String("isContainNewMap", fmt.Sprintf("%d", refFlag)))
 	if refFlag == -1 {
@@ -35,7 +35,7 @@ func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.Enti
 	if getFilterErr != nil {
 		return result, getFilterErr
 	}
-	// if filter empty -> get remote data + same entity new data
+	// if filter empty -> get rpc data + same entity new data
 	if filterString == "" {
 		result, err = getRefDataWithoutFilter(input)
 		return
@@ -620,7 +620,7 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 		reqParam = url[strings.Index(url, "=")+1:]
 		url = url[:strings.Index(url, "?")]
 	}
-	log.Logger.Info("curl remote entity options", log.String("url", url), log.String("method", method), log.String("param", reqParam))
+	log.Logger.Info("curl rpc entity options", log.String("url", url), log.String("method", method), log.String("param", reqParam))
 	req, reqErr := http.NewRequest(method, url, strings.NewReader(reqParam))
 	if reqErr != nil {
 		err = fmt.Errorf("Try to new request fail,%s ", reqErr.Error())

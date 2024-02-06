@@ -163,7 +163,7 @@ func TransFiltersToSQL(queryParam *models.QueryRequestParam, transParam *models.
 			param = append(param, fmt.Sprintf("%%%s%%", filter.Value))
 		} else if filter.Operator == "in" {
 			inValueList := filter.Value.([]interface{})
-			inValueStringList := []string{}
+			var inValueStringList []string
 			for _, inValueInterfaceObj := range inValueList {
 				if inValueInterfaceObj == nil {
 					inValueStringList = append(inValueStringList, "")

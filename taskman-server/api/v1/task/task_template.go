@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var (
+	operationLogService = service.GetOperationLogService()
+)
+
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
 	proNodeId := c.Param("proNodeId")
@@ -43,7 +47,7 @@ func UpdateTaskTemplate(c *gin.Context) {
 		return
 	}
 	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-	service.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+	operationLogService.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
 	middleware.ReturnData(c, result)
 }

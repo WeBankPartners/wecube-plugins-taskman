@@ -8,11 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	requestTemplateService = service.GetRequestTemplateService()
-	operationLogService    = service.GetOperationLogService()
-)
-
 func GetRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
@@ -58,7 +53,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 	var requestTemplate *models.RequestTemplateTable
 	var err error
 	id := c.Param("id")
-	requestTemplate, err = requestTemplateService.GetRequestTemplate(id)
+	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -77,7 +72,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
+	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 

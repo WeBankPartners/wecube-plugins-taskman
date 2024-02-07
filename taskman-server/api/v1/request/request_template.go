@@ -16,11 +16,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	requestTemplateService = service.GetRequestTemplateService()
-	operationLogService    = service.GetOperationLogService()
-)
-
 func QueryRequestTemplateGroup(c *gin.Context) {
 	var param models.QueryRequestParam
 	if err := c.ShouldBindJSON(&param); err != nil {
@@ -92,7 +87,7 @@ func DeleteRequestTemplateGroup(c *gin.Context) {
 }
 
 func GetCoreProcessList(c *gin.Context) {
-	result, err := requestTemplateService.GetCoreProcessListNew(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, err := service.GetRequestTemplateService().GetCoreProcessListNew(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -147,7 +142,7 @@ func QueryRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := requestTemplateService.QueryRequestTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestRoles(c))
+	pageInfo, rowData, err := service.GetRequestTemplateService().QueryRequestTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -166,12 +161,12 @@ func CreateRequestTemplate(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	result, err := requestTemplateService.CreateRequestTemplate(&param)
+	result, err := service.GetRequestTemplateService().CreateRequestTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "createRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "createRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, result)
 }
 
@@ -188,7 +183,7 @@ func UpdateRequestTemplateHandler(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "requestTemplateId")
 		return
 	}
-	requestTemplate, err = requestTemplateService.GetRequestTemplate(param.RequestTemplateId)
+	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -207,11 +202,11 @@ func UpdateRequestTemplateHandler(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("request template has deployed"))
 		return
 	}
-	if err := requestTemplateService.CheckRequestTemplateRoles(param.RequestTemplateId, middleware.GetRequestRoles(c)); err != nil {
+	if err := service.GetRequestTemplateService().CheckRequestTemplateRoles(param.RequestTemplateId, middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
-	err = requestTemplateService.UpdateRequestTemplateHandler(requestTemplate.Id, middleware.GetRequestUser(c))
+	err = service.GetRequestTemplateService().UpdateRequestTemplateHandler(requestTemplate.Id, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnError(c, err)
 		return
@@ -228,7 +223,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	requestTemplate, err = requestTemplateService.GetRequestTemplate(param.RequestTemplateId)
+	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -241,7 +236,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("param status invalid"))
 		return
 	}
-	err = requestTemplateService.UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)
+	err = service.GetRequestTemplateService().UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)
 	if err != nil {
 		middleware.ReturnError(c, err)
 		return
@@ -263,7 +258,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	if err := requestTemplateService.CheckRequestTemplateRoles(param.Id, middleware.GetRequestRoles(c)); err != nil {
+	if err := service.GetRequestTemplateService().CheckRequestTemplateRoles(param.Id, middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
@@ -273,7 +268,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "updateRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestTemplateLog(result.Id, result.Name, param.CreatedBy, "updateRequestTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, result)
 }
 
@@ -299,7 +294,7 @@ func DeleteRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	if err := requestTemplateService.CheckRequestTemplateRoles(id, middleware.GetRequestRoles(c)); err != nil {
+	if err := service.GetRequestTemplateService().CheckRequestTemplateRoles(id, middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
@@ -352,7 +347,7 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		return
 	}
 	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-	operationLogService.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateRequestTemplateAttr", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateRequestTemplateAttr", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnSuccess(c)
 }
 
@@ -372,7 +367,7 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "forkRequestTemplate", c.Request.RequestURI, "")
+	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "forkRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
@@ -454,7 +449,7 @@ func DisableRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "disableRequestTemplate", c.Request.RequestURI, "")
+	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "disableRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
@@ -465,6 +460,6 @@ func EnableRequestTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "enableRequestTemplate", c.Request.RequestURI, "")
+	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "enableRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }

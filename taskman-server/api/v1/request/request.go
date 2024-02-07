@@ -205,7 +205,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -226,7 +226,7 @@ func UpdateRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(param.Id, param.Name, param.UpdatedBy, "updateRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestLog(param.Id, param.Name, param.UpdatedBy, "updateRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -237,7 +237,7 @@ func DeleteRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "deleteRequest", c.Request.RequestURI, "")
+	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "deleteRequest", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
@@ -294,7 +294,7 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }
 
@@ -315,7 +315,7 @@ func UpdateRequestStatus(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "setRequestStatus", c.Request.RequestURI, status)
+	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "setRequestStatus", c.Request.RequestURI, status)
 	middleware.ReturnSuccess(c)
 }
 
@@ -464,7 +464,7 @@ func CopyRequest(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		operationLogService.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "copyRequest", c.Request.RequestURI, "")
+		service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "copyRequest", c.Request.RequestURI, "")
 		middleware.ReturnData(c, result)
 	}
 }

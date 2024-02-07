@@ -10,7 +10,7 @@ type RequestTemplateRoleDao struct {
 }
 
 func (d RequestTemplateRoleDao) CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) (bool, error) {
-	return d.DB.Table(models.RequestTemplateRoleTable{}.TableName()).Where("request_template=?", requestTemplateId).And("role_type",
+	return d.DB.Table(models.RequestTemplateRoleTable{}.TableName()).Where("request_template=?", requestTemplateId).And("role_type=?",
 		"MGMT").In("role", userRoles).Exist()
 }
 

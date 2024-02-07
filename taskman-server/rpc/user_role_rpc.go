@@ -3,7 +3,6 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/network"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 )
 
@@ -19,7 +18,7 @@ func QueryAllRoles(requiredAll, userToken, language string) (roleMap map[string]
 	var response models.QueryRolesResponse
 	var userMap map[string]*models.UserDto
 	roleMap = make(map[string]*models.SimpleLocalRoleDto)
-	byteArr, err := network.HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathRetrieveAllRoles, requiredAll), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathRetrieveAllRoles, requiredAll), userToken, language)
 	if err != nil {
 		return
 	}
@@ -50,7 +49,7 @@ func QueryAllRoles(requiredAll, userToken, language string) (roleMap map[string]
 func QueryAllUser(userToken, language string) (userMap map[string]*models.UserDto, err error) {
 	var response models.QueryUserResponse
 	userMap = make(map[string]*models.UserDto)
-	byteArr, err := network.HttpGet(models.Config.Wecube.BaseUrl+pathRetrieveAllUser, userToken, language)
+	byteArr, err := HttpGet(models.Config.Wecube.BaseUrl+pathRetrieveAllUser, userToken, language)
 	if err != nil {
 		return
 	}

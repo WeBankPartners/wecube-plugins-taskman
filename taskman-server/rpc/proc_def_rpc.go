@@ -3,7 +3,6 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/network"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 )
 
@@ -20,7 +19,7 @@ func QueryProcessDefinitionList(userToken, language string, param models.QueryPr
 	var procDefMap = make(map[string]*models.ProcDefDto)
 	processList = make([]*models.ProcDefDto, 0)
 	postBytes, _ := json.Marshal(param)
-	byteArr, err := network.HttpPost(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
+	byteArr, err := HttpPost(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
 	if err != nil {
 		return
 	}
@@ -57,7 +56,7 @@ func QueryProcessDefinitionList(userToken, language string, param models.QueryPr
 func QueryAllModels(userToken, language string) (nodesList []*models.DataModel, err error) {
 	var response models.QueryAllModelsResponse
 	nodesList = make([]*models.DataModel, 0)
-	byteArr, err := network.HttpGet(models.Config.Wecube.BaseUrl+pathQueryModel, userToken, language)
+	byteArr, err := HttpGet(models.Config.Wecube.BaseUrl+pathQueryModel, userToken, language)
 	if err != nil {
 		return
 	}

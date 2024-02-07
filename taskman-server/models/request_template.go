@@ -5,11 +5,12 @@ import (
 )
 
 type RequestTemplateTable struct {
-	Id               string `json:"id" xorm:"id"`
-	Group            string `json:"group" xorm:"group"`
-	Name             string `json:"name" xorm:"name"`
-	Description      string `json:"description" xorm:"description"`
-	FormTemplate     string `json:"formTemplate" xorm:"form_template"`
+	Id           string  `json:"id" xorm:"id"`
+	Group        string  `json:"group" xorm:"group"`
+	Name         string  `json:"name" xorm:"name"`
+	Description  string  `json:"description" xorm:"description"`
+	FormTemplate *string `json:"formTemplate" xorm:"form_template"` // 此处定义成指针类型原因: request_template表插入数据,
+	// form_template字段为""也会被插入,又是外键就会报错
 	Tags             string `json:"tags" xorm:"tags"`
 	Status           string `json:"status" xorm:"status"`
 	RecordId         string `json:"recordId" xorm:"record_id"`
@@ -42,6 +43,13 @@ type RequestTemplateTable struct {
 
 func (RequestTemplateTable) TableName() string {
 	return "request_template"
+}
+
+func (r RequestTemplateTable) GetFormTemplate() string {
+	return *r.FormTemplate
+}
+func (r RequestTemplateTable) SetFormTemplate(formTemplate string) {
+	*r.FormTemplate = formTemplate
 }
 
 // CollectDataObj 收藏数据项

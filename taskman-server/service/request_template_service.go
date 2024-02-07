@@ -734,7 +734,7 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAc
 	}
 	var taskTemplateTable []*models.TaskTemplateTable
 	dao.X.SQL("select id,form_template from task_template where request_template=?", id).Find(&taskTemplateTable)
-	formTemplateIds := []string{rtObj.FormTemplate}
+	formTemplateIds := []string{rtObj.GetFormTemplate()}
 	for _, v := range taskTemplateTable {
 		formTemplateIds = append(formTemplateIds, v.FormTemplate)
 	}
@@ -925,7 +925,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id, requestTemplateObj.ParentId)})
 	}
-	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
+	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.GetFormTemplate(), newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
 	}
@@ -967,7 +967,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	if err != nil {
 		return err
 	}
-	if requestTemplateObj.FormTemplate == "" {
+	if requestTemplateObj.GetFormTemplate() == "" {
 		return fmt.Errorf("Please config request template form ")
 	}
 	if requestTemplateObj.Status == "confirm" {
@@ -1664,8 +1664,8 @@ func createNewImportTemplate(input models.RequestTemplateExport, recordId string
 		historyFormTemplateId := formTemplate.Id
 		formTemplate.Id = guid.CreateGuid()
 		// 修改模板里面的 formTemplateId
-		if input.RequestTemplate.FormTemplate == historyFormTemplateId {
-			input.RequestTemplate.FormTemplate = formTemplate.Id
+		if input.RequestTemplate.GetFormTemplate() == historyFormTemplateId {
+			input.RequestTemplate.SetFormTemplate(formTemplate.Id)
 		}
 		for _, formItemTemplate := range input.FormItemTemplate {
 			formItemTemplate.Id = guid.CreateGuid()

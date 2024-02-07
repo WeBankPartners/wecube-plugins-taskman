@@ -11,6 +11,9 @@ const (
 	pathQueryProcessDefinitions = "/platform/v1/process/definitions/list"
 	// pathQueryModel 查询model
 	pathQueryModel = "/platform/v1/models"
+
+	// @todo 后面调整回来 models.Config.Wecube.BaseUrl
+	BaseUrl = "http://106.52.160.142:18080"
 )
 
 // QueryProcessDefinitionList 查询编排列表
@@ -19,7 +22,7 @@ func QueryProcessDefinitionList(userToken, language string, param models.QueryPr
 	var procDefMap = make(map[string]*models.ProcDefDto)
 	processList = make([]*models.ProcDefDto, 0)
 	postBytes, _ := json.Marshal(param)
-	byteArr, err := HttpPost(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
+	byteArr, err := HttpPost(BaseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
 	if err != nil {
 		return
 	}
@@ -56,7 +59,7 @@ func QueryProcessDefinitionList(userToken, language string, param models.QueryPr
 func QueryAllModels(userToken, language string) (nodesList []*models.DataModel, err error) {
 	var response models.QueryAllModelsResponse
 	nodesList = make([]*models.DataModel, 0)
-	byteArr, err := HttpGet(models.Config.Wecube.BaseUrl+pathQueryModel, userToken, language)
+	byteArr, err := HttpGet(BaseUrl+pathQueryModel, userToken, language)
 	if err != nil {
 		return
 	}

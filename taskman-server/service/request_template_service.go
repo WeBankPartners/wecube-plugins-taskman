@@ -549,7 +549,7 @@ func SyncCoreRole() {
 			actions = append(actions, &dao.ExecAction{Sql: "delete from `role` where id=?", Param: []interface{}{role.Id}})
 			roleIdList = append(roleIdList, role.Id)
 		}
-		actions = append(actions, &dao.ExecAction{Sql: "update form_template set `role`=NULL where `role` in ('" + strings.Join(roleIdList, "','") + "')"})
+		//actions = append(actions, &dao.ExecAction{Sql: "update form_template set `role`=NULL where `role` in ('" + strings.Join(roleIdList, "','") + "')"})
 		actions = append(actions, &dao.ExecAction{Sql: "update request_template_group set manage_role=NULL where manage_role in ('" + strings.Join(roleIdList, "','") + "')"})
 	}
 	if len(actions) > 0 {

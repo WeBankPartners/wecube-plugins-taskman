@@ -217,17 +217,6 @@ type RequestProDataV2Dto struct {
 	Data         []*RequestPreDataTableObj `json:"data"`
 }
 
-type WorkflowEntityQuery struct {
-	Status  string                   `json:"status"`
-	Message string                   `json:"message"`
-	Data    []*WorkflowEntityDataObj `json:"data"`
-}
-
-type WorkflowEntityDataObj struct {
-	Id          string `json:"id"`
-	DisplayName string `json:"displayName"`
-}
-
 type RequestForm struct {
 	Id                string `json:"id"`
 	Name              string `json:"name"`
@@ -302,24 +291,6 @@ type RequestDetail struct {
 
 type UpdateRequestStatusParam struct {
 	Description string `json:"description"`
-}
-
-type QueryNodeSort []*InstanceStatusQueryNode
-
-func (q QueryNodeSort) Len() int {
-	return len(q)
-}
-
-func (q QueryNodeSort) Less(i, j int) bool {
-	t := strings.Compare(q[i].OrderedNo, q[j].OrderedNo)
-	if t < 0 {
-		return true
-	}
-	return false
-}
-
-func (q QueryNodeSort) Swap(i, j int) {
-	q[i], q[j] = q[j], q[i]
 }
 
 type RequestProgressObjSort []*RequestProgressObj

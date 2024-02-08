@@ -38,7 +38,7 @@ func notifyAction() {
 		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime, NowTime: time.Now().Format(models.DateTimeFormat)}
 		calcExpireObj(&tmpExpireObj)
 		if tmpExpireObj.Percent > 75 {
-			tmpErr := NotifyTaskMail(v.Id)
+			tmpErr := NotifyTaskMail(v.Id, models.CoreToken.GetCoreToken(), "")
 			if tmpErr != nil {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			} else {

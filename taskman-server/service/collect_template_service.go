@@ -34,7 +34,7 @@ func DeleteTemplateCollect(templateId, user string) error {
 }
 
 // QueryTemplateCollect 查询模板收藏
-func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken string, userRoles []string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
+func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userToken, language string, userRoles []string) (pageInfo models.PageInfo, rowData []*models.CollectDataObj, err error) {
 	var result models.ProcNodeObjList
 	var collectTemplateList []*models.CollectTemplateTable
 	var disableTemplateVersionMap = getAllDisableTemplateVersionMap()
@@ -90,7 +90,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	if len(rowData) > 0 {
 		for _, collectObj := range rowData {
 			templateUserRoleMap = make(map[string]bool, 0)
-			template, err := GetSimpleRequestTemplate(collectObj.Id)
+			template, err := GetRequestTemplateService().GetSimpleRequestTemplate(collectObj.Id)
 			if err != nil {
 				continue
 			}
@@ -121,7 +121,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 				// 模板使用权限变更,导致收藏模板时候角色,没权限新建请求
 				collectObj.Status = 3
 			}
-			result, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: collectObj.Id}, userToken, "template")
+			result, err = GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: collectObj.Id}, userToken, language, "template")
 			if err != nil {
 				continue
 			}

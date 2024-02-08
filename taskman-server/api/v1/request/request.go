@@ -17,7 +17,7 @@ func GetEntityData(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestId can not empty "))
 		return
 	}
-	result, err := service.GetEntityData(id, c.GetHeader("Authorization"))
+	result, err := service.GetEntityData(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -32,7 +32,7 @@ func ProcessDataPreview(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestTemplateId or entityDataId can not empty "))
 		return
 	}
-	result, err := service.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"))
+	result, err := service.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -43,7 +43,7 @@ func ProcessDataPreview(c *gin.Context) {
 func GetRequestPreviewData(c *gin.Context) {
 	requestId := c.Query("requestId")
 	entityDataId := c.Query("rootEntityId")
-	result, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"))
+	result, err := service.GetRequestPreData(requestId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -92,7 +92,7 @@ func DataList(c *gin.Context) {
 	if param.PageSize == 0 {
 		param.PageSize = 10
 	}
-	pageInfo, rowData, err := service.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -121,7 +121,7 @@ func HistoryList(c *gin.Context) {
 	if param.PageSize == 0 {
 		param.PageSize = 10
 	}
-	pageInfo, rowData, err := service.HistoryList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.HistoryList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -151,7 +151,7 @@ func ListRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := service.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission, middleware.GetRequestUser(c))
+	pageInfo, rowData, err := service.ListRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), permission, middleware.GetRequestUser(c), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -200,7 +200,7 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	err := service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
+	err := service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -289,7 +289,7 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	instanceId, err := service.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), param)
+	instanceId, err := service.StartRequest(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -310,7 +310,7 @@ func UpdateRequestStatus(c *gin.Context) {
 	if bindErr := c.ShouldBindJSON(&param); bindErr == nil {
 		description = param.Description
 	}
-	err := service.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), description)
+	err := service.UpdateRequestStatus(requestId, status, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), description)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -321,7 +321,7 @@ func UpdateRequestStatus(c *gin.Context) {
 
 func TerminateRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
-	err := service.RequestTermination(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"))
+	err := service.RequestTermination(requestId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -451,9 +451,12 @@ func RemoveAttachFile(c *gin.Context) {
 	}
 }
 
-func QueryWorkflowEntity(c *gin.Context) {
-	result := models.WorkflowEntityQuery{Status: "OK", Message: "Success", Data: []*models.WorkflowEntityDataObj{}}
-	result.Data = append(result.Data, &models.WorkflowEntityDataObj{Id: "taskman_request_id", DisplayName: "request"})
+func QueryProcDefEntity(c *gin.Context) {
+	result := models.ProcDefRootEntityResponse{
+		HttpResponseMeta: models.HttpResponseMeta{Status: "OK", Message: "Success"},
+		Data:             []*models.ProcDefEntityDataObj{},
+	}
+	result.Data = append(result.Data, &models.ProcDefEntityDataObj{Id: "taskman_request_id", DisplayName: "request"})
 	c.JSON(http.StatusOK, result)
 }
 
@@ -488,7 +491,7 @@ func GetRequestProgress(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowsData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"))
+	rowsData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -505,7 +508,7 @@ func GetProcessInstance(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowData, err = service.GetProcessInstance(instanceId, c.GetHeader("Authorization"))
+	rowData, err = service.GetProcDefService().GetProcessDefineInstance(instanceId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -513,7 +516,7 @@ func GetProcessInstance(c *gin.Context) {
 	middleware.ReturnData(c, rowData)
 }
 
-// ProcessDefinitions 流程定义
+// GetProcessDefinitions 流程定义
 func GetProcessDefinitions(c *gin.Context) {
 	var rowData *models.DefinitionsData
 	var err error
@@ -522,7 +525,7 @@ func GetProcessDefinitions(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowData, err = service.GetProcessDefinitions(templateId, c.GetHeader("Authorization"))
+	rowData, err = service.GetProcessDefinitions(templateId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -530,11 +533,11 @@ func GetProcessDefinitions(c *gin.Context) {
 	middleware.ReturnData(c, rowData)
 }
 
-// GetExecutionNodes  获取工作流执行节点
-func GetExecutionNodes(c *gin.Context) {
+// GetProcDefTaskNodeContext  获取工作流执行节点
+func GetProcDefTaskNodeContext(c *gin.Context) {
 	procInstanceId := c.Param("procInstanceId")
 	nodeInstanceId := c.Param("nodeInstanceId")
-	rowData, err := service.GetExecutionNodes(c.GetHeader("Authorization"), procInstanceId, nodeInstanceId)
+	rowData, err := service.GetProcDefService().GetProcDefTaskNodeContext(procInstanceId, nodeInstanceId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

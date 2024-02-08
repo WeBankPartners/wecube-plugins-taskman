@@ -3,8 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -25,7 +23,7 @@ type RequestTemplateService struct {
 	operationLogDao        dao.OperationLogDao
 }
 
-func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, userToken, language string, userRoles []string) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
+func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
@@ -73,7 +71,7 @@ func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestP
 	}
 	var rowData []*models.RequestTemplateTable
 	filterSql, queryColumn, queryParam := dao.TransFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
-	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
+	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(commonParam.Roles, "")
 	queryParam = append(userRolesFilterParam, queryParam...)
 	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
 	if param.Paging {
@@ -120,7 +118,7 @@ func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestP
 	}
 	if isQueryMessage {
 		for _, v := range rowData {
-			tmpErr := SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, userToken)
+			tmpErr := SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, commonParam.Token, commonParam.Language)
 			if tmpErr != nil {
 				err = fmt.Errorf("Try to sync proDefId fail,%s ", tmpErr.Error())
 				break
@@ -130,7 +128,7 @@ func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestP
 			return
 		}
 	}
-	roleMap, err = rpc.QueryAllRoles("Y", userToken, language)
+	roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language)
 	if err != nil {
 		return
 	}
@@ -168,7 +166,7 @@ func (s RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, u
 	requestTemplate := models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)}
 	// 状态更新到草稿,需要退回
-	if status == string(models.Draft) {
+	if status == string(models.RequestStatusDraft) {
 		requestTemplate.RollbackDesc = reason
 	}
 	return s.requestTemplateDao.Update(requestTemplate)
@@ -176,35 +174,6 @@ func (s RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, u
 
 func (s RequestTemplateService) GetRequestTemplate(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
 	return s.requestTemplateDao.Get(requestTemplateId)
-}
-
-func (s RequestTemplateService) GetCoreProcessListNew(userToken, language string) (processList []*models.ProcDefObj, err error) {
-	var procDefDtoList []*models.ProcDefDto
-	var nodesList []*models.DataModel
-	var entityMap = make(map[string]models.ProcEntity)
-	processList = make([]*models.ProcDefObj, 0)
-	procDefDtoList, err = rpc.QueryProcessDefinitionList(userToken, language, models.QueryProcessDefinitionParam{Plugins: []string{"taskman"}, Status: "deployed"})
-	if err != nil {
-		return
-	}
-	nodesList, err = rpc.QueryAllModels(userToken, language)
-	if err != nil {
-		return
-	}
-	entityMap = models.ConvertModelsList2Map(nodesList)
-	if len(procDefDtoList) > 0 {
-		for _, dto := range procDefDtoList {
-			processList = append(processList, &models.ProcDefObj{
-				ProcDefId:   dto.Id,
-				ProcDefKey:  dto.Key,
-				ProcDefName: dto.Name,
-				Status:      dto.Status,
-				RootEntity:  entityMap[dto.RootEntity],
-				CreatedTime: dto.CreatedTime,
-			})
-		}
-	}
-	return
 }
 
 func (s RequestTemplateService) CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) error {
@@ -246,6 +215,20 @@ func (s RequestTemplateService) CreateRequestTemplate(param *models.RequestTempl
 		return nil
 	})
 	return
+}
+
+func (s RequestTemplateService) GetAllCoreProcess(userToken, language string) map[string]string {
+	var processMap = make(map[string]string)
+	// 查询全部流程
+	result, _ := GetProcDefService().GetCoreProcessListAll(userToken, language)
+	if len(result) > 0 {
+		for _, procDef := range result {
+			if procDef != nil {
+				processMap[procDef.ProcDefKey] = procDef.RootEntity.DisplayName
+			}
+		}
+	}
+	return processMap
 }
 
 func QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
@@ -317,158 +300,20 @@ func CheckRequestTemplateGroupRoles(id string, roles []string) error {
 	return nil
 }
 
-func GetCoreProcessListNew(userToken string) (processList []*models.ProcDefObj, err error) {
-	processList = []*models.ProcDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions?tags="+models.ProcessFetchTabs, nil)
-	if reqErr != nil {
-		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	http.DefaultClient.CloseIdleConnections()
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do request to core fail,%s ", respErr.Error())
-		return
-	}
-	var respObj models.ProcQueryResponse
-	respBytes, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	err = json.Unmarshal(respBytes, &respObj)
-	log.Logger.Debug("Get core process list", log.String("body", string(respBytes)))
-	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
-		return
-	}
-	if respObj.Status != "OK" {
-		err = fmt.Errorf(respObj.Message)
-		return
-	}
-	processList = respObj.Data
-	return
-}
-
-func GetCoreProcessListAll(userToken, permission, tags string) (processList []*models.ProcAllDefObj, err error) {
-	if permission == "" {
-		permission = "USE"
-	}
-	processList = []*models.ProcAllDefObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+fmt.Sprintf("/platform/v1/process/definitions?includeDraft=0&permission=%s&tags=%s", permission, tags), nil)
-	if reqErr != nil {
-		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	http.DefaultClient.CloseIdleConnections()
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do request to core fail,%s ", respErr.Error())
-		return
-	}
-	var respObj models.ProcAllQueryResponse
-	respBytes, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	err = json.Unmarshal(respBytes, &respObj)
-	log.Logger.Debug("Get core process list", log.String("body", string(respBytes)))
-	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
-		return
-	}
-	if respObj.Status != "OK" {
-		err = fmt.Errorf(respObj.Message)
-		return
-	}
-	processList = respObj.Data
-	return
-}
-
-func GetProcessNodesByProc(requestTemplateObj models.RequestTemplateTable, userToken string, filterType string) (nodeList models.ProcNodeObjList, err error) {
-	if requestTemplateObj.ProcDefId == "" {
-		requestTemplateObj, err = GetSimpleRequestTemplate(requestTemplateObj.Id)
-		if err != nil {
-			return
-		}
-	}
-	if requestTemplateObj.ProcDefId == "" {
-		err = fmt.Errorf("Request template proDefId illegal ")
-		return
-	}
-	nodeList = []*models.ProcNodeObj{}
-	req, reqErr := http.NewRequest(http.MethodGet, models.Config.Wecube.BaseUrl+"/platform/v1/public/process/definitions/"+requestTemplateObj.ProcDefId+"/tasknodes", nil)
-	if reqErr != nil {
-		err = fmt.Errorf("Try to new http request to core fail,%s ", reqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	http.DefaultClient.CloseIdleConnections()
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do request to core fail,%s ", respErr.Error())
-		return
-	}
-	var respObj models.ProcNodeQueryResponse
-	respBytes, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	log.Logger.Debug("platform process task node return", log.String("body", string(respBytes)))
-	err = json.Unmarshal(respBytes, &respObj)
-	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
-		return
-	}
-	if respObj.Status != "OK" {
-		err = fmt.Errorf(respObj.Message)
-		return
-	}
-	for _, v := range respObj.Data {
-		if v.NodeType != "subProcess" {
-			continue
-		}
-		if filterType == "template" {
-			if v.TaskCategory != "SUTN" {
-				continue
-			}
-		} else if filterType == "bind" {
-			if v.DynamicBind == "Y" {
-				continue
-			}
-		}
-		if v.OrderedNo == "" {
-			v.OrderedNum = 0
-		} else {
-			v.OrderedNum, _ = strconv.Atoi(v.OrderedNo)
-		}
-		nodeList = append(nodeList, v)
-	}
-	sort.Sort(nodeList)
-	return
-}
-
-func getRoleMail(roleList []*models.RoleTable) (mailList []string) {
+func getRoleMail(roleList []*models.RoleTable, userToken, language string) (mailList []string) {
+	var roleMap map[string]*models.SimpleLocalRoleDto
+	var err error
 	if models.CoreToken.BaseUrl == "" || len(roleList) == 0 {
 		return
 	}
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/roles/retrieve", models.CoreToken.BaseUrl), strings.NewReader(""))
+	roleMap, err = rpc.QueryAllRoles("N", userToken, language)
 	if err != nil {
-		log.Logger.Error("Get core role key new request fail", log.Error(err))
-		return
-	}
-	request.Header.Set("Authorization", models.CoreToken.GetCoreToken())
-	res, err := http.DefaultClient.Do(request)
-	if err != nil {
-		log.Logger.Error("Get core role key ctxhttp request fail", log.Error(err))
-		return
-	}
-	b, _ := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	var result models.CoreRoleDto
-	err = json.Unmarshal(b, &result)
-	if err != nil {
-		log.Logger.Error("Get core role key json unmarshal result", log.Error(err))
+		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
 		return
 	}
 	for _, v := range roleList {
 		tmpMail := ""
-		for _, vv := range result.Data {
+		for _, vv := range roleMap {
 			if vv.Name == v.Id {
 				tmpMail = vv.Email
 				break
@@ -481,41 +326,20 @@ func getRoleMail(roleList []*models.RoleTable) (mailList []string) {
 	return
 }
 
-func SyncCoreRole() {
+func SyncCoreRole(userToken, language string) {
+	var roleMap map[string]*models.SimpleLocalRoleDto
+	var err error
 	if models.CoreToken.BaseUrl == "" {
 		return
 	}
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/roles/retrieve", models.CoreToken.BaseUrl), strings.NewReader(""))
-	if err != nil {
-		log.Logger.Error("Get core role key new request fail", log.Error(err))
-		return
-	}
-	request.Header.Set("Authorization", models.CoreToken.GetCoreToken())
-	res, err := http.DefaultClient.Do(request)
-	if err != nil {
-		log.Logger.Error("Get core role key ctxhttp request fail", log.Error(err))
-		return
-	}
-	b, _ := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	//log.Logger.Debug("Get core role response", log.String("body", string(b)))
-	var result models.CoreRoleDto
-	err = json.Unmarshal(b, &result)
-	if err != nil {
-		log.Logger.Error("Get core role key json unmarshal result", log.Error(err))
-		return
-	}
-	if len(result.Data) == 0 {
-		log.Logger.Warn("Get core role key fail with no data")
-		return
-	}
+	roleMap, err = rpc.QueryAllRoles("N", userToken, language)
 	var roleTable, addRoleList, delRoleList []*models.RoleTable
 	err = dao.X.SQL("select * from role").Find(&roleTable)
 	if err != nil {
 		log.Logger.Error("Try to sync core role fail", log.Error(err))
 		return
 	}
-	for _, v := range result.Data {
+	for _, v := range roleMap {
 		existFlag := false
 		for _, vv := range roleTable {
 			if v.Name == vv.Id {
@@ -524,12 +348,12 @@ func SyncCoreRole() {
 			}
 		}
 		if !existFlag {
-			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName, CoreId: v.Id, Email: v.Email})
+			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName, CoreId: v.ID, Email: v.Email})
 		}
 	}
 	for _, v := range roleTable {
 		existFlag := false
-		for _, vv := range result.Data {
+		for _, vv := range roleMap {
 			if v.Id == vv.Name {
 				existFlag = true
 				break
@@ -579,11 +403,11 @@ func getRequestTemplateModifyType(requestTemplate *models.RequestTemplateTable) 
 	return true
 }
 
-func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist bool, newProDefId string, err error) {
+func checkProDefId(proDefId, proDefName, proDefKey, userToken, language string) (exist bool, newProDefId string, err error) {
 	exist = false
 	var processList []*models.ProcDefObj
 	if proDefKey != "" {
-		tmpProcessList, tmpErr := GetCoreProcessListNew(userToken)
+		tmpProcessList, tmpErr := GetProcDefService().GetCoreProcessListNew(userToken, language, "")
 		if tmpErr != nil {
 			err = tmpErr
 		} else {
@@ -592,7 +416,7 @@ func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist boo
 			}
 		}
 	} else {
-		allProcessList, tmpErr := GetCoreProcessListAll(userToken, "", "")
+		allProcessList, tmpErr := GetProcDefService().GetCoreProcessListAll(userToken, language)
 		if tmpErr != nil {
 			err = tmpErr
 		} else {
@@ -637,14 +461,14 @@ func checkProDefId(proDefId, proDefName, proDefKey, userToken string) (exist boo
 	return
 }
 
-func getUpdateNodeDefIdActions(requestTemplateId, userToken string) (actions []*dao.ExecAction) {
+func getUpdateNodeDefIdActions(requestTemplateId, userToken, language string) (actions []*dao.ExecAction) {
 	actions = []*dao.ExecAction{}
 	var taskTemplate []*models.TaskTemplateTable
 	dao.X.SQL("select * from task_template where request_template=?", requestTemplateId).Find(&taskTemplate)
 	if len(taskTemplate) == 0 {
 		return actions
 	}
-	nodeList, _ := GetProcessNodesByProc(models.RequestTemplateTable{Id: requestTemplateId}, userToken, "template")
+	nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: requestTemplateId}, userToken, language, "template")
 	nodeMap := make(map[string]string)
 	for _, v := range nodeList {
 		nodeMap[v.NodeId] = v.NodeDefId
@@ -663,9 +487,9 @@ func getUpdateNodeDefIdActions(requestTemplateId, userToken string) (actions []*
 	return actions
 }
 
-func SyncProcDefId(requestTemplateId, proDefId, proDefName, proDefKey, userToken string) error {
+func SyncProcDefId(requestTemplateId, proDefId, proDefName, proDefKey, userToken, language string) error {
 	log.Logger.Info("Start sync process def id")
-	proExistFlag, newProDefId, err := checkProDefId(proDefId, proDefName, proDefKey, userToken)
+	proExistFlag, newProDefId, err := checkProDefId(proDefId, proDefName, proDefKey, userToken, language)
 	if err != nil {
 		return err
 	}
@@ -683,7 +507,7 @@ func SyncProcDefId(requestTemplateId, proDefId, proDefName, proDefKey, userToken
 		log.Logger.Info("Update requestTemplate proDefId done")
 		actions = []*dao.ExecAction{}
 	}
-	tmpActions := getUpdateNodeDefIdActions(requestTemplateId, userToken)
+	tmpActions := getUpdateNodeDefIdActions(requestTemplateId, userToken, language)
 	if len(tmpActions) > 0 {
 		err = dao.Transaction(tmpActions)
 		if err != nil {
@@ -725,7 +549,7 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAction, err error) {
-	rtObj, err := GetSimpleRequestTemplate(id)
+	rtObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(id)
 	if err != nil {
 		return actions, err
 	}
@@ -767,9 +591,9 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAc
 	return actions, err
 }
 
-func ListRequestTemplateEntityAttrs(id, userToken string) (result []*models.ProcEntity, err error) {
+func ListRequestTemplateEntityAttrs(id, userToken, language string) (result []*models.ProcEntity, err error) {
 	result = []*models.ProcEntity{}
-	nodes, getNodesErr := GetProcessNodesByProc(models.RequestTemplateTable{Id: id}, userToken, "all")
+	nodes, getNodesErr := GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: id}, userToken, language, "all")
 	if getNodesErr != nil {
 		err = getNodesErr
 		return
@@ -839,7 +663,7 @@ func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttri
 	return err
 }
 
-func GetSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
+func (s RequestTemplateService) GetSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
 	err = dao.X.SQL("select * from request_template where id=?", id).Find(&requestTemplateTable)
 	if err != nil {
@@ -892,7 +716,7 @@ func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTabl
 }
 
 func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -963,7 +787,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 
 func ConfirmRequestTemplate(requestTemplateId string) error {
 	var parentId string
-	requestTemplateObj, err := GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -979,7 +803,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if requestTemplateObj.RecordId != "" {
-		prevRequestTemplateObj, _ := GetSimpleRequestTemplate(requestTemplateObj.RecordId)
+		prevRequestTemplateObj, _ := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateObj.RecordId)
 		parentId = prevRequestTemplateObj.ParentId
 	}
 	version := requestTemplateObj.Version
@@ -1127,7 +951,7 @@ func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestT
 }
 
 // GetRequestTemplateByUserV2  新的选择模板接口
-func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
+func (s RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, language string, userRoles []string) (result []*models.UserRequestTemplateQueryObjNew, err error) {
 	var operatorObjTypeMap = make(map[string]string)
 	var roleTemplateGroupMap = make(map[string]map[string][]*models.RequestTemplateTableObj)
 	var resultMap = make(map[string]*models.UserRequestTemplateQueryObjNew)
@@ -1222,7 +1046,7 @@ func GetRequestTemplateByUserV2(user, userToken string, userRoles []string) (res
 	var collectFlag int
 	// 组装数据
 	// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
-	operatorObjTypeMap = getAllCoreProcess(userToken)
+	operatorObjTypeMap = s.GetAllCoreProcess(userToken, language)
 	if len(requestTemplateTable) > 0 {
 		for _, template := range requestTemplateTable {
 			collectFlag = 0
@@ -1400,7 +1224,7 @@ func getMGmtRequestTemplateRoles() map[string]string {
 	return roleMap
 }
 
-func QueryUserByRoles(roles []string, userToken string) (result []string, err error) {
+func QueryUserByRoles(roles []string, userToken, language string) (result []string, err error) {
 	result = []string{}
 	var roleTable []*models.RoleTable
 	rolesFilterSql, rolesFilterParam := dao.CreateListParams(roles, "")
@@ -1413,47 +1237,20 @@ func QueryUserByRoles(roles []string, userToken string) (result []string, err er
 		if v.CoreId == "" {
 			continue
 		}
-		tmpResult, tmpErr := queryCoreUser(v.CoreId, userToken)
+		tmpResult, tmpErr := rpc.QueryRolesUsers(v.CoreId, userToken, language)
 		if tmpErr != nil {
 			err = tmpErr
 			break
 		}
+		if len(tmpResult) == 0 {
+			continue
+		}
 		for _, vv := range tmpResult {
-			if _, b := existMap[vv]; !b {
-				result = append(result, vv)
-				existMap[vv] = 1
+			if _, b := existMap[vv.UserName]; !b {
+				result = append(result, vv.UserName)
+				existMap[vv.UserName] = 1
 			}
 		}
-	}
-	return
-}
-
-func queryCoreUser(roleId, userToken string) (result []string, err error) {
-	request, newRequestErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/roles/%s/users", models.CoreToken.BaseUrl, roleId), strings.NewReader(""))
-	if newRequestErr != nil {
-		err = fmt.Errorf("Get core role key new request fail:%s ", newRequestErr.Error())
-		return
-	}
-	request.Header.Set("Authorization", userToken)
-	res, requestErr := http.DefaultClient.Do(request)
-	if requestErr != nil {
-		err = fmt.Errorf("Get core user request fail:%s ", requestErr.Error())
-		return
-	}
-	b, _ := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	var response models.CoreUserDto
-	err = json.Unmarshal(b, &response)
-	if err != nil {
-		err = fmt.Errorf("Get core user json unmarshal result:%s ", err.Error())
-		return
-	}
-	if response.Status != "OK" {
-		err = fmt.Errorf(response.Message)
-		return
-	}
-	for _, v := range response.Data {
-		result = append(result, v.Username)
 	}
 	return
 }
@@ -1500,7 +1297,7 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 	return
 }
 
-func RequestTemplateImport(input models.RequestTemplateExport, userToken, confirmToken, operator string) (templateName, backToken string, err error) {
+func RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string) (templateName, backToken string, err error) {
 	var actions []*dao.ExecAction
 	var inputVersion = getTemplateVersion(&input.RequestTemplate)
 	var templateList []*models.RequestTemplateTable
@@ -1562,7 +1359,7 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		err = fmt.Errorf("RequestTemplate id illegal ")
 		return
 	}
-	allProcessList, processErr := GetCoreProcessListAll(userToken, "", "")
+	allProcessList, processErr := GetProcDefService().GetCoreProcessListAll(userToken, language)
 	if processErr != nil {
 		err = fmt.Errorf("Get core process list fail,%s ", processErr.Error())
 		return
@@ -1579,7 +1376,7 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, confir
 		err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
 		return
 	}
-	nodeList, _ := GetProcessNodesByProc(input.RequestTemplate, userToken, "template")
+	nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(input.RequestTemplate, userToken, language, "template")
 	for i, v := range input.TaskTemplate {
 		existFlag := false
 		for _, node := range nodeList {

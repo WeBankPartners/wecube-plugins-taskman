@@ -10,19 +10,21 @@ const (
 	DefaultHttpErrorCode = "ERROR"
 )
 
-// Status 定义请求状态
-type Status string
+// RequestStatus 定义请求状态
+type RequestStatus string
 
 const (
-	Draft               Status = "Draft"                 // 草稿
-	Pending             Status = "Pending"               // 等待定版
-	InProgress          Status = "InProgress"            // 执行中
-	InProgressFaulted   Status = "InProgress(Faulted)"   // 节点报错
-	Termination         Status = "Termination"           // 手动终止
-	Completed           Status = "Completed"             // 成功
-	InProgressTimeOuted Status = "InProgress(Timeouted)" // 节点超时
-	Faulted             Status = "Faulted"               // 自动退出
+	RequestStatusDraft               RequestStatus = "Draft"                 // 草稿
+	RequestStatusPending             RequestStatus = "Pending"               // 等待定版
+	RequestStatusInProgress          RequestStatus = "InProgress"            // 执行中
+	RequestStatusInProgressFaulted   RequestStatus = "InProgress(Faulted)"   // 节点报错
+	RequestStatusTermination         RequestStatus = "Termination"           // 手动终止
+	RequestStatusCompleted           RequestStatus = "Completed"             // 成功
+	RequestStatusInProgressTimeOuted RequestStatus = "InProgress(Timeouted)" // 节点超时
+	RequestStatusFaulted             RequestStatus = "Faulted"               // 自动退出
 )
+
+const ProcDefStatusTimeout = "Timeouted" //编排状态超时
 
 // TemplateType 模板类型
 type TemplateType string
@@ -49,4 +51,21 @@ type RolePermission string
 const (
 	RolePermissionUse  RolePermission = "USE"
 	RolePermissionMGMT RolePermission = "MGMT"
+)
+
+// ProcDefNodeType 编排节点类型
+type ProcDefNodeType string
+
+const (
+	ProcDefNodeTypeStart        ProcDefNodeType = "start"        //开始
+	ProcDefNodeTypeEnd          ProcDefNodeType = "end"          //结束
+	ProcDefNodeTypeAbnormal     ProcDefNodeType = "abnormal"     //异常
+	ProcDefNodeTypeDecision     ProcDefNodeType = "decision"     //判断
+	ProcDefNodeTypeFork         ProcDefNodeType = "fork"         //分流
+	ProcDefNodeTypeMerge        ProcDefNodeType = "merge"        //汇聚
+	ProcDefNodeTypeHuman        ProcDefNodeType = "human"        //人工节点
+	ProcDefNodeTypeAutomatic    ProcDefNodeType = "automatic"    //自动节点
+	ProcDefNodeTypeData         ProcDefNodeType = "data"         //数据节点
+	ProcDefNodeTypeDate         ProcDefNodeType = "date"         //时间节点
+	ProcDefNodeTypeTimeInterval ProcDefNodeType = "timeInterval" //时间间隔
 )

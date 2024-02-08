@@ -22,7 +22,7 @@ func AddTemplateCollect(c *gin.Context) {
 		return
 	}
 	var parentId string
-	requestTemplate, err := service.GetSimpleRequestTemplate(param.TemplateId)
+	requestTemplate, err := service.GetRequestTemplateService().GetSimpleRequestTemplate(param.TemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -86,7 +86,7 @@ func QueryTemplateCollect(c *gin.Context) {
 	if param.PageSize == 0 {
 		param.PageSize = 10
 	}
-	pageInfo, rowData, err := service.QueryTemplateCollect(&param, middleware.GetRequestUser(c), c.GetHeader("Authorization"), middleware.GetRequestRoles(c))
+	pageInfo, rowData, err := service.QueryTemplateCollect(&param, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -112,7 +112,7 @@ func FilterItem(c *gin.Context) {
 // getRequestTemplateParentId  根据模板id查找 最开始版本模板id
 func getRequestTemplateParentId(templateId string) (string, error) {
 	// 根据 templateId 查找parent_id,模板会变更产生多个版本,只需要关联最开始版本
-	requestTemplate, err := service.GetSimpleRequestTemplate(templateId)
+	requestTemplate, err := service.GetRequestTemplateService().GetSimpleRequestTemplate(templateId)
 	if err != nil {
 		return "", err
 	}

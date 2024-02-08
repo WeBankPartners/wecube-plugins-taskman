@@ -4,12 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/go-common-lib/guid"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"github.com/tealeg/xlsx"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -18,6 +12,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/tealeg/xlsx"
 )
 
 type RequestService struct {
@@ -54,13 +55,13 @@ var (
 	templateTypeArr = []int{1, 0} // 模版类型: 1表示发布,0表示请求
 )
 
-func GetEntityData(requestId, userToken string) (result models.EntityQueryResult, err error) {
-	var byteArr []byte
+func GetEntityData(requestId, userToken, language string) (result models.EntityQueryResult, err error) {
+	var list []*models.ProcDefEntityDataObj
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	requestTemplateObj, getTemplateErr := GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, getTemplateErr := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
 		return
@@ -69,24 +70,21 @@ func GetEntityData(requestId, userToken string) (result models.EntityQueryResult
 		err = fmt.Errorf("RequestTemplate packageName or entityName illegal ")
 		return
 	}
-	url := fmt.Sprintf("%s/platform/v1/process/definitions/%s/root-entities", models.Config.Wecube.BaseUrl, requestTemplateObj.ProcDefId)
-	byteArr, err = HttpGet(url, userToken)
-	var responseObj models.WorkflowEntityQuery
-	err = json.Unmarshal(byteArr, &responseObj)
+
+	list, err = GetProcDefService().GetProcDefRootEntities(requestTemplateObj.ProcDefId, userToken, language)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
-	} else {
-		result.Status = responseObj.Status
-		result.Message = responseObj.Message
-		for _, v := range responseObj.Data {
+		return
+	}
+	if len(list) > 0 {
+		for _, v := range list {
 			result.Data = append(result.Data, &models.EntityDataObj{Id: v.Id, DisplayName: v.DisplayName, PackageName: requestTemplateObj.PackageName, Entity: requestTemplateObj.EntityName})
 		}
 	}
 	return
 }
 
-func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (result models.EntityTreeResult, err error) {
-	requestTemplateObj, getTemplateErr := GetSimpleRequestTemplate(requestTemplateId)
+func ProcessDataPreview(requestTemplateId, entityDataId, userToken, language string) (result *models.EntityTreeData, err error) {
+	requestTemplateObj, getTemplateErr := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
 		return
@@ -95,24 +93,7 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken string) (resu
 		err = fmt.Errorf("RequestTemplate proDefId illegal ")
 		return
 	}
-	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/public/process/definitions/%s/preview/entities/%s", models.Config.Wecube.BaseUrl, requestTemplateObj.ProcDefId, entityDataId), nil)
-	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
-		return
-	}
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	err = json.Unmarshal(b, &result)
-	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
-	}
-	return
+	return GetProcDefService().GetProcDefDataPreview(requestTemplateObj.ProcDefId, entityDataId, userToken, language)
 }
 
 // GetRequestCount 工作台请求统计
@@ -249,7 +230,7 @@ func collectSQL(templateType int, user string) (sql string, queryParam []interfa
 }
 
 // DataList 首页工作台数据列表
-func DataList(param *models.PlatformRequestParam, userRoles []string, userToken, user string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
+func DataList(param *models.PlatformRequestParam, userRoles []string, userToken, user, language string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
 	// 先拼接查询条件
 	var templateType int
 	var sql string
@@ -275,7 +256,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			sql, queryParam = pendingRequestSQL(templateType, userRolesFilterSql, userRolesFilterParam)
 		} else if param.Type == 2 {
 			sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
-			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), true)
+			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 			return
 		}
 	case "hasProcessed":
@@ -283,7 +264,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			sql, queryParam = hasProcessedRequestSQL(templateType, user)
 		} else if param.Type == 2 {
 			sql, queryParam = hasProcessedTaskSQL(templateType, user)
-			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), true)
+			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 			return
 		}
 	case "submit":
@@ -294,12 +275,12 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatRequestSQL(where, sql), true)
+	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatRequestSQL(where, sql), language, true)
 	return
 }
 
 // HistoryList 发布历史
-func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToken, user string) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
+func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToken, user, language string) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var sql = "select id from request"
 	var queryParam []interface{}
 	where := transHistoryConditionToSQL(param)
@@ -309,7 +290,7 @@ func HistoryList(param *models.RequestHistoryParam, userRoles []string, userToke
 		sql = "select id from request where  `role` in (" + userRolesFilterSql + ")"
 		queryParam = append(queryParam, userRolesFilterParam...)
 	}
-	pageInfo, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), true)
+	pageInfo, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), language, true)
 	return
 }
 
@@ -319,7 +300,7 @@ func Export(w http.ResponseWriter, param *models.RequestHistoryParam, userToken,
 	var sql = "select id from request"
 	var queryParam []interface{}
 	where := transHistoryConditionToSQL(param)
-	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), false)
+	_, rowsData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, User: user, UserToken: userToken}, getPlatRequestSQL(where, sql), language, false)
 	if len(rowsData) > 0 {
 		fileName, titles, dataArr := getRequestExportData(language, rowsData)
 		file := xlsx.NewFile()
@@ -443,21 +424,21 @@ func getInternationalizationCurNode(language, node string) string {
 func getInternationalizationStatus(language string, status string) string {
 	if strings.Contains(language, "zh-CN") {
 		switch status {
-		case string(models.Draft):
+		case string(models.RequestStatusDraft):
 			return "草稿"
-		case string(models.Pending):
+		case string(models.RequestStatusPending):
 			return "等待定版"
-		case string(models.InProgress):
+		case string(models.RequestStatusInProgress):
 			return "执行中"
-		case string(models.InProgressFaulted):
+		case string(models.RequestStatusInProgressFaulted):
 			return "节点报错"
-		case string(models.Termination):
+		case string(models.RequestStatusTermination):
 			return "手动终止"
-		case string(models.Completed):
+		case string(models.RequestStatusCompleted):
 			return "成功"
-		case string(models.InProgressTimeOuted):
+		case string(models.RequestStatusInProgressTimeOuted):
 			return "节点超时"
-		case string(models.Faulted):
+		case string(models.RequestStatusFaulted):
 			return "自动退出"
 		}
 	}
@@ -473,7 +454,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	var err error
 	var reportTime, requestExpectTime, taskCreateTime, taskExpectTime, taskApprovalTime time.Time
 	loc, _ := time.LoadLocation("Local")
-	if dataObject.Status == string(models.Draft) {
+	if dataObject.Status == string(models.RequestStatusDraft) {
 		return
 	}
 	// 计算任务停留时长
@@ -499,7 +480,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		return
 	}
 	// 计算请求停留时长
-	if dataObject.Status == string(models.Completed) || dataObject.Status == string(models.Termination) || dataObject.Status == string(models.Faulted) {
+	if dataObject.Status == string(models.RequestStatusCompleted) || dataObject.Status == string(models.RequestStatusTermination) || dataObject.Status == string(models.RequestStatusFaulted) {
 		updateTime, err := time.ParseInLocation(models.DateTimeFormat, dataObject.UpdatedTime, loc)
 		if err != nil {
 			log.Logger.Error("getRequestRemainDays UpdatedTime err", log.Error(err))
@@ -526,7 +507,7 @@ func getPlatTaskSQL(where, sql string) string {
 		"from request r join request_template rt on r.request_template = rt.id left join task t on r.id = t.request) temp %s and task_id in (%s) ", where, sql)
 }
 
-func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
+func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var operatorObjTypeMap = make(map[string]string)
 	// 排序处理
 	if req.Param.Sorting != nil {
@@ -552,7 +533,7 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 	}
 	if len(rowsData) > 0 {
 		// 操作对象类型,新增模板是录入.历史模板操作对象类型为空,需要全量处理下
-		operatorObjTypeMap = getAllCoreProcess(req.UserToken)
+		operatorObjTypeMap = GetRequestTemplateService().GetAllCoreProcess(req.UserToken, language)
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := getAllRequestTemplate()
@@ -575,10 +556,10 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 				platformDataObj.CurNode = RequestPending
 			}
 			if platformDataObj.ProcInstanceId != "" {
-				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken)
+				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken, language)
 			}
 			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
-				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken)
+				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken, language)
 				if newStatus == "InternallyTerminated" {
 					newStatus = "Termination"
 				}
@@ -595,7 +576,7 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
 			}
 			if platformDataObj.OperatorObj == "" && platformDataObj.Cache != "" {
-				result, _ := GetEntityData(platformDataObj.Id, req.UserToken)
+				result, _ := GetEntityData(platformDataObj.Id, req.UserToken, language)
 				if len(result.Data) > 0 {
 					var cacheObj models.RequestPreDataDto
 					err = json.Unmarshal([]byte(platformDataObj.Cache), &cacheObj)
@@ -621,7 +602,7 @@ func getPlatData(req models.PlatDataParam, newSQL string, page bool) (pageInfo m
 	return
 }
 
-func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission, operator string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
+func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken, permission, operator, language string) (pageInfo models.PageInfo, rowData []*models.RequestTable, err error) {
 	rowData = []*models.RequestTable{}
 	if strings.ToLower(permission) == "mgmt" {
 		permission = "MGMT"
@@ -662,7 +643,7 @@ func ListRequest(param *models.QueryRequestParam, userRoles []string, userToken,
 				v.HandleRoles = []string{}
 			}
 			if strings.Contains(v.Status, "InProgress") && v.ProcInstanceId != "" {
-				newStatus := getInstanceStatus(v.ProcInstanceId, userToken)
+				newStatus := getInstanceStatus(v.ProcInstanceId, userToken, language)
 				if newStatus == "InternallyTerminated" {
 					newStatus = "Termination"
 				}
@@ -729,50 +710,55 @@ func calcExpireObj(param *models.ExpireObj) {
 	return
 }
 
-func getInstanceStatus(instanceId, userToken string) string {
-	response, err := getProcessInstances(instanceId, userToken)
+func getInstanceStatus(instanceId, userToken, language string) string {
+	processInstance, err := GetProcDefService().GetProcessDefineInstance(instanceId, userToken, language)
 	if err != nil {
 		return ""
 	}
-	if response.Data.Status != "InProgress" {
-		return response.Data.Status
+	if processInstance == nil {
+		return ""
 	}
-	status := "InProgress"
-	for _, v := range response.Data.TaskNodeInstances {
-		if v.Status == "Faulted" {
-			status = "InProgress(Faulted)"
-			break
-		}
-		if v.Status == "Timeouted" {
-			status = "InProgress(Timeouted)"
-			break
+	if processInstance.Status != string(models.RequestStatusInProgress) {
+		return processInstance.Status
+	}
+	status := string(models.RequestStatusInProgress)
+	if len(processInstance.TaskNodeInstances) > 0 {
+		for _, v := range processInstance.TaskNodeInstances {
+			if v.Status == string(models.RequestStatusFaulted) {
+				status = string(models.RequestStatusInProgressFaulted)
+				break
+			}
+			if v.Status == models.ProcDefStatusTimeout {
+				status = string(models.RequestStatusInProgressTimeOuted)
+				break
+			}
 		}
 	}
 	return status
 }
 
-func getCurNodeName(instanceId, userToken string) (progress int, curNode string) {
+func getCurNodeName(instanceId, userToken, language string) (progress int, curNode string) {
 	var total int
-	response, err := getProcessInstances(instanceId, userToken)
-	if err != nil || len(response.Data.TaskNodeInstances) == 0 {
+	processInstance, err := GetProcDefService().GetProcessDefineInstance(instanceId, userToken, language)
+	if err != nil || processInstance == nil || len(processInstance.TaskNodeInstances) == 0 {
 		return
 	}
 	// 统计完成进度 ,已完成/总数, 编号不为空
-	for _, v := range response.Data.TaskNodeInstances {
+	for _, v := range processInstance.TaskNodeInstances {
 		if v.OrderedNo != "" {
-			if v.Status == "Completed" {
+			if v.Status == string(models.RequestStatusCompleted) {
 				progress++
 			}
 			total++
 		}
 	}
 	progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
-	switch response.Data.Status {
+	switch processInstance.Status {
 	case "Completed":
 		curNode = CurNodeCompleted
 		return
 	case "InProgress":
-		for _, v := range response.Data.TaskNodeInstances {
+		for _, v := range processInstance.TaskNodeInstances {
 			if v.Status == "InProgress" || v.Status == "Timeouted" || v.Status == "Faulted" {
 				curNode = v.NodeName
 				return
@@ -782,7 +768,7 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 		curNode = "NotStarted"
 	case "Faulted":
 		// 失败状态,筛选成功并且有序号的节点
-		list := filterSuccessNode(response.Data.TaskNodeInstances)
+		list := filterSuccessNode(processInstance.TaskNodeInstances)
 		if len(list) == 0 {
 			return
 		}
@@ -792,10 +778,10 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 		return
 	default:
 		// 失败状态,显示具体执行失败的节点. filterNode 过滤orderNo为空大节点
-		list := filterNode(response.Data.TaskNodeInstances)
+		list := filterNode(processInstance.TaskNodeInstances)
 		if len(list) == 0 {
 			// 如果都没有序号,找一个NotStarted节点,找不到返回 Completed
-			for _, v := range response.Data.TaskNodeInstances {
+			for _, v := range processInstance.TaskNodeInstances {
 				if v.Status == "NotStarted" {
 					curNode = v.NodeName
 					return
@@ -816,8 +802,8 @@ func getCurNodeName(instanceId, userToken string) (progress int, curNode string)
 	return
 }
 
-func filterNode(instances []*models.InstanceStatusQueryNode) []*models.InstanceStatusQueryNode {
-	var list []*models.InstanceStatusQueryNode
+func filterNode(instances []*models.TaskNodeInstances) []*models.TaskNodeInstances {
+	var list []*models.TaskNodeInstances
 	for _, node := range instances {
 		if node.OrderedNo != "" {
 			list = append(list, node)
@@ -826,44 +812,14 @@ func filterNode(instances []*models.InstanceStatusQueryNode) []*models.InstanceS
 	return list
 }
 
-func filterSuccessNode(instances []*models.InstanceStatusQueryNode) []*models.InstanceStatusQueryNode {
-	var list []*models.InstanceStatusQueryNode
+func filterSuccessNode(instances []*models.TaskNodeInstances) []*models.TaskNodeInstances {
+	var list []*models.TaskNodeInstances
 	for _, node := range instances {
 		if node.OrderedNo != "" && node.Status == "Completed" {
 			list = append(list, node)
 		}
 	}
 	return list
-}
-
-// getProcessInstances 获取编排
-func getProcessInstances(instanceId, userToken string) (response models.InstanceStatusQuery, err error) {
-	var req *http.Request
-	var resp *http.Response
-	req, err = http.NewRequest(http.MethodGet, fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, instanceId), nil)
-	if err != nil {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "new http request fail"), log.Error(err))
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	resp, err = http.DefaultClient.Do(req)
-	if err != nil {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to do http request fail"), log.Error(err))
-		return
-	}
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	err = json.Unmarshal(b, &response)
-	if err != nil {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", "Try to json unmarshal body fail"), log.Error(err))
-		return
-	}
-	if response.Status != "OK" {
-		log.Logger.Error("GetInstanceStatus fail", log.String("msg", response.Message))
-		err = fmt.Errorf("GetInstanceStatus fail")
-		return
-	}
-	return
 }
 
 func calcExpireTime(reportTime string, expireDay int) (expire string) {
@@ -938,13 +894,13 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 	return
 }
 
-func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken string) error {
-	requestTemplateObj, err := GetSimpleRequestTemplate(param.RequestTemplate)
+func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken, language string) error {
+	requestTemplateObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
 	var actions []*dao.ExecAction
-	err = SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken)
+	err = SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
 	if err != nil {
 		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
 	}
@@ -1151,7 +1107,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	requestTemplateObj, _ := GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, _ := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
 	result.Id = requestTemplateObj.Id
 	result.Name = requestTemplateObj.Name
 	result.PackageName = requestTemplateObj.PackageName
@@ -1165,7 +1121,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	return
 }
 
-func GetRequestPreData(requestId, entityDataId, userToken string) (result []*models.RequestPreDataTableObj, err error) {
+func GetRequestPreData(requestId, entityDataId, userToken, language string) (result []*models.RequestPreDataTableObj, err error) {
 	var requestTables []*models.RequestTable
 	err = dao.X.SQL("select cache from request where id=?", requestId).Find(&requestTables)
 	if err != nil {
@@ -1203,15 +1159,15 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 	if entityDataId == "" {
 		return
 	}
-	previewData, previewErr := ProcessDataPreview(requestTemplateId, entityDataId, userToken)
+	previewData, previewErr := ProcessDataPreview(requestTemplateId, entityDataId, userToken, language)
 	if previewErr != nil {
 		return result, previewErr
 	}
-	if len(previewData.Data.EntityTreeNodes) == 0 {
+	if len(previewData.EntityTreeNodes) == 0 {
 		return
 	}
 	for _, entity := range result {
-		for _, tmpData := range previewData.Data.EntityTreeNodes {
+		for _, tmpData := range previewData.EntityTreeNodes {
 			if tmpData.EntityName == entity.Entity {
 				tmpValueData := make(map[string]interface{})
 				for _, title := range entity.Title {
@@ -1225,13 +1181,13 @@ func GetRequestPreData(requestId, entityDataId, userToken string) (result []*mod
 }
 
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
-	result := []*models.RequestPreDataTableObj{}
+	var result []*models.RequestPreDataTableObj
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
 	tmpItemGroupName := items[0].ItemGroupName
-	tmpRefEntity := []string{}
-	tmpItems := []*models.FormItemTemplateTable{}
+	var tmpRefEntity []string
+	var tmpItems []*models.FormItemTemplateTable
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
@@ -1363,7 +1319,7 @@ func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPre
 	return result
 }
 
-func StartRequest(requestId, operator, userToken string, cacheData models.RequestCacheData) (result models.StartInstanceResultData, err error) {
+func StartRequest(requestId, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
 	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", requestId).Find(&requestTemplateTable)
 	if len(requestTemplateTable) == 0 {
@@ -1371,57 +1327,34 @@ func StartRequest(requestId, operator, userToken string, cacheData models.Reques
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
-	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, &cacheData)
+	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
 	if tmpErr != nil {
 		return result, fmt.Errorf("Try to append useless entity fail,%s ", tmpErr.Error())
 	}
-	fillBindingWithRequestData(requestId, userToken, &cacheData, entityDepMap)
+	fillBindingWithRequestData(requestId, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
 	log.Logger.Info("cacheByte", log.String("cacheBytes", string(cacheBytes)))
 	startParam := BuildRequestProcessData(cacheData)
-	startParamBytes, tmpErr := json.Marshal(startParam)
-	if tmpErr != nil {
-		err = fmt.Errorf("Json marshal cache data fail,%s ", tmpErr.Error())
-		return
-	}
-	log.Logger.Info("Start request", log.String("param", string(startParamBytes)))
-	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances", models.Config.Wecube.BaseUrl), bytes.NewReader(startParamBytes))
-	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	req.Header.Set("Content-Type", "application/json")
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
-		return
-	}
-	var respResult models.StartInstanceResponse
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	err = json.Unmarshal(b, &respResult)
+	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
-	if respResult.Status != "OK" {
-		err = fmt.Errorf("Start instance fail,%s ", respResult.Message)
+	if result == nil {
+		err = fmt.Errorf("StartProcDefInstances response empty")
 		return
 	}
-	result = respResult.Data
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	expireTime := calcExpireTime(nowTime, requestTemplateTable[0].ExpireDay)
-	_, err = dao.X.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, expireTime, respResult.Data.Status, string(cacheBytes), operator, nowTime, requestId)
+	_, err = dao.X.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, expireTime, result.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
 
-func UpdateRequestStatus(requestId, status, operator, userToken, description string) error {
+func UpdateRequestStatus(requestId, status, operator, userToken, language, description string) error {
 	var err error
 	var request models.RequestTable
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if status == "Pending" {
-		bindData, bindErr := GetRequestPreBindData(requestId, userToken)
+		bindData, bindErr := GetRequestPreBindData(requestId, userToken, language)
 		if bindErr != nil {
 			return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
 		}
@@ -1429,7 +1362,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 		bindCache := string(bindCacheBytes)
 		_, err = dao.X.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
 		if err == nil {
-			notifyRoleMail(requestId)
+			notifyRoleMail(requestId, userToken, language)
 		}
 	} else if status == "Draft" {
 		request, err = GetSimpleRequest(requestId)
@@ -1444,7 +1377,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, description str
 	return err
 }
 
-func fillBindingWithRequestData(requestId, userToken string, cacheData *models.RequestCacheData, existDepMap map[string][]string) {
+func fillBindingWithRequestData(requestId, userToken, language string, cacheData *models.RequestCacheData, existDepMap map[string][]string) {
 	var items []*models.FormItemTemplateTable
 	dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
@@ -1479,7 +1412,7 @@ func fillBindingWithRequestData(requestId, userToken string, cacheData *models.R
 	}
 	entityOidMap := make(map[string]int)
 	dataIdOidMap := make(map[string]string)
-	matchEntityRoot(requestId, userToken, cacheData)
+	matchEntityRoot(requestId, userToken, language, cacheData)
 	if cacheData.RootEntityValue.EntityDataOp != "create" {
 		dataIdOidMap[cacheData.RootEntityValue.EntityDataId] = cacheData.RootEntityValue.Oid
 	}
@@ -1595,7 +1528,7 @@ func getEntityNameFromAttrDefId(attrDefId, attrName string) string {
 	return attrName
 }
 
-func matchEntityRoot(requestId, userToken string, cacheData *models.RequestCacheData) {
+func matchEntityRoot(requestId, userToken, language string, cacheData *models.RequestCacheData) {
 	for _, taskNode := range cacheData.TaskNodeBindInfos {
 		existFlag := false
 		for _, entityValue := range taskNode.BoundEntityValues {
@@ -1622,7 +1555,7 @@ func matchEntityRoot(requestId, userToken string, cacheData *models.RequestCache
 		}
 	}
 	if cacheData.RootEntityValue.Oid != "" && cacheData.RootEntityValue.EntityName == "" {
-		entityQueryResult, entityQueryErr := GetEntityData(requestId, userToken)
+		entityQueryResult, entityQueryErr := GetEntityData(requestId, userToken, language)
 		if entityQueryErr != nil {
 			log.Logger.Error("Try to fill root entity data fail", log.Error(entityQueryErr))
 		} else {
@@ -1661,35 +1594,15 @@ func listToSet(input []string, itemMap map[string]int) []string {
 	return result
 }
 
-func RequestTermination(requestId, operator, userToken string) error {
+func RequestTermination(requestId, operator, userToken, language string) error {
 	requestObj, err := GetRequest(requestId)
 	if err != nil {
 		return err
 	}
 	param := models.TerminateInstanceParam{ProcInstId: requestObj.ProcInstanceId, ProcInstKey: requestObj.ProcInstanceKey}
-	paramBytes, tmpErr := json.Marshal(param)
-	if tmpErr != nil {
-		return fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
-	}
-	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/platform/v1/public/process/instances/%s/terminations", models.Config.Wecube.BaseUrl, requestObj.ProcInstanceId), bytes.NewReader(paramBytes))
-	if newReqErr != nil {
-		return fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
-	}
-	req.Header.Set("Authorization", userToken)
-	req.Header.Set("Content-Type", "application/json")
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		return fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
-	}
-	var respResult models.StartInstanceResponse
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	err = json.Unmarshal(b, &respResult)
+	err = GetProcDefService().TerminationsProcDefInstance(param, userToken, language)
 	if err != nil {
-		return fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
-	}
-	if respResult.Status != "OK" {
-		return fmt.Errorf("Terminate instance fail,%s ", respResult.Message)
+		return err
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err = dao.X.Exec("update request set status='Termination',updated_by=?,updated_time=? where id=?", operator, nowTime, requestId)
@@ -1720,7 +1633,7 @@ func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestPar
 	return
 }
 
-func GetRequestPreBindData(requestId, userToken string) (result models.RequestCacheData, err error) {
+func GetRequestPreBindData(requestId, userToken, language string) (result models.RequestCacheData, err error) {
 	var requestTable []*models.RequestTable
 	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
@@ -1732,14 +1645,14 @@ func GetRequestPreBindData(requestId, userToken string) (result models.RequestCa
 	if requestTable[0].Cache == "" {
 		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
 	}
-	processNodes, processErr := GetProcessNodesByProc(models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, "bind")
+	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, language, "bind")
 	if processErr != nil {
 		return result, processErr
 	}
 	entityDefIdMap := make(map[string]string)
 	entityBindMap := make(map[string][]string)
 	for _, v := range processNodes {
-		tmpBoundEntities := []string{}
+		var tmpBoundEntities []string
 		for _, vv := range v.BoundEntities {
 			if vv == nil {
 				continue
@@ -1936,7 +1849,7 @@ func getPendingRequestData(request *models.RequestTable) *models.TaskQueryObj {
 	return taskQueryObj
 }
 
-func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetail, err error) {
+func GetRequestDetailV2(requestId, userToken, language string) (result models.RequestDetail, err error) {
 	// get request
 	var requests []*models.RequestTable
 	var taskQueryList []*models.TaskQueryObj
@@ -1946,7 +1859,7 @@ func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetai
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
 	}
 	if strings.Contains(requests[0].Status, "InProgress") && requests[0].ProcInstanceId != "" {
-		newStatus := getInstanceStatus(requests[0].ProcInstanceId, userToken)
+		newStatus := getInstanceStatus(requests[0].ProcInstanceId, userToken, language)
 		if newStatus == "InternallyTerminated" {
 			newStatus = "Termination"
 		}
@@ -1962,7 +1875,7 @@ func GetRequestDetailV2(requestId, userToken string) (result models.RequestDetai
 			}
 		}
 	}
-	result.Request = getRequestForm(requests[0], userToken)
+	result.Request = getRequestForm(requests[0], userToken, language)
 	taskQueryList, err = GetRequestTaskListV2(requestId)
 	if err != nil {
 		return
@@ -2136,18 +2049,18 @@ func BuildRequestProcessData(input models.RequestCacheData) (result models.Reque
 	return result
 }
 
-func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.RequestCacheData) (entityDepMap map[string][]string, err error) {
+func AppendUselessEntity(requestTemplateId, userToken, language string, cacheData *models.RequestCacheData) (entityDepMap map[string][]string, err error) {
 	entityDepMap = make(map[string][]string)
 	if cacheData.RootEntityValue.Oid == "" || strings.HasPrefix(cacheData.RootEntityValue.Oid, "tmp") {
 		return entityDepMap, nil
 	}
 	// get core preview data list
-	preData, preErr := ProcessDataPreview(requestTemplateId, cacheData.RootEntityValue.Oid, userToken)
+	preData, preErr := ProcessDataPreview(requestTemplateId, cacheData.RootEntityValue.Oid, userToken, language)
 	if preErr != nil {
 		return entityDepMap, fmt.Errorf("Try to get process preview data fail,%s ", preErr.Error())
 	}
 	// get binding entity data
-	entityList := []*models.RequestCacheEntityValue{}
+	var entityList []*models.RequestCacheEntityValue
 	entityExistMap := make(map[string]int)
 	for _, v := range cacheData.TaskNodeBindInfos {
 		for _, vv := range v.BoundEntityValues {
@@ -2158,10 +2071,10 @@ func AppendUselessEntity(requestTemplateId, userToken string, cacheData *models.
 		}
 	}
 	// preEntityList is other entity data
-	preEntityList := []*models.EntityTreeObj{}
+	var preEntityList []*models.EntityTreeObj
 	rootParent := models.RequestCacheEntityAttrValue{}
-	rootSucceeding := []string{}
-	for _, v := range preData.Data.EntityTreeNodes {
+	var rootSucceeding []string
+	for _, v := range preData.EntityTreeNodes {
 		if _, b := entityExistMap[v.Id]; !b {
 			preEntityList = append(preEntityList, v)
 		}
@@ -2273,7 +2186,7 @@ func listContains(inputList []string, element string) bool {
 	return result
 }
 
-func notifyRoleMail(requestId string) error {
+func notifyRoleMail(requestId, userToken, language string) error {
 	if !models.MailEnable {
 		return nil
 	}
@@ -2286,7 +2199,7 @@ func notifyRoleMail(requestId string) error {
 	if len(roleTable) == 0 {
 		return nil
 	}
-	mailList := getRoleMail(roleTable)
+	mailList := getRoleMail(roleTable, userToken, language)
 	if len(mailList) == 0 {
 		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
 		return nil
@@ -2320,7 +2233,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	parentRequest = requestTable[0]
-	requestTemplate, err = GetSimpleRequestTemplate(parentRequest.RequestTemplate)
+	requestTemplate, err = GetRequestTemplateService().GetSimpleRequestTemplate(parentRequest.RequestTemplate)
 	if err != nil {
 		return
 	}
@@ -2597,10 +2510,11 @@ func getTaskApproveHandler(requestId string, result models.TaskTemplateDto) stri
 }
 
 // GetRequestProgress  请求已创建时,获取请求进度
-func GetRequestProgress(requestId, userToken string) (rowsData []*models.RequestProgressObj, err error) {
+func GetRequestProgress(requestId, userToken, language string) (rowsData []*models.RequestProgressObj, err error) {
 	var request models.RequestTable
 	var pendingHandler string
 	var status = int(Completed) //初始化为已完成
+	var processInstance *models.ProcessInstance
 	request, err = GetSimpleRequest(requestId)
 	if err != nil {
 		return
@@ -2610,7 +2524,7 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 	} else {
 		pendingHandler = GetRequestTemplateManageRole(request.RequestTemplate)
 	}
-	subRowsData := getCommonRequestProgress(requestId, request.RequestTemplate, userToken)
+	subRowsData := getCommonRequestProgress(requestId, request.RequestTemplate, language, userToken)
 	switch request.Status {
 	case "Draft":
 		status = int(NotStart)
@@ -2656,24 +2570,28 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 					}
 				}
 			}
-			response, err := getProcessInstances(request.ProcInstanceId, userToken)
+			processInstance, err = GetProcDefService().GetProcessDefineInstance(request.ProcInstanceId, userToken, language)
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
+			if processInstance == nil {
+				log.Logger.Error("getProcessDefineInstance nil", log.String("procInstanceId", request.ProcInstanceId))
+				return
+			}
 
 			// 自动退出
-			if response.Data.Status == "Faulted" {
+			if processInstance.Status == "Faulted" {
 				subRowsData[len(subRowsData)-1].Node = AutoExit
 				subRowsData[len(subRowsData)-1].Status = int(AutoExitStatus)
 			} else {
 				// 手动终止
-				if response.Data.Status == "InternallyTerminated" {
+				if processInstance.Status == "InternallyTerminated" {
 					subRowsData[len(subRowsData)-1].Node = InternallyTerminated
 					subRowsData[len(subRowsData)-1].Status = int(InternallyTerminatedStatus)
 				}
 				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
 				var exist bool
-				for _, v := range response.Data.TaskNodeInstances {
+				for _, v := range processInstance.TaskNodeInstances {
 					exist = false
 					if v.Status == "Faulted" || v.Status == "Timeouted" {
 						for _, rowData := range subRowsData {
@@ -2716,10 +2634,10 @@ func GetRequestProgress(requestId, userToken string) (rowsData []*models.Request
 	return
 }
 
-func getCommonRequestProgress(requestId, templateId, userToken string) (rowsData []*models.RequestProgressObj) {
+func getCommonRequestProgress(requestId, templateId, language, userToken string) (rowsData []*models.RequestProgressObj) {
 	var nodeList models.ProcNodeObjList
 	var err error
-	nodeList, err = GetProcessNodesByProc(models.RequestTemplateTable{Id: templateId}, userToken, "template")
+	nodeList, err = GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: templateId}, userToken, language, "template")
 	if err != nil {
 		log.Logger.Error("GetProcessNodesByProc err", log.Error(err))
 		rowsData = append(rowsData, &models.RequestProgressObj{
@@ -2778,63 +2696,17 @@ func getCommonRequestProgress(requestId, templateId, userToken string) (rowsData
 	return
 }
 
-func GetProcessDefinitions(templateId, userToken string) (rowData *models.DefinitionsData, err error) {
+func GetProcessDefinitions(templateId, userToken, language string) (rowData *models.DefinitionsData, err error) {
 	var template models.RequestTemplateTable
-	var response models.ProcessDefinitionsResponse
-	var url string
-	var byteArr []byte
-	template, err = GetSimpleRequestTemplate(templateId)
+	template, err = GetRequestTemplateService().GetSimpleRequestTemplate(templateId)
 	if err != nil {
 		return
 	}
-	url = fmt.Sprintf("%s/platform/v1/process/definitions/%s/outline", models.Config.Wecube.BaseUrl, template.ProcDefId)
-	byteArr, err = HttpGet(url, userToken)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(byteArr, &response)
-	if err != nil {
-		return
-	}
-	rowData = response.Data
-	return
-}
-
-func GetProcessInstance(instanceId, userToken string) (rowData *models.ProcessInstance, err error) {
-	var byteArr []byte
-	var response models.ProcessInstanceResponse
-	url := fmt.Sprintf("%s/platform/v1/process/instances/%s", models.Config.Wecube.BaseUrl, instanceId)
-	byteArr, err = HttpGet(url, userToken)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(byteArr, &response)
-	if err != nil {
-		return
-	}
-	rowData = response.Data
-	return
-}
-
-func HttpGet(url, userToken string) (byteArr []byte, err error) {
-	req, newReqErr := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
-	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
-		return
-	}
-	req.Header.Set("Authorization", userToken)
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
-		return
-	}
-	byteArr, _ = ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	return
+	return GetProcDefService().GetProcessDefine(template.ProcDefId, userToken, language)
 }
 
 // getRequestForm 获取请求信息
-func getRequestForm(request *models.RequestTable, userToken string) (form models.RequestForm) {
+func getRequestForm(request *models.RequestTable, userToken, language string) (form models.RequestForm) {
 	if request == nil {
 		return
 	}
@@ -2873,7 +2745,7 @@ func getRequestForm(request *models.RequestTable, userToken string) (form models
 		form.CurNode = RequestPending
 	}
 	if request.ProcInstanceId != "" {
-		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken)
+		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken, language)
 	}
 	_, form.Handler = getRequestHandler(request.Id)
 	return
@@ -2918,7 +2790,7 @@ func getRequestHandler(requestId string) (role, handler string) {
 func getRequestRemainTime(requestId string) (startTime string, effectiveDays int) {
 	request, _ := GetSimpleRequest(requestId)
 	if request.Status == "Draft" || request.Status == "Pending" || request.Status == "Completed" {
-		requestTemplate, _ := GetSimpleRequestTemplate(request.RequestTemplate)
+		requestTemplate, _ := GetRequestTemplateService().GetSimpleRequestTemplate(request.RequestTemplate)
 		startTime = request.ReportTime
 		effectiveDays = requestTemplate.ExpireDay
 		return
@@ -2937,25 +2809,9 @@ func getRequestRemainTime(requestId string) (startTime string, effectiveDays int
 			}
 		}
 	}
-	requestTemplate, _ := GetSimpleRequestTemplate(request.RequestTemplate)
+	requestTemplate, _ := GetRequestTemplateService().GetSimpleRequestTemplate(request.RequestTemplate)
 	startTime = request.CreatedTime
 	effectiveDays = requestTemplate.ExpireDay
-	return
-}
-
-func GetExecutionNodes(userToken string, procInstanceId, nodeInstanceId string) (data interface{}, err error) {
-	var response models.ExecutionResponse
-	var byteArr []byte
-	var url = fmt.Sprintf("%s/platform/v1/process/instances/%s/tasknodes/%s/context", models.Config.Wecube.BaseUrl, procInstanceId, nodeInstanceId)
-	byteArr, err = HttpGet(url, userToken)
-	if err != nil {
-		return
-	}
-	err = json.Unmarshal(byteArr, &response)
-	if err != nil {
-		return
-	}
-	data = response.Data
 	return
 }
 
@@ -3049,18 +2905,4 @@ func convertArray2Map(arr []string) map[string]bool {
 		hashMap[str] = true
 	}
 	return hashMap
-}
-
-func getAllCoreProcess(userToken string) map[string]string {
-	var processMap = make(map[string]string)
-	// 查询全部流程
-	result, _ := GetCoreProcessListNew(userToken)
-	if len(result) > 0 {
-		for _, procDef := range result {
-			if procDef != nil {
-				processMap[procDef.ProcDefKey] = procDef.RootEntity.DisplayName
-			}
-		}
-	}
-	return processMap
 }

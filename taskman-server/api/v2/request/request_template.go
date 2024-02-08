@@ -8,7 +8,7 @@ import (
 
 // GetRequestTemplateByUser 选择模板
 func GetRequestTemplateByUser(c *gin.Context) {
-	result, err := service.GetRequestTemplateByUserV2(middleware.GetRequestUser(c), c.GetHeader("Authorization"), middleware.GetRequestRoles(c))
+	result, err := service.GetRequestTemplateService().GetRequestTemplateByUserV2(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

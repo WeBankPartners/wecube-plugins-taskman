@@ -36,6 +36,7 @@ func HttpPost(url, userToken, language string, postBytes []byte) (byteArr []byte
 	}
 	req.Header.Set("Authorization", userToken)
 	req.Header.Set("Accept-Language", language)
+	req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
 		err = fmt.Errorf("do http reqeust fail,%s ", reqErr.Error())

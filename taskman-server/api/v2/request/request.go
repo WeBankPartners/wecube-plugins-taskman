@@ -17,7 +17,7 @@ var (
 // GetRequestDetail 新版请求详情
 func GetRequestDetail(c *gin.Context) {
 	requestId := c.Param("requestId")
-	result, err := service.GetRequestDetailV2(requestId, c.GetHeader("Authorization"))
+	result, err := service.GetRequestDetailV2(requestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -39,7 +39,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param role can not empty "))
 		return
 	}
-	template, err := service.GetSimpleRequestTemplate(param.RequestTemplate)
+	template, err := service.GetRequestTemplateService().GetSimpleRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -58,7 +58,7 @@ func CreateRequest(c *gin.Context) {
 	} else {
 		param.TemplateVersion = template.Version
 	}
-	err = service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"))
+	err = service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -143,7 +143,7 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
 		return
 	}
-	instanceId, err := service.StartRequest(requestId, operator, c.GetHeader("Authorization"), param)
+	instanceId, err := service.StartRequest(requestId, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

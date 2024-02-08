@@ -98,7 +98,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/progress", Method: "POST", HandlerFunc: request.GetRequestProgress},
 		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: request.GetProcessDefinitions},
 		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: request.GetProcessInstance},
-		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: request.GetExecutionNodes},
+		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: request.GetProcDefTaskNodeContext},
 		&handlerFuncObj{Url: "/request/history/list", Method: "POST", HandlerFunc: request.HistoryList},
 		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
 		// For core 1:get task form template  2:create task
@@ -173,7 +173,7 @@ func InitHttpServer() {
 	}
 
 	// entity query
-	r.POST(urlPrefix+"/entities/request/query", request.QueryWorkflowEntity)
+	r.POST(urlPrefix+"/entities/request/query", request.QueryProcDefEntity)
 	r.Run(":" + models.Config.HttpServer.Port)
 }
 

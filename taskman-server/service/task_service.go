@@ -1,7 +1,6 @@
 package service
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
@@ -10,8 +9,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"io/ioutil"
-	"net/http"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"strconv"
 	"strings"
 	"time"
@@ -609,20 +607,9 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 	for _, v := range requestParam.Results.Outputs {
 		v.Comment = param.Comment
 	}
-	requestBytes, _ := json.Marshal(requestParam)
-	req, newReqErr := http.NewRequest(http.MethodPost, models.Config.Wecube.BaseUrl+callbackUrl, bytes.NewReader(requestBytes))
-	if newReqErr != nil {
-		return fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
-	}
-	req.Header.Set("Authorization", userToken)
-	req.Header.Set("Content-Type", "application/json")
-	resp, respErr := http.DefaultClient.Do(req)
-	if respErr != nil {
-		return fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
-	}
 	var respResult models.CallbackResult
-	b, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	requestBytes, _ := json.Marshal(requestParam)
+	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, "", requestBytes)
 	log.Logger.Info("Callback response", log.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
@@ -810,7 +797,7 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	}
 }
 
-func NotifyTaskMail(taskId string) error {
+func NotifyTaskMail(taskId, userToken, language string) error {
 	if !models.MailEnable {
 		return nil
 	}
@@ -829,7 +816,7 @@ func NotifyTaskMail(taskId string) error {
 	if len(roleTable) == 0 {
 		return fmt.Errorf("can not find handle role with task:%s ", taskId)
 	}
-	mailList := getRoleMail(roleTable)
+	mailList := getRoleMail(roleTable, userToken, language)
 	if len(mailList) == 0 {
 		log.Logger.Warn("Notify task mail break,email is empty", log.String("role", roleTable[0].Id))
 		return fmt.Errorf("handle role email is empty ")

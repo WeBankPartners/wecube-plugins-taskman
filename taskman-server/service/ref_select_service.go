@@ -640,7 +640,7 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 	if resp.StatusCode != 200 {
 		return result, fmt.Errorf("Do request fail,response statusCode:%d resp:%s ", resp.StatusCode, string(b))
 	}
-	var response models.WorkflowEntityQuery
+	var response models.ProcDefRootEntityResponse
 	err = json.Unmarshal(b, &response)
 	if err != nil {
 		return result, fmt.Errorf("Json unmarshal response body fail,%s ", err.Error())

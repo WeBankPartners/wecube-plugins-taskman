@@ -24,6 +24,8 @@ var (
 	taskService TaskService
 	// 记录 service
 	operationLogService OperationLogService
+	// 编排 service
+	procDefService ProcDefService
 )
 
 func New() (err error) {
@@ -44,6 +46,7 @@ func New() (err error) {
 	attachFileService = AttachFileService{attachFileDao: attachFileDao}
 	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, requestTemplateRoleDao: requestTemplateRoleDao, operationLogDao: operationLogDao}
 	operationLogService = OperationLogService{operationLogDao: operationLogDao}
+	procDefService = ProcDefService{}
 	db = engine
 	return
 }
@@ -61,6 +64,11 @@ func GetRequestTemplateService() RequestTemplateService {
 // GetOperationLogService 获取记录日志 service
 func GetOperationLogService() OperationLogService {
 	return operationLogService
+}
+
+// GetProcDefService 获取编排 service
+func GetProcDefService() ProcDefService {
+	return procDefService
 }
 
 // transaction 事务处理

@@ -127,3 +127,11 @@ type TerminateInstanceParam struct {
 	ProcInstId  string `json:"procInstId"`
 	ProcInstKey string `json:"procInstKey"`
 }
+
+// CommonParam 通用参数
+type CommonParam struct {
+	User     string   // 登录用户
+	Roles    []string // 用户角色
+	Token    string   // 鉴权token
+	Language string   // 环境语言
+}

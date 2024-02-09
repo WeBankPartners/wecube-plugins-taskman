@@ -14,8 +14,6 @@ var (
 	collectTemplateService CollectTemplateService
 	// 表单 service
 	formService FormService
-	// 表单项 service
-	formItemService FormItemService
 	// 表单模板 service
 	formTemplateService FormTemplateService
 	// 日志记录 service
@@ -34,10 +32,6 @@ var (
 	taskService TaskService
 	// 任务模板 service
 	taskTemplateService TaskTemplateService
-	// 任务模板角色
-	taskTemplateRoleService TaskTemplateRoleService
-	// 模板表单项 service
-	formItemTemplateService FormItemTemplateService
 )
 
 func New() (err error) {
@@ -58,7 +52,7 @@ func New() (err error) {
 	requestDao := dao.RequestDao{DB: engine}
 	requestTemplateDao := dao.RequestTemplateDao{DB: engine}
 	requestTemplateGroupDao := dao.RequestTemplateGroupDao{DB: engine}
-	//requestTemplateRoleDao := dao.RequestTemplateRoleDao{DB: engine}
+	requestTemplateRoleDao := dao.RequestTemplateRoleDao{DB: engine}
 	taskDao := dao.TaskDao{DB: engine}
 	taskTemplateDao := dao.TaskTemplateDao{DB: engine}
 	taskTemplateRoleDao := dao.TaskTemplateRoleDao{DB: engine}
@@ -71,12 +65,9 @@ func New() (err error) {
 	refSelectService = RefSelectService{}
 	requestService = RequestService{requestDao: requestDao}
 	taskService = TaskService{taskDao: taskDao}
-	taskTemplateService = TaskTemplateService{taskTemplateDao: taskTemplateDao}
-	taskTemplateRoleService = TaskTemplateRoleService{taskTemplateRoleDao: taskTemplateRoleDao}
-	formService = FormService{formDao: formDao}
-	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao}
-	formItemService = FormItemService{formItemDao: formItemDao}
-	formItemTemplateService = FormItemTemplateService{formItemTemplateDao: formItemTemplateDao}
+	taskTemplateService = TaskTemplateService{taskTemplateDao: taskTemplateDao, taskTemplateRoleDao: taskTemplateRoleDao}
+	formService = FormService{formDao: formDao, formItemDao: formItemDao}
+	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao, requestTemplateRoleDao: requestTemplateRoleDao}
 	requestTemplateGroupService = RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
 	formTemplateService = FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
 	db = engine
@@ -118,11 +109,6 @@ func GetFormService() FormService {
 	return formService
 }
 
-// GetFormItemService 表单项 service
-func GetFormItemService() FormItemService {
-	return formItemService
-}
-
 // GetFormTemplateService 表单模板 service
 func GetFormTemplateService() FormTemplateService {
 	return formTemplateService
@@ -141,11 +127,6 @@ func GetTaskService() TaskService {
 // GetTaskTemplateService 获取任务模板 service
 func GetTaskTemplateService() TaskTemplateService {
 	return taskTemplateService
-}
-
-// GetTaskTemplateRoleService 获取任务模板角色 service
-func GetTaskTemplateRoleService() TaskTemplateRoleService {
-	return taskTemplateRoleService
 }
 
 // GetRequestTemplateGroupService 获取请求模板组 service

@@ -10,7 +10,8 @@ import (
 )
 
 type TaskTemplateService struct {
-	taskTemplateDao dao.TaskTemplateDao
+	taskTemplateDao     dao.TaskTemplateDao
+	taskTemplateRoleDao dao.TaskTemplateRoleDao
 }
 
 func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models.TaskTemplateDto, err error) {

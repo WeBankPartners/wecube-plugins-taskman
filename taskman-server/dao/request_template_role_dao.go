@@ -11,7 +11,7 @@ type RequestTemplateRoleDao struct {
 
 func (d RequestTemplateRoleDao) CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) (bool, error) {
 	return d.DB.Table(models.RequestTemplateRoleTable{}.TableName()).Where("request_template=?", requestTemplateId).And("role_type=?",
-		"MGMT").In("role", userRoles).Exist()
+		models.RolePermissionMGMT).In("role", userRoles).Exist()
 }
 
 func (d RequestTemplateRoleDao) Add(session *xorm.Session, requestTemplateRole *models.RequestTemplateRoleTable) (affected int64, err error) {

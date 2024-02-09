@@ -12,20 +12,32 @@ var (
 	attachFileService AttachFileService
 	// 模板收藏 service
 	collectTemplateService CollectTemplateService
+	// 表单 service
+	formService FormService
+	// 表单项 service
+	formItemService FormItemService
 	// 表单模板 service
 	formTemplateService FormTemplateService
+	// 日志记录 service
+	operationLogService OperationLogService
+	// 编排 service
+	procDefService ProcDefService
 	// CMDB service
 	refSelectService RefSelectService
 	// 请求 service
 	requestService RequestService
 	// 请求模板 service
 	requestTemplateService RequestTemplateService
+	// 请求模板组 service
+	requestTemplateGroupService RequestTemplateGroupService
 	// 任务 service
 	taskService TaskService
-	// 记录 service
-	operationLogService OperationLogService
-	// 编排 service
-	procDefService ProcDefService
+	// 任务模板 service
+	taskTemplateService TaskTemplateService
+	// 任务模板角色
+	taskTemplateRoleService TaskTemplateRoleService
+	// 模板表单项 service
+	formItemTemplateService FormItemTemplateService
 )
 
 func New() (err error) {
@@ -36,17 +48,37 @@ func New() (err error) {
 		return
 	}
 	// 初始化Dao
-	requestDao := dao.RequestDao{DB: engine}
 	attachFileDao := dao.AttachFileDao{DB: engine}
-	requestTemplateDao := dao.RequestTemplateDao{DB: engine}
-	requestTemplateRoleDao := dao.RequestTemplateRoleDao{DB: engine}
+	collectTemplateDao := dao.CollectTemplateDao{DB: engine}
+	formDao := dao.FormDao{DB: engine}
+	formItemDao := dao.FormItemDao{DB: engine}
+	formItemTemplateDao := dao.FormItemTemplateDao{DB: engine}
 	operationLogDao := dao.OperationLogDao{DB: engine}
+	formTemplateDao := dao.FormTemplateDao{DB: engine}
+	requestDao := dao.RequestDao{DB: engine}
+	requestTemplateDao := dao.RequestTemplateDao{DB: engine}
+	requestTemplateGroupDao := dao.RequestTemplateGroupDao{DB: engine}
+	//requestTemplateRoleDao := dao.RequestTemplateRoleDao{DB: engine}
+	taskDao := dao.TaskDao{DB: engine}
+	taskTemplateDao := dao.TaskTemplateDao{DB: engine}
+	taskTemplateRoleDao := dao.TaskTemplateRoleDao{DB: engine}
 	// 初始化Service
+	collectTemplateService = CollectTemplateService{collectTemplateDao: collectTemplateDao}
 	requestService = RequestService{requestDao: requestDao}
 	attachFileService = AttachFileService{attachFileDao: attachFileDao}
-	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, requestTemplateRoleDao: requestTemplateRoleDao, operationLogDao: operationLogDao}
 	operationLogService = OperationLogService{operationLogDao: operationLogDao}
 	procDefService = ProcDefService{}
+	refSelectService = RefSelectService{}
+	requestService = RequestService{requestDao: requestDao}
+	taskService = TaskService{taskDao: taskDao}
+	taskTemplateService = TaskTemplateService{taskTemplateDao: taskTemplateDao}
+	taskTemplateRoleService = TaskTemplateRoleService{taskTemplateRoleDao: taskTemplateRoleDao}
+	formService = FormService{formDao: formDao}
+	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao}
+	formItemService = FormItemService{formItemDao: formItemDao}
+	formItemTemplateService = FormItemTemplateService{formItemTemplateDao: formItemTemplateDao}
+	requestTemplateGroupService = RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
+	formTemplateService = FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
 	db = engine
 	return
 }
@@ -71,6 +103,56 @@ func GetProcDefService() ProcDefService {
 	return procDefService
 }
 
+// GetAttachFileService 文件上传 service
+func GetAttachFileService() AttachFileService {
+	return attachFileService
+}
+
+// GetCollectTemplateService 模板收藏 service
+func GetCollectTemplateService() CollectTemplateService {
+	return collectTemplateService
+}
+
+// GetFormService 表单 service
+func GetFormService() FormService {
+	return formService
+}
+
+// GetFormItemService 表单项 service
+func GetFormItemService() FormItemService {
+	return formItemService
+}
+
+// GetFormTemplateService 表单模板 service
+func GetFormTemplateService() FormTemplateService {
+	return formTemplateService
+}
+
+// GetRefSelectService service
+func GetRefSelectService() RefSelectService {
+	return refSelectService
+}
+
+// GetTaskService 任务 service
+func GetTaskService() TaskService {
+	return taskService
+}
+
+// GetTaskTemplateService 获取任务模板 service
+func GetTaskTemplateService() TaskTemplateService {
+	return taskTemplateService
+}
+
+// GetTaskTemplateRoleService 获取任务模板角色 service
+func GetTaskTemplateRoleService() TaskTemplateRoleService {
+	return taskTemplateRoleService
+}
+
+// GetRequestTemplateGroupService 获取请求模板组 service
+func GetRequestTemplateGroupService() RequestTemplateGroupService {
+	return requestTemplateGroupService
+}
+
 // transaction 事务处理
 func transaction(f func(session *xorm.Session) error) (err error) {
 	session := db.NewSession()
@@ -81,5 +163,20 @@ func transaction(f func(session *xorm.Session) error) (err error) {
 		session.Rollback()
 	}
 	session.Commit()
+	return
+}
+
+// transactionWithoutForeignCheck 事务处理
+func transactionWithoutForeignCheck(f func(session *xorm.Session) error) (err error) {
+	session := db.NewSession()
+	defer session.Close()
+	session.Begin()
+	session.Exec("SET FOREIGN_KEY_CHECKS=0")
+	err = f(session)
+	if err != nil {
+		session.Rollback()
+	}
+	session.Commit()
+	session.Exec("SET FOREIGN_KEY_CHECKS=1")
 	return
 }

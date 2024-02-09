@@ -165,7 +165,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	result, err := service.GetRequestTemplateService().CreateRequestTemplate(&param)
+	result, err := service.GetRequestTemplateService().CreateRequestTemplate(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

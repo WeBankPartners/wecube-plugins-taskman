@@ -5,7 +5,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"sort"
-	"strconv"
 )
 
 // 编排任务节点
@@ -89,8 +88,7 @@ func (s ProcDefService) GetProcessDefine(procDefId, userToken, language string) 
 
 // GetProcessDefineTaskNodes 获取编排节点
 func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate models.RequestTemplateTable, userToken, language, filterType string) (nodeList []*models.ProcNodeObj, err error) {
-	var dynamicBind = "n"
-	var allTaskNodeList []*models.ProcDefNode
+	var allTaskNodeList []*models.ProcNodeObj
 	nodeList = make([]*models.ProcNodeObj, 0)
 	if requestTemplate.ProcDefId == "" {
 		requestTemplate, err = GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplate.Id)
@@ -121,23 +119,7 @@ func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate models.Request
 					continue
 				}
 			}
-			if node.DynamicBind {
-				dynamicBind = "y"
-			}
-			nodeList = append(nodeList, &models.ProcNodeObj{
-				NodeId:        node.NodeId,
-				NodeName:      node.Name,
-				NodeType:      node.NodeType,
-				NodeDefId:     node.ProcDefId,
-				TaskCategory:  node.NodeType,
-				RoutineExp:    node.RoutineExpression,
-				ServiceId:     node.ServiceName,
-				ServiceName:   node.ServiceName,
-				OrderedNo:     strconv.Itoa(node.OrderedNo),
-				OrderedNum:    node.OrderedNo,
-				DynamicBind:   dynamicBind,
-				BoundEntities: nil,
-			})
+			nodeList = append(nodeList, node)
 		}
 		sort.Sort(models.ProcNodeObjList(nodeList))
 	}

@@ -14,7 +14,7 @@ func GetRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	result, err := service.GetRequestFormTemplate(id)
+	result, err := service.GetFormTemplateService().GetRequestFormTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -23,29 +23,30 @@ func GetRequestFormTemplate(c *gin.Context) {
 }
 
 func UpdateRequestFormTemplate(c *gin.Context) {
+	var param models.FormTemplateDto
+	var err error
+	var user = middleware.GetRequestUser(c)
 	id := c.Param("id")
 	if id == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	var param models.FormTemplateDto
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	var err error
-	param.UpdatedBy = middleware.GetRequestUser(c)
+	param.UpdatedBy = user
 	if param.Id != "" {
-		err = service.UpdateRequestFormTemplate(param)
+		err = service.GetFormTemplateService().UpdateRequestFormTemplate(param, id)
 	} else {
-		err = service.CreateRequestFormTemplate(param, id)
+		err = service.GetFormTemplateService().CreateRequestFormTemplate(param, id)
 	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
-	result, _ := service.GetRequestFormTemplate(id)
+	service.SetRequestTemplateToCreated(id, user)
+	result, _ := service.GetFormTemplateService().GetRequestFormTemplate(id)
 	middleware.ReturnData(c, result)
 }
 
@@ -78,7 +79,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 
 func DeleteRequestFormTemplate(c *gin.Context) {
 	id := c.Param("id")
-	err := service.DeleteRequestFormTemplate(id)
+	err := service.GetFormTemplateService().DeleteRequestFormTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

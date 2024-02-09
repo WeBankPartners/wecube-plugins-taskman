@@ -18,12 +18,16 @@ func (d RequestTemplateDao) Add(session *xorm.Session, requestTemplate *models.R
 	return session.InsertOne(requestTemplate)
 }
 
-func (d RequestTemplateDao) Update(requestTemplate models.RequestTemplateTable) (err error) {
-	_, err = d.DB.ID(requestTemplate.Id).Update(&requestTemplate)
+func (d RequestTemplateDao) Update(session *xorm.Session, requestTemplate *models.RequestTemplateTable) (err error) {
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	_, err = d.DB.ID(requestTemplate.Id).Update(requestTemplate)
 	return
 }
 
 func (d RequestTemplateDao) Get(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
-	_, err = d.DB.ID(requestTemplateId).Get(requestTemplate)
+	_, err = d.DB.ID(requestTemplateId).Get(&requestTemplate)
 	return
 }

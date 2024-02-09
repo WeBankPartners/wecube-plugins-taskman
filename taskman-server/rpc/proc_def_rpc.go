@@ -80,9 +80,9 @@ func QueryProcessDefinitionList(userToken, language, manageRole string, param mo
 }
 
 // GetProcessDefineTaskNodes 获取编排节点
-func GetProcessDefineTaskNodes(procDefId, userToken, language string) (list []*models.ProcDefNode, err error) {
+func GetProcessDefineTaskNodes(procDefId, userToken, language string) (list []*models.ProcNodeObj, err error) {
 	var response models.ProcDefTaskNodesResponse
-	list = make([]*models.ProcDefNode, 0)
+	list = make([]*models.ProcNodeObj, 0)
 	byteArr, err := HttpGet(fmt.Sprintf(BaseUrl+pathQueryProcessDefinitionsTaskNodes, procDefId), userToken, language)
 	if err != nil {
 		return

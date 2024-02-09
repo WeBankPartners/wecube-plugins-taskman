@@ -78,7 +78,7 @@ type ProcNodeQueryResponse struct {
 
 type ProcDefTaskNodesResponse struct {
 	HttpResponseMeta
-	Data []*ProcDefNode `json:"data"`
+	Data []*ProcNodeObj `json:"data"`
 }
 
 type CoreProcessQueryResponse struct {

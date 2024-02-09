@@ -19,5 +19,5 @@ func (d RequestTemplateRoleDao) Add(session *xorm.Session, requestTemplateRole *
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	return session.Insert(requestTemplateRole)
+	return session.InsertOne(requestTemplateRole)
 }

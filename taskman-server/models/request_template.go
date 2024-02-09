@@ -191,7 +191,7 @@ func (s RequestTemplateSort) Less(i, j int) bool {
 	return s[i].UpdatedTime > s[j].UpdatedTime
 }
 
-func ConvertRequestTemplateUpdateParam2RequestTemplate(param *RequestTemplateUpdateParam) *RequestTemplateTable {
+func ConvertRequestTemplateUpdateParam2RequestTemplate(param RequestTemplateUpdateParam) *RequestTemplateTable {
 	nowTime := time.Now().Format(DateTimeFormat)
 	return &RequestTemplateTable{
 		Id:               param.Id,

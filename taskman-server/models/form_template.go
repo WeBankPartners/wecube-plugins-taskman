@@ -37,3 +37,15 @@ type TaskFormItemQueryObj struct {
 	AttrDefDataType  string `json:"attrDefDataType" xorm:"attr_def_data_type"`
 	ElementType      string `json:"elementType" xorm:"element_type"`
 }
+
+func CovertFormTemplateDto2Model(dto FormTemplateDto) *FormTemplateTable {
+	return &FormTemplateTable{
+		Id:          dto.Id,
+		Name:        dto.Name,
+		Description: dto.Description,
+		CreatedBy:   dto.UpdatedBy,
+		CreatedTime: dto.NowTime,
+		UpdatedBy:   dto.UpdatedBy,
+		UpdatedTime: dto.NowTime,
+	}
+}

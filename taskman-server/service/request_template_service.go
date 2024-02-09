@@ -157,19 +157,24 @@ func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestP
 	return
 }
 
-func (s RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId, handler string) (err error) {
-	return s.requestTemplateDao.Update(models.RequestTemplateTable{Id: requestTemplateId, Handler: handler, UpdatedBy: handler,
-		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
-}
-
 func (s RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, user, status, reason string) (err error) {
-	requestTemplate := models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)}
 	// 状态更新到草稿,需要退回
 	if status == string(models.RequestStatusDraft) {
 		requestTemplate.RollbackDesc = reason
 	}
-	return s.requestTemplateDao.Update(requestTemplate)
+	return s.requestTemplateDao.Update(nil, requestTemplate)
+}
+
+func (s RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId, handler string) (err error) {
+	return s.requestTemplateDao.Update(nil, &models.RequestTemplateTable{Id: requestTemplateId, Handler: handler, UpdatedBy: handler,
+		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
+}
+
+func (s RequestTemplateService) UpdateFormTemplate(session *xorm.Session, requestTemplateId, formTemplate, description string, expireDay int) (err error) {
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, FormTemplate: &formTemplate, Description: description, ExpireDay: expireDay}
+	return s.requestTemplateDao.Update(session, requestTemplate)
 }
 
 func (s RequestTemplateService) GetRequestTemplate(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
@@ -187,7 +192,7 @@ func (s RequestTemplateService) CheckRequestTemplateRoles(requestTemplateId stri
 	return nil
 }
 
-func (s RequestTemplateService) CreateRequestTemplate(param *models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
+func (s RequestTemplateService) CreateRequestTemplate(param models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
 	newGuid := guid.CreateGuid()
 	param.Id = newGuid
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
@@ -592,10 +597,10 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAc
 }
 
 func ListRequestTemplateEntityAttrs(id, userToken, language string) (result []*models.ProcEntity, err error) {
+	var nodes []*models.ProcNodeObj
 	result = []*models.ProcEntity{}
-	nodes, getNodesErr := GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: id}, userToken, language, "all")
-	if getNodesErr != nil {
-		err = getNodesErr
+	nodes, err = GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: id}, userToken, language, "all")
+	if err != nil {
 		return
 	}
 	if len(nodes) == 0 {
@@ -1600,4 +1605,15 @@ func UpdateRequestTemplateParentIdById(templateId, parentId string) (err error) 
 		}
 	}
 	return
+}
+
+func buildVersionNum(version string) string {
+	if version == "" {
+		return "v1"
+	}
+	tmpV, err := strconv.Atoi(version[1:])
+	if err != nil {
+		return fmt.Sprintf("v%d", time.Now().Unix())
+	}
+	return fmt.Sprintf("v%d", tmpV+1)
 }

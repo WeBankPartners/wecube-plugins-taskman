@@ -1,141 +1,175 @@
 package service
 
 import (
-	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"strconv"
 	"time"
+	"xorm.io/xorm"
 )
 
 type FormTemplateService struct {
-	formTemplateDao dao.FormTemplateDao
+	formTemplateDao     dao.FormTemplateDao
+	formItemTemplateDao dao.FormItemTemplateDao
+	formDao             dao.FormDao
 }
 
-func GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error) {
-	result = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
-	requestTemplate, getErr := GetRequestTemplateService().GetSimpleRequestTemplate(id)
-	if getErr != nil {
-		err = getErr
-		return
-	}
-	var formTemplateTable []*models.FormTemplateTable
-	err = dao.X.SQL("select * from form_template where id=?", requestTemplate.FormTemplate).Find(&formTemplateTable)
+func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (newId string, err error) {
+	newId = guid.CreateGuid()
+	itemIds := guid.CreateGuidList(len(formTemplateDto.Items))
+	formTemplateDto.NowTime = time.Now().Format(models.DateTimeFormat)
+	formTemplateDto.Id = newId
+	// 添加模板
+	_, err = s.formTemplateDao.Add(session, models.CovertFormTemplateDto2Model(formTemplateDto))
 	if err != nil {
-		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
 		return
 	}
-	if len(formTemplateTable) == 0 {
-		log.Logger.Warn("Can not find any data in form template", log.String("id", id))
-		return
-	}
-	result.ExpireDay = requestTemplate.ExpireDay
-	result.Id = formTemplateTable[0].Id
-	result.Name = formTemplateTable[0].Name
-	result.Description = formTemplateTable[0].Description
-	result.UpdatedTime = formTemplateTable[0].UpdatedTime
-	result.UpdatedBy = formTemplateTable[0].UpdatedBy
-	var formItemTemplate []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where form_template=?", requestTemplate.FormTemplate).Find(&formItemTemplate)
-	result.Items = formItemTemplate
-	return
-}
-
-func CreateRequestFormTemplate(param models.FormTemplateDto, requestTemplateId string) error {
-	param.NowTime = time.Now().Format(models.DateTimeFormat)
-	insertFormActions, formId := getFormTemplateCreateActions(param)
-	insertFormActions = append(insertFormActions, &dao.ExecAction{Sql: "update request_template set form_template=?,expire_day=?,description=? where id=?", Param: []interface{}{formId, param.ExpireDay, param.Description, requestTemplateId}})
-	return dao.TransactionWithoutForeignCheck(insertFormActions)
-}
-
-func getFormTemplateCreateActions(param models.FormTemplateDto) (actions []*dao.ExecAction, id string) {
-	param.Id = guid.CreateGuid()
-	id = param.Id
-	itemIds := guid.CreateGuidList(len(param.Items))
-	insertAction := dao.ExecAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)"}
-	insertAction.Param = []interface{}{param.Id, param.Name, param.Description, param.UpdatedBy, param.NowTime, param.UpdatedBy, param.NowTime}
-	actions = append(actions, &insertAction)
-	for i, item := range param.Items {
-		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		tmpAction.Param = []interface{}{itemIds[i], id, item.Name, item.Description, item.ItemGroup, item.ItemGroupName, item.DefaultValue, item.Sort, item.PackageName, item.Entity, item.AttrDefId, item.AttrDefName, item.AttrDefDataType, item.ElementType, item.Title, item.Width, item.RefPackageName, item.RefEntity, item.DataOptions, item.Required, item.Regular, item.IsEdit, item.IsView, item.IsOutput, item.InDisplayName, item.IsRefInside, item.Multiple, item.DefaultClear}
-		actions = append(actions, &tmpAction)
+	// 添加模板项
+	for i, item := range formTemplateDto.Items {
+		item.Id = itemIds[i]
+		_, err = s.formItemTemplateDao.Add(session, item)
+		if err != nil {
+			return
+		}
 	}
 	return
 }
 
-func UpdateRequestFormTemplate(param models.FormTemplateDto) error {
-	param.NowTime = time.Now().Format(models.DateTimeFormat)
-	updateActions, err := getFormTemplateUpdateActions(param)
+func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (err error) {
+	var formItemTemplateList []*models.FormItemTemplateTable
+	formTemplateDto.NowTime = time.Now().Format(models.DateTimeFormat)
+	newItemGuidList := guid.CreateGuidList(len(formTemplateDto.Items))
+	formTemplateTable := &models.FormTemplateTable{
+		Id:          formTemplateDto.Id,
+		Name:        formTemplateDto.Name,
+		Description: formTemplateDto.Description,
+		UpdatedBy:   formTemplateDto.UpdatedBy,
+		UpdatedTime: formTemplateDto.UpdatedTime,
+	}
+	// 更新表单模板
+	err = s.formTemplateDao.Update(session, formTemplateTable)
 	if err != nil {
-		return err
+		return
 	}
-	updateActions = append(updateActions, &dao.ExecAction{Sql: "update request_template set expire_day=?,description=? where form_template=?", Param: []interface{}{param.ExpireDay, param.Description, param.Id}})
-	return dao.Transaction(updateActions)
-}
-
-func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*dao.ExecAction, err error) {
-	var formTemplateTable []*models.FormTemplateTable
-	err = dao.X.SQL("select id,updated_time from form_template where id=?", param.Id).Find(&formTemplateTable)
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplateDto.Id)
 	if err != nil {
-		err = fmt.Errorf("Try to query form template table fail,%s ", err.Error())
 		return
 	}
-	if len(formTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find any form template with id=%s ", param.Id)
-		return
-	}
-	if param.UpdatedTime != formTemplateTable[0].UpdatedTime {
-		err = fmt.Errorf("Update time validate fail,please refersh data ")
-		return
-	}
-	updateAction := dao.ExecAction{Sql: "update form_template set name=?,description=?,updated_by=?,updated_time=? where id=?"}
-	updateAction.Param = []interface{}{param.Name, param.Description, param.UpdatedBy, param.NowTime, param.Id}
-	actions = append(actions, &updateAction)
-	newItemGuidList := guid.CreateGuidList(len(param.Items))
-	var formItemTemplate []*models.FormItemTemplateTable
-	dao.X.SQL("select id from form_item_template where form_template=?", param.Id).Find(&formItemTemplate)
-	for i, inputItem := range param.Items {
-		tmpAction := dao.ExecAction{}
+	// 新增or更新表单项模板
+	for i, inputItem := range formTemplateDto.Items {
 		if inputItem.Id == "" {
 			inputItem.Id = newItemGuidList[i]
-			tmpAction.Sql = "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-			tmpAction.Param = []interface{}{inputItem.Id, param.Id, inputItem.Name, inputItem.Description, inputItem.ItemGroup, inputItem.ItemGroupName, inputItem.DefaultValue, inputItem.Sort, inputItem.PackageName, inputItem.Entity, inputItem.AttrDefId, inputItem.AttrDefName, inputItem.AttrDefDataType, inputItem.ElementType, inputItem.Title, inputItem.Width, inputItem.RefPackageName, inputItem.RefEntity, inputItem.DataOptions, inputItem.Required, inputItem.Regular, inputItem.IsEdit, inputItem.IsView, inputItem.IsOutput, inputItem.InDisplayName, inputItem.IsRefInside, inputItem.Multiple, inputItem.DefaultClear}
+			_, err = s.formItemTemplateDao.Add(session, inputItem)
+			if err != nil {
+				return
+			}
 		} else {
-			tmpAction.Sql = "update form_item_template set name=?,description=?,item_group=?,item_group_name=?,default_value=?,sort=?,package_name=?,entity=?,attr_def_id=?,attr_def_name=?,attr_def_data_type=?,element_type=?,title=?,width=?,ref_package_name=?,ref_entity=?,data_options=?,required=?,regular=?,is_edit=?,is_view=?,is_output=?,in_display_name=?,is_ref_inside=?,multiple=?,default_clear=? where id=?"
-			tmpAction.Param = []interface{}{inputItem.Name, inputItem.Description, inputItem.ItemGroup, inputItem.ItemGroupName, inputItem.DefaultValue, inputItem.Sort, inputItem.PackageName, inputItem.Entity, inputItem.AttrDefId, inputItem.AttrDefName, inputItem.AttrDefDataType, inputItem.ElementType, inputItem.Title, inputItem.Width, inputItem.RefPackageName, inputItem.RefEntity, inputItem.DataOptions, inputItem.Required, inputItem.Regular, inputItem.IsEdit, inputItem.IsView, inputItem.IsOutput, inputItem.InDisplayName, inputItem.IsRefInside, inputItem.Multiple, inputItem.DefaultClear, inputItem.Id}
+			s.formItemTemplateDao.Update(session, inputItem)
 		}
-		actions = append(actions, &tmpAction)
 	}
-	for _, existItem := range formItemTemplate {
+	// 删除表单项&表单项模板
+	for _, formItemTemplate := range formItemTemplateList {
 		existFlag := false
-		for _, inputItem := range param.Items {
-			if existItem.Id == inputItem.Id {
+		for _, inputItem := range formTemplateDto.Items {
+			if formItemTemplate.Id == inputItem.Id {
 				existFlag = true
 				break
 			}
 		}
 		if !existFlag {
-			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form_item_template=?", Param: []interface{}{existItem.Id}})
-			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where id=?", Param: []interface{}{existItem.Id}})
+			err = s.formDao.DeleteByFormItemTemplate(session, formItemTemplate.FormTemplate)
+			if err != nil {
+				return
+			}
+			err = s.formItemTemplateDao.Delete(session, formItemTemplate.Id)
 		}
 	}
 	return
 }
 
-func DeleteRequestFormTemplate(id string) error {
-	_, err := dao.X.Exec("update form_template set del_flag=1 where id=?", id)
-	return err
+func (s FormTemplateService) GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error) {
+	var requestTemplate models.RequestTemplateTable
+	var formTemplate *models.FormTemplateTable
+	result = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
+	requestTemplate, err = GetRequestTemplateService().GetSimpleRequestTemplate(id)
+	if err != nil {
+		return
+	}
+	formTemplate, err = s.formTemplateDao.Get(requestTemplate.GetFormTemplate())
+	if err != nil {
+		return
+	}
+	if formTemplate == nil {
+		return
+	}
+	result.ExpireDay = requestTemplate.ExpireDay
+	result.Id = formTemplate.Id
+	result.Name = formTemplate.Name
+	result.Description = formTemplate.Description
+	result.UpdatedTime = formTemplate.UpdatedTime
+	result.UpdatedBy = formTemplate.UpdatedBy
+	result.Items, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.GetFormTemplate())
+	return
 }
 
-func buildVersionNum(version string) string {
-	if version == "" {
-		return "v1"
-	}
-	tmpV, err := strconv.Atoi(version[1:])
+func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.FormTemplateDto, requestTemplateId string) (err error) {
+	var requestTemplate *models.RequestTemplateTable
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
-		return fmt.Sprintf("v%d", time.Now().Unix())
+		return err
 	}
-	return fmt.Sprintf("v%d", tmpV+1)
+	// 请求模板的处理不是当前用户,不允许操作
+	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
+		return exterror.New().DataPermissionDeny
+	}
+	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
+		// 添加表单模板
+		formTemplateDto.Id, err = s.AddFormTemplate(session, formTemplateDto)
+		// 更新模板
+		err = GetRequestTemplateService().UpdateFormTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return
+}
+
+func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.FormTemplateDto, requestTemplateId string) (err error) {
+	// 需要对当前用户进行校验&操作时间进行校验
+	var requestTemplate *models.RequestTemplateTable
+	var formTemplate *models.FormTemplateTable
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	// 请求模板的处理不是当前用户,不允许操作
+	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
+		return exterror.New().DataPermissionDeny
+	}
+	formTemplate, err = s.formTemplateDao.Get(formTemplateDto.Id)
+	if err != nil {
+		return err
+	}
+	// 前端传递表单模板更新时间必须和数据库一致才能更新
+	if formTemplate.UpdatedTime != formTemplateDto.UpdatedTime {
+		return exterror.New().DealWithAtTheSameTimeError
+	}
+	err = transaction(func(session *xorm.Session) error {
+		// 更新表单项模板
+		err = s.UpdateFormTemplate(session, formTemplateDto)
+		// 更新模板
+		err = GetRequestTemplateService().UpdateFormTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return
+}
+
+func (s FormTemplateService) DeleteRequestFormTemplate(id string) error {
+	_, err := dao.X.Exec("update form_template set del_flag=1 where id=?", id)
+	return err
 }

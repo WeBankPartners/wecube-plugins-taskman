@@ -5,7 +5,7 @@ type FormItemTemplateTable struct {
 	Name            string           `json:"name" xorm:"name"`
 	Description     string           `json:"description" xorm:"description"`
 	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`
-	ItemGroupType   string           `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义,request 请求信息
+	ItemGroupType   string           `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName   string           `json:"itemGroupName" xorm:"item_group_name"`
 	FormTemplate    string           `json:"formTemplate" xorm:"form_template"`
 	DefaultValue    string           `json:"defaultValue" xorm:"default_value"`

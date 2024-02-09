@@ -27,7 +27,17 @@ func (d RequestTemplateDao) Update(session *xorm.Session, requestTemplate *model
 	return
 }
 
-func (d RequestTemplateDao) Get(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
-	_, err = d.DB.ID(requestTemplateId).Get(&requestTemplate)
-	return
+func (d RequestTemplateDao) Get(requestTemplateId string) (*models.RequestTemplateTable, error) {
+	var requestTemplate *models.RequestTemplateTable
+	var found bool
+	var err error
+	requestTemplate = &models.RequestTemplateTable{}
+	found, err = d.DB.Where("id=?", requestTemplateId).Get(requestTemplate)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		return requestTemplate, nil
+	}
+	return nil, nil
 }

@@ -120,6 +120,9 @@ func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.Fo
 	if err != nil {
 		return err
 	}
+	if requestTemplate == nil {
+		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
+	}
 	// 请求模板的处理不是当前用户,不允许操作
 	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
 		return exterror.New().DataPermissionDeny
@@ -143,7 +146,10 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 	var formTemplate *models.FormTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
-		return err
+		return
+	}
+	if requestTemplate == nil {
+		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
 	// 请求模板的处理不是当前用户,不允许操作
 	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
@@ -151,10 +157,10 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 	}
 	formTemplate, err = s.formTemplateDao.Get(formTemplateDto.Id)
 	if err != nil {
-		return err
+		return
 	}
 	if formTemplate == nil {
-		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
+		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param form_template_id is invalid"))
 	}
 	// 前端传递表单模板更新时间必须和数据库一致才能更新
 	if formTemplate.UpdatedTime != formTemplateDto.UpdatedTime {

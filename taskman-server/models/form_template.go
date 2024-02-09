@@ -1,7 +1,7 @@
 package models
 
 type FormTemplateTable struct {
-	Id          string `json:"id" xorm:"id"`
+	Id          string `json:"id" xorm:"'id' pk"`
 	Name        string `json:"name" xorm:"name"`
 	Description string `json:"description" xorm:"description"`
 	CreatedBy   string `json:"createdBy" xorm:"created_by"`
@@ -27,7 +27,7 @@ type FormTemplateDto struct {
 }
 
 type TaskFormItemQueryObj struct {
-	Id               string `json:"id" xorm:"id"`
+	Id               string `json:"id" xorm:"'id' pk"`
 	Form             string `json:"form" xorm:"form"`
 	FormItemTemplate string `json:"formItemTemplate" xorm:"form_item_template"`
 	Name             string `json:"name" xorm:"name"`

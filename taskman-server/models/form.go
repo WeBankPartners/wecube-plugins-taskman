@@ -1,7 +1,7 @@
 package models
 
 type FormTable struct {
-	Id           string `json:"id" xorm:"id"`
+	Id           string `json:"id" xorm:"'id' pk"`
 	Name         string `json:"name" xorm:"name"`
 	Description  string `json:"description" xorm:"description"`
 	FormTemplate string `json:"formTemplate" xorm:"form_template"`

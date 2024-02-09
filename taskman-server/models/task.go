@@ -1,7 +1,7 @@
 package models
 
 type TaskTable struct {
-	Id                string   `json:"id" xorm:"id"`
+	Id                string   `json:"id" xorm:"'id' pk"`
 	Name              string   `json:"name" xorm:"name"`
 	Description       string   `json:"description" xorm:"description"`
 	Form              string   `json:"form" xorm:"form"`
@@ -43,7 +43,7 @@ type TaskTable struct {
 }
 
 type TaskListObj struct {
-	Id               string       `json:"id" xorm:"id"`
+	Id               string       `json:"id" xorm:"'id' pk"`
 	Name             string       `json:"name" xorm:"name"`
 	Description      string       `json:"description" xorm:"description"`
 	Status           string       `json:"status" xorm:"status"`

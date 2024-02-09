@@ -1,7 +1,7 @@
 package models
 
 type RequestTemplateRoleTable struct {
-	Id              string `json:"id" xorm:"id"`
+	Id              string `json:"id" xorm:"'id' pk"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
 	Role            string `json:"role" xorm:"role"`
 	RoleType        string `json:"roleType" xorm:"role_type"`

@@ -3,7 +3,7 @@ package models
 import "strings"
 
 type RequestTable struct {
-	Id                  string             `json:"id" xorm:"id"`
+	Id                  string             `json:"id" xorm:"'id' pk"`
 	Name                string             `json:"name" xorm:"name"`
 	Form                string             `json:"form" xorm:"form"`
 	RequestTemplate     string             `json:"requestTemplate" xorm:"request_template"`
@@ -56,7 +56,7 @@ type PlatformData struct {
 
 // PlatformDataObj 工作台返回数据
 type PlatformDataObj struct {
-	Id                   string `json:"id" xorm:"id"`                               // 请求ID
+	Id                   string `json:"id" xorm:"'id' pk"`                          // 请求ID
 	Name                 string `json:"name" xorm:"name"`                           // 请求名称
 	TemplateId           string `json:"templateId" xorm:"template_id"`              // 模板ID
 	TemplateName         string `json:"templateName" xorm:"template_name"`          // 使用模板名称
@@ -273,7 +273,7 @@ func (q KeyValueSort) Swap(i, j int) {
 }
 
 type FilterObj struct {
-	Id              string `json:"id" xorm:"id"`                             // requestID
+	Id              string `json:"id" xorm:"'id' pk"`                        // requestID
 	TemplateId      string `json:"templateId" xorm:"template_id"`            // 模板IDa
 	TemplateName    string `json:"templateName" xorm:"template_name"`        // 模板名称
 	Version         string `json:"version" xorm:"version"`                   // 模板版本

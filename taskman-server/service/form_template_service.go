@@ -29,6 +29,7 @@ func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplate
 	// 添加模板项
 	for i, item := range formTemplateDto.Items {
 		item.Id = itemIds[i]
+		item.FormTemplate = newId
 		_, err = s.formItemTemplateDao.Add(session, item)
 		if err != nil {
 			return
@@ -97,7 +98,7 @@ func (s FormTemplateService) GetRequestFormTemplate(id string) (result models.Fo
 	if err != nil {
 		return
 	}
-	formTemplate, err = s.formTemplateDao.Get(requestTemplate.GetFormTemplate())
+	formTemplate, err = s.formTemplateDao.Get(requestTemplate.FormTemplate)
 	if err != nil {
 		return
 	}
@@ -110,7 +111,7 @@ func (s FormTemplateService) GetRequestFormTemplate(id string) (result models.Fo
 	result.Description = formTemplate.Description
 	result.UpdatedTime = formTemplate.UpdatedTime
 	result.UpdatedBy = formTemplate.UpdatedBy
-	result.Items, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.GetFormTemplate())
+	result.Items, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.FormTemplate)
 	return
 }
 
@@ -130,8 +131,11 @@ func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.Fo
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
 		formTemplateDto.Id, err = s.AddFormTemplate(session, formTemplateDto)
+		if err != nil {
+			return err
+		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateFormTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
+		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
 		if err != nil {
 			return err
 		}
@@ -166,11 +170,14 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 	if formTemplate.UpdatedTime != formTemplateDto.UpdatedTime {
 		return exterror.New().DealWithAtTheSameTimeError
 	}
-	err = transaction(func(session *xorm.Session) error {
+	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 更新表单项模板
 		err = s.UpdateFormTemplate(session, formTemplateDto)
+		if err != nil {
+			return err
+		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateFormTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
+		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
 		if err != nil {
 			return err
 		}

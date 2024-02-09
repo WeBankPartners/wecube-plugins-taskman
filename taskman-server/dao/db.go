@@ -42,6 +42,12 @@ func InitDatabase() (engine *xorm.Engine, err error) {
 	return
 }
 
+// logExecuteSql 打印执行sql
+func logExecuteSql(session *xorm.Session, module, method string, objectParam interface{}, affected int64, err error) {
+	sql, param := session.LastSQL()
+	log.DatabaseLogger.Debug(fmt.Sprintf("%s exec %s sql", module, method), log.String("sql", sql), log.JsonObj("param", param), log.JsonObj("objectParam", objectParam), log.Int64("affected", affected), log.Error(err))
+}
+
 type dbLogger struct {
 	LogLevel xorm_log.LogLevel
 	ShowSql  bool

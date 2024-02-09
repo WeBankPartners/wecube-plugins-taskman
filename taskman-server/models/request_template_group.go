@@ -1,7 +1,7 @@
 package models
 
 type RequestTemplateGroupTable struct {
-	Id            string    `json:"id" xorm:"id"`
+	Id            string    `json:"id" xorm:"'id' pk"`
 	Name          string    `json:"name" xorm:"name" binding:"required"`
 	Description   string    `json:"description" xorm:"description"`
 	ManageRole    string    `json:"manageRole" xorm:"manage_role" binding:"required"`

@@ -172,8 +172,8 @@ func (s RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId, 
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
 }
 
-func (s RequestTemplateService) UpdateFormTemplate(session *xorm.Session, requestTemplateId, formTemplate, description string, expireDay int) (err error) {
-	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, FormTemplate: &formTemplate, Description: description, ExpireDay: expireDay}
+func (s RequestTemplateService) UpdateRequestTemplate(session *xorm.Session, requestTemplateId, formTemplate, description string, expireDay int) (err error) {
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, FormTemplate: formTemplate, Description: description, ExpireDay: expireDay}
 	return s.requestTemplateDao.Update(session, requestTemplate)
 }
 
@@ -199,7 +199,7 @@ func (s RequestTemplateService) CreateRequestTemplate(param models.RequestTempla
 	result.Id = newGuid
 	err = transaction(func(session *xorm.Session) error {
 		var err error
-		_, err = s.requestTemplateDao.Add(session, models.ConvertRequestTemplateUpdateParam2RequestTemplate(param))
+		_, err = s.requestTemplateDao.AddBasicInfo(session, models.ConvertRequestTemplateUpdateParam2RequestTemplate(param))
 		if err != nil {
 			return err
 		}
@@ -563,7 +563,7 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAc
 	}
 	var taskTemplateTable []*models.TaskTemplateTable
 	dao.X.SQL("select id,form_template from task_template where request_template=?", id).Find(&taskTemplateTable)
-	formTemplateIds := []string{rtObj.GetFormTemplate()}
+	formTemplateIds := []string{rtObj.FormTemplate}
 	for _, v := range taskTemplateTable {
 		formTemplateIds = append(formTemplateIds, v.FormTemplate)
 	}
@@ -754,7 +754,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id, requestTemplateObj.ParentId)})
 	}
-	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.GetFormTemplate(), newRequestFormTemplateId)
+	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
 	}
@@ -796,7 +796,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	if err != nil {
 		return err
 	}
-	if requestTemplateObj.GetFormTemplate() == "" {
+	if requestTemplateObj.FormTemplate == "" {
 		return fmt.Errorf("Please config request template form ")
 	}
 	if requestTemplateObj.Status == "confirm" {
@@ -1466,8 +1466,8 @@ func createNewImportTemplate(input models.RequestTemplateExport, recordId string
 		historyFormTemplateId := formTemplate.Id
 		formTemplate.Id = guid.CreateGuid()
 		// 修改模板里面的 formTemplateId
-		if input.RequestTemplate.GetFormTemplate() == historyFormTemplateId {
-			input.RequestTemplate.SetFormTemplate(formTemplate.Id)
+		if input.RequestTemplate.FormTemplate == historyFormTemplateId {
+			input.RequestTemplate.FormTemplate = formTemplate.Id
 		}
 		for _, formItemTemplate := range input.FormItemTemplate {
 			formItemTemplate.Id = guid.CreateGuid()

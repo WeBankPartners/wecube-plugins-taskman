@@ -5,63 +5,50 @@ import (
 )
 
 type RequestTemplateTable struct {
-	Id               string  `json:"id" xorm:"id"`
-	Group            string  `json:"group" xorm:"group"`
-	Name             string  `json:"name" xorm:"name"`
-	Description      string  `json:"description" xorm:"description"`
-	FormTemplate     *string `json:"formTemplate" xorm:"form_template"` // 此处定义成指针类型原因: request_template表插入数据,form_template字段为""也会被插入,又是外键就会报错
-	DataFormTemplate *string `json:"dataFormTemplate" xorm:"data_form_template"`
-	Tags             string  `json:"tags" xorm:"tags"`
-	Status           string  `json:"status" xorm:"status"`
-	RecordId         string  `json:"recordId" xorm:"record_id"`
-	Version          string  `json:"version" xorm:"version"`
-	ConfirmTime      string  `json:"confirmTime" xorm:"confirm_time"`
-	PackageName      string  `json:"packageName" xorm:"package_name"`
-	EntityName       string  `json:"entityName" xorm:"entity_name"`
-	ProcDefKey       string  `json:"procDefKey" xorm:"proc_def_key"`
-	ProcDefId        string  `json:"procDefId" xorm:"proc_def_id"`
-	ProcDefName      string  `json:"procDefName" xorm:"proc_def_name"`
-	CreatedBy        string  `json:"createdBy" xorm:"created_by"`
-	CreatedTime      string  `json:"createdTime" xorm:"created_time"`
-	UpdatedBy        string  `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime      string  `json:"updatedTime" xorm:"updated_time"`
-	EntityAttrs      string  `json:"entityAttrs" xorm:"entity_attrs"`
-	ExpireDay        int     `json:"expireDay" xorm:"expire_day"`
-	Handler          string  `json:"handler" xorm:"handler"`
-	DelFlag          int     `json:"delFlag" xorm:"del_flag"`
-	Type             int     `json:"type" xorm:"type"`                           // 请求类型, 0表示请求,1表示发布
-	OperatorObjType  string  `json:"operatorObjType" xorm:"operator_obj_type"`   // 操作对象类型
-	ParentId         string  `json:"parentId" xorm:"parent_id"`                  // 父类ID
-	ApproveBy        string  `json:"approveBy" xorm:"approve_by"`                // 模板发布审批人
-	PendingSwitch    bool    `json:"pendingSwitch" xorm:"pending_switch"`        // 是否加入确认定版流程
-	PendingRole      string  `json:"pendingRole" xorm:"pending_role"`            // 定版角色
-	PendingHandler   string  `json:"pendingHandler" xorm:"pending_handler"`      // 定版处理人
-	ConfirmSwitch    bool    `json:"confirmSwitch" xorm:"confirm_switch"`        // 是否加入确认流程
-	ConfirmExpireDay int     `json:"confirmExpireDay" xorm:"confirm_expire_day"` // 是否加入确认流程
-	RollbackDesc     string  `json:"rollbackDesc" xorm:"rollback_desc"`          // 退回理由
+	Id               string `json:"id"  xorm:"'id' pk"`
+	Group            string `json:"group" xorm:"group"`
+	Name             string `json:"name" xorm:"name"`
+	Description      string `json:"description" xorm:"description"`
+	FormTemplate     string `json:"formTemplate" xorm:"form_template"` // 此处定义成指针类型原因: request_template表插入数据,form_template字段为""也会被插入,又是外键就会报错
+	DataFormTemplate string `json:"dataFormTemplate" xorm:"data_form_template"`
+	Tags             string `json:"tags" xorm:"tags"`
+	Status           string `json:"status" xorm:"status"`
+	RecordId         string `json:"recordId" xorm:"record_id"`
+	Version          string `json:"version" xorm:"version"`
+	ConfirmTime      string `json:"confirmTime" xorm:"confirm_time"`
+	PackageName      string `json:"packageName" xorm:"package_name"`
+	EntityName       string `json:"entityName" xorm:"entity_name"`
+	ProcDefKey       string `json:"procDefKey" xorm:"proc_def_key"`
+	ProcDefId        string `json:"procDefId" xorm:"proc_def_id"`
+	ProcDefName      string `json:"procDefName" xorm:"proc_def_name"`
+	CreatedBy        string `json:"createdBy" xorm:"created_by"`
+	CreatedTime      string `json:"createdTime" xorm:"created_time"`
+	UpdatedBy        string `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime      string `json:"updatedTime" xorm:"updated_time"`
+	EntityAttrs      string `json:"entityAttrs" xorm:"entity_attrs"`
+	ExpireDay        int    `json:"expireDay" xorm:"expire_day"`
+	Handler          string `json:"handler" xorm:"handler"`
+	DelFlag          int    `json:"delFlag" xorm:"del_flag"`
+	Type             int    `json:"type" xorm:"type"`                           // 请求类型, 0表示请求,1表示发布
+	OperatorObjType  string `json:"operatorObjType" xorm:"operator_obj_type"`   // 操作对象类型
+	ParentId         string `json:"parentId" xorm:"parent_id"`                  // 父类ID
+	ApproveBy        string `json:"approveBy" xorm:"approve_by"`                // 模板发布审批人
+	PendingSwitch    bool   `json:"pendingSwitch" xorm:"pending_switch"`        // 是否加入确认定版流程
+	PendingRole      string `json:"pendingRole" xorm:"pending_role"`            // 定版角色
+	PendingHandler   string `json:"pendingHandler" xorm:"pending_handler"`      // 定版处理人
+	ConfirmSwitch    bool   `json:"confirmSwitch" xorm:"confirm_switch"`        // 是否加入确认流程
+	ConfirmExpireDay int    `json:"confirmExpireDay" xorm:"confirm_expire_day"` // 是否加入确认流程
+	RollbackDesc     string `json:"rollbackDesc" xorm:"rollback_desc"`          // 退回理由
 }
 
 func (RequestTemplateTable) TableName() string {
 	return "request_template"
 }
 
-func (r RequestTemplateTable) GetFormTemplate() string {
-	if r.FormTemplate == nil {
-		return ""
-	}
-	return *r.FormTemplate
-}
-func (r RequestTemplateTable) SetFormTemplate(formTemplate string) {
-	if formTemplate == "" {
-		return
-	}
-	r.FormTemplate = &formTemplate
-}
-
 // CollectDataObj 收藏数据项
 type CollectDataObj struct {
 	ParentId          string   `json:"parentId" xorm:"parent_id"`                    // 父类ID
-	Id                string   `json:"id" xorm:"id"`                                 // 模版ID
+	Id                string   `json:"id" xorm:"'id' pk"`                            // 模版ID
 	Name              string   `json:"name" xorm:"name"`                             // 模版名称
 	Version           string   `json:"version" xorm:"version"`                       // 模版名称
 	Status            int      `json:"status" xorm:"status"`                         // 模版状态: 1可使用 2已禁用 3权限被移除
@@ -115,7 +102,7 @@ type UserRequestTemplateQueryObj struct {
 }
 
 type RequestTemplateTableObj struct {
-	Id              string `json:"id" xorm:"id"`
+	Id              string `json:"id" xorm:"'id' pk"`
 	Name            string `json:"name" xorm:"name"`
 	Version         string `json:"version" xorm:"version"`
 	Tags            string `json:"tags" xorm:"tags"`

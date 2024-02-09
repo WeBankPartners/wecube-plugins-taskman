@@ -1,7 +1,7 @@
 package models
 
 type SysCiTypeAttrTable struct {
-	Id                      string `json:"ciTypeAttrId" xorm:"id"`
+	Id                      string `json:"ciTypeAttrId" xorm:"'id' pk"`
 	CiType                  string `json:"ciTypeId" xorm:"ci_type"`
 	Name                    string `json:"propertyName" xorm:"name"`
 	DisplayNameTmp          string `json:"displayName" xorm:"-"`

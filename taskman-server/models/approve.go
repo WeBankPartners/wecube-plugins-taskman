@@ -2,7 +2,7 @@ package models
 
 // RequestApproveTable 请求审批表
 type RequestApproveTable struct {
-	Id           string `json:"id" xorm:"id"`
+	Id           string `json:"id" xorm:"'id' pk"`
 	Request      string `json:"request" xorm:"request"`            // 请求ID
 	Name         string `json:"name" xorm:"name"`                  // 审批名称
 	ExpireDay    string `json:"expireDay" xorm:"expire_day"`       // 审批时效

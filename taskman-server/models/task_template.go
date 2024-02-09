@@ -1,7 +1,7 @@
 package models
 
 type TaskTemplateTable struct {
-	Id              string `json:"id" xorm:"id"`
+	Id              string `json:"id" xorm:"'id' pk"`
 	Name            string `json:"name" xorm:"name"`
 	Description     string `json:"description" xorm:"description"`
 	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
@@ -19,13 +19,13 @@ type TaskTemplateTable struct {
 }
 
 type TaskTemplateVo struct {
-	Id      string `json:"id" xorm:"id"`
+	Id      string `json:"id" xorm:"'id' pk"`
 	Handler string `json:"handler" xorm:"handler"`
 	Role    string `json:"role" xorm:"role"`
 }
 
 type TaskTemplateRoleTable struct {
-	Id           string `json:"id" xorm:"id"`
+	Id           string `json:"id" xorm:"'id' pk"`
 	TaskTemplate string `json:"taskTemplate" xorm:"task_template"`
 	Role         string `json:"role" xorm:"role"`
 	RoleType     string `json:"roleType" xorm:"role_type"`

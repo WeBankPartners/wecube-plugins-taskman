@@ -6,7 +6,7 @@ import (
 )
 
 type OperationLogTable struct {
-	Id                  string `json:"id" xorm:"id"`
+	Id                  string `json:"id" xorm:"'id' pk"`
 	Request             string `json:"request" xorm:"request"`
 	RequestName         string `json:"requestName" xorm:"request_name"`
 	RequestTemplate     string `json:"requestTemplate" xorm:"request_template"`

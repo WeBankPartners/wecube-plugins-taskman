@@ -143,7 +143,10 @@ func transaction(f func(session *xorm.Session) error) (err error) {
 	if err != nil {
 		session.Rollback()
 	}
-	session.Commit()
+	err = session.Commit()
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -157,7 +160,10 @@ func transactionWithoutForeignCheck(f func(session *xorm.Session) error) (err er
 	if err != nil {
 		session.Rollback()
 	}
-	session.Commit()
+	err = session.Commit()
+	if err != nil {
+		return
+	}
 	session.Exec("SET FOREIGN_KEY_CHECKS=1")
 	return
 }

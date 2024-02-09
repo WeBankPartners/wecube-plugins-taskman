@@ -46,10 +46,16 @@ func (RequestTemplateTable) TableName() string {
 }
 
 func (r RequestTemplateTable) GetFormTemplate() string {
+	if r.FormTemplate == nil {
+		return ""
+	}
 	return *r.FormTemplate
 }
 func (r RequestTemplateTable) SetFormTemplate(formTemplate string) {
-	*r.FormTemplate = formTemplate
+	if formTemplate == "" {
+		return
+	}
+	r.FormTemplate = &formTemplate
 }
 
 // CollectDataObj 收藏数据项

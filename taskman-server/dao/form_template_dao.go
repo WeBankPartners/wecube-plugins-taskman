@@ -22,11 +22,21 @@ func (d FormTemplateDao) Update(session *xorm.Session, formTemplate *models.Form
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(formTemplate.Id).Update(formTemplate)
+	_, err = d.DB.Where("id=?", formTemplate.Id).Update(formTemplate)
 	return
 }
 
-func (d FormTemplateDao) Get(formTemplateId string) (formTemplate *models.FormTemplateTable, err error) {
-	_, err = d.DB.ID(formTemplateId).Get(&formTemplate)
-	return
+func (d FormTemplateDao) Get(formTemplateId string) (*models.FormTemplateTable, error) {
+	var formTemplate *models.FormTemplateTable
+	var found bool
+	var err error
+	formTemplate = &models.FormTemplateTable{}
+	found, err = d.DB.Where("id=?", formTemplateId).Get(formTemplate)
+	if err != nil {
+		return nil, err
+	}
+	if found {
+		return formTemplate, nil
+	}
+	return nil, nil
 }

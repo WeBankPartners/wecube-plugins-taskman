@@ -27,11 +27,13 @@ func (d FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *mod
 }
 
 func (d FormItemTemplateDao) Get(formItemTemplateId string) (formItemTemplate *models.FormItemTemplateTable, err error) {
-	_, err = d.DB.ID(formItemTemplateId).Get(&formItemTemplate)
+	formItemTemplate = &models.FormItemTemplateTable{}
+	_, err = d.DB.ID(formItemTemplateId).Get(formItemTemplate)
 	return
 }
 
 func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+	formItemTemplate = []*models.FormItemTemplateTable{}
 	err = d.DB.Where("form_template = ?", formTemplate).Find(&formItemTemplate)
 	return
 }

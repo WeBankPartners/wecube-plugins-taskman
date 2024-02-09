@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
@@ -151,6 +152,9 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 	formTemplate, err = s.formTemplateDao.Get(formTemplateDto.Id)
 	if err != nil {
 		return err
+	}
+	if formTemplate == nil {
+		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
 	// 前端传递表单模板更新时间必须和数据库一致才能更新
 	if formTemplate.UpdatedTime != formTemplateDto.UpdatedTime {

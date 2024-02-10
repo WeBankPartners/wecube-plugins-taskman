@@ -22,9 +22,13 @@ func AddTemplateCollect(c *gin.Context) {
 		return
 	}
 	var parentId string
-	requestTemplate, err := service.GetRequestTemplateService().GetSimpleRequestTemplate(param.TemplateId)
+	requestTemplate, err := service.GetRequestTemplateService().GetRequestTemplate(param.TemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if requestTemplate == nil {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("requestTemplate not exist"))
 		return
 	}
 	parentId = strings.TrimSpace(requestTemplate.ParentId)
@@ -112,7 +116,7 @@ func FilterItem(c *gin.Context) {
 // getRequestTemplateParentId  根据模板id查找 最开始版本模板id
 func getRequestTemplateParentId(templateId string) (string, error) {
 	// 根据 templateId 查找parent_id,模板会变更产生多个版本,只需要关联最开始版本
-	requestTemplate, err := service.GetRequestTemplateService().GetSimpleRequestTemplate(templateId)
+	requestTemplate, err := service.GetRequestTemplateService().GetRequestTemplate(templateId)
 	if err != nil {
 		return "", err
 	}

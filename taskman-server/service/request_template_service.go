@@ -177,6 +177,11 @@ func (s RequestTemplateService) UpdateRequestTemplate(session *xorm.Session, req
 	return s.requestTemplateDao.Update(session, requestTemplate)
 }
 
+func (s RequestTemplateService) UpdateRequestTemplateStatusToCreated(id, operator string) (err error) {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	return s.requestTemplateDao.Update(nil, &models.RequestTemplateTable{Id: id, Status: "created", UpdatedBy: operator, UpdatedTime: nowTime})
+}
+
 func (s RequestTemplateService) GetRequestTemplate(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
 	return s.requestTemplateDao.Get(requestTemplateId)
 }
@@ -473,7 +478,7 @@ func getUpdateNodeDefIdActions(requestTemplateId, userToken, language string) (a
 	if len(taskTemplate) == 0 {
 		return actions
 	}
-	nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: requestTemplateId}, userToken, language, "template")
+	nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTemplateId}, userToken, language, "template")
 	nodeMap := make(map[string]string)
 	for _, v := range nodeList {
 		nodeMap[v.NodeId] = v.NodeDefId
@@ -554,7 +559,7 @@ func UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result mod
 }
 
 func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAction, err error) {
-	rtObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(id)
+	rtObj, err := GetRequestTemplateService().GetRequestTemplate(id)
 	if err != nil {
 		return actions, err
 	}
@@ -599,7 +604,7 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAc
 func ListRequestTemplateEntityAttrs(id, userToken, language string) (result []*models.ProcEntity, err error) {
 	var nodes []*models.ProcNodeObj
 	result = []*models.ProcEntity{}
-	nodes, err = GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: id}, userToken, language, "all")
+	nodes, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: id}, userToken, language, "all")
 	if err != nil {
 		return
 	}
@@ -668,22 +673,6 @@ func UpdateRequestTemplateEntityAttrs(id string, attrs []*models.ProcEntityAttri
 	return err
 }
 
-func (s RequestTemplateService) GetSimpleRequestTemplate(id string) (result models.RequestTemplateTable, err error) {
-	var requestTemplateTable []*models.RequestTemplateTable
-	err = dao.X.SQL("select * from request_template where id=?", id).Find(&requestTemplateTable)
-	if err != nil {
-		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
-		return
-	}
-	if len(requestTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find request template with id:%s ", id)
-		result = models.RequestTemplateTable{}
-		return
-	}
-	result = *requestTemplateTable[0]
-	return
-}
-
 func GetRequestTemplateManageRole(id string) (role string) {
 	var roleList []string
 	err := dao.X.SQL("select role from request_template_role where request_template=? and role_type='MGMT'", id).Find(&roleList)
@@ -721,7 +710,7 @@ func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTabl
 }
 
 func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	requestTemplateObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -792,7 +781,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 
 func ConfirmRequestTemplate(requestTemplateId string) error {
 	var parentId string
-	requestTemplateObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -808,7 +797,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if requestTemplateObj.RecordId != "" {
-		prevRequestTemplateObj, _ := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateObj.RecordId)
+		prevRequestTemplateObj, _ := GetRequestTemplateService().GetRequestTemplate(requestTemplateObj.RecordId)
 		parentId = prevRequestTemplateObj.ParentId
 	}
 	version := requestTemplateObj.Version
@@ -854,14 +843,6 @@ func validateConfirm(requestTemplateId string) error {
 		return fmt.Errorf("Please config task template ")
 	}
 	return nil
-}
-
-func SetRequestTemplateToCreated(id, operator string) {
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	_, err := dao.X.Exec("update request_template set status='created',updated_by=?,updated_time=? where id=?", operator, nowTime, id)
-	if err != nil {
-		log.Logger.Error("Update request template to created status fail", log.Error(err), log.String("operator", operator), log.String("requestTemplateId", id))
-	}
 }
 
 func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
@@ -1381,7 +1362,7 @@ func RequestTemplateImport(input models.RequestTemplateExport, userToken, langua
 		err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
 		return
 	}
-	nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(input.RequestTemplate, userToken, language, "template")
+	nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(&input.RequestTemplate, userToken, language, "template")
 	for i, v := range input.TaskTemplate {
 		existFlag := false
 		for _, node := range nodeList {
@@ -1562,13 +1543,13 @@ func getAllRequestTemplateGroup() (groupMap map[string]*models.RequestTemplateGr
 	return
 }
 
-func UpdateRequestTemplateParentId(requestTemplate models.RequestTemplateTable) (parentId string) {
+func UpdateRequestTemplateParentId(requestTemplate *models.RequestTemplateTable) (parentId string) {
 	var actions []*dao.ExecAction
 	var templateIds []string
 	// 老模板有多个版本,需要更新所有版本,并找到 recordId为空的记录
 	requestTemplateMap, _ := getAllRequestTemplate()
 	if len(requestTemplateMap) > 0 {
-		temp := &requestTemplate
+		temp := requestTemplate
 		for {
 			if temp == nil {
 				break

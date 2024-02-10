@@ -61,7 +61,7 @@ func GetEntityData(requestId, userToken, language string) (result models.EntityQ
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	requestTemplateObj, getTemplateErr := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, getTemplateErr := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
 		return
@@ -84,7 +84,7 @@ func GetEntityData(requestId, userToken, language string) (result models.EntityQ
 }
 
 func ProcessDataPreview(requestTemplateId, entityDataId, userToken, language string) (result *models.EntityTreeData, err error) {
-	requestTemplateObj, getTemplateErr := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, getTemplateErr := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if getTemplateErr != nil {
 		err = getTemplateErr
 		return
@@ -895,7 +895,7 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 }
 
 func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken, language string) error {
-	requestTemplateObj, err := GetRequestTemplateService().GetSimpleRequestTemplate(param.RequestTemplate)
+	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
@@ -1107,7 +1107,7 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	requestTemplateObj, _ := GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplateId)
+	requestTemplateObj, _ := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	result.Id = requestTemplateObj.Id
 	result.Name = requestTemplateObj.Name
 	result.PackageName = requestTemplateObj.PackageName
@@ -1645,7 +1645,7 @@ func GetRequestPreBindData(requestId, userToken, language string) (result models
 	if requestTable[0].Cache == "" {
 		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
 	}
-	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, language, "bind")
+	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, language, "bind")
 	if processErr != nil {
 		return result, processErr
 	}
@@ -2223,7 +2223,7 @@ func notifyRoleMail(requestId, userToken, language string) error {
 func CopyRequest(requestId, createdBy string) (result models.RequestTable, err error) {
 	parentRequest := &models.RequestTable{}
 	var requestTable []*models.RequestTable
-	var requestTemplate models.RequestTemplateTable
+	var requestTemplate *models.RequestTemplateTable
 	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requestTable)
 	if err != nil {
 		return
@@ -2233,8 +2233,12 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	parentRequest = requestTable[0]
-	requestTemplate, err = GetRequestTemplateService().GetSimpleRequestTemplate(parentRequest.RequestTemplate)
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(parentRequest.RequestTemplate)
 	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate not exist")
 		return
 	}
 	// 重新设置请求名称
@@ -2637,7 +2641,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowsData []*mode
 func getCommonRequestProgress(requestId, templateId, language, userToken string) (rowsData []*models.RequestProgressObj) {
 	var nodeList models.ProcNodeObjList
 	var err error
-	nodeList, err = GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: templateId}, userToken, language, "template")
+	nodeList, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: templateId}, userToken, language, "template")
 	if err != nil {
 		log.Logger.Error("GetProcessNodesByProc err", log.Error(err))
 		rowsData = append(rowsData, &models.RequestProgressObj{
@@ -2697,9 +2701,13 @@ func getCommonRequestProgress(requestId, templateId, language, userToken string)
 }
 
 func GetProcessDefinitions(templateId, userToken, language string) (rowData *models.DefinitionsData, err error) {
-	var template models.RequestTemplateTable
-	template, err = GetRequestTemplateService().GetSimpleRequestTemplate(templateId)
+	var template *models.RequestTemplateTable
+	template, err = GetRequestTemplateService().GetRequestTemplate(templateId)
 	if err != nil {
+		return
+	}
+	if template == nil {
+		err = fmt.Errorf("requestTemplate not exist")
 		return
 	}
 	return GetProcDefService().GetProcessDefine(template.ProcDefId, userToken, language)
@@ -2790,7 +2798,7 @@ func getRequestHandler(requestId string) (role, handler string) {
 func getRequestRemainTime(requestId string) (startTime string, effectiveDays int) {
 	request, _ := GetSimpleRequest(requestId)
 	if request.Status == "Draft" || request.Status == "Pending" || request.Status == "Completed" {
-		requestTemplate, _ := GetRequestTemplateService().GetSimpleRequestTemplate(request.RequestTemplate)
+		requestTemplate, _ := GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 		startTime = request.ReportTime
 		effectiveDays = requestTemplate.ExpireDay
 		return
@@ -2809,7 +2817,7 @@ func getRequestRemainTime(requestId string) (startTime string, effectiveDays int
 			}
 		}
 	}
-	requestTemplate, _ := GetRequestTemplateService().GetSimpleRequestTemplate(request.RequestTemplate)
+	requestTemplate, _ := GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	startTime = request.CreatedTime
 	effectiveDays = requestTemplate.ExpireDay
 	return

@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 type FormItemTemplateTable struct {
 	Id              string           `json:"id" xorm:"'id' pk"`
 	Name            string           `json:"name" xorm:"name"`
@@ -35,4 +37,21 @@ type FormItemTemplateTable struct {
 
 func (FormItemTemplateTable) TableName() string {
 	return "form_item_template"
+}
+
+type FormItemTemplateTableSort []*FormItemTemplateTable
+
+func (s FormItemTemplateTableSort) Len() int {
+	return len(s)
+}
+
+func (s FormItemTemplateTableSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s FormItemTemplateTableSort) Less(i, j int) bool {
+	if strings.Compare(s[i].Name, s[j].Name) > 0 {
+		return true
+	}
+	return false
 }

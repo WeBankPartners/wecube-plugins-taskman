@@ -90,7 +90,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	if len(rowData) > 0 {
 		for _, collectObj := range rowData {
 			templateUserRoleMap = make(map[string]bool, 0)
-			template, err := GetRequestTemplateService().GetSimpleRequestTemplate(collectObj.Id)
+			template, err := GetRequestTemplateService().GetRequestTemplate(collectObj.Id)
 			if err != nil {
 				continue
 			}
@@ -121,7 +121,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 				// 模板使用权限变更,导致收藏模板时候角色,没权限新建请求
 				collectObj.Status = 3
 			}
-			result, err = GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: collectObj.Id}, userToken, language, "template")
+			result, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: collectObj.Id}, userToken, language, "template")
 			if err != nil {
 				continue
 			}

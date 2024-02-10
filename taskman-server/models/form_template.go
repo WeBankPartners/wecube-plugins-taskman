@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 type FormTemplateTable struct {
 	Id          string `json:"id" xorm:"'id' pk"`
 	Name        string `json:"name" xorm:"name"`
@@ -26,6 +28,14 @@ type FormTemplateDto struct {
 	Items       []*FormItemTemplateTable `json:"items"`
 }
 
+// GlobalFormTemplateGroupDto 全局表单模板组dto
+type GlobalFormTemplateGroupDto struct {
+	ItemGroup     string                   `json:"itemGroup"`
+	ItemGroupType string                   `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName string                   `json:"itemGroupName"`
+	Items         []*FormItemTemplateTable `json:"items"` // 表单项
+}
+
 type TaskFormItemQueryObj struct {
 	Id               string `json:"id" xorm:"'id' pk"`
 	Form             string `json:"form" xorm:"form"`
@@ -48,4 +58,21 @@ func CovertFormTemplateDto2Model(dto FormTemplateDto) *FormTemplateTable {
 		UpdatedBy:   dto.UpdatedBy,
 		UpdatedTime: dto.NowTime,
 	}
+}
+
+type GlobalFormTemplateGroupDtoSort []*GlobalFormTemplateGroupDto
+
+func (s GlobalFormTemplateGroupDtoSort) Len() int {
+	return len(s)
+}
+
+func (s GlobalFormTemplateGroupDtoSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s GlobalFormTemplateGroupDtoSort) Less(i, j int) bool {
+	if strings.Compare(s[i].ItemGroupName, s[j].ItemGroupName) > 0 {
+		return true
+	}
+	return false
 }

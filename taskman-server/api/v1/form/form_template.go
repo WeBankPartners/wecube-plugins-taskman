@@ -9,12 +9,12 @@ import (
 )
 
 func GetRequestFormTemplate(c *gin.Context) {
-	id := c.Param("id")
-	if id == "" {
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	result, err := service.GetFormTemplateService().GetRequestFormTemplate(id)
+	result, err := service.GetFormTemplateService().GetRequestFormTemplate(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -26,8 +26,8 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	var param models.FormTemplateDto
 	var err error
 	var user = middleware.GetRequestUser(c)
-	id := c.Param("id")
-	if id == "" {
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
@@ -37,24 +37,32 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 	}
 	param.UpdatedBy = user
 	if param.Id != "" {
-		err = service.GetFormTemplateService().UpdateRequestFormTemplate(param, id)
+		err = service.GetFormTemplateService().UpdateRequestFormTemplate(param, requestTemplateId)
 	} else {
-		err = service.GetFormTemplateService().CreateRequestFormTemplate(param, id)
+		err = service.GetFormTemplateService().CreateRequestFormTemplate(param, requestTemplateId)
 	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.SetRequestTemplateToCreated(id, user)
-	result, _ := service.GetFormTemplateService().GetRequestFormTemplate(id)
+	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(requestTemplateId, user)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	result, _ := service.GetFormTemplateService().GetRequestFormTemplate(requestTemplateId)
 	middleware.ReturnData(c, result)
 }
 
 func ConfirmRequestFormTemplate(c *gin.Context) {
 	var requestTemplate *models.RequestTemplateTable
 	var err error
-	id := c.Param("id")
-	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(id)
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -68,21 +76,42 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("illegal operation"))
 		return
 	}
-	err = service.ConfirmRequestTemplate(id)
+	err = service.ConfirmRequestTemplate(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
+	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "confirmRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
 }
 
 func DeleteRequestFormTemplate(c *gin.Context) {
-	id := c.Param("id")
-	err := service.GetFormTemplateService().DeleteRequestFormTemplate(id)
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	err := service.GetFormTemplateService().DeleteRequestFormTemplate(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		middleware.ReturnSuccess(c)
 	}
+}
+
+// GetGlobalForm 获取全局表单
+func GetGlobalForm(c *gin.Context) {
+	var result []*models.GlobalFormTemplateGroupDto
+	var err error
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	result, err = service.GetFormTemplateService().GetGlobalFormTemplate(requestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }

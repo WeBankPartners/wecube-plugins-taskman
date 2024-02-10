@@ -101,7 +101,7 @@ func GetCoreProcNodes(c *gin.Context) {
 	var err error
 	requestTemplateId := c.Param("id")
 	getType := c.Param("type")
-	nodeList, err = service.GetProcDefService().GetProcessDefineTaskNodes(models.RequestTemplateTable{Id: requestTemplateId}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), getType)
+	nodeList, err = service.GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTemplateId}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), getType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -193,7 +193,7 @@ func UpdateRequestTemplateHandler(c *gin.Context) {
 		return
 	}
 	if requestTemplate == nil {
-		middleware.ReturnError(c, fmt.Errorf("requestTemplateId not exist"))
+		middleware.ReturnError(c, fmt.Errorf("requestTemplate not exist"))
 		return
 	}
 	// 处理时间校验
@@ -233,7 +233,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		return
 	}
 	if requestTemplate == nil {
-		middleware.ReturnError(c, fmt.Errorf("requestTemplateId not exist"))
+		middleware.ReturnError(c, fmt.Errorf("requestTemplate not exist"))
 		return
 	}
 	if requestTemplate.Status != param.Status {
@@ -336,6 +336,7 @@ func GetRequestTemplateEntityAttrs(c *gin.Context) {
 
 func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 	id := c.Param("id")
+	var user = middleware.GetRequestUser(c)
 	if id == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
@@ -345,12 +346,16 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := service.UpdateRequestTemplateEntityAttrs(id, param, middleware.GetRequestUser(c))
+	err := service.UpdateRequestTemplateEntityAttrs(id, param, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(id, user)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateRequestTemplateAttr", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnSuccess(c)
 }

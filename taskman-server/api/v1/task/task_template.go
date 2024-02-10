@@ -46,7 +46,12 @@ func UpdateTaskTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.SetRequestTemplateToCreated(id, middleware.GetRequestUser(c))
+	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(id, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+
 	operationLogService.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
 	middleware.ReturnData(c, result)

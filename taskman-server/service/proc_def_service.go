@@ -87,11 +87,15 @@ func (s ProcDefService) GetProcessDefine(procDefId, userToken, language string) 
 }
 
 // GetProcessDefineTaskNodes 获取编排节点
-func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate models.RequestTemplateTable, userToken, language, filterType string) (nodeList []*models.ProcNodeObj, err error) {
+func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.RequestTemplateTable, userToken, language, filterType string) (nodeList []*models.ProcNodeObj, err error) {
 	var allTaskNodeList []*models.ProcNodeObj
 	nodeList = make([]*models.ProcNodeObj, 0)
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate is empty")
+		return
+	}
 	if requestTemplate.ProcDefId == "" {
-		requestTemplate, err = GetRequestTemplateService().GetSimpleRequestTemplate(requestTemplate.Id)
+		requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplate.Id)
 		if err != nil {
 			return
 		}

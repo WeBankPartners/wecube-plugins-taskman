@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"sort"
 	"time"
 	"xorm.io/xorm"
 )
@@ -90,12 +91,16 @@ func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTempl
 	return
 }
 
-func (s FormTemplateService) GetRequestFormTemplate(id string) (result models.FormTemplateDto, err error) {
-	var requestTemplate models.RequestTemplateTable
+func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (result models.FormTemplateDto, err error) {
+	var requestTemplate *models.RequestTemplateTable
 	var formTemplate *models.FormTemplateTable
 	result = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
-	requestTemplate, err = GetRequestTemplateService().GetSimpleRequestTemplate(id)
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate not exist")
 		return
 	}
 	formTemplate, err = s.formTemplateDao.Get(requestTemplate.FormTemplate)
@@ -112,6 +117,59 @@ func (s FormTemplateService) GetRequestFormTemplate(id string) (result models.Fo
 	result.UpdatedTime = formTemplate.UpdatedTime
 	result.UpdatedBy = formTemplate.UpdatedBy
 	result.Items, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.FormTemplate)
+	return
+}
+
+func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (result []*models.GlobalFormTemplateGroupDto, err error) {
+	var requestTemplate *models.RequestTemplateTable
+	var formItemTemplateList []*models.FormItemTemplateTable
+	var itemGroupMap = make(map[string][]*models.FormItemTemplateTable)
+	var itemGroupType, itemGroupName string
+	result = []*models.GlobalFormTemplateGroupDto{}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate not exist")
+		return
+	}
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
+	if err != nil {
+		return
+	}
+	if len(formItemTemplateList) == 0 {
+		return
+	}
+	for _, formItemTemplate := range formItemTemplateList {
+		if _, ok := itemGroupMap[formItemTemplate.ItemGroup]; !ok {
+			itemGroupMap[formItemTemplate.ItemGroup] = make([]*models.FormItemTemplateTable, 0)
+		}
+	}
+	for itemGroup, formItemTemplateArr := range itemGroupMap {
+		for _, formItemTemplate := range formItemTemplateList {
+			if itemGroup == formItemTemplate.ItemGroup {
+				formItemTemplateArr = append(formItemTemplateArr, formItemTemplate)
+			}
+		}
+		if len(formItemTemplateArr) > 0 {
+			itemGroupType = formItemTemplateArr[0].ItemGroupType
+			itemGroupName = formItemTemplateArr[0].ItemGroupName
+		}
+		result = append(result, &models.GlobalFormTemplateGroupDto{
+			ItemGroup:     itemGroup,
+			ItemGroupType: itemGroupType,
+			ItemGroupName: itemGroupName,
+			Items:         formItemTemplateArr,
+		})
+	}
+	// 设置排序,保证前端展示数据顺序一致
+	for _, globalFormTemplateGroupDto := range result {
+		if len(globalFormTemplateGroupDto.Items) > 0 {
+			sort.Sort(models.FormItemTemplateTableSort(globalFormTemplateGroupDto.Items))
+		}
+	}
+	sort.Sort(models.GlobalFormTemplateGroupDtoSort(result))
 	return
 }
 

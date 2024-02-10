@@ -39,7 +39,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param role can not empty "))
 		return
 	}
-	template, err := service.GetRequestTemplateService().GetSimpleRequestTemplate(param.RequestTemplate)
+	template, err := service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

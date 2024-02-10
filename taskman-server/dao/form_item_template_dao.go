@@ -31,7 +31,7 @@ func (d FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTem
 	var found bool
 	var err error
 	formItemTemplate = &models.FormItemTemplateTable{}
-	found, err = d.DB.Where("id=?", formItemTemplateId).Get(formItemTemplate)
+	found, err = d.DB.ID(formItemTemplateId).Get(formItemTemplate)
 	if err != nil {
 		return nil, err
 	}

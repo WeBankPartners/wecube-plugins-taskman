@@ -1,7 +1,5 @@
 package models
 
-import "strings"
-
 type FormTemplateTable struct {
 	Id          string `json:"id" xorm:"'id' pk"`
 	Name        string `json:"name" xorm:"name"`
@@ -28,12 +26,21 @@ type FormTemplateDto struct {
 	Items       []*FormItemTemplateTable `json:"items"`
 }
 
+// GlobalFormTemplateDto 全局表单模板 dto
+type GlobalFormTemplateDto struct {
+	Id          string                        `json:"id"`          // 全局表单模板ID
+	UpdatedBy   string                        `json:"updatedBy"`   // 更新人
+	UpdatedTime string                        `json:"updatedTime"` // 更新时间
+	Groups      []*GlobalFormTemplateGroupDto `json:"groups"`
+}
+
 // GlobalFormTemplateGroupDto 全局表单模板组dto
 type GlobalFormTemplateGroupDto struct {
 	ItemGroup     string                   `json:"itemGroup"`
-	ItemGroupType string                   `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupType string                   `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName string                   `json:"itemGroupName"`
-	Items         []*FormItemTemplateTable `json:"items"` // 表单项
+	ItemGroupSort int                      `json:"itemGroupSort"` // 组排序
+	Items         []*FormItemTemplateTable `json:"items"`         // 表单项
 }
 
 type TaskFormItemQueryObj struct {
@@ -60,6 +67,30 @@ func CovertFormTemplateDto2Model(dto FormTemplateDto) *FormTemplateTable {
 	}
 }
 
+func ConvertGlobalFormTemplate2FormTemplateDto(dto GlobalFormTemplateDto) FormTemplateDto {
+	var items = make([]*FormItemTemplateTable, 0)
+	if len(dto.Groups) > 0 {
+		for _, group := range dto.Groups {
+			if group != nil && len(group.Items) > 0 {
+				for _, item := range group.Items {
+					if item != nil {
+						items = append(items, item)
+					}
+				}
+			}
+		}
+	}
+	return FormTemplateDto{
+		Id:          dto.Id,
+		Name:        "globalFormTemplate",
+		Description: "",
+		ExpireDay:   0,
+		UpdatedBy:   dto.UpdatedBy,
+		UpdatedTime: dto.UpdatedTime,
+		Items:       items,
+	}
+}
+
 type GlobalFormTemplateGroupDtoSort []*GlobalFormTemplateGroupDto
 
 func (s GlobalFormTemplateGroupDtoSort) Len() int {
@@ -71,7 +102,7 @@ func (s GlobalFormTemplateGroupDtoSort) Swap(i, j int) {
 }
 
 func (s GlobalFormTemplateGroupDtoSort) Less(i, j int) bool {
-	if strings.Compare(s[i].ItemGroupName, s[j].ItemGroupName) > 0 {
+	if s[i].ItemGroupSort < s[j].ItemGroupSort {
 		return true
 	}
 	return false

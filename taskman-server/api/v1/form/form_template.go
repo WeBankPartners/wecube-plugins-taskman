@@ -99,9 +99,9 @@ func DeleteRequestFormTemplate(c *gin.Context) {
 	}
 }
 
-// GetGlobalForm 获取全局表单
-func GetGlobalForm(c *gin.Context) {
-	var result []*models.GlobalFormTemplateGroupDto
+// GetGlobalFormTemplate 获取全局表单模板
+func GetGlobalFormTemplate(c *gin.Context) {
+	var result *models.GlobalFormTemplateDto
 	var err error
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
@@ -114,4 +114,30 @@ func GetGlobalForm(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, result)
+}
+
+// UpdateGlobalFormTemplate 新增更新全局表单模板
+func UpdateGlobalFormTemplate(c *gin.Context) {
+	var param models.GlobalFormTemplateDto
+	var err error
+	var user = middleware.GetRequestUser(c)
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	param.UpdatedBy = user
+	if param.Id != "" {
+		err = service.GetFormTemplateService().UpdateDataFormTemplate(param, requestTemplateId)
+	} else {
+		err = service.GetFormTemplateService().CreateDataFormTemplate(param, requestTemplateId)
+	}
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 }

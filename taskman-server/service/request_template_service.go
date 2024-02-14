@@ -172,11 +172,17 @@ func (s RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId, 
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
 }
 
-func (s RequestTemplateService) UpdateRequestTemplate(session *xorm.Session, requestTemplateId, formTemplate, description string, expireDay int) (err error) {
-	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, FormTemplate: formTemplate, Description: description, ExpireDay: expireDay}
+func (s RequestTemplateService) UpdateRequestTemplate(session *xorm.Session, requestTemplateId, formTemplate, description, updatedBy string, expireDay int) (err error) {
+	now := time.Now().Format(models.DateTimeFormat)
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, FormTemplate: formTemplate, Description: description, ExpireDay: expireDay, UpdatedBy: updatedBy, UpdatedTime: now}
 	return s.requestTemplateDao.Update(session, requestTemplate)
 }
 
+func (s RequestTemplateService) UpdateRequestTemplateDataForm(session *xorm.Session, requestTemplateId, dataFormTemplate, updatedBy string) (err error) {
+	now := time.Now().Format(models.DateTimeFormat)
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, DataFormTemplate: dataFormTemplate, UpdatedBy: updatedBy, UpdatedTime: now}
+	return s.requestTemplateDao.Update(session, requestTemplate)
+}
 func (s RequestTemplateService) UpdateRequestTemplateStatusToCreated(id, operator string) (err error) {
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	return s.requestTemplateDao.Update(nil, &models.RequestTemplateTable{Id: id, Status: "created", UpdatedBy: operator, UpdatedTime: nowTime})

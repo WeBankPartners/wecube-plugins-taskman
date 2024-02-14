@@ -91,10 +91,10 @@ func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTempl
 	return
 }
 
-func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (result models.FormTemplateDto, err error) {
+func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (result *models.FormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var formTemplate *models.FormTemplateTable
-	result = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
+	result = &models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -120,12 +120,12 @@ func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (r
 	return
 }
 
-func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (result []*models.GlobalFormTemplateGroupDto, err error) {
+func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (result *models.GlobalFormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var itemGroupMap = make(map[string][]*models.FormItemTemplateTable)
 	var itemGroupType, itemGroupName string
-	result = []*models.GlobalFormTemplateGroupDto{}
+	var itemGroupSort int
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -134,6 +134,7 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 		err = fmt.Errorf("requestTemplate not exist")
 		return
 	}
+	result = &models.GlobalFormTemplateDto{Id: requestTemplate.DataFormTemplate, Groups: make([]*models.GlobalFormTemplateGroupDto, 0)}
 	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
 	if err != nil {
 		return
@@ -155,21 +156,23 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 		if len(formItemTemplateArr) > 0 {
 			itemGroupType = formItemTemplateArr[0].ItemGroupType
 			itemGroupName = formItemTemplateArr[0].ItemGroupName
+			itemGroupSort = formItemTemplateArr[0].ItemGroupSort
 		}
-		result = append(result, &models.GlobalFormTemplateGroupDto{
+		result.Groups = append(result.Groups, &models.GlobalFormTemplateGroupDto{
 			ItemGroup:     itemGroup,
 			ItemGroupType: itemGroupType,
 			ItemGroupName: itemGroupName,
+			ItemGroupSort: itemGroupSort,
 			Items:         formItemTemplateArr,
 		})
 	}
 	// 设置排序,保证前端展示数据顺序一致
-	for _, globalFormTemplateGroupDto := range result {
+	for _, globalFormTemplateGroupDto := range result.Groups {
 		if len(globalFormTemplateGroupDto.Items) > 0 {
 			sort.Sort(models.FormItemTemplateTableSort(globalFormTemplateGroupDto.Items))
 		}
 	}
-	sort.Sort(models.GlobalFormTemplateGroupDtoSort(result))
+	sort.Sort(models.GlobalFormTemplateGroupDtoSort(result.Groups))
 	return
 }
 
@@ -193,7 +196,7 @@ func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.Fo
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
+		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.UpdatedBy, formTemplateDto.ExpireDay)
 		if err != nil {
 			return err
 		}
@@ -235,12 +238,47 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.ExpireDay)
+		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplate.UpdatedBy, formTemplateDto.ExpireDay)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
+	return
+}
+
+// CreateDataFormTemplate 创建数据表单
+func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.GlobalFormTemplateDto, requestTemplateId string) (err error) {
+	var requestTemplate *models.RequestTemplateTable
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	if requestTemplate == nil {
+		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
+	}
+	// 请求模板的处理不是当前用户,不允许操作
+	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
+		return exterror.New().DataPermissionDeny
+	}
+	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
+		// 添加表单模板
+		formTemplateDto.Id, err = s.AddFormTemplate(session, models.ConvertGlobalFormTemplate2FormTemplateDto(formTemplateDto))
+		if err != nil {
+			return err
+		}
+		// 更新模板
+		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.UpdatedBy)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return
+}
+
+// UpdateDataFormTemplate 更新数据表单
+func (s FormTemplateService) UpdateDataFormTemplate(formTemplateDto models.GlobalFormTemplateDto, requestTemplateId string) (err error) {
 	return
 }
 

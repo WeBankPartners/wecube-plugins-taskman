@@ -1,7 +1,5 @@
 package models
 
-import "strings"
-
 type FormItemTemplateTable struct {
 	Id              string           `json:"id" xorm:"'id' pk"`
 	Name            string           `json:"name" xorm:"name"`
@@ -9,6 +7,7 @@ type FormItemTemplateTable struct {
 	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`
 	ItemGroupType   string           `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName   string           `json:"itemGroupName" xorm:"item_group_name"`
+	ItemGroupSort   int              `json:"ItemGroupSort" xorm:"item_group_sort"` // item_group 排序
 	FormTemplate    string           `json:"formTemplate" xorm:"form_template"`
 	DefaultValue    string           `json:"defaultValue" xorm:"default_value"`
 	Sort            int              `json:"sort" xorm:"sort"`
@@ -50,7 +49,7 @@ func (s FormItemTemplateTableSort) Swap(i, j int) {
 }
 
 func (s FormItemTemplateTableSort) Less(i, j int) bool {
-	if strings.Compare(s[i].Name, s[j].Name) > 0 {
+	if s[i].Sort < s[j].Sort {
 		return true
 	}
 	return false

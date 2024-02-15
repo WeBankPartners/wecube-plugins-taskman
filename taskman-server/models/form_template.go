@@ -28,10 +28,11 @@ type FormTemplateDto struct {
 
 // GlobalFormTemplateDto 全局表单模板 dto
 type GlobalFormTemplateDto struct {
-	Id          string                        `json:"id"`          // 全局表单模板ID
-	UpdatedBy   string                        `json:"updatedBy"`   // 更新人
-	UpdatedTime string                        `json:"updatedTime"` // 更新时间
-	Groups      []*GlobalFormTemplateGroupDto `json:"groups"`
+	Id                  string                        `json:"id"`                  // 全局表单模板ID
+	AssociationWorkflow bool                          `json:"associationWorkflow"` // 是否关联编排
+	UpdatedBy           string                        `json:"updatedBy"`           // 更新人
+	UpdatedTime         string                        `json:"updatedTime"`         // 更新时间
+	Groups              []*GlobalFormTemplateGroupDto `json:"groups"`
 }
 
 // GlobalFormTemplateGroupDto 全局表单模板组dto

@@ -191,6 +191,39 @@ func (s RequestTemplateService) UpdateRequestTemplateStatusToCreated(id, operato
 func (s RequestTemplateService) GetRequestTemplate(requestTemplateId string) (requestTemplate *models.RequestTemplateTable, err error) {
 	return s.requestTemplateDao.Get(requestTemplateId)
 }
+func (s RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, userToken, language string) (entityList []*models.RequestTemplateEntityDto, err error) {
+	var requestTemplate *models.RequestTemplateTable
+	var procDefEntities []*models.ProcEntity
+	entityList = []*models.RequestTemplateEntityDto{}
+	requestTemplate, err = s.GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate not exist")
+		return
+	}
+	entityList = append(entityList, &models.RequestTemplateEntityDto{
+		FormType: "1.自定义表单",
+		Entities: nil,
+	})
+	// 配置了编排数据
+	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
+		procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, userToken, language)
+		if err != nil {
+			return
+		}
+		if len(procDefEntities) > 0 {
+			var entities []string
+			for _, entity := range procDefEntities {
+				entities = append(entities, fmt.Sprintf("%s:%s", entity.PackageName, entity.Name))
+			}
+			entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: "2.编排数据项表单", Entities: entities})
+		}
+	}
+	// @todo 自选数据项表单
+	return
+}
 
 func (s RequestTemplateService) CheckRequestTemplateRoles(requestTemplateId string, userRoles []string) error {
 	has, err := s.requestTemplateRoleDao.CheckRequestTemplateRoles(requestTemplateId, userRoles)
@@ -607,7 +640,7 @@ func DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAc
 	return actions, err
 }
 
-func ListRequestTemplateEntityAttrs(id, userToken, language string) (result []*models.ProcEntity, err error) {
+func (s RequestTemplateService) ListRequestTemplateEntityAttrs(id, userToken, language string) (result []*models.ProcEntity, err error) {
 	var nodes []*models.ProcNodeObj
 	result = []*models.ProcEntity{}
 	nodes, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: id}, userToken, language, "all")

@@ -312,7 +312,7 @@ func DeleteRequestTemplate(c *gin.Context) {
 
 func ListRequestTemplateEntityAttrs(c *gin.Context) {
 	id := c.Param("id")
-	result, err := service.ListRequestTemplateEntityAttrs(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, err := service.GetRequestTemplateService().ListRequestTemplateEntityAttrs(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -327,6 +327,20 @@ func GetRequestTemplateEntityAttrs(c *gin.Context) {
 		return
 	}
 	result, err := service.GetRequestTemplateEntityAttrs(id)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
+func QueryRequestTemplateEntity(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	result, err := service.GetRequestTemplateService().QueryRequestTemplateEntity(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

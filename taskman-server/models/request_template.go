@@ -170,6 +170,11 @@ type ImportData struct {
 	TemplateName string `json:"templateName"`
 }
 
+type RequestTemplateEntityDto struct {
+	FormType string   `json:"formType"` //表单类型
+	Entities []string `json:"entities"` //实例
+}
+
 type RequestTemplateSort []*RequestTemplateTableObj
 
 func (s RequestTemplateSort) Len() int {

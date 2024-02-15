@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"sort"
+	"strings"
 	"time"
 	"xorm.io/xorm"
 )
@@ -126,6 +127,7 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 	var itemGroupMap = make(map[string][]*models.FormItemTemplateTable)
 	var itemGroupType, itemGroupName string
 	var itemGroupSort int
+	var associationWorkflow bool
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -134,7 +136,11 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 		err = fmt.Errorf("requestTemplate not exist")
 		return
 	}
-	result = &models.GlobalFormTemplateDto{Id: requestTemplate.DataFormTemplate, Groups: make([]*models.GlobalFormTemplateGroupDto, 0)}
+	// 关联编排
+	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
+		associationWorkflow = true
+	}
+	result = &models.GlobalFormTemplateDto{Id: requestTemplate.DataFormTemplate, Groups: make([]*models.GlobalFormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
 	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
 	if err != nil {
 		return

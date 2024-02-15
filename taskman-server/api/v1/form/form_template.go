@@ -99,8 +99,8 @@ func DeleteRequestFormTemplate(c *gin.Context) {
 	}
 }
 
-// GetGlobalFormTemplate 获取全局表单模板
-func GetGlobalFormTemplate(c *gin.Context) {
+// GetDataFormTemplate 获取数据表单模板
+func GetDataFormTemplate(c *gin.Context) {
 	var result *models.GlobalFormTemplateDto
 	var err error
 	requestTemplateId := c.Param("id")
@@ -116,8 +116,8 @@ func GetGlobalFormTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// UpdateGlobalFormTemplate 新增更新全局表单模板
-func UpdateGlobalFormTemplate(c *gin.Context) {
+// UpdateDataFormTemplate 新增更新全局表单模板
+func UpdateDataFormTemplate(c *gin.Context) {
 	var param models.GlobalFormTemplateDto
 	var err error
 	var user = middleware.GetRequestUser(c)

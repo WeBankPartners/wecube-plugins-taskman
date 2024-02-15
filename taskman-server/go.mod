@@ -1,6 +1,6 @@
 module github.com/WeBankPartners/wecube-plugins-taskman/taskman-server
 
-go 1.18
+go 1.19
 
 require (
 	github.com/WeBankPartners/go-common-lib v1.0.7

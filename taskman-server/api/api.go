@@ -73,7 +73,6 @@ func init() {
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem},
-		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: template.GetRequestTemplateByUser},
 
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: workflow.GetEntityData},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: workflow.ProcessDataPreview},
@@ -90,11 +89,13 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/get/:requestId/:cacheType", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
 		&handlerFuncObj{Url: "/request-data/reference/query/:attrId/:requestId", Method: "POST", HandlerFunc: request.GetReferenceData},
+
 		&handlerFuncObj{Url: "/user/platform", Method: "POST", HandlerFunc: request.CountRequest},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
 		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
+
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
 		&handlerFuncObj{Url: "/request/terminate/:requestId", Method: "POST", HandlerFunc: request.TerminateRequest},
@@ -108,10 +109,12 @@ func init() {
 		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: workflow.GetProcDefTaskNodeContext},
 		&handlerFuncObj{Url: "/request/history/list", Method: "POST", HandlerFunc: request.HistoryList},
 		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
+
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},
 		&handlerFuncObj{Url: "/plugin/task/create", Method: "POST", HandlerFunc: task.CreateTask},
 		&handlerFuncObj{Url: "/plugin/task/create/custom", Method: "POST", HandlerFunc: task.CreateTask},
+
 		&handlerFuncObj{Url: "/task/list", Method: "POST", HandlerFunc: task.ListTask},
 		&handlerFuncObj{Url: "/task/detail/:taskId", Method: "GET", HandlerFunc: task.GetTask},
 		&handlerFuncObj{Url: "/task/save/:taskId", Method: "POST", HandlerFunc: task.SaveTaskForm},

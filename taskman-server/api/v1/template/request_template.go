@@ -250,15 +250,6 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
-func GetRequestTemplateByUser(c *gin.Context) {
-	result, err := service.GetRequestTemplateByUser(middleware.GetRequestRoles(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnData(c, result)
-}
-
 func ForkConfirmRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("id")
 	err := service.ForkConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))

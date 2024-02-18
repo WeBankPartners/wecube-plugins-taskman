@@ -138,7 +138,7 @@ func GetConfigureForm(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id or form-name")
 		return
 	}
-	configureDto, err = service.GetFormTemplateService().GetConfigureForm(formTemplateId, itemGroupName)
+	configureDto, err = service.GetFormTemplateService().GetConfigureForm(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

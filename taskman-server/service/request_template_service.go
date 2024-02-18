@@ -200,6 +200,8 @@ func (s RequestTemplateService) GetRequestTemplate(requestTemplateId string) (re
 func (s RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, userToken, language string) (entityList []*models.RequestTemplateEntityDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var procDefEntities []*models.ProcEntity
+	var workflowEntityMap = make(map[string]bool)
+	var nodesList []*models.DataModel
 	entityList = []*models.RequestTemplateEntityDto{}
 	requestTemplate, err = s.GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -222,12 +224,32 @@ func (s RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, us
 		if len(procDefEntities) > 0 {
 			var entities []string
 			for _, entity := range procDefEntities {
-				entities = append(entities, fmt.Sprintf("%s:%s", entity.PackageName, entity.Name))
+				entityStr := fmt.Sprintf("%s:%s", entity.PackageName, entity.Name)
+				entities = append(entities, entityStr)
+				workflowEntityMap[entityStr] = true
 			}
 			entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: "2.编排数据项表单", Entities: entities})
 		}
 	}
-	// @todo 自选数据项表单
+	// 自选数据项表单
+	nodesList, err = rpc.QueryAllModels(userToken, language)
+	if err != nil {
+		return
+	}
+	if len(nodesList) > 0 {
+		var entities []string
+		for _, model := range nodesList {
+			if len(model.Entities) > 0 {
+				for _, entity := range model.Entities {
+					entityStr := fmt.Sprintf("%s:%s", entity.PackageName, entity.Name)
+					if !workflowEntityMap[entityStr] {
+						entities = append(entities, entityStr)
+					}
+				}
+			}
+		}
+		entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: "3.自选数据项表单", Entities: entities})
+	}
 	return
 }
 
@@ -666,96 +688,6 @@ func validateConfirm(requestTemplateId string) error {
 		return fmt.Errorf("Please config task template ")
 	}
 	return nil
-}
-
-func GetRequestTemplateByUser(userRoles []string) (result []*models.UserRequestTemplateQueryObj, err error) {
-	result = []*models.UserRequestTemplateQueryObj{}
-	var requestTemplateTable, tmpTemplateTable []*models.RequestTemplateTable
-	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
-	queryParam := append(userRolesFilterParam, userRolesFilterParam...)
-	err = dao.X.SQL("select * from request_template where (del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))) or (del_flag=0 and id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+"))) order by `group`,tags,status,id", queryParam...).Find(&requestTemplateTable)
-	if err != nil {
-		return
-	}
-	if len(requestTemplateTable) == 0 {
-		return
-	}
-	recordIdMap := make(map[string]int)
-	disableNameMap := make(map[string]int)
-	for _, v := range requestTemplateTable {
-		if v.Status == "disable" {
-			if v.Version == "" {
-				disableNameMap[v.Name] = 1
-			} else {
-				tmpV, _ := strconv.Atoi(v.Version[1:])
-				disableNameMap[v.Name] = tmpV
-			}
-		}
-	}
-	for _, v := range requestTemplateTable {
-		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
-			if v.Version == "" {
-				continue
-			}
-			tmpV, _ := strconv.Atoi(v.Version[1:])
-			if tmpV <= disVersion {
-				continue
-			}
-		}
-		if v.Status == "confirm" {
-			if v.RecordId != "" {
-				recordIdMap[v.RecordId] = 1
-			}
-		} else {
-			if v.ConfirmTime != "" {
-				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
-					recordIdMap[v.Id] = 1
-				}
-			}
-			v.Name = fmt.Sprintf("%s(beta)", v.Name)
-			v.Version = "beta"
-		}
-	}
-	for _, v := range requestTemplateTable {
-		if _, b := recordIdMap[v.Id]; b {
-			continue
-		}
-		if disVersion, isDisable := disableNameMap[v.Name]; isDisable {
-			if v.Version == "" {
-				continue
-			}
-			tmpV, _ := strconv.Atoi(v.Version[1:])
-			if tmpV <= disVersion {
-				continue
-			}
-		}
-		tmpTemplateTable = append(tmpTemplateTable, v)
-	}
-	requestTemplateTable = tmpTemplateTable
-	var groupTable []*models.RequestTemplateGroupTable
-	dao.X.SQL("select id,name,description from request_template_group").Find(&groupTable)
-	groupMap := make(map[string]*models.RequestTemplateGroupTable)
-	for _, v := range groupTable {
-		groupMap[v.Id] = v
-	}
-	tmpGroup := requestTemplateTable[0].Group
-	var tmpTemplateList []*models.RequestTemplateTable
-	for _, v := range requestTemplateTable {
-		if v.Group != tmpGroup {
-			result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[tmpGroup].Id, GroupName: groupMap[tmpGroup].Name, GroupDescription: groupMap[tmpGroup].Description, Templates: tmpTemplateList})
-			tmpTemplateList = []*models.RequestTemplateTable{}
-			tmpGroup = v.Group
-		}
-		tmpTemplateList = append(tmpTemplateList, v)
-	}
-	if len(tmpTemplateList) > 0 {
-		lastGroup := requestTemplateTable[len(requestTemplateTable)-1].Group
-		result = append(result, &models.UserRequestTemplateQueryObj{GroupId: groupMap[lastGroup].Id, GroupName: groupMap[lastGroup].Name, GroupDescription: groupMap[lastGroup].Description, Templates: tmpTemplateList})
-	}
-	for _, v := range result {
-		v.Tags = groupRequestTemplateByTags(v.Templates)
-	}
-	return
 }
 
 // GetRequestTemplateByUserV2  新的选择模板接口

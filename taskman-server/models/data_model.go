@@ -2,12 +2,21 @@ package models
 
 import "time"
 
+type QueryExpressionDataParam struct {
+	DataModelExpression string `json:"dataModelExpression"`
+}
+
 type DataModel struct {
 	PluginPackageDataModel
 	Entities []*DataModelEntity `json:"entities"`
 }
 
 type DataModelEntity struct {
+	PluginPackageEntities
+	Attributes []*PluginPackageAttributes `json:"attributes"`
+}
+
+type PluginPackageEntities struct {
 	Id               string `json:"id"`               // 唯一标识
 	DataModelId      string `json:"dataModelId"`      // 所属数据模型
 	DataModelVersion int    `json:"dataModelVersion"` // 版本
@@ -15,6 +24,29 @@ type DataModelEntity struct {
 	Name             string `json:"name"`             // 模型名
 	DisplayName      string `json:"displayName"`      // 显示名
 	Description      string `json:"description"`      // 描述
+}
+
+type ExpressionEntities struct {
+	PackageName string                    `json:"packageName"`
+	EntityName  string                    `json:"entityName"`
+	Attributes  []*ProcEntityAttributeObj `json:"attributes"`
+}
+
+type PluginPackageAttributes struct {
+	Id              string `json:"id"`               // 唯一标识
+	Package         string `json:"packageName"`      // 所属包
+	EntityId        string `json:"entityId"`         // 所属数据模型ci项
+	ReferenceId     string `json:"referenceId"`      // 关联数据模型
+	Name            string `json:"name"`             // 属性名
+	Description     string `json:"description"`      // 描述
+	DataType        string `json:"dataType"`         // 属性数据类型
+	RefPackage      string `json:"refPackageName"`   // 关联包
+	RefEntity       string `json:"refEntityName"`    // 关联ci项
+	RefAttr         string `json:"refAttributeName"` // 关联属性
+	MandatoryString string `json:"mandatory"`        // 是否必填
+	Multiple        string `json:"multiple"`         // 是否数组
+	IsArray         bool   `json:"isArray"`          // 是否数组-新
+	OrderNo         int    `json:"orderNo"`          // 排序
 }
 
 type EntityQueryResult struct {

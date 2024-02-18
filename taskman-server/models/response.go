@@ -71,6 +71,11 @@ type QueryAllModelsResponse struct {
 	Data []*DataModel `json:"data"`
 }
 
+type QueryExpressionEntitiesResponse struct {
+	HttpResponseMeta
+	Data []*ExpressionEntities `json:"data"`
+}
+
 type ProcNodeQueryResponse struct {
 	HttpResponseMeta
 	Data []*ProcNodeObj `json:"data"`

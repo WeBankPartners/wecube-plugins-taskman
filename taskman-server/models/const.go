@@ -69,3 +69,12 @@ const (
 	ProcDefNodeTypeDate         ProcDefNodeType = "date"         //时间节点
 	ProcDefNodeTypeTimeInterval ProcDefNodeType = "timeInterval" //时间间隔
 )
+
+// FormItemGroupType 表单组类型
+type FormItemGroupType string
+
+const (
+	FormItemGroupTypeWorkflow FormItemGroupType = "workflow"
+	FormItemGroupTypeOptional FormItemGroupType = "optional"
+	FormItemGroupTypeCustom   FormItemGroupType = "custom"
+)

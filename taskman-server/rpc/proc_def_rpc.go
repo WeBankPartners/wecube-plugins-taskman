@@ -12,7 +12,7 @@ const (
 	// pathQueryProcessDefinitions 查询编排
 	pathQueryProcessDefinitions = "/platform/v1/process/definitions/list"
 	// pathAllQueryProcessDefinitions 查询插件所有编排
-	pathAllQueryProcessDefinitions = "/platform/v1/process/definitions/%s/list"
+	pathAllQueryProcessDefinitions = "/platform/v1/process/definitions/list/%s"
 	// pathGetProcessDefinitions 查询编排详情
 	pathGetProcessDefinitions = "/platform/v1/process/definitions/%s/outline"
 	// pathQueryProcessDefinitionsTaskNodes 查询编排节点
@@ -32,6 +32,8 @@ const (
 
 	// pathQueryModel 查询model
 	pathQueryModel = "/platform/v1/models"
+	// pathQueryEntities 查询entity
+	pathQueryEntities = "/platform/v1/data-model/dme/all-entities"
 
 	// @todo 后面调整回来 models.Config.Wecube.BaseUrl
 	BaseUrl = "http://106.52.160.142:18080"
@@ -143,6 +145,29 @@ func QueryAllModels(userToken, language string) (nodesList []*models.DataModel, 
 	}
 	if len(response.Data) > 0 {
 		nodesList = response.Data
+	}
+	return
+}
+
+// QueryEntityAttributes 查询所有模型
+func QueryEntityAttributes(param models.QueryExpressionDataParam, userToken, language string) (entitiesList []*models.ExpressionEntities, err error) {
+	var response models.QueryExpressionEntitiesResponse
+	postBytes, _ := json.Marshal(param)
+	entitiesList = []*models.ExpressionEntities{}
+	byteArr, err := HttpPost(BaseUrl+pathQueryEntities, userToken, language, postBytes)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if response.Status != "OK" {
+		err = fmt.Errorf(response.Message)
+	}
+	if len(response.Data) > 0 {
+		entitiesList = response.Data
 	}
 	return
 }

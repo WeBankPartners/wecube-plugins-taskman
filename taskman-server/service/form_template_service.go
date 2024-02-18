@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"sort"
 	"strings"
 	"time"
@@ -324,26 +325,41 @@ func (s FormTemplateService) UpdateDataFormTemplate(dataFormTemplateDto models.D
 }
 
 // GetConfigureForm 获取配置表单
-func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var formItemTemplate []*models.FormItemTemplateTable
-	configureDto = &models.FormTemplateGroupConfigureDto{SystemItems: []*models.FormItemTemplateTable{}, CustomItems: []*models.FormItemTemplateTable{}}
+	var entitiesList []*models.ExpressionEntities
+	var existAttrMap = make(map[string]bool)
+	configureDto = &models.FormTemplateGroupConfigureDto{SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
 	// 1.先查询用户配置数据
 	formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
 	if err != nil {
 		return
 	}
 	if len(formItemTemplate) > 0 {
-		for _, formItemTemplate := range formItemTemplate {
-			if formItemTemplate.ItemGroupName != "" {
-				configureDto.ItemGroup = formItemTemplate.ItemGroup
-				configureDto.ItemGroupName = formItemTemplate.ItemGroupName
-				configureDto.ItemGroupType = formItemTemplate.ItemGroupType
-				configureDto.ItemGroupRule = formItemTemplate.ItemGroupRule
+		configureDto.ItemGroup = formItemTemplate[0].ItemGroup
+		configureDto.ItemGroupName = formItemTemplate[0].ItemGroupName
+		configureDto.ItemGroupType = formItemTemplate[0].ItemGroupType
+		configureDto.ItemGroupRule = formItemTemplate[0].ItemGroupRule
+		for _, formItem := range formItemTemplate {
+			if formItem.ItemGroupType == string(models.FormItemGroupTypeCustom) {
+				configureDto.CustomItems = append(configureDto.CustomItems, formItem)
+			} else {
+				existAttrMap[formItem.Name] = true
 			}
 		}
-	} else {
-		// 没有查询到用户配置则是新增
-
+	}
+	// 2.查询entity 属性集合
+	entitiesList, err = rpc.QueryEntityAttributes(models.QueryExpressionDataParam{DataModelExpression: itemGroupName}, userToken, language)
+	if err != nil {
+		return
+	}
+	if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
+		for _, attribute := range entitiesList[0].Attributes {
+			if existAttrMap[attribute.Name] {
+				attribute.Active = true
+			}
+			configureDto.SystemItems = append(configureDto.SystemItems, attribute)
+		}
 	}
 	return
 }

@@ -1,7 +1,7 @@
 package models
 
 type FormItemTemplateTable struct {
-	Id              string           `json:"id" xorm:"'id' pk"`
+	Id              string           `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name            string           `json:"name" xorm:"name"`
 	Description     string           `json:"description" xorm:"description"`
 	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`

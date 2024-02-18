@@ -139,12 +139,17 @@ func QueryCount(sql string, params ...interface{}) int {
 }
 
 func GetJsonToXormMap(input interface{}) (resultMap map[string]string, idKeyName string) {
+	var label string
 	resultMap = make(map[string]string)
 	t := reflect.TypeOf(input)
 	for i := 0; i < t.NumField(); i++ {
-		resultMap[t.Field(i).Tag.Get("json")] = t.Field(i).Tag.Get("xorm")
+		label = t.Field(i).Tag.Get("xorm")
+		if strings.Contains(label, "pk") && t.Field(i).Tag.Get("primary-key") != "" {
+			label = t.Field(i).Tag.Get("primary-key")
+		}
+		resultMap[t.Field(i).Tag.Get("json")] = label
 		if i == 0 {
-			idKeyName = t.Field(i).Tag.Get("xorm")
+			idKeyName = label
 		}
 	}
 	return resultMap, idKeyName

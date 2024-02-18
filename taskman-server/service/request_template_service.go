@@ -109,7 +109,9 @@ func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestP
 		var tmpRoles []*models.RoleTable
 		for _, vv := range strings.Split(v.Role, ",") {
 			tmpSplit := strings.Split(vv, "::")
-			tmpRoles = append(tmpRoles, &models.RoleTable{Id: tmpSplit[0], DisplayName: tmpSplit[1]})
+			if len(tmpSplit) > 1 {
+				tmpRoles = append(tmpRoles, &models.RoleTable{Id: tmpSplit[0], DisplayName: tmpSplit[1]})
+			}
 		}
 		if v.RoleType == "mgmt" {
 			mgmtRoleMap[v.Id] = tmpRoles

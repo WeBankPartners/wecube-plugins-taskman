@@ -5,7 +5,7 @@ import (
 )
 
 type RequestTemplateTable struct {
-	Id               string `json:"id"  xorm:"'id' pk"`
+	Id               string `json:"id"  xorm:"'id' pk" primary-key:"id"`
 	Group            string `json:"group" xorm:"group"`
 	Name             string `json:"name" xorm:"name"`
 	Description      string `json:"description" xorm:"description"`

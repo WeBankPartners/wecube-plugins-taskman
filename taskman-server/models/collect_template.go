@@ -2,7 +2,7 @@ package models
 
 // CollectTemplateTable  收藏模板
 type CollectTemplateTable struct {
-	Id              string `json:"id" xorm:"'id' pk"`
+	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"` // 收藏模板ID
 	User            string `json:"user" xorm:"user"`                        // 收藏用户
 	Role            string `json:"role" xorm:"role"`                        // 收藏模板时角色

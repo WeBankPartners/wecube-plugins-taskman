@@ -14,15 +14,24 @@ func (d FormItemTemplateDao) Add(session *xorm.Session, formItemTemplate *models
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	return session.InsertOne(formItemTemplate)
+	affected, err = session.Insert(formItemTemplate)
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "Add", formItemTemplate, affected, err)
+	return
 }
 
 func (d FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable) (err error) {
+	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(formItemTemplate.Id).Update(formItemTemplate)
+	if formItemTemplate.Id == "" {
+		return
+	}
+	affected, err = session.ID(formItemTemplate.Id).Update(formItemTemplate)
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "Update", formItemTemplate, affected, err)
 	return
 }
 
@@ -43,6 +52,9 @@ func (d FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTem
 
 func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
 	formItemTemplate = []*models.FormItemTemplateTable{}
+	if formTemplate == "" {
+		return
+	}
 	err = d.DB.Where("form_template = ?", formTemplate).Find(&formItemTemplate)
 	return
 }
@@ -54,6 +66,7 @@ func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupName(formTemplate, i
 }
 
 func (d FormItemTemplateDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
+	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
@@ -61,11 +74,14 @@ func (d FormItemTemplateDao) DeleteByIdOrCopyId(session *xorm.Session, id string
 	if id == "" {
 		return
 	}
-	_, err = d.DB.Where("id = ? or copy_id = ?", id, id).Delete(&models.FormItemTemplateTable{})
+	affected, err = session.Where("id = ? or copy_id = ?", id, id).Delete(&models.FormItemTemplateTable{})
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "DeleteByIdOrCopyId", id, affected, err)
 	return
 }
 
 func (d FormItemTemplateDao) Delete(session *xorm.Session, id string) (err error) {
+	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
@@ -73,6 +89,8 @@ func (d FormItemTemplateDao) Delete(session *xorm.Session, id string) (err error
 	if id == "" {
 		return
 	}
-	_, err = d.DB.ID(id).Delete(&models.FormItemTemplateTable{})
+	affected, err = session.ID(id).Delete(&models.FormItemTemplateTable{})
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "Delete", id, affected, err)
 	return
 }

@@ -117,7 +117,7 @@ func UpdateDataFormTemplate(c *gin.Context) {
 		return
 	}
 	param.UpdatedBy = user
-	if param.FormTemplateId != "" {
+	if param.DataFormTemplateId != "" {
 		err = service.GetFormTemplateService().UpdateDataFormTemplate(param, requestTemplateId)
 	} else {
 		err = service.GetFormTemplateService().CreateDataFormTemplate(param, requestTemplateId)
@@ -126,6 +126,7 @@ func UpdateDataFormTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	middleware.ReturnSuccess(c)
 }
 
 // GetConfigureForm 获取配置表单

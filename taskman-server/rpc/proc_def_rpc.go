@@ -16,13 +16,13 @@ const (
 	// pathGetProcessDefinitions 查询编排详情
 	pathGetProcessDefinitions = "/platform/v1/process/definitions/%s/outline"
 	// pathQueryProcessDefinitionsTaskNodes 查询编排节点
-	pathQueryProcessDefinitionsTaskNodes = "/public/platform/v1/process/definitions/%s/tasknodes"
+	pathQueryProcessDefinitionsTaskNodes = "/platform/v1/public/process/definitions/%s/tasknodes"
 	// pathQueryProcessDefinitionsInstance 编排实例
 	pathQueryProcessDefinitionsInstance = "/platform/v1/process/instances/%s"
 	// pathQueryProcessDefinitionsEntityData  查询编排实例entityData
 	pathQueryProcessDefinitionsEntityData = "/platform/v1/process/instances/%s"
 	// pathQueryPreviewProcessDefinitionsEntity 编排设计entityData预览
-	pathQueryPreviewProcessDefinitionsEntity = "/public/process/definitions/%s/preview/entities/%s"
+	pathQueryPreviewProcessDefinitionsEntity = "/platform/v1/process/definitions/%s/preview/entities/%s"
 	// pathTerminationsProcessDefinitionsInstance  终止编排实例运行
 	pathTerminationsProcessDefinitionsInstance = "/platform/v1/public/process/instances/%s/terminations"
 	// pathStartProcDefInstance 启动编排实例

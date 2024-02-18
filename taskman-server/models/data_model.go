@@ -104,7 +104,6 @@ type ProcEntityAttributeObj struct {
 	Name              string `json:"name"`
 	Description       string `json:"description"`
 	DataType          string `json:"dataType"`
-	Mandatory         bool   `json:"mandatory"`
 	RefPackageName    string `json:"refPackageName"`
 	RefEntityName     string `json:"refEntityName"`
 	RefAttrName       string `json:"refAttrName"`

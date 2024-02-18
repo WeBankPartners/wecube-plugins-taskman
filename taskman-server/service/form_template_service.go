@@ -70,7 +70,10 @@ func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTempl
 				return
 			}
 		} else {
-			s.formItemTemplateDao.Update(session, inputItem)
+			err = s.formItemTemplateDao.Update(session, inputItem)
+			if err != nil {
+				return
+			}
 		}
 	}
 	// 删除表单项&表单项模板
@@ -83,7 +86,7 @@ func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTempl
 			}
 		}
 		if !existFlag {
-			err = s.formDao.DeleteByFormItemTemplate(session, formItemTemplate.FormTemplate)
+			err = s.formItemTemplateDao.Delete(session, formItemTemplate.Id)
 			if err != nil {
 				return
 			}
@@ -142,7 +145,7 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
 		associationWorkflow = true
 	}
-	result = &models.DataFormTemplateDto{FormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.DataFormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
+	result = &models.DataFormTemplateDto{DataFormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.DataFormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
 	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
 	if err != nil {
 		return
@@ -271,12 +274,12 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 	}
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
-		formTemplateDto.FormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
+		formTemplateDto.DataFormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
 		if err != nil {
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.FormTemplateId, formTemplateDto.UpdatedBy)
+		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.DataFormTemplateId, formTemplateDto.UpdatedBy)
 		if err != nil {
 			return err
 		}
@@ -301,7 +304,7 @@ func (s FormTemplateService) UpdateDataFormTemplate(dataFormTemplateDto models.D
 		return exterror.New().DataPermissionDeny
 	}
 	// 将数据表单各分组中的表单项,整合一起更新表单模板
-	formTemplateDto.Id = dataFormTemplateDto.FormTemplateId
+	formTemplateDto.Id = dataFormTemplateDto.DataFormTemplateId
 	if len(dataFormTemplateDto.Groups) > 0 {
 		for _, groupDto := range dataFormTemplateDto.Groups {
 			if groupDto != nil && len(groupDto.Items) > 0 {
@@ -354,6 +357,11 @@ func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, use
 		return
 	}
 	if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
+		if configureDto.ItemGroup == "" {
+			configureDto.ItemGroup = itemGroupName
+			configureDto.ItemGroupName = itemGroupName
+			configureDto.ItemGroupType = string(models.FormItemGroupTypeOptional)
+		}
 		for _, attribute := range entitiesList[0].Attributes {
 			if existAttrMap[attribute.Name] {
 				attribute.Active = true

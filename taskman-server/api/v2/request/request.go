@@ -9,11 +9,6 @@ import (
 	"time"
 )
 
-var (
-	requestTemplateService = service.GetRequestTemplateService()
-	operationLogService    = service.GetOperationLogService()
-)
-
 // GetRequestDetail 新版请求详情
 func GetRequestDetail(c *gin.Context) {
 	requestId := c.Param("requestId")
@@ -63,7 +58,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, param)
 }
 
@@ -148,6 +143,6 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }

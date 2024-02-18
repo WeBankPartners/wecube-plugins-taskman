@@ -1,11 +1,10 @@
-package request
+package template
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -15,129 +14,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 )
-
-func QueryRequestTemplateGroup(c *gin.Context) {
-	var param models.QueryRequestParam
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	pageInfo, rowData, err := service.QueryRequestTemplateGroup(&param, middleware.GetRequestRoles(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnPageData(c, pageInfo, rowData)
-}
-
-func CreateRequestTemplateGroup(c *gin.Context) {
-	var param models.RequestTemplateGroupTable
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	err := service.CreateRequestTemplateGroup(&param)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnSuccess(c)
-}
-
-func UpdateRequestTemplateGroup(c *gin.Context) {
-	var param models.RequestTemplateGroupTable
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	if param.Id == "" {
-		middleware.ReturnParamEmptyError(c, "id")
-		return
-	}
-	err := service.CheckRequestTemplateGroupRoles(param.Id, middleware.GetRequestRoles(c))
-	if err != nil {
-		middleware.ReturnDataPermissionError(c, err)
-		return
-	}
-	err = service.UpdateRequestTemplateGroup(&param)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnSuccess(c)
-}
-
-func DeleteRequestTemplateGroup(c *gin.Context) {
-	id := c.Query("id")
-	if id == "" {
-		middleware.ReturnParamEmptyError(c, "id")
-		return
-	}
-	err := service.CheckRequestTemplateGroupRoles(id, middleware.GetRequestRoles(c))
-	if err != nil {
-		middleware.ReturnDataPermissionError(c, err)
-		return
-	}
-	err = service.DeleteRequestTemplateGroup(id)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnSuccess(c)
-}
-
-func GetCoreProcessList(c *gin.Context) {
-	mangeRole := c.Query("role")
-	result, err := service.GetProcDefService().GetCoreProcessListNew(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), mangeRole)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnData(c, result)
-}
-
-func GetCoreProcNodes(c *gin.Context) {
-	var nodeList []*models.ProcNodeObj
-	var err error
-	requestTemplateId := c.Param("id")
-	getType := c.Param("type")
-	nodeList, err = service.GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTemplateId}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), getType)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnData(c, nodeList)
-}
-
-func GetRoleList(c *gin.Context) {
-	service.SyncCoreRole(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	result, err := service.GetRoleList([]string{})
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnData(c, result)
-}
-
-func GetUserByRoles(c *gin.Context) {
-	roleString := c.Query("roles")
-	result, err := service.QueryUserByRoles(strings.Split(roleString, ","), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnData(c, result)
-}
-
-func GetUserRoles(c *gin.Context) {
-	service.SyncCoreRole(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	result, err := service.GetRoleList(middleware.GetRequestRoles(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
-	}
-}
 
 func QueryRequestTemplate(c *gin.Context) {
 	var param models.QueryRequestParam
@@ -267,7 +143,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
-	result, err := service.UpdateRequestTemplate(&param)
+	result, err := service.GetRequestTemplateService().UpdateRequestTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -302,7 +178,7 @@ func DeleteRequestTemplate(c *gin.Context) {
 		middleware.ReturnDataPermissionError(c, err)
 		return
 	}
-	_, err := service.DeleteRequestTemplate(id, false)
+	_, err := service.GetRequestTemplateService().DeleteRequestTemplate(id, false)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -326,7 +202,7 @@ func GetRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	result, err := service.GetRequestTemplateEntityAttrs(id)
+	result, err := service.GetRequestTemplateService().GetRequestTemplateEntityAttrs(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -360,7 +236,7 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := service.UpdateRequestTemplateEntityAttrs(id, param, user)
+	err := service.GetRequestTemplateService().UpdateRequestTemplateEntityAttrs(id, param, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -443,7 +319,7 @@ func ImportRequestTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
 		return
 	}
-	templateName, backToken, importErr := service.RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c))
+	templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c))
 	if importErr != nil {
 		middleware.ReturnServerHandleError(c, importErr)
 		return
@@ -457,7 +333,7 @@ func ImportRequestTemplate(c *gin.Context) {
 
 func ConfirmImportRequestTemplate(c *gin.Context) {
 	confirmToken := c.Param("confirmToken")
-	_, _, err := service.RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c))
+	_, _, err := service.GetRequestTemplateService().RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

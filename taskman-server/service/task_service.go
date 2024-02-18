@@ -816,7 +816,7 @@ func NotifyTaskMail(taskId, userToken, language string) error {
 	if len(roleTable) == 0 {
 		return fmt.Errorf("can not find handle role with task:%s ", taskId)
 	}
-	mailList := getRoleMail(roleTable, userToken, language)
+	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
 	if len(mailList) == 0 {
 		log.Logger.Warn("Notify task mail break,email is empty", log.String("role", roleTable[0].Id))
 		return fmt.Errorf("handle role email is empty ")

@@ -85,30 +85,16 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
-func DeleteRequestFormTemplate(c *gin.Context) {
-	requestTemplateId := c.Param("id")
-	if requestTemplateId == "" {
-		middleware.ReturnParamEmptyError(c, "id")
-		return
-	}
-	err := service.GetFormTemplateService().DeleteRequestFormTemplate(requestTemplateId)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnSuccess(c)
-	}
-}
-
 // GetDataFormTemplate 获取数据表单模板
 func GetDataFormTemplate(c *gin.Context) {
-	var result *models.GlobalFormTemplateDto
+	var result *models.DataFormTemplateDto
 	var err error
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	result, err = service.GetFormTemplateService().GetGlobalFormTemplate(requestTemplateId)
+	result, err = service.GetFormTemplateService().GetDataFormTemplate(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -118,7 +104,7 @@ func GetDataFormTemplate(c *gin.Context) {
 
 // UpdateDataFormTemplate 新增更新全局表单模板
 func UpdateDataFormTemplate(c *gin.Context) {
-	var param models.GlobalFormTemplateDto
+	var param models.DataFormTemplateDto
 	var err error
 	var user = middleware.GetRequestUser(c)
 	requestTemplateId := c.Param("id")
@@ -131,7 +117,7 @@ func UpdateDataFormTemplate(c *gin.Context) {
 		return
 	}
 	param.UpdatedBy = user
-	if param.Id != "" {
+	if param.FormTemplateId != "" {
 		err = service.GetFormTemplateService().UpdateDataFormTemplate(param, requestTemplateId)
 	} else {
 		err = service.GetFormTemplateService().CreateDataFormTemplate(param, requestTemplateId)
@@ -140,4 +126,22 @@ func UpdateDataFormTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+}
+
+// GetConfigureForm 获取配置表单
+func GetConfigureForm(c *gin.Context) {
+	var configureDto *models.FormTemplateGroupConfigureDto
+	var err error
+	formTemplateId := c.Query("form-template-id")
+	itemGroupName := c.Query("item-group-name")
+	if formTemplateId == "" || itemGroupName == "" {
+		middleware.ReturnParamEmptyError(c, "id or form-name")
+		return
+	}
+	configureDto, err = service.GetFormTemplateService().GetConfigureForm(formTemplateId, itemGroupName)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, configureDto)
 }

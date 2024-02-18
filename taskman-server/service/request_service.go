@@ -900,7 +900,7 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 		return err
 	}
 	var actions []*dao.ExecAction
-	err = SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
+	err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
 	if err != nil {
 		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
 	}
@@ -2199,7 +2199,7 @@ func notifyRoleMail(requestId, userToken, language string) error {
 	if len(roleTable) == 0 {
 		return nil
 	}
-	mailList := getRoleMail(roleTable, userToken, language)
+	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
 	if len(mailList) == 0 {
 		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
 		return nil
@@ -2526,7 +2526,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowsData []*mode
 	if request.Handler != "" {
 		pendingHandler = request.Handler
 	} else {
-		pendingHandler = GetRequestTemplateManageRole(request.RequestTemplate)
+		pendingHandler = GetRequestTemplateService().GetRequestTemplateManageRole(request.RequestTemplate)
 	}
 	subRowsData := getCommonRequestProgress(requestId, request.RequestTemplate, language, userToken)
 	switch request.Status {
@@ -2791,35 +2791,6 @@ func getRequestHandler(requestId string) (role, handler string) {
 			}
 		}
 	}
-	return
-}
-
-// getRequestRemainTime 获取请求停留时长
-func getRequestRemainTime(requestId string) (startTime string, effectiveDays int) {
-	request, _ := GetSimpleRequest(requestId)
-	if request.Status == "Draft" || request.Status == "Pending" || request.Status == "Completed" {
-		requestTemplate, _ := GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
-		startTime = request.ReportTime
-		effectiveDays = requestTemplate.ExpireDay
-		return
-	}
-	// 请求在任务状态
-	taskTemplateMap, _ := GetTaskTemplateMapByRequestTemplate(request.RequestTemplate)
-	if len(taskTemplateMap) > 0 {
-		taskMap, _ := getTaskMapByRequestId(requestId)
-		if len(taskMap) > 0 {
-			for _, task := range taskMap {
-				if task.Status != "done" && taskTemplateMap[task.Name] != 0 {
-					startTime = task.CreatedTime
-					effectiveDays = taskTemplateMap[task.Name]
-					return
-				}
-			}
-		}
-	}
-	requestTemplate, _ := GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
-	startTime = request.CreatedTime
-	effectiveDays = requestTemplate.ExpireDay
 	return
 }
 

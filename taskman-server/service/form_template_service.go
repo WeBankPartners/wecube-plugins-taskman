@@ -86,7 +86,8 @@ func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTempl
 			if err != nil {
 				return
 			}
-			err = s.formItemTemplateDao.Delete(session, formItemTemplate.Id)
+			// 审批表单、任务表单中的表单项都是copy数据表单而来,此处通过copy_id记录关系,当删除数据表单的表单项内容时候,对应任务表单、审批表单的表单项都需要删除
+			err = s.formItemTemplateDao.DeleteByIdOrCopyId(session, formItemTemplate.Id)
 		}
 	}
 	return
@@ -121,7 +122,7 @@ func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (r
 	return
 }
 
-func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (result *models.GlobalFormTemplateDto, err error) {
+func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (result *models.DataFormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var itemGroupMap = make(map[string][]*models.FormItemTemplateTable)
@@ -140,7 +141,7 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
 		associationWorkflow = true
 	}
-	result = &models.GlobalFormTemplateDto{Id: requestTemplate.DataFormTemplate, Groups: make([]*models.GlobalFormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
+	result = &models.DataFormTemplateDto{FormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.DataFormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
 	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
 	if err != nil {
 		return
@@ -164,7 +165,7 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 			itemGroupName = formItemTemplateArr[0].ItemGroupName
 			itemGroupSort = formItemTemplateArr[0].ItemGroupSort
 		}
-		result.Groups = append(result.Groups, &models.GlobalFormTemplateGroupDto{
+		result.Groups = append(result.Groups, &models.DataFormTemplateGroupDto{
 			ItemGroup:     itemGroup,
 			ItemGroupType: itemGroupType,
 			ItemGroupName: itemGroupName,
@@ -173,12 +174,12 @@ func (s FormTemplateService) GetGlobalFormTemplate(requestTemplateId string) (re
 		})
 	}
 	// 设置排序,保证前端展示数据顺序一致
-	for _, globalFormTemplateGroupDto := range result.Groups {
-		if len(globalFormTemplateGroupDto.Items) > 0 {
-			sort.Sort(models.FormItemTemplateTableSort(globalFormTemplateGroupDto.Items))
+	for _, DataFormTemplateGroupDto := range result.Groups {
+		if len(DataFormTemplateGroupDto.Items) > 0 {
+			sort.Sort(models.FormItemTemplateTableSort(DataFormTemplateGroupDto.Items))
 		}
 	}
-	sort.Sort(models.GlobalFormTemplateGroupDtoSort(result.Groups))
+	sort.Sort(models.DataFormTemplateGroupDtoSort(result.Groups))
 	return
 }
 
@@ -202,7 +203,7 @@ func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.Fo
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.UpdatedBy, formTemplateDto.ExpireDay)
+		err = GetRequestTemplateService().UpdateRequestTemplateBase(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplateDto.UpdatedBy, formTemplateDto.ExpireDay)
 		if err != nil {
 			return err
 		}
@@ -244,7 +245,7 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplate(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplate.UpdatedBy, formTemplateDto.ExpireDay)
+		err = GetRequestTemplateService().UpdateRequestTemplateBase(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.Description, formTemplate.UpdatedBy, formTemplateDto.ExpireDay)
 		if err != nil {
 			return err
 		}
@@ -254,7 +255,7 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 }
 
 // CreateDataFormTemplate 创建数据表单
-func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.GlobalFormTemplateDto, requestTemplateId string) (err error) {
+func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataFormTemplateDto, requestTemplateId string) (err error) {
 	var requestTemplate *models.RequestTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -269,12 +270,12 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.Globa
 	}
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
-		formTemplateDto.Id, err = s.AddFormTemplate(session, models.ConvertGlobalFormTemplate2FormTemplateDto(formTemplateDto))
+		formTemplateDto.FormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
 		if err != nil {
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.Id, formTemplateDto.UpdatedBy)
+		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.FormTemplateId, formTemplateDto.UpdatedBy)
 		if err != nil {
 			return err
 		}
@@ -284,11 +285,65 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.Globa
 }
 
 // UpdateDataFormTemplate 更新数据表单
-func (s FormTemplateService) UpdateDataFormTemplate(formTemplateDto models.GlobalFormTemplateDto, requestTemplateId string) (err error) {
+func (s FormTemplateService) UpdateDataFormTemplate(dataFormTemplateDto models.DataFormTemplateDto, requestTemplateId string) (err error) {
+	var requestTemplate *models.RequestTemplateTable
+	var formTemplateDto = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return err
+	}
+	if requestTemplate == nil {
+		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
+	}
+	// 请求模板的处理不是当前用户,不允许操作
+	if requestTemplate.Handler != dataFormTemplateDto.UpdatedBy {
+		return exterror.New().DataPermissionDeny
+	}
+	// 将数据表单各分组中的表单项,整合一起更新表单模板
+	formTemplateDto.Id = dataFormTemplateDto.FormTemplateId
+	if len(dataFormTemplateDto.Groups) > 0 {
+		for _, groupDto := range dataFormTemplateDto.Groups {
+			if groupDto != nil && len(groupDto.Items) > 0 {
+				formTemplateDto.Items = append(formTemplateDto.Items, groupDto.Items...)
+			}
+		}
+	}
+	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
+		// 更新表单项模板
+		err = s.UpdateFormTemplate(session, formTemplateDto)
+		if err != nil {
+			return err
+		}
+		err = GetRequestTemplateService().UpdateRequestTemplateUpdatedBy(session, requestTemplateId, formTemplateDto.UpdatedBy)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 	return
 }
 
-func (s FormTemplateService) DeleteRequestFormTemplate(id string) error {
-	_, err := dao.X.Exec("update form_template set del_flag=1 where id=?", id)
-	return err
+// GetConfigureForm 获取配置表单
+func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+	var formItemTemplate []*models.FormItemTemplateTable
+	configureDto = &models.FormTemplateGroupConfigureDto{SystemItems: []*models.FormItemTemplateTable{}, CustomItems: []*models.FormItemTemplateTable{}}
+	// 1.先查询用户配置数据
+	formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
+	if err != nil {
+		return
+	}
+	if len(formItemTemplate) > 0 {
+		for _, formItemTemplate := range formItemTemplate {
+			if formItemTemplate.ItemGroupName != "" {
+				configureDto.ItemGroup = formItemTemplate.ItemGroup
+				configureDto.ItemGroupName = formItemTemplate.ItemGroupName
+				configureDto.ItemGroupType = formItemTemplate.ItemGroupType
+				configureDto.ItemGroupRule = formItemTemplate.ItemGroupRule
+			}
+		}
+	} else {
+		// 没有查询到用户配置则是新增
+
+	}
+	return
 }

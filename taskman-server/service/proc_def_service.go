@@ -159,3 +159,61 @@ func (s ProcDefService) TerminationsProcDefInstance(param models.TerminateInstan
 func (s ProcDefService) StartProcDefInstances(param models.RequestProcessData, userToken, language string) (result *models.StartInstanceResultData, err error) {
 	return rpc.StartProcDefInstances(param, userToken, language)
 }
+
+func (s ProcDefService) CheckProDefId(proDefId, proDefName, proDefKey, userToken, language string) (exist bool, newProDefId string, err error) {
+	exist = false
+	var processList []*models.ProcDefObj
+	if proDefKey != "" {
+		tmpProcessList, tmpErr := GetProcDefService().GetCoreProcessListNew(userToken, language, "")
+		if tmpErr != nil {
+			err = tmpErr
+		} else {
+			for _, v := range tmpProcessList {
+				processList = append(processList, &models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefName: v.ProcDefName, ProcDefKey: v.ProcDefKey})
+			}
+		}
+	} else {
+		allProcessList, tmpErr := GetProcDefService().GetCoreProcessListAll(userToken, language)
+		if tmpErr != nil {
+			err = tmpErr
+		} else {
+			for _, v := range allProcessList {
+				processList = append(processList, &models.ProcDefObj{ProcDefId: v.ProcDefId, ProcDefName: v.ProcDefName, ProcDefKey: v.ProcDefKey})
+			}
+		}
+	}
+	if err != nil {
+		return
+	}
+	for _, v := range processList {
+		if v.ProcDefId == proDefId {
+			exist = true
+			break
+		}
+	}
+	if exist {
+		return
+	}
+	count := 0
+	for _, v := range processList {
+		if proDefKey != "" {
+			if proDefKey == v.ProcDefKey {
+				count = count + 1
+				newProDefId = v.ProcDefId
+			}
+			continue
+		}
+		if v.ProcDefName == proDefName {
+			count = count + 1
+			newProDefId = v.ProcDefId
+		}
+	}
+	if count != 1 {
+		if proDefKey != "" {
+			err = fmt.Errorf("Find %d record from process list by query proDefKey:%s ", count, proDefKey)
+		} else {
+			err = fmt.Errorf("Find %d record from process list by query proDefName:%s ", count, proDefName)
+		}
+	}
+	return
+}

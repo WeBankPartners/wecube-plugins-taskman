@@ -26,22 +26,32 @@ type FormTemplateDto struct {
 	Items       []*FormItemTemplateTable `json:"items"`
 }
 
-// GlobalFormTemplateDto 全局表单模板 dto
-type GlobalFormTemplateDto struct {
-	Id                  string                        `json:"id"`                  // 全局表单模板ID
-	AssociationWorkflow bool                          `json:"associationWorkflow"` // 是否关联编排
-	UpdatedBy           string                        `json:"updatedBy"`           // 更新人
-	UpdatedTime         string                        `json:"updatedTime"`         // 更新时间
-	Groups              []*GlobalFormTemplateGroupDto `json:"groups"`
+// DataFormTemplateDto 全局表单模板 dto
+type DataFormTemplateDto struct {
+	FormTemplateId      string                      `json:"formTemplateId"`      // 全局表单模板ID
+	AssociationWorkflow bool                        `json:"associationWorkflow"` // 是否关联编排
+	UpdatedBy           string                      `json:"updatedBy"`           // 更新人
+	UpdatedTime         string                      `json:"updatedTime"`         // 更新时间
+	Groups              []*DataFormTemplateGroupDto `json:"groups"`
 }
 
-// GlobalFormTemplateGroupDto 全局表单模板组dto
-type GlobalFormTemplateGroupDto struct {
+// DataFormTemplateGroupDto 全局表单模板组dto
+type DataFormTemplateGroupDto struct {
 	ItemGroup     string                   `json:"itemGroup"`
 	ItemGroupType string                   `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName string                   `json:"itemGroupName"`
 	ItemGroupSort int                      `json:"itemGroupSort"` // 组排序
 	Items         []*FormItemTemplateTable `json:"items"`         // 表单项
+}
+
+// FormTemplateGroupConfigureDto 表单组配置在dto
+type FormTemplateGroupConfigureDto struct {
+	ItemGroup     string                   `json:"itemGroup"`
+	ItemGroupType string                   `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName string                   `json:"itemGroupName"`
+	ItemGroupRule string                   `json:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	SystemItems   []*FormItemTemplateTable `json:"systemItems"`     // 系统表单项
+	CustomItems   []*FormItemTemplateTable `json:"customItems"`     // 自定义表单项
 }
 
 type TaskFormItemQueryObj struct {
@@ -68,7 +78,7 @@ func CovertFormTemplateDto2Model(dto FormTemplateDto) *FormTemplateTable {
 	}
 }
 
-func ConvertGlobalFormTemplate2FormTemplateDto(dto GlobalFormTemplateDto) FormTemplateDto {
+func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTemplateDto {
 	var items = make([]*FormItemTemplateTable, 0)
 	if len(dto.Groups) > 0 {
 		for _, group := range dto.Groups {
@@ -82,7 +92,7 @@ func ConvertGlobalFormTemplate2FormTemplateDto(dto GlobalFormTemplateDto) FormTe
 		}
 	}
 	return FormTemplateDto{
-		Id:          dto.Id,
+		Id:          dto.FormTemplateId,
 		Name:        "globalFormTemplate",
 		Description: "",
 		ExpireDay:   0,
@@ -92,17 +102,17 @@ func ConvertGlobalFormTemplate2FormTemplateDto(dto GlobalFormTemplateDto) FormTe
 	}
 }
 
-type GlobalFormTemplateGroupDtoSort []*GlobalFormTemplateGroupDto
+type DataFormTemplateGroupDtoSort []*DataFormTemplateGroupDto
 
-func (s GlobalFormTemplateGroupDtoSort) Len() int {
+func (s DataFormTemplateGroupDtoSort) Len() int {
 	return len(s)
 }
 
-func (s GlobalFormTemplateGroupDtoSort) Swap(i, j int) {
+func (s DataFormTemplateGroupDtoSort) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s GlobalFormTemplateGroupDtoSort) Less(i, j int) bool {
+func (s DataFormTemplateGroupDtoSort) Less(i, j int) bool {
 	if s[i].ItemGroupSort < s[j].ItemGroupSort {
 		return true
 	}

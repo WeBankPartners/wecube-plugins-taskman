@@ -266,30 +266,6 @@ func Transaction(actions []*ExecAction) error {
 	return err
 }
 
-func getDefaultInsertSqlByStruct(obj interface{}, tableName string, ignoreColumns []string) string {
-	var columnList, valueList []string
-	t := reflect.TypeOf(obj)
-	for i := 0; i < t.NumField(); i++ {
-		tmpXormTag := t.Field(i).Tag.Get("xorm")
-		ignoreFlag := false
-		for _, ignoreColumn := range ignoreColumns {
-			if ignoreColumn == tmpXormTag {
-				ignoreFlag = true
-				break
-			}
-		}
-		if ignoreFlag {
-			continue
-		}
-		if tmpXormTag == "-" || tmpXormTag == "" {
-			continue
-		}
-		columnList = append(columnList, fmt.Sprintf("`%s`", tmpXormTag))
-		valueList = append(valueList, "?")
-	}
-	return fmt.Sprintf("INSERT INTO %s(%s) VALUE (%s)", tableName, strings.Join(columnList, ","), strings.Join(valueList, ","))
-}
-
 func TransactionWithoutForeignCheck(actions []*ExecAction) error {
 	if len(actions) == 0 {
 		log.Logger.Warn("Transaction is empty,nothing to do")

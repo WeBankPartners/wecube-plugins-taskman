@@ -9,7 +9,10 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/role"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/template"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/workflow"
 	requestNew "github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v2/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -30,37 +33,38 @@ var (
 
 func init() {
 	httpHandlerFuncList = append(httpHandlerFuncList,
-		&handlerFuncObj{Url: "/request-template-group/query", Method: "POST", HandlerFunc: request.QueryRequestTemplateGroup},
-		&handlerFuncObj{Url: "/request-template-group", Method: "POST", HandlerFunc: request.CreateRequestTemplateGroup},
-		&handlerFuncObj{Url: "/request-template-group", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateGroup},
-		&handlerFuncObj{Url: "/request-template-group", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplateGroup},
-		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: request.GetCoreProcessList},
-		&handlerFuncObj{Url: "/process-nodes/:id/:type", Method: "GET", HandlerFunc: request.GetCoreProcNodes},
-		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: request.GetRoleList},
-		&handlerFuncObj{Url: "/role/user/list", Method: "GET", HandlerFunc: request.GetUserByRoles},
-		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: request.GetUserRoles},
-		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: request.QueryRequestTemplate},
-		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: request.CreateRequestTemplate},
-		&handlerFuncObj{Url: "/request-template", Method: "PUT", HandlerFunc: request.UpdateRequestTemplate},
-		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: request.DeleteRequestTemplate},
-		&handlerFuncObj{Url: "/request-template/handler/update", Method: "POST", HandlerFunc: request.UpdateRequestTemplateHandler},
-		&handlerFuncObj{Url: "/request-template/status/update", Method: "POST", HandlerFunc: request.UpdateRequestTemplateStatus},
-		&handlerFuncObj{Url: "/request-template/:id/attrs/update", Method: "PUT", HandlerFunc: request.UpdateRequestTemplateEntityAttrs},
-		&handlerFuncObj{Url: "/request-template/:id/attrs/get", Method: "GET", HandlerFunc: request.GetRequestTemplateEntityAttrs},
-		&handlerFuncObj{Url: "/request-template/:id/attrs/list", Method: "GET", HandlerFunc: request.ListRequestTemplateEntityAttrs},
-		&handlerFuncObj{Url: "/request-template/:id/entity", Method: "GET", HandlerFunc: request.QueryRequestTemplateEntity},
+		&handlerFuncObj{Url: "/request-template-group/query", Method: "POST", HandlerFunc: template.QueryRequestTemplateGroup},
+		&handlerFuncObj{Url: "/request-template-group", Method: "POST", HandlerFunc: template.CreateRequestTemplateGroup},
+		&handlerFuncObj{Url: "/request-template-group", Method: "PUT", HandlerFunc: template.UpdateRequestTemplateGroup},
+		&handlerFuncObj{Url: "/request-template-group", Method: "DELETE", HandlerFunc: template.DeleteRequestTemplateGroup},
+		&handlerFuncObj{Url: "/process/list", Method: "GET", HandlerFunc: workflow.GetCoreProcessList},
+		&handlerFuncObj{Url: "/process-nodes/:id/:type", Method: "GET", HandlerFunc: workflow.GetCoreProcNodes},
+		&handlerFuncObj{Url: "/role/list", Method: "GET", HandlerFunc: role.GetRoleList},
+		&handlerFuncObj{Url: "/role/user/list", Method: "GET", HandlerFunc: role.GetUserByRoles},
+		&handlerFuncObj{Url: "/user/roles", Method: "GET", HandlerFunc: role.GetUserRoles},
+		&handlerFuncObj{Url: "/request-template/query", Method: "POST", HandlerFunc: template.QueryRequestTemplate},
+		&handlerFuncObj{Url: "/request-template", Method: "POST", HandlerFunc: template.CreateRequestTemplate},
+		&handlerFuncObj{Url: "/request-template", Method: "PUT", HandlerFunc: template.UpdateRequestTemplate},
+		&handlerFuncObj{Url: "/request-template", Method: "DELETE", HandlerFunc: template.DeleteRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/handler/update", Method: "POST", HandlerFunc: template.UpdateRequestTemplateHandler},
+		&handlerFuncObj{Url: "/request-template/status/update", Method: "POST", HandlerFunc: template.UpdateRequestTemplateStatus},
+		&handlerFuncObj{Url: "/request-template/:id/attrs/update", Method: "PUT", HandlerFunc: template.UpdateRequestTemplateEntityAttrs},
+		&handlerFuncObj{Url: "/request-template/:id/attrs/get", Method: "GET", HandlerFunc: template.GetRequestTemplateEntityAttrs},
+		&handlerFuncObj{Url: "/request-template/:id/attrs/list", Method: "GET", HandlerFunc: template.ListRequestTemplateEntityAttrs},
+		&handlerFuncObj{Url: "/request-template/:id/entity", Method: "GET", HandlerFunc: template.QueryRequestTemplateEntity},
 		&handlerFuncObj{Url: "/request-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
-		&handlerFuncObj{Url: "/request-template/fork/:id", Method: "POST", HandlerFunc: request.ForkConfirmRequestTemplate},
-		&handlerFuncObj{Url: "/request-template/tags/:requestTemplateGroup", Method: "GET", HandlerFunc: request.GetRequestTemplateTags},
-		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: request.ExportRequestTemplate},
-		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: request.ImportRequestTemplate},
-		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: request.ConfirmImportRequestTemplate},
-		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: request.DisableRequestTemplate},
-		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: request.EnableRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/fork/:id", Method: "POST", HandlerFunc: template.ForkConfirmRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/tags/:requestTemplateGroup", Method: "GET", HandlerFunc: template.GetRequestTemplateTags},
+		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: template.ExportRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: template.ImportRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/import-confirm/:confirmToken", Method: "POST", HandlerFunc: template.ConfirmImportRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: template.DisableRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: template.EnableRequestTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/data-form", Method: "GET", HandlerFunc: form.GetDataFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/data-form", Method: "POST", HandlerFunc: form.UpdateDataFormTemplate},
-		//	&handlerFuncObj{Url: "/request-form-template/:id", Method: "DELETE", HandlerFunc: form.DeleteFormTemplate},
+		&handlerFuncObj{Url: "/form-template/get", Method: "GET", HandlerFunc: form.GetConfigureForm},
 
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
@@ -69,10 +73,10 @@ func init() {
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/query", Method: "POST", HandlerFunc: collect.QueryTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem},
-		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: request.GetRequestTemplateByUser},
+		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: template.GetRequestTemplateByUser},
 
-		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: request.GetEntityData},
-		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: request.ProcessDataPreview},
+		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: workflow.GetEntityData},
+		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: workflow.ProcessDataPreview},
 
 		&handlerFuncObj{Url: "/request/:requestId", Method: "GET", HandlerFunc: request.GetRequest},
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: request.CreateRequest},
@@ -99,9 +103,9 @@ func init() {
 		&handlerFuncObj{Url: "/request/attach-file/remove/:fileId", Method: "DELETE", HandlerFunc: request.RemoveAttachFile},
 		&handlerFuncObj{Url: "/request/handler/:requestId/:latestUpdateTime", Method: "POST", HandlerFunc: request.UpdateRequestHandler},
 		&handlerFuncObj{Url: "/request/progress", Method: "POST", HandlerFunc: request.GetRequestProgress},
-		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: request.GetProcessDefinitions},
-		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: request.GetProcessInstance},
-		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: request.GetProcDefTaskNodeContext},
+		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: workflow.GetProcessDefinitions},
+		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: workflow.GetProcessInstance},
+		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: workflow.GetProcDefTaskNodeContext},
 		&handlerFuncObj{Url: "/request/history/list", Method: "POST", HandlerFunc: request.HistoryList},
 		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
 		// For core 1:get task form template  2:create task

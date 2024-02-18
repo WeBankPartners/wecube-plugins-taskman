@@ -47,10 +47,31 @@ func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemT
 	return
 }
 
+func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+	formItemTemplate = []*models.FormItemTemplateTable{}
+	err = d.DB.Where("form_template = ? and item_group_name = ?", formTemplate, itemGroupName).Find(&formItemTemplate)
+	return
+}
+
+func (d FormItemTemplateDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	if id == "" {
+		return
+	}
+	_, err = d.DB.Where("id = ? or copy_id = ?", id, id).Delete(&models.FormItemTemplateTable{})
+	return
+}
+
 func (d FormItemTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
+	}
+	if id == "" {
+		return
 	}
 	_, err = d.DB.ID(id).Delete(&models.FormItemTemplateTable{})
 	return

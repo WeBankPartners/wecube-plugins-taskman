@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-publish-create">
     <Row class="back-header">
-      <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
+      <Icon size="22" type="md-arrow-back" class="icon" @click="$router.back()" />
       <span class="name">
         {{ `${templateName || ''}` }}<Tag size="medium">{{ version }}</Tag>
       </span>
@@ -517,9 +517,17 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
+    .icon {
+      cursor: pointer;
+      width: 28px;
+      height: 24px;
+      color: #fff;
+      border-radius: 2px;
+      background: #2d8cf0;
+    }
     .name {
       font-size: 16px;
-      margin-left: 20px;
+      margin-left: 16px;
       display: flex;
       align-items: center;
     }

@@ -8,12 +8,12 @@ import enUS from '@/locale/i18n/en-US.json'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
 
-import Dashboard from '@/pages/task'
+import Dashboard from '@/pages/workbench/index.vue'
 window.component('ValidationProvider', ValidationProvider)
 window.addHomepageComponent &&
   window.addHomepageComponent({
     name: () => {
-      return window.vm.$t('group_handle')
+      return window.vm.$t('tw_workbench')
     },
     component: Dashboard
   })

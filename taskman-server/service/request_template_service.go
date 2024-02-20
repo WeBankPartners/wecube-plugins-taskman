@@ -272,7 +272,6 @@ func (s RequestTemplateService) CreateRequestTemplate(param models.RequestTempla
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	result.Id = newGuid
 	err = transaction(func(session *xorm.Session) error {
-		var err error
 		_, err = s.requestTemplateDao.AddBasicInfo(session, models.ConvertRequestTemplateUpdateParam2RequestTemplate(param))
 		if err != nil {
 			return err

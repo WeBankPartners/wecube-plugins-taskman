@@ -158,6 +158,7 @@ func transaction(f func(session *xorm.Session) error) (err error) {
 	err = f(session)
 	if err != nil {
 		session.Rollback()
+		return
 	}
 	err = session.Commit()
 	if err != nil {
@@ -175,6 +176,7 @@ func transactionWithoutForeignCheck(f func(session *xorm.Session) error) (err er
 	err = f(session)
 	if err != nil {
 		session.Rollback()
+		return
 	}
 	err = session.Commit()
 	if err != nil {

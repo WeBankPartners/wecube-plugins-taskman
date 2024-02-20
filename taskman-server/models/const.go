@@ -80,3 +80,12 @@ const (
 	FormItemGroupTypeOptional FormItemGroupType = "optional"
 	FormItemGroupTypeCustom   FormItemGroupType = "custom"
 )
+
+// FormItemElementType 表单项类型
+type FormItemElementType string
+
+const (
+	FormItemElementTypeInput     FormItemElementType = "input"
+	FormItemElementTypeSelect    FormItemElementType = "select"
+	FormItemElementTypeCalculate FormItemElementType = "calculate" //计算类型
+)

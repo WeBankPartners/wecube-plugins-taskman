@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -14,6 +13,15 @@ type FormItemTemplateService struct {
 
 func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
+	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
+	var systemItemExist, customItemExist bool
+	var existMap = make(map[string]bool)
+	if len(param.SystemItems) == 0 {
+		param.SystemItems = []*models.ProcEntityAttributeObj{}
+	}
+	if len(param.CustomItems) == 0 {
+		param.CustomItems = []*models.FormItemTemplateTable{}
+	}
 	// 1. 查询表单组是否存在，不存在则新增
 	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(param.FormTemplateId, param.ItemGroupName)
 	if err != nil {
@@ -21,15 +29,77 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 	}
 	// 新增数据
 	if len(formItemTemplateList) == 0 {
-
-		return
-	}
-	// 更新数据
-	err = transaction(func(session *xorm.Session) error {
-		for _, formItemTemplate := range formItemTemplateList {
-			fmt.Printf("%v", formItemTemplate)
+		if len(param.SystemItems) > 0 {
+			for _, systemItem := range param.SystemItems {
+				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem))
+			}
 		}
-		return nil
+		if len(param.CustomItems) > 0 {
+			for _, customItem := range param.CustomItems {
+				customItem.ElementType = string(models.FormItemElementTypeCalculate)
+				insertItems = append(insertItems, customItem)
+			}
+		}
+	} else {
+		for _, systemItem := range param.SystemItems {
+			systemItemExist = false
+			existMap[systemItem.Id] = true
+			for _, formItemTemplate := range formItemTemplateList {
+				if systemItem.Id == formItemTemplate.AttrDefId {
+					systemItemExist = true
+					break
+				}
+			}
+			if !systemItemExist {
+				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem))
+			}
+		}
+		for _, customItem := range param.CustomItems {
+			customItemExist = false
+			existMap[customItem.Id] = true
+			for _, formItemTemplate := range formItemTemplateList {
+				if customItem.Id == formItemTemplate.Id {
+					customItemExist = true
+					updateItems = append(updateItems, customItem)
+					break
+				}
+			}
+			if !customItemExist {
+				insertItems = append(insertItems, customItem)
+			}
+		}
+		for _, formItemTemplate := range formItemTemplateList {
+			if existMap[formItemTemplate.Id] == false && existMap[formItemTemplate.AttrDefId] == false {
+				deleteItems = append(deleteItems, formItemTemplate)
+			}
+		}
+	}
+	err = transaction(func(session *xorm.Session) error {
+		if len(insertItems) > 0 {
+			for _, item := range insertItems {
+				_, err = s.formItemTemplateDao.Add(session, item)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if len(updateItems) > 0 {
+			for _, item := range updateItems {
+				err = s.formItemTemplateDao.Update(session, item)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if len(deleteItems) > 0 {
+			for _, item := range deleteItems {
+				err = s.formItemTemplateDao.Delete(session, item.Id)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return err
 	})
 	return
 }

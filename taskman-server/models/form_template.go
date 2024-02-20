@@ -1,5 +1,7 @@
 package models
 
+import "github.com/WeBankPartners/go-common-lib/guid"
+
 type FormTemplateTable struct {
 	Id          string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name        string `json:"name" xorm:"name"`
@@ -116,6 +118,44 @@ func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTempla
 		UpdatedBy:   dto.UpdatedBy,
 		UpdatedTime: dto.UpdatedTime,
 		Items:       items,
+	}
+}
+
+func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj) *FormItemTemplateTable {
+	var elementType = string(FormItemElementTypeInput)
+	if workflowEntityAttribute.DataType == "ref" {
+		elementType = string(FormItemElementTypeSelect)
+	}
+	return &FormItemTemplateTable{
+		Id:              guid.CreateGuid(),
+		Name:            workflowEntityAttribute.Name,
+		ItemGroup:       param.ItemGroup,
+		ItemGroupType:   param.ItemGroupType,
+		ItemGroupName:   param.ItemGroupName,
+		ItemGroupSort:   param.ItemGroupSort,
+		ItemGroupRule:   param.ItemGroupRule,
+		FormTemplate:    param.FormTemplateId,
+		Sort:            0,
+		PackageName:     workflowEntityAttribute.EntityPackage,
+		Entity:          workflowEntityAttribute.EntityName,
+		AttrDefId:       workflowEntityAttribute.Id,
+		AttrDefName:     workflowEntityAttribute.Name,
+		AttrDefDataType: workflowEntityAttribute.DataType,
+		ElementType:     elementType,
+		Title:           workflowEntityAttribute.Description,
+		Width:           24,
+		RefPackageName:  workflowEntityAttribute.EntityPackage,
+		RefEntity:       workflowEntityAttribute.Name,
+		DataOptions:     "",
+		Required:        "no",
+		IsEdit:          "yes",
+		IsView:          "yes",
+		IsOutput:        "no",
+		InDisplayName:   "no",
+		IsRefInside:     "no",
+		Multiple:        workflowEntityAttribute.Multiple,
+		DefaultClear:    "no",
+		CopyId:          "",
 	}
 }
 

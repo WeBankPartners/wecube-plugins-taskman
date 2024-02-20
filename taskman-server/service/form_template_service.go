@@ -288,49 +288,11 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 	return
 }
 
-// UpdateDataFormTemplate 更新数据表单
-func (s FormTemplateService) UpdateDataFormTemplate(dataFormTemplateDto models.DataFormTemplateDto, requestTemplateId string) (err error) {
-	var requestTemplate *models.RequestTemplateTable
-	var formTemplateDto = models.FormTemplateDto{Items: []*models.FormItemTemplateTable{}}
-	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
-	if err != nil {
-		return err
-	}
-	if requestTemplate == nil {
-		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
-	}
-	// 请求模板的处理不是当前用户,不允许操作
-	if requestTemplate.Handler != dataFormTemplateDto.UpdatedBy {
-		return exterror.New().DataPermissionDeny
-	}
-	// 将数据表单各分组中的表单项,整合一起更新表单模板
-	formTemplateDto.Id = dataFormTemplateDto.DataFormTemplateId
-	if len(dataFormTemplateDto.Groups) > 0 {
-		for _, groupDto := range dataFormTemplateDto.Groups {
-			if groupDto != nil && len(groupDto.Items) > 0 {
-				formTemplateDto.Items = append(formTemplateDto.Items, groupDto.Items...)
-			}
-		}
-	}
-	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
-		// 更新表单项模板
-		err = s.UpdateFormTemplate(session, formTemplateDto)
-		if err != nil {
-			return err
-		}
-		err = GetRequestTemplateService().UpdateRequestTemplateUpdatedBy(session, requestTemplateId, formTemplateDto.UpdatedBy)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return
-}
-
 // GetConfigureForm 获取配置表单
 func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var formItemTemplate []*models.FormItemTemplateTable
 	var entitiesList []*models.ExpressionEntities
+	var entity *models.ExpressionEntities
 	var existAttrMap = make(map[string]bool)
 	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
 	// 1.先查询用户配置数据
@@ -347,7 +309,7 @@ func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, use
 			if formItem.ItemGroupType == string(models.FormItemGroupTypeCustom) {
 				configureDto.CustomItems = append(configureDto.CustomItems, formItem)
 			} else {
-				existAttrMap[formItem.Name] = true
+				existAttrMap[formItem.AttrDefId] = true
 			}
 		}
 	}
@@ -357,13 +319,17 @@ func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, use
 		return
 	}
 	if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
+		entity = entitiesList[0]
 		if configureDto.ItemGroup == "" {
 			configureDto.ItemGroup = itemGroupName
 			configureDto.ItemGroupName = itemGroupName
 			configureDto.ItemGroupType = string(models.FormItemGroupTypeOptional)
 		}
 		for _, attribute := range entitiesList[0].Attributes {
-			if existAttrMap[attribute.Name] {
+			attribute.Id = fmt.Sprintf("%s:%s:%s", entitiesList[0].PackageName, entitiesList[0].EntityName, attribute.Name)
+			attribute.EntityName = entity.EntityName
+			attribute.EntityPackage = entity.PackageName
+			if existAttrMap[attribute.Id] {
 				attribute.Active = true
 			}
 			configureDto.SystemItems = append(configureDto.SystemItems, attribute)

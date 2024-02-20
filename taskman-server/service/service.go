@@ -74,7 +74,7 @@ func New() (err error) {
 	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao, requestTemplateRoleDao: requestTemplateRoleDao}
 	requestTemplateGroupService = RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
 	formTemplateService = FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
-	formItemTemplateService = FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, requestTemplateDao: requestTemplateDao}
+	formItemTemplateService = FormItemTemplateService{formItemTemplateDao: formItemTemplateDao}
 	roleService = RoleService{}
 	db = engine
 	return

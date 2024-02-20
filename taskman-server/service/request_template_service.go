@@ -164,7 +164,7 @@ func (s RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, u
 	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)}
 	// 状态更新到草稿,需要退回
-	if status == string(models.RequestStatusDraft) {
+	if status == string(models.RequestTemplateStatusCreated) {
 		requestTemplate.RollbackDesc = reason
 	}
 	return s.requestTemplateDao.Update(nil, requestTemplate)
@@ -1254,6 +1254,23 @@ func (s RequestTemplateService) UpdateRequestTemplateParentIdById(templateId, pa
 		if err != nil {
 			log.Logger.Error("Try to update request_template parent_id fail", log.Error(err))
 		}
+	}
+	return
+}
+
+func (s RequestTemplateService) CheckPermission(requestTemplateId, user string) (err error) {
+	var requestTemplate *models.RequestTemplateTable
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param requestTemplateId is invalid"))
+		return
+	}
+	// 请求模板的处理不是当前用户,不允许操作
+	if requestTemplate.Handler != user {
+		err = exterror.New().DataPermissionDeny
 	}
 	return
 }

@@ -159,9 +159,6 @@ func validateRequestTemplateParam(param *models.RequestTemplateUpdateParam) erro
 	if param.Group == "" {
 		return fmt.Errorf("Param group can not empty ")
 	}
-	if param.ProcDefKey == "" || param.ProcDefId == "" || param.ProcDefName == "" {
-		return fmt.Errorf("Param procDef can not empty ")
-	}
 	if len(param.MGMTRoles) == 0 {
 		return fmt.Errorf("Param mgmt can not empty ")
 	}

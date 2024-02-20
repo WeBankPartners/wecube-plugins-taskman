@@ -41,10 +41,10 @@ const (
 type RequestTemplateStatus string
 
 const (
-	RequestTemplateStatusCreated  RequestTemplateStatus = "created"  // 创建
-	RequestTemplateStatusDisabled RequestTemplateStatus = "disabled" // 禁用
-	RequestTemplateStatusPending  RequestTemplateStatus = "pending"  // 待发布
-	RequestTemplateStatusConfirm  RequestTemplateStatus = "confirm"  // 已发布
+	RequestTemplateStatusCreated  RequestTemplateStatus = "created" // 创建
+	RequestTemplateStatusDisabled RequestTemplateStatus = "disable" // 禁用
+	RequestTemplateStatusPending  RequestTemplateStatus = "pending" // 待发布
+	RequestTemplateStatusConfirm  RequestTemplateStatus = "confirm" // 已发布
 )
 
 // RolePermission 角色权限

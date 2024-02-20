@@ -102,35 +102,8 @@ func GetDataFormTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// UpdateDataFormTemplate 新增更新全局表单模板
-func UpdateDataFormTemplate(c *gin.Context) {
-	var param models.DataFormTemplateDto
-	var err error
-	var user = middleware.GetRequestUser(c)
-	requestTemplateId := c.Param("id")
-	if requestTemplateId == "" {
-		middleware.ReturnParamEmptyError(c, "id")
-		return
-	}
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	param.UpdatedBy = user
-	if param.DataFormTemplateId != "" {
-		err = service.GetFormTemplateService().UpdateDataFormTemplate(param, requestTemplateId)
-	} else {
-		err = service.GetFormTemplateService().CreateDataFormTemplate(param, requestTemplateId)
-	}
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnSuccess(c)
-}
-
-// GetFormTemplateItemGroup 获取配置表单组
-func GetFormTemplateItemGroup(c *gin.Context) {
+// GetFormTemplateItemGroupConfig 获取配置表单组配置
+func GetFormTemplateItemGroupConfig(c *gin.Context) {
 	var configureDto *models.FormTemplateGroupConfigureDto
 	var err error
 	formTemplateId := c.Query("form-template-id")
@@ -160,15 +133,21 @@ func GetFormTemplateItemGroup(c *gin.Context) {
 	middleware.ReturnData(c, configureDto)
 }
 
-// UpdateFormTemplateItemGroup 新增更新表单组
-func UpdateFormTemplateItemGroup(c *gin.Context) {
+// UpdateFormTemplateItemGroupConfig 新增更新表单组
+func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 	var param models.FormTemplateGroupConfigureDto
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroup(param)
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroupConfig(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -176,15 +155,21 @@ func UpdateFormTemplateItemGroup(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
-// UpdateFormTemplateItemGroupCustomData 更新表单组自定义数据
-func UpdateFormTemplateItemGroupCustomData(c *gin.Context) {
+// UpdateFormTemplateItemGroup 更新表单组
+func UpdateFormTemplateItemGroup(c *gin.Context) {
 	var param models.FormTemplateGroupCustomDataDto
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	//err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroup(param)
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroup(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -198,6 +183,12 @@ func SortFormTemplateItemGroup(c *gin.Context) {
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	err = service.GetFormItemTemplateService().SortFormTemplateItemGroup(param)

@@ -22,6 +22,8 @@ const (
 	RequestStatusCompleted           RequestStatus = "Completed"             // 成功
 	RequestStatusInProgressTimeOuted RequestStatus = "InProgress(Timeouted)" // 节点超时
 	RequestStatusFaulted             RequestStatus = "Faulted"               // 自动退出
+	RequestStatusInApproval          RequestStatus = "InApproval"            // 审批中
+	RequestStatusConfirm             RequestStatus = "Confirm"               // 请求确认
 )
 
 const ProcDefStatusTimeout = "Timeouted" //编排状态超时

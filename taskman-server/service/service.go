@@ -16,6 +16,8 @@ var (
 	formService FormService
 	// 表单模板 service
 	formTemplateService FormTemplateService
+	// 表单项 service
+	formItemTemplateService FormItemTemplateService
 	// 日志记录 service
 	operationLogService OperationLogService
 	// 编排 service
@@ -72,6 +74,7 @@ func New() (err error) {
 	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao, requestTemplateRoleDao: requestTemplateRoleDao}
 	requestTemplateGroupService = RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
 	formTemplateService = FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
+	formItemTemplateService = FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, requestTemplateDao: requestTemplateDao}
 	roleService = RoleService{}
 	db = engine
 	return
@@ -140,6 +143,11 @@ func GetRoleService() RoleService {
 // GetRequestTemplateGroupService 获取请求模板组 service
 func GetRequestTemplateGroupService() RequestTemplateGroupService {
 	return requestTemplateGroupService
+}
+
+// GetFormItemTemplateService 获取表单项模板 service
+func GetFormItemTemplateService() FormItemTemplateService {
+	return formItemTemplateService
 }
 
 // transaction 事务处理

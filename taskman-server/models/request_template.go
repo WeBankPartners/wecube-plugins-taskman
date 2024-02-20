@@ -37,7 +37,7 @@ type RequestTemplateTable struct {
 	PendingRole      string `json:"pendingRole" xorm:"pending_role"`            // 定版角色
 	PendingHandler   string `json:"pendingHandler" xorm:"pending_handler"`      // 定版处理人
 	ConfirmSwitch    bool   `json:"confirmSwitch" xorm:"confirm_switch"`        // 是否加入确认流程
-	ConfirmExpireDay int    `json:"confirmExpireDay" xorm:"confirm_expire_day"` // 是否加入确认流程
+	ConfirmExpireDay int    `json:"confirmExpireDay" xorm:"confirm_expire_day"` // 确认过期时间
 	RollbackDesc     string `json:"rollbackDesc" xorm:"rollback_desc"`          // 退回理由
 }
 

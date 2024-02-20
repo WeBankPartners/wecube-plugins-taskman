@@ -76,7 +76,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("illegal operation"))
 		return
 	}
-	err = service.ConfirmRequestTemplate(requestTemplateId)
+	err = service.GetRequestTemplateService().ConfirmRequestTemplate(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -129,15 +129,28 @@ func UpdateDataFormTemplate(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
-// GetConfigureForm 获取配置表单
-func GetConfigureForm(c *gin.Context) {
+// GetFormTemplateItemGroup 获取配置表单组
+func GetFormTemplateItemGroup(c *gin.Context) {
 	var configureDto *models.FormTemplateGroupConfigureDto
 	var err error
 	formTemplateId := c.Query("form-template-id")
 	itemGroupName := c.Query("item-group-name")
-	if formTemplateId == "" || itemGroupName == "" {
-		middleware.ReturnParamEmptyError(c, "id or form-name")
+	requestTemplateId := c.Query("request-template-id")
+	if itemGroupName == "" || requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name")
 		return
+	}
+	// formTemplateId 为空,查询数据表单模板是否为空,为空则新建(只有数据表单的formTemplateId会传递"",任务和审批表单不会)
+	if formTemplateId == "" {
+		formTemplateId, err = createDataFormTemplate(requestTemplateId)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		if formTemplateId == "" {
+			middleware.ReturnParamEmptyError(c, "form-template-id")
+			return
+		}
 	}
 	configureDto, err = service.GetFormTemplateService().GetConfigureForm(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
@@ -145,4 +158,93 @@ func GetConfigureForm(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, configureDto)
+}
+
+// UpdateFormTemplateItemGroup 新增更新表单组
+func UpdateFormTemplateItemGroup(c *gin.Context) {
+	var param models.FormTemplateGroupConfigureDto
+	var err error
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroup(param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// UpdateFormTemplateItemGroupCustomData 更新表单组自定义数据
+func UpdateFormTemplateItemGroupCustomData(c *gin.Context) {
+	var param models.FormTemplateGroupCustomDataDto
+	var err error
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	//err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroup(param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// SortFormTemplateItemGroup 表单组排序
+func SortFormTemplateItemGroup(c *gin.Context) {
+	var param models.FormTemplateGroupSortDto
+	var err error
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err = service.GetFormItemTemplateService().SortFormTemplateItemGroup(param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// DeleteFormTemplateItemGroup 删除表单组
+func DeleteFormTemplateItemGroup(c *gin.Context) {
+	formTemplateId := c.Query("form-template-id")
+	itemGroupName := c.Query("item-group-name")
+	if formTemplateId == "" || itemGroupName == "" {
+		middleware.ReturnParamEmptyError(c, "form-template-id or item-group-name")
+		return
+	}
+	err := service.GetFormItemTemplateService().DeleteFormTemplateItemGroup(formTemplateId, itemGroupName)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// createDataFormTemplate 创建数据表单
+func createDataFormTemplate(requestTemplateId string) (formTemplateId string, err error) {
+	var requestTemplate *models.RequestTemplateTable
+	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("param request-template-id is vailid")
+		return
+	}
+	// 新建数据表单
+	if requestTemplate.DataFormTemplate == "" {
+		err = service.GetFormTemplateService().CreateDataFormTemplate(models.DataFormTemplateDto{}, requestTemplateId)
+		if err != nil {
+			return
+		}
+		requestTemplate, _ = service.GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+		formTemplateId = requestTemplate.DataFormTemplate
+	} else {
+		err = fmt.Errorf("form-template-id is empty")
+	}
+	return
 }

@@ -99,7 +99,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 			} else {
 				collectObj.Version = template.Version
 			}
-			requestTemplateRoleList, _ := getRequestTemplateRole(collectObj.Id)
+			requestTemplateRoleList, _ := GetRequestTemplateService().getRequestTemplateRole(collectObj.Id)
 			if len(requestTemplateRoleList) == 0 {
 				continue
 			}

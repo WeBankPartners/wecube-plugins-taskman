@@ -36,7 +36,7 @@ type TransFiltersParam struct {
 type PlatformRequestParam struct {
 	Tab      string `json:"tab"`      // 标签,取值有:pending 待处理    hasProcessed 已处理  submit 我提交的 draft 我的暂存  collect 收藏
 	Action   int    `json:"action"`   // 行为, 1表示发布行为,2请求,3问题,4事件, 5变更
-	Type     int    `json:"type"`     // 0代表所有,1表示请求定版,2表示任务处理
+	Type     string `json:"type"`     // Pending 表示请求定版,task 表示任务处理,InApproval 表示审批，Confirm表示请求确认
 	Rollback int    `json:"rollback"` // 0代表所有,1表示被退回,2表示其他,3表示自己撤销(submit 我提交的tab下才有这个筛选生效)
 	CommonRequestParam
 }

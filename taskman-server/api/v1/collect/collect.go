@@ -34,11 +34,11 @@ func AddTemplateCollect(c *gin.Context) {
 	parentId = strings.TrimSpace(requestTemplate.ParentId)
 	if parentId == "" {
 		// parentId为空说明 模板为老数据,需要更新该名称的模板
-		parentId = service.UpdateRequestTemplateParentId(requestTemplate)
+		parentId = service.GetRequestTemplateService().UpdateRequestTemplateParentId(requestTemplate)
 		// 可能由于到导入到模板,模板的 recordId值是错误的,导致parentId 还是空,此处直接更新当前模板parentId值
 		if parentId == "" {
 			parentId = param.TemplateId
-			err = service.UpdateRequestTemplateParentIdById(param.TemplateId, parentId)
+			err = service.GetRequestTemplateService().UpdateRequestTemplateParentIdById(param.TemplateId, parentId)
 			if err != nil {
 				middleware.ReturnServerHandleError(c, err)
 				return

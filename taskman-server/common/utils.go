@@ -25,3 +25,13 @@ func BuildVersionNum(version string) string {
 	}
 	return fmt.Sprintf("v%d", tmpV+1)
 }
+
+func CompareUpdateConfirmTime(updatedTime, confirmTime string) bool {
+	result := false
+	ut, _ := time.Parse(models.DateTimeFormat, updatedTime)
+	ct, _ := time.Parse(models.DateTimeFormat, confirmTime)
+	if ut.Unix() > ct.Unix() {
+		result = true
+	}
+	return result
+}

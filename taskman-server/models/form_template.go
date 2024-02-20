@@ -46,12 +46,26 @@ type DataFormTemplateGroupDto struct {
 
 // FormTemplateGroupConfigureDto 表单组配置在dto
 type FormTemplateGroupConfigureDto struct {
-	ItemGroup     string                    `json:"itemGroup"`
-	ItemGroupType string                    `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
-	ItemGroupName string                    `json:"itemGroupName"`
-	ItemGroupRule string                    `json:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
-	SystemItems   []*ProcEntityAttributeObj `json:"systemItems"`     // 系统表单项
-	CustomItems   []*FormItemTemplateTable  `json:"customItems"`     // 自定义表单项
+	FormTemplateId string                    `json:"formTemplateId"` // 表单模板ID
+	ItemGroup      string                    `json:"itemGroup"`
+	ItemGroupType  string                    `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName  string                    `json:"itemGroupName"`
+	ItemGroupRule  string                    `json:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	SystemItems    []*ProcEntityAttributeObj `json:"systemItems"`     // 系统表单项
+	CustomItems    []*FormItemTemplateTable  `json:"customItems"`     // 自定义表单项
+}
+
+// FormTemplateGroupCustomDataDto 表单组自定义数据dto
+type FormTemplateGroupCustomDataDto struct {
+	FormTemplateId string                   `json:"formTemplateId"` // 表单模板ID
+	ItemGroupName  string                   `json:"itemGroupName"`
+	CustomItems    []*FormItemTemplateTable `json:"customItems"` // 自定义表单项
+}
+
+// FormTemplateGroupSortDto 表单组排序dto
+type FormTemplateGroupSortDto struct {
+	FormTemplateId    string   `json:"formTemplateId"`    // 表单模板ID
+	ItemGroupNameSort []string `json:"itemGroupNameSort"` // 排序
 }
 
 type TaskFormItemQueryObj struct {

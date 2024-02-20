@@ -98,7 +98,13 @@ func ProcessDataPreview(requestTemplateId, entityDataId, userToken, language str
 
 // GetRequestCount 工作台请求统计
 func GetRequestCount(user string, userRoles []string) (platformData models.PlatformData, err error) {
-	platformData.Pending = strings.Join(GetPendingCount(userRoles), ";")
+	var pendingTask, pendingApprove, requestPending, requestConfirm, pending []string
+	pendingTask, pendingApprove, requestPending, requestConfirm, pending = GetPendingCount(userRoles)
+	platformData.Pending = strings.Join(pending, ";")
+	platformData.PendingTask = strings.Join(pendingTask, ";")
+	platformData.PendingApprove = strings.Join(pendingApprove, ";")
+	platformData.RequestPending = strings.Join(requestPending, ";")
+	platformData.RequestConfirm = strings.Join(requestConfirm, ";")
 	platformData.HasProcessed = strings.Join(GetHasProcessedCount(user), ";")
 	platformData.Submit = strings.Join(GetSubmitCount(user), ";")
 	platformData.Draft = strings.Join(GetDraftCount(user), ";")
@@ -107,11 +113,12 @@ func GetRequestCount(user string, userRoles []string) (platformData models.Platf
 }
 
 // GetPendingCount 统计待处理,包括:(1)待定版 (2)任务待审批 分配给本组、本人的所有请求,此处按照角色去统计
-func GetPendingCount(userRoles []string) (resultArr []string) {
+func GetPendingCount(userRoles []string) (pendingTask, pendingApprove, requestPending, requestConfirm, pending []string) {
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
-	var requestQueryParam, taskQueryParam []interface{}
+	var requestQueryParam, taskQueryParam, approveQueryParam, requestConfirmQueryParam []interface{}
 	var roleFilterList []string
-	var requestSQL, taskSQL string
+	var requestSQL, taskSQL, approveSQL, requestConfirmSQL string
+	var requestSQLCount, taskSQLCount, approveSQLCount, requestConfirmSQLCount int
 	roleFilterSql := "1=1"
 	if len(userRoles) > 0 {
 		for _, v := range userRoles {
@@ -120,18 +127,28 @@ func GetPendingCount(userRoles []string) (resultArr []string) {
 		roleFilterSql = strings.Join(roleFilterList, " or ")
 	}
 	for i := 0; i < len(templateTypeArr); i++ {
-		requestSQL, requestQueryParam = pendingRequestSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam)
+		requestSQL, requestQueryParam = pendingRequestSQL(templateTypeArr[i], string(models.RequestStatusPending), userRolesFilterSql, userRolesFilterParam)
 		taskSQL, taskQueryParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
-		resultArr = append(resultArr, strconv.Itoa(dao.QueryCount(requestSQL, requestQueryParam...)+dao.QueryCount(taskSQL, taskQueryParam...)))
+		approveSQL, approveQueryParam = pendingRequestSQL(templateTypeArr[i], string(models.RequestStatusInApproval), userRolesFilterSql, userRolesFilterParam)
+		requestConfirmSQL, requestConfirmQueryParam = pendingRequestSQL(templateTypeArr[i], string(models.RequestStatusConfirm), userRolesFilterSql, userRolesFilterParam)
+		requestSQLCount = dao.QueryCount(requestSQL, requestQueryParam...)
+		taskSQLCount = dao.QueryCount(taskSQL, taskQueryParam...)
+		approveSQLCount = dao.QueryCount(approveSQL, approveQueryParam...)
+		requestConfirmSQLCount = dao.QueryCount(requestConfirmSQL, requestConfirmQueryParam...)
+		requestPending = append(requestPending, strconv.Itoa(requestSQLCount))
+		pendingTask = append(pendingTask, strconv.Itoa(taskSQLCount))
+		pendingApprove = append(pendingApprove, strconv.Itoa(approveSQLCount))
+		requestConfirm = append(requestConfirm, strconv.Itoa(requestConfirmSQLCount))
+		pending = append(pending, strconv.Itoa(requestSQLCount+approveSQLCount+requestConfirmSQLCount+taskSQLCount))
 	}
 	return
 }
 
-func pendingRequestSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag = 0 and status = 'Pending' and type = ? and request_template in (select id " +
+func pendingRequestSQL(templateType int, status, userRolesFilterSql string, userRolesFilterParam []interface{}) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag = 0 and status = ? and type = ? and request_template in (select id " +
 		"from request_template where  id in (select request_template from request_template_role where role_type= 'MGMT' " +
 		"and `role` in (" + userRolesFilterSql + "))) "
-	queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
+	queryParam = append([]interface{}{status, templateType}, userRolesFilterParam...)
 	return
 }
 
@@ -252,17 +269,17 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			}
 			roleFilterSql = strings.Join(roleFilterList, " or ")
 		}
-		if param.Type == 1 {
-			sql, queryParam = pendingRequestSQL(templateType, userRolesFilterSql, userRolesFilterParam)
-		} else if param.Type == 2 {
+		if param.Type == "task" {
 			sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
 			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 			return
+		} else {
+			sql, queryParam = pendingRequestSQL(templateType, param.Type, userRolesFilterSql, userRolesFilterParam)
 		}
 	case "hasProcessed":
-		if param.Type == 1 {
+		if param.Type == string(models.RequestStatusPending) {
 			sql, queryParam = hasProcessedRequestSQL(templateType, user)
-		} else if param.Type == 2 {
+		} else if param.Type == "task" {
 			sql, queryParam = hasProcessedTaskSQL(templateType, user)
 			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 			return
@@ -536,7 +553,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 		operatorObjTypeMap = GetRequestTemplateService().GetAllCoreProcess(req.UserToken, language)
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
-		templateMap, _ := getAllRequestTemplate()
+		templateMap, _ := GetRequestTemplateService().getAllRequestTemplate()
 		var actions []*dao.ExecAction
 		for _, platformDataObj := range rowsData {
 			// 获取 使用编排

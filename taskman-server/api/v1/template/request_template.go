@@ -252,7 +252,7 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 
 func ForkConfirmRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("id")
-	err := service.ForkConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	err := service.GetRequestTemplateService().ForkConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -263,7 +263,7 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 
 func GetRequestTemplateTags(c *gin.Context) {
 	group := c.Param("requestTemplateGroup")
-	result, err := service.GetRequestTemplateTags(group)
+	result, err := service.GetRequestTemplateService().GetRequestTemplateTags(group)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -273,7 +273,7 @@ func GetRequestTemplateTags(c *gin.Context) {
 
 func ExportRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
-	result, err := service.RequestTemplateExport(requestTemplateId)
+	result, err := service.GetRequestTemplateService().RequestTemplateExport(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -334,7 +334,7 @@ func ConfirmImportRequestTemplate(c *gin.Context) {
 
 func DisableRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("id")
-	err := service.DisableRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	err := service.GetRequestTemplateService().DisableRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -345,7 +345,7 @@ func DisableRequestTemplate(c *gin.Context) {
 
 func EnableRequestTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("id")
-	err := service.EnableRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	err := service.GetRequestTemplateService().EnableRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

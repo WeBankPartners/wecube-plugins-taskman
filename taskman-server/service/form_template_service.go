@@ -332,7 +332,7 @@ func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, use
 	var formItemTemplate []*models.FormItemTemplateTable
 	var entitiesList []*models.ExpressionEntities
 	var existAttrMap = make(map[string]bool)
-	configureDto = &models.FormTemplateGroupConfigureDto{SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
+	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
 	// 1.先查询用户配置数据
 	formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
 	if err != nil {

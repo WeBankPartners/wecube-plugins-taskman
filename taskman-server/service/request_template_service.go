@@ -1,14 +1,13 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"xorm.io/xorm"
 
+	"encoding/json"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
@@ -16,6 +15,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"xorm.io/xorm"
 )
 
 type RequestTemplateService struct {
@@ -429,8 +429,6 @@ func (s RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag b
 		for _, v := range formTable {
 			formIds = append(formIds, v.Id)
 		}
-		//actions = append(actions, &execAction{Sql: "delete from operation_log where task in (select id from task where task_template in (select id from task_template where request_template=?))", Param: []interface{}{id}})
-		//actions = append(actions, &execAction{Sql: "delete from operation_log where request in (select id from request where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})
@@ -533,7 +531,7 @@ func (s RequestTemplateService) GetRequestTemplateManageRole(id string) (role st
 	return
 }
 
-func getRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
+func (s RequestTemplateService) getRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
 	err = dao.X.SQL("select * from request_template_role where request_template=?", templateId).Find(&requestTemplateRoleList)
 	if err != nil {
 		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
@@ -542,7 +540,7 @@ func getRequestTemplateRole(templateId string) (requestTemplateRoleList []*model
 	return
 }
 
-func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTable, err error) {
+func (s RequestTemplateService) getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTable, err error) {
 	templateMap = make(map[string]*models.RequestTemplateTable)
 	var requestTemplateTable []*models.RequestTemplateTable
 	err = dao.X.SQL("select * from request_template").Find(&requestTemplateTable)
@@ -556,7 +554,7 @@ func getAllRequestTemplate() (templateMap map[string]*models.RequestTemplateTabl
 	return
 }
 
-func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
+func (s RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
@@ -590,7 +588,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id, requestTemplateObj.ParentId)})
 	}
-	newRequestFormActions, tmpErr := getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
+	newRequestFormActions, tmpErr := s.getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
 	if tmpErr != nil {
 		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
 	}
@@ -607,13 +605,13 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 	newTaskFormGuids := guid.CreateGuidList(len(taskTemplates))
 	for i, task := range taskTemplates {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into task_template(id,name,description,form_template,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,'%s' as form_template,'%s' as request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time from task_template where id='%s'", newTaskGuids[i], newTaskFormGuids[i], newRequestTemplateId, task.Id)})
-		tmpTaskFormActions, tmpErr := getFormCopyActions(task.FormTemplate, newTaskFormGuids[i])
+		tmpTaskFormActions, tmpErr := s.getFormCopyActions(task.FormTemplate, newTaskFormGuids[i])
 		if tmpErr != nil {
 			err = fmt.Errorf("Try to copy task form fail,%s ", tmpErr.Error())
 			break
 		}
 		actions = append(actions, tmpTaskFormActions...)
-		tmpTaskRoleActions, tmpErr := getTaskTemplateRoleActions(task.Id, newTaskGuids[i])
+		tmpTaskRoleActions, tmpErr := s.getTaskTemplateRoleActions(task.Id, newTaskGuids[i])
 		if tmpErr != nil {
 			err = fmt.Errorf("Try to copy task role releation fail,%s ", tmpErr.Error())
 			break
@@ -626,7 +624,7 @@ func ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
 	return dao.TransactionWithoutForeignCheck(actions)
 }
 
-func ConfirmRequestTemplate(requestTemplateId string) error {
+func (s RequestTemplateService) ConfirmRequestTemplate(requestTemplateId string) error {
 	var parentId string
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -638,7 +636,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	if requestTemplateObj.Status == "confirm" {
 		return fmt.Errorf("Request template already confirm ")
 	}
-	err = validateConfirm(requestTemplateId)
+	err = s.validateConfirm(requestTemplateId)
 	if err != nil {
 		return err
 	}
@@ -656,7 +654,7 @@ func ConfirmRequestTemplate(requestTemplateId string) error {
 	return dao.Transaction(actions)
 }
 
-func getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []*dao.ExecAction, err error) {
+func (s RequestTemplateService) getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []*dao.ExecAction, err error) {
 	var itemRows []*models.FormItemTemplateTable
 	err = dao.X.SQL("select id from form_item_template where form_template=?", oldFormTemplateId).Find(&itemRows)
 	if err != nil {
@@ -670,7 +668,7 @@ func getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []
 	return
 }
 
-func getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (actions []*dao.ExecAction, err error) {
+func (s RequestTemplateService) getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateRoles []*models.TaskTemplateRoleTable
 	err = dao.X.SQL("select * from task_template_role where task_template=?", oldTaskTemplateId).Find(&taskTemplateRoles)
 	if err != nil {
@@ -683,7 +681,7 @@ func getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (ac
 	return
 }
 
-func validateConfirm(requestTemplateId string) error {
+func (s RequestTemplateService) validateConfirm(requestTemplateId string) error {
 	var taskTemplateTable []*models.TaskTemplateTable
 	dao.X.SQL("select id from task_template where request_template=? and form_template IS NOT NULL", requestTemplateId).Find(&taskTemplateTable)
 	if len(requestTemplateId) == 0 {
@@ -704,7 +702,7 @@ func (s RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lang
 	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
 	var userRoleMap = convertArray2Map(userRoles)
 	result = []*models.UserRequestTemplateQueryObjNew{}
-	useGroupMap, _ := getAllRequestTemplateGroup()
+	useGroupMap, _ := s.getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	err = dao.X.SQL("select * from request_template ").Find(&allTemplateTable)
 	if err != nil {
@@ -753,7 +751,7 @@ func (s RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lang
 			}
 		} else {
 			if v.ConfirmTime != "" {
-				if !compareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
+				if !common.CompareUpdateConfirmTime(v.UpdatedTime, v.ConfirmTime) {
 					recordIdMap[v.Id] = 1
 				}
 			}
@@ -913,40 +911,7 @@ func getLatestVersionTemplate(requestTemplateList, allRequestTemplateList []*mod
 	return resultMap
 }
 
-func compareUpdateConfirmTime(updatedTime, confirmTime string) bool {
-	// if updatedTime > confirmTime -> true
-	result := false
-	ut, _ := time.Parse(models.DateTimeFormat, updatedTime)
-	ct, _ := time.Parse(models.DateTimeFormat, confirmTime)
-	if ut.Unix() > ct.Unix() {
-		result = true
-	}
-	return result
-}
-
-func groupRequestTemplateByTags(templates []*models.RequestTemplateTable) []*models.UserRequestTemplateTagObj {
-	result := []*models.UserRequestTemplateTagObj{}
-	if len(templates) == 0 {
-		return result
-	}
-	tmpTag := templates[0].Tags
-	tmpTemplateList := []*models.RequestTemplateTable{}
-	for _, v := range templates {
-		if v.Tags != tmpTag {
-			result = append(result, &models.UserRequestTemplateTagObj{Tag: tmpTag, Templates: tmpTemplateList})
-			tmpTemplateList = []*models.RequestTemplateTable{}
-			tmpTag = v.Tags
-		}
-		tmpTemplateList = append(tmpTemplateList, v)
-	}
-	if len(tmpTemplateList) > 0 {
-		lastTag := templates[len(templates)-1].Tags
-		result = append(result, &models.UserRequestTemplateTagObj{Tag: lastTag, Templates: tmpTemplateList})
-	}
-	return result
-}
-
-func GetRequestTemplateTags(group string) (result []string, err error) {
+func (s RequestTemplateService) GetRequestTemplateTags(group string) (result []string, err error) {
 	result = []string{}
 	var requestTemplates []*models.RequestTemplateTable
 	err = dao.X.SQL("select distinct tags from request_template where `group`=?", group).Find(&requestTemplates)
@@ -959,7 +924,7 @@ func GetRequestTemplateTags(group string) (result []string, err error) {
 	return
 }
 
-func RequestTemplateExport(requestTemplateId string) (result models.RequestTemplateExport, err error) {
+func (s RequestTemplateService) RequestTemplateExport(requestTemplateId string) (result models.RequestTemplateExport, err error) {
 	var requestTemplateTable []*models.RequestTemplateTable
 	result.RequestTemplateRole = []*models.RequestTemplateRoleTable{}
 	result.TaskTemplate = []*models.TaskTemplateTable{}
@@ -990,14 +955,14 @@ func RequestTemplateExport(requestTemplateId string) (result models.RequestTempl
 
 func (s RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string) (templateName, backToken string, err error) {
 	var actions []*dao.ExecAction
-	var inputVersion = getTemplateVersion(&input.RequestTemplate)
+	var inputVersion = s.getTemplateVersion(&input.RequestTemplate)
 	var templateList []*models.RequestTemplateTable
 	// 记录重复并且是草稿态的Id
 	var repeatTemplateIdList []string
 	if confirmToken == "" {
 		// 1.判断名称是否重复
 		templateName = input.RequestTemplate.Name
-		templateList, err = getTemplateListByName(input.RequestTemplate.Name)
+		templateList, err = s.getTemplateListByName(input.RequestTemplate.Name)
 		if err != nil {
 			return templateName, backToken, err
 		}
@@ -1005,7 +970,7 @@ func (s RequestTemplateService) RequestTemplateImport(input models.RequestTempla
 			// 有名称重复数据,判断导入版本是否高于所有模板版本
 			for _, template := range templateList {
 				// 导入版本 低于同名版本,直接报错
-				if inputVersion <= getTemplateVersion(template) {
+				if inputVersion <= s.getTemplateVersion(template) {
 					err = exterror.New().ImportTemplateVersionConflictError
 					return
 				}
@@ -1019,11 +984,11 @@ func (s RequestTemplateService) RequestTemplateImport(input models.RequestTempla
 				return
 			} else {
 				// 有重复数据,但是新导入模板版本最高,直接当成新建处理
-				input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
+				input = s.createNewImportTemplate(input, input.RequestTemplate.RecordId)
 			}
 		} else {
 			// 无名称重复数据，新建模板id以及模板关联表id都新建
-			input = createNewImportTemplate(input, "")
+			input = s.createNewImportTemplate(input, "")
 		}
 	} else {
 		// 删除冲突模板数据
@@ -1044,7 +1009,7 @@ func (s RequestTemplateService) RequestTemplateImport(input models.RequestTempla
 			actions = append(actions, delActions...)
 		}
 		// 新建模板&模板相关表属性
-		input = createNewImportTemplate(input, input.RequestTemplate.RecordId)
+		input = s.createNewImportTemplate(input, input.RequestTemplate.RecordId)
 	}
 	if input.RequestTemplate.Id == "" {
 		err = fmt.Errorf("RequestTemplate id illegal ")
@@ -1138,7 +1103,7 @@ func (s RequestTemplateService) RequestTemplateImport(input models.RequestTempla
 	return
 }
 
-func createNewImportTemplate(input models.RequestTemplateExport, recordId string) models.RequestTemplateExport {
+func (s RequestTemplateService) createNewImportTemplate(input models.RequestTemplateExport, recordId string) models.RequestTemplateExport {
 	var historyTemplateId = input.RequestTemplate.Id
 	input.RequestTemplate.Id = guid.CreateGuid()
 	input.RequestTemplate.RecordId = recordId
@@ -1183,7 +1148,7 @@ func createNewImportTemplate(input models.RequestTemplateExport, recordId string
 	return input
 }
 
-func getTemplateVersion(template *models.RequestTemplateTable) int {
+func (s RequestTemplateService) getTemplateVersion(template *models.RequestTemplateTable) int {
 	var version int
 	if template == nil {
 		return 0
@@ -1194,12 +1159,12 @@ func getTemplateVersion(template *models.RequestTemplateTable) int {
 	return version
 }
 
-func getTemplateListByName(templateName string) (requestTemplateTable []*models.RequestTemplateTable, err error) {
+func (s RequestTemplateService) getTemplateListByName(templateName string) (requestTemplateTable []*models.RequestTemplateTable, err error) {
 	err = dao.X.SQL("select id,name,version,status from request_template where name=?", templateName).Find(&requestTemplateTable)
 	return
 }
 
-func DisableRequestTemplate(requestTemplateId, operator string) (err error) {
+func (s RequestTemplateService) DisableRequestTemplate(requestTemplateId, operator string) (err error) {
 	queryRows, queryErr := dao.X.QueryString("select status from request_template where id=?", requestTemplateId)
 	if queryErr != nil {
 		err = queryErr
@@ -1217,7 +1182,7 @@ func DisableRequestTemplate(requestTemplateId, operator string) (err error) {
 	return
 }
 
-func EnableRequestTemplate(requestTemplateId, operator string) (err error) {
+func (s RequestTemplateService) EnableRequestTemplate(requestTemplateId, operator string) (err error) {
 	queryRows, queryErr := dao.X.QueryString("select status from request_template where id=?", requestTemplateId)
 	if queryErr != nil {
 		err = queryErr
@@ -1235,7 +1200,7 @@ func EnableRequestTemplate(requestTemplateId, operator string) (err error) {
 	return
 }
 
-func getAllRequestTemplateGroup() (groupMap map[string]*models.RequestTemplateGroupTable, err error) {
+func (s RequestTemplateService) getAllRequestTemplateGroup() (groupMap map[string]*models.RequestTemplateGroupTable, err error) {
 	groupMap = make(map[string]*models.RequestTemplateGroupTable)
 	var allGroupTable []*models.RequestTemplateGroupTable
 	err = dao.X.SQL("select id,name,description,manage_role,created_time,updated_time from request_template_group").Find(&allGroupTable)
@@ -1248,11 +1213,11 @@ func getAllRequestTemplateGroup() (groupMap map[string]*models.RequestTemplateGr
 	return
 }
 
-func UpdateRequestTemplateParentId(requestTemplate *models.RequestTemplateTable) (parentId string) {
+func (s RequestTemplateService) UpdateRequestTemplateParentId(requestTemplate *models.RequestTemplateTable) (parentId string) {
 	var actions []*dao.ExecAction
 	var templateIds []string
 	// 老模板有多个版本,需要更新所有版本,并找到 recordId为空的记录
-	requestTemplateMap, _ := getAllRequestTemplate()
+	requestTemplateMap, _ := s.getAllRequestTemplate()
 	if len(requestTemplateMap) > 0 {
 		temp := requestTemplate
 		for {
@@ -1281,7 +1246,7 @@ func UpdateRequestTemplateParentId(requestTemplate *models.RequestTemplateTable)
 	return
 }
 
-func UpdateRequestTemplateParentIdById(templateId, parentId string) (err error) {
+func (s RequestTemplateService) UpdateRequestTemplateParentIdById(templateId, parentId string) (err error) {
 	var actions []*dao.ExecAction
 	actions = append(actions, &dao.ExecAction{Sql: "update request_template set parent_id=? where id=?", Param: []interface{}{parentId, templateId}})
 	if len(actions) > 0 {

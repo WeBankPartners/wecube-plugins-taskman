@@ -30,15 +30,20 @@ type FormTemplateDto struct {
 
 // DataFormTemplateDto 全局表单模板 dto
 type DataFormTemplateDto struct {
-	DataFormTemplateId  string                      `json:"dataFormTemplateId"`  // 数据表单模板ID
-	AssociationWorkflow bool                        `json:"associationWorkflow"` // 是否关联编排
-	UpdatedBy           string                      `json:"updatedBy"`           // 更新人
-	UpdatedTime         string                      `json:"updatedTime"`         // 更新时间
-	Groups              []*DataFormTemplateGroupDto `json:"groups"`
+	DataFormTemplateId  string                  `json:"dataFormTemplateId"`  // 数据表单模板ID
+	AssociationWorkflow bool                    `json:"associationWorkflow"` // 是否关联编排
+	UpdatedBy           string                  `json:"updatedBy"`           // 更新人
+	Groups              []*FormTemplateGroupDto `json:"groups"`
 }
 
-// DataFormTemplateGroupDto 全局表单模板组dto
-type DataFormTemplateGroupDto struct {
+type SimpleFormTemplateDto struct {
+	FormTemplateId string                  `json:"formTemplateId"` // 数据表单模板ID
+	UpdatedBy      string                  `json:"updatedBy"`      // 更新人
+	Groups         []*FormTemplateGroupDto `json:"groups"`
+}
+
+// FormTemplateGroupDto 表单模板组dto
+type FormTemplateGroupDto struct {
 	ItemGroup     string                   `json:"itemGroup"`
 	ItemGroupType string                   `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName string                   `json:"itemGroupName"`
@@ -116,7 +121,6 @@ func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTempla
 		Description: "",
 		ExpireDay:   0,
 		UpdatedBy:   dto.UpdatedBy,
-		UpdatedTime: dto.UpdatedTime,
 		Items:       items,
 	}
 }
@@ -159,17 +163,17 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 	}
 }
 
-type DataFormTemplateGroupDtoSort []*DataFormTemplateGroupDto
+type FormTemplateGroupDtoSort []*FormTemplateGroupDto
 
-func (s DataFormTemplateGroupDtoSort) Len() int {
+func (s FormTemplateGroupDtoSort) Len() int {
 	return len(s)
 }
 
-func (s DataFormTemplateGroupDtoSort) Swap(i, j int) {
+func (s FormTemplateGroupDtoSort) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s DataFormTemplateGroupDtoSort) Less(i, j int) bool {
+func (s FormTemplateGroupDtoSort) Less(i, j int) bool {
 	if s[i].ItemGroupSort < s[j].ItemGroupSort {
 		return true
 	}

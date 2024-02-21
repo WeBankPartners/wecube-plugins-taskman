@@ -102,8 +102,42 @@ func GetDataFormTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// GetFormTemplateItemGroupConfig 获取配置表单组配置
-func GetFormTemplateItemGroupConfig(c *gin.Context) {
+// GetFormTemplate 获取数据表单模板
+func GetFormTemplate(c *gin.Context) {
+	var result *models.SimpleFormTemplateDto
+	var err error
+	formTemplateId := c.Param("from-template-id")
+	if formTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "from-template-id")
+		return
+	}
+	result, err = service.GetFormTemplateService().GetFormTemplate(formTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
+// GetGlobalFormEntity 获取全局表单 entity
+func GetGlobalFormEntity(c *gin.Context) {
+	var entityList []string
+	var err error
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	entityList, err = service.GetFormTemplateService().GetDataFormTemplateItemGroups(requestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, entityList)
+}
+
+// GetDataFormTemplateItemGroupConfig 获取配置表单组配置
+func GetDataFormTemplateItemGroupConfig(c *gin.Context) {
 	var configureDto *models.FormTemplateGroupConfigureDto
 	var err error
 	formTemplateId := c.Query("form-template-id")
@@ -125,12 +159,52 @@ func GetFormTemplateItemGroupConfig(c *gin.Context) {
 			return
 		}
 	}
-	configureDto, err = service.GetFormTemplateService().GetConfigureForm(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	middleware.ReturnData(c, configureDto)
+}
+
+// GetFormTemplateItemGroupConfig 获取配置表单组配置
+func GetFormTemplateItemGroupConfig(c *gin.Context) {
+	var configureDto *models.FormTemplateGroupConfigureDto
+	var err error
+	formTemplateId := c.Query("form-template-id")
+	itemGroupName := c.Query("item-group-name")
+	if itemGroupName == "" {
+		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name")
+		return
+	}
+	configureDto, err = service.GetFormTemplateService().GetFormConfig(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, configureDto)
+}
+
+// UpdateDataFormTemplateItemGroupConfig 新增更新数据表单组
+func UpdateDataFormTemplateItemGroupConfig(c *gin.Context) {
+	var param models.FormTemplateGroupConfigureDto
+	var err error
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroupConfig(param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
 }
 
 // UpdateFormTemplateItemGroupConfig 新增更新表单组
@@ -208,6 +282,22 @@ func DeleteFormTemplateItemGroup(c *gin.Context) {
 		return
 	}
 	err := service.GetFormItemTemplateService().DeleteFormTemplateItemGroup(formTemplateId, itemGroupName)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
+// CopyDataFormTemplateItemGroup 数据表单模板组copy
+func CopyDataFormTemplateItemGroup(c *gin.Context) {
+	formTemplateId := c.Query("form-template-id")
+	itemGroupName := c.Query("item-group-name")
+	if formTemplateId == "" || itemGroupName == "" {
+		middleware.ReturnParamEmptyError(c, "form-template-id or item-group-name")
+		return
+	}
+	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(formTemplateId, itemGroupName)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

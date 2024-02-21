@@ -169,6 +169,10 @@ func (s FormItemTemplateService) SortFormTemplateItemGroup(param models.FormTemp
 	return
 }
 
+func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, itemGroupName string) (err error) {
+	return
+}
+
 func (s FormItemTemplateService) buildFormTemplateGroupSortMap(itemGroupNameSort []string) map[string]int {
 	hashMap := make(map[string]int)
 	for i, groupName := range itemGroupNameSort {

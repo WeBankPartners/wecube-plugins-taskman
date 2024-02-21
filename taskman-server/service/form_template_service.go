@@ -128,10 +128,6 @@ func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (r
 
 func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (result *models.DataFormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
-	var formItemTemplateList []*models.FormItemTemplateTable
-	var itemGroupMap = make(map[string][]*models.FormItemTemplateTable)
-	var itemGroupType, itemGroupName string
-	var itemGroupSort int
 	var associationWorkflow bool
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -145,8 +141,24 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
 		associationWorkflow = true
 	}
-	result = &models.DataFormTemplateDto{DataFormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.DataFormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
+	result = &models.DataFormTemplateDto{DataFormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.FormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
+	result.Groups, err = s.getFormTemplateGroups(requestTemplate.DataFormTemplate)
+	return
+}
+
+func (s FormTemplateService) GetFormTemplate(formTemplateId string) (result *models.SimpleFormTemplateDto, err error) {
+	result = &models.SimpleFormTemplateDto{FormTemplateId: formTemplateId, Groups: make([]*models.FormTemplateGroupDto, 0)}
+	result.Groups, err = s.getFormTemplateGroups(formTemplateId)
+	return
+}
+
+func (s FormTemplateService) getFormTemplateGroups(formTemplateId string) (groups []*models.FormTemplateGroupDto, err error) {
+	var formItemTemplateList []*models.FormItemTemplateTable
+	var itemGroupMap = make(map[string][]*models.FormItemTemplateTable)
+	var itemGroupType, itemGroupName string
+	var itemGroupSort int
+	groups = []*models.FormTemplateGroupDto{}
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplateId)
 	if err != nil {
 		return
 	}
@@ -169,7 +181,7 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 			itemGroupName = formItemTemplateArr[0].ItemGroupName
 			itemGroupSort = formItemTemplateArr[0].ItemGroupSort
 		}
-		result.Groups = append(result.Groups, &models.DataFormTemplateGroupDto{
+		groups = append(groups, &models.FormTemplateGroupDto{
 			ItemGroup:     itemGroup,
 			ItemGroupType: itemGroupType,
 			ItemGroupName: itemGroupName,
@@ -178,12 +190,40 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 		})
 	}
 	// 设置排序,保证前端展示数据顺序一致
-	for _, DataFormTemplateGroupDto := range result.Groups {
-		if len(DataFormTemplateGroupDto.Items) > 0 {
-			sort.Sort(models.FormItemTemplateTableSort(DataFormTemplateGroupDto.Items))
+	for _, FormTemplateGroupDto := range groups {
+		if len(FormTemplateGroupDto.Items) > 0 {
+			sort.Sort(models.FormItemTemplateTableSort(FormTemplateGroupDto.Items))
 		}
 	}
-	sort.Sort(models.DataFormTemplateGroupDtoSort(result.Groups))
+	sort.Sort(models.FormTemplateGroupDtoSort(groups))
+	return
+}
+
+func (s FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (entityList []string, err error) {
+	var itemGroupNameMap = make(map[string]bool)
+	var requestTemplate *models.RequestTemplateTable
+	var formItemTemplateList []*models.FormItemTemplateTable
+	entityList = []string{}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate not exist")
+		return
+	}
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(requestTemplate.DataFormTemplate)
+	if err != nil {
+		return
+	}
+	for _, formItemTemplate := range formItemTemplateList {
+		itemGroupNameMap[formItemTemplate.ItemGroupName] = true
+	}
+	for groupName, _ := range itemGroupNameMap {
+		entityList = append(entityList, groupName)
+	}
+	// 排序
+	sort.Strings(entityList)
 	return
 }
 
@@ -288,8 +328,8 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 	return
 }
 
-// GetConfigureForm 获取配置表单
-func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+// GetFormConfig 获取配置表单,数据基于数据表单数据
+func (s FormTemplateService) GetFormConfig(formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var formItemTemplate []*models.FormItemTemplateTable
 	var entitiesList []*models.ExpressionEntities
 	var entity *models.ExpressionEntities
@@ -336,4 +376,58 @@ func (s FormTemplateService) GetConfigureForm(formTemplateId, itemGroupName, use
 		}
 	}
 	return
+}
+
+// GetDataFormConfig 获取数据表单配置
+func (s FormTemplateService) GetDataFormConfig(formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+	var formItemTemplate []*models.FormItemTemplateTable
+	var entitiesList []*models.ExpressionEntities
+	var entity *models.ExpressionEntities
+	var existAttrMap = make(map[string]bool)
+	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
+	// 1.先查询用户配置数据
+	formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
+	if err != nil {
+		return
+	}
+	if len(formItemTemplate) > 0 {
+		configureDto.ItemGroup = formItemTemplate[0].ItemGroup
+		configureDto.ItemGroupName = formItemTemplate[0].ItemGroupName
+		configureDto.ItemGroupType = formItemTemplate[0].ItemGroupType
+		configureDto.ItemGroupRule = formItemTemplate[0].ItemGroupRule
+		for _, formItem := range formItemTemplate {
+			if formItem.ItemGroupType == string(models.FormItemGroupTypeCustom) {
+				configureDto.CustomItems = append(configureDto.CustomItems, formItem)
+			} else {
+				existAttrMap[formItem.AttrDefId] = true
+			}
+		}
+	}
+	// 2.查询entity 属性集合
+	entitiesList, err = rpc.QueryEntityAttributes(models.QueryExpressionDataParam{DataModelExpression: itemGroupName}, userToken, language)
+	if err != nil {
+		return
+	}
+	if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
+		entity = entitiesList[0]
+		if configureDto.ItemGroup == "" {
+			configureDto.ItemGroup = itemGroupName
+			configureDto.ItemGroupName = itemGroupName
+			configureDto.ItemGroupType = string(models.FormItemGroupTypeOptional)
+		}
+		for _, attribute := range entitiesList[0].Attributes {
+			attribute.Id = fmt.Sprintf("%s:%s:%s", entitiesList[0].PackageName, entitiesList[0].EntityName, attribute.Name)
+			attribute.EntityName = entity.EntityName
+			attribute.EntityPackage = entity.PackageName
+			if existAttrMap[attribute.Id] {
+				attribute.Active = true
+			}
+			configureDto.SystemItems = append(configureDto.SystemItems, attribute)
+		}
+	}
+	return
+}
+
+func (s FormTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, itemGroupName string) {
+
 }

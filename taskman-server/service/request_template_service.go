@@ -216,7 +216,7 @@ func (s RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, us
 		return
 	}
 	entityList = append(entityList, &models.RequestTemplateEntityDto{
-		FormType: "1.自定义表单",
+		FormType: string(models.FormItemGroupTypeCustom),
 		Entities: nil,
 	})
 	// 配置了编排数据
@@ -232,7 +232,7 @@ func (s RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, us
 				entities = append(entities, entityStr)
 				workflowEntityMap[entityStr] = true
 			}
-			entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: "2.编排数据项表单", Entities: entities})
+			entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: string(models.FormItemGroupTypeWorkflow), Entities: entities})
 		}
 	}
 	// 自选数据项表单
@@ -252,7 +252,7 @@ func (s RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, us
 				}
 			}
 		}
-		entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: "3.自选数据项表单", Entities: entities})
+		entityList = append(entityList, &models.RequestTemplateEntityDto{FormType: string(models.FormItemGroupTypeOptional), Entities: entities})
 	}
 	return
 }

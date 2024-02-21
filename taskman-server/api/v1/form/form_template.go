@@ -173,38 +173,17 @@ func GetFormTemplateItemGroupConfig(c *gin.Context) {
 	var err error
 	formTemplateId := c.Query("form-template-id")
 	itemGroupName := c.Query("item-group-name")
-	if itemGroupName == "" {
-		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name")
+	requestTemplateId := c.Query("request-template-id")
+	if itemGroupName == "" || formTemplateId == "" || requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name or form-template-id")
 		return
 	}
-	configureDto, err = service.GetFormTemplateService().GetFormConfig(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	configureDto, err = service.GetFormTemplateService().GetFormConfig(requestTemplateId, formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	middleware.ReturnData(c, configureDto)
-}
-
-// UpdateDataFormTemplateItemGroupConfig 新增更新数据表单组
-func UpdateDataFormTemplateItemGroupConfig(c *gin.Context) {
-	var param models.FormTemplateGroupConfigureDto
-	var err error
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	// 校验是否有修改权限
-	err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroupConfig(param)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnSuccess(c)
 }
 
 // UpdateFormTemplateItemGroupConfig 新增更新表单组

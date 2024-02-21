@@ -170,6 +170,26 @@ func (s FormItemTemplateService) SortFormTemplateItemGroup(param models.FormTemp
 }
 
 func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, itemGroupName string) (err error) {
+	var formItemTemplateList []*models.FormItemTemplateTable
+	// 1. 查询表单组是否存在，不存在则新增
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
+	if err != nil {
+		return
+	}
+	// 新增数据
+	if len(formItemTemplateList) > 0 {
+		err = transaction(func(session *xorm.Session) error {
+			for _, formItemTemplate := range formItemTemplateList {
+				formItemTemplate.CopyId = formItemTemplate.Id
+				formItemTemplate.Id = guid.CreateGuid()
+				_, err = s.formItemTemplateDao.Add(session, formItemTemplate)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	}
 	return
 }
 

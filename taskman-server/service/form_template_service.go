@@ -329,52 +329,32 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 }
 
 // GetFormConfig 获取配置表单,数据基于数据表单数据
-func (s FormTemplateService) GetFormConfig(formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
-	var formItemTemplate []*models.FormItemTemplateTable
+func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+	var requestTemplate *models.RequestTemplateTable
+	/*var formItemTemplate []*models.FormItemTemplateTable
 	var entitiesList []*models.ExpressionEntities
 	var entity *models.ExpressionEntities
-	var existAttrMap = make(map[string]bool)
+	var existAttrMap = make(map[string]bool)*/
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param requestTemplateId is invalid"))
+		return
+	}
+	if requestTemplate.DataFormTemplate == "" {
+		err = fmt.Errorf("requestTemplate:%s DataFormTemplate is empty", requestTemplate.Id)
+		return
+	}
 	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
 	// 1.先查询用户配置数据
-	formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
+	//formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
 	if err != nil {
 		return
 	}
-	if len(formItemTemplate) > 0 {
-		configureDto.ItemGroup = formItemTemplate[0].ItemGroup
-		configureDto.ItemGroupName = formItemTemplate[0].ItemGroupName
-		configureDto.ItemGroupType = formItemTemplate[0].ItemGroupType
-		configureDto.ItemGroupRule = formItemTemplate[0].ItemGroupRule
-		for _, formItem := range formItemTemplate {
-			if formItem.ItemGroupType == string(models.FormItemGroupTypeCustom) {
-				configureDto.CustomItems = append(configureDto.CustomItems, formItem)
-			} else {
-				existAttrMap[formItem.AttrDefId] = true
-			}
-		}
-	}
-	// 2.查询entity 属性集合
-	entitiesList, err = rpc.QueryEntityAttributes(models.QueryExpressionDataParam{DataModelExpression: itemGroupName}, userToken, language)
-	if err != nil {
-		return
-	}
-	if len(entitiesList) > 0 && len(entitiesList[0].Attributes) > 0 {
-		entity = entitiesList[0]
-		if configureDto.ItemGroup == "" {
-			configureDto.ItemGroup = itemGroupName
-			configureDto.ItemGroupName = itemGroupName
-			configureDto.ItemGroupType = string(models.FormItemGroupTypeOptional)
-		}
-		for _, attribute := range entitiesList[0].Attributes {
-			attribute.Id = fmt.Sprintf("%s:%s:%s", entitiesList[0].PackageName, entitiesList[0].EntityName, attribute.Name)
-			attribute.EntityName = entity.EntityName
-			attribute.EntityPackage = entity.PackageName
-			if existAttrMap[attribute.Id] {
-				attribute.Active = true
-			}
-			configureDto.SystemItems = append(configureDto.SystemItems, attribute)
-		}
-	}
+	// 2. 查询数据表单
+	//s.GetDataFormConfig(requestTemplate.DataFormTemplate)
 	return
 }
 

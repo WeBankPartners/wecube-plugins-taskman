@@ -32,7 +32,7 @@ type FormItemTemplateTable struct {
 	IsRefInside     string           `json:"isRefInside" xorm:"is_ref_inside"`
 	Multiple        string           `json:"multiple" xorm:"multiple"`
 	DefaultClear    string           `json:"defaultClear" xorm:"default_clear"`
-	CopyId          string           `json:"-" xorm:"copy_id"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	CopyId          string           `json:"copyId" xorm:"copy_id"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
 	SelectList      []*EntityDataObj `json:"selectList" xorm:"-"`
 }
 

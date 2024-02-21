@@ -286,5 +286,8 @@
   "tw_only_me": "仅本人处理",
   "tw_commit": "提交",
   "tw_confirm_commit": "确认提交",
-  "tw_confirm": "确认 "
+  "tw_confirm": "确认 ",
+  "tw_confirm_discarding_changes": "确认放弃改动",
+  "tw_params_edit_confirm": "数据发生变化，选择放弃则变化信息不会被保存！",
+  "tw_abandon": "放弃"
 }

@@ -18,7 +18,7 @@ export const deleteTempGroup = data => req.delete('/taskman/api/v1/request-templ
 
 export const getManagementRoles = () => req.get('/taskman/api/v1/user/roles')
 export const getUserRoles = () => req.get('/taskman/api/v1/role/list')
-export const getProcess = () => req.get('/taskman/api/v1/process/list')
+export const getProcess = role => req.get(`/taskman/api/v1/process/list?role=${role}`)
 
 export const createTemp = data => req.post('/taskman/api/v1/request-template', data)
 export const updateTemp = data => req.put('/taskman/api/v1/request-template', data)

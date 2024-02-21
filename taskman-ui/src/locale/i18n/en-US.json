@@ -286,5 +286,8 @@
   "tw_only_me": "Only Myself",
   "tw_commit": "Submit",
   "tw_confirm_commit": "Confirm Submission",
-  "tw_confirm": "Confirm "
+  "tw_confirm": "Confirm ",
+  "tw_confirm_discarding_changes": "Confirm Discarding Changes",
+  "tw_params_edit_confirm": "The data changes, if you choose to give up, the changed information will not be saved!",
+  "tw_abandon": "Abandon"
 }

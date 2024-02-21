@@ -118,10 +118,8 @@ func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.Reques
 				if node.NodeType != string(models.ProcDefNodeTypeHuman) {
 					continue
 				}
-			} else if filterType == "bind" {
-				if node.DynamicBind {
-					continue
-				}
+			} else if filterType == "bind" && node.DynamicBind == "Y" {
+				continue
 			}
 			nodeList = append(nodeList, node)
 		}

@@ -36,6 +36,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 		}
 		if len(param.CustomItems) > 0 {
 			for _, customItem := range param.CustomItems {
+				customItem.FormTemplate = param.FormTemplateId
 				customItem.ElementType = string(models.FormItemElementTypeCalculate)
 				insertItems = append(insertItems, customItem)
 			}
@@ -65,6 +66,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 				}
 			}
 			if !customItemExist {
+				customItem.FormTemplate = param.FormTemplateId
 				insertItems = append(insertItems, customItem)
 			}
 		}

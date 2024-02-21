@@ -102,7 +102,7 @@ func GetDataFormTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// GetFormTemplate 获取数据表单模板
+// GetFormTemplate 获取表单模板
 func GetFormTemplate(c *gin.Context) {
 	var result *models.SimpleFormTemplateDto
 	var err error
@@ -191,6 +191,10 @@ func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 	var param models.FormTemplateGroupConfigureDto
 	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if err = validateFormTemplateItemGroupConfigParam(param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
@@ -307,4 +311,24 @@ func createDataFormTemplate(requestTemplateId string) (formTemplateId string, er
 		err = fmt.Errorf("form-template-id is empty")
 	}
 	return
+}
+
+func validateFormTemplateItemGroupConfigParam(param models.FormTemplateGroupConfigureDto) error {
+	if param.RequestTemplateId == "" {
+		return fmt.Errorf("param RequestTemplateId is empty")
+	}
+	if param.FormTemplateId == "" {
+		return fmt.Errorf("param FormTemplateId is empty")
+	}
+	if param.ItemGroup == "" || param.ItemGroupType == "" || param.ItemGroupName == "" || param.ItemGroupRule == "" {
+		return fmt.Errorf("param ItemGroup is empty")
+	}
+	if len(param.CustomItems) > 0 {
+		for _, item := range param.CustomItems {
+			if item.ItemGroup != param.ItemGroup || item.ItemGroupName != param.ItemGroupName || item.ItemGroupType != param.ItemGroupType || item.ItemGroupRule != param.ItemGroupRule {
+				return fmt.Errorf("param CustomItems  Id:%s is invalid", item.Id)
+			}
+		}
+	}
+	return nil
 }

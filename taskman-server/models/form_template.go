@@ -133,6 +133,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
 		Name:            workflowEntityAttribute.Name,
+		Description:     workflowEntityAttribute.Description,
 		ItemGroup:       param.ItemGroup,
 		ItemGroupType:   param.ItemGroupType,
 		ItemGroupName:   param.ItemGroupName,
@@ -152,6 +153,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		RefEntity:       workflowEntityAttribute.Name,
 		DataOptions:     "",
 		Required:        "no",
+		Regular:         "",
 		IsEdit:          "yes",
 		IsView:          "yes",
 		IsOutput:        "no",
@@ -160,6 +162,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		Multiple:        workflowEntityAttribute.Multiple,
 		DefaultClear:    "no",
 		CopyId:          "",
+		SelectList:      nil,
 	}
 }
 

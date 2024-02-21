@@ -121,10 +121,12 @@ func (s RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestP
 	}
 	if isQueryMessage {
 		for _, v := range rowData {
-			tmpErr := s.SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, commonParam.Token, commonParam.Language)
-			if tmpErr != nil {
-				err = fmt.Errorf("Try to sync proDefId fail,%s ", tmpErr.Error())
-				break
+			if v.ProcDefId != "" {
+				tmpErr := s.SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, commonParam.Token, commonParam.Language)
+				if tmpErr != nil {
+					err = fmt.Errorf("Try to sync proDefId fail,%s ", tmpErr.Error())
+					break
+				}
 			}
 		}
 		if err != nil {

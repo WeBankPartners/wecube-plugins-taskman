@@ -31,13 +31,15 @@ func (d RequestTemplateDao) AddBasicInfo(session *xorm.Session, template *models
 	}
 	result, err = session.Exec("insert into request_template(id,`group`,name,description,tags,package_name,entity_name,proc_def_key,proc_def_id,"+
 		"proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id,approve_by,pending_switch,"+
-		"pending_role,pending_handler,confirm_switch,confirm_expire_day,rollback_desc) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", template.Id,
+		"pending_role,pending_handler,confirm_switch,confirm_expire_day,rollback_desc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", template.Id,
 		template.Group, template.Name, template.Description, template.Tags, template.PackageName, template.EntityName, template.ProcDefKey, template.ProcDefId,
 		template.ProcDefName, template.ExpireDay, template.Handler, template.CreatedBy, template.CreatedTime, template.UpdatedBy, template.UpdatedTime, template.Type, template.OperatorObjType,
 		template.Id, template.ApproveBy, template.PendingSwitch, template.PendingRole, template.PendingHandler, template.ConfirmSwitch, template.ConfirmExpireDay, template.RollbackDesc)
 	if err != nil {
 		return
 	}
+	// 打印日志
+	logExecuteSql(session, "RequestTemplateDao", "AddBasicInfo", template, affected, err)
 	affected, err = result.RowsAffected()
 	return
 }

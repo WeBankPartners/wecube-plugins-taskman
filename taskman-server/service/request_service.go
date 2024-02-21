@@ -269,7 +269,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			}
 			roleFilterSql = strings.Join(roleFilterList, " or ")
 		}
-		if param.Type == "task" {
+		if param.Type == "Task" {
 			sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
 			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 			return
@@ -279,7 +279,7 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	case "hasProcessed":
 		if param.Type == string(models.RequestStatusPending) {
 			sql, queryParam = hasProcessedRequestSQL(templateType, user)
-		} else if param.Type == "task" {
+		} else if param.Type == "Task" {
 			sql, queryParam = hasProcessedTaskSQL(templateType, user)
 			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 			return
@@ -1058,10 +1058,10 @@ func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []
 						for _, interfaceV := range tmpV.([]interface{}) {
 							tmpStringV = append(tmpStringV, fmt.Sprintf("%s", interfaceV))
 						}
-						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, strings.Join(tmpStringV, ","), title.ItemGroup, valueObj.Id}})
+						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) values (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, strings.Join(tmpStringV, ","), title.ItemGroup, valueObj.Id}})
 					}
 				} else {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) values (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
 				}
 			}
 		}

@@ -331,10 +331,9 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 // GetFormConfig 获取配置表单,数据基于数据表单数据
 func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, itemGroupName, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
-	/*var formItemTemplate []*models.FormItemTemplateTable
-	var entitiesList []*models.ExpressionEntities
-	var entity *models.ExpressionEntities
-	var existAttrMap = make(map[string]bool)*/
+	var dataFormConfigureDto *models.FormTemplateGroupConfigureDto
+	var formItemTemplateList []*models.FormItemTemplateTable
+	var existAttrMap = make(map[string]bool)
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -349,12 +348,33 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 	}
 	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateTable{}}
 	// 1.先查询用户配置数据
-	//formItemTemplate, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(formTemplateId, itemGroupName)
 	if err != nil {
 		return
 	}
+	for _, formItemTemplate := range formItemTemplateList {
+		if formItemTemplate.AttrDefId != "" {
+			existAttrMap[formItemTemplate.AttrDefId] = true
+		} else {
+			configureDto.CustomItems = append(configureDto.CustomItems, formItemTemplate)
+		}
+	}
 	// 2. 查询数据表单
-	//s.GetDataFormConfig(requestTemplate.DataFormTemplate)
+	dataFormConfigureDto, err = s.GetDataFormConfig(requestTemplate.DataFormTemplate, itemGroupName, userToken, language)
+	if err != nil {
+		return
+	}
+	// 将数据表单的选中作为 审批、任务表单的全量
+	if len(dataFormConfigureDto.SystemItems) > 0 {
+		for _, systemItem := range dataFormConfigureDto.SystemItems {
+			if systemItem.Active {
+				configureDto.SystemItems = append(configureDto.SystemItems, systemItem)
+				if !existAttrMap[systemItem.Id] {
+					systemItem.Active = false
+				}
+			}
+		}
+	}
 	return
 }
 

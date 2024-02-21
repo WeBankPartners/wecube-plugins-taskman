@@ -52,6 +52,10 @@ export const deleteTemplate = data => req.delete('/taskman/api/v1/request-templa
 export const forkTemplate = requestTemplateId => req.post(`/taskman/api/v1/request-template/fork/${requestTemplateId}`)
 export const getRequestTemplateAttrs = requestTemplateId =>
   req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/get`)
+// 模板转给我
+export const templateGiveMe = data => req.post(`/taskman/api/v1/request-template/handler/update`, data)
+// 模板确认发版or退回草稿
+export const updateTemplateStatus = data => req.post(`/taskman/api/v1/request-template/status/update`, data)
 
 export const getRequestFormTemplateData = requestTemplateId =>
   req.get(`/taskman/api/v1/request-form-template/${requestTemplateId}`)

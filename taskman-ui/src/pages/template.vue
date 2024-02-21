@@ -2,6 +2,14 @@
   <div>
     <div>
       <Row>
+        <Tabs v-model="status" @on-click="getTemplateList()">
+          <TabPane label="草稿" name="created"></TabPane>
+          <TabPane label="待发布" name="pending"></TabPane>
+          <TabPane label="已发布" name="confirm"></TabPane>
+          <TabPane label="禁用" name="disable"></TabPane>
+        </Tabs>
+      </Row>
+      <Row>
         <Col span="4">
           <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
         </Col>
@@ -23,28 +31,24 @@
           </Select>
         </Col>
         <Col span="4">
-          <Select multiple v-model="status" clearable :placeholder="$t('status')" style="width: 90%">
-            <Option value="confirm" key="confirm">{{ this.$t('status_confirm') }}</Option>
-            <Option value="created" key="created">{{ this.$t('status_created') }}</Option>
-            <Option value="disable" key="disable">{{ this.$t('disable') }}</Option>
-          </Select>
-        </Col>
-        <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
+          <!-- <Button @click="addTemplate" type="success">{{ $t('add') }}</Button> -->
         </Col>
-        <Upload
-          :action="uploadUrl"
-          :before-upload="handleUpload"
-          :show-upload-list="false"
-          with-credentials
-          style="display: inline-block; float: right; margin-right: 16px"
-          :headers="headers"
-          :on-success="uploadSucess"
-          :on-error="uploadFailed"
-        >
-          <Button>{{ $t('upload') }}</Button>
-        </Upload>
+        <div style="display:flex;float:right;">
+          <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
+          <Upload
+            :action="uploadUrl"
+            :before-upload="handleUpload"
+            :show-upload-list="false"
+            with-credentials
+            style="margin-left:10px;"
+            :headers="headers"
+            :on-success="uploadSucess"
+            :on-error="uploadFailed"
+          >
+            <Button>{{ $t('upload') }}</Button>
+          </Upload>
+        </div>
       </Row>
     </div>
     <Table
@@ -85,7 +89,9 @@ import {
   getManagementRoles,
   confirmUploadTemplate,
   enableTemplate,
-  disableTemplate
+  disableTemplate,
+  templateGiveMe,
+  updateTemplateStatus
 } from '@/api/server'
 export default {
   name: '',
@@ -93,7 +99,7 @@ export default {
     return {
       MODALHEIGHT: 500,
       name: '',
-      status: ['confirm', 'created'],
+      status: 'created',
       mgmtRoles: [],
       tags: '',
       modalShow: false,
@@ -114,20 +120,27 @@ export default {
           field: 'updatedTime'
         }
       },
+      username: window.localStorage.getItem('username'),
       tableColumns: [
         {
           title: this.$t('name'),
           resizable: true,
           width: 200,
           sortable: 'custom',
-          fixed: 'left',
           key: 'name'
         },
         {
           title: this.$t('version'),
-          minWidth: 80,
+          minWidth: 60,
           sortable: 'custom',
-          key: 'version'
+          key: 'version',
+          render: (h, params) => {
+            if (params.row.version) {
+              return <Tag>{params.row.version}</Tag>
+            } else {
+              return <span>--</span>
+            }
+          }
         },
         {
           title: this.$t('procDefId'),
@@ -139,45 +152,49 @@ export default {
           title: this.$t('tags'),
           sortable: 'custom',
           minWidth: 130,
-          key: 'tags'
-        },
-        {
-          title: this.$t('status'),
-          minWidth: 80,
-          sortable: 'custom',
-          key: 'status',
+          key: 'tags',
           render: (h, params) => {
-            const statusArray = {
-              confirm: this.$t('status_confirm'),
-              created: this.$t('status_created'),
-              disable: this.$t('disable')
+            if (params.row.tags) {
+              return <Tag>{params.row.tags}</Tag>
+            } else {
+              return <span>--</span>
             }
-            return <span>{statusArray[params.row.status]}</span>
           }
         },
         {
           title: this.$t('description'),
           resizable: true,
-          width: 100,
+          minWidth: 120,
           sortable: 'custom',
-          key: 'description'
+          key: 'description',
+          render: (h, params) => {
+            return (
+              <Tooltip max-width="300" content={params.row.description}>
+                <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                  {params.row.description || '--'}
+                </span>
+              </Tooltip>
+            )
+          }
         },
         {
           title: this.$t('mgmtRoles'),
-          minWidth: 130,
+          minWidth: 100,
           key: 'mgmtRoles',
           render: (h, params) => {
-            const displayName = params.row.mgmtRoles.map(role => role.displayName).join(',')
-            return <span>{displayName}</span>
+            return params.row.mgmtRoles.map(item => {
+              return <Tag>{item.displayName}</Tag>
+            })
           }
         },
         {
           title: this.$t('useRoles'),
-          minWidth: 130,
+          minWidth: 140,
           key: 'mgmtRoles',
           render: (h, params) => {
-            const displayName = params.row.useRoles.map(role => role.displayName).join(',')
-            return <span>{displayName}</span>
+            return params.row.useRoles.map(item => {
+              return <Tag>{item.displayName}</Tag>
+            })
           }
         },
         {
@@ -196,81 +213,126 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 220,
+          width: 180,
           align: 'center',
           render: (h, params) => {
-            const operationOptions = params.row.operateOptions
+            // const operationOptions = params.row.operateOptions
             return (
-              <div style="text-align: left">
-                {operationOptions.includes('edit') && (
-                  <Button
-                    onClick={() => this.editTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="primary"
-                    size="small"
-                  >
-                    {this.$t('edit')}
-                  </Button>
+              <div style="text-align:center">
+                {/* 转给我 */ this.status === 'created' && this.username !== params.row.updatedBy && (
+                  <Tooltip content={this.$t('tw_action_give')} placement="top">
+                    <Button type="success" size="small" onClick={() => this.giveTemplate(params.row)}>
+                      <Icon type="ios-hand" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('delete') && (
-                  <Button
-                    onClick={() => this.deleteTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="error"
-                    size="small"
-                  >
-                    {this.$t('delete')}
-                  </Button>
+                {/* 编辑 */ this.status === 'created' && this.username === params.row.updatedBy && (
+                  <Tooltip content={this.$t('edit')} placement="top">
+                    <Button
+                      size="small"
+                      type="primary"
+                      onClick={() => this.editTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-create" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('query') && (
-                  <Button
-                    onClick={() => this.checkTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="info"
-                    size="small"
-                  >
-                    {this.$t('detail')}
-                  </Button>
+                {/* 删除 */ this.status === 'created' && this.username === params.row.updatedBy && (
+                  <Tooltip content={this.$t('delete')} placement="top">
+                    <Button
+                      size="small"
+                      type="error"
+                      onClick={() => this.deleteTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-trash" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('fork') && (
-                  <Button
-                    onClick={() => this.forkTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="warning"
-                    size="small"
-                  >
-                    {this.$t('fork')}
-                  </Button>
+                {/* 查看 */ ['pending', 'confirm', 'disable'].includes(this.status) && (
+                  <Tooltip content={this.$t('detail')} placement="top">
+                    <Button
+                      size="small"
+                      type="info"
+                      onClick={() => this.checkTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-eye" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('export') && (
-                  <Button
-                    onClick={() => this.exportTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="success"
-                    size="small"
-                  >
-                    {this.$t('download')}
-                  </Button>
+                {/* 确认发布 */ this.status === 'pending' && (
+                  <Tooltip content={this.$t('确认发布')} placement="top">
+                    <Button
+                      size="small"
+                      type="success"
+                      onClick={() => this.confirmTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-checkmark-circle" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('disable') && (
-                  <Button
-                    onClick={() => this.disableTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="error"
-                    size="small"
-                  >
-                    {this.$t('disable')}
-                  </Button>
+                {/* 退回草稿 */ this.status === 'pending' && (
+                  <Tooltip content={this.$t('退回草稿')} placement="top">
+                    <Button
+                      size="small"
+                      type="error"
+                      onClick={() => this.draftTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="ios-redo" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
-                {operationOptions.includes('enable') && (
-                  <Button
-                    onClick={() => this.enableTemplate(params.row)}
-                    style="margin-left: 6px"
-                    type="success"
-                    size="small"
-                  >
-                    {this.$t('enable')}
-                  </Button>
+                {/* 变更 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('fork')} placement="top">
+                    <Button
+                      size="small"
+                      type="warning"
+                      onClick={() => this.forkTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-pricetag" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 导出 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('download')} placement="top">
+                    <Button
+                      size="small"
+                      type="success"
+                      onClick={() => this.exportTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-cloud-download" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 禁用 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('disable')} placement="top">
+                    <Button
+                      size="small"
+                      type="error"
+                      onClick={() => this.disableTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-lock" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 启用 */ this.status === 'disable' && (
+                  <Tooltip content={this.$t('enable')} placement="top">
+                    <Button
+                      size="small"
+                      type="success"
+                      onClick={() => this.enableTemplate(params.row)}
+                      style="margin-right:5px;"
+                    >
+                      <Icon type="md-unlock" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
                 )}
               </div>
             )
@@ -280,7 +342,8 @@ export default {
       tableData: [],
       roleOptions: [],
       uploadUrl: '/taskman/api/v1/request-template/import',
-      headers: {}
+      headers: {},
+      backReason: ''
     }
   },
   mounted () {
@@ -298,6 +361,87 @@ export default {
     this.getTemplateList()
   },
   methods: {
+    // 转给我
+    async giveTemplate (row) {
+      const params = {
+        request_template_id: row.id,
+        latestUpdateTime: new Date(row.updatedTime).getTime().toString()
+      }
+      const { statusCode } = await templateGiveMe(params)
+      if (statusCode === 'OK') {
+        this.getTemplateList()
+      }
+    },
+    // 确认发布
+    async confirmTemplate (row) {
+      this.$Modal.confirm({
+        title: '确认发布？',
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const params = {
+            requestTemplateId: row.id,
+            status: 'pending',
+            targetStatus: 'confirm'
+          }
+          const { statusCode } = await updateTemplateStatus(params)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: 'Successful',
+              desc: 'Successful'
+            })
+            this.getTemplateList()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    // 退回草稿
+    async draftTemplate (row) {
+      this.$Modal.confirm({
+        title: '确认退回草稿？',
+        'z-index': 1000000,
+        loading: false,
+        render: () => {
+          return (
+            <div>
+              <Input
+                type="textarea"
+                maxlength={255}
+                show-word-limit
+                v-model={this.backReason}
+                placeholder={this.$t('tw_back_bind_placeholder')}
+              ></Input>
+            </div>
+          )
+        },
+        onOk: async () => {
+          if (!this.backReason.trim()) {
+            this.$Notice.warning({
+              title: this.$t('warning'),
+              desc: this.$t('tw_back_bind_tips')
+            })
+          } else {
+            const params = {
+              requestTemplateId: row.id,
+              status: 'pending',
+              targetStatus: 'created',
+              reason: this.backReason
+            }
+            const { statusCode } = await updateTemplateStatus(params)
+            if (statusCode === 'OK') {
+              this.$Notice.success({
+                title: this.$t('successful'),
+                desc: this.$t('successful')
+              })
+              this.getTemplateList()
+            }
+          }
+        },
+        onCancel: () => {}
+      })
+    },
     handleUpload (file) {
       if (!file.name.endsWith('.json')) {
         this.$Notice.warning({
@@ -478,11 +622,11 @@ export default {
           value: this.tags
         })
       }
-      if (this.status.length > 0) {
+      if (this.status) {
         this.payload.filters.push({
           name: 'status',
           operator: 'in',
-          value: this.status
+          value: [this.status]
         })
       }
       if (this.mgmtRoles.length > 0) {

@@ -94,14 +94,6 @@ func (s FormItemTemplateDtoSort) Less(i, j int) bool {
 	return false
 }
 
-func ConvertFormItemTemplateList2Map(formItemTemplateList []*FormItemTemplateTable) map[string]*FormItemTemplateTable {
-	hashMap := make(map[string]*FormItemTemplateTable)
-	for _, table := range formItemTemplateList {
-		hashMap[table.Id] = table
-	}
-	return hashMap
-}
-
 func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplateTable {
 	return &FormItemTemplateTable{
 		Id:              dto.Id,
@@ -139,7 +131,7 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 	}
 }
 
-func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup *FormItemTemplateGroupTable) *FormItemTemplateDto {
+func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup FormItemTemplateGroupTable) *FormItemTemplateDto {
 	dto := &FormItemTemplateDto{
 		Id:              model.Id,
 		Name:            model.Name,
@@ -174,10 +166,16 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup *F
 		SelectList:      model.SelectList,
 		Active:          model.Active,
 	}
-	if itemGroup != nil {
-		dto.ItemGroupType = itemGroup.ItemGroupType
-		dto.ItemGroupRule = itemGroup.ItemGroupRule
-		dto.ItemGroupSort = itemGroup.ItemGroupSort
-	}
+	dto.ItemGroupType = itemGroup.ItemGroupType
+	dto.ItemGroupRule = itemGroup.ItemGroupRule
+	dto.ItemGroupSort = itemGroup.ItemGroupSort
 	return dto
+}
+
+func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, itemGroup *FormItemTemplateGroupTable) []*FormItemTemplateDto {
+	var dtoList []*FormItemTemplateDto
+	for _, model := range tableList {
+		dtoList = append(dtoList, ConvertFormItemTemplateModel2Dto(model, *itemGroup))
+	}
+	return dtoList
 }

@@ -288,12 +288,5 @@ func validateFormTemplateItemGroupConfigParam(param models.FormTemplateGroupConf
 	if param.ItemGroupType == "" || param.ItemGroupName == "" || param.ItemGroupRule == "" {
 		return fmt.Errorf("param ItemGroup is empty")
 	}
-	if len(param.CustomItems) > 0 {
-		for _, item := range param.CustomItems {
-			if item.ItemGroup != param.ItemGroup || item.ItemGroupName != param.ItemGroupName || item.ItemGroupType != param.ItemGroupType || item.ItemGroupRule != param.ItemGroupRule {
-				return fmt.Errorf("param CustomItems  Id:%s is invalid", item.Id)
-			}
-		}
-	}
 	return nil
 }

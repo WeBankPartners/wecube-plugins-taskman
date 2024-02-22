@@ -119,12 +119,11 @@ func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTempla
 		}
 	}
 	return FormTemplateDto{
-		Id:          dto.DataFormTemplateId,
-		Name:        "globalFormTemplate",
-		Description: "",
-		ExpireDay:   0,
-		UpdatedBy:   dto.UpdatedBy,
-		Items:       items,
+		Id:        dto.DataFormTemplateId,
+		Name:      "global_form_template",
+		ExpireDay: 0,
+		UpdatedBy: dto.UpdatedBy,
+		Items:     items,
 	}
 }
 

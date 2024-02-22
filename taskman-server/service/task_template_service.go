@@ -46,14 +46,10 @@ func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models
 	result.UpdatedTime = formTemplateTable[0].UpdatedTime
 	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
-	var formItemTemplateGroupList []*models.FormItemTemplateGroupTable
-	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	dao.X.SQL("select * from form_item_template where form_template=?", taskTemplate.FormTemplate).Find(&formItemTemplate)
-	if len(formItemTemplate) > 0 {
-		dao.X.SQL("select * from form_item_template_group where id=?", formItemTemplate[0].Id).Find(&formItemTemplateGroup)
-		if len(formItemTemplateGroupList) > 0 {
-			formItemTemplateGroup = formItemTemplateGroupList[0]
-		}
+	if len(formItemTemplate) > 0 && formItemTemplate[0].ItemGroupId != "" {
+		dao.X.SQL("select * from form_item_template_group where id=?", formItemTemplate[0].ItemGroupId).Get(&formItemTemplateGroup)
 		for _, formItem := range formItemTemplate {
 			result.Items = append(result.Items, models.ConvertFormItemTemplateModel2Dto(formItem, formItemTemplateGroup))
 		}

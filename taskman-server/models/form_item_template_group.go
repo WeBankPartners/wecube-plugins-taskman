@@ -9,6 +9,7 @@ type FormItemTemplateGroupTable struct {
 	ItemGroupRule string `json:"itemGroupRule" xorm:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
 	FormTemplate  string `json:"formTemplate" xorm:"form_template"`
 	CopyId        string `json:"copyId" xorm:"copy_id"` // 复制Id
+	CreatedTime   string `json:"createdTime" xorm:"created_time"`
 }
 
 func (FormItemTemplateGroupTable) TableName() string {

@@ -14,9 +14,10 @@ import (
 )
 
 type FormTemplateService struct {
-	formTemplateDao     dao.FormTemplateDao
-	formItemTemplateDao dao.FormItemTemplateDao
-	formDao             dao.FormDao
+	formTemplateDao          dao.FormTemplateDao
+	formItemTemplateDao      dao.FormItemTemplateDao
+	formItemTemplateGroupDao dao.FormItemTemplateGroupDao
+	formDao                  dao.FormDao
 }
 
 func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (newId string, err error) {
@@ -161,43 +162,25 @@ func (s FormTemplateService) GetFormTemplate(formTemplateId string) (result *mod
 }
 
 func (s FormTemplateService) getFormTemplateGroups(formTemplateId string) (groups []*models.FormTemplateGroupDto, err error) {
-	var formItemTemplateList []*models.FormItemTemplateDto
-	var itemGroupMap = make(map[string][]*models.FormItemTemplateDto)
-	var itemGroupType, itemGroupName string
-	var itemGroupSort int
+	var formItemTemplateGroupList []*models.FormItemTemplateGroupTable
+	var formItemTemplateList []*models.FormItemTemplateTable
 	groups = []*models.FormTemplateGroupDto{}
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplateId)
+	formItemTemplateGroupList, err = s.formItemTemplateGroupDao.QueryFormTemplate(formTemplateId)
 	if err != nil {
 		return
 	}
-	if len(formItemTemplateList) == 0 {
+	if len(formItemTemplateGroupList) == 0 {
 		return
 	}
-	for _, formItemTemplate := range formItemTemplateList {
-		if _, ok := itemGroupMap[formItemTemplate.ItemGroup]; !ok {
-			itemGroupMap[formItemTemplate.ItemGroup] = make([]*models.FormItemTemplateDto, 0)
-		}
-	}
-	for itemGroup, formItemTemplateArr := range itemGroupMap {
-		for _, formItemTemplate := range formItemTemplateList {
-			if itemGroup == formItemTemplate.ItemGroup {
-				if formItemTemplate.ItemGroupType == string(models.FormItemGroupTypeCustom) && formItemTemplate.Name == defaultCustomFormItemName {
-					continue
-				}
-				formItemTemplateArr = append(formItemTemplateArr, formItemTemplate)
-			}
-		}
-		if len(formItemTemplateArr) > 0 {
-			itemGroupType = formItemTemplateArr[0].ItemGroupType
-			itemGroupName = formItemTemplateArr[0].ItemGroupName
-			itemGroupSort = formItemTemplateArr[0].ItemGroupSort
-		}
+	for _, group := range formItemTemplateGroupList {
+		formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupId(formTemplateId, group.Id)
 		groups = append(groups, &models.FormTemplateGroupDto{
-			ItemGroup:     itemGroup,
-			ItemGroupType: itemGroupType,
-			ItemGroupName: itemGroupName,
-			ItemGroupSort: itemGroupSort,
-			Items:         formItemTemplateArr,
+			ItemGroupId:   group.Id,
+			ItemGroup:     group.ItemGroup,
+			ItemGroupType: group.ItemGroupType,
+			ItemGroupName: group.ItemGroupName,
+			ItemGroupSort: group.ItemGroupSort,
+			Items:         models.ConvertFormItemTemplateModelList2Dto(formItemTemplateList, group),
 		})
 	}
 	// 设置排序,保证前端展示数据顺序一致

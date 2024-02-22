@@ -50,6 +50,15 @@ func (d FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.F
 	return nil, nil
 }
 
+func (d FormItemTemplateGroupDao) QueryFormTemplate(formTemplated string) (formItemTemplateGroupList []*models.FormItemTemplateGroupTable, err error) {
+	formItemTemplateGroupList = []*models.FormItemTemplateGroupTable{}
+	err = d.DB.Where("form_template = ?", formTemplated).Find(&formItemTemplateGroupList)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func (d FormItemTemplateGroupDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
 	var affected int64
 	if session == nil {

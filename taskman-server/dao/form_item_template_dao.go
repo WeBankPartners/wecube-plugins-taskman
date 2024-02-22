@@ -52,7 +52,7 @@ func (d FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTem
 
 func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
-	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
 	if formTemplate == "" {
 		return
@@ -61,8 +61,8 @@ func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemT
 	if err != nil {
 		return
 	}
-	if len(formItemTemplateList) > 0 {
-		err = d.DB.Where("id = ?", formItemTemplateList[0].ItemGroupId).Find(&formItemTemplateGroup)
+	if len(formItemTemplateList) > 0 && formItemTemplateList[0].ItemGroupId != "" {
+		_, err = d.DB.ID(formItemTemplateList[0].ItemGroupId).Get(&formItemTemplateGroup)
 		if err != nil {
 			return
 		}
@@ -84,11 +84,14 @@ func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupName(formTemplate, i
 
 func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
-	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
+	if formTemplate == "" {
+		return
+	}
 	err = d.DB.Where("form_template = ? and item_group_name = ?", formTemplate, itemGroupName).Find(&formItemTemplateList)
-	if len(formItemTemplateList) > 0 {
-		err = d.DB.Where("id = ?", formItemTemplateList[0].ItemGroupId).Find(&formItemTemplateList)
+	if len(formItemTemplateList) > 0 && formItemTemplateList[0].ItemGroupId != "" {
+		_, err = d.DB.ID(formItemTemplateList[0].ItemGroupId).Get(&formItemTemplateGroup)
 		if err != nil {
 			return
 		}
@@ -110,11 +113,14 @@ func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupId(formTemplate, ite
 
 func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
-	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
+	if formTemplate == "" {
+		return
+	}
 	err = d.DB.Where("form_template = ? and item_group_id = ?", formTemplate, itemGroupId).Find(&formItemTemplateList)
-	if len(formItemTemplateList) > 0 {
-		err = d.DB.Where("id = ?", formItemTemplateList[0].ItemGroupId).Find(&formItemTemplateList)
+	if len(formItemTemplateList) > 0 && formItemTemplateList[0].ItemGroupId != "" {
+		_, err = d.DB.ID(formItemTemplateList[0].ItemGroupId).Get(&formItemTemplateGroup)
 		if err != nil {
 			return
 		}

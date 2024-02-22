@@ -18,14 +18,14 @@ func (FormTemplateTable) TableName() string {
 }
 
 type FormTemplateDto struct {
-	Id          string                   `json:"id"`
-	Name        string                   `json:"name"`
-	Description string                   `json:"description"`
-	ExpireDay   int                      `json:"expireDay"`
-	UpdatedBy   string                   `json:"updatedBy"`
-	UpdatedTime string                   `json:"updatedTime"`
-	NowTime     string                   `json:"-"`
-	Items       []*FormItemTemplateTable `json:"items"`
+	Id          string                 `json:"id"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	ExpireDay   int                    `json:"expireDay"`
+	UpdatedBy   string                 `json:"updatedBy"`
+	UpdatedTime string                 `json:"updatedTime"`
+	NowTime     string                 `json:"-"`
+	Items       []*FormItemTemplateDto `json:"items"`
 }
 
 // DataFormTemplateDto 全局表单模板 dto
@@ -44,38 +44,41 @@ type SimpleFormTemplateDto struct {
 
 // FormTemplateGroupDto 表单模板组dto
 type FormTemplateGroupDto struct {
-	ItemGroup     string                   `json:"itemGroup"`
-	ItemGroupType string                   `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
-	ItemGroupName string                   `json:"itemGroupName"`
-	ItemGroupSort int                      `json:"itemGroupSort"` // 组排序
-	Items         []*FormItemTemplateTable `json:"items"`         // 表单项
+	ItemGroupId   string                 `json:"itemGroupId"` //表单组ID
+	ItemGroup     string                 `json:"itemGroup"`
+	ItemGroupType string                 `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupName string                 `json:"itemGroupName"`
+	ItemGroupSort int                    `json:"itemGroupSort"` // 组排序
+	Items         []*FormItemTemplateDto `json:"items"`         // 表单项
 }
 
 // FormTemplateGroupConfigureDto 表单组配置在dto
 type FormTemplateGroupConfigureDto struct {
 	RequestTemplateId string                    `json:"requestTemplateId"` // 模板Id
 	FormTemplateId    string                    `json:"formTemplateId"`    // 表单模板ID
+	ItemGroupId       string                    `json:"itemGroupId"`
 	ItemGroup         string                    `json:"itemGroup"`
 	ItemGroupType     string                    `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName     string                    `json:"itemGroupName"`
 	ItemGroupRule     string                    `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
 	ItemGroupSort     int                       `json:"itemGroupSort"` // 表单组排序
 	SystemItems       []*ProcEntityAttributeObj `json:"systemItems"`   // 系统表单项
-	CustomItems       []*FormItemTemplateTable  `json:"customItems"`   // 自定义表单项
+	CustomItems       []*FormItemTemplateDto    `json:"customItems"`   // 自定义表单项
 }
 
 // FormTemplateGroupCustomDataDto 表单组自定义数据dto
 type FormTemplateGroupCustomDataDto struct {
-	RequestTemplateId string                   `json:"requestTemplateId"` // 模板Id
-	FormTemplateId    string                   `json:"formTemplateId"`    // 表单模板ID
-	Items             []*FormItemTemplateTable `json:"items"`             // 表单项
+	RequestTemplateId string                 `json:"requestTemplateId"` // 模板Id
+	FormTemplateId    string                 `json:"formTemplateId"`    // 表单模板ID
+	ItemGroupId       string                 `json:"itemGroupId"`
+	Items             []*FormItemTemplateDto `json:"items"` // 表单项
 }
 
 // FormTemplateGroupSortDto 表单组排序dto
 type FormTemplateGroupSortDto struct {
 	RequestTemplateId string   `json:"requestTemplateId"` // 模板Id
 	FormTemplateId    string   `json:"formTemplateId"`    // 表单模板ID
-	ItemGroupNameSort []string `json:"itemGroupNameSort"` // 排序
+	ItemGroupIdSort   []string `json:"itemGroupIdSort"`   // 排序
 }
 
 type TaskFormItemQueryObj struct {
@@ -103,7 +106,7 @@ func CovertFormTemplateDto2Model(dto FormTemplateDto) *FormTemplateTable {
 }
 
 func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTemplateDto {
-	var items = make([]*FormItemTemplateTable, 0)
+	var items = make([]*FormItemTemplateDto, 0)
 	if len(dto.Groups) > 0 {
 		for _, group := range dto.Groups {
 			if group != nil && len(group.Items) > 0 {
@@ -125,7 +128,7 @@ func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTempla
 	}
 }
 
-func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj) *FormItemTemplateTable {
+func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
@@ -134,11 +137,9 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		Id:              guid.CreateGuid(),
 		Name:            workflowEntityAttribute.Name,
 		Description:     workflowEntityAttribute.Description,
+		ItemGroupId:     newItemGroupId,
 		ItemGroup:       param.ItemGroup,
-		ItemGroupType:   param.ItemGroupType,
 		ItemGroupName:   param.ItemGroupName,
-		ItemGroupSort:   param.ItemGroupSort,
-		ItemGroupRule:   param.ItemGroupRule,
 		FormTemplate:    param.FormTemplateId,
 		Sort:            0,
 		PackageName:     workflowEntityAttribute.EntityPackage,
@@ -163,6 +164,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		DefaultClear:    "no",
 		CopyId:          "",
 		SelectList:      nil,
+		Active:          false,
 	}
 }
 

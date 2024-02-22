@@ -35,17 +35,32 @@ func (d FormItemTemplateGroupDao) Update(session *xorm.Session, formItemTemplate
 	return
 }
 
-func (d FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.FormItemTemplateTable, error) {
-	var formItemTemplate *models.FormItemTemplateTable
+func (d FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.FormItemTemplateGroupTable, error) {
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
 	var found bool
 	var err error
-	formItemTemplate = &models.FormItemTemplateTable{}
-	found, err = d.DB.ID(formItemTemplateGroupId).Get(formItemTemplate)
+	formItemTemplateGroup = &models.FormItemTemplateGroupTable{}
+	found, err = d.DB.ID(formItemTemplateGroupId).Get(formItemTemplateGroup)
 	if err != nil {
 		return nil, err
 	}
 	if found {
-		return formItemTemplate, nil
+		return formItemTemplateGroup, nil
 	}
 	return nil, nil
+}
+
+func (d FormItemTemplateGroupDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
+	var affected int64
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	if id == "" {
+		return
+	}
+	affected, err = session.Where("id = ? or copy_id = ?", id, id).Delete(&models.FormItemTemplateGroupTable{})
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateGroupDao", "DeleteByIdOrCopyId", id, affected, err)
+	return
 }

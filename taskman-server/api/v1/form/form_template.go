@@ -141,13 +141,15 @@ func GetDataFormTemplateItemGroupConfig(c *gin.Context) {
 	var configureDto *models.FormTemplateGroupConfigureDto
 	var err error
 	formTemplateId := c.Query("form-template-id")
-	itemGroupName := c.Query("item-group-name")
+	entity := c.Query("entity")
+	formType := c.Query("form-type")
+	itemGroupId := c.Query("item-group-id")
 	requestTemplateId := c.Query("request-template-id")
-	if itemGroupName == "" || requestTemplateId == "" || formTemplateId == "" {
-		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name or form-template-id")
+	if requestTemplateId == "" || formTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id or form-template-id")
 		return
 	}
-	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(formTemplateId, itemGroupId, formType, entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -160,13 +162,13 @@ func GetFormTemplateItemGroupConfig(c *gin.Context) {
 	var configureDto *models.FormTemplateGroupConfigureDto
 	var err error
 	formTemplateId := c.Query("form-template-id")
-	itemGroupName := c.Query("item-group-name")
+	itemGroupId := c.Query("item-group-id")
 	requestTemplateId := c.Query("request-template-id")
-	if itemGroupName == "" || formTemplateId == "" || requestTemplateId == "" {
+	if itemGroupId == "" || formTemplateId == "" || requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name or form-template-id")
 		return
 	}
-	configureDto, err = service.GetFormTemplateService().GetFormConfig(requestTemplateId, formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	configureDto, err = service.GetFormTemplateService().GetFormConfig(requestTemplateId, formTemplateId, itemGroupId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -247,12 +249,12 @@ func SortFormTemplateItemGroup(c *gin.Context) {
 // DeleteFormTemplateItemGroup 删除表单组
 func DeleteFormTemplateItemGroup(c *gin.Context) {
 	formTemplateId := c.Query("form-template-id")
-	itemGroupName := c.Query("item-group-name")
-	if formTemplateId == "" || itemGroupName == "" {
-		middleware.ReturnParamEmptyError(c, "form-template-id or item-group-name")
+	itemGroupId := c.Query("item-group-id")
+	if formTemplateId == "" || itemGroupId == "" {
+		middleware.ReturnParamEmptyError(c, "form-template-id or item-group-id")
 		return
 	}
-	err := service.GetFormItemTemplateService().DeleteFormTemplateItemGroup(formTemplateId, itemGroupName)
+	err := service.GetFormItemTemplateService().DeleteFormTemplateItemGroup(formTemplateId, itemGroupId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -263,12 +265,12 @@ func DeleteFormTemplateItemGroup(c *gin.Context) {
 // CopyDataFormTemplateItemGroup 数据表单模板组copy
 func CopyDataFormTemplateItemGroup(c *gin.Context) {
 	formTemplateId := c.Query("form-template-id")
-	itemGroupName := c.Query("item-group-name")
-	if formTemplateId == "" || itemGroupName == "" {
+	itemGroupId := c.Query("item-group-id")
+	if formTemplateId == "" || itemGroupId == "" {
 		middleware.ReturnParamEmptyError(c, "form-template-id or item-group-name")
 		return
 	}
-	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(formTemplateId, itemGroupName)
+	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(formTemplateId, itemGroupId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

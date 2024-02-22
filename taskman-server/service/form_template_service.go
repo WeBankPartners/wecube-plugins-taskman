@@ -21,6 +21,7 @@ type FormTemplateService struct {
 }
 
 func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (newId string, err error) {
+	var groupId string
 	newId = guid.CreateGuid()
 	itemIds := guid.CreateGuidList(len(formTemplateDto.Items))
 	formTemplateDto.NowTime = time.Now().Format(models.DateTimeFormat)
@@ -29,6 +30,14 @@ func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplate
 	_, err = s.formTemplateDao.Add(session, models.CovertFormTemplateDto2Model(formTemplateDto))
 	if err != nil {
 		return
+	}
+	// 新建 item_group
+	if len(formTemplateDto.Items) > 0 && formTemplateDto.Items[0].ItemGroupId == "" {
+		groupId = guid.CreateGuid()
+		_, err = s.formItemTemplateGroupDao.Add(session, &models.FormItemTemplateGroupTable{Id: groupId, ItemGroupName: "message-form", FormTemplate: newId})
+		if err != nil {
+			return
+		}
 	}
 	// 添加模板项
 	for i, item := range formTemplateDto.Items {
@@ -230,10 +239,10 @@ func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.Fo
 	if requestTemplate == nil {
 		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
-	// 请求模板的处理不是当前用户,不允许操作
-	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
-		return exterror.New().DataPermissionDeny
-	}
+	/*	// 请求模板的处理不是当前用户,不允许操作
+		if requestTemplate.Handler != formTemplateDto.UpdatedBy {
+			return exterror.New().DataPermissionDeny
+		}*/
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
 		formTemplateDto.Id, err = s.AddFormTemplate(session, formTemplateDto)
@@ -262,9 +271,9 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
 	// 请求模板的处理不是当前用户,不允许操作
-	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
+	/*if requestTemplate.Handler != formTemplateDto.UpdatedBy {
 		return exterror.New().DataPermissionDeny
-	}
+	}*/
 	formTemplate, err = s.formTemplateDao.Get(formTemplateDto.Id)
 	if err != nil {
 		return

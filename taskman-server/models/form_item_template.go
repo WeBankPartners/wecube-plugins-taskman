@@ -4,11 +4,9 @@ type FormItemTemplateTable struct {
 	Id              string           `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name            string           `json:"name" xorm:"name"`
 	Description     string           `json:"description" xorm:"description"`
+	ItemGroupId     string           `json:"itemGroupId" xorm:"item_group_id"`
 	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`
-	ItemGroupType   string           `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName   string           `json:"itemGroupName" xorm:"item_group_name"`
-	ItemGroupSort   int              `json:"ItemGroupSort" xorm:"item_group_sort"` // item_group 排序
-	ItemGroupRule   string           `json:"itemGroupRule" xorm:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
 	FormTemplate    string           `json:"formTemplate" xorm:"form_template"`
 	DefaultValue    string           `json:"defaultValue" xorm:"default_value"`
 	Sort            int              `json:"sort" xorm:"sort"`
@@ -41,6 +39,7 @@ type FormItemTemplateDto struct {
 	Id              string           `json:"id"`
 	Name            string           `json:"name"`
 	Description     string           `json:"description"`
+	ItemGroupId     string           `json:"itemGroupId"`
 	ItemGroup       string           `json:"itemGroup"`
 	ItemGroupType   string           `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName   string           `json:"itemGroupName"`
@@ -78,17 +77,17 @@ func (FormItemTemplateTable) TableName() string {
 	return "form_item_template"
 }
 
-type FormItemTemplateTableSort []*FormItemTemplateTable
+type FormItemTemplateDtoSort []*FormItemTemplateDto
 
-func (s FormItemTemplateTableSort) Len() int {
+func (s FormItemTemplateDtoSort) Len() int {
 	return len(s)
 }
 
-func (s FormItemTemplateTableSort) Swap(i, j int) {
+func (s FormItemTemplateDtoSort) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s FormItemTemplateTableSort) Less(i, j int) bool {
+func (s FormItemTemplateDtoSort) Less(i, j int) bool {
 	if s[i].Sort < s[j].Sort {
 		return true
 	}
@@ -101,4 +100,84 @@ func ConvertFormItemTemplateList2Map(formItemTemplateList []*FormItemTemplateTab
 		hashMap[table.Id] = table
 	}
 	return hashMap
+}
+
+func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplateTable {
+	return &FormItemTemplateTable{
+		Id:              dto.Id,
+		Name:            dto.Name,
+		Description:     dto.Description,
+		ItemGroupId:     dto.ItemGroupId,
+		ItemGroup:       dto.ItemGroup,
+		ItemGroupName:   dto.ItemGroupName,
+		FormTemplate:    dto.FormTemplate,
+		DefaultValue:    dto.DefaultValue,
+		Sort:            dto.Sort,
+		PackageName:     dto.PackageName,
+		Entity:          dto.Entity,
+		AttrDefId:       dto.AttrDefId,
+		AttrDefName:     dto.AttrDefName,
+		AttrDefDataType: dto.AttrDefDataType,
+		ElementType:     dto.ElementType,
+		Title:           dto.Title,
+		Width:           dto.Width,
+		RefPackageName:  dto.RefPackageName,
+		RefEntity:       dto.RefEntity,
+		DataOptions:     dto.DataOptions,
+		Required:        dto.Required,
+		Regular:         dto.Regular,
+		IsEdit:          dto.IsEdit,
+		IsView:          dto.IsView,
+		IsOutput:        dto.IsOutput,
+		InDisplayName:   dto.InDisplayName,
+		IsRefInside:     dto.IsRefInside,
+		Multiple:        dto.Multiple,
+		DefaultClear:    dto.DefaultClear,
+		CopyId:          dto.CopyId,
+		SelectList:      dto.SelectList,
+		Active:          dto.Active,
+	}
+}
+
+func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup *FormItemTemplateGroupTable) *FormItemTemplateDto {
+	dto := &FormItemTemplateDto{
+		Id:              model.Id,
+		Name:            model.Name,
+		Description:     model.Description,
+		ItemGroupId:     model.ItemGroupId,
+		ItemGroup:       model.ItemGroup,
+		ItemGroupName:   model.ItemGroupName,
+		FormTemplate:    model.FormTemplate,
+		DefaultValue:    model.DefaultValue,
+		Sort:            model.Sort,
+		PackageName:     model.PackageName,
+		Entity:          model.Entity,
+		AttrDefId:       model.AttrDefId,
+		AttrDefName:     model.AttrDefName,
+		AttrDefDataType: model.AttrDefDataType,
+		ElementType:     model.ElementType,
+		Title:           model.Title,
+		Width:           model.Width,
+		RefPackageName:  model.RefPackageName,
+		RefEntity:       model.RefEntity,
+		DataOptions:     model.DataOptions,
+		Required:        model.Required,
+		Regular:         model.Regular,
+		IsEdit:          model.IsEdit,
+		IsView:          model.IsView,
+		IsOutput:        model.IsOutput,
+		InDisplayName:   model.InDisplayName,
+		IsRefInside:     model.IsRefInside,
+		Multiple:        model.Multiple,
+		DefaultClear:    model.DefaultClear,
+		CopyId:          model.CopyId,
+		SelectList:      model.SelectList,
+		Active:          model.Active,
+	}
+	if itemGroup != nil {
+		dto.ItemGroupType = itemGroup.ItemGroupType
+		dto.ItemGroupRule = itemGroup.ItemGroupRule
+		dto.ItemGroupSort = itemGroup.ItemGroupSort
+	}
+	return dto
 }

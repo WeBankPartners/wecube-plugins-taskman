@@ -15,7 +15,7 @@ type TaskTemplateService struct {
 }
 
 func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models.TaskTemplateDto, err error) {
-	result = models.TaskTemplateDto{}
+	result = models.TaskTemplateDto{Items: []*models.FormItemTemplateDto{}}
 	taskTemplate, getTaskErr := getSimpleTaskTemplate("", requestTemplateId, proNodeId, nodeId)
 	if getTaskErr != nil {
 		log.Logger.Warn("GetTaskTemplate warning", log.Error(getTaskErr))
@@ -46,8 +46,18 @@ func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models
 	result.UpdatedTime = formTemplateTable[0].UpdatedTime
 	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
+	var formItemTemplateGroupList []*models.FormItemTemplateGroupTable
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
 	dao.X.SQL("select * from form_item_template where form_template=?", taskTemplate.FormTemplate).Find(&formItemTemplate)
-	result.Items = formItemTemplate
+	if len(formItemTemplate) > 0 {
+		dao.X.SQL("select * from form_item_template_group where id=?", formItemTemplate[0].Id).Find(&formItemTemplateGroup)
+		if len(formItemTemplateGroupList) > 0 {
+			formItemTemplateGroup = formItemTemplateGroupList[0]
+		}
+		for _, formItem := range formItemTemplate {
+			result.Items = append(result.Items, models.ConvertFormItemTemplateModel2Dto(formItem, formItemTemplateGroup))
+		}
+	}
 	roleMap, _ := getRoleMap()
 	var taskRoleTable []*models.TaskTemplateRoleTable
 	dao.X.SQL("select `role`,role_type from task_template_role where task_template=?", taskTemplate.Id).Find(&taskRoleTable)

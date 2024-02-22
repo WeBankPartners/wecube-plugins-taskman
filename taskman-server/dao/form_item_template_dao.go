@@ -50,18 +50,81 @@ func (d FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTem
 	return nil, nil
 }
 
-func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
-	formItemTemplate = []*models.FormItemTemplateTable{}
+func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
+	var formItemTemplateList []*models.FormItemTemplateTable
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
 	if formTemplate == "" {
 		return
 	}
-	err = d.DB.Where("form_template = ?", formTemplate).Find(&formItemTemplate)
+	err = d.DB.Where("form_template = ?", formTemplate).Find(&formItemTemplateList)
+	if err != nil {
+		return
+	}
+	if len(formItemTemplateList) > 0 {
+		err = d.DB.Where("id = ?", formItemTemplateList[0].ItemGroupId).Find(&formItemTemplateGroup)
+		if err != nil {
+			return
+		}
+	}
+	for _, formItemTemplate := range formItemTemplateList {
+		dto := models.ConvertFormItemTemplateModel2Dto(formItemTemplate, formItemTemplateGroup)
+		if dto != nil {
+			formItemTemplateDtoList = append(formItemTemplateDtoList, dto)
+		}
+	}
 	return
 }
 
 func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
 	formItemTemplate = []*models.FormItemTemplateTable{}
 	err = d.DB.Where("form_template = ? and item_group_name = ?", formTemplate, itemGroupName).Find(&formItemTemplate)
+	return
+}
+
+func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
+	var formItemTemplateList []*models.FormItemTemplateTable
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
+	err = d.DB.Where("form_template = ? and item_group_name = ?", formTemplate, itemGroupName).Find(&formItemTemplateList)
+	if len(formItemTemplateList) > 0 {
+		err = d.DB.Where("id = ?", formItemTemplateList[0].ItemGroupId).Find(&formItemTemplateList)
+		if err != nil {
+			return
+		}
+	}
+	for _, formItemTemplate := range formItemTemplateList {
+		dto := models.ConvertFormItemTemplateModel2Dto(formItemTemplate, formItemTemplateGroup)
+		if dto != nil {
+			formItemTemplateDtoList = append(formItemTemplateDtoList, dto)
+		}
+	}
+	return
+}
+
+func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+	formItemTemplate = []*models.FormItemTemplateTable{}
+	err = d.DB.Where("form_template = ? and item_group_id = ?", formTemplate, itemGroupId).Find(&formItemTemplate)
+	return
+}
+
+func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
+	var formItemTemplateList []*models.FormItemTemplateTable
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
+	err = d.DB.Where("form_template = ? and item_group_id = ?", formTemplate, itemGroupId).Find(&formItemTemplateList)
+	if len(formItemTemplateList) > 0 {
+		err = d.DB.Where("id = ?", formItemTemplateList[0].ItemGroupId).Find(&formItemTemplateList)
+		if err != nil {
+			return
+		}
+	}
+	for _, formItemTemplate := range formItemTemplateList {
+		dto := models.ConvertFormItemTemplateModel2Dto(formItemTemplate, formItemTemplateGroup)
+		if dto != nil {
+			formItemTemplateDtoList = append(formItemTemplateDtoList, dto)
+		}
+	}
 	return
 }
 

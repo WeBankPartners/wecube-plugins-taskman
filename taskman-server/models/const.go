@@ -89,3 +89,34 @@ const (
 	FormItemElementTypeSelect    FormItemElementType = "select"
 	FormItemElementTypeCalculate FormItemElementType = "calculate" //计算类型
 )
+
+// ApprovalTemplateRoleType 审批模板 分配方式
+type ApprovalTemplateRoleType string
+
+const (
+	ApprovalTemplateRoleTypeCustom ApprovalTemplateRoleType = "custom" // 单人自定义
+	ApprovalTemplateRoleTypeAny    ApprovalTemplateRoleType = "any"    // 协同
+	ApprovalTemplateRoleTypeAll    ApprovalTemplateRoleType = "all"    // 并行
+	ApprovalTemplateRoleTypeAdmin  ApprovalTemplateRoleType = "admin"  // 提交人角色管理员
+	ApprovalTemplateRoleTypeAuto   ApprovalTemplateRoleType = "auto"   // 自动通过
+)
+
+// ApprovalTemplateRoleRoleType 审批处理模板 角色设置方式
+type ApprovalTemplateRoleRoleType string
+
+const (
+	ApprovalTemplateRoleRoleTypeTemplate ApprovalTemplateRoleRoleType = "template" // 模板指定
+	ApprovalTemplateRoleRoleTypeCustom   ApprovalTemplateRoleRoleType = "custom"   // 提交人指定
+)
+
+// ApprovalTemplateRoleHandlerType 审批处理模板 人员设置方式
+type ApprovalTemplateRoleHandlerType string
+
+const (
+	ApprovalTemplateRoleHandlerTypeTemplate        ApprovalTemplateRoleHandlerType = "template"         // 模板指定
+	ApprovalTemplateRoleHandlerTypeTemplateSuggest ApprovalTemplateRoleHandlerType = "template_suggest" // 模板建议
+	ApprovalTemplateRoleHandlerTypeCustom          ApprovalTemplateRoleHandlerType = "custom"           // 提交人指定
+	ApprovalTemplateRoleHandlerTypeCustomSuggest   ApprovalTemplateRoleHandlerType = "custom_suggest"   // 提交人建议
+	ApprovalTemplateRoleHandlerTypeSystem          ApprovalTemplateRoleHandlerType = "system"           // 组内系统分配
+	ApprovalTemplateRoleHandlerTypeClaim           ApprovalTemplateRoleHandlerType = "claim"            // 组内主动认领
+)

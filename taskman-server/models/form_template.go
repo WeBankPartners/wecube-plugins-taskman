@@ -58,10 +58,10 @@ type FormTemplateGroupConfigureDto struct {
 	ItemGroup         string                    `json:"itemGroup"`
 	ItemGroupType     string                    `json:"itemGroupType"` // 表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName     string                    `json:"itemGroupName"`
-	ItemGroupRule     string                    `json:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
-	ItemGroupSort     int                       `json:"item_group_sort"` // 表单组排序
-	SystemItems       []*ProcEntityAttributeObj `json:"systemItems"`     // 系统表单项
-	CustomItems       []*FormItemTemplateTable  `json:"customItems"`     // 自定义表单项
+	ItemGroupRule     string                    `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	ItemGroupSort     int                       `json:"itemGroupSort"` // 表单组排序
+	SystemItems       []*ProcEntityAttributeObj `json:"systemItems"`   // 系统表单项
+	CustomItems       []*FormItemTemplateTable  `json:"customItems"`   // 自定义表单项
 }
 
 // FormTemplateGroupCustomDataDto 表单组自定义数据dto

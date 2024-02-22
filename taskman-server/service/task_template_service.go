@@ -240,3 +240,32 @@ func GetTaskTemplateMapByRequestTemplate(requestTemplate string) (taskTemplateMa
 	}
 	return
 }
+
+func (s TaskTemplateService) CreateCustomTaskTemplate(param *models.CustomTaskTemplateCreateParam) (*models.CustomTaskTemplateCreateResponse, error) {
+	result := &models.CustomTaskTemplateCreateResponse{}
+	return result, nil
+}
+
+func (s TaskTemplateService) UpdateCustomTaskTemplate(param *models.TaskTemplateDto) error {
+	return nil
+}
+
+func (s TaskTemplateService) DeleteCustomTaskTemplate(id string) (*models.CustomTaskTemplateDeleteResponse, error) {
+	result := &models.CustomTaskTemplateDeleteResponse{}
+	return result, nil
+}
+
+func (s TaskTemplateService) GetCustomTaskTemplate(id string) (*models.TaskTemplateDto, error) {
+	result := &models.TaskTemplateDto{}
+	return result, nil
+}
+
+func (s TaskTemplateService) ListCustomTaskTemplateIds(requestTemplateId string) (*models.CustomTaskTemplateListIdsResponse, error) {
+	result := &models.CustomTaskTemplateListIdsResponse{}
+	return result, nil
+}
+
+func (s TaskTemplateService) ListCustomTaskTemplate(requestTemplateId string) ([]*models.TaskTemplateDto, error) {
+	result := []*models.TaskTemplateDto{}
+	return result, nil
+}

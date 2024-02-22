@@ -1,11 +1,15 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"xorm.io/xorm"
 )
+
+const defaultCustomFormItemName = "taskman-custom-form"
 
 type FormItemTemplateService struct {
 	formItemTemplateDao dao.FormItemTemplateDao
@@ -21,6 +25,10 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 	}
 	if len(param.CustomItems) == 0 {
 		param.CustomItems = []*models.FormItemTemplateTable{}
+	}
+	// 自定义类型 单独处理
+	if param.ItemGroupType == string(models.FormItemGroupTypeCustom) {
+		return s.UpdateFormTemplateCustomItemGroupConfig(param)
 	}
 	// 1. 查询表单组是否存在，不存在则新增
 	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(param.FormTemplateId, param.ItemGroupName)
@@ -76,33 +84,84 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 			}
 		}
 	}
-	err = transaction(func(session *xorm.Session) error {
-		if len(insertItems) > 0 {
-			for _, item := range insertItems {
-				_, err = s.formItemTemplateDao.Add(session, item)
-				if err != nil {
-					return err
+	if len(insertItems) > 0 || len(updateItems) > 0 || len(deleteItems) > 0 {
+		err = transaction(func(session *xorm.Session) error {
+			if len(insertItems) > 0 {
+				for _, item := range insertItems {
+					_, err = s.formItemTemplateDao.Add(session, item)
+					if err != nil {
+						return err
+					}
 				}
 			}
-		}
-		if len(updateItems) > 0 {
-			for _, item := range updateItems {
-				err = s.formItemTemplateDao.Update(session, item)
-				if err != nil {
-					return err
+			if len(updateItems) > 0 {
+				for _, item := range updateItems {
+					err = s.formItemTemplateDao.Update(session, item)
+					if err != nil {
+						return err
+					}
 				}
 			}
-		}
-		if len(deleteItems) > 0 {
-			for _, item := range deleteItems {
-				err = s.formItemTemplateDao.Delete(session, item.Id)
-				if err != nil {
-					return err
+			if len(deleteItems) > 0 {
+				for _, item := range deleteItems {
+					err = s.formItemTemplateDao.Delete(session, item.Id)
+					if err != nil {
+						return err
+					}
 				}
 			}
+			return err
+		})
+	}
+	return
+}
+
+func (s FormItemTemplateService) UpdateFormTemplateCustomItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
+	var formItemTemplateList, tempFormItemTemplateList []*models.FormItemTemplateTable
+	var addFormItemTemplate *models.FormItemTemplateTable
+	// 1. 查询表单组是否存在，不存在则新增
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroup(param.FormTemplateId, param.ItemGroup)
+	if err != nil {
+		return
+	}
+	if len(formItemTemplateList) == 0 {
+		formItemTemplateList = []*models.FormItemTemplateTable{}
+	}
+	formItemTemplateMap := models.ConvertFormItemTemplateList2Map(formItemTemplateList)
+	tempFormItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupName(param.FormTemplateId, param.ItemGroupName)
+	if err != nil {
+		return
+	}
+
+	if len(tempFormItemTemplateList) > 0 {
+		if len(tempFormItemTemplateList) != len(formItemTemplateList) {
+			err = fmt.Errorf("itemGroupName:%s has exisit", param.ItemGroupName)
+			return
 		}
-		return err
-	})
+		for _, tempFormItemTemplate := range tempFormItemTemplateList {
+			if formItemTemplateMap[tempFormItemTemplate.Id] == nil {
+				err = fmt.Errorf("itemGroupName:%s has exisit", param.ItemGroupName)
+				return
+			}
+		}
+	}
+	if len(formItemTemplateList) > 0 {
+		// 更新模板
+		for _, formItemTemplate := range formItemTemplateList {
+			formItemTemplate.ItemGroupName = param.ItemGroupName
+			formItemTemplate.ItemGroupRule = param.ItemGroupRule
+			formItemTemplate.ItemGroupType = param.ItemGroupType
+			err = s.formItemTemplateDao.Update(nil, formItemTemplate)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// 新增自定义组,同时给一个初始化假数据(后续更新模板组时候删除掉)
+		addFormItemTemplate = &models.FormItemTemplateTable{Id: guid.CreateGuid(), Name: defaultCustomFormItemName, ItemGroup: guid.CreateGuid(), ItemGroupName: param.ItemGroupName,
+			ItemGroupType: param.ItemGroupType, ItemGroupRule: param.ItemGroupRule, FormTemplate: param.FormTemplateId}
+		_, err = s.formItemTemplateDao.Add(nil, addFormItemTemplate)
+	}
 	return
 }
 

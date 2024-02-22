@@ -2,6 +2,7 @@ package models
 
 type TaskTable struct {
 	Id                string   `json:"id" xorm:"'id' pk" primary-key:"id"`
+	Type              string   `json:"type" xorm:"type"`
 	Name              string   `json:"name" xorm:"name"`
 	Description       string   `json:"description" xorm:"description"`
 	Form              string   `json:"form" xorm:"form"`
@@ -40,6 +41,29 @@ type TaskTable struct {
 	ExpireTime        string   `json:"expireTime" xorm:"expire_time"`
 	NotifyCount       int      `json:"notifyCount" xorm:"notify_count"`
 	TemplateType      int      `json:"templateType" xorm:"template_type"` // 请求模板类型 0表示请求,1表示发布
+	Sort              int      `json:"sort" xorm:"sort"`
+}
+
+type TaskRoleTable struct {
+	Id               string `json:"id" xorm:"'id' pk" primary-key:"id"`
+	TaskTemplateRole string `json:"taskTemplateRole" xorm:"task_template_role"`
+	Task             string `json:"task" xorm:"task"`
+	Role             string `json:"role" xorm:"role"`
+	Handler          string `json:"handler" xorm:"handler"`
+}
+
+type TaskDto struct {
+	Id           string         `json:"id"`
+	Sort         int            `json:"sort"`
+	TaskTemplate string         `json:"taskTemplate"`
+	Request      string         `json:"request" xorm:"request"`
+	RoleObjs     []*TaskRoleDto `json:"roleObjs"`
+}
+
+type TaskRoleDto struct {
+	TaskTemplateRole string `json:"taskTemplateRole"`
+	Role             string `json:"role"`
+	Handler          string `json:"handler"`
 }
 
 type TaskListObj struct {

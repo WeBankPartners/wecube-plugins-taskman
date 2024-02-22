@@ -17,6 +17,7 @@ import (
 
 type TaskService struct {
 	taskDao dao.TaskDao
+	taskRoleDao dao.TaskRoleDao
 }
 
 func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResult, err error) {
@@ -847,4 +848,24 @@ func GetSimpleTask(taskId string) (task models.TaskTable, err error) {
 	}
 	task = *taskTable[0]
 	return
+}
+
+func (s TaskService) CreateTasks(param []*models.TaskDto) ([]*dao.ExecAction, error) {
+	actions := []*dao.ExecAction{}
+	return actions, nil
+}
+
+func (s TaskService) UpdateTasks(param []*models.TaskDto) ([]*dao.ExecAction, error) {
+	actions := []*dao.ExecAction{}
+	return actions, nil
+}
+
+func (s TaskService) DeleteTasks(param []*models.TaskDto) ([]*dao.ExecAction, error) {
+	actions := []*dao.ExecAction{}
+	return actions, nil
+}
+
+func (s TaskService) ListTask(requestId string) ([]*models.TaskDto, error) {
+	result := []*models.TaskDto{}
+	return result, nil
 }

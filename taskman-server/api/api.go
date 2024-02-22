@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/approval"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
@@ -73,8 +74,21 @@ func init() {
 		&handlerFuncObj{Url: "/form-template/item-group", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroup},
 		&handlerFuncObj{Url: "/form-template/item-group/sort", Method: "POST", HandlerFunc: form.SortFormTemplateItemGroup},
 
+		&handlerFuncObj{Url: "/approval-template", Method: "POST", HandlerFunc: approval.CreateApprovalTemplate},
+		&handlerFuncObj{Url: "/approval-template", Method: "PUT", HandlerFunc: approval.UpdateApprovalTemplate},
+		&handlerFuncObj{Url: "/approval-template", Method: "DELETE", HandlerFunc: approval.DeleteApprovalTemplate},
+		&handlerFuncObj{Url: "/approval-template/:requestTemplateId/:id", Method: "GET", HandlerFunc: approval.GetApprovalTemplate},
+		&handlerFuncObj{Url: "/approval-template/:requestTemplateId/ids", Method: "GET", HandlerFunc: approval.ListApprovalTemplateIds},
+		&handlerFuncObj{Url: "/approval-template/:requestTemplateId", Method: "GET", HandlerFunc: approval.ListApprovalTemplate},
+
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/custom", Method: "POST", HandlerFunc: task.CreateCustomTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/custom", Method: "PUT", HandlerFunc: task.UpdateCustomTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/custom", Method: "DELETE", HandlerFunc: task.DeleteCustomTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId/:id", Method: "GET", HandlerFunc: task.GetCustomTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId/ids", Method: "GET", HandlerFunc: task.ListCustomTaskTemplateIds},
+		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId", Method: "GET", HandlerFunc: task.ListCustomTaskTemplate},
 
 		&handlerFuncObj{Url: "/user/template/collect", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},

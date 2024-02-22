@@ -57,3 +57,11 @@ func (s FormItemTemplateTableSort) Less(i, j int) bool {
 	}
 	return false
 }
+
+func ConvertFormItemTemplateList2Map(formItemTemplateList []*FormItemTemplateTable) map[string]*FormItemTemplateTable {
+	hashMap := make(map[string]*FormItemTemplateTable)
+	for _, table := range formItemTemplateList {
+		hashMap[table.Id] = table
+	}
+	return hashMap
+}

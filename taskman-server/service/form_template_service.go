@@ -141,6 +141,14 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
 		associationWorkflow = true
 	}
+	// 新增数据表单
+	if requestTemplate.DataFormTemplate == "" {
+		err = s.CreateDataFormTemplate(models.DataFormTemplateDto{}, requestTemplateId)
+		if err != nil {
+			return
+		}
+		requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	}
 	result = &models.DataFormTemplateDto{DataFormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.FormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
 	result.Groups, err = s.getFormTemplateGroups(requestTemplate.DataFormTemplate)
 	return
@@ -173,6 +181,9 @@ func (s FormTemplateService) getFormTemplateGroups(formTemplateId string) (group
 	for itemGroup, formItemTemplateArr := range itemGroupMap {
 		for _, formItemTemplate := range formItemTemplateList {
 			if itemGroup == formItemTemplate.ItemGroup {
+				if formItemTemplate.ItemGroupType == string(models.FormItemGroupTypeCustom) && formItemTemplate.Name == defaultCustomFormItemName {
+					continue
+				}
 				formItemTemplateArr = append(formItemTemplateArr, formItemTemplate)
 			}
 		}
@@ -434,8 +445,4 @@ func (s FormTemplateService) GetDataFormConfig(formTemplateId, itemGroupName, us
 		}
 	}
 	return
-}
-
-func (s FormTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, itemGroupName string) {
-
 }

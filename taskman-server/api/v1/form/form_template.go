@@ -143,21 +143,9 @@ func GetDataFormTemplateItemGroupConfig(c *gin.Context) {
 	formTemplateId := c.Query("form-template-id")
 	itemGroupName := c.Query("item-group-name")
 	requestTemplateId := c.Query("request-template-id")
-	if itemGroupName == "" || requestTemplateId == "" {
-		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name")
+	if itemGroupName == "" || requestTemplateId == "" || formTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name or form-template-id")
 		return
-	}
-	// formTemplateId 为空,查询数据表单模板是否为空,为空则新建(只有数据表单的formTemplateId会传递"",任务和审批表单不会)
-	if formTemplateId == "" {
-		formTemplateId, err = createDataFormTemplate(requestTemplateId)
-		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
-			return
-		}
-		if formTemplateId == "" {
-			middleware.ReturnParamEmptyError(c, "form-template-id")
-			return
-		}
 	}
 	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(formTemplateId, itemGroupName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
@@ -288,31 +276,6 @@ func CopyDataFormTemplateItemGroup(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
-// createDataFormTemplate 创建数据表单
-func createDataFormTemplate(requestTemplateId string) (formTemplateId string, err error) {
-	var requestTemplate *models.RequestTemplateTable
-	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
-	if err != nil {
-		return
-	}
-	if requestTemplate == nil {
-		err = fmt.Errorf("param request-template-id is vailid")
-		return
-	}
-	// 新建数据表单
-	if requestTemplate.DataFormTemplate == "" {
-		err = service.GetFormTemplateService().CreateDataFormTemplate(models.DataFormTemplateDto{}, requestTemplateId)
-		if err != nil {
-			return
-		}
-		requestTemplate, _ = service.GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
-		formTemplateId = requestTemplate.DataFormTemplate
-	} else {
-		err = fmt.Errorf("form-template-id is empty")
-	}
-	return
-}
-
 func validateFormTemplateItemGroupConfigParam(param models.FormTemplateGroupConfigureDto) error {
 	if param.RequestTemplateId == "" {
 		return fmt.Errorf("param RequestTemplateId is empty")
@@ -320,7 +283,7 @@ func validateFormTemplateItemGroupConfigParam(param models.FormTemplateGroupConf
 	if param.FormTemplateId == "" {
 		return fmt.Errorf("param FormTemplateId is empty")
 	}
-	if param.ItemGroup == "" || param.ItemGroupType == "" || param.ItemGroupName == "" || param.ItemGroupRule == "" {
+	if param.ItemGroupType == "" || param.ItemGroupName == "" || param.ItemGroupRule == "" {
 		return fmt.Errorf("param ItemGroup is empty")
 	}
 	if len(param.CustomItems) > 0 {

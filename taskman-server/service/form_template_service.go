@@ -308,10 +308,6 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 	if requestTemplate == nil {
 		return exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param id is invalid"))
 	}
-	// 请求模板的处理不是当前用户,不允许操作
-	if requestTemplate.Handler != formTemplateDto.UpdatedBy {
-		return exterror.New().DataPermissionDeny
-	}
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
 		formTemplateDto.DataFormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))

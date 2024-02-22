@@ -1274,8 +1274,8 @@ func (s RequestTemplateService) CheckPermission(requestTemplateId, user string) 
 		return
 	}
 	// 请求模板的处理不是当前用户,不允许操作
-	if requestTemplate.Handler != user {
+	/*if requestTemplate.CreatedBy != user {
 		err = exterror.New().DataPermissionDeny
-	}
+	}*/
 	return
 }

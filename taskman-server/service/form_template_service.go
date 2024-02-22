@@ -330,6 +330,7 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 	var dataFormConfigureDto *models.FormTemplateGroupConfigureDto
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var existAttrMap = make(map[string]bool)
+	var existCustomItemsMap = make(map[string]string)
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -353,6 +354,7 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 			existAttrMap[formItemTemplate.AttrDefId] = true
 		} else {
 			configureDto.CustomItems = append(configureDto.CustomItems, formItemTemplate)
+			existCustomItemsMap[formItemTemplate.CopyId] = formItemTemplate.Id
 		}
 	}
 	// 2. 查询数据表单
@@ -369,6 +371,16 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 					systemItem.Active = false
 				}
 			}
+		}
+	}
+	if len(dataFormConfigureDto.CustomItems) > 0 {
+		for _, customItem := range dataFormConfigureDto.CustomItems {
+			if existCustomItemsMap[customItem.Id] != "" {
+				customItem.Id = existCustomItemsMap[customItem.Id]
+			} else {
+				customItem.Id = ""
+			}
+			configureDto.CustomItems = append(configureDto.CustomItems, customItem)
 		}
 	}
 	return

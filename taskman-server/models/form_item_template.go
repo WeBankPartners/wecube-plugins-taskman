@@ -34,6 +34,7 @@ type FormItemTemplateTable struct {
 	DefaultClear    string           `json:"defaultClear" xorm:"default_clear"`
 	CopyId          string           `json:"copyId" xorm:"copy_id"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
 	SelectList      []*EntityDataObj `json:"selectList" xorm:"-"`
+	Active          bool             `json:"active" xorm:"-"` // 是否选中状态
 }
 
 func (FormItemTemplateTable) TableName() string {

@@ -67,6 +67,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-form-template/form/:from-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/global-form", Method: "GET", HandlerFunc: form.GetGlobalFormEntity},
 		&handlerFuncObj{Url: "/data-form-template/item-group-config", Method: "GET", HandlerFunc: form.GetDataFormTemplateItemGroupConfig},
+		&handlerFuncObj{Url: "/form-template/item-group-config", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroupConfig},
 		&handlerFuncObj{Url: "/form-template/item-group-config", Method: "GET", HandlerFunc: form.GetFormTemplateItemGroupConfig},
 		&handlerFuncObj{Url: "/form-template/item-group/copy", Method: "POST", HandlerFunc: form.CopyDataFormTemplateItemGroup},
 		&handlerFuncObj{Url: "/form-template/item-group", Method: "DELETE", HandlerFunc: form.DeleteFormTemplateItemGroup},

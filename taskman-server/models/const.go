@@ -120,3 +120,39 @@ const (
 	ApprovalTemplateRoleHandlerTypeSystem          ApprovalTemplateRoleHandlerType = "system"           // 组内系统分配
 	ApprovalTemplateRoleHandlerTypeClaim           ApprovalTemplateRoleHandlerType = "claim"            // 组内主动认领
 )
+
+// TaskTemplateType 任务模板 类型
+type TaskTemplateType string
+
+const (
+	TaskTemplateTypeProc   TaskTemplateType = "proc"   // 编排
+	TaskTemplateTypeCustom TaskTemplateType = "custom" // 自定义
+)
+
+// TaskTemplateRoleType 任务模板 分配方式
+type TaskTemplateRoleType string
+
+const (
+	TaskTemplateRoleTypeCustom TaskTemplateRoleType = "custom" // 单人自定义
+	TaskTemplateRoleTypeAdmin  TaskTemplateRoleType = "admin"  // 提交人角色管理员
+)
+
+// TaskTemplateRoleRoleType 任务处理模板 角色设置方式
+type TaskTemplateRoleRoleType string
+
+const (
+	TaskTemplateRoleRoleTypeTemplate TaskTemplateRoleRoleType = "template" // 模板指定
+	TaskTemplateRoleRoleTypeCustom   TaskTemplateRoleRoleType = "custom"   // 提交人指定
+)
+
+// TaskTemplateRoleHandlerType 任务处理模板 人员设置方式
+type TaskTemplateRoleHandlerType string
+
+const (
+	TaskTemplateRoleHandlerTypeTemplate        TaskTemplateRoleHandlerType = "template"         // 模板指定
+	TaskTemplateRoleHandlerTypeTemplateSuggest TaskTemplateRoleHandlerType = "template_suggest" // 模板建议
+	TaskTemplateRoleHandlerTypeCustom          TaskTemplateRoleHandlerType = "custom"           // 提交人指定
+	TaskTemplateRoleHandlerTypeCustomSuggest   TaskTemplateRoleHandlerType = "custom_suggest"   // 提交人建议
+	TaskTemplateRoleHandlerTypeSystem          TaskTemplateRoleHandlerType = "system"           // 组内系统分配
+	TaskTemplateRoleHandlerTypeClaim           TaskTemplateRoleHandlerType = "claim"            // 组内主动认领
+)

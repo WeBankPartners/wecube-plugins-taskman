@@ -24,6 +24,10 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 	if err != nil {
 		return nil, err
 	}
+	// 校验参数
+	if param.Sort <= 0 || param.Sort > len(approvalTemplates)+1 {
+		return nil, errors.New("param sort out of range")
+	}
 	// 插入新审批模板
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newApprovalTemplate := &models.ApprovalTemplateTable{
@@ -55,12 +59,14 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 			t := approvalTemplates[i-1]
 			t.Sort += 1
 			t.UpdatedTime = nowTime
-			action = &dao.ExecAction{Sql: "UPDATE approval_template SET sort = ?, update_time = ? WHERE id = ?"}
+			action = &dao.ExecAction{Sql: "UPDATE approval_template SET sort = ?, updated_time = ? WHERE id = ?"}
 			action.Param = []interface{}{t.Sort, t.UpdatedTime, t.Id}
 			actions = append(actions, action)
 		}
 		tmp := append(approvalTemplates[:param.Sort-1], newApprovalTemplate)
 		approvalTemplates = append(tmp, approvalTemplates[param.Sort-1:]...)
+	} else {
+		approvalTemplates = append(approvalTemplates, newApprovalTemplate)
 	}
 	// 执行事务
 	err = dao.Transaction(actions)
@@ -115,7 +121,7 @@ func (s *ApprovalTemplateService) UpdateApprovalTemplate(param *models.ApprovalT
 	}
 	// 更新现有审批模板
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	action := &dao.ExecAction{Sql: "UPDATE approval_template SET name = ?, expire_day = ?, description = ?, role_type = ?, update_time = ? WHERE id = ?"}
+	action := &dao.ExecAction{Sql: "UPDATE approval_template SET name = ?, expire_day = ?, description = ?, role_type = ?, updated_time = ? WHERE id = ?"}
 	action.Param = []interface{}{param.Name, param.ExpireDay, param.Description, param.RoleType, nowTime, param.Id}
 	actions = append(actions, action)
 	// 增删改现有审批处理模板

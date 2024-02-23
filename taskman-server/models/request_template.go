@@ -35,6 +35,7 @@ type RequestTemplateTable struct {
 	ApproveBy        string `json:"approveBy" xorm:"approve_by"`                // 模板发布审批人
 	PendingSwitch    bool   `json:"pendingSwitch" xorm:"pending_switch"`        // 是否加入确认定版流程
 	PendingRole      string `json:"pendingRole" xorm:"pending_role"`            // 定版角色
+	PendingExpireDay int    `json:"pendingExpireDay" xorm:"pending_expire_day"` // 定版时效
 	PendingHandler   string `json:"pendingHandler" xorm:"pending_handler"`      // 定版处理人
 	ConfirmSwitch    bool   `json:"confirmSwitch" xorm:"confirm_switch"`        // 是否加入确认流程
 	ConfirmExpireDay int    `json:"confirmExpireDay" xorm:"confirm_expire_day"` // 确认过期时间
@@ -208,12 +209,14 @@ func ConvertRequestTemplateUpdateParam2RequestTemplate(param RequestTemplateUpda
 		UpdatedTime:      nowTime,
 		ExpireDay:        param.ExpireDay,
 		Handler:          param.Handler,
+		DelFlag:          0,
 		Type:             param.Type,
 		OperatorObjType:  param.OperatorObjType,
 		ParentId:         param.Id,
 		ApproveBy:        param.ApproveBy,
 		PendingSwitch:    param.PendingSwitch,
 		PendingRole:      param.PendingRole,
+		PendingExpireDay: param.PendingExpireDay,
 		PendingHandler:   param.PendingHandler,
 		ConfirmSwitch:    param.ConfirmSwitch,
 		ConfirmExpireDay: param.ConfirmExpireDay,

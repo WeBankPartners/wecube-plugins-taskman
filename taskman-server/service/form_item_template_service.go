@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"time"
@@ -111,7 +112,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 				ItemGroup:     param.ItemGroup,
 				ItemGroupType: param.ItemGroupType,
 				ItemGroupName: param.ItemGroupName,
-				ItemGroupSort: param.ItemGroupSort,
+				ItemGroupSort: s.CalcItemGroupSort(param.FormTemplateId),
 				ItemGroupRule: param.ItemGroupRule,
 				FormTemplate:  param.FormTemplateId,
 				CreatedTime:   time.Now().Format(models.DateTimeFormat),
@@ -147,6 +148,23 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 		return err
 	})
 	return
+}
+
+func (s FormItemTemplateService) CalcItemGroupSort(formTemplateId string) int {
+	var max = 0
+	list, err := s.formItemTemplateGroupDao.QueryFormTemplate(formTemplateId)
+	if err != nil {
+		log.Logger.Error("CalcItemGroupSort err", log.Error(err))
+		return 0
+	}
+	if len(list) > 0 {
+		for _, group := range list {
+			if group.ItemGroupSort >= max {
+				max = group.ItemGroupSort
+			}
+		}
+	}
+	return max + 1
 }
 
 func (s FormItemTemplateService) DeleteFormTemplateItemGroup(formTemplateId, itemGroupId string) (err error) {

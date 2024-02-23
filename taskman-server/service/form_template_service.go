@@ -159,7 +159,7 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 		}
 		requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	}
-	result = &models.DataFormTemplateDto{DataFormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.FormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
+	result = &models.DataFormTemplateDto{FormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.FormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
 	result.Groups, err = s.getFormTemplateGroups(requestTemplate.DataFormTemplate)
 	return
 }
@@ -313,12 +313,12 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 	}
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
-		formTemplateDto.DataFormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
+		formTemplateDto.FormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
 		if err != nil {
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.DataFormTemplateId, formTemplateDto.UpdatedBy)
+		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.FormTemplateId, formTemplateDto.UpdatedBy)
 		if err != nil {
 			return err
 		}
@@ -361,7 +361,7 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 		}
 	}
 	// 2. 查询数据表单
-	dataFormConfigureDto, err = s.GetDataFormConfig(requestTemplate.DataFormTemplate, itemGroupId, "", "", userToken, language)
+	dataFormConfigureDto, err = s.GetDataFormConfig(requestTemplateId, requestTemplate.DataFormTemplate, itemGroupId, "", "", userToken, language)
 	if err != nil {
 		return
 	}
@@ -390,13 +390,13 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 }
 
 // GetDataFormConfig 获取数据表单配置
-func (s FormTemplateService) GetDataFormConfig(formTemplateId, itemGroupId, formType, entity, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+func (s FormTemplateService) GetDataFormConfig(requestTemplateId, formTemplateId, itemGroupId, formType, entity, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateDto
 	var entitiesList []*models.ExpressionEntities
 	var expressEntity *models.ExpressionEntities
 	var existAttrMap = make(map[string]bool)
 	var formItemTemplateGroup *models.FormItemTemplateGroupTable
-	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, ItemGroupId: itemGroupId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
+	configureDto = &models.FormTemplateGroupConfigureDto{RequestTemplateId: requestTemplateId, FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
 	// 1.先查询用户配置数据
 	if itemGroupId != "" {
 		formItemTemplateList, err = s.formItemTemplateDao.QueryDtoByFormTemplateAndItemGroupId(formTemplateId, itemGroupId)
@@ -409,10 +409,12 @@ func (s FormTemplateService) GetDataFormConfig(formTemplateId, itemGroupId, form
 			return
 		}
 		if formItemTemplateGroup != nil {
+			configureDto.ItemGroupId = itemGroupId
 			configureDto.ItemGroup = formItemTemplateGroup.ItemGroup
 			configureDto.ItemGroupName = formItemTemplateGroup.ItemGroupName
 			configureDto.ItemGroupType = formItemTemplateGroup.ItemGroupType
 			configureDto.ItemGroupRule = formItemTemplateGroup.ItemGroupRule
+			configureDto.ItemGroupSort = formItemTemplateGroup.ItemGroupSort
 		}
 		if len(formItemTemplateList) > 0 {
 			for _, formItem := range formItemTemplateList {

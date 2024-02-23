@@ -9,9 +9,6 @@
           <Step icon="ios-add-circle">
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
           </Step>
-          <Step icon="md-apps">
-            <span slot="title" @click="changeStep(1)">{{ $t('form_item_selection') }}</span>
-          </Step>
           <Step icon="md-cog">
             <span slot="title" @click="changeStep(2)">{{ $t('request_form_settings') }}</span>
           </Step>
@@ -32,27 +29,21 @@
     </Row>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
       <BasicInfo
-        @basicInfoNextStep="basicInfoNextStep"
+        @gotoNextStep="gotoNextStep"
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 0"
       ></BasicInfo>
-      <FormSelect
-        @formSelectNextStep="formSelectNextStep"
+      <RequestForm
+        @gotoNextStep="gotoNextStep"
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 1"
-      ></FormSelect>
-      <RequestForm
-        :requestTemplateId="requestTemplateId"
-        @formSelectNextStep="formSelectNextStep"
-        v-if="currentStep === 2"
       ></RequestForm>
-      <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 3"></TaskForm>
+      <!-- <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 2"></TaskForm> -->
     </div>
   </div>
 </template>
 
 <script>
-import FormSelect from './form-select'
 import RequestForm from './request-form'
 import BasicInfo from './basic-info'
 import TaskForm from './task-form'
@@ -90,16 +81,12 @@ export default {
     backToTemplate () {
       this.$router.push({ path: '/taskman/template-mgmt' })
     },
-    basicInfoNextStep (data) {
-      this.requestTemplateId = data.id
-      this.currentStep++
-    },
-    formSelectNextStep () {
+    gotoNextStep (tmpId) {
+      this.requestTemplateId = tmpId
       this.currentStep++
     }
   },
   components: {
-    FormSelect,
     RequestForm,
     BasicInfo,
     TaskForm

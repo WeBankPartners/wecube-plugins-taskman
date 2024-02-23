@@ -148,6 +148,9 @@
   "status_inProgress_timeouted": "InProgress(Timeouted)",
   "status_faulted": "Faulted",
   "status_draft": "Draft",
+  "abandon": "Abandon",
+  "confirm_discarding_changes": "Confirm Discarding Changes",
+  "params_edit_confirm": "The data changes, if you choose to give up, the changed information will not be saved!",
   "tw_yes": "yes",
   "tw_no": "no",
   "tw_default_empty": "Default clear",
@@ -207,7 +210,6 @@
   "tw_use_template": "Using Template",
   "tw_request_des": "Request Description",
   "tw_upload_10_error": "File Upload Failed: Please ensure the file size is below 10MB and try again.",
-
   "tw_handle_history": "Processing Record",
   "tw_submit_request": "Submit",
   "tw_submit_approval": "Submit Approval",

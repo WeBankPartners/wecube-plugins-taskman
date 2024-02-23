@@ -146,3 +146,15 @@ export const getNodeContextByNodeId = (instanceId, nodeId) =>
   req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)
 
 export const getAllDataModels = () => req.get(`/platform/v1/models`)
+// 获取可添加表单组
+export const getEntityByTemplateId = tmpId => req.get(`/taskman/api/v1/request-template/${tmpId}/entity`)
+
+export const getRequestDataForm = tmpId => req.get(`/taskman/api/v1/request-form-template/${tmpId}/data-form`)
+export const saveRequestGroupForm = data => req.post(`/taskman/api/v1/form-template/item-group-config`, data)
+export const deleteRequestGroupForm = (tmpId, formTemplateId) =>
+  req.delete(`/taskman/api/v1/form-template/item-group?item-group-id=${tmpId}&form-template-id=${formTemplateId}`)
+export const saveRequestGroupCustomForm = data => req.post(`/taskman/api/v1/form-template/item-group`, data)
+export const getRequestGroupForm = (tmpId, formTemplateId, itemGroupId) =>
+  req.get(
+    `/taskman/api/v1/data-form-template/item-group-config?request-template-id=${tmpId}&form-template-id=${formTemplateId}&item-group-id=${itemGroupId}`
+  )

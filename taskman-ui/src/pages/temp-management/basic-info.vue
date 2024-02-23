@@ -3,7 +3,6 @@
     <Row type="flex">
       <Col span="20" offset="2">
         <Row>
-          {{ isParmasChanged }}
           <Col span="12">
             <div class="basci-info-left">
               <div class="title">
@@ -175,6 +174,15 @@
                           }}</Option>
                         </Select>
                       </FormItem>
+                      <!-- 节点时效 -->
+                      <FormItem :label="$t('节点时效')">
+                        <Select v-model="basicInfo.pendingExpireDay" filterable style="width: 98%">
+                          <Option v-for="item in expireDayOptions" :value="item" :key="item"
+                            >{{ item }}{{ $t('day') }}</Option
+                          >
+                        </Select>
+                        <span style="color: red">*</span>
+                      </FormItem>
                     </div>
                   </template>
                   <!-- [中间]关联编排 -->
@@ -225,7 +233,7 @@
         </Row>
       </Col>
     </Row>
-    <div style="text-align: center">
+    <div style="text-align: center;margin-top: 16px;">
       <Button @click="createTemp" type="info" :disabled="isSaveBtnActiv()">{{ $t('save') }}</Button>
       <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
     </div>
@@ -262,6 +270,7 @@ export default {
         pendingSwitch: false, // 定版节点
         pendingRole: '', // 定版角色
         pendingHandler: '', // 定版处理人
+        pendingExpireDay: 1, // 定版节点时效
         procDefId: '',
         confirmSwitch: false, // 结束确认节点
         confirmExpireDay: 1 // 确认过期时间
@@ -297,9 +306,7 @@ export default {
       this.isParmasChanged = false
       this.getGroupOptions()
       this.getManagementRoles()
-      // this.getHandlerRoles()
       this.getUserRoles()
-      this.getPendingHandlerRoles()
       this.getProcess()
       this.getTemplateData()
     },
@@ -373,9 +380,10 @@ export default {
           this.basicInfo = templateData
           this.basicInfo.mgmtRoles = templateData.mgmtRoles[0].id
           this.basicInfo.useRoles = templateData.useRoles.map(role => role.id)
-
+          this.showFlow = templateData.procDefId !== ''
           this.getTags()
           this.getHandlerRoles()
+          this.getPendingHandlerRoles()
         }
       }
     },
@@ -391,11 +399,11 @@ export default {
             this.createTemp()
           },
           onCancel: () => {
-            console.log('next')
+            this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
           }
         })
       } else {
-        console.log('next')
+        this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
       }
     },
     // 获取模版组信息

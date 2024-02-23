@@ -30,7 +30,7 @@ type FormTemplateDto struct {
 
 // DataFormTemplateDto 全局表单模板 dto
 type DataFormTemplateDto struct {
-	DataFormTemplateId  string                  `json:"dataFormTemplateId"`  // 数据表单模板ID
+	FormTemplateId      string                  `json:"formTemplateId"`      // 数据表单模板ID
 	AssociationWorkflow bool                    `json:"associationWorkflow"` // 是否关联编排
 	UpdatedBy           string                  `json:"updatedBy"`           // 更新人
 	Groups              []*FormTemplateGroupDto `json:"groups"`
@@ -119,7 +119,7 @@ func ConvertDataFormTemplate2FormTemplateDto(dto DataFormTemplateDto) FormTempla
 		}
 	}
 	return FormTemplateDto{
-		Id:        dto.DataFormTemplateId,
+		Id:        dto.FormTemplateId,
 		Name:      "global_form_template",
 		ExpireDay: 0,
 		UpdatedBy: dto.UpdatedBy,

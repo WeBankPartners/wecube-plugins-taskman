@@ -159,7 +159,7 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 		}
 		requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	}
-	result = &models.DataFormTemplateDto{DataFormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.FormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
+	result = &models.DataFormTemplateDto{FormTemplateId: requestTemplate.DataFormTemplate, Groups: make([]*models.FormTemplateGroupDto, 0), AssociationWorkflow: associationWorkflow}
 	result.Groups, err = s.getFormTemplateGroups(requestTemplate.DataFormTemplate)
 	return
 }
@@ -313,12 +313,12 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 	}
 	err = transactionWithoutForeignCheck(func(session *xorm.Session) error {
 		// 添加表单模板
-		formTemplateDto.DataFormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
+		formTemplateDto.FormTemplateId, err = s.AddFormTemplate(session, models.ConvertDataFormTemplate2FormTemplateDto(formTemplateDto))
 		if err != nil {
 			return err
 		}
 		// 更新模板
-		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.DataFormTemplateId, formTemplateDto.UpdatedBy)
+		err = GetRequestTemplateService().UpdateRequestTemplateDataForm(session, requestTemplateId, formTemplateDto.FormTemplateId, formTemplateDto.UpdatedBy)
 		if err != nil {
 			return err
 		}

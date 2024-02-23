@@ -34,7 +34,7 @@ func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplate
 	// 新建 item_group
 	if len(formTemplateDto.Items) > 0 && formTemplateDto.Items[0].ItemGroupId == "" {
 		groupId = guid.CreateGuid()
-		_, err = s.formItemTemplateGroupDao.Add(session, &models.FormItemTemplateGroupTable{Id: groupId, ItemGroupName: "message-form", FormTemplate: newId})
+		_, err = s.formItemTemplateGroupDao.Add(session, &models.FormItemTemplateGroupTable{Id: groupId, ItemGroupName: "message-form", FormTemplate: newId, CreatedTime: time.Now().Format(models.DateTimeFormat)})
 		if err != nil {
 			return
 		}
@@ -395,18 +395,26 @@ func (s FormTemplateService) GetDataFormConfig(formTemplateId, itemGroupId, form
 	var entitiesList []*models.ExpressionEntities
 	var expressEntity *models.ExpressionEntities
 	var existAttrMap = make(map[string]bool)
-	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, ItemGroupId: itemGroupId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
 	// 1.先查询用户配置数据
 	if itemGroupId != "" {
 		formItemTemplateList, err = s.formItemTemplateDao.QueryDtoByFormTemplateAndItemGroupId(formTemplateId, itemGroupId)
 		if err != nil {
 			return
 		}
+		// 查询表单组
+		formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(itemGroupId)
+		if err != nil {
+			return
+		}
+		if formItemTemplateGroup != nil {
+			configureDto.ItemGroup = formItemTemplateGroup.ItemGroup
+			configureDto.ItemGroupName = formItemTemplateGroup.ItemGroupName
+			configureDto.ItemGroupType = formItemTemplateGroup.ItemGroupType
+			configureDto.ItemGroupRule = formItemTemplateGroup.ItemGroupRule
+		}
 		if len(formItemTemplateList) > 0 {
-			configureDto.ItemGroup = formItemTemplateList[0].ItemGroup
-			configureDto.ItemGroupName = formItemTemplateList[0].ItemGroupName
-			configureDto.ItemGroupType = formItemTemplateList[0].ItemGroupType
-			configureDto.ItemGroupRule = formItemTemplateList[0].ItemGroupRule
 			for _, formItem := range formItemTemplateList {
 				if formItem.ItemGroupType == string(models.FormItemGroupTypeCustom) {
 					configureDto.CustomItems = append(configureDto.CustomItems, formItem)

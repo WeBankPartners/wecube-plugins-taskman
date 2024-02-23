@@ -24,6 +24,10 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 	if err != nil {
 		return nil, err
 	}
+	// 校验参数
+	if param.Sort <= 0 || param.Sort > len(approvalTemplates)+1 {
+		return nil, errors.New("param sort out of range")
+	}
 	// 插入新审批模板
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newApprovalTemplate := &models.ApprovalTemplateTable{
@@ -61,6 +65,8 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 		}
 		tmp := append(approvalTemplates[:param.Sort-1], newApprovalTemplate)
 		approvalTemplates = append(tmp, approvalTemplates[param.Sort-1:]...)
+	} else {
+		approvalTemplates = append(approvalTemplates, newApprovalTemplate)
 	}
 	// 执行事务
 	err = dao.Transaction(actions)

@@ -297,8 +297,11 @@ func (s TaskTemplateService) CreateCustomTaskTemplate(param *models.CustomTaskTe
 			action.Param = []interface{}{t.Sort, t.UpdatedTime, t.Id}
 			actions = append(actions, action)
 		}
-		tmp := append(taskTemplates[:param.Sort-1], newTaskTemplate)
-		taskTemplates = append(tmp, taskTemplates[param.Sort-1:]...)
+		tmp := make([]*models.TaskTemplateTable, len(taskTemplates)+1)
+		copy(tmp, taskTemplates[:param.Sort-1])
+		tmp[param.Sort-1] = newTaskTemplate
+		copy(tmp[param.Sort:], taskTemplates[:param.Sort-1])
+		taskTemplates = tmp
 	} else {
 		taskTemplates = append(taskTemplates, newTaskTemplate)
 	}

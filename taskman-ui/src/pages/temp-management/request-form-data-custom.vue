@@ -50,8 +50,8 @@ export default {
         itemGroupName: '', // 组名称
         itemGroupSort: -1, // 组顺序
         itemGroupRule: 'new', // 新增一行
-        systemItems: [],
-        customItems: []
+        systemItems: [], // 预制表单字段
+        customItems: [] // 自定义分析字段
       }
     }
   },

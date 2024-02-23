@@ -3,7 +3,9 @@
     <div>
       <Form :label-width="120">
         <FormItem :label="$t('表单类型')">
-          <Button shape="circle" style="border:1px solid #dd6da6; color: #dd6da6;">编排数据项</Button>
+          <Button shape="circle" :style="groupStyle[group.itemGroupType]">{{
+            group.itemGroupType === 'workflow' ? '编排数据项' : '自选数据项'
+          }}</Button>
         </FormItem>
         <FormItem :label="$t('表单名')">
           <Input v-model="group.itemGroupName" style="width: 96%;" disabled></Input>
@@ -18,6 +20,13 @@
           <span style="color: red">*</span>
         </FormItem>
         <Divider>预制表单字段</Divider>
+        <div>
+          <Row>
+            <Col span="12" v-for="system in group.systemItems" :key="system.id">
+              <Checkbox v-model="system.active" @on-change="paramsChanged">{{ system.description }}</Checkbox>
+            </Col>
+          </Row>
+        </div>
         <Divider>自定义分析字段</Divider>
         <Row>
           <Col span="10">字段名称</Col>
@@ -62,6 +71,16 @@ export default {
         { label: '输入新数据', value: 'new' },
         { label: '选择已有数据', value: 'exist' }
       ],
+      groupStyle: {
+        workflow: {
+          border: '1px solid #ba89f8',
+          color: '#ba89f8'
+        },
+        optional: {
+          border: '1px solid #81b337',
+          color: '#81b337'
+        }
+      },
       defaultItem: {
         // 自定义分析字段信息
         active: false,
@@ -111,29 +130,35 @@ export default {
       }
     }
   },
-  props: ['requestTemplateId'],
   methods: {
-    loadPage (params, formTemplateId) {
+    async loadPage (params) {
+      await this.getRequestGroupForm(params)
       if (params.isAdd) {
-        this.group.requestTemplateId = params.requestTemplateId
-        this.group.formTemplateId = params.formTemplateId
-        this.group.itemGroupName = params.itemGroup
-        this.group.itemGroupType = params.itemGroupType
-        this.group.itemGroup = params.itemGroup
-        this.group.itemGroupName = params.itemGroup
+        // this.group = {}
+        // this.group.requestTemplateId = params.requestTemplateId
+        // this.group.formTemplateId = params.formTemplateId
+        // this.group.itemGroupName = params.itemGroup
+        // this.group.itemGroupType = params.itemGroupType
+        // this.group.itemGroup = params.itemGroup
         this.group.itemGroupSort = params.itemGroupSort
-        this.openFormConfig = true
+        this.group.itemGroupRule = 'new'
+        // this.group.systemItems = []
+        // this.group.customItems = []
       }
-      this.getRequestGroupForm()
+      console.log(55, this.group)
+      this.openFormConfig = true
     },
-    async getRequestGroupForm () {
-      const { statusCode, data } = await getRequestGroupForm(
-        this.requestTemplateId,
-        '65d7106743737270',
-        this.group.itemGroupName
-      )
+    async getRequestGroupForm (params) {
+      console.log(66, params)
+      const { statusCode, data } = await getRequestGroupForm({
+        formTemplateId: params.formTemplateId,
+        requestTemplateId: params.requestTemplateId,
+        entity: params.itemGroup,
+        formType: params.itemGroupType,
+        itemGroupId: params.itemGroupId
+      })
       if (statusCode === 'OK') {
-        console.log(22, data)
+        this.group = data
       }
     },
     paramsChanged () {
@@ -148,16 +173,37 @@ export default {
       return res
     },
     async saveGroupDrawer () {
-      let params = {
-        formTemplateId: '',
-        groups: [this.group]
-      }
-      const { statusCode, data } = await saveRequestGroupForm(this.requestTemplateId, params)
+      let finalData = JSON.parse(JSON.stringify(this.group))
+      finalData.systemItems = finalData.systemItems.filter(system => system.active === true)
+      const { statusCode } = await saveRequestGroupForm(finalData)
       if (statusCode === 'OK') {
-        console.log(data)
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.openFormConfig = false
+        this.$emit('reloadParentPage')
       }
     },
-    cancelGroupDrawer () {},
+    cancelGroupDrawer () {
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('confirm_discarding_changes')}`,
+          content: `${this.group.itemGroupName}:${this.$t('params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('abandon'),
+          onOk: async () => {
+            this.saveGroupDrawer()
+          },
+          onCancel: () => {
+            this.openFormConfig = false
+          }
+        })
+      } else {
+        this.openFormConfig = false
+      }
+    },
     deleteCustomItem (itemIndex) {},
     addCustomItem () {
       let tmpItem = JSON.parse(JSON.stringify(this.defaultItem))

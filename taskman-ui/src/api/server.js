@@ -154,7 +154,7 @@ export const saveRequestGroupForm = data => req.post(`/taskman/api/v1/form-templ
 export const deleteRequestGroupForm = (tmpId, formTemplateId) =>
   req.delete(`/taskman/api/v1/form-template/item-group?item-group-id=${tmpId}&form-template-id=${formTemplateId}`)
 export const saveRequestGroupCustomForm = data => req.post(`/taskman/api/v1/form-template/item-group`, data)
-export const getRequestGroupForm = (tmpId, formTemplateId, itemGroupId) =>
+export const getRequestGroupForm = params =>
   req.get(
-    `/taskman/api/v1/data-form-template/item-group-config?request-template-id=${tmpId}&form-template-id=${formTemplateId}&item-group-id=${itemGroupId}`
+    `/taskman/api/v1/data-form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}`
   )

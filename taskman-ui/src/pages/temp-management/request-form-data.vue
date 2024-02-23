@@ -51,7 +51,7 @@
               ></Button>
               <Button
                 shape="circle"
-                style="border:1px solid #dd6da6; color: #dd6da6;"
+                :style="groupStyle[groupItem.itemGroupType]"
                 @click="editGroupCustomItems(groupItem)"
                 >{{ groupItem.itemGroupName }}</Button
               >
@@ -298,11 +298,15 @@
     <RequestFormDataCustom
       ref="requestFormDataCustomRef"
       @reloadParentPage="loadPage"
-      v-show="itemGroupType === 'custom'"
+      v-show="['custom'].includes(itemGroupType)"
     ></RequestFormDataCustom>
 
     <!-- 编排表单配置 -->
-    <!-- <RequestFormDataWorkflow ref="requestFormDataWorkflowRef" :requestTemplateId="requestTemplateId" v-show="itemGroupType === 'workflow'"></RequestFormDataWorkflow> -->
+    <RequestFormDataWorkflow
+      ref="requestFormDataWorkflowRef"
+      @reloadParentPage="loadPage"
+      v-show="['workflow', 'optional'].includes(itemGroupType)"
+    ></RequestFormDataWorkflow>
   </div>
 </template>
 
@@ -506,7 +510,21 @@ export default {
         itemGroupIndex: -1,
         attrIndex: -1
       },
-      allEntityList: []
+      allEntityList: [],
+      groupStyle: {
+        custom: {
+          border: '1px solid #dd6da6',
+          color: '#dd6da6'
+        },
+        workflow: {
+          border: '1px solid #ba89f8',
+          color: '#ba89f8'
+        },
+        optional: {
+          border: '1px solid #81b337',
+          color: '#81b337'
+        }
+      }
     }
   },
   props: ['requestTemplateId'],
@@ -578,6 +596,7 @@ export default {
           isAdd: true,
           itemGroupType: this.itemGroupType,
           itemGroup: this.itemGroup,
+          itemGroupId: '',
           itemGroupSort: this.dataFormInfo.groups.length + 1
         }
         this.$refs.requestFormDataCustomRef.loadPage(params)
@@ -589,13 +608,14 @@ export default {
           }
         })
         this.$nextTick(() => {
-          if (this.itemGroupType === 'workflow') {
+          if (['workflow', 'optional'].includes(this.itemGroupType)) {
             let params = {
               requestTemplateId: this.requestTemplateId,
               formTemplateId: this.dataFormInfo.formTemplateId,
               isAdd: true,
               itemGroupType: this.itemGroupType,
               itemGroup: this.itemGroup,
+              itemGroupId: '',
               itemGroupSort: this.dataFormInfo.groups.length + 1
             }
             this.$refs.requestFormDataWorkflowRef.loadPage(params)
@@ -669,6 +689,19 @@ export default {
           itemGroupId: groupItem.itemGroupId
         }
         this.$refs.requestFormDataCustomRef.loadPage(params)
+      }
+      if (['workflow', 'optional'].includes(groupItem.itemGroupType)) {
+        this.itemGroupType = groupItem.itemGroupType
+        let params = {
+          requestTemplateId: this.requestTemplateId,
+          formTemplateId: this.dataFormInfo.formTemplateId,
+          isAdd: false,
+          itemGroupName: groupItem.itemGroupName,
+          itemGroupType: groupItem.itemGroupType,
+          itemGroupId: groupItem.itemGroupId,
+          itemGroup: groupItem.itemGroup
+        }
+        this.$refs.requestFormDataWorkflowRef.loadPage(params)
       }
     },
     // 获取wecmdb下拉类型entity值

@@ -66,7 +66,7 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 		tmp := make([]*models.ApprovalTemplateTable, len(approvalTemplates)+1)
 		copy(tmp, approvalTemplates[:param.Sort-1])
 		tmp[param.Sort-1] = newApprovalTemplate
-		copy(tmp[param.Sort:], approvalTemplates[:param.Sort-1])
+		copy(tmp[param.Sort:], approvalTemplates[param.Sort-1:])
 		approvalTemplates = tmp
 	} else {
 		approvalTemplates = append(approvalTemplates, newApprovalTemplate)

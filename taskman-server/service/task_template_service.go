@@ -300,7 +300,7 @@ func (s TaskTemplateService) CreateCustomTaskTemplate(param *models.CustomTaskTe
 		tmp := make([]*models.TaskTemplateTable, len(taskTemplates)+1)
 		copy(tmp, taskTemplates[:param.Sort-1])
 		tmp[param.Sort-1] = newTaskTemplate
-		copy(tmp[param.Sort:], taskTemplates[:param.Sort-1])
+		copy(tmp[param.Sort:], taskTemplates[param.Sort-1:])
 		taskTemplates = tmp
 	} else {
 		taskTemplates = append(taskTemplates, newTaskTemplate)

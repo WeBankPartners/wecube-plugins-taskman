@@ -149,7 +149,7 @@ func GetDataFormTemplateItemGroupConfig(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id or form-template-id")
 		return
 	}
-	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(formTemplateId, itemGroupId, formType, entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(requestTemplateId, formTemplateId, itemGroupId, formType, entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

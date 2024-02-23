@@ -392,10 +392,10 @@ func (s RequestTemplateService) UpdateRequestTemplate(param *models.RequestTempl
 	result = models.RequestTemplateQueryObj{RequestTemplateTable: param.RequestTemplateTable, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	updateAction := dao.ExecAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?," +
 		"proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,handler=?,updated_by=?,updated_time=?,type=?,operator_obj_type=?,approve_by=?,pending_switch=?," +
-		"pending_role=?,pending_handler=?,confirm_switch=?,confirm_expire_day=? where id=?"}
+		"pending_role=?,pending_handler=?,confirm_switch=?,confirm_expire_day=?,pending_expire_day=? where id=?"}
 	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey,
 		param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.UpdatedBy, nowTime, param.Type, param.OperatorObjType, param.ApproveBy,
-		param.PendingSwitch, param.PendingRole, param.PendingHandler, param.ConfirmSwitch, param.ConfirmExpireDay, param.Id}
+		param.PendingSwitch, param.PendingRole, param.PendingHandler, param.ConfirmSwitch, param.ConfirmExpireDay, param.PendingExpireDay, param.Id}
 	actions = append(actions, &updateAction)
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{param.Id}})
 	for _, v := range param.MGMTRoles {

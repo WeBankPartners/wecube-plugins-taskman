@@ -54,6 +54,7 @@ type TaskRoleTable struct {
 
 type TaskDto struct {
 	Id           string         `json:"id"`
+	Type         string         `json:"type"`
 	Sort         int            `json:"sort"`
 	TaskTemplate string         `json:"taskTemplate"`
 	Request      string         `json:"request" xorm:"request"`

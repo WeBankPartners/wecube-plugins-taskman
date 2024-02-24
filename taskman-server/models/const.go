@@ -121,6 +121,15 @@ const (
 	ApprovalTemplateRoleHandlerTypeClaim           ApprovalTemplateRoleHandlerType = "claim"            // 组内主动认领
 )
 
+// ApprovalRoleApprove 审批处理 是否同意
+type ApprovalRoleApprove string
+
+const (
+	ApprovalRoleApproveInit    ApprovalRoleApprove = "init"    // 未处理
+	ApprovalRoleApproveApprove ApprovalRoleApprove = "approve" // 同意
+	ApprovalRoleApproveDeny    ApprovalRoleApprove = "deny"    // 拒绝
+)
+
 // TaskTemplateType 任务模板 类型
 type TaskTemplateType string
 

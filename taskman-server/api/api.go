@@ -79,7 +79,7 @@ func init() {
 		&handlerFuncObj{Url: "/approval-template", Method: "DELETE", HandlerFunc: approval.DeleteApprovalTemplate},
 		&handlerFuncObj{Url: "/approval-template/:requestTemplateId/:id", Method: "GET", HandlerFunc: approval.GetApprovalTemplate},
 		&handlerFuncObj{Url: "/approval-template/:requestTemplateId/ids", Method: "GET", HandlerFunc: approval.ListApprovalTemplateIds},
-		&handlerFuncObj{Url: "/approval-template/:requestTemplateId", Method: "GET", HandlerFunc: approval.ListApprovalTemplate},
+		&handlerFuncObj{Url: "/approval-template/:requestTemplateId", Method: "GET", HandlerFunc: approval.ListApprovalTemplates},
 
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
@@ -88,7 +88,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/custom", Method: "DELETE", HandlerFunc: task.DeleteCustomTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId/:id", Method: "GET", HandlerFunc: task.GetCustomTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId/ids", Method: "GET", HandlerFunc: task.ListCustomTaskTemplateIds},
-		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId", Method: "GET", HandlerFunc: task.ListCustomTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/custom/:requestTemplateId", Method: "GET", HandlerFunc: task.ListTaskTemplates},
 
 		&handlerFuncObj{Url: "/user/template/collect", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},

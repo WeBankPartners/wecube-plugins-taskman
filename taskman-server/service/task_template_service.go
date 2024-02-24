@@ -328,7 +328,7 @@ func (s TaskTemplateService) CreateCustomTaskTemplate(param *models.CustomTaskTe
 	return result, nil
 }
 
-func (s TaskTemplateService) UpdateCustomTaskTemplate(param *models.TaskTemplateDto) error {
+func (s TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto) error {
 	actions := []*dao.ExecAction{}
 	// 查询现有任务模板
 	var taskTemplates []*models.TaskTemplateTable
@@ -341,9 +341,6 @@ func (s TaskTemplateService) UpdateCustomTaskTemplate(param *models.TaskTemplate
 	}
 	taskTemplate := taskTemplates[0]
 	// 校验参数
-	if param.Type != string(models.TaskTemplateTypeCustom) {
-		return errors.New("param type wrong")
-	}
 	if taskTemplate.Type != param.Type || taskTemplate.Sort != param.Sort || taskTemplate.RequestTemplate != param.RequestTemplateId {
 		return errors.New("param type or sort or requestTemplate wrong")
 	}
@@ -405,21 +402,128 @@ func (s TaskTemplateService) UpdateCustomTaskTemplate(param *models.TaskTemplate
 }
 
 func (s TaskTemplateService) DeleteCustomTaskTemplate(id string) (*models.CustomTaskTemplateDeleteResponse, error) {
-	result := &models.CustomTaskTemplateDeleteResponse{}
+	actions := []*dao.ExecAction{}
+	// 查询现有任务模板
+	var taskTemplates []*models.TaskTemplateTable
+	err := s.taskTemplateDao.DB.SQL("SELECT * FROM task_template WHERE id = ?", id).Find(&taskTemplates)
+	if err != nil {
+		return nil, err
+	}
+	if len(taskTemplates) == 0 {
+		return nil, errors.New("no task_template record found")
+	}
+	taskTemplate := taskTemplates[0]
+	// 校验参数
+	if taskTemplate.Type != string(models.TaskTemplateTypeCustom) {
+		return nil, errors.New("type wrong")
+	}
+	// 删除现有任务处理模板
+	action := &dao.ExecAction{Sql: "DELETE FROM task_template_role WHERE task_template = ?"}
+	action.Param = []interface{}{id}
+	actions = append(actions, action)
+	// 删除现有任务模板
+	action = &dao.ExecAction{Sql: "DELETE FROM task_template WHERE id = ?"}
+	action.Param = []interface{}{id}
+	actions = append(actions, action)
+	// 查询剩余任务模板列表
+	taskTemplates = nil
+	err = s.taskTemplateDao.DB.SQL("SELECT * FROM task_template WHERE request_template = ? AND id != ? ORDER BY sort", taskTemplate.RequestTemplate, id).Find(&taskTemplates)
+	if err != nil {
+		return nil, err
+	}
+	// 如果不是尾删，则需更新现有数据的序号
+	if taskTemplate.Sort != len(taskTemplates)+1 {
+		nowTime := time.Now().Format(models.DateTimeFormat)
+		for i := taskTemplate.Sort; i < len(taskTemplates)+1; i++ {
+			t := taskTemplates[i-1]
+			t.Sort = i
+			t.UpdatedTime = nowTime
+			action = &dao.ExecAction{Sql: "UPDATE task_template SET sort = ?, updated_time = ? WHERE id = ?"}
+			action.Param = []interface{}{t.Sort, t.UpdatedTime, t.Id}
+			actions = append(actions, action)
+		}
+	}
+	// 执行事务
+	err = dao.Transaction(actions)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result := &models.CustomTaskTemplateDeleteResponse{
+		Ids: make([]*models.CustomTaskTemplateIdObj, len(taskTemplates)),
+	}
+	for i, taskTemplate := range taskTemplates {
+		result.Ids[i] = &models.CustomTaskTemplateIdObj{
+			Id:   taskTemplate.Id,
+			Sort: taskTemplate.Sort,
+			Name: taskTemplate.Name,
+		}
+	}
 	return result, nil
 }
 
-func (s TaskTemplateService) GetCustomTaskTemplate(id string) (*models.TaskTemplateDto, error) {
-	result := &models.TaskTemplateDto{}
+func (s TaskTemplateService) GetTaskTemplate(id string) (*models.TaskTemplateDto, error) {
+	// 查询现有任务模板
+	var taskTemplates []*models.TaskTemplateTable
+	err := s.taskTemplateDao.DB.SQL("SELECT * FROM task_template WHERE id = ?", id).Find(&taskTemplates)
+	if err != nil {
+		return nil, err
+	}
+	if len(taskTemplates) == 0 {
+		return nil, errors.New("no task_template record found")
+	}
+	taskTemplate := taskTemplates[0]
+	// 查询现有任务处理模板
+	var taskTemplateRoles []*models.TaskTemplateRoleTable
+	err = s.taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE task_template = ? ORDER BY sort", id).Find(&taskTemplateRoles)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result := &models.TaskTemplateDto{
+		Id:                taskTemplate.Id,
+		Type:              taskTemplate.Type,
+		Sort:              taskTemplate.Sort,
+		RequestTemplateId: taskTemplate.RequestTemplate,
+		Name:              taskTemplate.Name,
+		ExpireDay:         taskTemplate.ExpireDay,
+		Description:       taskTemplate.Description,
+		RoleType:          taskTemplate.RoleType,
+		RoleObjs:          make([]*models.TaskTemplateRoleDto, len(taskTemplateRoles)),
+	}
+	for i, taskTemplateRole := range taskTemplateRoles {
+		result.RoleObjs[i] = &models.TaskTemplateRoleDto{
+			RoleType:    taskTemplateRole.CustomRoleType,
+			HandlerType: taskTemplateRole.HandlerType,
+			Role:        taskTemplateRole.CustomRole,
+			Handler:     taskTemplateRole.Handler,
+		}
+	}
 	return result, nil
 }
 
 func (s TaskTemplateService) ListCustomTaskTemplateIds(requestTemplateId string) (*models.CustomTaskTemplateListIdsResponse, error) {
-	result := &models.CustomTaskTemplateListIdsResponse{}
+	// 查询现有任务模板列表
+	var taskTemplates []*models.TaskTemplateTable
+	err := s.taskTemplateDao.DB.SQL("SELECT * FROM task_template WHERE request_template = ? AND type = ? ORDER BY sort", requestTemplateId, string(models.TaskTemplateTypeCustom)).Find(&taskTemplates)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result := &models.CustomTaskTemplateListIdsResponse{
+		Ids: make([]*models.CustomTaskTemplateIdObj, len(taskTemplates)),
+	}
+	for i, taskTemplate := range taskTemplates {
+		result.Ids[i] = &models.CustomTaskTemplateIdObj{
+			Id:   taskTemplate.Id,
+			Sort: taskTemplate.Sort,
+			Name: taskTemplate.Name,
+		}
+	}
 	return result, nil
 }
 
-func (s TaskTemplateService) ListCustomTaskTemplate(requestTemplateId string) ([]*models.TaskTemplateDto, error) {
+func (s TaskTemplateService) ListTaskTemplates(requestTemplateId string) ([]*models.TaskTemplateDto, error) {
 	result := []*models.TaskTemplateDto{}
 	// 查询现有任务模板列表
 	var taskTemplates []*models.TaskTemplateTable
@@ -477,4 +581,29 @@ func (s TaskTemplateService) ListCustomTaskTemplate(requestTemplateId string) ([
 		}
 	}
 	return result, nil
+}
+
+func (s *TaskTemplateService) DeleteTaskTemplates(requestTemplateId string) ([]*dao.ExecAction, error) {
+	// 查询现有任务模板列表
+	var taskTemplates []*models.TaskTemplateTable
+	err := s.taskTemplateDao.DB.SQL("SELECT * FROM task_template WHERE request_template = ? ORDER BY sort", requestTemplateId).Find(&taskTemplates)
+	if err != nil {
+		return nil, err
+	}
+	if len(taskTemplates) == 0 {
+		return nil, nil
+	}
+	// 汇总任务模板列表
+	taskTemplateIds := make([]string, len(taskTemplates))
+	for i, taskTemplate := range taskTemplates {
+		taskTemplateIds[i] = taskTemplate.Id
+	}
+	actions := []*dao.ExecAction{}
+	// 删除现有任务处理模板
+	action := &dao.ExecAction{Sql: "DELETE FROM task_template_role WHERE task_template IN ('" + strings.Join(taskTemplateIds, "','") + "')"}
+	actions = append(actions, action)
+	// 删除现有任务模板
+	action = &dao.ExecAction{Sql: "DELETE FROM task_template WHERE id IN ('" + strings.Join(taskTemplateIds, "','") + "')"}
+	actions = append(actions, action)
+	return actions, nil
 }

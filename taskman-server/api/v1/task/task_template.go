@@ -97,7 +97,7 @@ func UpdateCustomTaskTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := service.GetTaskTemplateService().UpdateCustomTaskTemplate(&param)
+	err := service.GetTaskTemplateService().UpdateTaskTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -120,11 +120,11 @@ func DeleteCustomTaskTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// 读取自定义任务模板
+// 读取任务模板
 func GetCustomTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
 	id := c.Param("id")
-	result, err := service.GetTaskTemplateService().GetCustomTaskTemplate(id)
+	result, err := service.GetTaskTemplateService().GetTaskTemplate(id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -149,9 +149,9 @@ func ListCustomTaskTemplateIds(c *gin.Context) {
 }
 
 // 任务模板列表
-func ListCustomTaskTemplate(c *gin.Context) {
+func ListTaskTemplates(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
-	result, err := service.GetTaskTemplateService().ListCustomTaskTemplate(requestTemplateId)
+	result, err := service.GetTaskTemplateService().ListTaskTemplates(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

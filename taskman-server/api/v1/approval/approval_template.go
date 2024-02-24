@@ -83,9 +83,9 @@ func ListApprovalTemplateIds(c *gin.Context) {
 }
 
 // 审批模板列表
-func ListApprovalTemplate(c *gin.Context) {
+func ListApprovalTemplates(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
-	result, err := service.GetApprovalTemplateService().ListApprovalTemplate(requestTemplateId)
+	result, err := service.GetApprovalTemplateService().ListApprovalTemplates(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

@@ -168,21 +168,123 @@ func (s *ApprovalTemplateService) UpdateApprovalTemplate(param *models.ApprovalT
 }
 
 func (s *ApprovalTemplateService) DeleteApprovalTemplate(id string) (*models.ApprovalTemplateDeleteResponse, error) {
-	result := &models.ApprovalTemplateDeleteResponse{}
+	actions := []*dao.ExecAction{}
+	// 查询现有审批模板
+	var approvalTemplates []*models.ApprovalTemplateTable
+	err := s.approvalTemplateDao.DB.SQL("SELECT * FROM approval_template WHERE id = ?", id).Find(&approvalTemplates)
+	if err != nil {
+		return nil, err
+	}
+	if len(approvalTemplates) == 0 {
+		return nil, errors.New("no approval_template record found")
+	}
+	approvalTemplate := approvalTemplates[0]
+	// 删除现有审批处理模板
+	action := &dao.ExecAction{Sql: "DELETE FROM approval_template_role WHERE approval_template = ?"}
+	action.Param = []interface{}{id}
+	actions = append(actions, action)
+	// 删除现有审批模板
+	action = &dao.ExecAction{Sql: "DELETE FROM approval_template WHERE id = ?"}
+	action.Param = []interface{}{id}
+	actions = append(actions, action)
+	// 查询剩余审批模板列表
+	approvalTemplates = nil
+	err = s.approvalTemplateDao.DB.SQL("SELECT * FROM approval_template WHERE request_template = ? AND id != ? ORDER BY sort", approvalTemplate.RequestTemplate, id).Find(&approvalTemplates)
+	if err != nil {
+		return nil, err
+	}
+	// 如果不是尾删，则需更新现有数据的序号
+	if approvalTemplate.Sort != len(approvalTemplates)+1 {
+		nowTime := time.Now().Format(models.DateTimeFormat)
+		for i := approvalTemplate.Sort; i < len(approvalTemplates)+1; i++ {
+			t := approvalTemplates[i-1]
+			t.Sort = i
+			t.UpdatedTime = nowTime
+			action = &dao.ExecAction{Sql: "UPDATE approval_template SET sort = ?, updated_time = ? WHERE id = ?"}
+			action.Param = []interface{}{t.Sort, t.UpdatedTime, t.Id}
+			actions = append(actions, action)
+		}
+	}
+	// 执行事务
+	err = dao.Transaction(actions)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result := &models.ApprovalTemplateDeleteResponse{
+		Ids: make([]*models.ApprovalTemplateIdObj, len(approvalTemplates)),
+	}
+	for i, approvalTemplate := range approvalTemplates {
+		result.Ids[i] = &models.ApprovalTemplateIdObj{
+			Id:   approvalTemplate.Id,
+			Sort: approvalTemplate.Sort,
+			Name: approvalTemplate.Name,
+		}
+	}
 	return result, nil
 }
 
 func (s *ApprovalTemplateService) GetApprovalTemplate(id string) (*models.ApprovalTemplateDto, error) {
-	result := &models.ApprovalTemplateDto{}
+	// 查询现有审批模板
+	var approvalTemplates []*models.ApprovalTemplateTable
+	err := s.approvalTemplateDao.DB.SQL("SELECT * FROM approval_template WHERE id = ?", id).Find(&approvalTemplates)
+	if err != nil {
+		return nil, err
+	}
+	if len(approvalTemplates) == 0 {
+		return nil, errors.New("no approval_template record found")
+	}
+	approvalTemplate := approvalTemplates[0]
+	// 查询现有审批处理模板
+	var approvalTemplateRoles []*models.ApprovalTemplateRoleTable
+	err = s.approvalTemplateRoleDao.DB.SQL("SELECT * FROM approval_template_role WHERE approval_template = ? ORDER BY sort", id).Find(&approvalTemplateRoles)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result := &models.ApprovalTemplateDto{
+		Id:              approvalTemplate.Id,
+		Sort:            approvalTemplate.Sort,
+		RequestTemplate: approvalTemplate.RequestTemplate,
+		Name:            approvalTemplate.Name,
+		ExpireDay:       approvalTemplate.ExpireDay,
+		Description:     approvalTemplate.Description,
+		RoleType:        approvalTemplate.RoleType,
+		RoleObjs:        make([]*models.ApprovalTemplateRoleDto, len(approvalTemplateRoles)),
+	}
+	for i, approvalTemplateRole := range approvalTemplateRoles {
+		result.RoleObjs[i] = &models.ApprovalTemplateRoleDto{
+			RoleType:    approvalTemplateRole.RoleType,
+			HandlerType: approvalTemplateRole.HandlerType,
+			Role:        approvalTemplateRole.Role,
+			Handler:     approvalTemplateRole.Handler,
+		}
+	}
 	return result, nil
 }
 
 func (s *ApprovalTemplateService) ListApprovalTemplateIds(requestTemplateId string) (*models.ApprovalTemplateListIdsResponse, error) {
-	result := &models.ApprovalTemplateListIdsResponse{}
+	// 查询现有审批模板列表
+	var approvalTemplates []*models.ApprovalTemplateTable
+	err := s.approvalTemplateDao.DB.SQL("SELECT * FROM approval_template WHERE request_template = ? ORDER BY sort", requestTemplateId).Find(&approvalTemplates)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result := &models.ApprovalTemplateListIdsResponse{
+		Ids: make([]*models.ApprovalTemplateIdObj, len(approvalTemplates)),
+	}
+	for i, approvalTemplate := range approvalTemplates {
+		result.Ids[i] = &models.ApprovalTemplateIdObj{
+			Id:   approvalTemplate.Id,
+			Sort: approvalTemplate.Sort,
+			Name: approvalTemplate.Name,
+		}
+	}
 	return result, nil
 }
 
-func (s *ApprovalTemplateService) ListApprovalTemplate(requestTemplateId string) ([]*models.ApprovalTemplateDto, error) {
+func (s *ApprovalTemplateService) ListApprovalTemplates(requestTemplateId string) ([]*models.ApprovalTemplateDto, error) {
 	result := []*models.ApprovalTemplateDto{}
 	// 查询现有审批模板列表
 	var approvalTemplates []*models.ApprovalTemplateTable
@@ -239,4 +341,29 @@ func (s *ApprovalTemplateService) ListApprovalTemplate(requestTemplateId string)
 		}
 	}
 	return result, nil
+}
+
+func (s *ApprovalTemplateService) DeleteApprovalTemplates(requestTemplateId string) ([]*dao.ExecAction, error) {
+	// 查询现有审批模板列表
+	var approvalTemplates []*models.ApprovalTemplateTable
+	err := s.approvalTemplateDao.DB.SQL("SELECT * FROM approval_template WHERE request_template = ? ORDER BY sort", requestTemplateId).Find(&approvalTemplates)
+	if err != nil {
+		return nil, err
+	}
+	if len(approvalTemplates) == 0 {
+		return nil, nil
+	}
+	// 汇总审批模板列表
+	approvalTemplateIds := make([]string, len(approvalTemplates))
+	for i, approvalTemplate := range approvalTemplates {
+		approvalTemplateIds[i] = approvalTemplate.Id
+	}
+	actions := []*dao.ExecAction{}
+	// 删除现有审批处理模板
+	action := &dao.ExecAction{Sql: "DELETE FROM approval_template_role WHERE approval_template IN ('" + strings.Join(approvalTemplateIds, "','") + "')"}
+	actions = append(actions, action)
+	// 删除现有审批模板
+	action = &dao.ExecAction{Sql: "DELETE FROM approval_template WHERE id IN ('" + strings.Join(approvalTemplateIds, "','") + "')"}
+	actions = append(actions, action)
+	return actions, nil
 }

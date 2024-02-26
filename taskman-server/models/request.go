@@ -18,7 +18,7 @@ type RequestTable struct {
 	Status              string             `json:"status" xorm:"status"`
 	Cache               string             `json:"cache" xorm:"cache"`
 	BindCache           string             `json:"bindCache" xorm:"bind_cache"`
-	CustomFormCache     string             `json:"CustomFormCache" xorm:"custom_form_cache"` //自定义表单cache
+	CustomFormCache     string             `json:"customFormCache" xorm:"custom_form_cache"` //自定义表单cache
 	Result              string             `json:"result" xorm:"result"`
 	ExpireTime          string             `json:"expireTime" xorm:"expire_time"`
 	ExpectTime          string             `json:"expectTime" xorm:"expect_time"`
@@ -40,10 +40,29 @@ type RequestTable struct {
 	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`  // 撤回标志 0表示没被撤回,1表示撤回
 	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
+	CustomForm          CustomForm         `json:"customForm" xorm:"-"`            // 自定义表单
 }
 
 func (RequestTable) TableName() string {
 	return "request"
+}
+
+type CreateRequestDto struct {
+	Id                  string     `json:"id"`
+	Name                string     `json:"name"`
+	Form                string     `json:"form"`
+	RequestTemplate     string     `json:"requestTemplate"`
+	RequestTemplateName string     `json:"requestTemplateName"`
+	Handler             string     `json:"handler"`
+	ReportTime          string     `json:"reportTime"`
+	Emergency           int        `json:"emergency"`
+	Role                string     `json:"role"`      // 创建请求的role
+	ExpireDay           int        `json:"expireDay"` // 模板过期时间
+	Type                int        `json:"type" `
+	CreatedBy           string     `json:"createdBy"`
+	ExpectTime          string     `json:"expectTime"`
+	TemplateVersion     string     `json:"templateVersion"` // 模板版本
+	CustomForm          CustomForm `json:"customForm"`      // 自定义表单
 }
 
 // PlatformData  工作台数据
@@ -190,6 +209,8 @@ type RequestPreDataTableObj struct {
 	Entity        string                 `json:"entity"`
 	ItemGroup     string                 `json:"itemGroup"`
 	ItemGroupName string                 `json:"itemGroupName"`
+	ItemGroupType string                 `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupRule string                 `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
 	RefEntity     []string               `json:"-"`
 	SortLevel     int                    `json:"-"`
 	Title         []*FormItemTemplateDto `json:"title"`

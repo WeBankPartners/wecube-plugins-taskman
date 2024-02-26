@@ -456,16 +456,16 @@ func GetRequestParent(c *gin.Context) {
 // GetRequestProgress  获取请求进度
 func GetRequestProgress(c *gin.Context) {
 	var param models.RequestQueryParam
-	var rowsData []*models.RequestProgressObj
+	var rowData *models.RequestProgressObj
 	var err error
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	rowsData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	rowData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	middleware.ReturnData(c, rowsData)
+	middleware.ReturnData(c, rowData)
 }

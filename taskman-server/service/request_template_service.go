@@ -1279,3 +1279,22 @@ func (s RequestTemplateService) CheckPermission(requestTemplateId, user string) 
 	}*/
 	return
 }
+
+func (s RequestTemplateService) GetRequestPendingRoleAndHandler(requestTemplate *models.RequestTemplateTable) (role, handler string) {
+	if requestTemplate == nil {
+		return
+	}
+	if !requestTemplate.PendingSwitch {
+		return
+	}
+
+	// 配置了定版角色
+	if requestTemplate.PendingRole != "" {
+		role = requestTemplate.PendingRole
+		handler = requestTemplate.PendingHandler
+	}
+	// 没有配置定版角色和定版人则读取模板属主角色和属主处理人
+	role = s.GetRequestTemplateManageRole(requestTemplate.Id)
+	handler = requestTemplate.Handler
+	return
+}

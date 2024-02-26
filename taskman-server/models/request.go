@@ -18,6 +18,7 @@ type RequestTable struct {
 	Status              string             `json:"status" xorm:"status"`
 	Cache               string             `json:"cache" xorm:"cache"`
 	BindCache           string             `json:"bindCache" xorm:"bind_cache"`
+	CustomFormCache     string             `json:"CustomFormCache" xorm:"custom_form_cache"` //自定义表单cache
 	Result              string             `json:"result" xorm:"result"`
 	ExpireTime          string             `json:"expireTime" xorm:"expire_time"`
 	ExpectTime          string             `json:"expectTime" xorm:"expect_time"`
@@ -106,12 +107,18 @@ type PlatformDataObj struct {
 }
 
 type RequestProgressObj struct {
-	NodeId    string `json:"nodeId" xorm:"node_id"`
-	NodeDefId string `json:"nodeDefId" xorm:"node_def_id"`
-	Node      string `json:"node" xorm:"node"`
-	Handler   string `json:"handler" xorm:"handler"`
-	Status    int    `json:"status" xorm:"status"` // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
-	OrderedNo string `json:"orderNo" xorm:"-"`     // 排序字段
+	RequestProgress  []*ProgressObj `json:"requestProgress" xorm:"request_progress"`
+	ApprovalProgress []*ProgressObj `json:"approvalProgress" xorm:"approval_progress"`
+	TaskProgress     []*ProgressObj `json:"taskProgress" xorm:"task_progress"`
+}
+
+type ProgressObj struct {
+	NodeId      string `json:"nodeId" `
+	NodeDefId   string `json:"nodeDefId" `
+	Node        string `json:"node"`
+	Handler     string `json:"handler"`
+	Status      int    `json:"status"`      // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
+	ApproveType string `json:"approveType"` // 审批类型:custom.单人自定义 any.协同 all.并行
 }
 
 type ExpireObj struct {
@@ -219,27 +226,34 @@ type RequestProDataV2Dto struct {
 	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
+	CustomForm   CustomForm                `json:"customForm"` //自定义表单
 }
 
 type RequestForm struct {
-	Id                string `json:"id"`
-	Name              string `json:"name"`
-	RequestType       int    `json:"requestType"`       // 请求类型,0表示请求,1表示发布
-	Progress          int    `json:"progress"`          // 请求进度
-	Status            string `json:"status"`            // 请求状态
-	CurNode           string `json:"curNode"`           // 当前节点
-	Handler           string `json:"handler"`           // 当前处理人
-	CreatedBy         string `json:"createdBy"`         // 创建人
-	Role              string `json:"role"`              // 创建人角色
-	TemplateName      string `json:"templateName"`      // 使用模板
-	Version           string `json:"version"`           // 模板版本
-	TemplateGroupName string `json:"templateGroupName"` // 使用模板组
-	Description       string `json:"description"`       // 请求描述
-	CreatedTime       string `json:"createdTime"`       // 创建时间
-	ExpectTime        string `json:"expectTime" `       // 期望时间
-	OperatorObj       string `json:"operatorObj"`       // 发布操作对象
-	ProcInstanceId    string `json:"procInstanceId"`    // 编排实例ID
-	ExpireDay         int    `json:"expireDay"`         // 模板过期时间
+	Id                string     `json:"id"`
+	Name              string     `json:"name"`
+	RequestType       int        `json:"requestType"`       // 请求类型,0表示请求,1表示发布
+	Progress          int        `json:"progress"`          // 请求进度
+	Status            string     `json:"status"`            // 请求状态
+	CurNode           string     `json:"curNode"`           // 当前节点
+	Handler           string     `json:"handler"`           // 当前处理人
+	CreatedBy         string     `json:"createdBy"`         // 创建人
+	Role              string     `json:"role"`              // 创建人角色
+	TemplateName      string     `json:"templateName"`      // 使用模板
+	Version           string     `json:"version"`           // 模板版本
+	TemplateGroupName string     `json:"templateGroupName"` // 使用模板组
+	Description       string     `json:"description"`       // 请求描述
+	CreatedTime       string     `json:"createdTime"`       // 创建时间
+	ExpectTime        string     `json:"expectTime" `       // 期望时间
+	OperatorObj       string     `json:"operatorObj"`       // 发布操作对象
+	ProcInstanceId    string     `json:"procInstanceId"`    // 编排实例ID
+	ExpireDay         int        `json:"expireDay"`         // 模板过期时间
+	CustomForm        CustomForm `json:"customForm"`        // 自定义表单
+}
+
+type CustomForm struct {
+	Title []*FormItemTemplateTable `json:"title"`
+	Value map[string]interface{}   `json:"value"`
 }
 
 type FilterItem struct {
@@ -295,22 +309,4 @@ type RequestDetail struct {
 
 type UpdateRequestStatusParam struct {
 	Description string `json:"description"`
-}
-
-type RequestProgressObjSort []*RequestProgressObj
-
-func (q RequestProgressObjSort) Len() int {
-	return len(q)
-}
-
-func (q RequestProgressObjSort) Less(i, j int) bool {
-	t := strings.Compare(q[i].OrderedNo, q[j].OrderedNo)
-	if t < 0 {
-		return true
-	}
-	return false
-}
-
-func (q RequestProgressObjSort) Swap(i, j int) {
-	q[i], q[j] = q[j], q[i]
 }

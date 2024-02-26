@@ -16,6 +16,12 @@
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
               <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <DatePicker
+                v-if="element.elementType === 'datePicker'"
+                type="date"
+                placeholder="Select date"
+                style="width:100%"
+              ></DatePicker>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
                 <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
@@ -78,6 +84,7 @@
                     v-model="element.defaultValue"
                     style="width: calc(100% - 30px)"
                   ></Select>
+                  <DatePicker v-if="element.elementType === 'datePicker'" type="date"></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
@@ -346,6 +353,36 @@ export default {
           name: 'wecmdbEntity',
           title: 'WecmdbEntity',
           elementType: 'wecmdbEntity',
+          defaultValue: '',
+          defaultClear: 'no',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
+          width: 24,
+          dataOptions: '',
+          regular: '',
+          inDisplayName: 'yes',
+          isEdit: 'yes',
+          multiple: 'N',
+          selectList: [],
+          isRefInside: 'no',
+          required: 'no',
+          isView: 'yes',
+          isOutput: 'no',
+          sort: 0,
+          attrDefId: '',
+          attrDefName: '',
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
+        },
+        {
+          id: 6,
+          name: 'datePicker',
+          title: 'datePicker',
+          elementType: 'datePicker',
           defaultValue: '',
           defaultClear: 'no',
           // tag: '',

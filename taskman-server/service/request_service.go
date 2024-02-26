@@ -537,6 +537,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
 	var result []*models.RequestPreDataTableObj
+	var itemGroupType, itemGroupRule string
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
@@ -547,6 +548,11 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
 		itemGroup := models.FormItemTemplateGroupTable{}
+		if v.ItemGroupId != "" {
+			dao.X.SQL("select * from form_item_template_group where id=?", v.ItemGroupId).Get(&itemGroup)
+			itemGroupType = itemGroup.ItemGroupType
+			itemGroupRule = itemGroup.ItemGroupRule
+		}
 		if _, b := existItemMap[tmpKey]; b {
 			continue
 		} else {
@@ -554,7 +560,9 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 		if v.ItemGroup != tmpItemGroup {
 			if tmpItemGroup != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
+				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup,
+					ItemGroupName: tmpItemGroupName, ItemGroupType: itemGroupType, ItemGroupRule: itemGroupRule, PackageName: tmpPackageName,
+					Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 			}
 			tmpItems = []*models.FormItemTemplateDto{}
 			tmpEntity = v.Entity
@@ -567,9 +575,6 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 				tmpEntity = v.Entity
 				tmpPackageName = v.PackageName
 			}
-		}
-		if v.ItemGroupId != "" {
-			dao.X.SQL("select * from form_item_group where id=?", v.ItemGroupId).Get(&itemGroup)
 		}
 		tmpItems = append(tmpItems, models.ConvertFormItemTemplateModel2Dto(v, itemGroup))
 		if v.RefEntity != "" {
@@ -594,7 +599,8 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 		tmpItemGroup = items[len(items)-1].ItemGroup
 		tmpItemGroupName = items[len(items)-1].ItemGroupName
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
+		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, ItemGroupRule: itemGroupRule,
+			PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, ItemGroupType: itemGroupType, Value: []*models.EntityTreeObj{}})
 	}
 	result = sortRequestEntity(result)
 	for _, v := range result {

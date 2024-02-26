@@ -3,6 +3,7 @@ package request
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -53,6 +54,9 @@ func CreateRequest(c *gin.Context) {
 	} else {
 		param.TemplateVersion = template.Version
 	}
+	var items []*models.FormItemTemplateTable
+	dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", template.Id).Find(&items)
+	param.CustomForm.Title = items
 	err = service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

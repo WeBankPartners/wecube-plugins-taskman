@@ -22,7 +22,7 @@ const (
 	// pathQueryProcessDefinitionsEntityData  查询编排实例entityData
 	pathQueryProcessDefinitionsEntityData = "/platform/v1/process/definitions/%s/root-entities"
 	// pathQueryPreviewProcessDefinitionsEntity 编排设计entityData预览
-	pathQueryPreviewProcessDefinitionsEntity = "/platform/v1/process/definitions/%s/preview/entities/%s"
+	pathQueryPreviewProcessDefinitionsEntity = "/platform/v1/public/process/definitions/%s/preview/entities/%s"
 	// pathTerminationsProcessDefinitionsInstance  终止编排实例运行
 	pathTerminationsProcessDefinitionsInstance = "/platform/v1/public/process/instances/%s/terminations"
 	// pathStartProcDefInstance 启动编排实例

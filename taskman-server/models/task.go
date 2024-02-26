@@ -50,6 +50,7 @@ type TaskRoleTable struct {
 	Task             string `json:"task" xorm:"task"`
 	Role             string `json:"role" xorm:"role"`
 	Handler          string `json:"handler" xorm:"handler"`
+	HandlerType      string `json:"handlerType" xorm:"handler_type"`
 }
 
 type TaskDto struct {

@@ -39,8 +39,8 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 		CreatedTime:     nowTime,
 		UpdatedTime:     nowTime,
 	}
-	action := &dao.ExecAction{Sql: "INSERT INTO approval_template (id,sort,request_template,name,expire_day,role_type,created_time,updated_time) VALUES (?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{newApprovalTemplate.Id, newApprovalTemplate.Sort, newApprovalTemplate.RequestTemplate, newApprovalTemplate.Name, newApprovalTemplate.ExpireDay, newApprovalTemplate.RoleType, newApprovalTemplate.CreatedTime, newApprovalTemplate.UpdatedTime}
+	action := &dao.ExecAction{Sql: "INSERT INTO approval_template (id,sort,request_template,name,role_type,created_time,updated_time) VALUES (?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{newApprovalTemplate.Id, newApprovalTemplate.Sort, newApprovalTemplate.RequestTemplate, newApprovalTemplate.Name, newApprovalTemplate.RoleType, newApprovalTemplate.CreatedTime, newApprovalTemplate.UpdatedTime}
 	actions = append(actions, action)
 	// 插入新审批处理模板
 	newApprovalTemplateRole := &models.ApprovalTemplateRoleTable{

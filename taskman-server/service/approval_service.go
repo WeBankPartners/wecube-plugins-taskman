@@ -22,7 +22,8 @@ func (s *ApprovalService) CreateApprovals(param []*models.ApprovalDto) ([]*dao.E
 	// 校验参数
 	approvalTemplateId := param[0].ApprovalTemplate
 	requestId := param[0].Request
-	for _, approval := range param {
+	approvalRoleHandlerTypes := make([][]string, len(param))
+	for i, approval := range param {
 		if approval.ApprovalTemplate != approvalTemplateId {
 			return nil, errors.New("param approvalTemplate not the same")
 		}
@@ -32,20 +33,19 @@ func (s *ApprovalService) CreateApprovals(param []*models.ApprovalDto) ([]*dao.E
 		if len(approval.RoleObjs) == 0 {
 			continue
 		}
-		approvalTemplateRoleId := approval.RoleObjs[0].ApprovalTemplateRole
-		for _, roleObj := range approval.RoleObjs {
-			if roleObj.ApprovalTemplateRole != approvalTemplateRoleId {
-				return nil, errors.New("param approvalTemplateRole not the same")
+		approvalRoleHandlerTypes[i] = make([]string, len(approval.RoleObjs))
+		for j, roleObj := range approval.RoleObjs {
+			approvalTemplateRoleId := roleObj.ApprovalTemplateRole
+			// 查询现有审批处理模板
+			var approvalTemplateRoles []*models.ApprovalTemplateRoleTable
+			err := GetApprovalTemplateService().approvalTemplateRoleDao.DB.SQL("SELECT * FROM approval_template_role WHERE id = ? AND approval_template = ?", approvalTemplateRoleId, approvalTemplateId).Find(&approvalTemplateRoles)
+			if err != nil {
+				return nil, err
 			}
-		}
-		// 查询现有审批处理模板
-		var approvalTemplateRoles []*models.ApprovalTemplateRoleTable
-		err := GetApprovalTemplateService().approvalTemplateRoleDao.DB.SQL("SELECT * FROM approval_template_role WHERE id = ? AND approval_template = ?", approvalTemplateRoleId, approvalTemplateId).Find(&approvalTemplateRoles)
-		if err != nil {
-			return nil, err
-		}
-		if len(approvalTemplateRoles) == 0 {
-			return nil, errors.New("no approval_template_role record found")
+			if len(approvalTemplateRoles) == 0 {
+				return nil, errors.New("no approval_template_role record found")
+			}
+			approvalRoleHandlerTypes[i][j] = approvalTemplateRoles[0].HandlerType
 		}
 	}
 	// 查询现有审批模板
@@ -57,6 +57,7 @@ func (s *ApprovalService) CreateApprovals(param []*models.ApprovalDto) ([]*dao.E
 	if len(approvalTemplates) == 0 {
 		return nil, errors.New("no approval_template record found")
 	}
+	approvalTemplate := approvalTemplates[0]
 	// 查询现有审批列表
 	var approvals []*models.ApprovalTable
 	err = s.approvalDao.DB.SQL("SELECT * FROM approval WHERE request = ? ORDER BY sort", requestId).Find(&approvals)
@@ -71,13 +72,13 @@ func (s *ApprovalService) CreateApprovals(param []*models.ApprovalDto) ([]*dao.E
 		approval.Id = guid.CreateGuid()
 		approval.Sort = i + 1
 		// 插入审批
-		action := &dao.ExecAction{Sql: "INSERT INTO approval (id,sort,approval_template,request) VALUES (?,?,?,?)"}
-		action.Param = []interface{}{approval.Id, approval.Sort, approval.ApprovalTemplate, approval.Request}
+		action := &dao.ExecAction{Sql: "INSERT INTO approval (id,sort,approval_template,request,name,approve) VALUES (?,?,?,?,?,?)"}
+		action.Param = []interface{}{approval.Id, approval.Sort, approval.ApprovalTemplate, approval.Request, approvalTemplate.Name, string(models.ApprovalApproveInit)}
 		actions = append(actions, action)
 		// 插入审批处理
 		for j, roleObj := range approval.RoleObjs {
-			action := &dao.ExecAction{Sql: "INSERT INTO approval_role (id,sort,approval_template_role,approval,role,handler,approve) VALUES (?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{guid.CreateGuid(), j + 1, roleObj.ApprovalTemplateRole, approval.Id, roleObj.Role, roleObj.Handler, string(models.ApprovalRoleApproveInit)}
+			action := &dao.ExecAction{Sql: "INSERT INTO approval_role (id,sort,approval_template_role,approval,role,handler,approve,handler_type) VALUES (?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{guid.CreateGuid(), j + 1, roleObj.ApprovalTemplateRole, approval.Id, roleObj.Role, roleObj.Handler, string(models.ApprovalRoleApproveInit), approvalRoleHandlerTypes[i][j]}
 			actions = append(actions, action)
 		}
 	}
@@ -92,6 +93,8 @@ func (s *ApprovalService) UpdateApprovals(param []*models.ApprovalDto) ([]*dao.E
 	// 校验参数
 	approvalTemplateId := param[0].ApprovalTemplate
 	requestId := param[0].Request
+	approvalRoleHandlerTypes := make([][]string, len(param))
+	approvalRoleHandlerTypeMap := make([]map[string]string, len(param))
 	for i, approval := range param {
 		if approval.ApprovalTemplate != approvalTemplateId {
 			return nil, errors.New("param approvalTemplate not the same")
@@ -105,20 +108,21 @@ func (s *ApprovalService) UpdateApprovals(param []*models.ApprovalDto) ([]*dao.E
 		if len(approval.RoleObjs) == 0 {
 			continue
 		}
-		approvalTemplateRoleId := approval.RoleObjs[0].ApprovalTemplateRole
-		for _, roleObj := range approval.RoleObjs {
-			if roleObj.ApprovalTemplateRole != approvalTemplateRoleId {
-				return nil, errors.New("param approvalTemplateRole not the same")
+		approvalRoleHandlerTypes[i] = make([]string, len(approval.RoleObjs))
+		approvalRoleHandlerTypeMap[i] = make(map[string]string)
+		for j, roleObj := range approval.RoleObjs {
+			approvalTemplateRoleId := roleObj.ApprovalTemplateRole
+			// 查询现有审批处理模板
+			var approvalTemplateRoles []*models.ApprovalTemplateRoleTable
+			err := GetApprovalTemplateService().approvalTemplateRoleDao.DB.SQL("SELECT * FROM approval_template_role WHERE id = ? AND approval_template = ?", approvalTemplateRoleId, approvalTemplateId).Find(&approvalTemplateRoles)
+			if err != nil {
+				return nil, err
 			}
-		}
-		// 查询现有审批处理模板
-		var approvalTemplateRoles []*models.ApprovalTemplateRoleTable
-		err := GetApprovalTemplateService().approvalTemplateRoleDao.DB.SQL("SELECT * FROM approval_template_role WHERE id = ? AND approval_template = ?", approvalTemplateRoleId, approvalTemplateId).Find(&approvalTemplateRoles)
-		if err != nil {
-			return nil, err
-		}
-		if len(approvalTemplateRoles) == 0 {
-			return nil, errors.New("no approval_template_role record found")
+			if len(approvalTemplateRoles) == 0 {
+				return nil, errors.New("no approval_template_role record found")
+			}
+			approvalRoleHandlerTypes[i][j] = approvalTemplateRoles[0].HandlerType
+			approvalRoleHandlerTypeMap[i][approvalTemplateRoleId] = approvalTemplateRoles[0].HandlerType
 		}
 	}
 	// 查询现有审批模板
@@ -130,6 +134,7 @@ func (s *ApprovalService) UpdateApprovals(param []*models.ApprovalDto) ([]*dao.E
 	if len(approvalTemplates) == 0 {
 		return nil, errors.New("no approval_template record found")
 	}
+	approvalTemplate := approvalTemplates[0]
 	// 查询现有审批列表
 	var approvals []*models.ApprovalTable
 	err = s.approvalDao.DB.SQL("SELECT * FROM approval WHERE request = ? AND approval_template = ? ORDER BY sort", requestId, approvalTemplateId).Find(&approvals)
@@ -158,33 +163,33 @@ func (s *ApprovalService) UpdateApprovals(param []*models.ApprovalDto) ([]*dao.E
 		approvalRoleMap[approvalId] = append(approvalRoleMap[approvalId], approvalRole)
 	}
 	// 对比请求和现有数据
-	for _, approval := range param {
+	for i, approval := range param {
 		if approval.Id == "" {
 			approval.Id = guid.CreateGuid()
 		}
 		approvalRoles, ok := approvalRoleMap[approval.Id]
 		if !ok {
 			// 插入审批
-			action := &dao.ExecAction{Sql: "INSERT INTO approval (id,sort,approval_template,request) VALUES (?,?,?,?)"}
-			action.Param = []interface{}{approval.Id, approval.Sort, approval.ApprovalTemplate, approval.Request}
+			action := &dao.ExecAction{Sql: "INSERT INTO approval (id,sort,approval_template,request,name,approve) VALUES (?,?,?,?,?,?)"}
+			action.Param = []interface{}{approval.Id, approval.Sort, approval.ApprovalTemplate, approval.Request, approvalTemplate.Name, string(models.ApprovalApproveInit)}
 			actions = append(actions, action)
 			// 插入审批处理
 			for j, roleObj := range approval.RoleObjs {
-				action := &dao.ExecAction{Sql: "INSERT INTO approval_role (id,sort,approval_template_role,approval,role,handler,approve) VALUES (?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{guid.CreateGuid(), j + 1, roleObj.ApprovalTemplateRole, approval.Id, roleObj.Role, roleObj.Handler, string(models.ApprovalRoleApproveInit)}
+				action := &dao.ExecAction{Sql: "INSERT INTO approval_role (id,sort,approval_template_role,approval,role,handler,approve,handler_type) VALUES (?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{guid.CreateGuid(), j + 1, roleObj.ApprovalTemplateRole, approval.Id, roleObj.Role, roleObj.Handler, string(models.ApprovalRoleApproveInit), approvalRoleHandlerTypes[i][j]}
 				actions = append(actions, action)
 			}
 		} else {
 			// 更新审批
-			action := &dao.ExecAction{Sql: "UPDATE approval SET sort = ? WHERE id = ?"}
-			action.Param = []interface{}{approval.Sort, approval.Id}
+			action := &dao.ExecAction{Sql: "UPDATE approval SET sort = ?, name = ? WHERE id = ?"}
+			action.Param = []interface{}{approval.Sort, approvalTemplate.Name, approval.Id}
 			actions = append(actions, action)
 			// 增删改审批处理
 			for j, approvalRole := range approvalRoles {
 				if j < len(approval.RoleObjs) {
 					roleObj := approval.RoleObjs[j]
-					action = &dao.ExecAction{Sql: "UPDATE approval_role SET role = ?, handler = ?, approve = ? WHERE id = ?"}
-					action.Param = []interface{}{roleObj.Role, roleObj.Handler, roleObj.Approve, approvalRole.Id}
+					action = &dao.ExecAction{Sql: "UPDATE approval_role SET role = ?, handler = ?, approve = ?, handler_type = ? WHERE id = ?"}
+					action.Param = []interface{}{roleObj.Role, roleObj.Handler, roleObj.Approve, approvalRoleHandlerTypeMap[i][roleObj.ApprovalTemplateRole], approvalRole.Id}
 					actions = append(actions, action)
 				} else {
 					action = &dao.ExecAction{Sql: "DELETE FROM approval_role WHERE id = ?"}
@@ -194,8 +199,8 @@ func (s *ApprovalService) UpdateApprovals(param []*models.ApprovalDto) ([]*dao.E
 			}
 			for sort := len(approvalRoles) + 1; sort <= len(approval.RoleObjs); sort++ {
 				roleObj := approval.RoleObjs[sort-1]
-				action = &dao.ExecAction{Sql: "INSERT INTO approval_role (id,sort,approval_template_role,approval,role,handler,approve) VALUES (?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{guid.CreateGuid(), sort, roleObj.ApprovalTemplateRole, approval.Id, roleObj.Role, roleObj.Handler, string(models.ApprovalRoleApproveInit)}
+				action = &dao.ExecAction{Sql: "INSERT INTO approval_role (id,sort,approval_template_role,approval,role,handler,approve,handler_type) VALUES (?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{guid.CreateGuid(), sort, roleObj.ApprovalTemplateRole, approval.Id, roleObj.Role, roleObj.Handler, string(models.ApprovalRoleApproveInit), approvalRoleHandlerTypeMap[i][roleObj.ApprovalTemplateRole]}
 				actions = append(actions, action)
 			}
 			// 处理完，从审批处理列表删除

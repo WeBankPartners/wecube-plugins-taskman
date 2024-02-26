@@ -5,6 +5,8 @@ type ApprovalTable struct {
 	Sort             int    `json:"sort" xorm:"sort"`
 	ApprovalTemplate string `json:"approvalTemplate" xorm:"approval_template"`
 	Request          string `json:"request" xorm:"request"`
+	Name             string `json:"name" xorm:"name"`
+	Approve          string `json:"approve" xorm:"approve"`
 }
 
 type ApprovalRoleTable struct {
@@ -15,6 +17,7 @@ type ApprovalRoleTable struct {
 	Role                 string `json:"role" xorm:"role"`
 	Handler              string `json:"handler" xorm:"handler"`
 	Approve              string `json:"approve" xorm:"approve"`
+	HandlerType          string `json:"handlerType" xorm:"handler_type"`
 }
 
 type ApprovalDto struct {

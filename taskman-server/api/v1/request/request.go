@@ -115,6 +115,26 @@ func Export(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
+// GetTaskList 获取任务列表
+func GetTaskList(c *gin.Context) {
+
+}
+
+// Confirm 请求确认
+func Confirm(c *gin.Context) {
+	var param models.RequestHistoryParam
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	err := service.Export(c.Writer, &param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func ListRequest(c *gin.Context) {
 	permission := c.Param("permission")
 	var param models.QueryRequestParam

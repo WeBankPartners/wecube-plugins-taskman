@@ -79,6 +79,11 @@ type RequestHistoryParam struct {
 	CommonRequestParam
 }
 
+type RequestConfirmParam struct {
+	Id string `json:"id"` // 请求ID
+
+}
+
 type CommonRequestParam struct {
 	Id                    string               `json:"id"`                     // ID
 	Name                  string               `json:"name"`                   // Name

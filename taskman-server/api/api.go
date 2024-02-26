@@ -130,6 +130,8 @@ func init() {
 		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: workflow.GetProcDefTaskNodeContext},
 		&handlerFuncObj{Url: "/request/history/list", Method: "POST", HandlerFunc: request.HistoryList},
 		&handlerFuncObj{Url: "/request/export", Method: "POST", HandlerFunc: request.Export},
+		&handlerFuncObj{Url: "/request/:requestId/task/list", Method: "GET", HandlerFunc: request.GetTaskList},
+		&handlerFuncObj{Url: "/request/confirm", Method: "POST", HandlerFunc: request.Confirm},
 
 		// For core 1:get task form template  2:create task
 		&handlerFuncObj{Url: "/plugin/task/create/meta", Method: "GET", HandlerFunc: task.GetTaskFormStruct},

@@ -46,6 +46,7 @@
                 type="primary"
                 size="small"
                 ghost
+                shape="circle"
                 style="position: relative;left: 16px;bottom: 16px;"
                 icon="md-create"
               ></Button>
@@ -60,6 +61,7 @@
                 type="error"
                 size="small"
                 ghost
+                shape="circle"
                 icon="md-trash"
                 style="position: relative;right: 16px;bottom: 16px;"
               ></Button>
@@ -68,7 +70,6 @@
               <Icon @click="selectItemGroup" style="cursor: pointer;" type="md-add-circle" size="24" color="#2d8cf0" />
             </span>
           </div>
-          {{ isParmasChanged }}
           <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
             <div
               v-for="(item, itemIndex) in finalElement"
@@ -686,7 +687,8 @@ export default {
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
-          itemGroupId: groupItem.itemGroupId
+          itemGroupId: groupItem.itemGroupId,
+          itemGroup: ''
         }
         this.$refs.requestFormDataCustomRef.loadPage(params)
       }

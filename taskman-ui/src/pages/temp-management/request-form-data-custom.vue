@@ -71,11 +71,13 @@ export default {
         this.group.customItems = []
         this.openFormConfig = true
       } else {
-        const { statusCode, data } = await getRequestGroupForm(
-          params.requestTemplateId,
-          params.formTemplateId,
-          params.itemGroupId
-        )
+        const { statusCode, data } = await getRequestGroupForm({
+          formTemplateId: params.formTemplateId,
+          requestTemplateId: params.requestTemplateId,
+          entity: params.itemGroup,
+          formType: params.itemGroupType,
+          itemGroupId: params.itemGroupId
+        })
         if (statusCode === 'OK') {
           this.group = data
           this.group.requestTemplateId = params.requestTemplateId

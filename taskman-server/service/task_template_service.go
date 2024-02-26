@@ -475,7 +475,7 @@ func (s TaskTemplateService) GetTaskTemplate(id string) (*models.TaskTemplateDto
 	taskTemplate := taskTemplates[0]
 	// 查询现有任务处理模板
 	var taskTemplateRoles []*models.TaskTemplateRoleTable
-	err = s.taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE task_template = ? ORDER BY sort", id).Find(&taskTemplateRoles)
+	err = s.taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE task_template = ?", id).Find(&taskTemplateRoles)
 	if err != nil {
 		return nil, err
 	}

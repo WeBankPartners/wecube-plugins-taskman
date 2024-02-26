@@ -1122,6 +1122,7 @@ func (s TaskService) ListTasks(requestId string) ([]*models.TaskDto, error) {
 	for i, task := range tasks {
 		result[i] = &models.TaskDto{
 			Id:           task.Id,
+			Name:         task.Name,
 			Type:         task.Type,
 			Sort:         task.Sort,
 			TaskTemplate: task.TaskTemplate,

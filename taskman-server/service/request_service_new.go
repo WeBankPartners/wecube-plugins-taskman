@@ -1105,6 +1105,17 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 	return
 }
 
+// RequestConfirm 请求确认
+func RequestConfirm(param models.RequestConfirmParam) (err error) {
+	var markTaskIds string
+	if len(param.MarkTaskId) > 0 {
+		markTaskIds = strings.Join(param.MarkTaskId, ",")
+	}
+	_, err = dao.X.Exec("update reqeust set mark_task_id=?,complete_status=?,notes=?,updated_time=? where id =?",
+		markTaskIds, param.CompleteStatus, param.Notes, time.Now().Format(models.DateTimeFormat), param.Id)
+	return
+}
+
 func convertMap2Array(hashMap map[string]bool) (arr []string) {
 	for key, _ := range hashMap {
 		if key != "" {

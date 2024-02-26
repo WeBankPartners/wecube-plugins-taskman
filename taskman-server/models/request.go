@@ -186,14 +186,14 @@ type RequestProcessTaskNodeBindObj struct {
 }
 
 type RequestPreDataTableObj struct {
-	PackageName   string                   `json:"packageName"`
-	Entity        string                   `json:"entity"`
-	ItemGroup     string                   `json:"itemGroup"`
-	ItemGroupName string                   `json:"itemGroupName"`
-	RefEntity     []string                 `json:"-"`
-	SortLevel     int                      `json:"-"`
-	Title         []*FormItemTemplateTable `json:"title"`
-	Value         []*EntityTreeObj         `json:"value"`
+	PackageName   string                 `json:"packageName"`
+	Entity        string                 `json:"entity"`
+	ItemGroup     string                 `json:"itemGroup"`
+	ItemGroupName string                 `json:"itemGroupName"`
+	RefEntity     []string               `json:"-"`
+	SortLevel     int                    `json:"-"`
+	Title         []*FormItemTemplateDto `json:"title"`
+	Value         []*EntityTreeObj       `json:"value"`
 }
 
 type RequestPreDataSort []*RequestPreDataTableObj

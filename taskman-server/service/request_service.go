@@ -502,7 +502,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		return result, tmpErr
 	}
 	var items []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", requestTemplateId).Find(&items)
+	err = dao.X.SQL("select * from form_item_template where form_template in (select data_form_template from request_template where id=?) order by item_group,sort", requestTemplateId).Find(&items)
 	if err != nil {
 		return
 	}
@@ -542,10 +542,11 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	tmpItemGroup := items[0].ItemGroup
 	tmpItemGroupName := items[0].ItemGroupName
 	var tmpRefEntity []string
-	var tmpItems []*models.FormItemTemplateTable
+	var tmpItems []*models.FormItemTemplateDto
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
+		itemGroup := models.FormItemTemplateGroupTable{}
 		if _, b := existItemMap[tmpKey]; b {
 			continue
 		} else {
@@ -555,7 +556,7 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 			if tmpItemGroup != "" {
 				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 			}
-			tmpItems = []*models.FormItemTemplateTable{}
+			tmpItems = []*models.FormItemTemplateDto{}
 			tmpEntity = v.Entity
 			tmpPackageName = v.PackageName
 			tmpItemGroup = v.ItemGroup
@@ -567,7 +568,10 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 				tmpPackageName = v.PackageName
 			}
 		}
-		tmpItems = append(tmpItems, v)
+		if v.ItemGroupId != "" {
+			dao.X.SQL("select * from form_item_group where id=?", v.ItemGroupId).Get(&itemGroup)
+		}
+		tmpItems = append(tmpItems, models.ConvertFormItemTemplateModel2Dto(v, itemGroup))
 		if v.RefEntity != "" {
 			existFlag := false
 			for _, vv := range tmpRefEntity {
@@ -592,13 +596,7 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		tmpItemGroupName = items[len(items)-1].ItemGroupName
 		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
 	}
-	// sort result by dependence
 	result = sortRequestEntity(result)
-	//var err error
-	//result, err = getCMDBSelectList(result, models.CoreToken.GetCoreToken())
-	//if err != nil {
-	//	log.Logger.Error("Try to get selectList fail", log.Error(err))
-	//}
 	for _, v := range result {
 		for _, vv := range v.Title {
 			if vv.SelectList == nil {
@@ -1075,16 +1073,16 @@ func GetRequestPreBindData(requestId, userToken, language string) (result models
 	return
 }
 
-func buildEntityValueAttrData(titles []*models.FormItemTemplateTable, entityData map[string]interface{}) (result []*models.RequestCacheEntityAttrValue) {
+func buildEntityValueAttrData(titles []*models.FormItemTemplateDto, entityData map[string]interface{}) (result []*models.RequestCacheEntityAttrValue) {
 	result = []*models.RequestCacheEntityAttrValue{}
-	titleMap := make(map[string]*models.FormItemTemplateTable)
+	titleMap := make(map[string]*models.FormItemTemplateDto)
 	for _, v := range titles {
 		titleMap[v.Name] = v
 	}
 	for k, v := range entityData {
 		if vv, b := titleMap[k]; b {
 			if vv.Multiple == "Y" {
-				tmpV := []string{}
+				var tmpV []string
 				for _, interfaceV := range v.([]interface{}) {
 					tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
 				}

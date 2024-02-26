@@ -80,8 +80,10 @@ type RequestHistoryParam struct {
 }
 
 type RequestConfirmParam struct {
-	Id string `json:"id"` // 请求ID
-
+	Id             string   `json:"id"`             // 请求ID
+	MarkTaskId     []string `json:"markTaskId"`     // 任务id
+	CompleteStatus string   `json:"completeStatus"` // 任务完成状态 取值：completed or uncompleted
+	Notes          string   `json:"notes"`          // 备注
 }
 
 type CommonRequestParam struct {

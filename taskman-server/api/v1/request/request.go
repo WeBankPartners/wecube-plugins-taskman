@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -117,17 +118,42 @@ func Export(c *gin.Context) {
 
 // GetTaskList 获取任务列表
 func GetTaskList(c *gin.Context) {
-
+	var taskList []*models.TaskDto
+	var err error
+	requestId := c.Param("requestId")
+	taskList, err = service.GetTaskService().ListTasks(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, taskList)
 }
 
 // Confirm 请求确认
 func Confirm(c *gin.Context) {
-	var param models.RequestHistoryParam
+	var param models.RequestConfirmParam
+	var request models.RequestTable
+	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	err := service.Export(c.Writer, &param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestUser(c))
+	if param.Id == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	// 权限校验,创建人才能确认
+	user := middleware.GetRequestUser(c)
+	request, err = service.GetSimpleRequest(param.Id)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if request.CreatedBy != user {
+		middleware.ReturnServerHandleError(c, exterror.New().ServerHandleError)
+		return
+	}
+	err = service.RequestConfirm(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

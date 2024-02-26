@@ -861,7 +861,8 @@ func (s TaskService) CreateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 	taskTemplateId := param[0].TaskTemplate
 	requestId := param[0].Request
 	taskType := param[0].Type
-	for _, task := range param {
+	taskRoleHandlerTypes := make([][]string, len(param))
+	for i, task := range param {
 		if task.TaskTemplate != taskTemplateId {
 			return nil, errors.New("param taskTemplate not the same")
 		}
@@ -874,20 +875,19 @@ func (s TaskService) CreateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 		if len(task.RoleObjs) == 0 {
 			continue
 		}
-		taskTemplateRoleId := task.RoleObjs[0].TaskTemplateRole
-		for _, roleObj := range task.RoleObjs {
-			if roleObj.TaskTemplateRole != taskTemplateRoleId {
-				return nil, errors.New("param taskTemplateRole not the same")
+		taskRoleHandlerTypes[i] = make([]string, len(task.RoleObjs))
+		for j, roleObj := range task.RoleObjs {
+			taskTemplateRoleId := roleObj.TaskTemplateRole
+			// 查询现有任务处理模板
+			var taskTemplateRoles []*models.TaskTemplateRoleTable
+			err := GetTaskTemplateService().taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE id = ? AND task_template = ?", taskTemplateRoleId, taskTemplateId).Find(&taskTemplateRoles)
+			if err != nil {
+				return nil, err
 			}
-		}
-		// 查询现有任务处理模板
-		var taskTemplateRoles []*models.TaskTemplateRoleTable
-		err := GetTaskTemplateService().taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE id = ? AND task_template = ?", taskTemplateRoleId, taskTemplateId).Find(&taskTemplateRoles)
-		if err != nil {
-			return nil, err
-		}
-		if len(taskTemplateRoles) == 0 {
-			return nil, errors.New("no task_template_role record found")
+			if len(taskTemplateRoles) == 0 {
+				return nil, errors.New("no task_template_role record found")
+			}
+			taskRoleHandlerTypes[i][j] = taskTemplateRoles[0].HandlerType
 		}
 	}
 	// 查询现有任务模板
@@ -899,6 +899,7 @@ func (s TaskService) CreateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 	if len(taskTemplates) == 0 {
 		return nil, errors.New("no task_template record found")
 	}
+	taskTemplate := taskTemplates[0]
 	// 查询现有任务列表
 	var tasks []*models.TaskTable
 	err = s.taskDao.DB.SQL("SELECT * FROM task WHERE request = ? ORDER BY sort", requestId).Find(&tasks)
@@ -913,13 +914,13 @@ func (s TaskService) CreateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 		task.Id = guid.CreateGuid()
 		task.Sort = i + 1
 		// 插入任务
-		action := &dao.ExecAction{Sql: "INSERT INTO task (id,type,sort,task_template,request) VALUES (?,?,?,?,?)"}
-		action.Param = []interface{}{task.Id, task.Type, task.Sort, task.TaskTemplate, task.Request}
+		action := &dao.ExecAction{Sql: "INSERT INTO task (id,type,sort,task_template,request,name) VALUES (?,?,?,?,?,?)"}
+		action.Param = []interface{}{task.Id, task.Type, task.Sort, task.TaskTemplate, task.Request, taskTemplate.Name}
 		actions = append(actions, action)
 		// 插入任务处理
-		for _, roleObj := range task.RoleObjs {
-			action := &dao.ExecAction{Sql: "INSERT INTO task_role (id,task_template_role,task,role,handler) VALUES (?,?,?,?,?)"}
-			action.Param = []interface{}{guid.CreateGuid(), roleObj.TaskTemplateRole, task.Id, roleObj.Role, roleObj.Handler}
+		for j, roleObj := range task.RoleObjs {
+			action := &dao.ExecAction{Sql: "INSERT INTO task_role (id,task_template_role,task,role,handler,handler_type) VALUES (?,?,?,?,?,?)"}
+			action.Param = []interface{}{guid.CreateGuid(), roleObj.TaskTemplateRole, task.Id, roleObj.Role, roleObj.Handler, taskRoleHandlerTypes[i][j]}
 			actions = append(actions, action)
 		}
 	}
@@ -935,6 +936,8 @@ func (s TaskService) UpdateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 	taskTemplateId := param[0].TaskTemplate
 	requestId := param[0].Request
 	taskType := param[0].Type
+	taskRoleHandlerTypes := make([][]string, len(param))
+	taskRoleHandlerTypeMap := make([]map[string]string, len(param))
 	for i, task := range param {
 		if task.TaskTemplate != taskTemplateId {
 			return nil, errors.New("param taskTemplate not the same")
@@ -951,20 +954,21 @@ func (s TaskService) UpdateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 		if len(task.RoleObjs) == 0 {
 			continue
 		}
-		taskTemplateRoleId := task.RoleObjs[0].TaskTemplateRole
-		for _, roleObj := range task.RoleObjs {
-			if roleObj.TaskTemplateRole != taskTemplateRoleId {
-				return nil, errors.New("param taskTemplateRole not the same")
+		taskRoleHandlerTypes[i] = make([]string, len(task.RoleObjs))
+		taskRoleHandlerTypeMap[i] = make(map[string]string)
+		for j, roleObj := range task.RoleObjs {
+			taskTemplateRoleId := roleObj.TaskTemplateRole
+			// 查询现有任务处理模板
+			var taskTemplateRoles []*models.TaskTemplateRoleTable
+			err := GetTaskTemplateService().taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE id = ? AND task_template = ?", taskTemplateRoleId, taskTemplateId).Find(&taskTemplateRoles)
+			if err != nil {
+				return nil, err
 			}
-		}
-		// 查询现有任务处理模板
-		var taskTemplateRoles []*models.TaskTemplateRoleTable
-		err := GetTaskTemplateService().taskTemplateRoleDao.DB.SQL("SELECT * FROM task_template_role WHERE id = ? AND task_template = ?", taskTemplateRoleId, taskTemplateId).Find(&taskTemplateRoles)
-		if err != nil {
-			return nil, err
-		}
-		if len(taskTemplateRoles) == 0 {
-			return nil, errors.New("no task_template_role record found")
+			if len(taskTemplateRoles) == 0 {
+				return nil, errors.New("no task_template_role record found")
+			}
+			taskRoleHandlerTypes[i][j] = taskTemplateRoles[0].HandlerType
+			taskRoleHandlerTypeMap[i][taskTemplateRoleId] = taskTemplateRoles[0].HandlerType
 		}
 	}
 	// 查询现有任务模板
@@ -976,6 +980,7 @@ func (s TaskService) UpdateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 	if len(taskTemplates) == 0 {
 		return nil, errors.New("no task_template record found")
 	}
+	taskTemplate := taskTemplates[0]
 	// 查询现有任务列表
 	var tasks []*models.TaskTable
 	err = s.taskDao.DB.SQL("SELECT * FROM task WHERE request = ? AND task_template = ? ORDER BY sort", requestId, taskTemplateId).Find(&tasks)
@@ -1004,33 +1009,33 @@ func (s TaskService) UpdateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 		taskRoleMap[taskId] = append(taskRoleMap[taskId], taskRole)
 	}
 	// 对比请求和现有数据
-	for _, task := range param {
+	for i, task := range param {
 		if task.Id == "" {
 			task.Id = guid.CreateGuid()
 		}
 		taskRoles, ok := taskRoleMap[task.Id]
 		if !ok {
 			// 插入任务
-			action := &dao.ExecAction{Sql: "INSERT INTO task (id,type,sort,task_template,request) VALUES (?,?,?,?,?)"}
-			action.Param = []interface{}{task.Id, task.Type, task.Sort, task.TaskTemplate, task.Request}
+			action := &dao.ExecAction{Sql: "INSERT INTO task (id,type,sort,task_template,request,name) VALUES (?,?,?,?,?,?)"}
+			action.Param = []interface{}{task.Id, task.Type, task.Sort, task.TaskTemplate, task.Request, taskTemplate.Name}
 			actions = append(actions, action)
 			// 插入任务处理
-			for _, roleObj := range task.RoleObjs {
-				action := &dao.ExecAction{Sql: "INSERT INTO task_role (id,task_template_role,task,role,handler) VALUES (?,?,?,?,?)"}
-				action.Param = []interface{}{guid.CreateGuid(), roleObj.TaskTemplateRole, task.Id, roleObj.Role, roleObj.Handler}
+			for j, roleObj := range task.RoleObjs {
+				action := &dao.ExecAction{Sql: "INSERT INTO task_role (id,task_template_role,task,role,handler,handler_type) VALUES (?,?,?,?,?,?)"}
+				action.Param = []interface{}{guid.CreateGuid(), roleObj.TaskTemplateRole, task.Id, roleObj.Role, roleObj.Handler, taskRoleHandlerTypes[i][j]}
 				actions = append(actions, action)
 			}
 		} else {
 			// 更新任务
-			action := &dao.ExecAction{Sql: "UPDATE task SET sort = ? WHERE id = ?"}
-			action.Param = []interface{}{task.Sort, task.Id}
+			action := &dao.ExecAction{Sql: "UPDATE task SET sort = ?, name = ? WHERE id = ?"}
+			action.Param = []interface{}{task.Sort, taskTemplate.Name, task.Id}
 			actions = append(actions, action)
 			// 增删改任务处理
 			for j, taskRole := range taskRoles {
 				if j < len(task.RoleObjs) {
 					roleObj := task.RoleObjs[j]
-					action = &dao.ExecAction{Sql: "UPDATE task_role SET role = ?, handler = ? WHERE id = ?"}
-					action.Param = []interface{}{roleObj.Role, roleObj.Handler, taskRole.Id}
+					action = &dao.ExecAction{Sql: "UPDATE task_role SET role = ?, handler = ?, handler_type = ? WHERE id = ?"}
+					action.Param = []interface{}{roleObj.Role, roleObj.Handler, taskRoleHandlerTypeMap[i][roleObj.TaskTemplateRole], taskRole.Id}
 					actions = append(actions, action)
 				} else {
 					action = &dao.ExecAction{Sql: "DELETE FROM task_role WHERE id = ?"}
@@ -1040,8 +1045,8 @@ func (s TaskService) UpdateTasks(param []*models.TaskDto) ([]*dao.ExecAction, er
 			}
 			for sort := len(taskRoles) + 1; sort <= len(task.RoleObjs); sort++ {
 				roleObj := task.RoleObjs[sort-1]
-				action = &dao.ExecAction{Sql: "INSERT INTO task_role (id,task_template_role,task,role,handler) VALUES (?,?,?,?,?)"}
-				action.Param = []interface{}{guid.CreateGuid(), roleObj.TaskTemplateRole, task.Id, roleObj.Role, roleObj.Handler}
+				action = &dao.ExecAction{Sql: "INSERT INTO task_role (id,task_template_role,task,role,handler,handler_type) VALUES (?,?,?,?,?,?)"}
+				action.Param = []interface{}{guid.CreateGuid(), roleObj.TaskTemplateRole, task.Id, roleObj.Role, roleObj.Handler, taskRoleHandlerTypeMap[i][roleObj.TaskTemplateRole]}
 				actions = append(actions, action)
 			}
 			// 处理完，从任务处理列表删除

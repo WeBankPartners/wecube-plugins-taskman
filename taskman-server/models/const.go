@@ -121,6 +121,16 @@ const (
 	ApprovalTemplateRoleHandlerTypeClaim           ApprovalTemplateRoleHandlerType = "claim"            // 组内主动认领
 )
 
+// ApprovalApprove 审批 是否同意
+type ApprovalApprove string
+
+const (
+	ApprovalApproveInit       ApprovalApprove = "init"       // 未处理
+	ApprovalApproveProcessing ApprovalApprove = "processing" // 处理中
+	ApprovalApproveApprove    ApprovalApprove = "approve"    // 同意
+	ApprovalApproveDeny       ApprovalApprove = "deny"       // 拒绝
+)
+
 // ApprovalRoleApprove 审批处理 是否同意
 type ApprovalRoleApprove string
 

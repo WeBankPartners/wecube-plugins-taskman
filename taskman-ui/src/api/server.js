@@ -18,7 +18,7 @@ export const deleteTempGroup = data => req.delete('/taskman/api/v1/request-templ
 
 export const getManagementRoles = () => req.get('/taskman/api/v1/user/roles')
 export const getUserRoles = () => req.get('/taskman/api/v1/role/list')
-export const getProcess = () => req.get('/taskman/api/v1/process/list')
+export const getProcess = role => req.get(`/taskman/api/v1/process/list?role=${role}`)
 
 export const createTemp = data => req.post('/taskman/api/v1/request-template', data)
 export const updateTemp = data => req.put('/taskman/api/v1/request-template', data)
@@ -150,3 +150,27 @@ export const getNodeContextByNodeId = (instanceId, nodeId) =>
   req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)
 
 export const getAllDataModels = () => req.get(`/platform/v1/models`)
+// 获取可添加表单组
+export const getEntityByTemplateId = tmpId => req.get(`/taskman/api/v1/request-template/${tmpId}/entity`)
+
+export const getRequestDataForm = tmpId => req.get(`/taskman/api/v1/request-form-template/${tmpId}/data-form`)
+export const saveRequestGroupForm = data => req.post(`/taskman/api/v1/form-template/item-group-config`, data)
+export const deleteRequestGroupForm = (tmpId, formTemplateId) =>
+  req.delete(`/taskman/api/v1/form-template/item-group?item-group-id=${tmpId}&form-template-id=${formTemplateId}`)
+export const saveRequestGroupCustomForm = data => req.post(`/taskman/api/v1/form-template/item-group`, data)
+export const getRequestGroupForm = params =>
+  req.get(
+    `/taskman/api/v1/data-form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}`
+  )
+// 获取审批节点
+export const getApprovalNode = tmpId => req.get(`/taskman/api/v1/approval-template/${tmpId}/ids`)
+// 保存审批节点
+export const addApprovalNode = data => req.post(`/taskman/api/v1/approval-template`, data)
+// 保存审批节点
+export const updateApprovalNode = data => req.put(`/taskman/api/v1/approval-template`, data)
+// 删除审批节点
+export const removeApprovalNode = id => req.delete(`/taskman/api/v1/approval-template?id=${id}`)
+// 获取审批节点
+export const getApprovalNodeById = (tmpId, nodeId) => req.get(`/taskman/api/v1/approval-template/${tmpId}/${nodeId}`)
+// 查询审批中可添加的组
+export const getApprovalGlobalForm = tmpId => req.get(`/taskman/api/v1/request-form-template/${tmpId}/global-form`)

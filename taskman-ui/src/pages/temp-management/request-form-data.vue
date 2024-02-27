@@ -528,12 +528,12 @@ export default {
       }
     }
   },
-  props: ['requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
   },
   methods: {
-    async loadPage () {
+    async loadPage (requestTemplateId) {
+      this.requestTemplateId = requestTemplateId
       this.isParmasChanged = false
       const { statusCode, data } = await getRequestDataForm(this.requestTemplateId)
       if (statusCode === 'OK') {

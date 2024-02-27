@@ -1,37 +1,15 @@
 <template>
   <div class="workbench-publish-detail">
     <Row class="back-header">
-      <Icon size="26" type="md-arrow-back" style="cursor:pointer" @click="$router.back()" />
+      <Icon size="22" type="md-arrow-back" class="icon" @click="$router.back()" />
       <span class="name">
         {{ `${detailInfo.name || ''}` }}
       </span>
     </Row>
     <Row class="w-header">
-      <Col span="19" class="steps">
+      <Col span="19">
         <!--请求进度-->
-        <span class="title">{{ $t('tw_request_progress') }}：</span>
-        <Steps :current="0" style="max-width:600px;">
-          <Step v-for="(i, index) in progressList" :key="index" :content="i.name">
-            <template #icon>
-              <Icon style="font-weight:bold" size="24" :type="i.icon" :color="i.color" />
-            </template>
-            <div class="role" slot="content">
-              <Tooltip :content="i.name">
-                <div class="word-eclipse">{{ i.name }}</div>
-              </Tooltip>
-              <span>{{ i.handler }}</span>
-            </div>
-          </Step>
-        </Steps>
-        <div v-if="errorNode" style="margin:0 0 10px 20px;max-width:500px;">
-          <Alert v-if="errorNode === 'autoExit'" show-icon type="error">
-            {{ $t('tw_auto_exit_tips') }}
-          </Alert>
-          <Alert v-else-if="errorNode === 'internallyTerminated'" show-icon type="error">
-            {{ $t('tw_terminate_tips') }}
-          </Alert>
-          <Alert v-else show-icon type="error"> {{ errorNode }}{{ $t('tw_tag_error_tips') }} </Alert>
-        </div>
+        <BaseProgress ref="progress"></BaseProgress>
       </Col>
       <Col span="5" class="btn-group">
         <!--撤回-->
@@ -41,7 +19,7 @@
       </Col>
     </Row>
     <div style="display:flex;" class="content">
-      <div style="width:calc(100% - 420px)" class="split-line">
+      <div style="width:100%;">
         <Form :model="form" label-position="right" :label-width="120">
           <template>
             <!--请求信息-->
@@ -321,14 +299,18 @@
           </template>
         </Form>
       </div>
-      <!--编排流程-->
-      <div style="width:420px;padding-left:20px;">
-        <StaticFlow
-          v-if="['Draft', 'Pending'].includes(detailInfo.status)"
-          :requestTemplate="requestTemplate"
-        ></StaticFlow>
-        <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
-      </div>
+    </div>
+    <!--编排流程-->
+    <div class="expand-btn" :style="{right: flowVisible ? '440px' : '0px'}" @click="flowVisible = !flowVisible">
+      <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
+      <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
+    </div>
+    <div v-show="flowVisible" class="flow-expand">
+      <StaticFlow
+        v-if="['Draft', 'Pending'].includes(detailInfo.status)"
+        :requestTemplate="requestTemplate"
+      ></StaticFlow>
+      <DynamicFlow v-else :flowId="detailInfo.procInstanceId"></DynamicFlow>
     </div>
   </div>
 </template>
@@ -341,9 +323,9 @@ import DynamicFlow from '../../components/flow/dynamic-flow.vue'
 import EntityTable from '../../components/entity-table.vue'
 import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
+import BaseProgress from '../../components/base-progress.vue'
 import { deepClone } from '@/pages/util/index'
 import {
-  getProgressInfo,
   getRootEntity,
   getEntityData,
   getPublishInfo,
@@ -352,22 +334,6 @@ import {
   commitTaskData,
   recallRequest
 } from '@/api/server'
-const statusIcon = {
-  1: 'md-pin', // 进行中
-  2: 'md-radio-button-on', // 未开始
-  3: 'ios-checkmark-circle-outline', // 已完成
-  4: 'md-close-circle', // 节点失败(包含超时)
-  5: 'md-exit', // 自动退出
-  6: 'md-exit' // 手动终止
-}
-const statusColor = {
-  1: '#ffa500',
-  2: '#8189a5',
-  3: '#19be6b',
-  4: '#ed4014',
-  5: '#ed4014',
-  6: '#ed4014'
-}
 export default {
   components: {
     HeaderTitle,
@@ -376,7 +342,8 @@ export default {
     DynamicFlow,
     EntityTable,
     DataBind,
-    UploadFile
+    UploadFile,
+    BaseProgress
   },
   props: {
     // 1发布,2请求(3问题,4事件,5变更)
@@ -404,13 +371,13 @@ export default {
         data: []
       },
       rootEntityOptions: [],
-      progressList: [],
       requestData: [], // 发布目标对象表格数据
       historyData: [], // 处理历史数据
       handleData: {},
       attachFiles: [], // 上传附件
       activeStep: '', // 处理历史当前展开
-      errorNode: ''
+      errorNode: '',
+      flowVisible: false
     }
   },
   computed: {
@@ -433,7 +400,9 @@ export default {
   },
   async created () {
     // 获取请求进度
-    this.getProgressInfo()
+    this.$nextTick(() => {
+      this.$refs.progress.initData(this.requestTemplate, this.requestId)
+    })
     // 获取详情信息
     this.getPublishInfo()
     // 获取附件和操作单元
@@ -441,47 +410,6 @@ export default {
     this.getEntity()
   },
   methods: {
-    // 获取请求进度
-    async getProgressInfo () {
-      const params = {
-        templateId: this.requestTemplate,
-        requestId: this.requestId
-      }
-      const { statusCode, data } = await getProgressInfo(params)
-      if (statusCode === 'OK') {
-        this.progressList = data
-        this.progressList.forEach(item => {
-          item.icon = statusIcon[item.status]
-          item.color = statusColor[item.status]
-          switch (item.node) {
-            case 'sendRequest':
-              item.name = this.$t('tw_commit_request') // 提交请求
-              break
-            case 'requestPending':
-              item.name = this.$t('tw_request_pending') // 请求定版
-              break
-            case 'requestComplete':
-              item.name = this.$t('tw_request_complete') // 请求完成
-              break
-            case 'autoExit':
-              item.name = this.$t('status_faulted') // 自动退出
-              this.errorNode = item.node
-              break
-            case 'internallyTerminated':
-              item.name = this.$t('status_termination') // 手动终止
-              this.errorNode = item.node
-              break
-            default:
-              item.name = item.node
-              break
-          }
-          if (item.handler === 'autoNode') {
-            item.handler = this.$t('tw_auto_tag') // 自动节点
-            this.errorNode = item.name
-          }
-        })
-      }
-    },
     // 获取附件和操作单元
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.requestId)
@@ -723,9 +651,17 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
+    .icon {
+      cursor: pointer;
+      width: 28px;
+      height: 24px;
+      color: #fff;
+      border-radius: 2px;
+      background: #2d8cf0;
+    }
     .name {
       font-size: 16px;
-      margin-left: 20px;
+      margin-left: 16px;
       display: flex;
       align-items: center;
     }
@@ -734,25 +670,6 @@ export default {
     padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
-    .steps {
-      display: flex;
-      align-items: center;
-      .title {
-        font-size: 14px;
-        font-weight: 500;
-        margin-right: 20px;
-      }
-      .role {
-        display: flex;
-        flex-direction: column;
-      }
-      .word-eclipse {
-        max-width: 180px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-    }
     .btn-group {
       display: flex;
       justify-content: flex-end;
@@ -760,10 +677,6 @@ export default {
   }
   .content {
     min-height: 500px;
-    .split-line {
-      border-right: 2px dashed #d7dadc;
-      padding-right: 20px;
-    }
     .history {
       padding: 20px;
       border: 1px dashed #d7dadc;
@@ -781,6 +694,19 @@ export default {
       }
     }
   }
+  .expand-btn {
+    position: fixed;
+    top: calc(50% - 14px);
+    cursor: pointer;
+  }
+  .flow-expand {
+    height: 100%;
+    position: fixed;
+    right: 0px;
+    top: 0px;
+    background: #f8f8f9;
+    padding: 20px;
+  }
 }
 </style>
 <style lang="scss">
@@ -796,7 +722,7 @@ export default {
     background: #8189a5;
   }
   .ivu-form-item {
-    margin-bottom: 25px !important;
+    margin-bottom: 15px !important;
   }
   .ivu-form-item-content {
     line-height: 20px;

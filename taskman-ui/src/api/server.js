@@ -142,6 +142,10 @@ export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/re
 // 定版暂存新接口
 export const saveRequestNew = (requestId, type, data) =>
   req.post(`/taskman/api/v2/request-data/save/${requestId}/bing/${type}`, data)
+// 审批模板配置
+export const getApprovalConfig = (templateId) => req.get(`/taskman/api/v1/approval-template/${templateId}`)
+// 任务模板配置
+export const getTaskConfig = (templateId) => req.get(`/taskman/api/v1/task-template/custom/${templateId}`)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

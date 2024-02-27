@@ -6,7 +6,7 @@
       <span class="custom-display">{{ flowData.procInstName }} {{ flowData.operator }}</span>
     </div>
     <div id="graphcontain">
-      <div class="graph-container" id="flow" style="height: 90%"></div>
+      <div class="graph-container" id="flow" style="height: 96%"></div>
       <Button class="reset-button" size="small" @click="ResetFlow">ResetZoom</Button>
     </div>
 

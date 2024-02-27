@@ -559,7 +559,6 @@ export default {
           }
         })
       } else {
-        console.log(22)
         this.$emit('gotoNextStep', this.requestTemplateId)
       }
     },

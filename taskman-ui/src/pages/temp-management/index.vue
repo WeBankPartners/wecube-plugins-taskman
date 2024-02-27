@@ -10,7 +10,10 @@
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
           </Step>
           <Step icon="md-cog">
-            <span slot="title" @click="changeStep(2)">{{ $t('request_form_settings') }}</span>
+            <span slot="title" @click="changeStep(1)">{{ $t('request_form_settings') }}</span>
+          </Step>
+          <Step icon="md-cog">
+            <span slot="title" @click="changeStep(2)">{{ $t('approval_form_settings') }}</span>
           </Step>
           <Step icon="ios-settings">
             <span slot="title" @click="changeStep(3)">{{ $t('task_form_settings') }}</span>
@@ -38,12 +41,18 @@
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 1"
       ></RequestForm>
+      <ApprovalForm
+        @gotoNextStep="gotoNextStep"
+        :requestTemplateId="requestTemplateId"
+        v-if="currentStep === 2"
+      ></ApprovalForm>
       <!-- <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 2"></TaskForm> -->
     </div>
   </div>
 </template>
 
 <script>
+import ApprovalForm from './approval-form'
 import RequestForm from './request-form'
 import BasicInfo from './basic-info'
 import TaskForm from './task-form'
@@ -87,6 +96,7 @@ export default {
     }
   },
   components: {
+    ApprovalForm,
     RequestForm,
     BasicInfo,
     TaskForm

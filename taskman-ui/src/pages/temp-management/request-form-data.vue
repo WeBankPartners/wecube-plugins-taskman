@@ -299,6 +299,7 @@
     <RequestFormDataCustom
       ref="requestFormDataCustomRef"
       @reloadParentPage="loadPage"
+      module="data-form"
       v-show="['custom'].includes(itemGroupType)"
     ></RequestFormDataCustom>
 
@@ -306,6 +307,7 @@
     <RequestFormDataWorkflow
       ref="requestFormDataWorkflowRef"
       @reloadParentPage="loadPage"
+      module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
   </div>
@@ -322,7 +324,6 @@ import {
 import draggable from 'vuedraggable'
 import RequestFormDataCustom from './request-form-data-custom.vue'
 import RequestFormDataWorkflow from './request-form-data-workflow.vue'
-import RequestFormDataOptional from './request-form-data-optional.vue'
 let idGlobal = 18
 export default {
   name: 'form-select',
@@ -533,7 +534,9 @@ export default {
   },
   methods: {
     async loadPage (requestTemplateId) {
-      this.requestTemplateId = requestTemplateId
+      if (requestTemplateId) {
+        this.requestTemplateId = requestTemplateId
+      }
       this.isParmasChanged = false
       const { statusCode, data } = await getRequestDataForm(this.requestTemplateId)
       if (statusCode === 'OK') {
@@ -619,6 +622,7 @@ export default {
               itemGroupId: '',
               itemGroupSort: this.dataFormInfo.groups.length + 1
             }
+            console.log(34, params)
             this.$refs.requestFormDataWorkflowRef.loadPage(params)
           }
         })
@@ -777,8 +781,7 @@ export default {
   components: {
     draggable,
     RequestFormDataCustom,
-    RequestFormDataWorkflow,
-    RequestFormDataOptional
+    RequestFormDataWorkflow
   }
 }
 </script>

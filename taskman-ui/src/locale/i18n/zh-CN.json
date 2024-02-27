@@ -164,6 +164,8 @@
   "tw_new_publish": "新建发布",
   "tw_publish_history": "发布历史",
   "tw_request": "请求",
+  "tw_question": "问题",
+  "tw_event": "事件",
   "tw_new_request": "新建请求",
   "tw_request_history": "请求历史",
   "tw_flow_tips": "如对以下编排的设计、执行情况有任何疑问，请复制【编排名】发送给wecube管理员询问。",
@@ -292,5 +294,9 @@
   "tw_confirm": "确认 ",
   "tw_confirm_discarding_changes": "确认放弃改动",
   "tw_params_edit_confirm": "数据发生变化，选择放弃则变化信息不会被保存！",
-  "tw_abandon": "放弃"
+  "tw_abandon": "放弃",
+  "tw_approve": "同意",
+  "tw_reject": "拒绝",
+  "tw_send_back": "退回",
+  "tw_comments": "意见"
 }

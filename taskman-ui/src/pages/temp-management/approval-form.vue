@@ -2,18 +2,19 @@
   <Row type="flex">
     <Col span="20" offset="2">
       <div style="margin: 24px 0">
-        <span v-for="approval in approvalNodes" :key="approval.id">
+        <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right: 30px;">
           <Tag
             color="primary"
             checkable
             @on-change="editNode(approval)"
             style="cursor: pointer"
             :checked="approval.id === activeEditingNode.id ? true : false"
-            :type="approval.id === activeEditingNode.id ? 'none' : 'border'"
+            :type="approval.id === activeEditingNode.id ? 'dot' : 'border'"
           >
             {{ approval.name }}
           </Tag>
           <Button
+            v-if="approvalNodes.length > 1"
             @click.stop="removeNopde(approval)"
             type="error"
             size="small"
@@ -33,7 +34,11 @@
         </span>
       </div>
       <div>
-        <ApprovalFormNode ref="approvalFormNodeRef" @reloadParentPage="loadPage"></ApprovalFormNode>
+        <ApprovalFormNode
+          ref="approvalFormNodeRef"
+          @jumpToNode="jumpToNode"
+          @reloadParentPage="loadPage"
+        ></ApprovalFormNode>
       </div>
       <Divider />
       <div>
@@ -72,13 +77,6 @@
                   <span class="underline"></span>
                 </div>
               </div>
-              <Form :label-width="120" v-if="dataFormInfo.associationWorkflow">
-                <FormItem :label="$t('tw_choose_object')">
-                  <Select style="width: 30%">
-                    <Option v-for="item in []" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
-                  </Select>
-                </FormItem>
-              </Form>
               <div style="margin-top:16px">
                 <div
                   v-for="groupItem in dataFormInfo.groups"
@@ -120,76 +118,113 @@
                   />
                 </span>
               </div>
-              <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
-                <div
-                  v-for="(item, itemIndex) in finalElement"
-                  :key="itemIndex"
-                  style="border: 1px solid #dcdee2; margin-bottom: 8px; padding: 8px"
-                >
-                  <span style="font-weight: 600;">
-                    {{ item.itemGroupName }}
-                  </span>
-                  <draggable
-                    class="dragArea"
-                    :list="item.attrs"
-                    :sort="$parent.isCheck !== 'Y'"
-                    group="people"
-                    @change="log(item)"
+              <div style="min-height: 200px;">
+                <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
+                  <div
+                    v-for="(item, itemIndex) in finalElement"
+                    :key="itemIndex"
+                    style="border: 1px solid #dcdee2; margin-bottom: 8px; padding: 8px"
                   >
-                    <div
-                      @click="selectElement(itemIndex, eleIndex)"
-                      :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
-                      :style="{ width: (element.width / 24) * 100 + '%' }"
-                      v-for="(element, eleIndex) in item.attrs"
-                      :key="element.id"
+                    <span style="font-weight: 600;">
+                      {{ item.itemGroupName }}
+                    </span>
+                    <draggable
+                      class="dragArea"
+                      :list="item.attrs"
+                      :sort="$parent.isCheck !== 'Y'"
+                      group="people"
+                      @change="log(item)"
                     >
-                      <div>
-                        <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
-                        {{ element.title }}:
+                      <div
+                        @click="selectElement(itemIndex, eleIndex)"
+                        :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
+                        :style="{ width: (element.width / 24) * 100 + '%' }"
+                        v-for="(element, eleIndex) in item.attrs"
+                        :key="element.id"
+                      >
+                        <div>
+                          <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
+                          {{ element.title }}:
+                        </div>
+                        <Input
+                          v-if="element.elementType === 'input'"
+                          :disabled="element.isEdit === 'no'"
+                          v-model="element.defaultValue"
+                          placeholder=""
+                          style="width: calc(100% - 30px)"
+                        />
+                        <Input
+                          v-if="element.elementType === 'textarea'"
+                          :disabled="element.isEdit === 'no'"
+                          v-model="element.defaultValue"
+                          type="textarea"
+                          style="width: calc(100% - 30px)"
+                        />
+                        <Select
+                          v-if="element.elementType === 'select'"
+                          :disabled="element.isEdit === 'no'"
+                          v-model="element.defaultValue"
+                          style="width: calc(100% - 30px)"
+                        ></Select>
+                        <Select
+                          v-if="element.elementType === 'wecmdbEntity'"
+                          :disabled="element.isEdit === 'no'"
+                          v-model="element.defaultValue"
+                          style="width: calc(100% - 30px)"
+                        ></Select>
+                        <Button
+                          @click.stop="removeForm(itemIndex, eleIndex, element)"
+                          type="error"
+                          size="small"
+                          :disabled="$parent.isCheck === 'Y'"
+                          ghost
+                          icon="ios-close"
+                        ></Button>
                       </div>
-                      <Input
-                        v-if="element.elementType === 'input'"
-                        :disabled="element.isEdit === 'no'"
-                        v-model="element.defaultValue"
-                        placeholder=""
-                        style="width: calc(100% - 30px)"
-                      />
-                      <Input
-                        v-if="element.elementType === 'textarea'"
-                        :disabled="element.isEdit === 'no'"
-                        v-model="element.defaultValue"
-                        type="textarea"
-                        style="width: calc(100% - 30px)"
-                      />
-                      <Select
-                        v-if="element.elementType === 'select'"
-                        :disabled="element.isEdit === 'no'"
-                        v-model="element.defaultValue"
-                        style="width: calc(100% - 30px)"
-                      ></Select>
-                      <Select
-                        v-if="element.elementType === 'wecmdbEntity'"
-                        :disabled="element.isEdit === 'no'"
-                        v-model="element.defaultValue"
-                        style="width: calc(100% - 30px)"
-                      ></Select>
-                      <Button
-                        @click.stop="removeForm(itemIndex, eleIndex, element)"
-                        type="error"
-                        size="small"
-                        :disabled="$parent.isCheck === 'Y'"
-                        ghost
-                        icon="ios-close"
-                      ></Button>
-                    </div>
-                  </draggable>
+                    </draggable>
+                  </div>
+                  <div style="text-align: right;">
+                    <Button type="primary" size="small" ghost @click="saveGroup">{{ $t('save') }}</Button>
+                    <Button size="small" @click="cancelGroup">{{ $t('cancel') }}</Button>
+                  </div>
+                </template>
+              </div>
+              <div class="title">
+                <div class="title-text">
+                  {{ $t('审批结果') }}
+                  <span class="underline"></span>
                 </div>
-                <div style="text-align: right;">
-                  <Button type="primary" size="small" ghost @click="saveGroup">{{ $t('save') }}</Button>
-                  <Button size="small" @click="cancelGroup">{{ $t('cancel') }}</Button>
-                </div>
-              </template>
+              </div>
+              <div>
+                <Form :label-width="120">
+                  <FormItem :label="$t('t_action')">
+                    <Select>
+                      <Option value="1">{{ $t('tw_approve') }}</Option>
+                      <Option value="2">{{ $t('tw_reject') }}</Option>
+                      <Option value="3">{{ $t('tw_send_back') }}</Option>
+                    </Select>
+                  </FormItem>
+                  <FormItem :label="$t('tw_comments')">
+                    <Input type="textarea" :row="2"></Input>
+                  </FormItem>
+                </Form>
+              </div>
             </div>
+            <Modal v-model="showSelectModel" title="选择组信息" :mask-closable="false">
+              <Form :label-width="120">
+                <FormItem :label="$t('选择组')">
+                  <Select style="width: 80%" v-model="itemGroup" filterable>
+                    <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
+                      item.itemGroupName
+                    }}</Option>
+                  </Select>
+                </FormItem>
+              </Form>
+              <template #footer>
+                <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
+                <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
+              </template>
+            </Modal>
           </Col>
           <Col span="6" style="border: 1px solid #dcdee2">
             <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
@@ -336,13 +371,40 @@
         </Row>
       </div>
     </Col>
+    <!-- 自定义表单配置 -->
+    <RequestFormDataCustom
+      ref="requestFormDataCustomRef"
+      @reloadParentPage="loadPage"
+      module="other"
+      v-show="['custom'].includes(itemGroupType)"
+    ></RequestFormDataCustom>
+
+    <!-- 编排表单配置 -->
+    <RequestFormDataWorkflow
+      ref="requestFormDataWorkflowRef"
+      @reloadParentPage="loadPage"
+      module="other"
+      v-show="['workflow', 'optional'].includes(itemGroupType)"
+    ></RequestFormDataWorkflow>
   </Row>
 </template>
 
 <script>
 import draggable from 'vuedraggable'
 import ApprovalFormNode from './approval-form-node.vue'
-import { getApprovalNode, addApprovalNode, removeApprovalNode, getApprovalGlobalForm } from '@/api/server.js'
+import RequestFormDataCustom from './request-form-data-custom.vue'
+import RequestFormDataWorkflow from './request-form-data-workflow.vue'
+import {
+  getApprovalNode,
+  addApprovalNode,
+  removeApprovalNode,
+  getApprovalGlobalForm,
+  copyItemGroup,
+  getApprovalNodeGroups,
+  deleteRequestGroupForm,
+  getAllDataModels,
+  saveRequestGroupCustomForm
+} from '@/api/server.js'
 let idGlobal = 118
 export default {
   name: 'BasicInfo',
@@ -500,6 +562,7 @@ export default {
         formTemplateId: '',
         groups: []
       },
+      groupOptions: [],
       finalElement: [
         // 待编辑组信息
         {
@@ -566,7 +629,8 @@ export default {
       groups: [], // 已存在组
       showSelectModel: false, // 组选择框
       itemGroupType: '', // 选中的组类型
-      itemGroup: '' // 选中的组信息
+      itemGroup: '', // 选中的组信息
+      nextNodeInfo: {} // 缓存待切换节点信息
     }
   },
   props: ['requestTemplateId'],
@@ -586,10 +650,7 @@ export default {
         } else {
           this.approvalNodes = data.ids
           this.activeEditingNode = this.approvalNodes[0]
-          this.$refs.approvalFormNodeRef.loadPage({
-            requestTemplateId: this.requestTemplateId,
-            id: this.approvalNodes[0].id
-          })
+          this.editNode(this.activeEditingNode)
         }
       }
     },
@@ -619,13 +680,36 @@ export default {
         onCancel: () => {}
       })
     },
+    preApprovalNodeChange () {
+      this.$refs.approvalFormNodeRef.isNeedConfirm()
+      return this.$refs.approvalFormNodeRef.panalStatus()
+    },
     editNode (node) {
-      console.log(234)
-      this.activeEditingNode = node
-      this.$refs.approvalFormNodeRef.loadPage({
+      let params = {
         requestTemplateId: this.requestTemplateId,
         id: node.id
-      })
+      }
+      this.nextNodeInfo = node
+      const res = this.preApprovalNodeChange()
+      if (!res) {
+        this.activeEditingNode = node
+        this.$refs.approvalFormNodeRef.loadPage(params)
+      }
+      this.getApprovalNodeGroups(node)
+    },
+    async getApprovalNodeGroups (node) {
+      const { statusCode, data } = await getApprovalNodeGroups(node.formTemplate)
+      if (statusCode === 'OK') {
+        this.dataFormInfo = data
+      }
+    },
+    jumpToNode () {
+      let params = {
+        requestTemplateId: this.requestTemplateId,
+        id: this.nextNodeInfo.id
+      }
+      this.activeEditingNode = this.nextNodeInfo
+      this.$refs.approvalFormNodeRef.loadPage(params)
     },
     // 查询可添加的组
     async selectItemGroup () {
@@ -636,17 +720,26 @@ export default {
       if (statusCode === 'OK') {
         console.log(77, data)
         // workflow  2.编排数据, 3.optional 自选数据项表单,  custom 1.自定义表单
-        // this.$nextTick(() => {
-        //   this.groupOptions = data.map(d => {
-        //     if (d.formType === 'custom') {
-        //       d.entities = ['custom']
-        //     } else {
-        //       d.entities = d.entities || []
-        //     }
-        //     return d
-        //   })
-        //   this.showSelectModel = true
-        // })
+        this.groupOptions = data.filter(d => {
+          console.log(d, this.dataFormInfo.groups)
+          const findIndex = this.dataFormInfo.groups.findIndex(group => group.itemGroupName === d.itemGroupName)
+          if (findIndex === -1) {
+            return d
+          }
+        })
+        this.showSelectModel = true
+      }
+    },
+    // 选择可添加的组
+    async okSelect () {
+      this.showSelectModel = false
+      let params = {
+        formTemplateId: this.activeEditingNode.formTemplate,
+        itemGroupId: this.itemGroup
+      }
+      const { statusCode } = await copyItemGroup(params)
+      if (statusCode === 'OK') {
+        this.getApprovalNodeGroups(this.activeEditingNode)
       }
     },
     cloneDog (val) {
@@ -673,10 +766,162 @@ export default {
     },
     paramsChanged () {
       this.isParmasChanged = true
+    },
+    // 编辑组自定义属性
+    editGroupCustomItems (groupItem) {
+      console.log(11, this.isParmasChanged)
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('confirm_discarding_changes')}`,
+          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('abandon'),
+          onOk: async () => {
+            this.saveGroup()
+          },
+          onCancel: () => {
+            this.updateFinalElement(groupItem)
+          }
+        })
+      } else {
+        this.updateFinalElement(groupItem)
+      }
+    },
+    updateFinalElement (groupItem) {
+      this.finalElement = [
+        {
+          itemGroupId: groupItem.itemGroupId,
+          formTemplateId: this.dataFormInfo.formTemplateId,
+          requestTemplateId: this.requestTemplateId,
+          itemGroup: groupItem.itemGroup,
+          itemGroupName: groupItem.itemGroupName,
+          attrs: groupItem.items || []
+        }
+      ]
+    },
+    // 删除组
+    async removeGroupItem (groupItem) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.dataFormInfo.formTemplateId)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.loadPage()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    // 编辑组信息
+    editGroupItem (groupItem) {
+      console.log(12, groupItem)
+      if (groupItem.itemGroupType === 'custom') {
+        this.itemGroupType = groupItem.itemGroupType
+        let params = {
+          requestTemplateId: this.requestTemplateId,
+          formTemplateId: this.dataFormInfo.formTemplateId,
+          isAdd: false,
+          itemGroupName: groupItem.itemGroupName,
+          itemGroupType: groupItem.itemGroupType,
+          itemGroupId: groupItem.itemGroupId,
+          itemGroup: ''
+        }
+        this.$refs.requestFormDataCustomRef.loadPage(params)
+      }
+      if (['workflow', 'optional'].includes(groupItem.itemGroupType)) {
+        this.itemGroupType = groupItem.itemGroupType
+        let params = {
+          requestTemplateId: this.requestTemplateId,
+          formTemplateId: this.dataFormInfo.formTemplateId,
+          isAdd: false,
+          itemGroupName: groupItem.itemGroupName,
+          itemGroupType: groupItem.itemGroupType,
+          itemGroupId: groupItem.itemGroupId,
+          itemGroup: groupItem.itemGroup
+        }
+        this.$refs.requestFormDataWorkflowRef.loadPage(params)
+      }
+    },
+    // 获取wecmdb下拉类型entity值
+    async getAllDataModels () {
+      const { data, status } = await getAllDataModels()
+      if (status === 'OK') {
+        this.allEntityList = []
+        const sortData = data.map(_ => {
+          return {
+            ..._,
+            entities: _.entities.sort(function (a, b) {
+              var s = a.name.toLowerCase()
+              var t = b.name.toLowerCase()
+              if (s < t) return -1
+              if (s > t) return 1
+            })
+          }
+        })
+        sortData.forEach(i => {
+          i.entities.forEach(j => {
+            this.allEntityList.push(`${j.packageName}:${j.name}`)
+          })
+        })
+      }
+    },
+    // 选中自定义表单项
+    selectElement (itemIndex, eleIndex) {
+      if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {
+        this.finalElement[this.activeTag.itemGroupIndex].attrs[this.activeTag.attrIndex].isActive = false
+      }
+      this.activeTag = {
+        itemGroupIndex: itemIndex,
+        attrIndex: eleIndex
+      }
+      this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
+      this.editElement.isActive = true
+      this.openPanel = '1'
+    },
+    // 删除自定义表单项
+    removeForm (itemIndex, eleIndex, element) {
+      this.finalElement[itemIndex].attrs.splice(eleIndex, 1)
+      this.openPanel = ''
+      this.paramsChanged()
+    },
+    // 保存自定义表单项
+    async saveGroup () {
+      let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+      finalData.items = finalData.attrs.map(attr => {
+        if (attr.id.startsWith('c_')) {
+          attr.id = ''
+        }
+        return attr
+      })
+      delete finalData.attrs
+      const { statusCode } = await saveRequestGroupCustomForm(finalData)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.isParmasChanged = false
+        this.finalElement = []
+        this.loadPage()
+      }
+    },
+    cancelGroup () {
+      this.finalElement = []
+      this.isParmasChanged = false
     }
   },
   components: {
     ApprovalFormNode,
+    RequestFormDataCustom,
+    RequestFormDataWorkflow,
     draggable
   }
 }

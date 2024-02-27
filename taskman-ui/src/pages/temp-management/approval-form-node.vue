@@ -7,16 +7,17 @@
       </div>
     </div>
     <div>
+      {{ isParmasChanged }}
       <Form ref="formInline" inline :label-width="120">
         <FormItem label="审批名称">
-          <Input type="text" v-model="activeApprovalNode.name" style="width: 94%;"> </Input>
+          <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 94%;"> </Input>
           <span style="color: red">*</span>
           <span v-if="activeApprovalNode.name === ''" style="color: red"
             >{{ $t('审批名称') }}{{ $t('can_not_be_empty') }}</span
           >
         </FormItem>
         <FormItem label="审批时效">
-          <Select v-model="activeApprovalNode.expireDay" filterable style="width: 94%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 94%;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -55,14 +56,14 @@
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.roleObjs" :key="roleObjIndex" style="margin: 4px 0">
             <Col span="1">{{ roleObjIndex + 1 }}</Col>
             <Col span="5">
-              <Select v-model="roleObj.roleType" filterable>
+              <Select v-model="roleObj.roleType" filterable @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
               </Select>
             </Col>
             <Col span="5">
-              <Select v-model="roleObj.handlerType" filterable>
+              <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
                 <Option
                   v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.roleType))"
                   :value="item.value"
@@ -181,7 +182,7 @@ export default {
   },
   methods: {
     loadPage (params) {
-      console.log(2)
+      this.isParmasChanged = false
       this.requestTemplateId = params.requestTemplateId
       this.getNodeById(params)
       this.getUserRoles()
@@ -204,6 +205,30 @@ export default {
         })
         this.$emit('reloadParentPage')
       }
+    },
+    isNeedConfirm () {
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('confirm_discarding_changes')}`,
+          content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('abandon'),
+          onOk: async () => {
+            this.saveNode()
+          },
+          onCancel: () => {
+            this.$emit('jumpToNode')
+          }
+        })
+        return true
+      } else {
+        return false
+      }
+    },
+    // 为父页面提供状态查询
+    panalStatus () {
+      return this.isParmasChanged
     },
     mgmtData () {
       this.activeApprovalNode.roleObjs.forEach((roleObj, roleObjIndex) => {
@@ -236,6 +261,7 @@ export default {
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
+      this.paramsChanged()
     },
     async getUserByRole (role, roleObjIndex) {
       const params = {

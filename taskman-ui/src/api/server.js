@@ -160,7 +160,7 @@ export const deleteRequestGroupForm = (tmpId, formTemplateId) =>
 export const saveRequestGroupCustomForm = data => req.post(`/taskman/api/v1/form-template/item-group`, data)
 export const getRequestGroupForm = params =>
   req.get(
-    `/taskman/api/v1/data-form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}`
+    `/taskman/api/v1/form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}&module=${params.module}`
   )
 // 获取审批节点
 export const getApprovalNode = tmpId => req.get(`/taskman/api/v1/approval-template/${tmpId}/ids`)
@@ -174,3 +174,12 @@ export const removeApprovalNode = id => req.delete(`/taskman/api/v1/approval-tem
 export const getApprovalNodeById = (tmpId, nodeId) => req.get(`/taskman/api/v1/approval-template/${tmpId}/${nodeId}`)
 // 查询审批中可添加的组
 export const getApprovalGlobalForm = tmpId => req.get(`/taskman/api/v1/request-form-template/${tmpId}/global-form`)
+// 在审批节点中赋值赋值添加数据表单
+export const copyItemGroup = params =>
+  req.post(
+    `/taskman/api/v1/form-template/item-group/copy?form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}`,
+    {}
+  )
+// 获取审批节点下的组信息
+export const getApprovalNodeGroups = formTemplateId =>
+  req.get(`/taskman/api/v1/request-form-template/form/${formTemplateId}`)

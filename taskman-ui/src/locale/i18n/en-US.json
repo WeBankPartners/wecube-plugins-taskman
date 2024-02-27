@@ -164,6 +164,8 @@
   "tw_new_publish": "New Release",
   "tw_publish_history": "Release History",
   "tw_request": "Request",
+  "tw_question": "Question",
+  "tw_event": "Event",
   "tw_new_request": "New Request",
   "tw_request_history": "Request History",
   "tw_flow_tips": "If you have any questions about the design or execution of the following process, please copy the [Process Name] and send it to the wecube admin for inquiry.",
@@ -292,5 +294,9 @@
   "tw_confirm": "Confirm ",
   "tw_confirm_discarding_changes": "Confirm Discarding Changes",
   "tw_params_edit_confirm": "The data changes, if you choose to give up, the changed information will not be saved!",
-  "tw_abandon": "Abandon"
+  "tw_abandon": "Abandon",
+  "tw_approve": "Approve",
+  "tw_reject": "Reject",
+  "tw_send_back": "Send Back",
+  "tw_comments": "Comments"
 }

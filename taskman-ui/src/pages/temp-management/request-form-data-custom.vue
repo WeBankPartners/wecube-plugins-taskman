@@ -55,7 +55,7 @@ export default {
       }
     }
   },
-  props: ['requestTemplateId'],
+  props: ['requestTemplateId', 'module'],
   methods: {
     async loadPage (params) {
       if (params.isAdd) {
@@ -76,7 +76,8 @@ export default {
           requestTemplateId: params.requestTemplateId,
           entity: params.itemGroup,
           formType: params.itemGroupType,
-          itemGroupId: params.itemGroupId
+          itemGroupId: params.itemGroupId,
+          module: this.module
         })
         if (statusCode === 'OK') {
           this.group = data

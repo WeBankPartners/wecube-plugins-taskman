@@ -130,6 +130,7 @@ export default {
       }
     }
   },
+  props: ['module'],
   methods: {
     async loadPage (params) {
       await this.getRequestGroupForm(params)
@@ -155,7 +156,8 @@ export default {
         requestTemplateId: params.requestTemplateId,
         entity: params.itemGroup,
         formType: params.itemGroupType,
-        itemGroupId: params.itemGroupId
+        itemGroupId: params.itemGroupId,
+        module: this.module
       })
       if (statusCode === 'OK') {
         this.group = data

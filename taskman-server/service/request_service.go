@@ -321,6 +321,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 }
 
 func SaveRequestCacheV2(requestId, operator, userToken string, param *models.RequestProDataV2Dto) error {
+	var customFormCache []byte
 	err := ValidateRequestForm(param.Data, userToken)
 	if err != nil {
 		return err
@@ -351,10 +352,16 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	if err != nil {
 		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
 	}
+	if len(param.CustomForm.Value) > 0 {
+		customFormCache, err = json.Marshal(param.CustomForm)
+		if err != nil {
+			return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
+		}
+	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, newParam)
-	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, requestId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), requestId}})
 	return dao.Transaction(actions)
 }
 

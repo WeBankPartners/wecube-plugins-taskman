@@ -17,7 +17,8 @@
             type="text"
             :placeholder="$t('name')"
             clearable
-            @on-change="handleInputChange">
+            @on-change="handleInputChange"
+          >
           </Input>
         </Col>
         <Col span="4">
@@ -27,7 +28,8 @@
             type="text"
             :placeholder="$t('tags')"
             clearable
-            @on-change="handleInputChange">
+            @on-change="handleInputChange"
+          >
           </Input>
         </Col>
         <Col span="4">

@@ -6,10 +6,10 @@
         :key="index"
         @click="handleTabChange(item)"
         :class="{
-          'radio': true,
-          'custom': item.itemGroupType === 'custom',
-          'workflow': item.itemGroupType === 'workflow',
-          'optional': item.itemGroupType === 'optional',
+          radio: true,
+          custom: item.itemGroupType === 'custom',
+          workflow: item.itemGroupType === 'workflow',
+          optional: item.itemGroupType === 'optional',
           'fix-old-data': !item.itemGroupType
         }"
         :style="activeStyle(item)"
@@ -28,7 +28,9 @@
                   :label="i.title || '自定义分析'"
                   :prop="i.name"
                   :required="i.required === 'yes'"
-                  :rules="i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []"
+                  :rules="
+                    i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []
+                  "
                 >
                   <!--输入框-->
                   <Input
@@ -162,7 +164,7 @@ export default {
             color = 'rgb(45, 140, 240)'
           }
         }
-        return {background: color}
+        return { background: color }
       }
     }
   },
@@ -337,7 +339,7 @@ export default {
         this.initTableData()
       } else if (this.activeItem.itemGroupRule === 'exist') {
         if (!this.addRowSource) {
-          return
+
         } else {
           const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
           this.handleAddRow(this.activeItem, source)
@@ -359,7 +361,7 @@ export default {
         } else {
           entityData[item.name] = ''
         }
-        
+
         if (item.elementType === 'select' || item.elementType === 'wecmdbEntity') {
           entityData[item.name + 'Options'] = []
         }
@@ -385,16 +387,6 @@ export default {
       const { status, data } = await getWeCmdbOptions(packageName, entity, {})
       if (status === 'OK') {
         this.addRowSourceOptions = data || []
-      }
-    },
-    // 提交时，定位到没有填写必填项的页签
-    validTable (index) {
-      if (index !== '') {
-        if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
-          return
-        }
-        this.activeTab = this.requestData[index].entity || this.requestData[index].itemGroup
-        this.initTableData()
       }
     }
   }

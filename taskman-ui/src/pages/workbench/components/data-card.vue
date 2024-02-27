@@ -128,8 +128,10 @@ export default {
       }
     },
     getPendingNum () {
-      return function(type) {
-        return this.pendingNumObj[type].reduce((sum, cur) => {return Number(sum) + Number(cur)}, 0)
+      return function (type) {
+        return this.pendingNumObj[type].reduce((sum, cur) => {
+          return Number(sum) + Number(cur)
+        }, 0)
       }
     }
   },
@@ -171,10 +173,10 @@ export default {
             }
           })
         }
-        const pendingTaskArr = data.pendingTask && data.pendingTask.split(';') || []
-        const pendingApprove = data.pendingApprove && data.pendingApprove.split(';') || []
-        const requestPending = data.requestPending && data.requestPending.split(';') || []
-        const requestConfirm = data.requestConfirm && data.requestConfirm.split(';') || []
+        const pendingTaskArr = (data.pendingTask && data.pendingTask.split(';')) || []
+        const pendingApprove = (data.pendingApprove && data.pendingApprove.split(';')) || []
+        const requestPending = (data.requestPending && data.requestPending.split(';')) || []
+        const requestConfirm = (data.requestConfirm && data.requestConfirm.split(';')) || []
         this.pendingNumObj['1'] = [pendingTaskArr[0], pendingApprove[0], requestPending[0], requestConfirm[0]]
         this.pendingNumObj['2'] = [pendingTaskArr[1], pendingApprove[1], requestPending[1], requestConfirm[1]]
       }
@@ -193,7 +195,7 @@ export default {
   padding: 10px;
 }
 .badge {
-  position:absolute;
+  position: absolute;
   top: -30px;
   right: -35px;
   font-size: 12px;

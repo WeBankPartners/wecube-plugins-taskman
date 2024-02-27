@@ -301,7 +301,7 @@
       </div>
     </div>
     <!--编排流程-->
-    <div class="expand-btn" :style="{right: flowVisible ? '440px' : '0px'}" @click="flowVisible = !flowVisible">
+    <div class="expand-btn" :style="{ right: flowVisible ? '440px' : '0px' }" @click="flowVisible = !flowVisible">
       <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
       <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
     </div>

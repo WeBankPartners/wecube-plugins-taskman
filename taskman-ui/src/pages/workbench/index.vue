@@ -130,28 +130,44 @@ export default {
       },
       sorting: {}, // 表格默认排序
       taskLabel: () => {
-        return <div>
-          <span>{this.$t('tw_task_tab')}</span>
-          {this.tabName === 'pending' && <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][0])}></Badge>}
-        </div>
+        return (
+          <div>
+            <span>{this.$t('tw_task_tab')}</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][0])}></Badge>
+            )}
+          </div>
+        )
       },
       approveLabel: () => {
-        return <div>
-          <span>审批</span>
-          {this.tabName === 'pending' && <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][1])}></Badge>}
-        </div>
+        return (
+          <div>
+            <span>审批</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][1])}></Badge>
+            )}
+          </div>
+        )
       },
       pendingLabel: () => {
-        return <div>
-          <span>{this.$t('tw_pending_tab')}</span>
-          {this.tabName === 'pending' && <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][2])}></Badge>}
-        </div>
+        return (
+          <div>
+            <span>{this.$t('tw_pending_tab')}</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][2])}></Badge>
+            )}
+          </div>
+        )
       },
       confirmLabel: () => {
-        return <div>
-          <span>请求确认</span>
-          {this.tabName === 'pending' && <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][3])}></Badge>}
-        </div>
+        return (
+          <div>
+            <span>请求确认</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][3])}></Badge>
+            )}
+          </div>
+        )
       }
     }
   },

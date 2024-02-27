@@ -106,7 +106,7 @@ export default {
       deep: true
     },
     options: {
-      handler(val) {
+      handler (val) {
         if (val && val.length) {
           // select类型集合
           this.refKeys = []
@@ -140,7 +140,11 @@ export default {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {
         // this.entityData[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
-        this.$set(this.entityData, titleObj.name + 'Options', (titleObj.dataOptions && titleObj.dataOptions.split(',')) || [])
+        this.$set(
+          this.entityData,
+          titleObj.name + 'Options',
+          (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
+        )
         return
       }
       // taskman模板管理配置的引用下拉类型
@@ -204,4 +208,3 @@ export default {
   }
 }
 </script>
-

@@ -71,7 +71,11 @@
               <FormItem :label="$t('tw_attach')">
                 <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
               </FormItem>
-              <CustomForm v-model="form.customForm.value" :options="form.customForm.title" :requestId="requestId"></CustomForm>
+              <CustomForm
+                v-model="form.customForm.value"
+                :options="form.customForm.title"
+                :requestId="requestId"
+              ></CustomForm>
             </HeaderTitle>
             <!--请求表单-->
             <HeaderTitle title="请求表单">
@@ -102,7 +106,7 @@
                 <div v-for="(i, index) in approvalList" :key="index" class="step-item">
                   <div class="step-item-left">
                     <div class="circle">{{ index + 1 }}</div>
-                    <div v-if="(index + 1) !== approvalList.length" class="line" />
+                    <div v-if="index + 1 !== approvalList.length" class="line" />
                   </div>
                   <div class="step-item-content">
                     <div class="title">
@@ -159,22 +163,12 @@
                     <div v-else-if="i.roleType === 'admin'" class="step-background">
                       <div class="form-item">
                         <FormItem label="" required :label-width="0">
-                          <Select
-                            v-model="role"
-                            disabled
-                            placeholder="请选择处理角色"
-                            style="width:300px;"
-                          >
+                          <Select v-model="role" disabled placeholder="请选择处理角色" style="width:300px;">
                             <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                           </Select>
                         </FormItem>
                         <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                          <Input
-                            v-model="role"
-                            disabled
-                            placeholder="请选择处理人"
-                            style="width:300px;"
-                          />
+                          <Input v-model="role" disabled placeholder="请选择处理人" style="width:300px;" />
                         </FormItem>
                       </div>
                     </div>
@@ -183,12 +177,12 @@
               </div>
             </HeaderTitle>
             <!--任务流程-->
-            <HeaderTitle  v-if="taskList.length > 0" title="任务流程">
+            <HeaderTitle v-if="taskList.length > 0" title="任务流程">
               <div class="step-wrap">
                 <div v-for="(i, index) in taskList" :key="index" class="step-item">
                   <div class="step-item-left">
                     <div class="circle">{{ index + 1 }}</div>
-                    <div v-if="(index + 1) !== taskList.length" class="line" />
+                    <div v-if="index + 1 !== taskList.length" class="line" />
                   </div>
                   <div class="step-item-content">
                     <div class="title">
@@ -246,22 +240,12 @@
                     <div v-else-if="i.roleType === 'admin'" class="step-background">
                       <div class="form-item">
                         <FormItem label="" required :label-width="0">
-                          <Select
-                            v-model="role"
-                            disabled
-                            placeholder="请选择处理角色"
-                            style="width:300px;"
-                          >
+                          <Select v-model="role" disabled placeholder="请选择处理角色" style="width:300px;">
                             <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                           </Select>
                         </FormItem>
                         <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                          <Input
-                            v-model="role"
-                            disabled
-                            placeholder="请选择处理人"
-                            style="width:300px;"
-                          />
+                          <Input v-model="role" disabled placeholder="请选择处理人" style="width:300px;" />
                         </FormItem>
                       </div>
                     </div>
@@ -274,7 +258,7 @@
       </div>
     </div>
     <!--编排流程-->
-    <div class="expand-btn" :style="{right: flowVisible ? '445px' : '0px'}" @click="flowVisible = !flowVisible">
+    <div class="expand-btn" :style="{ right: flowVisible ? '445px' : '0px' }" @click="flowVisible = !flowVisible">
       <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
       <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
     </div>
@@ -360,15 +344,15 @@ export default {
       approvalList: [], // 审批流程
       taskList: [], // 任务流程
       approvalTypeName: {
-        'custom': '单人',
-        'any': '协同',
-        'all': '并行',
-        'admin': '提交人角色管理员',
-        'auto': '自动通过'
+        custom: '单人',
+        any: '协同',
+        all: '并行',
+        admin: '提交人角色管理员',
+        auto: '自动通过'
       },
       taskTypeName: {
-        'custom': '自定义任务',
-        'proc': '编排人工任务'
+        custom: '自定义任务',
+        proc: '编排人工任务'
       },
       userRoleList: []
     }

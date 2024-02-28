@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
@@ -285,25 +286,44 @@ func (s FormItemTemplateService) SortFormTemplateItemGroup(param models.FormTemp
 
 func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, itemGroupId string) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
-	// 1. 查询表单组是否存在，不存在则新增
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupId(formTemplateId, itemGroupId)
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var newItemGroupId string
+	formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(itemGroupId)
+	if err != nil {
+		return
+	}
+	if formItemTemplateGroup == nil {
+		err = fmt.Errorf("item-group-id is invalid")
+		return
+	}
+	// 1. 查询表单组是否存在
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByItemGroupId(itemGroupId)
 	if err != nil {
 		return
 	}
 	// 新增数据
-	if len(formItemTemplateList) > 0 {
-		err = transaction(func(session *xorm.Session) error {
+	err = transaction(func(session *xorm.Session) error {
+		newItemGroupId = guid.CreateGuid()
+		_, err = s.formItemTemplateGroupDao.Add(session, &models.FormItemTemplateGroupTable{Id: newItemGroupId, ItemGroupName: formItemTemplateGroup.ItemGroupName,
+			FormTemplate: formTemplateId, ItemGroup: formItemTemplateGroup.ItemGroup, ItemGroupType: formItemTemplateGroup.ItemGroupType,
+			ItemGroupRule: formItemTemplateGroup.ItemGroupRule, CreatedTime: time.Now().Format(models.DateTimeFormat), CopyId: itemGroupId, ItemGroupSort: s.CalcItemGroupSort(formTemplateId)})
+		if err != nil {
+			return err
+		}
+		if len(formItemTemplateList) > 0 {
 			for _, formItemTemplate := range formItemTemplateList {
 				formItemTemplate.CopyId = formItemTemplate.Id
 				formItemTemplate.Id = guid.CreateGuid()
+				formItemTemplate.ItemGroupId = newItemGroupId
+				formItemTemplate.FormTemplate = formTemplateId
 				_, err = s.formItemTemplateDao.Add(session, formItemTemplate)
 				if err != nil {
 					return err
 				}
 			}
-			return nil
-		})
-	}
+		}
+		return nil
+	})
 	return
 }
 

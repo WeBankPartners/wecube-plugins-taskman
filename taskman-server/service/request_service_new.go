@@ -32,6 +32,7 @@ const (
 	RequestPending       = "requestPending"       // 请求定版
 	Approval             = "approval"             // 审批
 	Task                 = "task"                 // 任务
+	Confirm              = "confirm"              // 请求确认
 	CurNodeCompleted     = "Completed"            // 完成
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出
@@ -986,12 +987,12 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 			log.Logger.Error("json Unmarshal", log.Error(err), log.String("CustomFormCache", request.CustomFormCache))
 			return
 		}
-		form.CustomForm = customForm
 	} else {
 		var items []*models.FormItemTemplateTable
 		dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", request.RequestTemplate).Find(&items)
 		customForm.Title = items
 	}
+	form.CustomForm = customForm
 	return
 }
 

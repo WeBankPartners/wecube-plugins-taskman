@@ -121,40 +121,19 @@ func GetFormTemplate(c *gin.Context) {
 
 // GetGlobalFormEntity 获取全局表单 entity
 func GetGlobalFormEntity(c *gin.Context) {
-	var entityList []string
+	var result []*models.FormItemTemplateGroupTable
 	var err error
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	entityList, err = service.GetFormTemplateService().GetDataFormTemplateItemGroups(requestTemplateId)
+	result, err = service.GetFormTemplateService().GetDataFormTemplateItemGroups(requestTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	middleware.ReturnData(c, entityList)
-}
-
-// GetDataFormTemplateItemGroupConfig 获取配置表单组配置
-func GetDataFormTemplateItemGroupConfig(c *gin.Context) {
-	var configureDto *models.FormTemplateGroupConfigureDto
-	var err error
-	formTemplateId := c.Query("form-template-id")
-	entity := c.Query("entity")
-	formType := c.Query("form-type")
-	itemGroupId := c.Query("item-group-id")
-	requestTemplateId := c.Query("request-template-id")
-	if requestTemplateId == "" || formTemplateId == "" {
-		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id or form-template-id")
-		return
-	}
-	configureDto, err = service.GetFormTemplateService().GetDataFormConfig(requestTemplateId, formTemplateId, itemGroupId, formType, entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	middleware.ReturnData(c, configureDto)
+	middleware.ReturnData(c, result)
 }
 
 // GetFormTemplateItemGroupConfig 获取配置表单组配置
@@ -162,13 +141,22 @@ func GetFormTemplateItemGroupConfig(c *gin.Context) {
 	var configureDto *models.FormTemplateGroupConfigureDto
 	var err error
 	formTemplateId := c.Query("form-template-id")
+	entity := c.Query("entity")
+	formType := c.Query("form-type")
 	itemGroupId := c.Query("item-group-id")
 	requestTemplateId := c.Query("request-template-id")
-	if itemGroupId == "" || formTemplateId == "" || requestTemplateId == "" {
-		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-name or form-template-id")
+	module := c.Query("module")
+	if formTemplateId == "" || requestTemplateId == "" || module == "" {
+		middleware.ReturnParamEmptyError(c, "request-template-id  or form-template-id or module")
 		return
 	}
-	configureDto, err = service.GetFormTemplateService().GetFormConfig(requestTemplateId, formTemplateId, itemGroupId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if module == "data-form" {
+		// 数据表单
+		configureDto, err = service.GetFormTemplateService().GetDataFormConfig(requestTemplateId, formTemplateId, itemGroupId, formType, entity, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	} else {
+		// 审批、任务表单
+		configureDto, err = service.GetFormTemplateService().GetFormConfig(requestTemplateId, formTemplateId, itemGroupId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	}
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -267,7 +255,7 @@ func CopyDataFormTemplateItemGroup(c *gin.Context) {
 	formTemplateId := c.Query("form-template-id")
 	itemGroupId := c.Query("item-group-id")
 	if formTemplateId == "" || itemGroupId == "" {
-		middleware.ReturnParamEmptyError(c, "form-template-id or item-group-name")
+		middleware.ReturnParamEmptyError(c, "form-template-id or form-template-id")
 		return
 	}
 	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(formTemplateId, itemGroupId)

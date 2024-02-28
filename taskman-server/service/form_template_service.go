@@ -202,11 +202,11 @@ func (s FormTemplateService) getFormTemplateGroups(formTemplateId string) (group
 	return
 }
 
-func (s FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (entityList []string, err error) {
-	var itemGroupNameMap = make(map[string]bool)
+func (s FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (result []*models.FormItemTemplateGroupTable, err error) {
+	var itemGroupMap = make(map[string]*models.FormItemTemplateGroupTable)
 	var requestTemplate *models.RequestTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateDto
-	entityList = []string{}
+	result = []*models.FormItemTemplateGroupTable{}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -220,13 +220,16 @@ func (s FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId str
 		return
 	}
 	for _, formItemTemplate := range formItemTemplateList {
-		itemGroupNameMap[formItemTemplate.ItemGroupName] = true
+		itemGroupMap[formItemTemplate.ItemGroupId] = &models.FormItemTemplateGroupTable{Id: formItemTemplate.ItemGroupId,
+			ItemGroupName: formItemTemplate.ItemGroupName, ItemGroupType: formItemTemplate.ItemGroupType, ItemGroupSort: formItemTemplate.ItemGroupSort}
 	}
-	for groupName, _ := range itemGroupNameMap {
-		entityList = append(entityList, groupName)
+	if len(itemGroupMap) > 0 {
+		for _, itemGroup := range itemGroupMap {
+			result = append(result, itemGroup)
+		}
 	}
 	// 排序
-	sort.Strings(entityList)
+	sort.Sort(models.FormItemTemplateGroupTableSort(result))
 	return
 }
 
@@ -334,6 +337,7 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 	var formItemTemplateList []*models.FormItemTemplateDto
 	var existAttrMap = make(map[string]bool)
 	var existCustomItemsMap = make(map[string]string)
+	var formItemTemplateGroup *models.FormItemTemplateGroupTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -346,44 +350,62 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 		err = fmt.Errorf("requestTemplate:%s DataFormTemplate is empty", requestTemplate.Id)
 		return
 	}
-	configureDto = &models.FormTemplateGroupConfigureDto{FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
+	configureDto = &models.FormTemplateGroupConfigureDto{RequestTemplateId: requestTemplateId, FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
 	// 1.先查询用户配置数据
-	formItemTemplateList, err = s.formItemTemplateDao.QueryDtoByFormTemplateAndItemGroupId(formTemplateId, itemGroupId)
-	if err != nil {
-		return
-	}
-	for _, formItemTemplate := range formItemTemplateList {
-		if formItemTemplate.AttrDefId != "" {
-			existAttrMap[formItemTemplate.AttrDefId] = true
-		} else {
-			configureDto.CustomItems = append(configureDto.CustomItems, formItemTemplate)
-			existCustomItemsMap[formItemTemplate.CopyId] = formItemTemplate.Id
+	if itemGroupId != "" {
+		// 1.先查询用户配置数据
+		formItemTemplateList, err = s.formItemTemplateDao.QueryDtoByFormTemplateAndItemGroupId(formTemplateId, itemGroupId)
+		if err != nil {
+			return
 		}
-	}
-	// 2. 查询数据表单
-	dataFormConfigureDto, err = s.GetDataFormConfig(requestTemplateId, requestTemplate.DataFormTemplate, itemGroupId, "", "", userToken, language)
-	if err != nil {
-		return
-	}
-	// 将数据表单的选中作为 审批、任务表单的全量
-	if len(dataFormConfigureDto.SystemItems) > 0 {
-		for _, systemItem := range dataFormConfigureDto.SystemItems {
-			if systemItem.Active {
-				configureDto.SystemItems = append(configureDto.SystemItems, systemItem)
-				if !existAttrMap[systemItem.Id] {
-					systemItem.Active = false
+		// 查询表单组
+		formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(itemGroupId)
+		if err != nil {
+			return
+		}
+		if formItemTemplateGroup != nil {
+			configureDto.ItemGroupId = itemGroupId
+			configureDto.ItemGroup = formItemTemplateGroup.ItemGroup
+			configureDto.ItemGroupName = formItemTemplateGroup.ItemGroupName
+			configureDto.ItemGroupType = formItemTemplateGroup.ItemGroupType
+			configureDto.ItemGroupRule = formItemTemplateGroup.ItemGroupRule
+			configureDto.ItemGroupSort = formItemTemplateGroup.ItemGroupSort
+		}
+		for _, formItemTemplate := range formItemTemplateList {
+			if formItemTemplate.AttrDefId != "" {
+				existAttrMap[formItemTemplate.AttrDefId] = true
+			} else {
+				configureDto.CustomItems = append(configureDto.CustomItems, formItemTemplate)
+				existCustomItemsMap[formItemTemplate.CopyId] = formItemTemplate.Id
+			}
+		}
+		// 2. 查询数据表单
+		if formItemTemplateGroup != nil {
+			dataFormConfigureDto, err = s.GetDataFormConfig(requestTemplateId, requestTemplate.DataFormTemplate, formItemTemplateGroup.CopyId, "", "", userToken, language)
+			if err != nil {
+				return
+			}
+			// 将数据表单的选中作为 审批、任务表单的全量
+			if len(dataFormConfigureDto.SystemItems) > 0 {
+				for _, systemItem := range dataFormConfigureDto.SystemItems {
+					if systemItem.Active {
+						configureDto.SystemItems = append(configureDto.SystemItems, systemItem)
+						if !existAttrMap[systemItem.Id] {
+							systemItem.Active = false
+						}
+					}
 				}
 			}
-		}
-	}
-	if len(dataFormConfigureDto.CustomItems) > 0 {
-		for _, customItem := range dataFormConfigureDto.CustomItems {
-			if existCustomItemsMap[customItem.Id] != "" {
-				customItem.Id = existCustomItemsMap[customItem.Id]
-			} else {
-				customItem.Id = ""
+			if len(dataFormConfigureDto.CustomItems) > 0 {
+				for _, customItem := range dataFormConfigureDto.CustomItems {
+					if existCustomItemsMap[customItem.Id] != "" {
+						customItem.Id = existCustomItemsMap[customItem.Id]
+					} else {
+						customItem.Id = ""
+					}
+					configureDto.CustomItems = append(configureDto.CustomItems, customItem)
+				}
 			}
-			configureDto.CustomItems = append(configureDto.CustomItems, customItem)
 		}
 	}
 	return

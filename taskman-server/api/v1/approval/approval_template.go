@@ -16,7 +16,7 @@ func CreateApprovalTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	result, err := service.GetApprovalTemplateService().CreateApprovalTemplate(&param)
+	result, err := service.GetApprovalTemplateService().CreateApprovalTemplate(&param, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

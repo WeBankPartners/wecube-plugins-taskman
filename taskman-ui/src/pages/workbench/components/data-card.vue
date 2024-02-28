@@ -19,6 +19,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.publishNum || '' }}</span>
+            <Badge v-if="i.type === 'pending'" class-name="badge" :count="getPendingNum('1')"></Badge>
             <span>{{ $t('tw_publish') }}</span>
           </div>
           <div
@@ -32,6 +33,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.requestNum || '' }}</span>
+            <Badge v-if="i.type === 'pending'" class-name="badge" :count="getPendingNum('2')"></Badge>
             <span>{{ $t('tw_request') }}</span>
           </div>
         </div>
@@ -99,7 +101,11 @@ export default {
           requestNum: 0,
           publishNum: 0
         }
-      ]
+      ],
+      pendingNumObj: {
+        '1': [], // 发布待处理数量统计
+        '2': [] // 请求待处理数量统计
+      }
     }
   },
   computed: {
@@ -119,6 +125,13 @@ export default {
         return {
           color: this.action === val && i.type === this.active ? '#e59e2d' : 'rgba(16, 16, 16, 1)'
         }
+      }
+    },
+    getPendingNum () {
+      return function (type) {
+        return this.pendingNumObj[type].reduce((sum, cur) => {
+          return Number(sum) + Number(cur)
+        }, 0)
       }
     }
   },
@@ -160,6 +173,12 @@ export default {
             }
           })
         }
+        const pendingTaskArr = (data.pendingTask && data.pendingTask.split(';')) || []
+        const pendingApprove = (data.pendingApprove && data.pendingApprove.split(';')) || []
+        const requestPending = (data.requestPending && data.requestPending.split(';')) || []
+        const requestConfirm = (data.requestConfirm && data.requestConfirm.split(';')) || []
+        this.pendingNumObj['1'] = [pendingTaskArr[0], pendingApprove[0], requestPending[0], requestConfirm[0]]
+        this.pendingNumObj['2'] = [pendingTaskArr[1], pendingApprove[1], requestPending[1], requestConfirm[1]]
       }
     },
     handleTabChange: debounce(function (item, subType) {
@@ -174,6 +193,12 @@ export default {
 <style lang="scss">
 .workbench-data-card .ivu-card-body {
   padding: 10px;
+}
+.badge {
+  position: absolute;
+  top: -30px;
+  right: -35px;
+  font-size: 12px;
 }
 </style>
 <style lang="scss" scoped>
@@ -201,6 +226,7 @@ export default {
       align-items: center;
       margin-top: 10px;
       .list {
+        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;

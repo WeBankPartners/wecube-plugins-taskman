@@ -1,17 +1,16 @@
 <template>
   <div>
     <Row>
-      <Col span="4">
+      <Col span="24">
         <Select
           ref="select"
-          :value="data"
+          :value="value"
           @on-change="handleSelect"
           @on-query-change="handleQuery"
           clearable
           filterable
           :disabled="disabled"
           :multiple="multiple"
-          :style="{ width: width + 'px' }"
         >
           <template v-for="i in optionsData">
             <Option
@@ -98,7 +97,6 @@ export default {
   },
   data () {
     return {
-      data: '', // 绑定值
       optionsData: [], // 当前下拉数据
       sourceData: [], // 备份原始下拉数据
       sourceDataFilter: [], // 模糊搜索过滤数据
@@ -108,15 +106,15 @@ export default {
     }
   },
   watch: {
-    value: {
-      handler (val) {
-        if (val) {
-          this.data = val
-        }
-      },
-      immediate: true,
-      deep: true
-    },
+    // value: {
+    //   handler (val) {
+    //     if (val) {
+    //       this.data = val
+    //     }
+    //   },
+    //   immediate: true,
+    //   deep: true
+    // },
     options: {
       handler (val) {
         if (val) {
@@ -164,8 +162,7 @@ export default {
   },
   methods: {
     handleSelect (val) {
-      this.data = val
-      this.$emit('on-change', val)
+      this.$emit('input', val)
     },
     getList () {
       if (this.query) {

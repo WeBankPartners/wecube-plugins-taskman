@@ -1,36 +1,112 @@
 <template>
   <div class="workbench-entity-table">
-    <RadioGroup v-model="activeTab" @on-change="handleTabChange" style="margin-bottom:20px;">
-      <Radio v-for="(item, index) in requestData" :label="item.entity || item.itemGroup" :key="index" border>
-        <span
-          >{{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span></span
-        >
-      </Radio>
-    </RadioGroup>
-    <Table size="small" :columns="tableColumns" :data="tableData" @on-selection-change="handleChooseData"></Table>
-    <Button v-if="isAdd && type === '2'" size="small" style="margin-top: 10px;" @click="addRow">{{
-      $t('tw_add_row')
-    }}</Button>
-    <EditDrawer
-      v-if="editVisible"
-      v-model="editData"
-      :options="editOptions"
-      :visible.sync="editVisible"
-      :disabled="viewDisabled"
-      @submit="submitEditRow"
-    ></EditDrawer>
+    <div class="radio-group">
+      <div
+        v-for="(item, index) in requestData"
+        :key="index"
+        @click="handleTabChange(item)"
+        :class="{
+          radio: true,
+          custom: item.itemGroupType === 'custom',
+          workflow: item.itemGroupType === 'workflow',
+          optional: item.itemGroupType === 'optional',
+          'fix-old-data': !item.itemGroupType
+        }"
+        :style="activeStyle(item)"
+      >
+        {{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span>
+      </div>
+    </div>
+    <div class="form-table">
+      <div v-for="(value, index) in tableData" :key="index" class="table-item">
+        <div class="number">{{ index + 1 }}</div>
+        <div class="form">
+          <Form :model="value" ref="form" label-position="left" :label-width="100">
+            <Row :key="index">
+              <Col v-for="(i, index) in formOptions" :key="index" :span="i.width || 24">
+                <FormItem
+                  :label="i.title || '自定义分析'"
+                  :prop="i.name"
+                  :required="i.required === 'yes'"
+                  :rules="
+                    i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []
+                  "
+                >
+                  <!--输入框-->
+                  <Input
+                    v-if="i.elementType === 'input'"
+                    v-model="value[i.name]"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    style="width: calc(100% - 20px)"
+                  ></Input>
+                  <Input
+                    v-else-if="i.elementType === 'textarea'"
+                    v-model="value[i.name]"
+                    type="textarea"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    style="width: calc(100% - 20px)"
+                  ></Input>
+                  <LimitSelect
+                    v-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                    v-model="value[i.name]"
+                    :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
+                    :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
+                    :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+                    :options="value[i.name + 'Options']"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    :multiple="i.multiple === 'Y'"
+                    style="width: calc(100% - 20px)"
+                  >
+                  </LimitSelect>
+                  <Input
+                    v-else-if="i.elementType === 'calculate'"
+                    v-model="value[i.name]"
+                    type="textarea"
+                    :disabled="true"
+                    style="width: calc(100% - 20px)"
+                  ></Input>
+                </FormItem>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+        <div v-if="!formDisable && tableData.length > 1" class="button">
+          <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow" />
+        </div>
+      </div>
+    </div>
+    <div class="add-row">
+      <Button v-if="isAdd && type === '2' && activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{
+        $t('tw_add_row')
+      }}</Button>
+      <!--选择已有数据添加一行-->
+      <Select
+        v-if="isAdd && type === '2' && activeItem.itemGroupRule === 'exist'"
+        v-model="addRowSource"
+        filterable
+        clearable
+        placeholder="选择已有数据添加一行"
+        style="width:300px;"
+        @on-open-change="getCmdbEntityList"
+        @on-change="addRow"
+      >
+        <template v-for="(i, index) in addRowSourceOptions">
+          <Option :key="index" :value="i.id">{{ i.displayName }}</Option>
+        </template>
+      </Select>
+    </div>
   </div>
 </template>
 
 <script>
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import EditDrawer from './edit-entity-item.vue'
-import limitSelect from '@/pages/components/limit-select.vue'
+import EntityItem from './edit-entity-item.vue'
+import LimitSelect from '@/pages/components/limit-select.vue'
 export default {
   components: {
-    EditDrawer,
-    limitSelect
+    EntityItem,
+    LimitSelect
   },
   props: {
     data: {
@@ -65,56 +141,31 @@ export default {
     return {
       requestData: [],
       activeTab: '',
+      activeItem: '',
       refKeys: [], // 引用类型字段集合select类型
-      tableColumns: [],
+      formOptions: [],
       tableData: [],
-      editVisible: false,
-      editOptions: [],
-      editData: {},
-      viewDisabled: false,
-      initTableColumns: [
-        {
-          type: 'selection',
-          width: 55,
-          align: 'center',
-          fixed: 'left'
-        },
-        {
-          title: this.$t('t_action'),
-          key: 'action',
-          width: 100,
-          fixed: 'right',
-          align: 'center',
-          render: (h, params) => {
-            return (
-              <div style="display:flex;justify-content:space-around;">
-                {!this.formDisable && (
-                  <Tooltip content={this.$t('edit')} placement="top-start">
-                    <Icon
-                      size="20"
-                      type="md-create"
-                      style="cursor:pointer;"
-                      onClick={() => {
-                        this.handleEditRow(params.row)
-                      }}
-                    />
-                  </Tooltip>
-                )}
-                <Tooltip content={this.$t('detail')} placement="top-start">
-                  <Icon
-                    size="20"
-                    type="md-eye"
-                    style="cursor:pointer;"
-                    onClick={() => {
-                      this.handleViewRow(params.row)
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            )
+      addRowSource: '',
+      addRowSourceOptions: []
+    }
+  },
+  computed: {
+    activeStyle () {
+      return function (item) {
+        let color = '#fff'
+        if (this.activeTab === item.entity || this.activeTab === item.itemGroup) {
+          if (item.itemGroupType === 'workflow') {
+            color = '#ebdcb4'
+          } else if (item.itemGroupType === 'custom') {
+            color = 'rgba(184, 134, 248, 0.6)'
+          } else if (item.itemGroupType === 'optional') {
+            color = 'rgba(129, 179, 55, 0.6)'
+          } else if (!item.itemGroupType) {
+            color = 'rgb(45, 140, 240)'
           }
         }
-      ]
+        return { background: color }
+      }
     }
   },
   watch: {
@@ -127,23 +178,24 @@ export default {
             if (item.value.length === 0 && this.isAddRow) {
               this.handleAddRow(item)
             }
-            item.value.forEach(j => {
-              if (this.formDisable) {
-                j.entityData._disabled = true
-              }
-              j.entityData._checked = true
-            })
           })
-          this.activeTab = this.activeTab || this.requestData[0].entity || this.requestData[0].itemGroup
-          this.initTableData()
+          // this.activeTab = this.activeTab || this.requestData[0].entity || this.requestData[0].itemGroup
+          // this.initTableData()
+          this.handleTabChange(this.requestData[0])
         }
       },
       deep: true,
       immediate: true
     }
+    // addRowSource (val) {
+    //   if (val) {
+    //     const data = this.addRowSourceOptions.find(i => i.id === val)
+    //     this.addRowSource = data
+    //   }
+    // }
   },
-  mounted () {},
   methods: {
+    // 提交时，定位到没有填写必填项的页签
     validTable (index) {
       if (index !== '') {
         if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
@@ -154,23 +206,11 @@ export default {
       }
     },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
-    handleTabChange: debounce(function () {
+    handleTabChange: debounce(function (item) {
+      this.activeTab = item.entity || item.itemGroup
+      this.activeItem = item
       this.initTableData()
     }, 100),
-    // 编辑操作，刷新requestData
-    refreshRequestData () {
-      this.requestData.forEach(item => {
-        if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
-          for (let m of item.value) {
-            for (let n of this.tableData) {
-              if (m.id === n._id) {
-                m.entityData = n
-              }
-            }
-          }
-        }
-      })
-    },
     async initTableData () {
       // 当前选择tab数据
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
@@ -182,111 +222,7 @@ export default {
           this.refKeys.push(t.name)
         }
       })
-      // tableColumns数据初始化
-      this.tableColumns = deepClone(this.initTableColumns)
-      data.title.forEach(t => {
-        let column = {
-          title: t.title,
-          key: t.name,
-          align: 'left',
-          minWidth: 240
-        }
-        if (t.required === 'yes') {
-          column.renderHeader = (h, { column }) => {
-            return (
-              <span>
-                {`${column.title}`}
-                <span class="required">{`（${this.$t('required')}）`}</span>
-              </span>
-            )
-          }
-        }
-        if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-          column.render = (h, params) => {
-            return (
-              <div style="display:flex;align-items:center">
-                {t.name === 'deploy_package' && t.required === 'yes' && !params.row[t.name] && (
-                  <Icon size="24" color="#ed4014" type="md-apps" />
-                )}
-                {t.name === 'deploy_package' && t.required === 'yes' && params.row[t.name] && (
-                  <Icon size="24" color="#19be6b" type="md-apps" />
-                )}
-                {
-                  <limitSelect
-                    value={params.row[t.name]}
-                    on-on-change={v => {
-                      this.tableData[params.row._index][t.name] = v
-                      this.refreshRequestData()
-                    }}
-                    displayName={t.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'}
-                    displayValue={t.elementType === 'wecmdbEntity' ? 'id' : 'guid'}
-                    objectOption={!!t.entity || t.elementType === 'wecmdbEntity'}
-                    options={params.row[t.name + 'Options']}
-                    disabled={t.isEdit === 'no' || this.formDisable}
-                    multiple={t.multiple === 'Y'}
-                  />
-                }
-                {
-                  // <Select
-                  //   value={params.row[t.name]}
-                  //   on-on-change={v => {
-                  //     this.tableData[params.row._index][t.name] = v
-                  //     this.refreshRequestData()
-                  //   }}
-                  //   filterable
-                  //   clearable
-                  //   multiple={t.multiple === 'Y'}
-                  //   disabled={t.isEdit === 'no' || this.formDisable}
-                  // >
-                  //   {Array.isArray(params.row[t.name + 'Options']) &&
-                  //     params.row[t.name + 'Options'].map(i => (
-                  //       <Option value={t.entity ? i.guid : i} key={t.entity ? i.guid : i}>
-                  //         {t.entity ? i.key_name : i}
-                  //       </Option>
-                  //     ))}
-                  // </Select>
-                }
-              </div>
-            )
-          }
-        } else if (t.elementType === 'input') {
-          column.render = (h, params) => {
-            return (
-              <Input
-                value={params.row[t.name]}
-                onInput={v => {
-                  params.row[t.name] = v
-                  // 暂时这么写,为啥给params赋值不会更新tableData？
-                  this.tableData[params.row._index][t.name] = v
-                }}
-                onBlur={() => {
-                  this.refreshRequestData()
-                }}
-                disabled={t.isEdit === 'no' || this.formDisable}
-              />
-            )
-          }
-        } else if (t.elementType === 'textarea') {
-          column.render = (h, params) => {
-            return (
-              <Input
-                value={params.row[t.name]}
-                onInput={v => {
-                  params.row[t.name] = v
-                  this.tableData[params.row._index][t.name] = v
-                }}
-                onBlur={() => {
-                  this.refreshRequestData()
-                }}
-                type="textarea"
-                disabled={t.isEdit === 'no' || this.formDisable}
-              />
-            )
-          }
-        }
-        this.tableColumns.push(column)
-      })
-
+      this.formOptions = data.title
       // table数据初始化
       this.tableData = data.value.map(v => {
         this.refKeys.forEach(rfk => {
@@ -397,21 +333,35 @@ export default {
     },
     // 手动添加一行数据
     addRow () {
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      this.handleAddRow(data)
-      this.initTableData()
-      // const addRow = data.value[data.value.length - 1].entityData
-      // this.tableData.push(addRow)
-      // this.refKeys.forEach(rfk => {
-      //   const titleObj = data.title.find(f => f.name === rfk)
-      //   this.getRefOptions(titleObj, addRow, data.value.length - 1)
-      // })
+      if (this.activeItem.itemGroupRule === 'new') {
+        const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        this.handleAddRow(data)
+        this.initTableData()
+      } else if (this.activeItem.itemGroupRule === 'exist') {
+        if (!this.addRowSource) {
+
+        } else {
+          const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
+          this.handleAddRow(this.activeItem, source)
+          this.initTableData()
+        }
+      }
     },
     // 添加一条行数据
-    handleAddRow (data) {
+    handleAddRow (data, source) {
       let entityData = {}
       data.title.forEach(item => {
-        entityData[item.name] = ''
+        // 选择已有数据添加一行，填充默认值
+        if (source) {
+          for (let key of Object.keys(source)) {
+            if (key === item.name) {
+              entityData[item.name] = source[key]
+            }
+          }
+        } else {
+          entityData[item.name] = ''
+        }
+
         if (item.elementType === 'select' || item.elementType === 'wecmdbEntity') {
           entityData[item.name + 'Options'] = []
         }
@@ -432,45 +382,12 @@ export default {
       }
       data.value.push(obj)
     },
-    handleEditRow (row) {
-      this.viewDisabled = false
-      this.editVisible = true
-      // 当前选择tab数据
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      // 编辑表单的options配置
-      this.editOptions = data.title
-      this.editData = deepClone(row)
-    },
-    submitEditRow () {
-      this.tableData = this.tableData.map(item => {
-        if (item._id === this.editData._id) {
-          for (let key in item) {
-            item[key] = this.editData[key]
-          }
-        }
-        return item
-      })
-      this.refreshRequestData()
-    },
-    handleViewRow (row) {
-      this.viewDisabled = true
-      this.editVisible = true
-      // 当前选择tab数据
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      // 编辑表单的options配置
-      this.editOptions = data.title
-      this.editData = deepClone(row)
-    },
-    // 给勾选的表格数据设置_checked属性
-    handleChooseData (selection) {
-      const selectIds = selection.map(i => i._id)
-      this.tableData.forEach(row => {
-        if (selectIds.includes(row._id)) {
-          row._checked = true
-        } else {
-          row._checked = false
-        }
-      })
+    async getCmdbEntityList () {
+      const { packageName, entity } = this.activeItem
+      const { status, data } = await getWeCmdbOptions(packageName, entity, {})
+      if (status === 'OK') {
+        this.addRowSourceOptions = data || []
+      }
     }
   }
 }
@@ -479,24 +396,88 @@ export default {
 <style lang="scss">
 .workbench-entity-table {
   width: 100%;
-  .ivu-radio {
-    display: none;
-  }
-  .ivu-radio-wrapper {
-    border-radius: 20px;
-    font-size: 12px;
-    color: #000;
-    background: #fff;
-  }
-  .ivu-radio-wrapper-checked.ivu-radio-border {
-    border-color: #2d8cf0;
-    background: #2d8cf0;
-    color: #fff;
+  // .ivu-radio {
+  //   display: none;
+  // }
+  // .ivu-radio-wrapper {
+  //   border-radius: 20px;
+  //   font-size: 12px;
+  //   color: #000;
+  //   background: #fff;
+  // }
+  // .ivu-radio-wrapper-checked.ivu-radio-border {
+  //   border-color: #2d8cf0;
+  //   background: #2d8cf0;
+  //   color: #fff;
+  // }
+  .radio-group {
+    display: flex;
+    margin-bottom: 15px;
+    .radio {
+      padding: 5px 15px;
+      border-radius: 32px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .custom {
+      border: 1px solid #b886f8;
+      color: #b886f8;
+    }
+    .workflow {
+      border: 1px solid #cba43f;
+      color: #cba43f;
+    }
+    .optional {
+      border: 1px solid #81b337;
+      color: #81b337;
+    }
+    .fix-old-data {
+      border: 1px solid #dcdee2;
+      color: #000;
+    }
   }
   .count {
     font-weight: bold;
     font-size: 14px;
     margin-left: 10px;
+  }
+  .add-row {
+    margin-top: 10px;
+  }
+  .form-table {
+    position: relative;
+    .table-item {
+      display: flex;
+      border-left: 1px solid #dcdee2;
+      border-right: 1px solid #dcdee2;
+      border-bottom: 1px solid #dcdee2;
+      &:first-child {
+        border-top: 1px solid #dcdee2;
+      }
+      .number {
+        width: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-right: 1px solid #dcdee2;
+      }
+      .form {
+        padding: 20px 0 10px 20px;
+        flex: 1;
+      }
+      .button {
+        cursor: pointer;
+        width: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-left: 1px solid #dcdee2;
+      }
+    }
+  }
+  .ivu-form-item {
+    margin-bottom: 10px !important;
   }
 }
 </style>

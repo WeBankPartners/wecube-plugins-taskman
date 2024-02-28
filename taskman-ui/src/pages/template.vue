@@ -3,18 +3,34 @@
     <div>
       <Row>
         <Tabs v-model="status" @on-click="getTemplateList()">
-          <TabPane label="草稿" name="created"></TabPane>
-          <TabPane label="待发布" name="pending"></TabPane>
           <TabPane label="已发布" name="confirm"></TabPane>
-          <TabPane label="禁用" name="disable"></TabPane>
+          <TabPane label="草稿" name="created"></TabPane>
+          <TabPane label="待管理员确认" name="pending"></TabPane>
+          <TabPane label="已禁用" name="disable"></TabPane>
         </Tabs>
       </Row>
       <Row>
         <Col span="4">
-          <Input v-model="name" style="width: 90%" type="text" :placeholder="$t('name')"> </Input>
+          <Input
+            v-model="name"
+            style="width: 90%"
+            type="text"
+            :placeholder="$t('name')"
+            clearable
+            @on-change="handleInputChange"
+          >
+          </Input>
         </Col>
         <Col span="4">
-          <Input v-model="tags" style="width: 90%" type="text" :placeholder="$t('tags')"> </Input>
+          <Input
+            v-model="tags"
+            style="width: 90%"
+            type="text"
+            :placeholder="$t('tags')"
+            clearable
+            @on-change="handleInputChange"
+          >
+          </Input>
         </Col>
         <Col span="4">
           <Select
@@ -24,15 +40,16 @@
             filterable
             multiple
             :max-tag-count="3"
-            :placeholder="$t('manageRole')"
+            :placeholder="$t('tw_template_owner_role')"
             style="width: 90%"
+            @on-change="onSearch"
           >
             <Option v-for="item in roleOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
           </Select>
         </Col>
         <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
-          <!-- <Button @click="addTemplate" type="success">{{ $t('add') }}</Button> -->
+          <Button @click="handleReset" type="default">{{ $t('reset') }}</Button>
         </Col>
         <div style="display:flex;float:right;">
           <Button @click="addTemplate" type="success">{{ $t('add') }}</Button>
@@ -53,9 +70,9 @@
     </div>
     <Table
       style="margin: 24px 0"
-      border
       @on-sort-change="sortTable"
       size="small"
+      :loading="loading"
       :columns="tableColumns"
       :data="tableData"
       :max-height="MODALHEIGHT"
@@ -93,13 +110,14 @@ import {
   templateGiveMe,
   updateTemplateStatus
 } from '@/api/server'
+import { debounce } from '@/pages/util'
 export default {
   name: '',
   data () {
     return {
       MODALHEIGHT: 500,
       name: '',
-      status: 'created',
+      status: 'confirm',
       mgmtRoles: [],
       tags: '',
       modalShow: false,
@@ -138,7 +156,7 @@ export default {
             if (params.row.version) {
               return <Tag>{params.row.version}</Tag>
             } else {
-              return <span>--</span>
+              return <span>-</span>
             }
           }
         },
@@ -157,7 +175,7 @@ export default {
             if (params.row.tags) {
               return <Tag>{params.row.tags}</Tag>
             } else {
-              return <span>--</span>
+              return <span>-</span>
             }
           }
         },
@@ -171,14 +189,14 @@ export default {
             return (
               <Tooltip max-width="300" content={params.row.description}>
                 <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                  {params.row.description || '--'}
+                  {params.row.description || '-'}
                 </span>
               </Tooltip>
             )
           }
         },
         {
-          title: this.$t('mgmtRoles'),
+          title: this.$t('tw_template_owner_role'),
           minWidth: 100,
           key: 'mgmtRoles',
           render: (h, params) => {
@@ -218,7 +236,7 @@ export default {
           render: (h, params) => {
             // const operationOptions = params.row.operateOptions
             return (
-              <div style="text-align:center">
+              <div style="display:flex;align-items:center;justify-content:center;">
                 {/* 转给我 */ this.status === 'created' && this.username !== params.row.updatedBy && (
                   <Tooltip content={this.$t('tw_action_give')} placement="top">
                     <Button type="success" size="small" onClick={() => this.giveTemplate(params.row)}>
@@ -270,7 +288,7 @@ export default {
                       onClick={() => this.confirmTemplate(params.row)}
                       style="margin-right:5px;"
                     >
-                      <Icon type="md-checkmark-circle" size="16"></Icon>
+                      <Icon type="ios-paper-plane" size="16"></Icon>
                     </Button>
                   </Tooltip>
                 )}
@@ -294,7 +312,7 @@ export default {
                       onClick={() => this.forkTemplate(params.row)}
                       style="margin-right:5px;"
                     >
-                      <Icon type="md-pricetag" size="16"></Icon>
+                      <Icon type="md-git-branch" size="16"></Icon>
                     </Button>
                   </Tooltip>
                 )}
@@ -343,7 +361,8 @@ export default {
       roleOptions: [],
       uploadUrl: '/taskman/api/v1/request-template/import',
       headers: {},
-      backReason: ''
+      backReason: '',
+      loading: false
     }
   },
   mounted () {
@@ -361,6 +380,15 @@ export default {
     this.getTemplateList()
   },
   methods: {
+    handleReset () {
+      this.name = ''
+      this.mgmtRoles = []
+      this.tags = ''
+      this.onSearch()
+    },
+    handleInputChange: debounce(function () {
+      this.onSearch()
+    }, 300),
     // 转给我
     async giveTemplate (row) {
       const params = {
@@ -641,7 +669,9 @@ export default {
       }
       this.payload.pageable.pageSize = this.pagination.pageSize
       this.payload.pageable.startIndex = (this.pagination.currentPage - 1) * this.pagination.pageSize
+      this.loading = true
       const { statusCode, data } = await getTemplateList(this.payload)
+      this.loading = false
       if (statusCode === 'OK') {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows

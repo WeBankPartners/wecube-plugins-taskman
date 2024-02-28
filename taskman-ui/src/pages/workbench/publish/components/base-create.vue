@@ -71,6 +71,7 @@
               <FormItem :label="$t('tw_attach')">
                 <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
               </FormItem>
+              <!--自定义信息表单-->
               <CustomForm
                 v-model="form.customForm.value"
                 :options="form.customForm.title"
@@ -87,8 +88,6 @@
                   }}</Option>
                 </Select>
               </FormItem>
-              <!-- <FormItem v-if="requestData.length" :label="$t('tw_selected')">
-              </FormItem> -->
               <EntityTable
                 v-if="requestData.length"
                 ref="entityTable"
@@ -116,21 +115,16 @@
                       <Icon size="24" color="#19be6b" type="md-time" />
                       <span style="color:#19be6b;">{{ i.expireDay }}天</span>
                     </div>
+                    <!--单人自定义、协同、并行-->
                     <div v-if="['custom', 'any', 'all'].includes(i.roleType)" class="step-background">
                       <div v-for="(j, idx) in i.roleObjs" :key="idx" class="form-item">
                         <!--审批角色设置-->
                         <FormItem label="" required :label-width="0">
-                          <Input
-                            v-if="j.roleType === 'template'"
-                            v-model="j.role"
-                            disabled
-                            placeholder="请选择处理角色"
-                            style="width:300px;"
-                          />
                           <Select
-                            v-else-if="j.roleType === 'custom'"
+                            v-if="['custom', 'template'].includes(j.roleType)"
                             v-model="j.role"
                             filterable
+                            :disabled="j.roleType === 'template' ? true : false"
                             placeholder="请选择处理角色"
                             style="width:300px;"
                             @on-change="j.handler = ''"
@@ -160,6 +154,7 @@
                         </FormItem>
                       </div>
                     </div>
+                    <!--提交人角色管理员-->
                     <div v-else-if="i.roleType === 'admin'" class="step-background">
                       <div class="form-item">
                         <FormItem label="" required :label-width="0">
@@ -193,21 +188,16 @@
                       <Icon size="24" color="#19be6b" type="md-time" />
                       <span style="color:#19be6b;">{{ i.expireDay }}天</span>
                     </div>
+                    <!--单人自定义-->
                     <div v-if="i.roleType === 'custom'" class="step-background">
                       <div v-for="(j, idx) in i.roleObjs" :key="idx" class="form-item">
                         <!--审批角色设置-->
                         <FormItem label="" required :label-width="0">
-                          <Input
-                            v-if="j.roleType === 'template'"
-                            v-model="j.role"
-                            disabled
-                            placeholder="请选择处理角色"
-                            style="width:300px;"
-                          />
                           <Select
-                            v-else-if="j.roleType === 'custom'"
+                            v-if="['custom', 'template'].includes(j.roleType)"
                             v-model="j.role"
                             filterable
+                            :disabled="j.roleType === 'template' ? true : false"
                             placeholder="请选择处理角色"
                             style="width:300px;"
                             @on-change="j.handler = ''"
@@ -237,6 +227,7 @@
                         </FormItem>
                       </div>
                     </div>
+                    <!--提交人角色管理员-->
                     <div v-else-if="i.roleType === 'admin'" class="step-background">
                       <div class="form-item">
                         <FormItem label="" required :label-width="0">
@@ -397,11 +388,8 @@ export default {
     this.$nextTick(() => {
       this.$refs.progress.initData(this.requestTemplate, this.requestId)
     })
-    // 获取审批流程
-    this.getApprovalConfigList()
-    // 获取任务流程
-    this.getTaskConfigList()
-    this.getUserRoles()
+    // 获取审批和任务流程
+    this.getApprovalAndTaskList()
     // 获取目标对象
     this.getEntity()
   },
@@ -447,6 +435,7 @@ export default {
           title: customForm.title || [],
           value: customForm.value || {}
         }
+        // 初始化customForm value
         this.form.customForm.title.forEach(item => {
           if (!this.form.customForm.value.hasOwnProperty(item.name)) {
             this.form.customForm.value[item.name] = ''
@@ -506,25 +495,36 @@ export default {
       }
     },
     // 获取审批流程列表
-    async getApprovalConfigList () {
-      const { statusCode, data } = await getApprovalConfig(this.requestTemplate)
-      if (statusCode === 'OK') {
-        this.approvalList = data || []
-      }
+    getApprovalConfigList () {
+      return new Promise(async resolve => {
+        const { statusCode, data } = await getApprovalConfig(this.requestTemplate)
+        if (statusCode === 'OK') {
+          resolve(data || [])
+        } else {
+          resolve([])
+        }
+      })
     },
     // 获取任务流程列表
-    async getTaskConfigList () {
-      const { statusCode, data } = await getTaskConfig(this.requestTemplate)
-      if (statusCode === 'OK') {
-        this.taskList = data || []
-      }
+    getTaskConfigList () {
+      return new Promise(async resolve => {
+        const { statusCode, data } = await getTaskConfig(this.requestTemplate)
+        if (statusCode === 'OK') {
+          resolve(data || [])
+        } else {
+          resolve([])
+        }
+      })
     },
-    // 获取全部角色列表
-    async getUserRoles () {
-      const { statusCode, data } = await getUserRoles()
-      if (statusCode === 'OK') {
-        this.userRoleList = data
-      }
+    getApprovalAndTaskList () {
+      Promise.all([this.getApprovalConfigList(), this.getTaskConfigList()]).then(async response => {
+        const { statusCode, data } = await getUserRoles()
+        if (statusCode === 'OK') {
+          this.userRoleList = data
+        }
+        this.approvalList = response[0]
+        this.taskList = response[1]
+      })
     },
     // 获取角色对应的处理人
     async getHandlerByRole (group, item) {

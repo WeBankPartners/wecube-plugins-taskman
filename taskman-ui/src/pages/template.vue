@@ -234,12 +234,16 @@ export default {
           width: 180,
           align: 'center',
           render: (h, params) => {
-            // const operationOptions = params.row.operateOptions
             return (
               <div style="display:flex;align-items:center;justify-content:center;">
                 {/* 转给我 */ this.status === 'created' && this.username !== params.row.updatedBy && (
                   <Tooltip content={this.$t('tw_action_give')} placement="top">
-                    <Button type="success" size="small" onClick={() => this.giveTemplate(params.row)}>
+                    <Button
+                      type="success"
+                      size="small"
+                      style="margin-right:5px;"
+                      onClick={() => this.giveTemplate(params.row)}
+                    >
                       <Icon type="ios-hand" size="16"></Icon>
                     </Button>
                   </Tooltip>
@@ -249,8 +253,8 @@ export default {
                     <Button
                       size="small"
                       type="primary"
-                      onClick={() => this.editTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.editTemplate(params.row)}
                     >
                       <Icon type="md-create" size="16"></Icon>
                     </Button>
@@ -261,8 +265,8 @@ export default {
                     <Button
                       size="small"
                       type="error"
-                      onClick={() => this.deleteTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.deleteTemplate(params.row)}
                     >
                       <Icon type="md-trash" size="16"></Icon>
                     </Button>
@@ -273,8 +277,8 @@ export default {
                     <Button
                       size="small"
                       type="info"
-                      onClick={() => this.checkTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.checkTemplate(params.row)}
                     >
                       <Icon type="md-eye" size="16"></Icon>
                     </Button>
@@ -285,8 +289,8 @@ export default {
                     <Button
                       size="small"
                       type="success"
-                      onClick={() => this.confirmTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.confirmTemplate(params.row)}
                     >
                       <Icon type="ios-paper-plane" size="16"></Icon>
                     </Button>
@@ -297,8 +301,8 @@ export default {
                     <Button
                       size="small"
                       type="error"
-                      onClick={() => this.draftTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.draftTemplate(params.row)}
                     >
                       <Icon type="ios-redo" size="16"></Icon>
                     </Button>
@@ -309,8 +313,8 @@ export default {
                     <Button
                       size="small"
                       type="warning"
-                      onClick={() => this.forkTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.forkTemplate(params.row)}
                     >
                       <Icon type="md-git-branch" size="16"></Icon>
                     </Button>
@@ -321,8 +325,8 @@ export default {
                     <Button
                       size="small"
                       type="success"
-                      onClick={() => this.exportTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.exportTemplate(params.row)}
                     >
                       <Icon type="md-cloud-download" size="16"></Icon>
                     </Button>
@@ -333,8 +337,8 @@ export default {
                     <Button
                       size="small"
                       type="error"
-                      onClick={() => this.disableTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.disableTemplate(params.row)}
                     >
                       <Icon type="md-lock" size="16"></Icon>
                     </Button>
@@ -345,8 +349,8 @@ export default {
                     <Button
                       size="small"
                       type="success"
-                      onClick={() => this.enableTemplate(params.row)}
                       style="margin-right:5px;"
+                      onClick={() => this.enableTemplate(params.row)}
                     >
                       <Icon type="md-unlock" size="16"></Icon>
                     </Button>
@@ -398,6 +402,7 @@ export default {
       const { statusCode } = await templateGiveMe(params)
       if (statusCode === 'OK') {
         this.getTemplateList()
+        // this.editTemplate(row)
       }
     },
     // 确认发布
@@ -419,6 +424,7 @@ export default {
               title: 'Successful',
               desc: 'Successful'
             })
+            this.status = 'confirm'
             this.getTemplateList()
           }
         },
@@ -433,15 +439,13 @@ export default {
         loading: false,
         render: () => {
           return (
-            <div>
-              <Input
-                type="textarea"
-                maxlength={255}
-                show-word-limit
-                v-model={this.backReason}
-                placeholder={this.$t('tw_back_bind_placeholder')}
-              ></Input>
-            </div>
+            <Input
+              type="textarea"
+              maxlength={255}
+              show-word-limit
+              v-model={this.backReason}
+              placeholder={this.$t('tw_back_bind_placeholder')}
+            ></Input>
           )
         },
         onOk: async () => {
@@ -463,6 +467,7 @@ export default {
                 title: this.$t('successful'),
                 desc: this.$t('successful')
               })
+              this.status = 'created'
               this.getTemplateList()
             }
           }

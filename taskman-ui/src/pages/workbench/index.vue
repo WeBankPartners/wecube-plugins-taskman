@@ -134,7 +134,7 @@ export default {
           <div>
             <span>{this.$t('tw_task_tab')}</span>
             {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][0])}></Badge>
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][0])} class="badge"></Badge>
             )}
           </div>
         )
@@ -144,7 +144,7 @@ export default {
           <div>
             <span>审批</span>
             {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][1])}></Badge>
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][1])} class="badge"></Badge>
             )}
           </div>
         )
@@ -154,7 +154,7 @@ export default {
           <div>
             <span>{this.$t('tw_pending_tab')}</span>
             {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][2])}></Badge>
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][2])} class="badge"></Badge>
             )}
           </div>
         )
@@ -164,7 +164,7 @@ export default {
           <div>
             <span>请求确认</span>
             {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][3])}></Badge>
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][3])} class="badge"></Badge>
             )}
           </div>
         )
@@ -613,6 +613,9 @@ export default {
   .data-tabs {
     margin-top: 10px;
   }
+  .badge {
+    margin-left: 5px;
+  }
 }
 </style>
 <style lang="scss">
@@ -640,6 +643,10 @@ export default {
   }
   .ivu-tooltip-inner {
     max-width: 1000px;
+  }
+  .ivu-badge-count {
+    padding: 0 4px;
+    font-size: 10px;
   }
 }
 </style>

@@ -194,11 +194,11 @@ export default {
 .workbench-data-card .ivu-card-body {
   padding: 10px;
 }
-.badge {
+.workbench-data-card .badge {
   position: absolute;
-  top: -30px;
-  right: -35px;
-  font-size: 12px;
+  top: -28px;
+  right: -32px;
+  font-size: 10px;
 }
 </style>
 <style lang="scss" scoped>

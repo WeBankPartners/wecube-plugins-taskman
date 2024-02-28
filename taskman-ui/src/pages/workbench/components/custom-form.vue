@@ -24,48 +24,18 @@
             :disabled="i.isEdit === 'no'"
             style="width:60%;"
           ></Input>
-          <!--下拉entity类型-->
-          <Select
-            v-else-if="i.elementType === 'select' && i.entity"
+          <LimitSelect
+            v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
             v-model="value[i.name]"
-            :multiple="i.multiple === 'Y'"
-            filterable
-            clearable
+            :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
+            :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
+            :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+            :options="entityData[i.name + 'Options']"
             :disabled="i.isEdit === 'no'"
+            :multiple="i.multiple === 'Y'"
             style="width:60%;"
           >
-            <template v-for="item in entityData[i.name + 'Options']">
-              <Option :key="item.guid" :value="item.guid">{{ item.key_name }}</Option>
-            </template>
-          </Select>
-          <!--下拉非entity类型-->
-          <Select
-            v-else-if="i.elementType === 'select' && !i.entity"
-            v-model="value[i.name]"
-            :multiple="i.multiple === 'Y'"
-            filterable
-            clearable
-            :disabled="i.isEdit === 'no'"
-            style="width:60%;"
-          >
-            <template v-for="item in entityData[i.name + 'Options']">
-              <Option :key="item" :value="item">{{ item }}</Option>
-            </template>
-          </Select>
-          <!--下拉wecmdbEntity类型-->
-          <Select
-            v-else-if="i.elementType === 'wecmdbEntity'"
-            v-model="value[i.name]"
-            :multiple="i.multiple === 'Y'"
-            filterable
-            clearable
-            :disabled="i.isEdit === 'no'"
-            style="width:60%;"
-          >
-            <template v-for="item in entityData[i.name + 'Options']">
-              <Option :key="item.id" :value="item.id">{{ item.displayName }}</Option>
-            </template>
-          </Select>
+          </LimitSelect>
         </FormItem>
       </template>
     </Form>
@@ -73,9 +43,13 @@
 </template>
 
 <script>
+import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { deepClone } from '@/pages/util'
 export default {
+  components: {
+    LimitSelect
+  },
   props: {
     requestId: {
       type: String,

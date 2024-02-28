@@ -4,6 +4,7 @@ type ApprovalTemplateTable struct {
 	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Sort            int    `json:"sort" xorm:"sort"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
+	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
 	Name            string `json:"name" xorm:"name"`
 	ExpireDay       int    `json:"expireDay" xorm:"expire_day"`
 	Description     string `json:"description" xorm:"description"`
@@ -28,6 +29,7 @@ type ApprovalTemplateDto struct {
 	Id              string                     `json:"id"`
 	Sort            int                        `json:"sort"`
 	RequestTemplate string                     `json:"requestTemplate"`
+	FormTemplate    string                     `json:"formTemplate"`
 	Name            string                     `json:"name"`
 	ExpireDay       int                        `json:"expireDay"`
 	Description     string                     `json:"description"`
@@ -36,16 +38,18 @@ type ApprovalTemplateDto struct {
 }
 
 type ApprovalTemplateRoleDto struct {
-	RoleType    string `json:"roleType"`
-	HandlerType string `json:"handlerType"`
-	Role        string `json:"role"`
-	Handler     string `json:"handler"`
+	ApprovalRoleId string `json:"ApprovalRoleId"`
+	RoleType       string `json:"roleType"`
+	HandlerType    string `json:"handlerType"`
+	Role           string `json:"role"`
+	Handler        string `json:"handler"`
 }
 
 type ApprovalTemplateIdObj struct {
-	Id   string `json:"id"`
-	Sort int    `json:"sort"`
-	Name string `json:"name"`
+	Id           string `json:"id"`
+	Sort         int    `json:"sort"`
+	Name         string `json:"name"`
+	FormTemplate string `json:"formTemplate"`
 }
 
 type ApprovalTemplateCreateParam struct {

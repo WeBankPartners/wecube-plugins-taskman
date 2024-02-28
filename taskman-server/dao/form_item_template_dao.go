@@ -111,6 +111,12 @@ func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupId(formTemplate, ite
 	return
 }
 
+func (d FormItemTemplateDao) QueryByItemGroupId(itemGroupId string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+	formItemTemplate = []*models.FormItemTemplateTable{}
+	err = d.DB.Where("item_group_id = ?", itemGroupId).Find(&formItemTemplate)
+	return
+}
+
 func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var formItemTemplateGroup models.FormItemTemplateGroupTable

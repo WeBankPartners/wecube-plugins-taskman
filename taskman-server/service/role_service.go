@@ -136,3 +136,15 @@ func (s RoleService) QueryUserByRoles(roles []string, userToken, language string
 	}
 	return
 }
+
+func (s RoleService) GetRoleAdministrators(role string, userToken, language string) (result []string, err error) {
+	result = []string{}
+	roleMap, err := rpc.QueryAllRoles("Y", userToken, language)
+	if err != nil {
+		return
+	}
+	if v, ok := roleMap[role]; ok {
+		result = append(result, v.Administrator)
+	}
+	return
+}

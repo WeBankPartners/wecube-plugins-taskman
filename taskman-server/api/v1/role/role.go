@@ -28,6 +28,17 @@ func GetUserByRoles(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
+func GetRoleAdministrators(c *gin.Context) {
+	role := c.Query("role")
+	result, err := service.GetRoleService().GetRoleAdministrators(role,
+		c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
 func GetRoleList(c *gin.Context) {
 	service.GetRoleService().SyncCoreRole(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	result, err := service.GetRoleService().GetRoleList([]string{})

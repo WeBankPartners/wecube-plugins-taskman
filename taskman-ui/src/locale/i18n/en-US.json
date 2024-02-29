@@ -33,6 +33,7 @@
   "status_confirm": "Confirm",
   "status_created": "Created",
   "back_to_template": "Back",
+  "back_to_template_tip": "Confirm return? Unsaved information on this page will be lost.",
   "basic_information_settings": "Basic Info",
   "form_item_selection": "Form Item Selection",
   "form_item": "Form Item",
@@ -298,5 +299,8 @@
   "tw_approve": "Approve",
   "tw_reject": "Reject",
   "tw_send_back": "Send Back",
-  "tw_comments": "Comments"
+  "tw_comments": "Comments",
+  "tw_approval": "Approval",
+  "tw_date_picker": "DatePicker",
+  "tw_clear": "Clear"
 }

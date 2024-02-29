@@ -16,6 +16,12 @@
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
               <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <DatePicker
+                v-if="element.elementType === 'datePicker'"
+                type="date"
+                :placeholder="$t('tw_date_picker')"
+                style="width:100%"
+              ></DatePicker>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
                 <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
@@ -33,20 +39,23 @@
             </div>
           </div>
           <Form :label-width="120" v-if="dataFormInfo.associationWorkflow">
-            <FormItem :label="$t('tw_choose_object')">
+            <FormItem>
+              <span slot="label" style="font-size: 12px;">{{ $t('tw_choose_object') }}</span>
               <Select style="width: 30%">
                 <Option v-for="item in []" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </FormItem>
           </Form>
-          <div style="margin-top:16px">
-            <div v-for="groupItem in dataFormInfo.groups" :key="groupItem.itemGroupId" style="display: inline-block;">
+          <div>
+            <div
+              v-for="groupItem in dataFormInfo.groups"
+              :key="groupItem.itemGroupId"
+              style="margin-top: 16px;display: inline-block;"
+            >
               <Button
                 @click.stop="editGroupItem(groupItem)"
                 type="primary"
                 size="small"
-                ghost
-                shape="circle"
                 style="position: relative;left: 16px;bottom: 16px;"
                 icon="md-create"
               ></Button>
@@ -60,25 +69,20 @@
                 @click.stop="removeGroupItem(groupItem)"
                 type="error"
                 size="small"
-                ghost
-                shape="circle"
                 icon="md-trash"
                 style="position: relative;right: 16px;bottom: 16px;"
               ></Button>
             </div>
             <span>
-              <Icon @click="selectItemGroup" style="cursor: pointer;" type="md-add-circle" size="24" color="#2d8cf0" />
+              <Button @click="selectItemGroup" type="primary" icon="md-add"></Button>
             </span>
           </div>
           <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
             <div
               v-for="(item, itemIndex) in finalElement"
               :key="itemIndex"
-              style="border: 1px solid #dcdee2; margin-bottom: 8px; padding: 8px"
+              style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
             >
-              <span style="font-weight: 600;">
-                {{ item.itemGroupName }}
-              </span>
               <draggable
                 class="dragArea"
                 :list="item.attrs"
@@ -93,7 +97,7 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div>
+                  <div class="custom-title">
                     <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
                     {{ element.title }}:
                   </div>
@@ -102,41 +106,41 @@
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   ></Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   ></Select>
+                  <DatePicker v-if="element.elementType === 'datePicker'" class="custom-item" type="date"></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
                     size="small"
                     :disabled="$parent.isCheck === 'Y'"
-                    ghost
-                    icon="ios-close"
+                    icon="ios-trash"
                   ></Button>
                 </div>
               </draggable>
             </div>
             <div style="text-align: right;">
               <Button type="primary" size="small" ghost @click="saveGroup">{{ $t('save') }}</Button>
-              <Button size="small" @click="cancelGroup">{{ $t('cancel') }}</Button>
+              <Button size="small" @click="cancelGroup">{{ $t('tw_abandon') }}</Button>
             </div>
           </template>
         </div>
@@ -174,6 +178,7 @@
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
                       <Option value="wecmdbEntity">模型数据项</Option>
+                      <Option value="datePicker">DatePicker</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -310,6 +315,9 @@
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
+    <div style="text-align: center;margin-top: 16px;">
+      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
+    </div>
   </div>
 </template>
 
@@ -428,6 +436,37 @@ export default {
           name: 'wecmdbEntity',
           title: 'WecmdbEntity',
           elementType: 'wecmdbEntity',
+          defaultValue: '',
+          defaultClear: 'no',
+          // tag: '',
+          itemGroup: '',
+          itemGroupName: '',
+          packageName: '',
+          entity: '',
+          width: 24,
+          dataOptions: '',
+          regular: '',
+          inDisplayName: 'yes',
+          isEdit: 'yes',
+          multiple: 'N',
+          selectList: [],
+          isRefInside: 'no',
+          required: 'no',
+          isView: 'yes',
+          isOutput: 'no',
+          sort: 0,
+          attrDefId: '',
+          attrDefName: '',
+          attrDefDataType: '',
+          refEntity: '',
+          refPackageName: ''
+        },
+        {
+          id: 6,
+          name: 'datePicker',
+          title: 'datePicker',
+          elementType: 'datePicker',
+          abc: 'datePicker',
           defaultValue: '',
           defaultClear: 'no',
           // tag: '',
@@ -577,11 +616,19 @@ export default {
       if (statusCode === 'OK') {
         // workflow  2.编排数据, 3.optional 自选数据项表单,  custom 1.自定义表单
         this.$nextTick(() => {
+          console.log(12, this.dataFormInfo.groups)
+          const existGroup = this.dataFormInfo.groups
+            .filter(g => g.itemGroupType !== 'custom')
+            .map(g => {
+              return g.itemGroupName
+            })
+          console.log(existGroup)
           this.groupOptions = data.map(d => {
             if (d.formType === 'custom') {
               d.entities = ['custom']
             } else {
-              d.entities = d.entities || []
+              let entities = d.entities || []
+              d.entities = entities.filter(entity => !existGroup.includes(entity))
             }
             return d
           })
@@ -776,6 +823,25 @@ export default {
     cancelGroup () {
       this.finalElement = []
       this.isParmasChanged = false
+    },
+    gotoNext () {
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('tw_confirm_discarding_changes')}`,
+          content: `${this.$t('tw_params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('tw_abandon'),
+          onOk: async () => {
+            this.saveGroup()
+          },
+          onCancel: () => {
+            this.$emit('gotoNextStep', this.requestTemplateId)
+          }
+        })
+      } else {
+        this.$emit('gotoNextStep', this.requestTemplateId)
+      }
     }
   },
   components: {
@@ -807,10 +873,10 @@ fieldset[disabled] .ivu-input {
 }
 .list-group-item- {
   display: inline-block;
-  margin: 2px 0;
+  margin: 8px 0;
 }
 .title {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   margin: 0 10px;
   display: inline-block;
@@ -829,5 +895,15 @@ fieldset[disabled] .ivu-input {
     background-color: #c6eafe;
     box-sizing: content-box;
   }
+}
+.custom-title {
+  width: 90px;
+  display: inline-block;
+  text-align: right;
+  word-wrap: break-word;
+}
+.custom-item {
+  width: calc(100% - 130px);
+  display: inline-block;
 }
 </style>

@@ -6,16 +6,16 @@
     <Row type="flex">
       <Col span="20" offset="2">
         <Steps :current="currentStep">
-          <Step icon="ios-add-circle">
+          <Step>
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
           </Step>
-          <Step icon="md-cog">
+          <Step>
             <span slot="title" @click="changeStep(1)">{{ $t('request_form_settings') }}</span>
           </Step>
-          <Step icon="md-cog">
+          <Step>
             <span slot="title" @click="changeStep(2)">{{ $t('approval_form_settings') }}</span>
           </Step>
-          <Step icon="ios-settings">
+          <Step>
             <span slot="title" @click="changeStep(3)">{{ $t('task_form_settings') }}</span>
           </Step>
         </Steps>
@@ -88,7 +88,17 @@ export default {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/taskman/template-mgmt' })
+      this.$Modal.confirm({
+        title: `${this.$t('back_to_template')}`,
+        content: `${this.$t('back_to_template_tip')}`,
+        'z-index': 1000000,
+        okText: this.$t('confirm'),
+        cancelText: this.$t('cancel'),
+        onOk: async () => {
+          this.$router.push({ path: '/taskman/template-mgmt' })
+        },
+        onCancel: () => {}
+      })
     },
     gotoNextStep (tmpId) {
       this.requestTemplateId = tmpId

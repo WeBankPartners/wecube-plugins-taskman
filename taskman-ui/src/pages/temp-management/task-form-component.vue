@@ -109,6 +109,12 @@
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
               <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <DatePicker
+                v-if="element.elementType === 'datePicker'"
+                type="date"
+                :placeholder="$t('tw_date_picker')"
+                style="width:100%"
+              ></DatePicker>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
                 <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
               </div>
@@ -188,6 +194,11 @@
                     v-model="element.defaultValue"
                     style="width: calc(100% - 30px)"
                   ></Select>
+                  <DatePicker
+                    v-if="element.elementType === 'datePicker'"
+                    style="width: calc(100% - 30px)"
+                    type="date"
+                  ></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"

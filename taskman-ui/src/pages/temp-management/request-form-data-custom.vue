@@ -1,5 +1,5 @@
 <template>
-  <Drawer title="配置表单" :closable="false" :width="550" v-model="openFormConfig">
+  <Drawer title="配置表单" :closable="false" :mask-closable="false" :width="550" v-model="openFormConfig">
     <div>
       <Form :label-width="120">
         <FormItem :label="$t('表单类型')">
@@ -13,7 +13,7 @@
           >
         </FormItem>
         <FormItem :label="$t('新增一行')">
-          <Select v-model="group.itemGroupRule" style="width: 96%" filterable @on-change="paramsChanged">
+          <Select v-model="group.itemGroupRule" style="width: 96%" filterable disabled>
             <Option v-for="item in groupRules" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>

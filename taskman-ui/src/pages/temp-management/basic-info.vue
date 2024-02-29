@@ -6,23 +6,22 @@
           <Col span="12">
             <div class="basci-info-left">
               <div class="title">
-                <span>1</span>
                 <div class="title-text">
-                  模版信息
+                  1.模版信息
                   <span class="underline"></span>
                 </div>
               </div>
               <div class="basci-info-content">
                 <Form :label-width="120">
                   <FormItem :label="$t('name')">
-                    <Input v-model="basicInfo.name" style="width: 90%;" @on-change="paramsChanged"></Input>
+                    <Input v-model="basicInfo.name" style="width: 95%" @on-change="paramsChanged"></Input>
                     <span style="color: red">*</span>
                     <span v-if="basicInfo.name === ''" style="color: red"
                       >{{ $t('name') }}{{ $t('can_not_be_empty') }}</span
                     >
                   </FormItem>
                   <FormItem :label="$t('group')">
-                    <Select v-model="basicInfo.group" style="width: 90%" filterable @on-change="paramsChanged">
+                    <Select v-model="basicInfo.group" style="width: 95%;" filterable @on-change="paramsChanged">
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{ item.name }}</Option>
                     </Select>
                     <span style="color: red">*</span>
@@ -31,7 +30,7 @@
                     >
                   </FormItem>
                   <FormItem :label="$t('scene_type')">
-                    <Select v-model="basicInfo.type" style="width: 90%" filterable @on-change="paramsChanged">
+                    <Select v-model="basicInfo.type" style="width: 95%;" filterable @on-change="paramsChanged">
                       <Option v-for="item in typeOptions" :value="item.value" :key="item.label">{{
                         item.label
                       }}</Option>
@@ -45,7 +44,7 @@
                       @on-open-change="getTags"
                       filterable
                       allow-create
-                      style="width: 90%"
+                      style="width: 95%;"
                       @on-change="paramsChanged"
                       @on-create="handleCreate"
                     >
@@ -58,7 +57,7 @@
                   <FormItem :label="$t('description')">
                     <Input
                       v-model="basicInfo.description"
-                      style="width: 90%"
+                      style="width: 95%;"
                       type="textarea"
                       :rows="2"
                       @on-change="paramsChanged"
@@ -71,7 +70,7 @@
                       v-model="basicInfo.mgmtRoles"
                       @on-open-change="getManagementRoles"
                       filterable
-                      style="width: 90%"
+                      style="width: 95%;"
                       @on-change="changeMgmtRole"
                     >
                       <Option v-for="item in mgmtRolesOptions" :value="item.id" :key="item.id">{{
@@ -89,7 +88,7 @@
                       v-model="basicInfo.handler"
                       @on-open-change="getHandlerRoles"
                       filterable
-                      style="width: 90%"
+                      style="width: 95%;"
                       @on-change="paramsChanged"
                     >
                       <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
@@ -104,7 +103,7 @@
                       @on-open-change="getUserRoles"
                       filterable
                       multiple
-                      style="width: 90%"
+                      style="width: 95%;"
                     >
                       <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{
                         item.displayName
@@ -117,7 +116,7 @@
                   </FormItem>
                   <!-- 请求时效 -->
                   <FormItem :label="$t('request_time_limit')">
-                    <Select v-model="basicInfo.expireDay" filterable style="width: 90%" @on-change="paramsChanged">
+                    <Select v-model="basicInfo.expireDay" filterable style="width: 95%;" @on-change="paramsChanged">
                       <Option v-for="item in expireDayOptions" :value="item" :key="item"
                         >{{ item }}{{ $t('day') }}</Option
                       >
@@ -131,9 +130,8 @@
           <Col span="12">
             <div class="basci-info-right">
               <div class="title">
-                <span>2</span>
                 <div class="title-text">
-                  模版配置
+                  2.模版配置
                   <span class="underline"></span>
                 </div>
               </div>
@@ -152,7 +150,7 @@
                     <div>
                       <!-- 处理角色 -->
                       <FormItem :label="$t('handle_role')">
-                        <Select v-model="basicInfo.pendingRole" filterable style="width: 90%">
+                        <Select v-model="basicInfo.pendingRole" filterable style="width: 95%;">
                           <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{
                             item.displayName
                           }}</Option>
@@ -164,7 +162,7 @@
                           v-model="basicInfo.pendingHandler"
                           @on-open-change="getPendingHandlerRoles"
                           filterable
-                          style="width: 90%"
+                          style="width: 95%;"
                         >
                           <Option v-for="item in pendingHandlerOptions" :value="item.id" :key="item.id">{{
                             item.displayName
@@ -173,7 +171,7 @@
                       </FormItem>
                       <!-- 节点时效 -->
                       <FormItem :label="$t('节点时效')">
-                        <Select v-model="basicInfo.pendingExpireDay" filterable style="width: 90%">
+                        <Select v-model="basicInfo.pendingExpireDay" filterable style="width: 95%;">
                           <Option v-for="item in expireDayOptions" :value="item" :key="item"
                             >{{ item }}{{ $t('day') }}</Option
                           >
@@ -193,7 +191,7 @@
                         <Select
                           v-model="basicInfo.procDefId"
                           filterable
-                          style="width: 90%"
+                          style="width: 95%;"
                           :disabled="basicInfo.mgmtRoles === ''"
                         >
                           <Option v-for="item in procOptions" :value="item.procDefId" :key="item.procDefId">{{
@@ -208,13 +206,13 @@
                     </div>
                   </template>
                   <!-- [结束]确认节点 -->
-                  <FormItem :label="$t('结束]确认节点')">
+                  <FormItem :label="$t('[结束]确认节点')">
                     <i-switch v-model="basicInfo.confirmSwitch" />
                   </FormItem>
                   <template v-if="basicInfo.confirmSwitch">
                     <div>
                       <FormItem :label="$t('节点时效')">
-                        <Select v-model="basicInfo.confirmExpireDay" filterable style="width: 90%">
+                        <Select v-model="basicInfo.confirmExpireDay" filterable style="width: 95%;">
                           <Option v-for="item in expireDayOptions" :value="item" :key="item"
                             >{{ item }}{{ $t('day') }}</Option
                           >
@@ -265,7 +263,7 @@ export default {
         tags: '', // 标签
         type: 2, // 模版场景类型
         expireDay: 1, // 请求时效
-        pendingSwitch: false, // 定版节点
+        pendingSwitch: true, // 定版节点
         pendingRole: '', // 定版角色
         pendingHandler: '', // 定版处理人
         pendingExpireDay: 1, // 定版节点时效
@@ -525,7 +523,11 @@ fieldset[disabled] .ivu-input {
 }
 </style>
 <style lang="scss" scoped>
+.ivu-form-item {
+  margin-bottom: 24px;
+}
 .basci-info-right {
+  margin-left: 60px;
   height: calc(100vh - 260px);
 }
 

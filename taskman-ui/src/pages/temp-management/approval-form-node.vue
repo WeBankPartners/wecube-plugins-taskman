@@ -7,7 +7,6 @@
       </div>
     </div>
     <div>
-      {{ isParmasChanged }}
       <Form ref="formInline" inline :label-width="120">
         <FormItem label="审批名称">
           <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 94%;"> </Input>
@@ -196,14 +195,14 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      console.log(33, this.activeApprovalNode)
       const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
       if (statusCode === 'OK') {
+        this.isParmasChanged = false
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$emit('reloadParentPage')
+        this.$emit('reloadParentPage', this.activeApprovalNode.sort)
       }
     },
     isNeedConfirm () {

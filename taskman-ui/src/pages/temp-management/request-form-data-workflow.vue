@@ -1,5 +1,5 @@
 <template>
-  <Drawer title="配置表单" :closable="false" :width="550" v-model="openFormConfig">
+  <Drawer title="配置表单" :closable="false" :mask-closable="false" :width="550" v-model="openFormConfig">
     <div>
       <Form :label-width="120">
         <FormItem :label="$t('表单类型')">

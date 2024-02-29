@@ -19,7 +19,7 @@
               <DatePicker
                 v-if="element.elementType === 'datePicker'"
                 type="date"
-                placeholder="Select date"
+                :placeholder="$t('tw_date_picker')"
                 style="width:100%"
               ></DatePicker>
               <div v-if="element.elementType === 'group'" style="width: 100%; height: 80px; border: 1px solid #5ea7f4">
@@ -32,14 +32,14 @@
       <Col span="12" style="border: 1px solid #dcdee2; padding: 0 16px; width: 48%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
           <Divider>预览</Divider>
+          <div class="title">
+            <div class="title-text">
+              {{ $t('请求信息') }}
+              <span class="underline"></span>
+            </div>
+          </div>
           <template v-for="(item, itemIndex) in finalElement">
-            <div :key="itemIndex" style="border: 1px solid #dcdee2; margin-bottom: 8px; padding: 8px">
-              <div class="title">
-                <div class="title-text">
-                  {{ item.itemGroupName }}
-                  <span class="underline"></span>
-                </div>
-              </div>
+            <div :key="itemIndex" style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
               <draggable
                 class="dragArea"
                 :list="item.attrs"
@@ -54,7 +54,7 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div>
+                  <div class="custom-title">
                     <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
                     {{ element.title }}:
                   </div>
@@ -63,35 +63,34 @@
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     placeholder=""
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   />
                   <Input
                     v-if="element.elementType === 'textarea'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   />
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   ></Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
-                    style="width: calc(100% - 30px)"
+                    class="custom-item"
                   ></Select>
-                  <DatePicker v-if="element.elementType === 'datePicker'" type="date"></DatePicker>
+                  <DatePicker v-if="element.elementType === 'datePicker'" class="custom-item" type="date"></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
                     size="small"
                     :disabled="$parent.isCheck === 'Y'"
-                    ghost
-                    icon="ios-close"
+                    icon="ios-trash"
                   ></Button>
                 </div>
               </draggable>
@@ -132,6 +131,7 @@
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
                       <Option value="wecmdbEntity">模型数据项</Option>
+                      <Option value="datePicker">DatePicker</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -635,10 +635,10 @@ fieldset[disabled] .ivu-input {
 }
 .list-group-item- {
   display: inline-block;
-  margin: 2px 0;
+  margin: 8px 0;
 }
 .title {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   margin: 0 10px;
   display: inline-block;
@@ -657,5 +657,15 @@ fieldset[disabled] .ivu-input {
     background-color: #c6eafe;
     box-sizing: content-box;
   }
+}
+.custom-title {
+  width: 90px;
+  display: inline-block;
+  text-align: right;
+  word-wrap: break-word;
+}
+.custom-item {
+  width: calc(100% - 130px);
+  display: inline-block;
 }
 </style>

@@ -33,6 +33,7 @@
   "status_confirm": "已发布",
   "status_created": "未发布",
   "back_to_template": "返回",
+  "back_to_template_tip": "确认返回？本页面未保存的信息将会丢失",
   "basic_information_settings": "基础信息",
   "form_item_selection": "表单项选择",
   "form_item": "表单项",
@@ -298,5 +299,8 @@
   "tw_approve": "同意",
   "tw_reject": "拒绝",
   "tw_send_back": "退回",
-  "tw_comments": "意见"
+  "tw_comments": "意见",
+  "tw_approval": "审批",
+  "tw_date_picker": "日期选择器",
+  "tw_clear": "清空"
 }

@@ -175,3 +175,13 @@ const (
 	TaskTemplateRoleHandlerTypeSystem          TaskTemplateRoleHandlerType = "system"           // 组内系统分配
 	TaskTemplateRoleHandlerTypeClaim           TaskTemplateRoleHandlerType = "claim"            // 组内主动认领
 )
+
+// TaskType 任务类型
+type TaskType string
+
+const (
+	TaskTypeCheck     TaskType = "check"     // 定版
+	TaskTypeApprove   TaskType = "approve"   // 审批
+	TaskTypeImplement TaskType = "implement" // 执行类型(任务)
+	TaskTypeConfirm   TaskType = "confirm"   // 请求确认
+)

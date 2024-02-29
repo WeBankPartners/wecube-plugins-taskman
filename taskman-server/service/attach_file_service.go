@@ -11,7 +11,7 @@ import (
 )
 
 type AttachFileService struct {
-	attachFileDao dao.AttachFileDao
+	attachFileDao *dao.AttachFileDao
 }
 
 func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent []byte) error {

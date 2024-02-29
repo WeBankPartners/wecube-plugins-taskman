@@ -18,8 +18,8 @@ import (
 )
 
 type TaskService struct {
-	taskDao     dao.TaskDao
-	taskRoleDao dao.TaskRoleDao
+	taskDao     *dao.TaskDao
+	taskRoleDao *dao.TaskRoleDao
 }
 
 func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResult, err error) {

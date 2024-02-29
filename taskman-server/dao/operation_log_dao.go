@@ -9,6 +9,6 @@ type OperationLogDao struct {
 	DB *xorm.Engine
 }
 
-func (d OperationLogDao) AddOperationLog(record *models.OperationLogTable) (affected int64, err error) {
+func (d *OperationLogDao) AddOperationLog(record *models.OperationLogTable) (affected int64, err error) {
 	return d.DB.Insert(record)
 }

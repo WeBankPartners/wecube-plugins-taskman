@@ -877,6 +877,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var approvalTemplateList []*models.ApprovalTemplateDto
 	var approvalList []*models.ApprovalDto
 	var taskTemplateList []*models.TaskTemplateDto
+	var requestTemplateService = GetRequestTemplateService()
 	//var taskList []*models.TaskTable
 	rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
 	request, err = GetSimpleRequest(requestId)
@@ -893,8 +894,8 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	// 添加提交请求
 	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: SendRequest, Handler: request.CreatedBy})
 	// 配置了请求定版
-	if requestTemplate.PendingSwitch {
-		pendingRole, pendingHandler = GetRequestTemplateService().GetRequestPendingRoleAndHandler(requestTemplate)
+	if requestTemplate.CheckSwitch {
+		pendingRole, pendingHandler = requestTemplateService.GetRequestPendingRoleAndHandler(requestTemplateService.GetDtoByRequestTemplate(requestTemplate))
 		// 没有处理人,展示处理角色
 		if pendingHandler == "" {
 			pendingHandler = pendingRole

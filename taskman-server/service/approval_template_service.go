@@ -12,8 +12,8 @@ import (
 )
 
 type ApprovalTemplateService struct {
-	approvalTemplateDao     dao.ApprovalTemplateDao
-	approvalTemplateRoleDao dao.ApprovalTemplateRoleDao
+	approvalTemplateDao     *dao.ApprovalTemplateDao
+	approvalTemplateRoleDao *dao.ApprovalTemplateRoleDao
 }
 
 func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalTemplateCreateParam, user string) (*models.ApprovalTemplateCreateResponse, error) {

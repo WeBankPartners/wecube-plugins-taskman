@@ -9,10 +9,10 @@ import (
 )
 
 type RequestTemplateGroupService struct {
-	requestTemplateGroupDao dao.RequestTemplateGroupDao
+	requestTemplateGroupDao *dao.RequestTemplateGroupDao
 }
 
-func (s RequestTemplateGroupService) QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
+func (s *RequestTemplateGroupService) QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
 	rowData = []*models.RequestTemplateGroupTable{}
 	filterSql, queryColumn, queryParam := dao.TransFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateGroupTable{}, PrimaryKey: "id"})
 	userRoleFilterSql, userRoleFilterParams := dao.CreateListParams(userRoles, "")
@@ -38,7 +38,7 @@ func (s RequestTemplateGroupService) QueryRequestTemplateGroup(param *models.Que
 	return
 }
 
-func (s RequestTemplateGroupService) CreateRequestTemplateGroup(param *models.RequestTemplateGroupTable) error {
+func (s *RequestTemplateGroupService) CreateRequestTemplateGroup(param *models.RequestTemplateGroupTable) error {
 	param.Id = guid.CreateGuid()
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err := dao.X.Exec("insert into request_template_group(id,name,description,manage_role,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?)",
@@ -49,7 +49,7 @@ func (s RequestTemplateGroupService) CreateRequestTemplateGroup(param *models.Re
 	return err
 }
 
-func (s RequestTemplateGroupService) UpdateRequestTemplateGroup(param *models.RequestTemplateGroupTable) error {
+func (s *RequestTemplateGroupService) UpdateRequestTemplateGroup(param *models.RequestTemplateGroupTable) error {
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	_, err := dao.X.Exec("update request_template_group set name=?,description =?,manage_role=?,updated_by=?,updated_time=? where id=?",
 		param.Name, param.Description, param.ManageRole, param.UpdatedBy, nowTime, param.Id)
@@ -59,7 +59,7 @@ func (s RequestTemplateGroupService) UpdateRequestTemplateGroup(param *models.Re
 	return err
 }
 
-func (s RequestTemplateGroupService) DeleteRequestTemplateGroup(id string) error {
+func (s *RequestTemplateGroupService) DeleteRequestTemplateGroup(id string) error {
 	_, err := dao.X.Exec("update request_template_group set del_flag=1 where id=?", id)
 	if err != nil {
 		err = fmt.Errorf("Delete database error:%s ", err.Error())
@@ -67,7 +67,7 @@ func (s RequestTemplateGroupService) DeleteRequestTemplateGroup(id string) error
 	return err
 }
 
-func (s RequestTemplateGroupService) CheckRequestTemplateGroupRoles(id string, roles []string) error {
+func (s *RequestTemplateGroupService) CheckRequestTemplateGroupRoles(id string, roles []string) error {
 	rolesFilterSql, rolesFilterParam := dao.CreateListParams(roles, "")
 	var requestTemplateGroupRows []*models.RequestTemplateGroupTable
 	rolesFilterParam = append([]interface{}{id}, rolesFilterParam...)

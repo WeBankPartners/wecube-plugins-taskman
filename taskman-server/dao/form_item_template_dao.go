@@ -9,7 +9,7 @@ type FormItemTemplateDao struct {
 	DB *xorm.Engine
 }
 
-func (d FormItemTemplateDao) Add(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable) (affected int64, err error) {
+func (d *FormItemTemplateDao) Add(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable) (affected int64, err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
@@ -20,7 +20,7 @@ func (d FormItemTemplateDao) Add(session *xorm.Session, formItemTemplate *models
 	return
 }
 
-func (d FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable) (err error) {
+func (d *FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *models.FormItemTemplateTable) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
@@ -35,7 +35,7 @@ func (d FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *mod
 	return
 }
 
-func (d FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTemplateTable, error) {
+func (d *FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTemplateTable, error) {
 	var formItemTemplate *models.FormItemTemplateTable
 	var found bool
 	var err error
@@ -50,7 +50,7 @@ func (d FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTem
 	return nil, nil
 }
 
-func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
+func (d *FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
@@ -76,13 +76,13 @@ func (d FormItemTemplateDao) QueryByFormTemplate(formTemplate string) (formItemT
 	return
 }
 
-func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+func (d *FormItemTemplateDao) QueryByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
 	formItemTemplate = []*models.FormItemTemplateTable{}
 	err = d.DB.Where("form_template = ? and item_group_name = ?", formTemplate, itemGroupName).Find(&formItemTemplate)
 	return
 }
 
-func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
+func (d *FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupName(formTemplate, itemGroupName string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
@@ -105,19 +105,19 @@ func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupName(formTemplate
 	return
 }
 
-func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+func (d *FormItemTemplateDao) QueryByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
 	formItemTemplate = []*models.FormItemTemplateTable{}
 	err = d.DB.Where("form_template = ? and item_group_id = ?", formTemplate, itemGroupId).Find(&formItemTemplate)
 	return
 }
 
-func (d FormItemTemplateDao) QueryByItemGroupId(itemGroupId string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+func (d *FormItemTemplateDao) QueryByItemGroupId(itemGroupId string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
 	formItemTemplate = []*models.FormItemTemplateTable{}
 	err = d.DB.Where("item_group_id = ?", itemGroupId).Find(&formItemTemplate)
 	return
 }
 
-func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
+func (d *FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupId(formTemplate, itemGroupId string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var formItemTemplateGroup models.FormItemTemplateGroupTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
@@ -140,13 +140,13 @@ func (d FormItemTemplateDao) QueryDtoByFormTemplateAndItemGroupId(formTemplate, 
 	return
 }
 
-func (d FormItemTemplateDao) QueryByFormTemplateAndItemGroup(formTemplate, itemGroup string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
+func (d *FormItemTemplateDao) QueryByFormTemplateAndItemGroup(formTemplate, itemGroup string) (formItemTemplate []*models.FormItemTemplateTable, err error) {
 	formItemTemplate = []*models.FormItemTemplateTable{}
 	err = d.DB.Where("form_template = ? and item_group = ?", formTemplate, itemGroup).Find(&formItemTemplate)
 	return
 }
 
-func (d FormItemTemplateDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
+func (d *FormItemTemplateDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
@@ -161,7 +161,7 @@ func (d FormItemTemplateDao) DeleteByIdOrCopyId(session *xorm.Session, id string
 	return
 }
 
-func (d FormItemTemplateDao) Delete(session *xorm.Session, id string) (err error) {
+func (d *FormItemTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()

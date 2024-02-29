@@ -10,8 +10,8 @@ import (
 )
 
 type ApprovalService struct {
-	approvalDao     dao.ApprovalDao
-	approvalRoleDao dao.ApprovalRoleDao
+	approvalDao     *dao.ApprovalDao
+	approvalRoleDao *dao.ApprovalRoleDao
 }
 
 func (s *ApprovalService) CreateApprovals(param []*models.ApprovalDto) ([]*dao.ExecAction, error) {

@@ -29,21 +29,55 @@ type RequestTemplateTable struct {
 	ExpireDay        int    `json:"expireDay" xorm:"expire_day"`
 	Handler          string `json:"handler" xorm:"handler"`
 	DelFlag          int    `json:"delFlag" xorm:"del_flag"`
-	Type             int    `json:"type" xorm:"type"`                           // 请求类型, 0表示请求,1表示发布
-	OperatorObjType  string `json:"operatorObjType" xorm:"operator_obj_type"`   // 操作对象类型
-	ParentId         string `json:"parentId" xorm:"parent_id"`                  // 父类ID
-	ApproveBy        string `json:"approveBy" xorm:"approve_by"`                // 模板发布审批人
-	PendingSwitch    bool   `json:"pendingSwitch" xorm:"pending_switch"`        // 是否加入确认定版流程
-	PendingRole      string `json:"pendingRole" xorm:"pending_role"`            // 定版角色
-	PendingExpireDay int    `json:"pendingExpireDay" xorm:"pending_expire_day"` // 定版时效
-	PendingHandler   string `json:"pendingHandler" xorm:"pending_handler"`      // 定版处理人
-	ConfirmSwitch    bool   `json:"confirmSwitch" xorm:"confirm_switch"`        // 是否加入确认流程
-	ConfirmExpireDay int    `json:"confirmExpireDay" xorm:"confirm_expire_day"` // 确认过期时间
-	RollbackDesc     string `json:"rollbackDesc" xorm:"rollback_desc"`          // 退回理由
+	Type             int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布,2为变更,3为事件,4为问题
+	OperatorObjType  string `json:"operatorObjType" xorm:"operator_obj_type"` // 操作对象类型
+	ParentId         string `json:"parentId" xorm:"parent_id"`                // 父类ID
+	ApproveBy        string `json:"approveBy" xorm:"approve_by"`              // 模板发布审批人
+	CheckSwitch      bool   `json:"checkSwitch" xorm:"check_switch"`          // 是否加入确认定版流程
+	ConfirmSwitch    bool   `json:"confirmSwitch" xorm:"confirm_switch"`      // 是否加入确认流程
+	BackDesc         string `json:"backDesc" xorm:"back_desc"`                // 退回理由
 }
 
 func (RequestTemplateTable) TableName() string {
 	return "request_template"
+}
+
+type RequestTemplateDto struct {
+	Id               string `json:"id"`
+	Group            string `json:"group"`
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	FormTemplate     string `json:"formTemplate"`
+	DataFormTemplate string `json:"dataFormTemplate"`
+	Tags             string `json:"tags"`
+	Status           string `json:"status"`
+	RecordId         string `json:"recordId"`
+	Version          string `json:"version"`
+	ConfirmTime      string `json:"confirmTime"`
+	PackageName      string `json:"packageName"`
+	EntityName       string `json:"entityName"`
+	ProcDefKey       string `json:"procDefKey"`
+	ProcDefId        string `json:"procDefId"`
+	ProcDefName      string `json:"procDefName"`
+	CreatedBy        string `json:"createdBy"`
+	CreatedTime      string `json:"createdTime"`
+	UpdatedBy        string `json:"updatedBy"`
+	UpdatedTime      string `json:"updatedTime"`
+	EntityAttrs      string `json:"entityAttrs"`
+	ExpireDay        int    `json:"expireDay"`
+	Handler          string `json:"handler"`
+	DelFlag          int    `json:"delFlag"`
+	Type             int    `json:"type"`             // 请求类型,0表示请求,1表示发布
+	OperatorObjType  string `json:"operatorObjType"`  // 操作对象类型
+	ParentId         string `json:"parentId"`         // 父类ID
+	ApproveBy        string `json:"approveBy"`        // 模板发布审批人
+	CheckSwitch      bool   `json:"pendingSwitch"`    // 是否加入确认定版流程
+	CheckRole        string `json:"pendingRole"`      // 定版角色
+	CheckExpireDay   int    `json:"pendingExpireDay"` // 定版时效
+	CheckHandler     string `json:"pendingHandler"`   // 定版处理人
+	ConfirmSwitch    bool   `json:"confirmSwitch"`    // 是否加入确认流程
+	ConfirmExpireDay int    `json:"confirmExpireDay"` // 确认过期时间
+	BackDesc         string `json:"rollbackDesc"`     // 退回理由
 }
 
 // CollectDataObj 收藏数据项
@@ -73,7 +107,7 @@ type RequestTemplateHandlerDto struct {
 }
 
 type RequestTemplateQueryObj struct {
-	RequestTemplateTable
+	RequestTemplateDto
 	MGMTRoles      []*RoleTable `json:"mgmtRoles"`
 	USERoles       []*RoleTable `json:"useRoles"`
 	OperateOptions []string     `json:"operateOptions"`
@@ -89,17 +123,9 @@ type RequestTemplateStatusUpdateParam struct {
 }
 
 type RequestTemplateUpdateParam struct {
-	RequestTemplateTable
+	RequestTemplateDto
 	MGMTRoles []string `json:"mgmtRoles"`
 	USERoles  []string `json:"useRoles"`
-}
-
-type UserRequestTemplateQueryObj struct {
-	GroupId          string                       `json:"groupId"`
-	GroupName        string                       `json:"groupName"`
-	GroupDescription string                       `json:"groupDescription"`
-	Templates        []*RequestTemplateTable      `json:"-"`
-	Tags             []*UserRequestTemplateTagObj `json:"tags"`
 }
 
 type RequestTemplateTableObj struct {
@@ -120,11 +146,6 @@ type RequestTemplateTableObj struct {
 type UserRequestTemplateQueryObjNew struct {
 	ManageRole string              `json:"manageRole"` //管理角色
 	Groups     []*TemplateGroupObj `json:"groups"`
-}
-
-type UserRequestTemplateTagObj struct {
-	Tag       string                  `json:"tag"`
-	Templates []*RequestTemplateTable `json:"templates"`
 }
 
 type RequestTemplateFormStruct struct {
@@ -148,7 +169,7 @@ type TaskTemplateFormStruct struct {
 }
 
 type RequestTemplateExport struct {
-	RequestTemplate      RequestTemplateTable        `json:"requestTemplate"`
+	RequestTemplate      RequestTemplateDto          `json:"requestTemplate"`
 	FormTemplate         []*FormTemplateTable        `json:"formTemplate"`
 	FormItemTemplate     []*FormItemTemplateTable    `json:"formItemTemplate"`
 	RequestTemplateRole  []*RequestTemplateRoleTable `json:"requestTemplateRole"`
@@ -193,32 +214,103 @@ func (s RequestTemplateSort) Less(i, j int) bool {
 func ConvertRequestTemplateUpdateParam2RequestTemplate(param RequestTemplateUpdateParam) *RequestTemplateTable {
 	nowTime := time.Now().Format(DateTimeFormat)
 	return &RequestTemplateTable{
-		Id:               param.Id,
-		Group:            param.Group,
-		Name:             param.Name,
-		Description:      param.Description,
-		Tags:             param.Tags,
-		PackageName:      param.PackageName,
-		EntityName:       param.EntityName,
-		ProcDefKey:       param.ProcDefKey,
-		ProcDefId:        param.ProcDefId,
-		ProcDefName:      param.ProcDefName,
-		CreatedBy:        param.CreatedBy,
-		CreatedTime:      nowTime,
-		UpdatedBy:        param.CreatedBy,
-		UpdatedTime:      nowTime,
-		ExpireDay:        param.ExpireDay,
-		Handler:          param.Handler,
-		DelFlag:          0,
-		Type:             param.Type,
-		OperatorObjType:  param.OperatorObjType,
-		ParentId:         param.Id,
-		ApproveBy:        param.ApproveBy,
-		PendingSwitch:    param.PendingSwitch,
-		PendingRole:      param.PendingRole,
-		PendingExpireDay: param.PendingExpireDay,
-		PendingHandler:   param.PendingHandler,
-		ConfirmSwitch:    param.ConfirmSwitch,
-		ConfirmExpireDay: param.ConfirmExpireDay,
+		Id:              param.Id,
+		Group:           param.Group,
+		Name:            param.Name,
+		Description:     param.Description,
+		Tags:            param.Tags,
+		PackageName:     param.PackageName,
+		EntityName:      param.EntityName,
+		ProcDefKey:      param.ProcDefKey,
+		ProcDefId:       param.ProcDefId,
+		ProcDefName:     param.ProcDefName,
+		CreatedBy:       param.CreatedBy,
+		CreatedTime:     nowTime,
+		UpdatedBy:       param.CreatedBy,
+		UpdatedTime:     nowTime,
+		EntityAttrs:     "",
+		ExpireDay:       param.ExpireDay,
+		Handler:         param.Handler,
+		DelFlag:         0,
+		Type:            param.Type,
+		OperatorObjType: param.OperatorObjType,
+		ParentId:        param.Id,
+		ApproveBy:       param.ApproveBy,
+		CheckSwitch:     false,
+		ConfirmSwitch:   param.ConfirmSwitch,
+		BackDesc:        "",
+	}
+}
+
+func ConvertRequestTemplateDto2Model(param RequestTemplateDto) *RequestTemplateTable {
+	return &RequestTemplateTable{
+		Id:              param.Id,
+		Group:           param.Group,
+		Name:            param.Name,
+		Description:     param.Description,
+		FormTemplate:    param.FormTemplate,
+		Tags:            param.Tags,
+		Status:          param.Status,
+		RecordId:        param.RecordId,
+		Version:         param.Version,
+		ConfirmTime:     param.ConfirmTime,
+		PackageName:     param.PackageName,
+		EntityName:      param.EntityName,
+		ProcDefKey:      param.ProcDefKey,
+		ProcDefId:       param.ProcDefId,
+		ProcDefName:     param.ProcDefName,
+		CreatedBy:       param.CreatedBy,
+		CreatedTime:     param.CreatedTime,
+		UpdatedBy:       param.UpdatedBy,
+		UpdatedTime:     param.UpdatedTime,
+		EntityAttrs:     param.EntityAttrs,
+		ExpireDay:       param.ExpireDay,
+		Handler:         param.Handler,
+		DelFlag:         param.DelFlag,
+		Type:            param.Type,
+		OperatorObjType: param.OperatorObjType,
+		ParentId:        param.ParentId,
+		ApproveBy:       param.ApproveBy,
+		CheckSwitch:     param.CheckSwitch,
+		ConfirmSwitch:   param.ConfirmSwitch,
+		BackDesc:        param.BackDesc,
+	}
+}
+
+func ConvertRequestTemplateModel2Dto(requestTemplate *RequestTemplateTable) *RequestTemplateDto {
+	return &RequestTemplateDto{
+		Id:               requestTemplate.Id,
+		Group:            requestTemplate.Group,
+		Name:             requestTemplate.Name,
+		Description:      requestTemplate.Description,
+		FormTemplate:     requestTemplate.FormTemplate,
+		DataFormTemplate: requestTemplate.DataFormTemplate,
+		Tags:             requestTemplate.Tags,
+		Status:           requestTemplate.Status,
+		RecordId:         requestTemplate.RecordId,
+		Version:          requestTemplate.Version,
+		ConfirmTime:      requestTemplate.ConfirmTime,
+		PackageName:      requestTemplate.PackageName,
+		EntityName:       requestTemplate.EntityName,
+		ProcDefKey:       requestTemplate.ProcDefKey,
+		ProcDefId:        requestTemplate.ProcDefId,
+		ProcDefName:      requestTemplate.ProcDefName,
+		CreatedBy:        requestTemplate.CreatedBy,
+		CreatedTime:      requestTemplate.CreatedTime,
+		UpdatedBy:        requestTemplate.UpdatedBy,
+		UpdatedTime:      requestTemplate.UpdatedTime,
+		EntityAttrs:      requestTemplate.EntityAttrs,
+		ExpireDay:        requestTemplate.ExpireDay,
+		Handler:          requestTemplate.Handler,
+		DelFlag:          requestTemplate.DelFlag,
+		Type:             requestTemplate.Type,
+		OperatorObjType:  requestTemplate.OperatorObjType,
+		ParentId:         requestTemplate.ParentId,
+		ApproveBy:        requestTemplate.ApproveBy,
+		CheckSwitch:      requestTemplate.CheckSwitch,
+		CheckRole:        "",
+		CheckHandler:     "",
+		ConfirmSwitch:    requestTemplate.ConfirmSwitch,
+		BackDesc:         requestTemplate.BackDesc,
 	}
 }

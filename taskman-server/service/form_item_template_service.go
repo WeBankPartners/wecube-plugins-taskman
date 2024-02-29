@@ -11,8 +11,8 @@ import (
 )
 
 type FormItemTemplateService struct {
-	formItemTemplateDao      dao.FormItemTemplateDao
-	formItemTemplateGroupDao dao.FormItemTemplateGroupDao
+	formItemTemplateDao      *dao.FormItemTemplateDao
+	formItemTemplateGroupDao *dao.FormItemTemplateGroupDao
 }
 
 func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {

@@ -32,6 +32,7 @@ const (
 	RequestPending       = "requestPending"       // 请求定版
 	Approval             = "approval"             // 审批
 	Task                 = "task"                 // 任务
+	Confirm              = "confirm"              // 请求确认
 	CurNodeCompleted     = "Completed"            // 完成
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出

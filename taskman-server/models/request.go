@@ -247,7 +247,8 @@ type RequestProDataV2Dto struct {
 	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
-	CustomForm   CustomForm                `json:"customForm"` //自定义表单
+	CustomForm   CustomForm                `json:"customForm"`   //自定义表单
+	ApprovalList []*ApprovalDto            `json:"approvalList"` //审批列表
 }
 
 type RequestForm struct {

@@ -322,6 +322,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 
 func SaveRequestCacheV2(requestId, operator, userToken string, param *models.RequestProDataV2Dto) error {
 	var customFormCache []byte
+	var approvalAction []*dao.ExecAction
 	err := ValidateRequestForm(param.Data, userToken)
 	if err != nil {
 		return err
@@ -362,6 +363,16 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	actions := UpdateRequestFormItem(requestId, newParam)
 	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?" +
 		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), requestId}})
+	// 创建请求审批
+	if len(param.ApprovalList) > 0 {
+		approvalAction, err = GetApprovalService().CreateApprovals(param.ApprovalList)
+		if err != nil {
+			return err
+		}
+		if len(approvalAction) > 0 {
+			actions = append(actions, approvalAction...)
+		}
+	}
 	return dao.Transaction(actions)
 }
 

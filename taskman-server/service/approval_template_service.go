@@ -16,10 +16,11 @@ type ApprovalTemplateService struct {
 	approvalTemplateRoleDao dao.ApprovalTemplateRoleDao
 }
 
-func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalTemplateCreateParam) (*models.ApprovalTemplateCreateResponse, error) {
+func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalTemplateCreateParam, user string) (*models.ApprovalTemplateCreateResponse, error) {
 	actions := []*dao.ExecAction{}
 	// 查询现有审批模板列表
 	var approvalTemplates []*models.ApprovalTemplateTable
+	formTemplateId := guid.CreateGuid()
 	err := s.approvalTemplateDao.DB.SQL("SELECT * FROM approval_template WHERE request_template = ? ORDER BY sort", param.RequestTemplate).Find(&approvalTemplates)
 	if err != nil {
 		return nil, err
@@ -30,17 +31,25 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 	}
 	// 插入新审批模板
 	nowTime := time.Now().Format(models.DateTimeFormat)
+	//创建审批表单
+	action := &dao.ExecAction{Sql: "INSERT INTO form_template (id,name,created_by,created_time,updated_by,updated_time) VALUES (?,?,?,?,?,?)"}
+	action.Param = []interface{}{formTemplateId, param.Name, user, nowTime, user, nowTime}
+	actions = append(actions, action)
 	newApprovalTemplate := &models.ApprovalTemplateTable{
 		Id:              guid.CreateGuid(),
 		Sort:            param.Sort,
 		RequestTemplate: param.RequestTemplate,
+		FormTemplate:    formTemplateId,
 		Name:            param.Name,
 		RoleType:        string(models.ApprovalTemplateRoleTypeCustom),
+		CreatedBy:       user,
 		CreatedTime:     nowTime,
+		UpdatedBy:       user,
 		UpdatedTime:     nowTime,
 	}
-	action := &dao.ExecAction{Sql: "INSERT INTO approval_template (id,sort,request_template,name,role_type,created_time,updated_time) VALUES (?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{newApprovalTemplate.Id, newApprovalTemplate.Sort, newApprovalTemplate.RequestTemplate, newApprovalTemplate.Name, newApprovalTemplate.RoleType, newApprovalTemplate.CreatedTime, newApprovalTemplate.UpdatedTime}
+	action = &dao.ExecAction{Sql: "INSERT INTO approval_template (id,sort,request_template,name,role_type,created_time,updated_time,created_by,updated_by,form_template) VALUES (?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{newApprovalTemplate.Id, newApprovalTemplate.Sort, newApprovalTemplate.RequestTemplate, newApprovalTemplate.Name,
+		newApprovalTemplate.RoleType, newApprovalTemplate.CreatedTime, newApprovalTemplate.UpdatedTime, newApprovalTemplate.CreatedBy, newApprovalTemplate.UpdatedBy, formTemplateId}
 	actions = append(actions, action)
 	// 插入新审批处理模板
 	newApprovalTemplateRole := &models.ApprovalTemplateRoleTable{
@@ -86,9 +95,10 @@ func (s *ApprovalTemplateService) CreateApprovalTemplate(param *models.ApprovalT
 	}
 	for i, approvalTemplate := range approvalTemplates {
 		result.Ids[i] = &models.ApprovalTemplateIdObj{
-			Id:   approvalTemplate.Id,
-			Sort: approvalTemplate.Sort,
-			Name: approvalTemplate.Name,
+			Id:           approvalTemplate.Id,
+			Sort:         approvalTemplate.Sort,
+			Name:         approvalTemplate.Name,
+			FormTemplate: approvalTemplate.FormTemplate,
 		}
 	}
 	return result, nil
@@ -246,6 +256,7 @@ func (s *ApprovalTemplateService) GetApprovalTemplate(id string) (*models.Approv
 		Id:              approvalTemplate.Id,
 		Sort:            approvalTemplate.Sort,
 		RequestTemplate: approvalTemplate.RequestTemplate,
+		FormTemplate:    approvalTemplate.FormTemplate,
 		Name:            approvalTemplate.Name,
 		ExpireDay:       approvalTemplate.ExpireDay,
 		Description:     approvalTemplate.Description,
@@ -276,9 +287,10 @@ func (s *ApprovalTemplateService) ListApprovalTemplateIds(requestTemplateId stri
 	}
 	for i, approvalTemplate := range approvalTemplates {
 		result.Ids[i] = &models.ApprovalTemplateIdObj{
-			Id:   approvalTemplate.Id,
-			Sort: approvalTemplate.Sort,
-			Name: approvalTemplate.Name,
+			Id:           approvalTemplate.Id,
+			Sort:         approvalTemplate.Sort,
+			Name:         approvalTemplate.Name,
+			FormTemplate: approvalTemplate.FormTemplate,
 		}
 	}
 	return result, nil
@@ -332,10 +344,11 @@ func (s *ApprovalTemplateService) ListApprovalTemplates(requestTemplateId string
 			result[i].RoleObjs = make([]*models.ApprovalTemplateRoleDto, len(roleObjs))
 			for j, roleObj := range roleObjs {
 				result[i].RoleObjs[j] = &models.ApprovalTemplateRoleDto{
-					RoleType:    roleObj.RoleType,
-					HandlerType: roleObj.HandlerType,
-					Role:        roleObj.Role,
-					Handler:     roleObj.Handler,
+					ApprovalRoleId: roleObj.Id,
+					RoleType:       roleObj.RoleType,
+					HandlerType:    roleObj.HandlerType,
+					Role:           roleObj.Role,
+					Handler:        roleObj.Handler,
 				}
 			}
 		}

@@ -15,3 +15,20 @@ type FormItemTemplateGroupTable struct {
 func (FormItemTemplateGroupTable) TableName() string {
 	return "form_item_template_group"
 }
+
+type FormItemTemplateGroupTableSort []*FormItemTemplateGroupTable
+
+func (s FormItemTemplateGroupTableSort) Len() int {
+	return len(s)
+}
+
+func (s FormItemTemplateGroupTableSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s FormItemTemplateGroupTableSort) Less(i, j int) bool {
+	if s[i].ItemGroupSort < s[j].ItemGroupSort {
+		return true
+	}
+	return false
+}

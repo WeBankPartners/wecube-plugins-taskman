@@ -27,9 +27,13 @@
     <div class="data-tabs">
       <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
         <!--任务处理-->
-        <TabPane :label="$t('tw_task_tab')" name="2"></TabPane>
+        <TabPane :label="taskLabel" name="2"></TabPane>
+        <!--审批-->
+        <TabPane :label="approveLabel" name="3"></TabPane>
         <!--请求定版-->
-        <TabPane :label="$t('tw_pending_tab')" name="1"></TabPane>
+        <TabPane :label="pendingLabel" name="1"></TabPane>
+        <!--请求确认-->
+        <TabPane :label="confirmLabel" name="4"></TabPane>
       </Tabs>
       <Tabs v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
         <!--所有-->
@@ -95,7 +99,7 @@ export default {
       actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
       initTab: '',
       initAction: '',
-      type: '0', // 0所有,1请求定版,2任务处理
+      type: '0', // 0所有,1请求定版,2任务处理,3审批,4请求确认
       rollback: '0', // 0所有,1已退回,2其他,3被撤回
       form: {
         name: '', // 请求名
@@ -124,7 +128,47 @@ export default {
         currentPage: 1,
         pageSize: 10
       },
-      sorting: {} // 表格默认排序
+      sorting: {}, // 表格默认排序
+      taskLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_task_tab')}</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][0])} class="badge"></Badge>
+            )}
+          </div>
+        )
+      },
+      approveLabel: () => {
+        return (
+          <div>
+            <span>审批</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][1])} class="badge"></Badge>
+            )}
+          </div>
+        )
+      },
+      pendingLabel: () => {
+        return (
+          <div>
+            <span>{this.$t('tw_pending_tab')}</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][2])} class="badge"></Badge>
+            )}
+          </div>
+        )
+      },
+      confirmLabel: () => {
+        return (
+          <div>
+            <span>请求确认</span>
+            {this.tabName === 'pending' && (
+              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][3])} class="badge"></Badge>
+            )}
+          </div>
+        )
+      }
     }
   },
   watch: {
@@ -569,6 +613,9 @@ export default {
   .data-tabs {
     margin-top: 10px;
   }
+  .badge {
+    margin-left: 5px;
+  }
 }
 </style>
 <style lang="scss">
@@ -596,6 +643,10 @@ export default {
   }
   .ivu-tooltip-inner {
     max-width: 1000px;
+  }
+  .ivu-badge-count {
+    padding: 0 4px;
+    font-size: 10px;
   }
 }
 </style>

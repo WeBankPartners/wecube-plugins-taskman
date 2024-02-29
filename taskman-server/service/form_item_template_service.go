@@ -16,7 +16,7 @@ type FormItemTemplateService struct {
 }
 
 func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
-	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var formItemTemplateGroup *models.FormTemplateNewTable
 	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var newItemGroupId string
@@ -29,7 +29,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 		param.CustomItems = []*models.FormItemTemplateDto{}
 	}
 	// 1. 查询表单组是否存在，不存在则新增
-	formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(param.ItemGroupId)
+	formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(param.FormTemplateId)
 	if err != nil {
 		return
 	}
@@ -44,8 +44,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 		if len(param.CustomItems) > 0 {
 			for _, customItem := range param.CustomItems {
 				customItem.Id = guid.CreateGuid()
-				customItem.ItemGroupId = newItemGroupId
-				customItem.FormTemplate = param.FormTemplateId
+				customItem.FormTemplate = newItemGroupId
 				customItem.ItemGroup = param.ItemGroup
 				customItem.ItemGroupName = param.ItemGroupName
 				customItem.ElementType = string(models.FormItemElementTypeCalculate)
@@ -59,7 +58,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 		formItemTemplateGroup.ItemGroupRule = param.ItemGroupRule
 		formItemTemplateGroup.ItemGroupType = param.ItemGroupType
 
-		formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupId(param.FormTemplateId, param.ItemGroupId)
+		formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(param.FormTemplateId)
 		if err != nil {
 			return
 		}
@@ -73,7 +72,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 				}
 			}
 			if !systemItemExist {
-				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, param.ItemGroupId))
+				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, param.FormTemplateId))
 			}
 		}
 		for _, customItem := range param.CustomItems {
@@ -83,8 +82,8 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 				for _, formItemTemplate := range formItemTemplateList {
 					if customItem.Id == formItemTemplate.Id {
 						customItemExist = true
-						if customItem.ItemGroupId == "" {
-							customItem.ItemGroupId = param.ItemGroupId
+						if customItem.FormTemplate == "" {
+							customItem.FormTemplate = param.FormTemplateId
 						}
 						updateItems = append(updateItems, models.ConvertFormItemTemplateDto2Model(customItem))
 						break
@@ -94,8 +93,8 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 			if !customItemExist {
 				customItem.Id = guid.CreateGuid()
 				customItem.FormTemplate = param.FormTemplateId
-				if customItem.ItemGroupId == "" {
-					customItem.ItemGroupId = param.ItemGroupId
+				if customItem.FormTemplate == "" {
+					customItem.FormTemplate = param.FormTemplateId
 				}
 				insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(customItem))
 			}
@@ -108,19 +107,24 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 	}
 	err = transaction(func(session *xorm.Session) error {
 		if newItemGroupId != "" {
-			_, err = s.formItemTemplateGroupDao.Add(session, &models.FormItemTemplateGroupTable{
-				Id:            newItemGroupId,
-				ItemGroup:     param.ItemGroup,
-				ItemGroupType: param.ItemGroupType,
-				ItemGroupName: param.ItemGroupName,
-				ItemGroupSort: s.CalcItemGroupSort(param.FormTemplateId),
-				ItemGroupRule: param.ItemGroupRule,
-				FormTemplate:  param.FormTemplateId,
-				CreatedTime:   time.Now().Format(models.DateTimeFormat),
-			})
+			if param.TaskTemplateId != "" {
+				_, err = session.Exec("insert into form_template_new(id,request_template,task_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,"+
+					"created_time) values(?,?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.TaskTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
+					param.ItemGroupRule, s.CalcItemGroupSort(param.FormTemplateId), time.Now().Format(models.DateTimeFormat))
+			} else {
+				_, err = session.Exec("insert into form_template_new(id,request_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,"+
+					"created_time) values(?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
+					param.ItemGroupRule, s.CalcItemGroupSort(param.FormTemplateId), time.Now().Format(models.DateTimeFormat))
+			}
+			if err != nil {
+				return err
+			}
 		}
 		if formItemTemplateGroup != nil {
 			err = s.formItemTemplateGroupDao.Update(session, formItemTemplateGroup)
+			if err != nil {
+				return err
+			}
 		}
 		if len(insertItems) > 0 {
 			for _, item := range insertItems {
@@ -153,7 +157,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 
 func (s FormItemTemplateService) CalcItemGroupSort(formTemplateId string) int {
 	var max = 0
-	list, err := s.formItemTemplateGroupDao.QueryFormTemplate(formTemplateId)
+	list, err := s.formItemTemplateGroupDao.QueryByFormTemplateId(formTemplateId)
 	if err != nil {
 		log.Logger.Error("CalcItemGroupSort err", log.Error(err))
 		return 0
@@ -168,35 +172,11 @@ func (s FormItemTemplateService) CalcItemGroupSort(formTemplateId string) int {
 	return max + 1
 }
 
-func (s FormItemTemplateService) DeleteFormTemplateItemGroup(formTemplateId, itemGroupId string) (err error) {
-	var formItemTemplateList []*models.FormItemTemplateTable
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupId(formTemplateId, itemGroupId)
-	if err != nil {
-		return err
-	}
-	err = transaction(func(session *xorm.Session) error {
-		if len(formItemTemplateList) > 0 {
-			for _, formItemTemplate := range formItemTemplateList {
-				err = s.formItemTemplateDao.DeleteByIdOrCopyId(session, formItemTemplate.Id)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		err = s.formItemTemplateGroupDao.DeleteByIdOrCopyId(session, itemGroupId)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return
-}
-
 func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTemplateGroupCustomDataDto) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
 	var exist bool
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplateAndItemGroupId(param.FormTemplateId, param.ItemGroupId)
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(param.FormTemplateId)
 	if err != nil {
 		return
 	}
@@ -212,11 +192,10 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTe
 		if item.Id == "" {
 			item.Id = guid.CreateGuid()
 			item.FormTemplate = param.FormTemplateId
-			item.ItemGroupId = param.ItemGroupId
+			item.FormTemplate = param.FormTemplateId
 			insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(item))
 		} else {
 			item.FormTemplate = param.FormTemplateId
-			item.ItemGroupId = param.ItemGroupId
 			updateItems = append(updateItems, models.ConvertFormItemTemplateDto2Model(item))
 		}
 	}
@@ -261,34 +240,11 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTe
 	return
 }
 
-func (s FormItemTemplateService) SortFormTemplateItemGroup(param models.FormTemplateGroupSortDto) (err error) {
-	var formItemTemplateList []*models.FormItemTemplateDto
-	var formItemTemplateGroupSortMap = make(map[string]int)
-	formItemTemplateGroupSortMap = s.buildFormTemplateGroupSortMap(param.ItemGroupIdSort)
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(param.FormTemplateId)
-	if err != nil {
-		return
-	}
-	if len(formItemTemplateList) > 0 {
-		err = transaction(func(session *xorm.Session) error {
-			for _, formItemTemplate := range formItemTemplateList {
-				formItemTemplate.Sort = formItemTemplateGroupSortMap[formItemTemplate.ItemGroupName]
-				err = s.formItemTemplateDao.Update(session, models.ConvertFormItemTemplateDto2Model(formItemTemplate))
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		})
-	}
-	return
-}
-
-func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, itemGroupId string) (err error) {
+func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplate, formTemplateId, taskTemplate string) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
-	var formItemTemplateGroup *models.FormItemTemplateGroupTable
+	var formItemTemplateGroup *models.FormTemplateNewTable
 	var newItemGroupId string
-	formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(itemGroupId)
+	formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(formTemplateId)
 	if err != nil {
 		return
 	}
@@ -297,25 +253,33 @@ func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, i
 		return
 	}
 	// 1. 查询表单组是否存在
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByItemGroupId(itemGroupId)
+	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplateId)
 	if err != nil {
 		return
 	}
 	// 新增数据
 	err = transaction(func(session *xorm.Session) error {
 		newItemGroupId = guid.CreateGuid()
-		_, err = s.formItemTemplateGroupDao.Add(session, &models.FormItemTemplateGroupTable{Id: newItemGroupId, ItemGroupName: formItemTemplateGroup.ItemGroupName,
-			FormTemplate: formTemplateId, ItemGroup: formItemTemplateGroup.ItemGroup, ItemGroupType: formItemTemplateGroup.ItemGroupType,
-			ItemGroupRule: formItemTemplateGroup.ItemGroupRule, CreatedTime: time.Now().Format(models.DateTimeFormat), CopyId: itemGroupId, ItemGroupSort: s.CalcItemGroupSort(formTemplateId)})
+		_, err = s.formItemTemplateGroupDao.Add(session, &models.FormTemplateNewTable{
+			Id:              newItemGroupId,
+			RequestTemplate: requestTemplate,
+			TaskTemplate:    taskTemplate,
+			ItemGroup:       formItemTemplateGroup.ItemGroup,
+			ItemGroupType:   formItemTemplateGroup.ItemGroupType,
+			ItemGroupName:   formItemTemplateGroup.ItemGroupName,
+			ItemGroupSort:   s.CalcItemGroupSort(formTemplateId),
+			ItemGroupRule:   formItemTemplateGroup.ItemGroupRule,
+			RefId:           formTemplateId,
+			CreatedTime:     time.Now().Format(models.DateTimeFormat),
+		})
 		if err != nil {
 			return err
 		}
 		if len(formItemTemplateList) > 0 {
 			for _, formItemTemplate := range formItemTemplateList {
-				formItemTemplate.CopyId = formItemTemplate.Id
+				formItemTemplate.RefId = formItemTemplate.Id
 				formItemTemplate.Id = guid.CreateGuid()
-				formItemTemplate.ItemGroupId = newItemGroupId
-				formItemTemplate.FormTemplate = formTemplateId
+				formItemTemplate.FormTemplate = newItemGroupId
 				_, err = s.formItemTemplateDao.Add(session, formItemTemplate)
 				if err != nil {
 					return err
@@ -325,12 +289,4 @@ func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(formTemplateId, i
 		return nil
 	})
 	return
-}
-
-func (s FormItemTemplateService) buildFormTemplateGroupSortMap(itemGroupNameSort []string) map[string]int {
-	hashMap := make(map[string]int)
-	for i, groupName := range itemGroupNameSort {
-		hashMap[groupName] = i
-	}
-	return hashMap
 }

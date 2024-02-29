@@ -9,7 +9,7 @@ type FormTemplateDao struct {
 	DB *xorm.Engine
 }
 
-func (d *FormTemplateDao) Add(session *xorm.Session, formTemplate *models.FormTemplateTable) (affected int64, err error) {
+func (d *FormTemplateDao) Add(session *xorm.Session, formTemplate *models.FormTemplateNewTable) (affected int64, err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
@@ -20,7 +20,7 @@ func (d *FormTemplateDao) Add(session *xorm.Session, formTemplate *models.FormTe
 	return
 }
 
-func (d *FormTemplateDao) Update(session *xorm.Session, formTemplate *models.FormTemplateTable) (err error) {
+func (d *FormTemplateDao) Update(session *xorm.Session, formTemplate *models.FormTemplateNewTable) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
@@ -38,11 +38,11 @@ func (d *FormTemplateDao) Update(session *xorm.Session, formTemplate *models.For
 	return
 }
 
-func (d *FormTemplateDao) Get(formTemplateId string) (*models.FormTemplateTable, error) {
-	var formTemplate *models.FormTemplateTable
+func (d *FormTemplateDao) Get(formTemplateId string) (*models.FormTemplateNewTable, error) {
+	var formTemplate *models.FormTemplateNewTable
 	var found bool
 	var err error
-	formTemplate = &models.FormTemplateTable{}
+	formTemplate = &models.FormTemplateNewTable{}
 	found, err = d.DB.ID(formTemplateId).Get(formTemplate)
 	if err != nil {
 		return nil, err
@@ -59,5 +59,16 @@ func (d *FormTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 		defer session.Close()
 	}
 	_, err = d.DB.ID(id).Delete(&models.FormItemTemplateTable{})
+	return
+}
+
+func (d *FormTemplateDao) QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId string) (list []*models.FormTemplateNewTable, err error) {
+	list = []*models.FormTemplateNewTable{}
+	// taskTemplateId 为空,则只查询 数据表单数据
+	if taskTemplateId == "" {
+		err = d.DB.Where("request_template=? and task_template = null and del_flag = 0", requestTemplateId).Find(&list)
+	} else {
+		err = d.DB.Where("request_template=?  and task_template=? and del_flag = 0", requestTemplateId, taskTemplateId).Find(&list)
+	}
 	return
 }

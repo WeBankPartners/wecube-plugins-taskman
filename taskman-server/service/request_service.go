@@ -565,9 +565,9 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
-		itemGroup := models.FormItemTemplateGroupTable{}
-		if v.ItemGroupId != "" {
-			dao.X.SQL("select * from form_item_template_group where id=?", v.ItemGroupId).Get(&itemGroup)
+		itemGroup := models.FormTemplateNewTable{}
+		if v.FormTemplate != "" {
+			dao.X.SQL("select * from form_item_template_new where id=?", v.FormTemplate).Get(&itemGroup)
 			itemGroupType = itemGroup.ItemGroupType
 			itemGroupRule = itemGroup.ItemGroupRule
 		}

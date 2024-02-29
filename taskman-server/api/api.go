@@ -65,7 +65,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/data-form", Method: "GET", HandlerFunc: form.GetDataFormTemplate},
-		&handlerFuncObj{Url: "/request-form-template/form/:from-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template/:id/form/:task-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/global-form", Method: "GET", HandlerFunc: form.GetGlobalFormEntity},
 		&handlerFuncObj{Url: "/form-template/item-group-config", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroupConfig},
 		&handlerFuncObj{Url: "/form-template/item-group-config", Method: "GET", HandlerFunc: form.GetFormTemplateItemGroupConfig},

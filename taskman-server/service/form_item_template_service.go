@@ -116,9 +116,15 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 					"created_time) values(?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
 					param.ItemGroupRule, s.CalcItemGroupSort(param.FormTemplateId), time.Now().Format(models.DateTimeFormat))
 			}
+			if err != nil {
+				return err
+			}
 		}
 		if formItemTemplateGroup != nil {
 			err = s.formItemTemplateGroupDao.Update(session, formItemTemplateGroup)
+			if err != nil {
+				return err
+			}
 		}
 		if len(insertItems) > 0 {
 			for _, item := range insertItems {
@@ -151,7 +157,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 
 func (s FormItemTemplateService) CalcItemGroupSort(formTemplateId string) int {
 	var max = 0
-	list, err := s.formItemTemplateGroupDao.QueryFormTemplate(formTemplateId)
+	list, err := s.formItemTemplateGroupDao.QueryByFormTemplateId(formTemplateId)
 	if err != nil {
 		log.Logger.Error("CalcItemGroupSort err", log.Error(err))
 		return 0
@@ -164,30 +170,6 @@ func (s FormItemTemplateService) CalcItemGroupSort(formTemplateId string) int {
 		}
 	}
 	return max + 1
-}
-
-func (s FormItemTemplateService) DeleteFormTemplateItemGroup(formTemplateId string) (err error) {
-	var formItemTemplateList []*models.FormItemTemplateTable
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplateId)
-	if err != nil {
-		return err
-	}
-	err = transaction(func(session *xorm.Session) error {
-		if len(formItemTemplateList) > 0 {
-			for _, formItemTemplate := range formItemTemplateList {
-				err = s.formItemTemplateDao.DeleteByIdOrRefId(session, formItemTemplate.Id)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		err = s.formItemTemplateGroupDao.DeleteByIdOrRefId(session, formTemplateId)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-	return
 }
 
 func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTemplateGroupCustomDataDto) (err error) {
@@ -258,29 +240,6 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTe
 	return
 }
 
-func (s FormItemTemplateService) SortFormTemplateItemGroup(param models.FormTemplateGroupSortDto) (err error) {
-	var formItemTemplateList []*models.FormItemTemplateTable
-	var formItemTemplateGroupSortMap = make(map[string]int)
-	formItemTemplateGroupSortMap = s.buildFormTemplateGroupSortMap(param.ItemGroupIdSort)
-	formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(param.FormTemplateId)
-	if err != nil {
-		return
-	}
-	if len(formItemTemplateList) > 0 {
-		err = transaction(func(session *xorm.Session) error {
-			for _, formItemTemplate := range formItemTemplateList {
-				formItemTemplate.Sort = formItemTemplateGroupSortMap[formItemTemplate.ItemGroupName]
-				err = s.formItemTemplateDao.Update(session, formItemTemplate)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		})
-	}
-	return
-}
-
 func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplate, formTemplateId, taskTemplate string) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var formItemTemplateGroup *models.FormTemplateNewTable
@@ -330,12 +289,4 @@ func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplate, 
 		return nil
 	})
 	return
-}
-
-func (s FormItemTemplateService) buildFormTemplateGroupSortMap(itemGroupNameSort []string) map[string]int {
-	hashMap := make(map[string]int)
-	for i, groupName := range itemGroupNameSort {
-		hashMap[groupName] = i
-	}
-	return hashMap
 }

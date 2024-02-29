@@ -20,9 +20,9 @@ func (FormTemplateTable) TableName() string {
 type FormTemplateNewTable struct {
 	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
-	TaskTemplate    string `json:"taskTemplate" xorm:"taskTemplate"`
+	TaskTemplate    string `json:"taskTemplate" xorm:"task_template"`
 	ItemGroup       string `json:"itemGroup" xorm:"item_group"`
-	ItemGroupType   string `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupType   string `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义,request_form 请求表单,db判断用
 	ItemGroupName   string `json:"itemGroupName" xorm:"item_group_name"`
 	ItemGroupSort   int    `json:"ItemGroupSort" xorm:"item_group_sort"` // item_group 排序
 	ItemGroupRule   string `json:"itemGroupRule" xorm:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
@@ -111,7 +111,7 @@ type FormTemplateGroupCustomDataDto struct {
 // FormTemplateGroupSortDto 表单组排序dto
 type FormTemplateGroupSortDto struct {
 	RequestTemplateId string   `json:"requestTemplateId"` // 模板Id
-	FormTemplateId    string   `json:"formTemplateId"`    // 表单模板ID
+	TaskTemplateId    string   `json:"taskTemplateId"`    // 任务模板Id
 	ItemGroupIdSort   []string `json:"itemGroupIdSort"`   // 排序
 }
 

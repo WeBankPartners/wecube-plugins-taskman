@@ -63,6 +63,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: template.DisableRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: template.EnableRequestTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-template/:id/data-form-clean", Method: "POST", HandlerFunc: form.CleanDataForm},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/data-form", Method: "GET", HandlerFunc: form.GetDataFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/form/:task-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},

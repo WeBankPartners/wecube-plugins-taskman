@@ -28,7 +28,7 @@ func (s *FormTemplateService) AddFormTemplateByDto(session *xorm.Session, formTe
 	// 新建 formTemplate
 	if len(formTemplateDto.Items) > 0 && formTemplateDto.Items[0].FormTemplate == "" {
 		_, err = session.Exec("insert into form_template_new(id,request_template,item_group_name,item_group_type,item_group_rule,created_time) values(?,?,?,?,?,?)",
-			newId, formTemplateDto.RequestTemplate, "custom", "request_form", "exist", time.Now().Format(models.DateTimeFormat))
+			newId, formTemplateDto.RequestTemplate, "request_form", "request_form", "new", time.Now().Format(models.DateTimeFormat))
 		if err != nil {
 			return
 		}
@@ -37,6 +37,9 @@ func (s *FormTemplateService) AddFormTemplateByDto(session *xorm.Session, formTe
 	for i, item := range formTemplateDto.Items {
 		item.Id = itemIds[i]
 		item.FormTemplate = newId
+		item.ItemGroupType = "request_form"
+		item.ItemGroupName = "request_form"
+		item.ItemGroupRule = "new"
 		_, err = s.formItemTemplateDao.Add(session, models.ConvertFormItemTemplateDto2Model(item))
 		if err != nil {
 			return
@@ -394,4 +397,83 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 		}
 	}
 	return
+}
+
+func (s *FormTemplateService) CleanDataForm(requestTemplateId string) (err error) {
+	var list []*models.FormTemplateNewTable
+	var formItemTemplateList []*models.FormItemTemplateTable
+	list, err = s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, "")
+	if err != nil {
+		return
+	}
+	if len(list) > 0 {
+		for _, formTemplate := range list {
+			formItemTemplateList, err = s.formItemTemplateDao.QueryByFormTemplate(formTemplate.Id)
+			if err != nil {
+				return err
+			}
+			if len(formItemTemplateList) == 0 {
+				// 需要删除该表单
+				err = s.formTemplateDao.Delete(nil, formTemplate.Id)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return
+}
+
+func (s *FormTemplateService) DeleteFormTemplateItemGroup(formTemplateId string) (err error) {
+	var formTemplateList []*models.FormTemplateNewTable
+	formTemplateList, err = s.formTemplateDao.QueryListByIdOrRefId(formTemplateId)
+	if err != nil {
+		return err
+	}
+	err = transaction(func(session *xorm.Session) error {
+		if len(formTemplateList) > 0 {
+			for _, formTemplate := range formTemplateList {
+				err = s.formItemTemplateDao.DeleteByFormTemplate(session, formTemplate.Id)
+				if err != nil {
+					return err
+				}
+				err = s.formTemplateDao.Delete(session, formTemplateId)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	return
+}
+
+func (s *FormTemplateService) SortFormTemplateItemGroup(param models.FormTemplateGroupSortDto) (err error) {
+	var formTemplateList []*models.FormTemplateNewTable
+	var formTemplateSortMap = s.buildFormTemplateGroupSortMap(param.ItemGroupIdSort)
+	formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(param.RequestTemplateId, param.TaskTemplateId)
+	if err != nil {
+		return
+	}
+	if len(formTemplateList) > 0 {
+		err = transaction(func(session *xorm.Session) error {
+			for _, formTemplate := range formTemplateList {
+				formTemplate.ItemGroupSort = formTemplateSortMap[formTemplate.Id]
+				err = s.formTemplateDao.Update(session, formTemplate)
+				if err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	}
+	return
+}
+
+func (s *FormTemplateService) buildFormTemplateGroupSortMap(itemGroupIdSort []string) map[string]int {
+	hashMap := make(map[string]int)
+	for i, groupId := range itemGroupIdSort {
+		hashMap[groupId] = i
+	}
+	return hashMap
 }

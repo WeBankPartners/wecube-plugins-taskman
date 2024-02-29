@@ -58,17 +58,23 @@ func (d *FormTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(id).Delete(&models.FormItemTemplateTable{})
+	_, err = d.DB.ID(id).Delete(&models.FormTemplateNewTable{})
 	return
 }
 
 func (d *FormTemplateDao) QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId string) (list []*models.FormTemplateNewTable, err error) {
 	list = []*models.FormTemplateNewTable{}
-	// taskTemplateId 为空,则只查询 数据表单数据
+	// taskTemplateId 为空,则只查询 数据表单数据,item_group_type = 'request_form'表示信息表单
 	if taskTemplateId == "" {
-		err = d.DB.Where("request_template=? and task_template = null and del_flag = 0", requestTemplateId).Find(&list)
+		err = d.DB.Where("request_template=? and task_template is null and item_group_type != 'request_form' and del_flag = 0", requestTemplateId).Find(&list)
 	} else {
 		err = d.DB.Where("request_template=?  and task_template=? and del_flag = 0", requestTemplateId, taskTemplateId).Find(&list)
 	}
+	return
+}
+
+func (d *FormTemplateDao) QueryListByIdOrRefId(id string) (list []*models.FormTemplateNewTable, err error) {
+	list = []*models.FormTemplateNewTable{}
+	err = d.DB.Where("id=? or ref_id=?", id, id).Find(&list)
 	return
 }

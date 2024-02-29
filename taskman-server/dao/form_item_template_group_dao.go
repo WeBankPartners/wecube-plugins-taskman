@@ -50,16 +50,16 @@ func (d *FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.
 	return nil, nil
 }
 
-func (d *FormItemTemplateGroupDao) QueryFormTemplate(formTemplated string) (formItemTemplateGroupList []*models.FormTemplateNewTable, err error) {
+func (d *FormItemTemplateGroupDao) QueryByFormTemplateId(formTemplated string) (formItemTemplateGroupList []*models.FormTemplateNewTable, err error) {
 	formItemTemplateGroupList = []*models.FormTemplateNewTable{}
-	err = d.DB.Where("form_template = ?", formTemplated).Find(&formItemTemplateGroupList)
+	err = d.DB.Where("id = ?", formTemplated).Find(&formItemTemplateGroupList)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (d *FormItemTemplateGroupDao) DeleteByIdOrRefId(session *xorm.Session, id string) (err error) {
+func (d *FormItemTemplateGroupDao) DeleteById(session *xorm.Session, id string) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
@@ -68,7 +68,7 @@ func (d *FormItemTemplateGroupDao) DeleteByIdOrRefId(session *xorm.Session, id s
 	if id == "" {
 		return
 	}
-	affected, err = session.Where("id = ? or ref_id = ?", id, id).Delete(&models.FormTemplateNewTable{})
+	affected, err = session.ID(id).Delete(&models.FormTemplateNewTable{})
 	// 打印日志
 	logExecuteSql(session, "FormItemTemplateGroupDao", "DeleteByIdOrRefId", id, affected, err)
 	return

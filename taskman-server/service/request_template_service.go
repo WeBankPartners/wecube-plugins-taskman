@@ -223,11 +223,6 @@ func (s *RequestTemplateService) UpdateRequestTemplateUpdatedBy(session *xorm.Se
 	return s.requestTemplateDao.Update(session, requestTemplate)
 }
 
-func (s *RequestTemplateService) UpdateRequestTemplateDataForm(session *xorm.Session, requestTemplateId, dataFormTemplate, updatedBy string) (err error) {
-	now := time.Now().Format(models.DateTimeFormat)
-	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, DataFormTemplate: dataFormTemplate, UpdatedBy: updatedBy, UpdatedTime: now}
-	return s.requestTemplateDao.Update(session, requestTemplate)
-}
 func (s *RequestTemplateService) UpdateRequestTemplateStatusToCreated(id, operator string) (err error) {
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	return s.requestTemplateDao.Update(nil, &models.RequestTemplateTable{Id: id, Status: "created", UpdatedBy: operator, UpdatedTime: nowTime})
@@ -302,6 +297,7 @@ func (s *RequestTemplateService) CheckRequestTemplateRoles(requestTemplateId str
 	}
 	return nil
 }
+
 func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
 	newGuid := guid.CreateGuid()
 	newCheckTaskId := fmt.Sprintf("ch_%s", guid.CreateGuid())

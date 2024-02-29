@@ -22,6 +22,22 @@ func GetRequestFormTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
+// CleanDataForm 清洗数据表单空表单
+func CleanDataForm(c *gin.Context) {
+	var err error
+	requestTemplateId := c.Param("id")
+	if requestTemplateId == "" {
+		middleware.ReturnParamEmptyError(c, "id")
+		return
+	}
+	err = service.GetFormTemplateService().CleanDataForm(requestTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnSuccess(c)
+}
+
 func UpdateRequestFormTemplate(c *gin.Context) {
 	var param models.FormTemplateDto
 	var err error
@@ -228,7 +244,7 @@ func SortFormTemplateItemGroup(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	err = service.GetFormItemTemplateService().SortFormTemplateItemGroup(param)
+	err = service.GetFormTemplateService().SortFormTemplateItemGroup(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -244,7 +260,7 @@ func DeleteFormTemplateItemGroup(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id")
 		return
 	}
-	err := service.GetFormItemTemplateService().DeleteFormTemplateItemGroup(formTemplateId)
+	err := service.GetFormTemplateService().DeleteFormTemplateItemGroup(formTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -258,7 +274,7 @@ func CopyDataFormTemplateItemGroup(c *gin.Context) {
 	taskTemplate := c.Query("task-template-id")
 	formTemplateId := c.Query("item-group-id")
 	if formTemplateId == "" || requestTemplate == "" || taskTemplate == "" {
-		middleware.ReturnParamEmptyError(c, "form-template-id or form-template-id or task-template-id")
+		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id or task-template-id")
 		return
 	}
 	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(requestTemplate, formTemplateId, taskTemplate)
@@ -272,9 +288,6 @@ func CopyDataFormTemplateItemGroup(c *gin.Context) {
 func validateFormTemplateItemGroupConfigParam(param models.FormTemplateGroupConfigureDto) error {
 	if param.RequestTemplateId == "" {
 		return fmt.Errorf("param RequestTemplateId is empty")
-	}
-	if param.FormTemplateId == "" {
-		return fmt.Errorf("param FormTemplateId is empty")
 	}
 	if param.ItemGroupType == "" || param.ItemGroupName == "" || param.ItemGroupRule == "" {
 		return fmt.Errorf("param ItemGroup is empty")

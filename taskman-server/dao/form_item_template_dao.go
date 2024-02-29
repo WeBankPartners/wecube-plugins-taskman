@@ -111,3 +111,18 @@ func (d *FormItemTemplateDao) Delete(session *xorm.Session, id string) (err erro
 	logExecuteSql(session, "FormItemTemplateDao", "Delete", id, affected, err)
 	return
 }
+
+func (d *FormItemTemplateDao) DeleteByFormTemplate(session *xorm.Session, formTemplate string) (err error) {
+	var affected int64
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	if formTemplate == "" {
+		return
+	}
+	affected, err = session.Where("form_template = ?", formTemplate).Delete(&models.FormItemTemplateTable{})
+	// 打印日志
+	logExecuteSql(session, "FormItemTemplateDao", "DeleteByFormTemplate", formTemplate, affected, err)
+	return
+}

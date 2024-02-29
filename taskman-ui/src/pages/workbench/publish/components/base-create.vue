@@ -96,7 +96,7 @@
                 :type="actionName"
                 :isAdd="true"
                 :isAddRow="true"
-                style="width:calc(100% - 20px);margin-left:20px;"
+                style="width:calc(100% - 20px);margin-left:16px;"
               ></EntityTable>
             </HeaderTitle>
             <!--审批流程-->
@@ -158,12 +158,22 @@
                     <div v-else-if="i.roleType === 'admin'" class="step-background">
                       <div class="form-item">
                         <FormItem label="" required :label-width="0">
-                          <Select v-model="role" disabled placeholder="请选择处理角色" style="width:300px;">
+                          <Select
+                            v-model="i.roleObjs[0].role"
+                            disabled
+                            placeholder="请选择处理角色"
+                            style="width:300px;"
+                          >
                             <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                           </Select>
                         </FormItem>
                         <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                          <Input v-model="role" disabled placeholder="请选择处理人" style="width:300px;" />
+                          <Input
+                            v-model="i.roleObjs[0].handler"
+                            disabled
+                            placeholder="请选择处理人"
+                            style="width:300px;"
+                          />
                         </FormItem>
                       </div>
                     </div>
@@ -231,12 +241,22 @@
                     <div v-else-if="i.roleType === 'admin'" class="step-background">
                       <div class="form-item">
                         <FormItem label="" required :label-width="0">
-                          <Select v-model="role" disabled placeholder="请选择处理角色" style="width:300px;">
+                          <Select
+                            v-model="i.roleObjs[0].role"
+                            disabled
+                            placeholder="请选择处理角色"
+                            style="width:300px;"
+                          >
                             <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                           </Select>
                         </FormItem>
                         <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                          <Input v-model="role" disabled placeholder="请选择处理人" style="width:300px;" />
+                          <Input
+                            v-model="i.roleObjs[0].handler"
+                            disabled
+                            placeholder="请选择处理人"
+                            style="width:300px;"
+                          />
                         </FormItem>
                       </div>
                     </div>
@@ -281,7 +301,8 @@ import {
   getApprovalConfig,
   getTaskConfig,
   getUserRoles,
-  getHandlerRoles
+  getHandlerRoles,
+  getAdminUserByRole
 } from '@/api/server'
 import dayjs from 'dayjs'
 export default {
@@ -431,11 +452,11 @@ export default {
         const { name, description, expireDay, customForm } = data.request || {}
         this.form.name = (name && name.substr(0, 70)) || ''
         this.form.description = description
+        // 初始化customForm
         this.form.customForm = {
           title: customForm.title || [],
           value: customForm.value || {}
         }
-        // 初始化customForm value
         this.form.customForm.title.forEach(item => {
           if (!this.form.customForm.value.hasOwnProperty(item.name)) {
             this.form.customForm.value[item.name] = ''
@@ -518,9 +539,38 @@ export default {
     },
     getApprovalAndTaskList () {
       Promise.all([this.getApprovalConfigList(), this.getTaskConfigList()]).then(async response => {
+        // 获取所有角色列表
         const { statusCode, data } = await getUserRoles()
         if (statusCode === 'OK') {
           this.userRoleList = data
+        }
+        for (let i of response[0]) {
+          // 获取提交人角色管理员
+          if (i.roleType === 'admin') {
+            const { statusCode, data } = await getAdminUserByRole(this.role)
+            const obj = {
+              role: this.role,
+              handler: ''
+            }
+            if (statusCode === 'OK') {
+              obj.handler = (data && data[0]) || ''
+            }
+            this.$set(i, 'roleObjs', [obj])
+          }
+        }
+        for (let i of response[1]) {
+          // 获取提交人角色管理员
+          if (i.roleType === 'admin') {
+            const { statusCode, data } = await getAdminUserByRole(this.role)
+            const obj = {
+              role: this.role,
+              handler: ''
+            }
+            if (statusCode === 'OK') {
+              obj.handler = (data && data[0]) || ''
+            }
+            this.$set(i, 'roleObjs', [obj])
+          }
         }
         this.approvalList = response[0]
         this.taskList = response[1]
@@ -560,7 +610,7 @@ export default {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
-      // 提取表格勾选的数据
+      // 请求表单数据整理
       const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
       this.form.data =
         requestData.map(item => {
@@ -788,6 +838,7 @@ export default {
       padding: 5px 20px;
       width: 660px;
       margin-top: 10px;
+      border-radius: 4px;
     }
   }
   .expand-btn {

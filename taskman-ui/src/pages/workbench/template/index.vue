@@ -38,48 +38,53 @@
           <!--我的草稿-->
           <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
         </Tabs>
-        <template v-if="cardList.length">
-          <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
-            <div class="w-header" slot="title">
-              <Icon size="28" type="ios-people" />
-              <div class="title">
-                {{ i.manageRole }}
-                <span class="underline"></span>
-              </div>
-              <Icon
-                v-if="i.expand"
-                size="28"
-                type="md-arrow-dropdown"
-                style="cursor:pointer;"
-                @click="handleExpand(i)"
-              />
-              <Icon v-else size="28" type="md-arrow-dropright" style="cursor:pointer;" @click="handleExpand(i)" />
-            </div>
-            <div v-show="i.expand">
-              <div v-for="j in i.groups" :key="j.groupId" class="content">
-                <div class="sub-header">
-                  <Icon size="24" type="ios-folder" />
-                  <span class="title">{{ j.groupName }}</span>
+        <Card :bordered="false" dis-hover :padding="0">
+          <template v-if="cardList.length">
+            <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
+              <div class="w-header" slot="title">
+                <Icon size="28" type="ios-people" />
+                <div class="title">
+                  {{ i.manageRole }}
+                  <span class="underline"></span>
                 </div>
-                <Table
-                  @on-row-click="
-                    row => {
-                      handleChooseTemplate(row, row.manageRole)
-                    }
-                  "
-                  size="small"
-                  :columns="tableColumns"
-                  :data="j.templates"
-                  style="margin:10px 0 20px 0"
-                >
-                </Table>
+                <Icon
+                  v-if="i.expand"
+                  size="28"
+                  type="md-arrow-dropdown"
+                  style="cursor:pointer;"
+                  @click="handleExpand(i)"
+                />
+                <Icon v-else size="28" type="md-arrow-dropright" style="cursor:pointer;" @click="handleExpand(i)" />
               </div>
-            </div>
-          </Card>
-        </template>
-        <div v-else class="template-no-data">
-          {{ $t('tw_no_data') }}
-        </div>
+              <div v-show="i.expand">
+                <div v-for="j in i.groups" :key="j.groupId" class="content">
+                  <div class="sub-header">
+                    <Icon size="24" type="ios-folder" />
+                    <span class="title">{{ j.groupName }}</span>
+                  </div>
+                  <Table
+                    @on-row-click="
+                      row => {
+                        handleChooseTemplate(row, row.manageRole)
+                      }
+                    "
+                    size="small"
+                    :columns="tableColumns"
+                    :data="j.templates"
+                    style="margin:10px 0 20px 0"
+                  >
+                  </Table>
+                </div>
+              </div>
+            </Card>
+          </template>
+          <div v-else class="template-no-data">
+            {{ $t('tw_no_data') }}
+          </div>
+          <Spin fix v-if="spinShow">
+            <!-- <Icon type="ios-loading" size="44"></Icon> -->
+          </Spin>
+        </Card>
       </div>
       <!--收藏列表-->
       <div class="list">
@@ -122,6 +127,7 @@ export default {
       operateOptions: [],
       collectList: [], // 收藏列表
       cardList: [], // 模板数据
+      spinShow: false, // 加载动画
       originCardList: [],
       draftCardList: [], // 草稿页签数据
       tableColumns: [
@@ -240,6 +246,8 @@ export default {
   watch: {
     // 解决同路由跳转不触发页面更新问题
     $route (to, from) {
+      this.collectList = []
+      this.cardList = []
       this.type = this.$route.query.type || ''
       this.getTemplateData()
       this.getCollectTemplate()
@@ -254,7 +262,9 @@ export default {
     // 获取模板数据
     async getTemplateData () {
       this.operateOptions = []
+      this.spinShow = true
       const { statusCode, data } = await getTemplateTree()
+      this.spinShow = false
       const typeMap = {
         0: 'request',
         1: 'publish'

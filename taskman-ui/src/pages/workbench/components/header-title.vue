@@ -43,17 +43,17 @@ export default {
     display: flex;
     align-items: center;
     .title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 500;
       color: #282e38;
-      margin: 0 10px;
+      margin: 0 6px;
       .underline {
         display: block;
-        margin-top: -10px;
-        margin-left: -6px;
+        margin-top: -12px;
+        margin-left: -8px;
         width: 100%;
-        padding: 0 6px;
-        height: 10px;
+        padding: 0 8px;
+        height: 12px;
         border-radius: 12px;
         background-color: #c6eafe;
         box-sizing: content-box;

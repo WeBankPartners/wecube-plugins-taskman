@@ -9,7 +9,7 @@ type FormTemplateDao struct {
 	DB *xorm.Engine
 }
 
-func (d FormTemplateDao) Add(session *xorm.Session, formTemplate *models.FormTemplateTable) (affected int64, err error) {
+func (d *FormTemplateDao) Add(session *xorm.Session, formTemplate *models.FormTemplateTable) (affected int64, err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
@@ -20,7 +20,7 @@ func (d FormTemplateDao) Add(session *xorm.Session, formTemplate *models.FormTem
 	return
 }
 
-func (d FormTemplateDao) Update(session *xorm.Session, formTemplate *models.FormTemplateTable) (err error) {
+func (d *FormTemplateDao) Update(session *xorm.Session, formTemplate *models.FormTemplateTable) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
@@ -38,7 +38,7 @@ func (d FormTemplateDao) Update(session *xorm.Session, formTemplate *models.Form
 	return
 }
 
-func (d FormTemplateDao) Get(formTemplateId string) (*models.FormTemplateTable, error) {
+func (d *FormTemplateDao) Get(formTemplateId string) (*models.FormTemplateTable, error) {
 	var formTemplate *models.FormTemplateTable
 	var found bool
 	var err error
@@ -53,7 +53,7 @@ func (d FormTemplateDao) Get(formTemplateId string) (*models.FormTemplateTable, 
 	return nil, nil
 }
 
-func (d FormTemplateDao) Delete(session *xorm.Session, id string) (err error) {
+func (d *FormTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()

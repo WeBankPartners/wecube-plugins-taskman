@@ -9,7 +9,7 @@ type FormItemTemplateGroupDao struct {
 	DB *xorm.Engine
 }
 
-func (d FormItemTemplateGroupDao) Add(session *xorm.Session, formItemTemplate *models.FormItemTemplateGroupTable) (affected int64, err error) {
+func (d *FormItemTemplateGroupDao) Add(session *xorm.Session, formItemTemplate *models.FormItemTemplateGroupTable) (affected int64, err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
@@ -20,7 +20,7 @@ func (d FormItemTemplateGroupDao) Add(session *xorm.Session, formItemTemplate *m
 	return
 }
 
-func (d FormItemTemplateGroupDao) Update(session *xorm.Session, formItemTemplateGroup *models.FormItemTemplateGroupTable) (err error) {
+func (d *FormItemTemplateGroupDao) Update(session *xorm.Session, formItemTemplateGroup *models.FormItemTemplateGroupTable) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()
@@ -35,7 +35,7 @@ func (d FormItemTemplateGroupDao) Update(session *xorm.Session, formItemTemplate
 	return
 }
 
-func (d FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.FormItemTemplateGroupTable, error) {
+func (d *FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.FormItemTemplateGroupTable, error) {
 	var formItemTemplateGroup *models.FormItemTemplateGroupTable
 	var found bool
 	var err error
@@ -50,7 +50,7 @@ func (d FormItemTemplateGroupDao) Get(formItemTemplateGroupId string) (*models.F
 	return nil, nil
 }
 
-func (d FormItemTemplateGroupDao) QueryFormTemplate(formTemplated string) (formItemTemplateGroupList []*models.FormItemTemplateGroupTable, err error) {
+func (d *FormItemTemplateGroupDao) QueryFormTemplate(formTemplated string) (formItemTemplateGroupList []*models.FormItemTemplateGroupTable, err error) {
 	formItemTemplateGroupList = []*models.FormItemTemplateGroupTable{}
 	err = d.DB.Where("form_template = ?", formTemplated).Find(&formItemTemplateGroupList)
 	if err != nil {
@@ -59,7 +59,7 @@ func (d FormItemTemplateGroupDao) QueryFormTemplate(formTemplated string) (formI
 	return
 }
 
-func (d FormItemTemplateGroupDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
+func (d *FormItemTemplateGroupDao) DeleteByIdOrCopyId(session *xorm.Session, id string) (err error) {
 	var affected int64
 	if session == nil {
 		session = d.DB.NewSession()

@@ -5,17 +5,17 @@ import (
 	"xorm.io/xorm"
 )
 
-type TaskTemplateDao struct {
+type TaskHandleTemplateDao struct {
 	DB *xorm.Engine
 }
 
-func (d *TaskTemplateDao) Add(session *xorm.Session, taskTemplate *models.TaskTemplateTable) (affected int64, err error) {
+func (d *TaskHandleTemplateDao) Add(session *xorm.Session, taskTemplate *models.TaskHandleTemplateTable) (affected int64, err error) {
 	if session == nil {
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
 	affected, err = session.Insert(taskTemplate)
 	// 打印日志
-	logExecuteSql(session, "TaskTemplateDao", "Add", taskTemplate, affected, err)
+	logExecuteSql(session, "TaskHandleTemplateDao", "Add", taskTemplate, affected, err)
 	return
 }

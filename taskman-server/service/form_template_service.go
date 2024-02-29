@@ -14,13 +14,13 @@ import (
 )
 
 type FormTemplateService struct {
-	formTemplateDao          dao.FormTemplateDao
-	formItemTemplateDao      dao.FormItemTemplateDao
-	formItemTemplateGroupDao dao.FormItemTemplateGroupDao
-	formDao                  dao.FormDao
+	formTemplateDao          *dao.FormTemplateDao
+	formItemTemplateDao      *dao.FormItemTemplateDao
+	formItemTemplateGroupDao *dao.FormItemTemplateGroupDao
+	formDao                  *dao.FormDao
 }
 
-func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (newId string, err error) {
+func (s *FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (newId string, err error) {
 	var groupId string
 	newId = guid.CreateGuid()
 	itemIds := guid.CreateGuidList(len(formTemplateDto.Items))
@@ -51,7 +51,7 @@ func (s FormTemplateService) AddFormTemplate(session *xorm.Session, formTemplate
 	return
 }
 
-func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (err error) {
+func (s *FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateDto
 	formTemplateDto.NowTime = time.Now().Format(models.DateTimeFormat)
 	newItemGuidList := guid.CreateGuidList(len(formTemplateDto.Items))
@@ -107,7 +107,7 @@ func (s FormTemplateService) UpdateFormTemplate(session *xorm.Session, formTempl
 	return
 }
 
-func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (result *models.FormTemplateDto, err error) {
+func (s *FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (result *models.FormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var formTemplate *models.FormTemplateTable
 	result = &models.FormTemplateDto{Items: []*models.FormItemTemplateDto{}}
@@ -136,7 +136,7 @@ func (s FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (r
 	return
 }
 
-func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (result *models.DataFormTemplateDto, err error) {
+func (s *FormTemplateService) GetDataFormTemplate(requestTemplateId string) (result *models.DataFormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var associationWorkflow bool
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
@@ -164,13 +164,13 @@ func (s FormTemplateService) GetDataFormTemplate(requestTemplateId string) (resu
 	return
 }
 
-func (s FormTemplateService) GetFormTemplate(formTemplateId string) (result *models.SimpleFormTemplateDto, err error) {
+func (s *FormTemplateService) GetFormTemplate(formTemplateId string) (result *models.SimpleFormTemplateDto, err error) {
 	result = &models.SimpleFormTemplateDto{FormTemplateId: formTemplateId, Groups: make([]*models.FormTemplateGroupDto, 0)}
 	result.Groups, err = s.getFormTemplateGroups(formTemplateId)
 	return
 }
 
-func (s FormTemplateService) getFormTemplateGroups(formTemplateId string) (groups []*models.FormTemplateGroupDto, err error) {
+func (s *FormTemplateService) getFormTemplateGroups(formTemplateId string) (groups []*models.FormTemplateGroupDto, err error) {
 	var formItemTemplateGroupList []*models.FormItemTemplateGroupTable
 	var formItemTemplateList []*models.FormItemTemplateTable
 	groups = []*models.FormTemplateGroupDto{}
@@ -202,7 +202,7 @@ func (s FormTemplateService) getFormTemplateGroups(formTemplateId string) (group
 	return
 }
 
-func (s FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (result []*models.FormItemTemplateGroupTable, err error) {
+func (s *FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (result []*models.FormItemTemplateGroupTable, err error) {
 	var itemGroupMap = make(map[string]*models.FormItemTemplateGroupTable)
 	var requestTemplate *models.RequestTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateDto
@@ -233,7 +233,7 @@ func (s FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId str
 	return
 }
 
-func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.FormTemplateDto, requestTemplateId string) (err error) {
+func (s *FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.FormTemplateDto, requestTemplateId string) (err error) {
 	var requestTemplate *models.RequestTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -262,7 +262,7 @@ func (s FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.Fo
 	return
 }
 
-func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.FormTemplateDto, requestTemplateId string) (err error) {
+func (s *FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.FormTemplateDto, requestTemplateId string) (err error) {
 	// 需要对当前用户进行校验&操作时间进行校验
 	var requestTemplate *models.RequestTemplateTable
 	var formTemplate *models.FormTemplateTable
@@ -305,7 +305,7 @@ func (s FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.Fo
 }
 
 // CreateDataFormTemplate 创建数据表单
-func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataFormTemplateDto, requestTemplateId string) (err error) {
+func (s *FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataFormTemplateDto, requestTemplateId string) (err error) {
 	var requestTemplate *models.RequestTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -331,7 +331,7 @@ func (s FormTemplateService) CreateDataFormTemplate(formTemplateDto models.DataF
 }
 
 // GetFormConfig 获取配置表单,数据基于数据表单数据
-func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, itemGroupId, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+func (s *FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, itemGroupId, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
 	var dataFormConfigureDto *models.FormTemplateGroupConfigureDto
 	var formItemTemplateList []*models.FormItemTemplateDto
@@ -412,7 +412,7 @@ func (s FormTemplateService) GetFormConfig(requestTemplateId, formTemplateId, it
 }
 
 // GetDataFormConfig 获取数据表单配置
-func (s FormTemplateService) GetDataFormConfig(requestTemplateId, formTemplateId, itemGroupId, formType, entity, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
+func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, formTemplateId, itemGroupId, formType, entity, userToken, language string) (configureDto *models.FormTemplateGroupConfigureDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateDto
 	var entitiesList []*models.ExpressionEntities
 	var expressEntity *models.ExpressionEntities

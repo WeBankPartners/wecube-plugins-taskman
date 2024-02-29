@@ -4,23 +4,23 @@
       $t('back_to_template')
     }}</Button>
     <Row type="flex">
-      <Col span="20" offset="1">
+      <Col span="20" offset="2">
         <Steps :current="currentStep">
-          <Step icon="ios-add-circle">
+          <Step>
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
           </Step>
-          <Step icon="md-apps">
-            <span slot="title" @click="changeStep(1)">{{ $t('form_item_selection') }}</span>
+          <Step>
+            <span slot="title" @click="changeStep(1)">{{ $t('request_form_settings') }}</span>
           </Step>
-          <Step icon="md-cog">
-            <span slot="title" @click="changeStep(2)">{{ $t('request_form_settings') }}</span>
+          <Step>
+            <span slot="title" @click="changeStep(2)">{{ $t('approval_form_settings') }}</span>
           </Step>
-          <Step icon="ios-settings">
+          <Step>
             <span slot="title" @click="changeStep(3)">{{ $t('task_form_settings') }}</span>
           </Step>
         </Steps>
       </Col>
-      <Col span="3">
+      <!-- <Col span="3">
         <Button
           @click="confirmTemplate"
           :disabled="currentStep !== 3 || $parent.isCheck === 'Y'"
@@ -28,31 +28,31 @@
           type="primary"
           >{{ $t('publish_template') }}</Button
         >
-      </Col>
+      </Col> -->
     </Row>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
       <BasicInfo
-        @basicInfoNextStep="basicInfoNextStep"
+        @gotoNextStep="gotoNextStep"
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 0"
       ></BasicInfo>
-      <FormSelect
-        @formSelectNextStep="formSelectNextStep"
+      <RequestForm
+        @gotoNextStep="gotoNextStep"
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 1"
-      ></FormSelect>
-      <RequestForm
-        :requestTemplateId="requestTemplateId"
-        @formSelectNextStep="formSelectNextStep"
-        v-if="currentStep === 2"
       ></RequestForm>
-      <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 3"></TaskForm>
+      <ApprovalForm
+        @gotoNextStep="gotoNextStep"
+        :requestTemplateId="requestTemplateId"
+        v-if="currentStep === 2"
+      ></ApprovalForm>
+      <!-- <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 2"></TaskForm> -->
     </div>
   </div>
 </template>
 
 <script>
-import FormSelect from './form-select'
+import ApprovalForm from './approval-form'
 import RequestForm from './request-form'
 import BasicInfo from './basic-info'
 import TaskForm from './task-form'
@@ -88,18 +88,25 @@ export default {
       this.currentStep = val
     },
     backToTemplate () {
-      this.$router.push({ path: '/taskman/template-mgmt' })
+      this.$Modal.confirm({
+        title: `${this.$t('back_to_template')}`,
+        content: `${this.$t('back_to_template_tip')}`,
+        'z-index': 1000000,
+        okText: this.$t('confirm'),
+        cancelText: this.$t('cancel'),
+        onOk: async () => {
+          this.$router.push({ path: '/taskman/template-mgmt' })
+        },
+        onCancel: () => {}
+      })
     },
-    basicInfoNextStep (data) {
-      this.requestTemplateId = data.id
-      this.currentStep++
-    },
-    formSelectNextStep () {
+    gotoNextStep (tmpId) {
+      this.requestTemplateId = tmpId
       this.currentStep++
     }
   },
   components: {
-    FormSelect,
+    ApprovalForm,
     RequestForm,
     BasicInfo,
     TaskForm

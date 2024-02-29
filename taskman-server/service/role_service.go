@@ -12,7 +12,7 @@ import (
 type RoleService struct {
 }
 
-func (s RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, language string) (mailList []string) {
+func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, language string) (mailList []string) {
 	var roleMap map[string]*models.SimpleLocalRoleDto
 	var err error
 	if models.CoreToken.BaseUrl == "" || len(roleList) == 0 {
@@ -38,7 +38,7 @@ func (s RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, langua
 	return
 }
 
-func (s RoleService) SyncCoreRole(userToken, language string) {
+func (s *RoleService) SyncCoreRole(userToken, language string) {
 	var roleMap map[string]*models.SimpleLocalRoleDto
 	var err error
 	if models.CoreToken.BaseUrl == "" {
@@ -95,7 +95,7 @@ func (s RoleService) SyncCoreRole(userToken, language string) {
 	}
 }
 
-func (s RoleService) GetRoleList(ids []string) (result []*models.RoleTable, err error) {
+func (s *RoleService) GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 	result = []*models.RoleTable{}
 	if len(ids) == 0 {
 		err = dao.X.SQL("select * from role").Find(&result)
@@ -106,7 +106,7 @@ func (s RoleService) GetRoleList(ids []string) (result []*models.RoleTable, err 
 	return
 }
 
-func (s RoleService) QueryUserByRoles(roles []string, userToken, language string) (result []string, err error) {
+func (s *RoleService) QueryUserByRoles(roles []string, userToken, language string) (result []string, err error) {
 	result = []string{}
 	var roleTable []*models.RoleTable
 	rolesFilterSql, rolesFilterParam := dao.CreateListParams(roles, "")
@@ -137,7 +137,7 @@ func (s RoleService) QueryUserByRoles(roles []string, userToken, language string
 	return
 }
 
-func (s RoleService) GetRoleAdministrators(role string, userToken, language string) (result []string, err error) {
+func (s *RoleService) GetRoleAdministrators(role string, userToken, language string) (result []string, err error) {
 	result = []string{}
 	roleMap, err := rpc.QueryAllRoles("Y", userToken, language)
 	if err != nil {

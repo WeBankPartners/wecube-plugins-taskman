@@ -20,7 +20,7 @@ import (
 )
 
 type RequestService struct {
-	requestDao dao.RequestDao
+	requestDao *dao.RequestDao
 }
 
 var (

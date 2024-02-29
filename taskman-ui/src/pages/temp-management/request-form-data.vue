@@ -52,7 +52,21 @@
               :key="groupItem.itemGroupId"
               style="margin-top: 16px;display: inline-block;"
             >
-              <Button
+              <ButtonGroup shape="circle" size="small" :style="computendStyle(groupItem)" style="margin: 0 4px">
+                <Button @click.stop="editGroupItem(groupItem)" :style="computendActiveStyle(groupItem)">
+                  <Icon type="md-create" color="#2d8cf0" :size="16" />
+                </Button>
+                <Button
+                  @click="editGroupCustomItems(groupItem)"
+                  style="font-size: 14px;"
+                  :style="computendActiveStyle(groupItem)"
+                  >{{ groupItem.itemGroupName }}</Button
+                >
+                <Button @click.stop="removeGroupItem(groupItem)" :style="computendActiveStyle(groupItem)">
+                  <Icon type="md-close" color="#ed4014" :size="18" />
+                </Button>
+              </ButtonGroup>
+              <!-- <Button
                 @click.stop="editGroupItem(groupItem)"
                 type="primary"
                 size="small"
@@ -61,7 +75,7 @@
               ></Button>
               <Button
                 shape="circle"
-                :style="groupStyle[groupItem.itemGroupType]"
+                :style="computendStyle(groupItem)"
                 @click="editGroupCustomItems(groupItem)"
                 >{{ groupItem.itemGroupName }}</Button
               >
@@ -71,17 +85,17 @@
                 size="small"
                 icon="md-trash"
                 style="position: relative;right: 16px;bottom: 16px;"
-              ></Button>
+              ></Button> -->
             </div>
             <span>
-              <Button @click="selectItemGroup" type="primary" icon="md-add"></Button>
+              <Button @click="selectItemGroup" type="primary" ghost size="small" icon="md-add"></Button>
             </span>
           </div>
           <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
             <div
               v-for="(item, itemIndex) in finalElement"
               :key="itemIndex"
-              style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
+              style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
             >
               <draggable
                 class="dragArea"
@@ -554,16 +568,19 @@ export default {
       allEntityList: [],
       groupStyle: {
         custom: {
-          border: '1px solid #dd6da6',
-          color: '#dd6da6'
+          border: '1px solid #b886f8',
+          color: '#b886f8',
+          'border-radius': '14px'
         },
         workflow: {
-          border: '1px solid #ba89f8',
-          color: '#ba89f8'
+          border: '1px solid #cba43f',
+          color: '#cba43f',
+          'border-radius': '14px'
         },
         optional: {
           border: '1px solid #81b337',
-          color: '#81b337'
+          color: '#81b337',
+          'border-radius': '14px'
         }
       }
     }
@@ -616,13 +633,11 @@ export default {
       if (statusCode === 'OK') {
         // workflow  2.编排数据, 3.optional 自选数据项表单,  custom 1.自定义表单
         this.$nextTick(() => {
-          console.log(12, this.dataFormInfo.groups)
           const existGroup = this.dataFormInfo.groups
             .filter(g => g.itemGroupType !== 'custom')
             .map(g => {
               return g.itemGroupName
             })
-          console.log(existGroup)
           this.groupOptions = data.map(d => {
             if (d.formType === 'custom') {
               d.entities = ['custom']
@@ -669,15 +684,55 @@ export default {
               itemGroupId: '',
               itemGroupSort: this.dataFormInfo.groups.length + 1
             }
-            console.log(34, params)
             this.$refs.requestFormDataWorkflowRef.loadPage(params)
           }
         })
       }
     },
+    computendStyle (groupItem) {
+      let res = JSON.parse(JSON.stringify(this.groupStyle[groupItem.itemGroupType]))
+      let obj = this.finalElement[0]
+      if (groupItem.itemGroupId === obj.itemGroupId) {
+        res['background-color'] = 'white'
+        if (groupItem.itemGroupType === 'workflow') {
+          res['background-color'] = '#ebdcb4'
+        } else if (groupItem.itemGroupType === 'custom') {
+          res['background-color'] = 'rgba(184, 134, 248, 0.6)'
+        } else if (groupItem.itemGroupType === 'optional') {
+          res['background-color'] = 'rgba(129, 179, 55, 0.6)'
+        }
+      }
+      return res
+    },
+    computendActiveStyle (groupItem) {
+      let res = {}
+      let obj = this.finalElement[0]
+      if (groupItem.itemGroupId === obj.itemGroupId) {
+        res = {
+          'background-color': 'white'
+        }
+        if (groupItem.itemGroupType === 'workflow') {
+          res = {
+            'background-color': '#ebdcb4',
+            border: 'none'
+          }
+        } else if (groupItem.itemGroupType === 'custom') {
+          res = {
+            'background-color': 'rgba(184, 134, 248, 0.6)',
+            border: 'none'
+          }
+        } else if (groupItem.itemGroupType === 'optional') {
+          res = {
+            'background-color': 'rgba(129, 179, 55, 0.6)',
+            border: 'none'
+          }
+        }
+      }
+      console.log(44, res)
+      return res
+    },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem) {
-      console.log(11, this.isParmasChanged)
       if (this.isParmasChanged) {
         this.$Modal.confirm({
           title: `${this.$t('confirm_discarding_changes')}`,

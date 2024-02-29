@@ -70,6 +70,7 @@
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
+                    :rows="1"
                     class="custom-item"
                   />
                   <Select
@@ -463,7 +464,6 @@ export default {
     async loadPage (requestTemplateId) {
       this.requestTemplateId = requestTemplateId
       this.isParmasChanged = false
-      console.log(123, this.requestTemplateId)
       const { statusCode, data } = await getRequestFormTemplateData(this.requestTemplateId)
       if (statusCode === 'OK') {
         if (data.items !== null && data.items.length > 0) {

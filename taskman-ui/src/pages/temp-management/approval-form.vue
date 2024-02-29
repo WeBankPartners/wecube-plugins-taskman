@@ -99,7 +99,7 @@
                     ></Button>
                     <Button
                       shape="circle"
-                      :style="groupStyle[groupItem.itemGroupType]"
+                      :style="computendStyle(groupItem)"
                       @click="editGroupCustomItems(groupItem)"
                       >{{ groupItem.itemGroupName }}</Button
                     >
@@ -120,7 +120,7 @@
                     <div
                       v-for="(item, itemIndex) in finalElement"
                       :key="itemIndex"
-                      style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
+                      style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
                     >
                       <div :key="itemIndex"></div>
                       <draggable
@@ -209,7 +209,7 @@
                       </Select>
                     </FormItem>
                     <FormItem :label="$t('tw_comments')">
-                      <Input type="textarea" :row="2"></Input>
+                      <Input type="textarea" :rows="2"></Input>
                     </FormItem>
                   </Form>
                 </div>
@@ -654,12 +654,12 @@ export default {
       allEntityList: [],
       groupStyle: {
         custom: {
-          border: '1px solid #ff9900',
-          color: '#ff9900'
+          border: '1px solid #b886f8',
+          color: '#b886f8'
         },
         workflow: {
-          border: '1px solid #ba89f8',
-          color: '#ba89f8'
+          border: '1px solid #cba43f',
+          color: '#cba43f'
         },
         optional: {
           border: '1px solid #81b337',
@@ -833,6 +833,21 @@ export default {
     },
     paramsChanged () {
       this.isParmasChanged = true
+    },
+    computendStyle (groupItem) {
+      let res = JSON.parse(JSON.stringify(this.groupStyle[groupItem.itemGroupType]))
+      let obj = this.finalElement[0]
+      if (groupItem.itemGroupId === obj.itemGroupId) {
+        res['background-color'] = 'white'
+        if (groupItem.itemGroupType === 'workflow') {
+          res['background-color'] = '#ebdcb4'
+        } else if (groupItem.itemGroupType === 'custom') {
+          res['background-color'] = 'rgba(184, 134, 248, 0.6)'
+        } else if (groupItem.itemGroupType === 'optional') {
+          res['background-color'] = 'rgba(129, 179, 55, 0.6)'
+        }
+      }
+      return res
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem) {
@@ -1021,7 +1036,16 @@ export default {
       }
     },
     cancelGroup () {
-      this.finalElement = []
+      this.finalElement = [
+        {
+          itemGroupId: '',
+          formTemplateId: '',
+          requestTemplateId: '',
+          itemGroup: '',
+          itemGroupName: '',
+          attrs: []
+        }
+      ]
       this.isParmasChanged = false
       this.openPanel = ''
     },

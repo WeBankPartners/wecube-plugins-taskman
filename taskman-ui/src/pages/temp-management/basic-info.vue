@@ -371,7 +371,6 @@ export default {
       if (statusCode === 'OK') {
         if (data.contents.length === 1) {
           const templateData = data.contents[0]
-          console.log(22, templateData)
           this.basicInfo = templateData
           this.basicInfo.mgmtRoles = templateData.mgmtRoles[0].id
           this.basicInfo.useRoles = templateData.useRoles.map(role => role.id)
@@ -458,6 +457,9 @@ export default {
             id: d
           }
         })
+        if (this.handlerRolesOptions.length > 0) {
+          this.basicInfo.handler = this.handlerRolesOptions[0].id
+        }
       }
     },
     // 处理人
@@ -485,6 +487,8 @@ export default {
       }
     },
     changeMgmtRole () {
+      this.basicInfo.handler = ''
+      this.getHandlerRoles()
       this.basicInfo.procDefId = ''
       this.getProcess()
       this.paramsChanged()

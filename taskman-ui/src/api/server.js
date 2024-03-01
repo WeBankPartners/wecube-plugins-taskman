@@ -148,6 +148,10 @@ export const getApprovalConfig = templateId => req.get(`/taskman/api/v1/approval
 export const getTaskConfig = templateId => req.get(`/taskman/api/v1/task-template/custom/${templateId}`)
 // 获取指定角色的管理员
 export const getAdminUserByRole = role => req.get(`/taskman/api/v1/role/administrator/list?role=${role}`)
+// 需关注任务节点列表
+export const geTaskTagList = requestId => req.get(`/taskman/api/v1/request/${requestId}/task/list`)
+// 提交请求确认
+export const confirmRequest = params => req.post(`/taskman/api/v1/request/confirm`, params)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

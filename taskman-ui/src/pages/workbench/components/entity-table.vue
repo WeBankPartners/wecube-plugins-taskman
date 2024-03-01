@@ -23,9 +23,9 @@
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
             <Row :key="index">
-              <Col v-for="(i, index) in formOptions" :key="index" :span="i.width || 24">
+              <Col v-for="(i, index) in formOptions" :key="index" :span="i.width">
                 <FormItem
-                  :label="i.title || '自定义分析'"
+                  :label="i.title"
                   :prop="i.name"
                   :required="i.required === 'yes'"
                   :rules="

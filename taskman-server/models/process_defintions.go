@@ -147,7 +147,7 @@ type DefinitionsInfo struct {
 }
 
 type InstancesInfo struct {
-	Id           int             `json:"id"`
+	Id           interface{}     `json:"id"`
 	ProcInstKey  string          `json:"procInstKey"`
 	ProcInstName string          `json:"procInstName"`
 	CreatedTime  string          `json:"createdTime"`
@@ -161,24 +161,24 @@ type InstancesInfo struct {
 
 // WorkflowNode 任务编排节点
 type WorkflowNode struct {
-	Id                int      `json:"id"`
-	ProInstId         int      `json:"proInstId"`
-	ProInstKey        string   `json:"proInstKey"`
-	NodeId            string   `json:"nodeId"`
-	NodeName          string   `json:"nodeName"`
-	NodeType          string   `json:"nodeType"`
-	NodeDefId         string   `json:"nodeDefId"`
-	Status            string   `json:"status"`
-	OrderedNo         string   `json:"orderedNo"`
-	ProcDefId         string   `json:"procDefId"`
-	ProcDefKey        string   `json:"procDefKey"`
-	RoutineExpression string   `json:"routineExpression"`
-	TaskCategory      string   `json:"taskCategory"`
-	ServiceId         string   `json:"serviceId"`
-	DynamicBind       string   `json:"dynamicBind"`
-	Description       string   `json:"description"`
-	PreviousNodeIds   []string `json:"previousNodeIds"`
-	SucceedingNodeIds []string `json:"succeedingNodeIds"`
+	Id                interface{} `json:"id"`
+	ProInstId         interface{} `json:"proInstId"`
+	ProInstKey        string      `json:"proInstKey"`
+	NodeId            string      `json:"nodeId"`
+	NodeName          string      `json:"nodeName"`
+	NodeType          string      `json:"nodeType"`
+	NodeDefId         string      `json:"nodeDefId"`
+	Status            string      `json:"status"`
+	OrderedNo         string      `json:"orderedNo"`
+	ProcDefId         string      `json:"procDefId"`
+	ProcDefKey        string      `json:"procDefKey"`
+	RoutineExpression string      `json:"routineExpression"`
+	TaskCategory      string      `json:"taskCategory"`
+	ServiceId         string      `json:"serviceId"`
+	DynamicBind       string      `json:"dynamicBind"`
+	Description       string      `json:"description"`
+	PreviousNodeIds   []string    `json:"previousNodeIds"`
+	SucceedingNodeIds []string    `json:"succeedingNodeIds"`
 }
 
 type FlowNodes struct {
@@ -251,12 +251,12 @@ type TaskNodeInstances struct {
 	Description       string        `json:"description"`
 	PreviousNodeIds   []interface{} `json:"previousNodeIds"`
 	SucceedingNodeIds []string      `json:"succeedingNodeIds"`
-	ProcInstId        int           `json:"procInstId"`
+	ProcInstId        interface{}   `json:"procInstId"`
 	ProcInstKey       string        `json:"procInstKey"`
 }
 
 type ProcessInstance struct {
-	ID                int                  `json:"id"`
+	ID                interface{}          `json:"id"`
 	ProcInstKey       string               `json:"procInstKey"`
 	ProcInstName      string               `json:"procInstName"`
 	CreatedTime       string               `json:"createdTime"`
@@ -274,11 +274,11 @@ type EntityNodeBindQueryObj struct {
 }
 
 type StartInstanceResultData struct {
-	Id          int    `json:"id"`
-	ProcInstKey string `json:"procInstKey"`
-	ProcDefId   string `json:"procDefId"`
-	ProcDefKey  string `json:"procDefKey"`
-	Status      string `json:"status"`
+	Id          interface{} `json:"id"`
+	ProcInstKey string      `json:"procInstKey"`
+	ProcDefId   string      `json:"procDefId"`
+	ProcDefKey  string      `json:"procDefKey"`
+	Status      string      `json:"status"`
 }
 
 type ProcDefEntityDataObj struct {

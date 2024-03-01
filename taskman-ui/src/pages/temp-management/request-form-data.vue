@@ -60,32 +60,12 @@
                   @click="editGroupCustomItems(groupItem)"
                   style="font-size: 14px;"
                   :style="computendActiveStyle(groupItem)"
-                  >{{ groupItem.itemGroupName }}</Button
+                  >{{ groupItem.itemGroupName }}{{ groupItem.itemGroupType }}</Button
                 >
                 <Button @click.stop="removeGroupItem(groupItem)" :style="computendActiveStyle(groupItem)">
                   <Icon type="md-close" color="#ed4014" :size="18" />
                 </Button>
               </ButtonGroup>
-              <!-- <Button
-                @click.stop="editGroupItem(groupItem)"
-                type="primary"
-                size="small"
-                style="position: relative;left: 16px;bottom: 16px;"
-                icon="md-create"
-              ></Button>
-              <Button
-                shape="circle"
-                :style="computendStyle(groupItem)"
-                @click="editGroupCustomItems(groupItem)"
-                >{{ groupItem.itemGroupName }}</Button
-              >
-              <Button
-                @click.stop="removeGroupItem(groupItem)"
-                type="error"
-                size="small"
-                icon="md-trash"
-                style="position: relative;right: 16px;bottom: 16px;"
-              ></Button> -->
             </div>
             <span>
               <Button @click="selectItemGroup" type="primary" ghost size="small" icon="md-add"></Button>
@@ -153,7 +133,7 @@
               </draggable>
             </div>
             <div style="text-align: right;">
-              <Button type="primary" size="small" ghost @click="saveGroup">{{ $t('save') }}</Button>
+              <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
               <Button size="small" @click="cancelGroup">{{ $t('tw_abandon') }}</Button>
             </div>
           </template>
@@ -330,6 +310,7 @@
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
     <div style="text-align: center;margin-top: 16px;">
+      {{ isParmasChanged }}
       <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -658,7 +639,7 @@ export default {
         this.itemGroupType = 'custom'
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.dataFormInfo.formTemplateId,
+          formTemplateId: this.requestTemplateId,
           isAdd: true,
           itemGroupType: this.itemGroupType,
           itemGroup: this.itemGroup,
@@ -677,7 +658,7 @@ export default {
           if (['workflow', 'optional'].includes(this.itemGroupType)) {
             let params = {
               requestTemplateId: this.requestTemplateId,
-              formTemplateId: this.dataFormInfo.formTemplateId,
+              formTemplateId: this.requestTemplateId,
               isAdd: true,
               itemGroupType: this.itemGroupType,
               itemGroup: this.itemGroup,
@@ -707,6 +688,7 @@ export default {
     computendActiveStyle (groupItem) {
       let res = {}
       let obj = this.finalElement[0]
+      if (!groupItem) return
       if (groupItem.itemGroupId === obj.itemGroupId) {
         res = {
           'background-color': 'white'
@@ -728,7 +710,6 @@ export default {
           }
         }
       }
-      console.log(44, res)
       return res
     },
     // 编辑组自定义属性
@@ -741,7 +722,7 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveGroup()
+            this.saveGroup(1)
           },
           onCancel: () => {
             this.updateFinalElement(groupItem)
@@ -755,7 +736,7 @@ export default {
       this.finalElement = [
         {
           itemGroupId: groupItem.itemGroupId,
-          formTemplateId: this.dataFormInfo.formTemplateId,
+          formTemplateId: this.requestTemplateId,
           requestTemplateId: this.requestTemplateId,
           itemGroup: groupItem.itemGroup,
           itemGroupName: groupItem.itemGroupName,
@@ -771,7 +752,7 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.dataFormInfo.formTemplateId)
+          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.requestTemplateId)
           if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
@@ -789,7 +770,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.dataFormInfo.formTemplateId,
+          formTemplateId: this.requestTemplateId,
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -802,7 +783,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.dataFormInfo.formTemplateId,
+          formTemplateId: this.requestTemplateId,
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -855,7 +836,8 @@ export default {
       this.paramsChanged()
     },
     // 保存自定义表单项
-    async saveGroup () {
+    async saveGroup (nextStep) {
+      // nextStep 1新增 2下一步 3切换tab
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       finalData.items = finalData.attrs.map(attr => {
         if (attr.id.startsWith('c_')) {
@@ -871,13 +853,55 @@ export default {
           desc: this.$t('successful')
         })
         this.isParmasChanged = false
-        this.finalElement = []
-        this.loadPage()
+        if (nextStep === 1) {
+          this.cancelGroup()
+          this.loadPage()
+        } else if (nextStep === 2) {
+          this.$emit('gotoNextStep', this.requestTemplateId)
+        } else if (nextStep === 3) {
+          console.log(33333)
+          this.$emit('changTab', 'msgForm')
+        }
       }
     },
     cancelGroup () {
-      this.finalElement = []
+      this.finalElement = [
+        // 待编辑组信息
+        {
+          itemGroupId: '',
+          formTemplateId: '',
+          requestTemplateId: '',
+          itemGroup: '',
+          itemGroupName: '',
+          attrs: []
+        }
+      ]
       this.isParmasChanged = false
+    },
+    panalStatus () {
+      return this.isParmasChanged
+    },
+    tabChange () {
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('tw_confirm_discarding_changes')}`,
+          content: `${this.$t('tw_params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('tw_abandon'),
+          closable: true,
+          onOk: async () => {
+            this.saveGroup(3)
+          },
+          onCancel: () => {
+            this.isParmasChanged = false
+            this.$emit('changTab', 'msgForm')
+          }
+        })
+      } else {
+        this.isParmasChanged = false
+        this.$emit('gotoNextStep', this.requestTemplateId)
+      }
     },
     gotoNext () {
       if (this.isParmasChanged) {
@@ -888,13 +912,15 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('tw_abandon'),
           onOk: async () => {
-            this.saveGroup()
+            this.saveGroup(2)
           },
           onCancel: () => {
+            this.isParmasChanged = false
             this.$emit('gotoNextStep', this.requestTemplateId)
           }
         })
       } else {
+        this.isParmasChanged = false
         this.$emit('gotoNextStep', this.requestTemplateId)
       }
     }

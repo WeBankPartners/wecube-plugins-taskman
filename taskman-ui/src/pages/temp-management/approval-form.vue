@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row type="flex">
-      <Col span="20" offset="2">
+      <Col span="24" style="padding: 0 20px">
         <div style="margin: 24px 0">
           <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right: 30px;">
             <Tag
@@ -409,6 +409,7 @@ import {
   removeApprovalNode,
   getApprovalGlobalForm,
   copyItemGroup,
+  removeEmptyDataForm,
   getApprovalNodeGroups,
   deleteRequestGroupForm,
   getAllDataModels,
@@ -676,9 +677,13 @@ export default {
   props: ['requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
+    this.removeEmptyDataForm()
     this.loadPage()
   },
   methods: {
+    async removeEmptyDataForm () {
+      await removeEmptyDataForm(this.requestTemplateId)
+    },
     loadPage (sort) {
       this.cancelGroup()
       this.getApprovalNode(sort)
@@ -689,8 +694,17 @@ export default {
         if (data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
-          this.approvalNodes = data.ids
-          this.activeEditingNode = this.approvalNodes[sort || 0]
+          // this.approvalNodes = data.ids
+          this.approvalNodes = [
+            {
+              id: '65dbf5aeea879865',
+              sort: 1,
+              name: '审批2',
+              formTemplate: '65e04c4a94c4cb4c'
+            }
+          ]
+          const tmpSort = sort === undefined ? 1 : sort
+          this.activeEditingNode = this.approvalNodes.find(node => node.sort === tmpSort)
           this.editNode(this.activeEditingNode)
         }
       }
@@ -767,7 +781,7 @@ export default {
       this.getApprovalNodeGroups(node)
     },
     async getApprovalNodeGroups (node) {
-      const { statusCode, data } = await getApprovalNodeGroups(node.formTemplate)
+      const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
       }
@@ -801,7 +815,8 @@ export default {
     async okSelect () {
       this.showSelectModel = false
       let params = {
-        formTemplateId: this.activeEditingNode.formTemplate,
+        requestTemplateId: this.requestTemplateId,
+        taskTemplateId: this.activeEditingNode.id,
         itemGroupId: this.itemGroup
       }
       const { statusCode } = await copyItemGroup(params)
@@ -962,7 +977,7 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.dataFormInfo.formTemplateId)
+          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.activeEditingNode.id)
           if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),

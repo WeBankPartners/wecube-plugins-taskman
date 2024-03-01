@@ -58,7 +58,7 @@
       </Form>
     </div>
     <div class="demo-drawer-footer">
-      <Button type="primary" style="margin-right: 16px" :disabled="isSaveBtnActiv()" @click="saveGroupDrawer">{{
+      <Button type="primary" style="margin-right: 16px" :disabled="isSaveBtnActive()" @click="saveGroupDrawer">{{
         $t('save')
       }}</Button>
       <Button @click="cancelGroupDrawer">{{ $t('cancel') }}</Button>
@@ -179,7 +179,7 @@ export default {
       this.isParmasChanged = true
     },
     // 控制保存按钮
-    isSaveBtnActiv () {
+    isSaveBtnActive () {
       let res = false
       if (this.group.itemGroupName === '') {
         return true

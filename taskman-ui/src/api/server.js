@@ -159,8 +159,8 @@ export const getEntityByTemplateId = tmpId => req.get(`/taskman/api/v1/request-t
 
 export const getRequestDataForm = tmpId => req.get(`/taskman/api/v1/request-form-template/${tmpId}/data-form`)
 export const saveRequestGroupForm = data => req.post(`/taskman/api/v1/form-template/item-group-config`, data)
-export const deleteRequestGroupForm = (tmpId, formTemplateId) =>
-  req.delete(`/taskman/api/v1/form-template/item-group?item-group-id=${tmpId}&form-template-id=${formTemplateId}`)
+export const deleteRequestGroupForm = (itemGroupId, tmpId) =>
+  req.delete(`/taskman/api/v1/form-template/item-group?item-group-id=${itemGroupId}&request-template-id=${tmpId}`)
 export const saveRequestGroupCustomForm = data => req.post(`/taskman/api/v1/form-template/item-group`, data)
 export const getRequestGroupForm = params =>
   req.get(
@@ -181,9 +181,12 @@ export const getApprovalGlobalForm = tmpId => req.get(`/taskman/api/v1/request-f
 // 在审批节点中赋值赋值添加数据表单
 export const copyItemGroup = params =>
   req.post(
-    `/taskman/api/v1/form-template/item-group/copy?form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}`,
+    `/taskman/api/v1/form-template/item-group/copy?request-template-id=${params.requestTemplateId}&item-group-id=${params.itemGroupId}&task-template-id=${params.taskTemplateId}`,
     {}
   )
 // 获取审批节点下的组信息
-export const getApprovalNodeGroups = formTemplateId =>
-  req.get(`/taskman/api/v1/request-form-template/form/${formTemplateId}`)
+export const getApprovalNodeGroups = (tmpId, taskTemplateId) =>
+  req.get(`/taskman/api/v1/request-form-template/${tmpId}/form/${taskTemplateId}`)
+
+// 获取审批节点
+export const removeEmptyDataForm = tmpId => req.post(`/taskman/api/v1/request-template/${tmpId}/data-form-clean`)

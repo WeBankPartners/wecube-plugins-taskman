@@ -240,7 +240,8 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="saveMsgForm" type="info" :disabled="isSaveBtnActiv()">{{ $t('save') }}</Button>
+      {{ isParmasChanged }}
+      <Button @click="saveMsgForm(1)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
       <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -480,7 +481,8 @@ export default {
       this.getAllDataModels()
     },
     // 保存表单信息
-    async saveMsgForm () {
+    async saveMsgForm (nextStep) {
+      // nextStep 1新增 2下一步 3切换tab
       let tmp = [].concat(...JSON.parse(JSON.stringify(this.finalElement)).map(l => l.attrs))
       tmp.forEach((l, index) => {
         l.sort = index
@@ -498,7 +500,14 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.loadPage(this.requestTemplateId)
+        this.isParmasChanged = false
+        if (nextStep === 1) {
+          this.loadPage(this.requestTemplateId)
+        } else if (nextStep === 2) {
+          this.$emit('gotoNextStep', this.requestTemplateId)
+        } else if (nextStep === 3) {
+          this.$emit('changTab', 'dataForm')
+        }
       }
     },
     compare (prop) {
@@ -536,12 +545,37 @@ export default {
       this.paramsChanged()
     },
     // 控制保存按钮
-    isSaveBtnActiv () {
+    isSaveBtnActive () {
       let res = false
       return res
     },
     paramsChanged () {
       this.isParmasChanged = true
+    },
+    panalStatus () {
+      return this.isParmasChanged
+    },
+    tabChange () {
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('tw_confirm_discarding_changes')}`,
+          content: `${this.$t('tw_params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('tw_abandon'),
+          closable: true,
+          onOk: async () => {
+            this.saveMsgForm(3)
+          },
+          onCancel: () => {
+            this.isParmasChanged = false
+            this.$emit('changTab', 'dataForm')
+          }
+        })
+      } else {
+        this.isParmasChanged = false
+        this.$emit('gotoNextStep', this.requestTemplateId)
+      }
     },
     gotoNext () {
       if (this.isParmasChanged) {
@@ -551,14 +585,17 @@ export default {
           'z-index': 1000000,
           okText: this.$t('save'),
           cancelText: this.$t('tw_abandon'),
+          closable: true,
           onOk: async () => {
-            this.saveMsgForm()
+            this.saveMsgForm(2)
           },
           onCancel: () => {
+            this.isParmasChanged = false
             this.$emit('gotoNextStep', this.requestTemplateId)
           }
         })
       } else {
+        this.isParmasChanged = false
         this.$emit('gotoNextStep', this.requestTemplateId)
       }
     },

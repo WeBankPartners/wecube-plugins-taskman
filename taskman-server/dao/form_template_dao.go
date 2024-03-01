@@ -73,6 +73,12 @@ func (d *FormTemplateDao) QueryListByRequestTemplateAndTaskTemplate(requestTempl
 	return
 }
 
+func (d *FormTemplateDao) QueryListByRequestTemplateAndItemGroupType(requestTemplateId, itemGroupType string) (list []*models.FormTemplateNewTable, err error) {
+	list = []*models.FormTemplateNewTable{}
+	err = d.DB.Where("request_template=? and  item_group_type = ? and del_flag = 0", requestTemplateId, itemGroupType).Find(&list)
+	return
+}
+
 func (d *FormTemplateDao) QueryListByIdOrRefId(id string) (list []*models.FormTemplateNewTable, err error) {
 	list = []*models.FormTemplateNewTable{}
 	err = d.DB.Where("id=? or ref_id=?", id, id).Find(&list)

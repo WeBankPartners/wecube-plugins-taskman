@@ -19,3 +19,8 @@ func (d *TaskTemplateDao) Add(session *xorm.Session, taskTemplate *models.TaskTe
 	logExecuteSql(session, "TaskTemplateDao", "Add", taskTemplate, affected, err)
 	return
 }
+
+func (d *TaskTemplateDao) QueryByRequestTemplate(requestTemplateId string) (list []*models.TaskTemplateTable, err error) {
+	err = d.DB.Where("request_template=?", requestTemplateId).Find(&list)
+	return
+}

@@ -24,6 +24,7 @@ type RequestTemplateService struct {
 	operationLogDao        *dao.OperationLogDao
 	taskTemplateDao        *dao.TaskTemplateDao
 	taskHandleTemplateDao  *dao.TaskHandleTemplateDao
+	formTemplateDao        *dao.FormTemplateDao
 }
 
 func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models.RequestTemplateTable) (requestTemplateDto *models.RequestTemplateDto) {
@@ -441,7 +442,18 @@ func (s *RequestTemplateService) getRequestTemplateIdsBySql(sql string, param []
 
 func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
 	var actions []*dao.ExecAction
+	var taskTemplateList []*models.TaskTemplateTable
+	var requestTemplate *models.RequestTemplateTable
+	var formTemplateList []*models.FormTemplateNewTable
 	nowTime := time.Now().Format(models.DateTimeFormat)
+	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
+	if err != nil {
+		return
+	}
+	requestTemplate, err = s.GetRequestTemplate(param.Id)
+	if err != nil {
+		return
+	}
 	result = models.RequestTemplateQueryObj{RequestTemplateDto: param.RequestTemplateDto, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	updateAction := dao.ExecAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?," +
 		"proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,handler=?,updated_by=?,updated_time=?,type=?,operator_obj_type=?,approve_by=?,check_switch=?," +
@@ -458,6 +470,49 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	for _, v := range param.USERoles {
 		result.USERoles = append(result.USERoles, &models.RoleTable{Id: v})
 		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_role(id,request_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", param.Id, v, "USE"}})
+	}
+
+	// 删除定版任务和请求确认任务
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			if taskTemplate.Type == string(models.TaskTypeCheck) || taskTemplate.Type == string(models.TaskTypeConfirm) {
+				if taskTemplate.Type == string(models.TaskTypeCheck) {
+					actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template where task_template=?", Param: []interface{}{taskTemplate.Id}})
+				}
+				actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where id=?", Param: []interface{}{taskTemplate.Id}})
+			}
+		}
+	}
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where request_template=? and type=?", Param: []interface{}{param.Id, string(models.TaskTypeCheck)}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where request_template=? and type=?", Param: []interface{}{param.Id, string(models.TaskTypeConfirm)}})
+	// 根据参数重新任务模板添加定版任务和确认任务
+	if param.CheckSwitch {
+		newCheckTaskId := fmt.Sprintf("ch_%s", guid.CreateGuid())
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,request_template,expire_day,type,created_time," +
+			"updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{newCheckTaskId, "check", param.Id, param.CheckExpireDay, string(models.TaskTypeCheck), nowTime, nowTime}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,handler) values(?,?,?,?)",
+			Param: []interface{}{guid.CreateGuid(), newCheckTaskId, param.CheckRole, param.CheckHandler}})
+	}
+	if param.ConfirmSwitch {
+		newConfirmTaskId := fmt.Sprintf("co_%s", guid.CreateGuid())
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,request_template,expire_day,type,created_time," +
+			"updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{newConfirmTaskId, "confirm", param.Id, param.ConfirmExpireDay, string(models.TaskTypeConfirm), nowTime, nowTime}})
+	}
+
+	// 更新操作关闭了编排,则需要删除 所有跟编排相关的表单
+	if requestTemplate.ProcDefId != "" && param.ProcDefId == "" {
+		formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplateAndItemGroupType(param.Id, string(models.FormItemGroupTypeWorkflow))
+		if err != nil {
+			return
+		}
+		if len(formTemplateList) > 0 {
+			for _, formTemplate := range formTemplateList {
+				err = GetFormTemplateService().DeleteFormTemplateItemGroup(formTemplate.Id)
+				if err != nil {
+					return
+				}
+			}
+		}
 	}
 	err = dao.Transaction(actions)
 	return

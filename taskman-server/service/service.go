@@ -83,7 +83,7 @@ func New() (err error) {
 	taskTemplateService = &TaskTemplateService{taskTemplateDao: taskTemplateDao, taskTemplateRoleDao: taskTemplateRoleDao}
 	formService = &FormService{formDao: formDao, formItemDao: formItemDao}
 	requestTemplateService = &RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao,
-		requestTemplateRoleDao: requestTemplateRoleDao, taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao}
+		requestTemplateRoleDao: requestTemplateRoleDao, taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao, formTemplateDao: formTemplateDao}
 	requestTemplateGroupService = &RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
 	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
 	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formItemTemplateGroupDao: formItemTemplateGroupDao}

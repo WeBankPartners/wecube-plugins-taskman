@@ -47,29 +47,28 @@
             </FormItem>
           </Form>
           <div>
-            <div
-              v-for="groupItem in dataFormInfo.groups"
-              :key="groupItem.itemGroupId"
-              style="margin-top: 16px;display: inline-block;"
-            >
-              <ButtonGroup shape="circle" size="small" :style="computendStyle(groupItem)" style="margin: 0 4px">
-                <Button @click.stop="editGroupItem(groupItem)" :style="computendActiveStyle(groupItem)">
-                  <Icon type="md-create" color="#2d8cf0" :size="16" />
-                </Button>
-                <Button
-                  @click="editGroupCustomItems(groupItem)"
-                  style="font-size: 14px;"
-                  :style="computendActiveStyle(groupItem)"
-                  >{{ groupItem.itemGroupName }}{{ groupItem.itemGroupType }}</Button
-                >
-                <Button @click.stop="removeGroupItem(groupItem)" :style="computendActiveStyle(groupItem)">
-                  <Icon type="md-close" color="#ed4014" :size="18" />
-                </Button>
-              </ButtonGroup>
+            <div class="radio-group">
+              <div
+                v-for="(groupItem, index) in dataFormInfo.groups"
+                :key="index"
+                :class="{
+                  radio: true,
+                  custom: groupItem.itemGroupType === 'custom',
+                  workflow: groupItem.itemGroupType === 'workflow',
+                  optional: groupItem.itemGroupType === 'optional'
+                }"
+                :style="activeStyle(groupItem)"
+              >
+                <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
+                <span @click="editGroupCustomItems(groupItem)">
+                  {{ `${groupItem.itemGroup}` }}
+                </span>
+                <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
+              </div>
+              <span>
+                <Button @click="selectItemGroup" type="primary" ghost icon="md-add"></Button>
+              </span>
             </div>
-            <span>
-              <Button @click="selectItemGroup" type="primary" ghost size="small" icon="md-add"></Button>
-            </span>
           </div>
           <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
             <div
@@ -282,8 +281,8 @@
     <Modal v-model="showSelectModel" title="选择组信息" :mask-closable="false">
       <Form :label-width="120">
         <FormItem :label="$t('选择组')">
-          <Select style="width: 80%" v-model="itemGroup" filterable>
-            <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formType" :key="itemGroup.formType">
+          <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
+            <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
               <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
             </OptionGroup>
           </Select>
@@ -566,6 +565,26 @@ export default {
       }
     }
   },
+  computed: {
+    activeStyle () {
+      return function (item) {
+        let color = '#fff'
+        let obj = this.finalElement[0]
+        if (item.itemGroupId === obj.itemGroupId) {
+          if (item.itemGroupType === 'workflow') {
+            color = '#ebdcb4'
+          } else if (item.itemGroupType === 'custom') {
+            color = 'rgba(184, 134, 248, 0.6)'
+          } else if (item.itemGroupType === 'optional') {
+            color = 'rgba(129, 179, 55, 0.6)'
+          } else if (!item.itemGroupType) {
+            color = 'rgb(45, 140, 240)'
+          }
+        }
+        return { background: color }
+      }
+    }
+  },
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
   },
@@ -621,8 +640,14 @@ export default {
             })
           this.groupOptions = data.map(d => {
             if (d.formType === 'custom') {
+              d.formTypeName = this.$t('自定义表单')
               d.entities = ['custom']
-            } else {
+            } else if (d.formType === 'workflow') {
+              d.formTypeName = this.$t('编排数据项表单')
+              let entities = d.entities || []
+              d.entities = entities.filter(entity => !existGroup.includes(entity))
+            } else if (d.formType === 'optional') {
+              d.formTypeName = this.$t('自选表单项')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             }
@@ -642,7 +667,7 @@ export default {
           formTemplateId: this.requestTemplateId,
           isAdd: true,
           itemGroupType: this.itemGroupType,
-          itemGroup: this.itemGroup,
+          itemGroup: this.itemGroup + (this.dataFormInfo.groups.length + 1),
           itemGroupId: '',
           itemGroupSort: this.dataFormInfo.groups.length + 1
         }
@@ -669,48 +694,6 @@ export default {
           }
         })
       }
-    },
-    computendStyle (groupItem) {
-      let res = JSON.parse(JSON.stringify(this.groupStyle[groupItem.itemGroupType]))
-      let obj = this.finalElement[0]
-      if (groupItem.itemGroupId === obj.itemGroupId) {
-        res['background-color'] = 'white'
-        if (groupItem.itemGroupType === 'workflow') {
-          res['background-color'] = '#ebdcb4'
-        } else if (groupItem.itemGroupType === 'custom') {
-          res['background-color'] = 'rgba(184, 134, 248, 0.6)'
-        } else if (groupItem.itemGroupType === 'optional') {
-          res['background-color'] = 'rgba(129, 179, 55, 0.6)'
-        }
-      }
-      return res
-    },
-    computendActiveStyle (groupItem) {
-      let res = {}
-      let obj = this.finalElement[0]
-      if (!groupItem) return
-      if (groupItem.itemGroupId === obj.itemGroupId) {
-        res = {
-          'background-color': 'white'
-        }
-        if (groupItem.itemGroupType === 'workflow') {
-          res = {
-            'background-color': '#ebdcb4',
-            border: 'none'
-          }
-        } else if (groupItem.itemGroupType === 'custom') {
-          res = {
-            'background-color': 'rgba(184, 134, 248, 0.6)',
-            border: 'none'
-          }
-        } else if (groupItem.itemGroupType === 'optional') {
-          res = {
-            'background-color': 'rgba(129, 179, 55, 0.6)',
-            border: 'none'
-          }
-        }
-      }
-      return res
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem) {
@@ -859,7 +842,6 @@ export default {
         } else if (nextStep === 2) {
           this.$emit('gotoNextStep', this.requestTemplateId)
         } else if (nextStep === 3) {
-          console.log(33333)
           this.$emit('changTab', 'msgForm')
         }
       }
@@ -986,5 +968,29 @@ fieldset[disabled] .ivu-input {
 .custom-item {
   width: calc(100% - 130px);
   display: inline-block;
+}
+
+.radio-group {
+  margin-bottom: 15px;
+  .radio {
+    padding: 5px 15px;
+    border-radius: 32px;
+    font-size: 12px;
+    cursor: pointer;
+    margin: 4px;
+    display: inline-block;
+  }
+  .custom {
+    border: 1px solid #b886f8;
+    color: #b886f8;
+  }
+  .workflow {
+    border: 1px solid #cba43f;
+    color: #cba43f;
+  }
+  .optional {
+    border: 1px solid #81b337;
+    color: #81b337;
+  }
 }
 </style>

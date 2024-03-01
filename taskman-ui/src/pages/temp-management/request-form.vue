@@ -57,7 +57,6 @@ export default {
   methods: {
     changTab (tabName, firstLoad = false) {
       if (!firstLoad && tabName === this.activeTab) {
-        console.log(1)
         return
       }
 

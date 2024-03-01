@@ -85,35 +85,28 @@
                   </div>
                 </div>
                 <div style="margin-top:16px">
-                  <div
-                    v-for="groupItem in dataFormInfo.groups"
-                    :key="groupItem.itemGroupId"
-                    style="margin-top: 16px;display: inline-block;"
-                  >
-                    <Button
-                      @click.stop="editGroupItem(groupItem)"
-                      type="primary"
-                      size="small"
-                      style="position: relative;left: 16px;bottom: 16px;"
-                      icon="md-create"
-                    ></Button>
-                    <Button
-                      shape="circle"
-                      :style="computendStyle(groupItem)"
-                      @click="editGroupCustomItems(groupItem)"
-                      >{{ groupItem.itemGroupName }}</Button
+                  <div class="radio-group">
+                    <div
+                      v-for="(groupItem, index) in dataFormInfo.groups"
+                      :key="index"
+                      :class="{
+                        radio: true,
+                        custom: groupItem.itemGroupType === 'custom',
+                        workflow: groupItem.itemGroupType === 'workflow',
+                        optional: groupItem.itemGroupType === 'optional'
+                      }"
+                      :style="activeStyle(groupItem)"
                     >
-                    <Button
-                      @click.stop="removeGroupItem(groupItem)"
-                      type="error"
-                      size="small"
-                      icon="md-trash"
-                      style="position: relative;right: 16px;bottom: 16px;"
-                    ></Button>
+                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
+                      <span @click="editGroupCustomItems(groupItem)">
+                        {{ `${groupItem.itemGroup}` }}
+                      </span>
+                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
+                    </div>
+                    <span>
+                      <Button @click="selectItemGroup" type="primary" ghost icon="md-add"></Button>
+                    </span>
                   </div>
-                  <span>
-                    <Button @click="selectItemGroup" type="primary" icon="md-add"></Button>
-                  </span>
                 </div>
                 <div style="min-height: 200px;">
                   <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
@@ -674,6 +667,26 @@ export default {
       nextNodeInfo: {} // 缓存待切换节点信息
     }
   },
+  computed: {
+    activeStyle () {
+      return function (item) {
+        let color = '#fff'
+        let obj = this.finalElement[0]
+        if (item.itemGroupId === obj.itemGroupId) {
+          if (item.itemGroupType === 'workflow') {
+            color = '#ebdcb4'
+          } else if (item.itemGroupType === 'custom') {
+            color = 'rgba(184, 134, 248, 0.6)'
+          } else if (item.itemGroupType === 'optional') {
+            color = 'rgba(129, 179, 55, 0.6)'
+          } else if (!item.itemGroupType) {
+            color = 'rgb(45, 140, 240)'
+          }
+        }
+        return { background: color }
+      }
+    }
+  },
   props: ['requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
@@ -848,21 +861,6 @@ export default {
     },
     paramsChanged () {
       this.isParmasChanged = true
-    },
-    computendStyle (groupItem) {
-      let res = JSON.parse(JSON.stringify(this.groupStyle[groupItem.itemGroupType]))
-      let obj = this.finalElement[0]
-      if (groupItem.itemGroupId === obj.itemGroupId) {
-        res['background-color'] = 'white'
-        if (groupItem.itemGroupType === 'workflow') {
-          res['background-color'] = '#ebdcb4'
-        } else if (groupItem.itemGroupType === 'custom') {
-          res['background-color'] = 'rgba(184, 134, 248, 0.6)'
-        } else if (groupItem.itemGroupType === 'optional') {
-          res['background-color'] = 'rgba(129, 179, 55, 0.6)'
-        }
-      }
-      return res
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem) {
@@ -1151,5 +1149,28 @@ fieldset[disabled] .ivu-input {
 .custom-item {
   width: calc(100% - 130px);
   display: inline-block;
+}
+.radio-group {
+  margin-bottom: 15px;
+  .radio {
+    padding: 5px 15px;
+    border-radius: 32px;
+    font-size: 12px;
+    cursor: pointer;
+    margin: 4px;
+    display: inline-block;
+  }
+  .custom {
+    border: 1px solid #b886f8;
+    color: #b886f8;
+  }
+  .workflow {
+    border: 1px solid #cba43f;
+    color: #cba43f;
+  }
+  .optional {
+    border: 1px solid #81b337;
+    color: #81b337;
+  }
 }
 </style>

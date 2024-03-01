@@ -213,11 +213,6 @@ func (s *RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
 }
 
-func (s *RequestTemplateService) UpdateRequestTemplateBase(session *xorm.Session, requestTemplateId, formTemplate, description, updatedBy string, expireDay int) (err error) {
-	now := time.Now().Format(models.DateTimeFormat)
-	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, FormTemplate: formTemplate, Description: description, ExpireDay: expireDay, UpdatedBy: updatedBy, UpdatedTime: now}
-	return s.requestTemplateDao.Update(session, requestTemplate)
-}
 func (s *RequestTemplateService) UpdateRequestTemplateUpdatedBy(session *xorm.Session, requestTemplateId, updatedBy string) (err error) {
 	now := time.Now().Format(models.DateTimeFormat)
 	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, UpdatedBy: updatedBy, UpdatedTime: now}
@@ -519,6 +514,10 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 }
 
 func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAction, err error) {
+	var taskTemplateTable []*models.TaskTemplateTable
+	var formTemplateList []*models.FormTemplateNewTable
+	var taskHandlerTemplateIds []string
+	var formTemplateIds []string
 	rtObj, err := GetRequestTemplateService().GetRequestTemplate(id)
 	if err != nil {
 		return actions, err
@@ -526,33 +525,48 @@ func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag 
 	if rtObj.Status == "confirm" {
 		return actions, fmt.Errorf("confirm status can not delete")
 	}
-	var taskTemplateTable []*models.TaskTemplateTable
 	dao.X.SQL("select id,form_template from task_template where request_template=?", id).Find(&taskTemplateTable)
-	formTemplateIds := []string{rtObj.FormTemplate}
+
 	for _, v := range taskTemplateTable {
-		formTemplateIds = append(formTemplateIds, v.FormTemplate)
+		var taskHandleTemplateList []*models.TaskHandleTemplateTable
+		dao.X.SQL("select id,task_template from task_handle_template where task_template=?", v.Id).Find(&taskHandleTemplateList)
+		if len(taskHandleTemplateList) > 0 {
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				taskHandlerTemplateIds = append(taskHandlerTemplateIds, taskHandleTemplate.Id)
+			}
+		}
+	}
+	// 删除关联 request_template_id的from_template
+	dao.X.SQL("select id,task_template from form_template_new where request_template=?", id).Find(&formTemplateList)
+	if len(formTemplateList) > 0 {
+		for _, formTemplate := range formTemplateList {
+			formTemplateIds = append(formTemplateIds, formTemplate.Id)
+		}
 	}
 	actions = []*dao.ExecAction{}
 	var requestTable []*models.RequestTable
 	dao.X.SQL("select id,name from request where request_template=?", id).Find(&requestTable)
 	if len(requestTable) > 0 {
 		var formTable []*models.FormTable
-		dao.X.SQL("select id from form where form_template in ('" + strings.Join(formTemplateIds, "','") + "')").Find(&formTable)
-		formIds := []string{}
+		dao.X.SQL("select id from form_new where form_template in ('" + strings.Join(formTemplateIds, "','") + "')").Find(&formTable)
+		var formIds []string
 		for _, v := range formTable {
 			formIds = append(formIds, v.Id)
+		}
+		if len(taskHandlerTemplateIds) > 0 {
+			actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle where task_handle_template in ('" + strings.Join(taskHandlerTemplateIds, "','") + "')", Param: []interface{}{}})
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})
-		actions = append(actions, &dao.ExecAction{Sql: "delete from form where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
+		actions = append(actions, &dao.ExecAction{Sql: "delete from form_new where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template_role where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template_new where id in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where request_template=?", Param: []interface{}{id}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{id}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template where id=?", Param: []interface{}{id}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template where id in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	if !getActionFlag {
 		err = dao.Transaction(actions)
 	}
@@ -668,6 +682,10 @@ func (s *RequestTemplateService) getAllRequestTemplate() (templateMap map[string
 }
 
 func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
+	var formTemplate *models.FormTemplateNewTable
+	var actions []*dao.ExecAction
+	var requestTemplateRoles []*models.RequestTemplateRoleTable
+	var taskTemplates []*models.TaskTemplateTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
@@ -683,7 +701,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	version := common.BuildVersionNum(requestTemplateObj.Version)
 	newRequestTemplateId := guid.CreateGuid()
 	newRequestFormTemplateId := guid.CreateGuid()
-	var actions []*dao.ExecAction
+
 	if requestTemplateObj.ParentId == "" {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
@@ -701,18 +719,23 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id, requestTemplateObj.ParentId)})
 	}
-	newRequestFormActions, tmpErr := s.getFormCopyActions(requestTemplateObj.FormTemplate, newRequestFormTemplateId)
-	if tmpErr != nil {
-		return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
+	formTemplate, err = s.formTemplateDao.QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, string(models.RequestFormTypeMessage))
+	if err != nil {
+		return err
 	}
-	actions = append(actions, newRequestFormActions...)
-	var requestTemplateRoles []*models.RequestTemplateRoleTable
+	if formTemplate != nil {
+		newRequestFormActions, tmpErr := s.getFormCopyActions(formTemplate.Id, newRequestFormTemplateId)
+		if tmpErr != nil {
+			return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
+		}
+		actions = append(actions, newRequestFormActions...)
+	}
 	dao.X.SQL("select * from request_template_role where request_template=?", requestTemplateObj.Id).Find(&requestTemplateRoles)
 	for _, v := range requestTemplateRoles {
 		tmpId := newRequestTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
 		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_role(id,request_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newRequestTemplateId, v.Role, v.RoleType}})
 	}
-	var taskTemplates []*models.TaskTemplateTable
+
 	dao.X.SQL("select id,form_template from task_template where request_template=?", requestTemplateObj.Id).Find(&taskTemplates)
 	newTaskGuids := guid.CreateGuidList(len(taskTemplates))
 	newTaskFormGuids := guid.CreateGuidList(len(taskTemplates))
@@ -739,11 +762,16 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 
 func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId string) error {
 	var parentId string
+	var formTemplate *models.FormTemplateNewTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
 	}
-	if requestTemplateObj.FormTemplate == "" {
+	formTemplate, err = s.formTemplateDao.QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, string(models.RequestFormTypeMessage))
+	if err != nil {
+		return err
+	}
+	if formTemplate == nil {
 		return fmt.Errorf("Please config request template form ")
 	}
 	if requestTemplateObj.Status == "confirm" {

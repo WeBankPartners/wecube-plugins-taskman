@@ -8,6 +8,7 @@ type TaskHandleTemplateTable struct {
 	Assign       string `json:"assign" xorm:"assign"`
 	HandlerType  string `json:"handlerType" xorm:"handler_type"`
 	Handler      string `json:"handler" xorm:"handler"`
+	HandleMode   string `json:"handleMode" xorm:"handle_mode"` // 任务类型
 }
 
 func (TaskHandleTemplateTable) TableName() string {

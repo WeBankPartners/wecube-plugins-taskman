@@ -97,6 +97,8 @@ func init() {
 		&handlerFuncObj{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem},
 
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: workflow.GetEntityData},
+		&handlerFuncObj{Url: "/models/package/:packageName/entity/:entity", Method: "GET", HandlerFunc: workflow.GetEntityModel},
+		&handlerFuncObj{Url: "/packages/:pluginPackageId/entities/:entityName/query", Method: "POST", HandlerFunc: workflow.ProcEntityDataQuery},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: workflow.ProcessDataPreview},
 
 		&handlerFuncObj{Url: "/request/:requestId", Method: "GET", HandlerFunc: request.GetRequest},

@@ -5,14 +5,8 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"sort"
+	"strconv"
 )
-
-// 编排任务节点
-var taskNodeTypeMap = map[string]bool{
-	string(models.ProcDefNodeTypeHuman):     true,
-	string(models.ProcDefNodeTypeAutomatic): true,
-	string(models.ProcDefNodeTypeData):      true,
-}
 
 type ProcDefService struct {
 }
@@ -109,19 +103,25 @@ func (s *ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.Reque
 		return
 	}
 	if len(allTaskNodeList) > 0 {
-		for _, node := range allTaskNodeList {
-			if _, ok := taskNodeTypeMap[node.NodeType]; !ok {
+		for _, v := range allTaskNodeList {
+			if v.NodeType != string(models.ProcDefNodeTypeHuman) {
 				continue
 			}
 			if filterType == "template" {
-				// 模板只展示人工节点
-				if node.NodeType != string(models.ProcDefNodeTypeHuman) {
+				if v.TaskCategory != "SUTN" {
 					continue
 				}
-			} else if filterType == "bind" && node.DynamicBind == "Y" {
-				continue
+			} else if filterType == "bind" {
+				if v.DynamicBind == "Y" {
+					continue
+				}
 			}
-			nodeList = append(nodeList, node)
+			if v.OrderedNo == "" {
+				v.OrderedNum = 0
+			} else {
+				v.OrderedNum, _ = strconv.Atoi(v.OrderedNo)
+			}
+			nodeList = append(nodeList, v)
 		}
 		sort.Sort(models.ProcNodeObjList(nodeList))
 	}

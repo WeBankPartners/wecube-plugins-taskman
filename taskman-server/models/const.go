@@ -59,17 +59,9 @@ const (
 type ProcDefNodeType string
 
 const (
-	ProcDefNodeTypeStart        ProcDefNodeType = "start"        //开始
-	ProcDefNodeTypeEnd          ProcDefNodeType = "end"          //结束
-	ProcDefNodeTypeAbnormal     ProcDefNodeType = "abnormal"     //异常
-	ProcDefNodeTypeDecision     ProcDefNodeType = "decision"     //判断
-	ProcDefNodeTypeFork         ProcDefNodeType = "fork"         //分流
-	ProcDefNodeTypeMerge        ProcDefNodeType = "merge"        //汇聚
-	ProcDefNodeTypeHuman        ProcDefNodeType = "human"        //人工节点
-	ProcDefNodeTypeAutomatic    ProcDefNodeType = "automatic"    //自动节点
-	ProcDefNodeTypeData         ProcDefNodeType = "data"         //数据节点
-	ProcDefNodeTypeDate         ProcDefNodeType = "date"         //时间节点
-	ProcDefNodeTypeTimeInterval ProcDefNodeType = "timeInterval" //时间间隔
+	ProcDefNodeTypeHuman     ProcDefNodeType = "subProcess" //人工节点
+	ProcDefNodeTypeAutomatic ProcDefNodeType = "automatic"  //自动节点
+	ProcDefNodeTypeData      ProcDefNodeType = "data"       //数据节点
 )
 
 // FormItemGroupType 表单组类型
@@ -184,4 +176,12 @@ const (
 	TaskTypeApprove   TaskType = "approve"   // 审批
 	TaskTypeImplement TaskType = "implement" // 执行类型(任务)
 	TaskTypeConfirm   TaskType = "confirm"   // 请求确认
+)
+
+// RequestFormType 请求表单类型
+type RequestFormType string
+
+const (
+	RequestFormTypeMessage RequestFormType = "message" // 请求表单-信息表单
+	RequestFormTypeData    RequestFormType = "data"    // 请求表单-数据表单
 )

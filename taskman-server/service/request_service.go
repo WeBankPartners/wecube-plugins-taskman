@@ -250,11 +250,12 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 }
 
 func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken, language string) error {
+	var formTemplate *models.FormTemplateNewTable
+	var actions []*dao.ExecAction
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
-	var actions []*dao.ExecAction
 	err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
 	if err != nil {
 		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
@@ -262,10 +263,16 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	formGuid := guid.CreateGuid()
 	param.Id = newRequestId()
-	formInsertAction := dao.ExecAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
-	formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", requestTemplateObj.FormTemplate,
-		nowTime, param.CreatedBy, nowTime, param.CreatedBy}
-	actions = append(actions, &formInsertAction)
+	formTemplate, err = GetFormTemplateService().QueryRequestFormByRequestTemplateIdAndType(param.RequestTemplate, string(models.RequestFormTypeMessage))
+	if err != nil {
+		return err
+	}
+	if formTemplate != nil {
+		formInsertAction := dao.ExecAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
+		formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", formTemplate.Id,
+			nowTime, param.CreatedBy, nowTime, param.CreatedBy}
+		actions = append(actions, &formInsertAction)
+	}
 	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time," +
 		"expect_time,handler,created_by,created_time,updated_by,updated_time,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency,
@@ -475,6 +482,8 @@ func getRequestTemplateByRequest(requestId string) (templateId string, err error
 }
 
 func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStruct, err error) {
+	var formTemplate *models.FormTemplateNewTable
+	var items []*models.FormItemTemplateTable
 	result = models.RequestTemplateFormStruct{}
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
 	if tmpErr != nil {
@@ -488,9 +497,11 @@ func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStru
 	result.ProcDefName = requestTemplateObj.ProcDefName
 	result.ProcDefId = requestTemplateObj.ProcDefId
 	result.ProcDefKey = requestTemplateObj.ProcDefKey
-	var items []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where form_template=?", requestTemplateObj.FormTemplate).Find(&items)
-	result.FormItems = items
+	formTemplate, err = GetFormTemplateService().QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, string(models.RequestFormTypeMessage))
+	if formTemplate != nil {
+		dao.X.SQL("select * from form_item_template where form_template=?", formTemplate.Id).Find(&items)
+		result.FormItems = items
+	}
 	return
 }
 

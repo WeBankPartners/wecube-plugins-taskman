@@ -62,13 +62,23 @@ func (d *FormTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 	return
 }
 
-func (d *FormTemplateDao) QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId string) (list []*models.FormTemplateNewTable, err error) {
+func (d *FormTemplateDao) QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId, requestFormType string) (list []*models.FormTemplateNewTable, err error) {
 	list = []*models.FormTemplateNewTable{}
-	// taskTemplateId 为空,则只查询 数据表单数据,item_group_type = 'request_form'表示信息表单
+	// taskTemplateId 为空,则只查询请求表单,根据 requestFormType区分类型
 	if taskTemplateId == "" {
-		err = d.DB.Where("request_template=? and task_template is null and item_group_type != 'request_form' and del_flag = 0", requestTemplateId).Find(&list)
+		err = d.DB.Where("request_template=? and request_form_type = ? and del_flag = 0", requestTemplateId, requestFormType).Find(&list)
 	} else {
 		err = d.DB.Where("request_template=?  and task_template=? and del_flag = 0", requestTemplateId, taskTemplateId).Find(&list)
+	}
+	return
+}
+
+// QueryRequestFormByRequestTemplateIdAndType 查询请求表单
+func (d *FormTemplateDao) QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, requestFormType string) (result *models.FormTemplateNewTable, err error) {
+	var list []*models.FormTemplateNewTable
+	err = d.DB.Where("request_template=? and request_form_type = ? and del_flag = 0", requestTemplateId, requestFormType).Find(&list)
+	if len(list) > 0 {
+		result = list[0]
 	}
 	return
 }

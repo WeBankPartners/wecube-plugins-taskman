@@ -24,9 +24,10 @@ type FormTemplateNewTable struct {
 	ItemGroup       string `json:"itemGroup" xorm:"item_group"`
 	ItemGroupType   string `json:"itemGroupType" xorm:"item_group_type"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义,request_form 请求表单,db判断用
 	ItemGroupName   string `json:"itemGroupName" xorm:"item_group_name"`
-	ItemGroupSort   int    `json:"ItemGroupSort" xorm:"item_group_sort"` // item_group 排序
-	ItemGroupRule   string `json:"itemGroupRule" xorm:"item_group_rule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
-	RefId           string `json:"refId" xorm:"ref_id"`                  // 引用ID
+	ItemGroupSort   int    `json:"ItemGroupSort" xorm:"item_group_sort"`     // item_group 排序
+	ItemGroupRule   string `json:"itemGroupRule" xorm:"item_group_rule"`     // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	RefId           string `json:"refId" xorm:"ref_id"`                      // 引用ID
+	RequestFormType string `json:"requestFormType" xorm:"request_form_type"` // 请求表单类型: message 信息表单,data 数据表单
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 }
@@ -61,6 +62,7 @@ type FormTemplateDto struct {
 	UpdatedTime     string                 `json:"updatedTime"`
 	NowTime         string                 `json:"-"`
 	RequestTemplate string                 `json:"-"`
+	RequestFormType string                 `json:"-"`
 	Items           []*FormItemTemplateDto `json:"items"`
 }
 

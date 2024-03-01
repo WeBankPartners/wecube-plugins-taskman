@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
-
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 )
 
@@ -34,6 +33,10 @@ const (
 	pathQueryModel = "/platform/v1/models"
 	// pathQueryEntities 查询entity
 	pathQueryEntities = "/platform/v1/data-model/dme/all-entities"
+	// pathQueryEntityModel
+	pathQueryEntityModel = "/platform/v1/models/package/%s/entity/%s"
+	// pathQueryPackageEntity
+	pathQueryPackageEntity = "/platform/v1/packages/%s/entities/%s/query"
 
 	// @todo 后面调整回来 models.Config.Wecube.BaseUrl
 	BaseUrl = "http://106.52.160.142:18080"
@@ -307,5 +310,41 @@ func StartProcDefInstances(param models.RequestProcessData, userToken, language 
 		err = fmt.Errorf(response.Message)
 	}
 	result = response.Data
+	return
+}
+
+// GetEntityModel 查询entity
+func GetEntityModel(packageName, entityName, userToken, language string) (data interface{}, err error) {
+	var byteArr []byte
+	var response models.DataModelEntityResponse
+	byteArr, err = HttpGet(fmt.Sprintf(BaseUrl+pathQueryEntityModel, packageName, entityName), userToken, language)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if response.Status != "OK" {
+		err = fmt.Errorf(response.Message)
+	}
+	data = response.Data
+	return
+}
+
+// RequestPluginModelData entity查询
+func RequestPluginModelData(packageName, entity, userToken, language string, param models.ProcEntityDataQueryParam) (response models.EntityResponse, err error) {
+	var byteArr []byte
+	postBytes, _ := json.Marshal(param)
+	byteArr, err = HttpPost(fmt.Sprintf(BaseUrl+pathQueryPackageEntity, packageName, entity), userToken, language, postBytes)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
 	return
 }

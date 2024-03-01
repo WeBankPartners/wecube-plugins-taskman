@@ -21,6 +21,10 @@ type TaskTemplateTable struct {
 	RoleType        string `json:"roleType" xorm:"role_type"`
 }
 
+func (TaskTemplateTable) TableName() string {
+	return "task_template"
+}
+
 type TaskTemplateVo struct {
 	Id      string `json:"id" xorm:"'id' pk"`
 	Handler string `json:"handler" xorm:"handler"`

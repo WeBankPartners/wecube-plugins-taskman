@@ -11,7 +11,7 @@ import (
 )
 
 type CollectTemplateService struct {
-	collectTemplateDao dao.CollectTemplateDao
+	collectTemplateDao *dao.CollectTemplateDao
 }
 
 func AddTemplateCollect(param *models.CollectTemplateTable) error {

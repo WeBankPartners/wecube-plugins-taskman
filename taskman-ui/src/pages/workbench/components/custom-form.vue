@@ -1,43 +1,47 @@
 <template>
   <div class="workbench-custom-form">
-    <Form :model="value" ref="form" label-position="right" :label-width="120">
-      <template v-for="(i, index) in options">
-        <FormItem
-          :label="i.title"
-          :prop="i.name"
-          :key="index"
-          :required="i.required === 'yes'"
-          :rules="i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []"
-          style="margin-bottom:20px;"
-        >
-          <!--输入框-->
-          <Input
-            v-if="i.elementType === 'input'"
-            v-model="value[i.name]"
-            :disabled="i.isEdit === 'no'"
-            style="width:60%;"
-          ></Input>
-          <Input
-            v-else-if="i.elementType === 'textarea'"
-            v-model="value[i.name]"
-            type="textarea"
-            :disabled="i.isEdit === 'no'"
-            style="width:60%;"
-          ></Input>
-          <LimitSelect
-            v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
-            v-model="value[i.name]"
-            :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
-            :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
-            :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
-            :options="entityData[i.name + 'Options']"
-            :disabled="i.isEdit === 'no'"
-            :multiple="i.multiple === 'Y'"
-            style="width:60%;"
-          >
-          </LimitSelect>
-        </FormItem>
-      </template>
+    <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
+      <Row :gutter="20">
+        <template v-for="(i, index) in options">
+          <Col :span="disabled ? 12 : 24" :key="index">
+            <FormItem
+              :label="i.title"
+              :prop="i.name"
+              :key="index"
+              :required="i.required === 'yes'"
+              :rules="i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []"
+              style="margin-bottom:20px;"
+            >
+              <!--输入框-->
+              <Input
+                v-if="i.elementType === 'input'"
+                v-model="value[i.name]"
+                :disabled="i.isEdit === 'no' || disabled"
+                style="width:60%;"
+              ></Input>
+              <Input
+                v-else-if="i.elementType === 'textarea'"
+                v-model="value[i.name]"
+                type="textarea"
+                :disabled="i.isEdit === 'no' || disabled"
+                style="width:60%;"
+              ></Input>
+              <LimitSelect
+                v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
+                v-model="value[i.name]"
+                :displayName="i.elementType === 'wecmdbEntity' ? 'displayName' : 'key_name'"
+                :displayValue="i.elementType === 'wecmdbEntity' ? 'id' : 'guid'"
+                :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
+                :options="entityData[i.name + 'Options']"
+                :disabled="i.isEdit === 'no' || disabled"
+                :multiple="i.multiple === 'Y'"
+                style="width:60%;"
+              >
+              </LimitSelect>
+            </FormItem>
+          </Col>
+        </template>
+      </Row>
     </Form>
   </div>
 </template>
@@ -45,7 +49,6 @@
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
-import { deepClone } from '@/pages/util'
 export default {
   components: {
     LimitSelect
@@ -62,6 +65,18 @@ export default {
     options: {
       type: Array,
       default: () => []
+    },
+    labelWidth: {
+      type: Number,
+      default: 120
+    },
+    labelPosition: {
+      type: String,
+      default: 'right'
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -74,10 +89,13 @@ export default {
     value: {
       handler (val) {
         if (val) {
-          this.entityData = deepClone(val)
+          Object.keys(val).forEach(key => {
+            this.entityData[key] = val[key]
+          })
         }
       },
-      deep: true
+      deep: true,
+      immediate: true
     },
     options: {
       handler (val) {

@@ -63,9 +63,10 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/disable/:id", Method: "POST", HandlerFunc: template.DisableRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/enable/:id", Method: "POST", HandlerFunc: template.EnableRequestTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "GET", HandlerFunc: form.GetRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-template/:id/data-form-clean", Method: "POST", HandlerFunc: form.CleanDataForm},
 		&handlerFuncObj{Url: "/request-form-template/:id", Method: "POST", HandlerFunc: form.UpdateRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/data-form", Method: "GET", HandlerFunc: form.GetDataFormTemplate},
-		&handlerFuncObj{Url: "/request-form-template/form/:from-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},
+		&handlerFuncObj{Url: "/request-form-template/:id/form/:task-template-id", Method: "GET", HandlerFunc: form.GetFormTemplate},
 		&handlerFuncObj{Url: "/request-form-template/:id/global-form", Method: "GET", HandlerFunc: form.GetGlobalFormEntity},
 		&handlerFuncObj{Url: "/form-template/item-group-config", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroupConfig},
 		&handlerFuncObj{Url: "/form-template/item-group-config", Method: "GET", HandlerFunc: form.GetFormTemplateItemGroupConfig},
@@ -96,6 +97,8 @@ func init() {
 		&handlerFuncObj{Url: "/user/template/filter-item", Method: "POST", HandlerFunc: collect.FilterItem},
 
 		&handlerFuncObj{Url: "/entity/data", Method: "GET", HandlerFunc: workflow.GetEntityData},
+		&handlerFuncObj{Url: "/models/package/:packageName/entity/:entity", Method: "GET", HandlerFunc: workflow.GetEntityModel},
+		&handlerFuncObj{Url: "/packages/:pluginPackageId/entities/:entityName/query", Method: "POST", HandlerFunc: workflow.ProcEntityDataQuery},
 		&handlerFuncObj{Url: "/process/preview", Method: "GET", HandlerFunc: workflow.ProcessDataPreview},
 
 		&handlerFuncObj{Url: "/request/:requestId", Method: "GET", HandlerFunc: request.GetRequest},

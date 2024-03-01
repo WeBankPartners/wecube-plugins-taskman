@@ -4,7 +4,6 @@ type FormItemTemplateTable struct {
 	Id              string           `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name            string           `json:"name" xorm:"name"`
 	Description     string           `json:"description" xorm:"description"`
-	ItemGroupId     string           `json:"itemGroupId" xorm:"item_group_id"`
 	ItemGroup       string           `json:"itemGroup" xorm:"item_group"`
 	ItemGroupName   string           `json:"itemGroupName" xorm:"item_group_name"`
 	FormTemplate    string           `json:"formTemplate" xorm:"form_template"`
@@ -30,7 +29,7 @@ type FormItemTemplateTable struct {
 	IsRefInside     string           `json:"isRefInside" xorm:"is_ref_inside"`
 	Multiple        string           `json:"multiple" xorm:"multiple"`
 	DefaultClear    string           `json:"defaultClear" xorm:"default_clear"`
-	CopyId          string           `json:"copyId" xorm:"copy_id"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RefId           string           `json:"refId" xorm:"ref_id"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
 	SelectList      []*EntityDataObj `json:"selectList" xorm:"-"`
 	Active          bool             `json:"active" xorm:"-"` // 是否选中状态
 }
@@ -39,13 +38,12 @@ type FormItemTemplateDto struct {
 	Id              string           `json:"id"`
 	Name            string           `json:"name"`
 	Description     string           `json:"description"`
-	ItemGroupId     string           `json:"itemGroupId"`
+	FormTemplate    string           `json:"itemGroupId"`
 	ItemGroup       string           `json:"itemGroup"`
 	ItemGroupType   string           `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
 	ItemGroupName   string           `json:"itemGroupName"`
 	ItemGroupSort   int              `json:"ItemGroupSort"` // item_group 排序
 	ItemGroupRule   string           `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
-	FormTemplate    string           `json:"formTemplate"`
 	DefaultValue    string           `json:"defaultValue"`
 	Sort            int              `json:"sort"`
 	PackageName     string           `json:"packageName"`
@@ -68,7 +66,7 @@ type FormItemTemplateDto struct {
 	IsRefInside     string           `json:"isRefInside"`
 	Multiple        string           `json:"multiple"`
 	DefaultClear    string           `json:"defaultClear"`
-	CopyId          string           `json:"copyId"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
+	RefId           string           `json:"copyId"` //复制数据表单ID,数据表单删除该表单项时,需要删除审批表单,任务表单对应数据项
 	SelectList      []*EntityDataObj `json:"selectList"`
 	Active          bool             `json:"active"` // 是否选中状态
 }
@@ -99,10 +97,9 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		Id:              dto.Id,
 		Name:            dto.Name,
 		Description:     dto.Description,
-		ItemGroupId:     dto.ItemGroupId,
+		FormTemplate:    dto.FormTemplate,
 		ItemGroup:       dto.ItemGroup,
 		ItemGroupName:   dto.ItemGroupName,
-		FormTemplate:    dto.FormTemplate,
 		DefaultValue:    dto.DefaultValue,
 		Sort:            dto.Sort,
 		PackageName:     dto.PackageName,
@@ -125,18 +122,17 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 		IsRefInside:     dto.IsRefInside,
 		Multiple:        dto.Multiple,
 		DefaultClear:    dto.DefaultClear,
-		CopyId:          dto.CopyId,
+		RefId:           dto.RefId,
 		SelectList:      dto.SelectList,
 		Active:          dto.Active,
 	}
 }
 
-func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup FormItemTemplateGroupTable) *FormItemTemplateDto {
+func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup FormTemplateNewTable) *FormItemTemplateDto {
 	dto := &FormItemTemplateDto{
 		Id:              model.Id,
 		Name:            model.Name,
 		Description:     model.Description,
-		ItemGroupId:     model.ItemGroupId,
 		ItemGroup:       model.ItemGroup,
 		ItemGroupName:   model.ItemGroupName,
 		FormTemplate:    model.FormTemplate,
@@ -162,7 +158,7 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 		IsRefInside:     model.IsRefInside,
 		Multiple:        model.Multiple,
 		DefaultClear:    model.DefaultClear,
-		CopyId:          model.CopyId,
+		RefId:           model.RefId,
 		SelectList:      model.SelectList,
 		Active:          model.Active,
 	}
@@ -172,7 +168,7 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 	return dto
 }
 
-func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, itemGroup *FormItemTemplateGroupTable) []*FormItemTemplateDto {
+func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, itemGroup *FormTemplateNewTable) []*FormItemTemplateDto {
 	var dtoList []*FormItemTemplateDto
 	for _, model := range tableList {
 		dtoList = append(dtoList, ConvertFormItemTemplateModel2Dto(model, *itemGroup))

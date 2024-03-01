@@ -1,20 +1,20 @@
 <template>
   <div class="workbench-header-tag">
     <Row v-if="showHeader" class="title" :gutter="10">
-      <Col :span="4" class="line">{{ $t('handle_time') }}</Col>
-      <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
       <Col :span="2" class="line">{{ $t('handler') }}</Col>
       <Col :span="2" class="line">{{ $t('t_action') }}</Col>
+      <Col :span="4" class="line">{{ $t('handle_time') }}</Col>
+      <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_attach') }}</Col>
     </Row>
     <Row class="content" :gutter="10">
-      <Col :span="4" class="line">{{ data.handleTime }}</Col>
-      <Col :span="3" class="line">{{ getDiffTime }}</Col>
       <Col :span="3" class="line">{{ data.handleRoleName || '-' }}</Col>
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
       <Col :span="2" class="line">{{ data.choseOption || operation }}</Col>
+      <Col :span="4" class="line">{{ data.handleTime }}</Col>
+      <Col :span="3" class="line">{{ getDiffTime }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
       >

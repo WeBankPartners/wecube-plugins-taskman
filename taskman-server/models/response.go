@@ -125,3 +125,8 @@ type EntityTreeResponse struct {
 	HttpResponseMeta
 	Data *EntityTreeData `json:"data"`
 }
+
+type DataModelEntityResponse struct {
+	HttpResponseMeta
+	Data *DataModelEntity `json:"data"`
+}

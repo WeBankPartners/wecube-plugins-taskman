@@ -18,287 +18,341 @@
         }}</Button>
       </Col>
     </Row>
-    <div style="display:flex;" class="content">
-      <div style="width:100%;">
-        <Form :model="form" label-position="right" :label-width="120">
-          <template>
-            <!--请求信息-->
-            <HeaderTitle :title="$t('tw_request_title')">
+    <div class="content">
+      <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
+        <template>
+          <!--请求信息-->
+          <HeaderTitle :title="$t('tw_request_title')">
+            <div style="padding-left:16px;">
               <Row :gutter="20">
-                <Col :span="3">{{ $t('request_id') }}：</Col>
-                <Col :span="9">{{ detailInfo.id || '--' }}</Col>
-                <Col :span="3">{{ $t('tw_request_type') }}：</Col>
-                <Col :span="9">{{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detailInfo.requestType] || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('createdTime') }}：</Col>
-                <Col :span="9">{{ detailInfo.createdTime || '--' }}</Col>
-                <Col :span="3">{{ $t('expected_completion_time') }}：</Col>
-                <Col :span="9">{{ detailInfo.expectTime || '--' }}</Col>
-              </Row>
-              <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('tw_request_progress') }}：</Col>
-                <Col :span="9">
-                  <Progress :percent="detailInfo.progress" style="width:150px;" />
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('request_id') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.id || '--' }}</div>
                 </Col>
-                <Col :span="3">{{ $t('tw_request_status') }}：</Col>
-                <Col :span="9">{{ getStatusName(detailInfo.status) || '--' }}</Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
+                  <div class="info-item-value">
+                    {{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detailInfo.requestType] || '--' }}
+                  </div>
+                </Col>
+              </Row>
+              <Row style="margin-top:10px;" :gutter="20">
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('createdTime') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.createdTime || '--' }}</div>
+                </Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('expected_completion_time') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.expectTime || '--' }}</div>
+                </Col>
+              </Row>
+              <Row style="margin-top:10px;" :gutter="20">
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_request_progress') }}：</div>
+                  <div class="info-item-value">
+                    <Progress :percent="detailInfo.progress" style="width:150px;" />
+                  </div>
+                </Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_request_status') }}：</div>
+                  <div class="info-item-value">{{ getStatusName(detailInfo.status) || '--' }}</div>
+                </Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
                 <!--当前节点-->
-                <Col :span="3">{{ $t('tw_cur_tag') }}：</Col>
-                <Col :span="9">{{
-                  {
-                    waitCommit: $t('tw_wait_commit'),
-                    sendRequest: $t('tw_commit_request'),
-                    requestPending: $t('tw_request_pending'),
-                    requestComplete: $t('tw_request_complete')
-                  }[detailInfo.curNode] ||
-                    detailInfo.curNode ||
-                    '--'
-                }}</Col>
-                <Col :span="3"
-                  >{{ detailInfo.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：</Col
-                >
-                <Col :span="9">{{ detailInfo.handler || '--' }}</Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_cur_tag') }}：</div>
+                  <div class="info-item-value">
+                    {{
+                      {
+                        waitCommit: $t('tw_wait_commit'),
+                        sendRequest: $t('tw_commit_request'),
+                        requestPending: $t('tw_request_pending'),
+                        requestComplete: $t('tw_request_complete')
+                      }[detailInfo.curNode] ||
+                        detailInfo.curNode ||
+                        '--'
+                    }}
+                  </div>
+                </Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">
+                    {{ detailInfo.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：
+                  </div>
+                  <div class="info-item-value">{{ detailInfo.handler || '--' }}</div>
+                </Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('createdBy') }}：</Col>
-                <Col :span="9">{{ detailInfo.createdBy || '--' }}</Col>
-                <Col :span="3">{{ $t('tw_creatby_role') }}：</Col>
-                <Col :span="9">{{ detailInfo.role || '--' }}</Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('createdBy') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.createdBy || '--' }}</div>
+                </Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_creatby_role') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.role || '--' }}</div>
+                </Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('tw_use_template') }}：</Col>
-                <Col :span="9"
-                  >{{ detailInfo.templateName }}<Tag>{{ detailInfo.version }}</Tag></Col
-                >
-                <Col :span="3">{{ $t('tm_template_group') }}：</Col>
-                <Col :span="9">{{ detailInfo.templateGroupName || '--' }}</Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_use_template') }}：</div>
+                  <div class="info-item-value">
+                    {{ detailInfo.templateName }}<span class="tag">{{ detailInfo.version }}</span>
+                  </div>
+                </Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tm_template_group') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.templateGroupName || '--' }}</div>
+                </Col>
               </Row>
               <Row style="margin-top:10px;" :gutter="20">
-                <Col :span="3">{{ $t('tw_request_des') }}：</Col>
-                <Col :span="9">{{ detailInfo.description || '--' }}</Col>
+                <Col :span="12" class="info-item">
+                  <div class="info-item-label">{{ $t('tw_request_des') }}：</div>
+                  <div class="info-item-value">{{ detailInfo.description || '--' }}</div>
+                </Col>
               </Row>
-            </HeaderTitle>
-            <!--处理历史-->
-            <HeaderTitle :title="$t('tw_handle_history')">
-              <Collapse v-model="activeStep" simple style="margin-top:30px;">
-                <Panel v-for="(data, index) in historyData" :name="index + ''" :key="index">
-                  <!--提交请求-->
-                  <template v-if="index === 0">
-                    <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ $t('tw_submit_request') }}</div>
-                      <div style="width:calc(100% - 70px)">
-                        <HeaderTag :showHeader="true" :data="data" :operation="$t('tw_submit_approval')"></HeaderTag>
-                      </div>
-                    </div>
-                    <div slot="content" class="history">
-                      <FormItem :label="$t('tw_choose_object')" required>
-                        <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-                          <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                            item.key_name
-                          }}</Option>
-                        </Select>
-                      </FormItem>
-                      <EntityTable :data="data.formData" :requestId="requestId" :formDisable="true"></EntityTable>
-                    </div>
-                  </template>
-                  <!--请求定版-->
-                  <template v-else-if="index === 1">
-                    <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ $t('tw_request_pending') }}</div>
-                      <div style="width:calc(100% - 70px)">
-                        <HeaderTag :data="data" :operation="$t('final_version')"></HeaderTag>
-                      </div>
-                    </div>
-                    <div slot="content" class="history">
-                      <DataBind
-                        :isHandle="isHandle"
-                        :requestTemplate="requestTemplate"
-                        :requestId="requestId"
-                        :formDisable="true"
-                        :showBtn="false"
-                      ></DataBind>
-                    </div>
-                  </template>
-                  <!--任务审批-->
-                  <template v-else>
-                    <div style="display:flex;align-items:center;width:100%;">
-                      <div style="width:70px;font-weight:bold;line-height:22px;">{{ data.taskName }}</div>
-                      <div style="width:calc(100% - 70px)">
-                        <HeaderTag :data="data"></HeaderTag>
-                      </div>
-                    </div>
-                    <div slot="content" class="history">
-                      <EntityTable
-                        :data="data.formData"
-                        :requestId="requestId"
-                        :formDisable="!data.editable || enforceDisable"
-                      ></EntityTable>
-                      <div>
-                        <Form :label-width="80" style="margin: 16px 0">
-                          <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
-                            <Input disabled v-model="data.description" type="textarea" />
-                          </FormItem>
-                          <FormItem
-                            :label="$t('process_result')"
-                            v-if="data.nextOption && data.nextOption.length !== 0"
-                          >
-                            <span slot="label">
-                              {{ $t('process_result') }}
-                              <span style="color: #ed4014"> * </span>
-                            </span>
-                            <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
-                              <Option v-for="option in data.nextOption" :value="option" :key="option">{{
-                                option
-                              }}</Option>
-                            </Select>
-                          </FormItem>
-                          <FormItem :label="$t('process_comments')">
-                            <Input
-                              :disabled="!data.editable || enforceDisable"
-                              v-model="data.comment"
-                              type="textarea"
-                            />
-                          </FormItem>
-                        </Form>
-                      </div>
-                    </div>
-                  </template>
-                </Panel>
-              </Collapse>
-            </HeaderTitle>
-            <!--当前处理-任务审批-->
-            <HeaderTitle
-              v-if="isHandle && detailInfo.status === 'InProgress'"
-              :title="$t('tw_cur_handle')"
-              :subTitle="handleData.taskName"
-            >
-              <Steps :current="1" direction="vertical">
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_approval_step1') }}</div>
-                    <div>{{ $t('tw_approval_step1_tips') }}</div>
+              <!--自定义信息表单-->
+              <CustomForm
+                v-if="detailInfo.customForm"
+                v-model="detailInfo.customForm.value"
+                :options="detailInfo.customForm.title"
+                :requestId="requestId"
+                disabled
+                :label-width="140"
+                labelPosition="left"
+                style="margin-top: 10px;"
+              ></CustomForm>
+            </div>
+          </HeaderTitle>
+          <!--请求表单-->
+          <HeaderTitle title="请求表单">
+            <FormItem :label="$t('tw_choose_object')" required>
+              <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
+                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                  item.key_name
+                }}</Option>
+              </Select>
+            </FormItem>
+            <EntityTable
+              :data="historyData[0] && historyData[0].formData"
+              :requestId="requestId"
+              :formDisable="true"
+              style="width:calc(100% - 20px);margin-left:16px;"
+            ></EntityTable>
+          </HeaderTitle>
+          <!--处理历史-->
+          <HeaderTitle :title="$t('tw_handle_history')">
+            <Collapse v-model="activeStep" simple style="margin-top:30px;">
+              <Panel
+                v-for="(data, index) in historyData"
+                :name="index + ''"
+                :key="index"
+                :hide-arrow="index === 0 ? true : false"
+              >
+                <!--提交请求-->
+                <template v-if="index === 0">
+                  <div class="custom-panel">
+                    <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
+                    <HeaderTag
+                      class="custom-panel-header"
+                      :showHeader="true"
+                      :data="data"
+                      :operation="$t('tw_submit_approval')"
+                    ></HeaderTag>
                   </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <EntityTable
-                      ref="entityTable"
-                      :data="handleData.formData"
-                      :requestId="requestId"
-                      :formDisable="!handleData.editable || enforceDisable"
-                      :isAddRow="true"
-                    ></EntityTable>
+                </template>
+                <!--请求定版-->
+                <template v-else-if="index === 1">
+                  <div class="custom-panel">
+                    <div class="custom-panel-title">{{ $t('tw_request_pending') }}</div>
+                    <HeaderTag class="custom-panel-header" :data="data" :operation="$t('final_version')"></HeaderTag>
                   </div>
-                </Step>
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_approval_step2') }}</div>
-                    <div>{{ $t('tw_approval_step2_tips') }}</div>
-                  </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <Form :label-width="80" style="margin: 16px 0">
-                      <FormItem v-if="handleData.requestId === ''" :label="$t('task') + $t('description')">
-                        <Input disabled v-model="handleData.description" type="textarea" />
-                      </FormItem>
-                      <FormItem
-                        :label="$t('process_result')"
-                        v-if="handleData.nextOption && handleData.nextOption.length !== 0"
-                      >
-                        <span slot="label">
-                          {{ $t('process_result') }}
-                          <span style="color: #ed4014"> * </span>
-                        </span>
-                        <Select v-model="handleData.choseOption" :disabled="!handleData.editable || enforceDisable">
-                          <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{
-                            option
-                          }}</Option>
-                        </Select>
-                      </FormItem>
-                      <FormItem :label="$t('process_comments')">
-                        <Input
-                          :disabled="!handleData.editable || enforceDisable"
-                          v-model="handleData.comment"
-                          type="textarea"
-                        />
-                      </FormItem>
-                      <FormItem :label="$t('tw_attach')">
-                        <UploadFile
-                          :id="handleData.taskId"
-                          :files="handleData.attachFiles"
-                          :formDisable="enforceDisable"
-                          type="task"
-                        ></UploadFile>
-                      </FormItem>
-                    </Form>
-                    <div style="text-align: center">
-                      <Button v-if="handleData.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
-                        $t('save')
-                      }}</Button>
-                      <Button
-                        v-if="handleData.editable"
-                        :disabled="
-                          enforceDisable ||
-                            (handleData.nextOption &&
-                              handleData.nextOption.length !== 0 &&
-                              handleData.choseOption === '')
-                        "
-                        @click="commitTaskData"
-                        type="primary"
-                        >{{ $t('tw_commit') }}</Button
-                      >
-                    </div>
-                  </div>
-                </Step>
-              </Steps>
-            </HeaderTitle>
-            <!--当前处理-请求定版-->
-            <HeaderTitle
-              v-if="isHandle && detailInfo.status === 'Pending'"
-              :title="$t('tw_cur_handle')"
-              :subTitle="$t('tw_request_pending')"
-            >
-              <Steps :current="1" direction="vertical">
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_pending_step1') }}</div>
-                    <div>{{ $t('tw_pending_step1_tips') }}</div>
-                  </div>
-                  <div slot="content" style="padding:20px 0px;">
-                    <FormItem :label="$t('tw_choose_object')" required>
-                      <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-                        <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                          item.key_name
-                        }}</Option>
-                      </Select>
-                    </FormItem>
-                    <EntityTable
-                      :data="historyData[0].formData"
-                      :requestId="requestId"
-                      :formDisable="true"
-                    ></EntityTable>
-                  </div>
-                </Step>
-                <Step>
-                  <div slot="title" class="task-step">
-                    <div>{{ $t('tw_pending_step2') }}</div>
-                    <div>{{ $t('tw_pending_step2_tips') }}</div>
-                  </div>
-                  <div slot="content" style="padding:20px 0px;">
+                  <div slot="content" class="history">
                     <DataBind
                       :isHandle="isHandle"
                       :requestTemplate="requestTemplate"
                       :requestId="requestId"
-                      :formDisable="formDisable || detailInfo.status !== 'Pending'"
-                      :actionName="actionName"
+                      :formDisable="true"
+                      :showBtn="false"
                     ></DataBind>
                   </div>
-                </Step>
-              </Steps>
-            </HeaderTitle>
-          </template>
-        </Form>
-      </div>
+                </template>
+                <!--任务审批-->
+                <template v-else>
+                  <div class="custom-panel">
+                    <div class="custom-panel-title">{{ data.taskName }}</div>
+                    <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
+                  </div>
+                  <div slot="content" class="history">
+                    <EntityTable
+                      :data="data.formData"
+                      :requestId="requestId"
+                      :formDisable="!data.editable || enforceDisable"
+                    ></EntityTable>
+                    <div>
+                      <Form :label-width="80" style="margin: 16px 0">
+                        <FormItem v-if="data.requestId === ''" :label="$t('task') + $t('description')">
+                          <Input disabled v-model="data.description" type="textarea" />
+                        </FormItem>
+                        <FormItem :label="$t('process_result')" v-if="data.nextOption && data.nextOption.length !== 0">
+                          <span slot="label">
+                            {{ $t('process_result') }}
+                            <span style="color: #ed4014"> * </span>
+                          </span>
+                          <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                            <Option v-for="option in data.nextOption" :value="option" :key="option">{{
+                              option
+                            }}</Option>
+                          </Select>
+                        </FormItem>
+                        <FormItem :label="$t('process_comments')">
+                          <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
+                        </FormItem>
+                      </Form>
+                    </div>
+                  </div>
+                </template>
+              </Panel>
+            </Collapse>
+          </HeaderTitle>
+          <!--当前处理-确认请求-->
+          <HeaderTitle
+            v-if="isHandle && detailInfo.status === 'Pending'"
+            :title="$t('tw_cur_handle')"
+            subTitle="请求确认"
+          >
+            <div slot="content" style="padding:20px 0px;">
+              <DataBind
+                :isHandle="isHandle"
+                :requestTemplate="requestTemplate"
+                :requestId="requestId"
+                :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                :actionName="actionName"
+              ></DataBind>
+            </div>
+          </HeaderTitle>
+          <!--当前处理-请求定版-->
+          <HeaderTitle
+            v-if="isHandle && detailInfo.status === 'Pending'"
+            :title="$t('tw_cur_handle')"
+            :subTitle="$t('tw_request_pending')"
+          >
+            <Steps :current="1" direction="vertical">
+              <Step>
+                <div slot="title" class="task-step">
+                  <div>{{ $t('tw_pending_step1') }}</div>
+                  <div>{{ $t('tw_pending_step1_tips') }}</div>
+                </div>
+                <div slot="content" style="padding:20px 0px;">
+                  <FormItem :label="$t('tw_choose_object')" required>
+                    <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
+                      <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                        item.key_name
+                      }}</Option>
+                    </Select>
+                  </FormItem>
+                  <EntityTable :data="historyData[0].formData" :requestId="requestId" :formDisable="true"></EntityTable>
+                </div>
+              </Step>
+              <Step>
+                <div slot="title" class="task-step">
+                  <div>{{ $t('tw_pending_step2') }}</div>
+                  <div>{{ $t('tw_pending_step2_tips') }}</div>
+                </div>
+                <div slot="content" style="padding:20px 0px;">
+                  <DataBind
+                    :isHandle="isHandle"
+                    :requestTemplate="requestTemplate"
+                    :requestId="requestId"
+                    :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                    :actionName="actionName"
+                  ></DataBind>
+                </div>
+              </Step>
+            </Steps>
+          </HeaderTitle>
+          <!--当前处理-任务审批-->
+          <HeaderTitle
+            v-if="isHandle && detailInfo.status === 'InProgress'"
+            :title="$t('tw_cur_handle')"
+            :subTitle="handleData.taskName"
+          >
+            <Steps :current="1" direction="vertical">
+              <Step>
+                <div slot="title" class="task-step">
+                  <div>{{ $t('tw_approval_step1') }}</div>
+                  <div>{{ $t('tw_approval_step1_tips') }}</div>
+                </div>
+                <div slot="content" style="padding:20px 0px;">
+                  <EntityTable
+                    ref="entityTable"
+                    :data="handleData.formData"
+                    :requestId="requestId"
+                    :formDisable="!handleData.editable || enforceDisable"
+                    :isAddRow="true"
+                  ></EntityTable>
+                </div>
+              </Step>
+              <Step>
+                <div slot="title" class="task-step">
+                  <div>{{ $t('tw_approval_step2') }}</div>
+                  <div>{{ $t('tw_approval_step2_tips') }}</div>
+                </div>
+                <div slot="content" style="padding:20px 0px;">
+                  <Form :label-width="80" style="margin: 16px 0">
+                    <FormItem v-if="handleData.requestId === ''" :label="$t('task') + $t('description')">
+                      <Input disabled v-model="handleData.description" type="textarea" />
+                    </FormItem>
+                    <FormItem
+                      :label="$t('process_result')"
+                      v-if="handleData.nextOption && handleData.nextOption.length !== 0"
+                    >
+                      <span slot="label">
+                        {{ $t('process_result') }}
+                        <span style="color: #ed4014"> * </span>
+                      </span>
+                      <Select v-model="handleData.choseOption" :disabled="!handleData.editable || enforceDisable">
+                        <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{
+                          option
+                        }}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem :label="$t('process_comments')">
+                      <Input
+                        :disabled="!handleData.editable || enforceDisable"
+                        v-model="handleData.comment"
+                        type="textarea"
+                      />
+                    </FormItem>
+                    <FormItem :label="$t('tw_attach')">
+                      <UploadFile
+                        :id="handleData.taskId"
+                        :files="handleData.attachFiles"
+                        :formDisable="enforceDisable"
+                        type="task"
+                      ></UploadFile>
+                    </FormItem>
+                  </Form>
+                  <div style="text-align: center">
+                    <Button v-if="handleData.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
+                      $t('save')
+                    }}</Button>
+                    <Button
+                      v-if="handleData.editable"
+                      :disabled="
+                        enforceDisable ||
+                          (handleData.nextOption && handleData.nextOption.length !== 0 && handleData.choseOption === '')
+                      "
+                      @click="commitTaskData"
+                      type="primary"
+                      >{{ $t('tw_commit') }}</Button
+                    >
+                  </div>
+                </div>
+              </Step>
+            </Steps>
+          </HeaderTitle>
+        </template>
+      </Form>
     </div>
     <!--编排流程-->
     <div class="expand-btn" :style="{ right: flowVisible ? '440px' : '0px' }" @click="flowVisible = !flowVisible">
@@ -324,6 +378,7 @@ import EntityTable from '../../components/entity-table.vue'
 import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
 import BaseProgress from '../../components/base-progress.vue'
+import CustomForm from '../../components/custom-form.vue'
 import { deepClone } from '@/pages/util/index'
 import {
   getRootEntity,
@@ -343,7 +398,8 @@ export default {
     EntityTable,
     DataBind,
     UploadFile,
-    BaseProgress
+    BaseProgress,
+    CustomForm
   },
   props: {
     // 1发布,2请求(3问题,4事件,5变更)
@@ -677,10 +733,41 @@ export default {
   }
   .content {
     min-height: 500px;
+    display: flex;
+    .info-item {
+      display: flex;
+      &-label {
+        color: #515a6e;
+        width: 140px;
+        word-wrap: break-word;
+      }
+      &-value {
+        color: #515a6e;
+        width: calc(100% - 120px);
+        word-wrap: break-word;
+        .tag {
+          background: #f7f7f7;
+          padding: 4px 8px;
+        }
+      }
+    }
+    .custom-panel {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      &-title {
+        width: 70px;
+        font-weight: bold;
+        line-height: 22px;
+      }
+      &-header {
+        width: calc(100% - 70px);
+      }
+    }
     .history {
       padding: 20px;
       border: 1px dashed #d7dadc;
-      margin-top: 20px;
+      margin: 16px 0;
     }
     .task-step {
       display: flex;
@@ -742,8 +829,11 @@ export default {
     align-items: center;
     padding-left: 0px !important;
   }
+  .ivu-collapse-content-box {
+    padding-bottom: 0px;
+  }
   .ivu-collapse-content {
-    padding: 0 0 0 16px;
+    padding: 0;
   }
 }
 </style>

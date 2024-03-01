@@ -86,10 +86,14 @@
         filterable
         clearable
         placeholder="选择已有数据添加一行"
-        style="width:300px;"
+        style="width:450px;"
+        prefix="md-add-circle"
         @on-open-change="getCmdbEntityList"
         @on-change="addRow"
       >
+        <template #prefix>
+          <Icon type="md-add-circle" color="#2d8cf0" :size="24"></Icon>
+        </template>
         <template v-for="(i, index) in addRowSourceOptions">
           <Option :key="index" :value="i.id">{{ i.displayName }}</Option>
         </template>
@@ -179,20 +183,14 @@ export default {
               this.handleAddRow(item)
             }
           })
-          // this.activeTab = this.activeTab || this.requestData[0].entity || this.requestData[0].itemGroup
-          // this.initTableData()
-          this.handleTabChange(this.requestData[0])
+          this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
+          this.activeItem = this.requestData[0]
+          this.initTableData()
         }
       },
       deep: true,
       immediate: true
     }
-    // addRowSource (val) {
-    //   if (val) {
-    //     const data = this.addRowSourceOptions.find(i => i.id === val)
-    //     this.addRowSource = data
-    //   }
-    // }
   },
   methods: {
     // 提交时，定位到没有填写必填项的页签
@@ -338,8 +336,7 @@ export default {
         this.handleAddRow(data)
         this.initTableData()
       } else if (this.activeItem.itemGroupRule === 'exist') {
-        if (!this.addRowSource) {
-        } else {
+        if (this.addRowSource) {
           const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
           this.handleAddRow(this.activeItem, source)
           this.initTableData()
@@ -386,6 +383,12 @@ export default {
       const { status, data } = await getWeCmdbOptions(packageName, entity, {})
       if (status === 'OK') {
         this.addRowSourceOptions = data || []
+        // 过滤下拉框数据(表单dataId和下拉框数据id相同)
+        if (this.activeItem.value) {
+          let dataIds = []
+          this.activeItem.value.forEach(i => i.dataId && dataIds.push(i.dataId))
+          this.addRowSourceOptions = this.addRowSourceOptions.filter(i => !dataIds.includes(i.id))
+        }
       }
     }
   }
@@ -395,27 +398,13 @@ export default {
 <style lang="scss">
 .workbench-entity-table {
   width: 100%;
-  // .ivu-radio {
-  //   display: none;
-  // }
-  // .ivu-radio-wrapper {
-  //   border-radius: 20px;
-  //   font-size: 12px;
-  //   color: #000;
-  //   background: #fff;
-  // }
-  // .ivu-radio-wrapper-checked.ivu-radio-border {
-  //   border-color: #2d8cf0;
-  //   background: #2d8cf0;
-  //   color: #fff;
-  // }
   .radio-group {
     display: flex;
     margin-bottom: 15px;
     .radio {
       padding: 5px 15px;
       border-radius: 32px;
-      font-size: 12px;
+      font-size: 14px;
       cursor: pointer;
       margin-right: 10px;
     }
@@ -448,18 +437,19 @@ export default {
     position: relative;
     .table-item {
       display: flex;
-      border-left: 1px solid #dcdee2;
-      border-right: 1px solid #dcdee2;
-      border-bottom: 1px solid #dcdee2;
+      border-left: 1px dashed #dcdee2;
+      border-right: 1px dashed #dcdee2;
+      border-bottom: 1px dashed #dcdee2;
+      border-radius: 4px;
       &:first-child {
-        border-top: 1px solid #dcdee2;
+        border-top: 1px dashed #dcdee2;
       }
       .number {
         width: 50px;
         display: flex;
         justify-content: center;
         align-items: center;
-        border-right: 1px solid #dcdee2;
+        border-right: 1px dashed #dcdee2;
       }
       .form {
         padding: 20px 0 10px 20px;
@@ -477,6 +467,10 @@ export default {
   }
   .ivu-form-item {
     margin-bottom: 10px !important;
+  }
+  .ivu-form-item-label {
+    word-wrap: break-word;
+    padding: 10px 10px 10px 0;
   }
 }
 </style>

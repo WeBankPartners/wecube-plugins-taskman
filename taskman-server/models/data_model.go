@@ -2,6 +2,11 @@ package models
 
 import "time"
 
+type ProcEntityDataQueryParam struct {
+	AdditionalFilters []*EntityQueryObj `json:"additionalFilters"`
+	ProcInstId        string            `json:"procInstId"`
+}
+
 type QueryExpressionDataParam struct {
 	DataModelExpression string `json:"dataModelExpression"`
 }
@@ -13,7 +18,28 @@ type DataModel struct {
 
 type DataModelEntity struct {
 	PluginPackageEntities
-	Attributes []*PluginPackageAttributes `json:"attributes"`
+	Attributes            []*PluginPackageAttributes `json:"attributes"`
+	ReferenceByEntityList []*DataModelRefEntity      `json:"referenceByEntityList"`
+	ReferenceToEntityList []*DataModelRefEntity      `json:"referenceToEntityList"`
+	LeafEntityList        *DataModelLeafEntityList   `json:"leafEntityList,omitempty"`
+}
+
+type DataModelRefEntity struct {
+	PluginPackageEntities
+	RelatedAttribute *PluginPackageAttributes `json:"relatedAttribute"`
+}
+
+type DataModelLeafEntityList struct {
+	Name                  string                 `json:"name"`
+	PackageName           string                 `json:"packageName"`
+	ReferenceByEntityList []*DataModelLeafEntity `json:"referenceByEntityList"`
+	ReferenceToEntityList []*DataModelLeafEntity `json:"referenceToEntityList"`
+}
+
+type DataModelLeafEntity struct {
+	EntityName  string `json:"entityName"`
+	PackageName string `json:"packageName"`
+	FilterRule  string `json:"filterRule"`
 }
 
 type PluginPackageEntities struct {

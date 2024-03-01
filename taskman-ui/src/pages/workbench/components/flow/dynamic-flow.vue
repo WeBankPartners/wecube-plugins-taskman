@@ -92,17 +92,17 @@ export default {
             return (
               <div style="white-space: nowrap; overflow: auto;">
                 [
-                {jsonData.map((data, index) => (
-                  <div key={index}>
-                    {'{'}
-                    {Object.entries(data).map(([key, value]) => (
-                      <div>
-                        {key}: {value}
-                      </div>
-                    ))}
-                    {'},'}
-                  </div>
-                ))}
+              {jsonData.map((data, index) => (
+                <div key={index}>
+                  {'{'}
+                  {Object.entries(data).map(([key, value]) => (
+                    <div>
+                      {key}: {value}
+                    </div>
+                  ))}
+                  {'},'}
+                </div>
+              ))}
                 ]
               </div>
             )

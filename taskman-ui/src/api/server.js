@@ -146,6 +146,8 @@ export const saveRequestNew = (requestId, type, data) =>
 export const getApprovalConfig = templateId => req.get(`/taskman/api/v1/approval-template/${templateId}`)
 // 任务模板配置
 export const getTaskConfig = templateId => req.get(`/taskman/api/v1/task-template/custom/${templateId}`)
+// 获取指定角色的管理员
+export const getAdminUserByRole = role => req.get(`/taskman/api/v1/role/administrator/list?role=${role}`)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

@@ -3,7 +3,9 @@ package workflow
 import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 )
@@ -81,6 +83,39 @@ func GetEntityData(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, result)
+}
+
+func GetEntityModel(c *gin.Context) {
+	packageName := c.Param("packageName")
+	entityName := c.Param("entity")
+	if packageName == "" || entityName == "" {
+		middleware.ReturnError(c, exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("packageName or eneity can not empty")))
+		return
+	}
+	result, err := rpc.GetEntityModel(packageName, entityName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}
+
+func ProcEntityDataQuery(c *gin.Context) {
+	var err error
+	var param models.ProcEntityDataQueryParam
+	var response models.EntityResponse
+	packageName := c.Param("pluginPackageId")
+	entityName := c.Param("entityName")
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnError(c, exterror.Catch(exterror.New().RequestParamValidateError, err))
+		return
+	}
+	response, err = rpc.RequestPluginModelData(packageName, entityName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	middleware.Return(c, response)
 }
 
 func GetCoreProcNodes(c *gin.Context) {

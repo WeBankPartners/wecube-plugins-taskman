@@ -5,20 +5,14 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"sort"
+	"strconv"
 )
-
-// 编排任务节点
-var taskNodeTypeMap = map[string]bool{
-	string(models.ProcDefNodeTypeHuman):     true,
-	string(models.ProcDefNodeTypeAutomatic): true,
-	string(models.ProcDefNodeTypeData):      true,
-}
 
 type ProcDefService struct {
 }
 
 // GetCoreProcessListNew 获取用户角色下的编排列表
-func (s ProcDefService) GetCoreProcessListNew(userToken, language, manageRole string) (processList []*models.ProcDefObj, err error) {
+func (s *ProcDefService) GetCoreProcessListNew(userToken, language, manageRole string) (processList []*models.ProcDefObj, err error) {
 	var procDefDtoList []*models.ProcDefDto
 	var nodesList []*models.DataModel
 	var entityMap = make(map[string]models.ProcEntity)
@@ -48,7 +42,7 @@ func (s ProcDefService) GetCoreProcessListNew(userToken, language, manageRole st
 }
 
 // GetCoreProcessListAll 查询当前插件的所有编排
-func (s ProcDefService) GetCoreProcessListAll(userToken, language string) (processList []*models.ProcDefObj, err error) {
+func (s *ProcDefService) GetCoreProcessListAll(userToken, language string) (processList []*models.ProcDefObj, err error) {
 	var procDefList []*models.ProcDef
 	var nodesList []*models.DataModel
 	var entityMap = make(map[string]models.ProcEntity)
@@ -78,7 +72,7 @@ func (s ProcDefService) GetCoreProcessListAll(userToken, language string) (proce
 }
 
 // GetProcessDefine 获取编排定义
-func (s ProcDefService) GetProcessDefine(procDefId, userToken, language string) (result *models.DefinitionsData, err error) {
+func (s *ProcDefService) GetProcessDefine(procDefId, userToken, language string) (result *models.DefinitionsData, err error) {
 	result, err = rpc.GetProcessDefine(procDefId, userToken, language)
 	if err != nil {
 		return
@@ -87,7 +81,7 @@ func (s ProcDefService) GetProcessDefine(procDefId, userToken, language string) 
 }
 
 // GetProcessDefineTaskNodes 获取编排节点
-func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.RequestTemplateTable, userToken, language, filterType string) (nodeList []*models.ProcNodeObj, err error) {
+func (s *ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.RequestTemplateTable, userToken, language, filterType string) (nodeList []*models.ProcNodeObj, err error) {
 	var allTaskNodeList []*models.ProcNodeObj
 	nodeList = make([]*models.ProcNodeObj, 0)
 	if requestTemplate == nil {
@@ -109,19 +103,25 @@ func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.Reques
 		return
 	}
 	if len(allTaskNodeList) > 0 {
-		for _, node := range allTaskNodeList {
-			if _, ok := taskNodeTypeMap[node.NodeType]; !ok {
+		for _, v := range allTaskNodeList {
+			if v.NodeType != string(models.ProcDefNodeTypeHuman) {
 				continue
 			}
 			if filterType == "template" {
-				// 模板只展示人工节点
-				if node.NodeType != string(models.ProcDefNodeTypeHuman) {
+				if v.TaskCategory != "SUTN" {
 					continue
 				}
-			} else if filterType == "bind" && node.DynamicBind == "Y" {
-				continue
+			} else if filterType == "bind" {
+				if v.DynamicBind == "Y" {
+					continue
+				}
 			}
-			nodeList = append(nodeList, node)
+			if v.OrderedNo == "" {
+				v.OrderedNum = 0
+			} else {
+				v.OrderedNum, _ = strconv.Atoi(v.OrderedNo)
+			}
+			nodeList = append(nodeList, v)
 		}
 		sort.Sort(models.ProcNodeObjList(nodeList))
 	}
@@ -129,36 +129,36 @@ func (s ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.Reques
 }
 
 // GetProcessDefineInstance 获取编排实例
-func (s ProcDefService) GetProcessDefineInstance(instanceId, userToken, language string) (processInstance *models.ProcessInstance, err error) {
+func (s *ProcDefService) GetProcessDefineInstance(instanceId, userToken, language string) (processInstance *models.ProcessInstance, err error) {
 	return rpc.GetProcessInstance(userToken, language, instanceId)
 }
 
 // GetProcDefRootEntities 获取编排RootEntity
-func (s ProcDefService) GetProcDefRootEntities(procDefId, userToken, language string) (list []*models.ProcDefEntityDataObj, err error) {
+func (s *ProcDefService) GetProcDefRootEntities(procDefId, userToken, language string) (list []*models.ProcDefEntityDataObj, err error) {
 	return rpc.GetProcDefRootEntities(procDefId, userToken, language)
 }
 
 // GetProcDefDataPreview 查询编排设计 RootEntity
-func (s ProcDefService) GetProcDefDataPreview(procDefId, entityDataId, userToken, language string) (result *models.EntityTreeData, err error) {
+func (s *ProcDefService) GetProcDefDataPreview(procDefId, entityDataId, userToken, language string) (result *models.EntityTreeData, err error) {
 	return rpc.GetProcDefDataPreview(procDefId, entityDataId, userToken, language)
 }
 
 // GetProcDefTaskNodeContext 查询编排设计 RootEntity
-func (s ProcDefService) GetProcDefTaskNodeContext(procInstanceId, taskNodeId, userToken, language string) (data interface{}, err error) {
+func (s *ProcDefService) GetProcDefTaskNodeContext(procInstanceId, taskNodeId, userToken, language string) (data interface{}, err error) {
 	return rpc.GetProcDefTaskNodeContext(procInstanceId, taskNodeId, userToken, language)
 }
 
 // TerminationsProcDefInstance 终止编排实例运行
-func (s ProcDefService) TerminationsProcDefInstance(param models.TerminateInstanceParam, userToken, language string) (err error) {
+func (s *ProcDefService) TerminationsProcDefInstance(param models.TerminateInstanceParam, userToken, language string) (err error) {
 	return rpc.TerminationsProcDefInstance(param, userToken, language)
 }
 
 // StartProcDefInstances 启动编排实例
-func (s ProcDefService) StartProcDefInstances(param models.RequestProcessData, userToken, language string) (result *models.StartInstanceResultData, err error) {
+func (s *ProcDefService) StartProcDefInstances(param models.RequestProcessData, userToken, language string) (result *models.StartInstanceResultData, err error) {
 	return rpc.StartProcDefInstances(param, userToken, language)
 }
 
-func (s ProcDefService) CheckProDefId(proDefId, proDefName, proDefKey, userToken, language string) (exist bool, newProDefId string, err error) {
+func (s *ProcDefService) CheckProDefId(proDefId, proDefName, proDefKey, userToken, language string) (exist bool, newProDefId string, err error) {
 	exist = false
 	var processList []*models.ProcDefObj
 	if proDefKey != "" {

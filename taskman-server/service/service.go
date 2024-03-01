@@ -9,33 +9,33 @@ var (
 	// db操作
 	db *xorm.Engine
 	// 文件上传 service
-	attachFileService AttachFileService
+	attachFileService *AttachFileService
 	// 模板收藏 service
-	collectTemplateService CollectTemplateService
+	collectTemplateService *CollectTemplateService
 	// 表单 service
-	formService FormService
+	formService *FormService
 	// 表单模板 service
-	formTemplateService FormTemplateService
+	formTemplateService *FormTemplateService
 	// 表单项 service
-	formItemTemplateService FormItemTemplateService
+	formItemTemplateService *FormItemTemplateService
 	// 日志记录 service
-	operationLogService OperationLogService
+	operationLogService *OperationLogService
 	// 编排 service
-	procDefService ProcDefService
+	procDefService *ProcDefService
 	// CMDB service
-	refSelectService RefSelectService
+	refSelectService *RefSelectService
 	// 请求 service
-	requestService RequestService
+	requestService *RequestService
 	// 请求模板 service
-	requestTemplateService RequestTemplateService
+	requestTemplateService *RequestTemplateService
 	// 请求模板组 service
-	requestTemplateGroupService RequestTemplateGroupService
+	requestTemplateGroupService *RequestTemplateGroupService
 	// 任务 service
-	taskService TaskService
+	taskService *TaskService
 	// 任务模板 service
-	taskTemplateService TaskTemplateService
+	taskTemplateService *TaskTemplateService
 	// 角色 service
-	roleService RoleService
+	roleService *RoleService
 	// 审批模板 service
 	approvalTemplateService *ApprovalTemplateService
 	// 审批 service
@@ -50,42 +50,44 @@ func New() (err error) {
 		return
 	}
 	// 初始化Dao
-	attachFileDao := dao.AttachFileDao{DB: engine}
-	collectTemplateDao := dao.CollectTemplateDao{DB: engine}
-	formDao := dao.FormDao{DB: engine}
-	formItemDao := dao.FormItemDao{DB: engine}
-	formItemTemplateDao := dao.FormItemTemplateDao{DB: engine}
-	operationLogDao := dao.OperationLogDao{DB: engine}
-	formTemplateDao := dao.FormTemplateDao{DB: engine}
-	requestDao := dao.RequestDao{DB: engine}
-	requestTemplateDao := dao.RequestTemplateDao{DB: engine}
-	requestTemplateGroupDao := dao.RequestTemplateGroupDao{DB: engine}
-	requestTemplateRoleDao := dao.RequestTemplateRoleDao{DB: engine}
-	taskDao := dao.TaskDao{DB: engine}
-	taskRoleDao := dao.TaskRoleDao{DB: engine}
-	taskTemplateDao := dao.TaskTemplateDao{DB: engine}
-	taskTemplateRoleDao := dao.TaskTemplateRoleDao{DB: engine}
-	approvalTemplateDao := dao.ApprovalTemplateDao{DB: engine}
-	approvalTemplateRoleDao := dao.ApprovalTemplateRoleDao{DB: engine}
-	approvalDao := dao.ApprovalDao{DB: engine}
-	approvalRoleDao := dao.ApprovalRoleDao{DB: engine}
-	formItemTemplateGroupDao := dao.FormItemTemplateGroupDao{DB: engine}
+	attachFileDao := &dao.AttachFileDao{DB: engine}
+	collectTemplateDao := &dao.CollectTemplateDao{DB: engine}
+	formDao := &dao.FormDao{DB: engine}
+	formItemDao := &dao.FormItemDao{DB: engine}
+	formItemTemplateDao := &dao.FormItemTemplateDao{DB: engine}
+	operationLogDao := &dao.OperationLogDao{DB: engine}
+	formTemplateDao := &dao.FormTemplateDao{DB: engine}
+	requestDao := &dao.RequestDao{DB: engine}
+	requestTemplateDao := &dao.RequestTemplateDao{DB: engine}
+	requestTemplateGroupDao := &dao.RequestTemplateGroupDao{DB: engine}
+	requestTemplateRoleDao := &dao.RequestTemplateRoleDao{DB: engine}
+	taskDao := &dao.TaskDao{DB: engine}
+	taskRoleDao := &dao.TaskRoleDao{DB: engine}
+	taskTemplateDao := &dao.TaskTemplateDao{DB: engine}
+	taskTemplateRoleDao := &dao.TaskTemplateRoleDao{DB: engine}
+	approvalTemplateDao := &dao.ApprovalTemplateDao{DB: engine}
+	approvalTemplateRoleDao := &dao.ApprovalTemplateRoleDao{DB: engine}
+	approvalDao := &dao.ApprovalDao{DB: engine}
+	approvalRoleDao := &dao.ApprovalRoleDao{DB: engine}
+	formItemTemplateGroupDao := &dao.FormItemTemplateGroupDao{DB: engine}
+	taskHandleTemplateDao := &dao.TaskHandleTemplateDao{DB: engine}
 	// 初始化Service
-	collectTemplateService = CollectTemplateService{collectTemplateDao: collectTemplateDao}
-	requestService = RequestService{requestDao: requestDao}
-	attachFileService = AttachFileService{attachFileDao: attachFileDao}
-	operationLogService = OperationLogService{operationLogDao: operationLogDao}
-	procDefService = ProcDefService{}
-	refSelectService = RefSelectService{}
-	requestService = RequestService{requestDao: requestDao}
-	taskService = TaskService{taskDao: taskDao, taskRoleDao: taskRoleDao}
-	taskTemplateService = TaskTemplateService{taskTemplateDao: taskTemplateDao, taskTemplateRoleDao: taskTemplateRoleDao}
-	formService = FormService{formDao: formDao, formItemDao: formItemDao}
-	requestTemplateService = RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao, requestTemplateRoleDao: requestTemplateRoleDao}
-	requestTemplateGroupService = RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
-	formTemplateService = FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
-	formItemTemplateService = FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
-	roleService = RoleService{}
+	collectTemplateService = &CollectTemplateService{collectTemplateDao: collectTemplateDao}
+	requestService = &RequestService{requestDao: requestDao}
+	attachFileService = &AttachFileService{attachFileDao: attachFileDao}
+	operationLogService = &OperationLogService{operationLogDao: operationLogDao}
+	procDefService = &ProcDefService{}
+	refSelectService = &RefSelectService{}
+	requestService = &RequestService{requestDao: requestDao}
+	taskService = &TaskService{taskDao: taskDao, taskRoleDao: taskRoleDao}
+	taskTemplateService = &TaskTemplateService{taskTemplateDao: taskTemplateDao, taskTemplateRoleDao: taskTemplateRoleDao}
+	formService = &FormService{formDao: formDao, formItemDao: formItemDao}
+	requestTemplateService = &RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao,
+		requestTemplateRoleDao: requestTemplateRoleDao, taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao, formTemplateDao: formTemplateDao}
+	requestTemplateGroupService = &RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
+	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
+	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
+	roleService = &RoleService{}
 	approvalTemplateService = &ApprovalTemplateService{approvalTemplateDao: approvalTemplateDao, approvalTemplateRoleDao: approvalTemplateRoleDao}
 	approvalService = &ApprovalService{approvalDao: approvalDao, approvalRoleDao: approvalRoleDao}
 	db = engine
@@ -93,62 +95,62 @@ func New() (err error) {
 }
 
 // GetRequestService 获取请求service
-func GetRequestService() RequestService {
+func GetRequestService() *RequestService {
 	return requestService
 }
 
 // GetRequestTemplateService 获取请求模板 service
-func GetRequestTemplateService() RequestTemplateService {
+func GetRequestTemplateService() *RequestTemplateService {
 	return requestTemplateService
 }
 
 // GetOperationLogService 获取记录日志 service
-func GetOperationLogService() OperationLogService {
+func GetOperationLogService() *OperationLogService {
 	return operationLogService
 }
 
 // GetProcDefService 获取编排 service
-func GetProcDefService() ProcDefService {
+func GetProcDefService() *ProcDefService {
 	return procDefService
 }
 
 // GetAttachFileService 文件上传 service
-func GetAttachFileService() AttachFileService {
+func GetAttachFileService() *AttachFileService {
 	return attachFileService
 }
 
 // GetCollectTemplateService 模板收藏 service
-func GetCollectTemplateService() CollectTemplateService {
+func GetCollectTemplateService() *CollectTemplateService {
 	return collectTemplateService
 }
 
 // GetFormService 表单 service
-func GetFormService() FormService {
+func GetFormService() *FormService {
 	return formService
 }
 
 // GetFormTemplateService 表单模板 service
-func GetFormTemplateService() FormTemplateService {
+func GetFormTemplateService() *FormTemplateService {
 	return formTemplateService
 }
 
 // GetRefSelectService service
-func GetRefSelectService() RefSelectService {
+func GetRefSelectService() *RefSelectService {
 	return refSelectService
 }
 
 // GetTaskService 任务 service
-func GetTaskService() TaskService {
+func GetTaskService() *TaskService {
 	return taskService
 }
 
 // GetTaskTemplateService 获取任务模板 service
-func GetTaskTemplateService() TaskTemplateService {
+func GetTaskTemplateService() *TaskTemplateService {
 	return taskTemplateService
 }
 
 // GetRoleService 获取角色 service
-func GetRoleService() RoleService {
+func GetRoleService() *RoleService {
 	return roleService
 }
 
@@ -163,12 +165,12 @@ func GetApprovalService() *ApprovalService {
 }
 
 // GetRequestTemplateGroupService 获取请求模板组 service
-func GetRequestTemplateGroupService() RequestTemplateGroupService {
+func GetRequestTemplateGroupService() *RequestTemplateGroupService {
 	return requestTemplateGroupService
 }
 
 // GetFormItemTemplateService 获取表单项模板 service
-func GetFormItemTemplateService() FormItemTemplateService {
+func GetFormItemTemplateService() *FormItemTemplateService {
 	return formItemTemplateService
 }
 

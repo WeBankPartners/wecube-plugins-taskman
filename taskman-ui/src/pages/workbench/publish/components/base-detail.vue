@@ -19,7 +19,7 @@
       </Col>
     </Row>
     <div class="content">
-      <Form :model="form" label-position="right" :label-width="120">
+      <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
         <template>
           <!--请求信息-->
           <HeaderTitle :title="$t('tw_request_title')">
@@ -96,7 +96,7 @@
                 <Col :span="12" class="info-item">
                   <div class="info-item-label">{{ $t('tw_use_template') }}：</div>
                   <div class="info-item-value">
-                    {{ detailInfo.templateName }}<Tag>{{ detailInfo.version }}</Tag>
+                    {{ detailInfo.templateName }}<span class="tag">{{ detailInfo.version }}</span>
                   </div>
                 </Col>
                 <Col :span="12" class="info-item">
@@ -119,7 +119,7 @@
                 disabled
                 :label-width="140"
                 labelPosition="left"
-                style="margin-top: 20px;"
+                style="margin-top: 10px;"
               ></CustomForm>
             </div>
           </HeaderTitle>
@@ -214,6 +214,62 @@
               </Panel>
             </Collapse>
           </HeaderTitle>
+          <!--当前处理-确认请求-->
+          <HeaderTitle
+            v-if="isHandle && detailInfo.status === 'Pending'"
+            :title="$t('tw_cur_handle')"
+            subTitle="请求确认"
+          >
+            <div slot="content" style="padding:20px 0px;">
+              <DataBind
+                :isHandle="isHandle"
+                :requestTemplate="requestTemplate"
+                :requestId="requestId"
+                :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                :actionName="actionName"
+              ></DataBind>
+            </div>
+          </HeaderTitle>
+          <!--当前处理-请求定版-->
+          <HeaderTitle
+            v-if="isHandle && detailInfo.status === 'Pending'"
+            :title="$t('tw_cur_handle')"
+            :subTitle="$t('tw_request_pending')"
+          >
+            <Steps :current="1" direction="vertical">
+              <Step>
+                <div slot="title" class="task-step">
+                  <div>{{ $t('tw_pending_step1') }}</div>
+                  <div>{{ $t('tw_pending_step1_tips') }}</div>
+                </div>
+                <div slot="content" style="padding:20px 0px;">
+                  <FormItem :label="$t('tw_choose_object')" required>
+                    <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
+                      <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                        item.key_name
+                      }}</Option>
+                    </Select>
+                  </FormItem>
+                  <EntityTable :data="historyData[0].formData" :requestId="requestId" :formDisable="true"></EntityTable>
+                </div>
+              </Step>
+              <Step>
+                <div slot="title" class="task-step">
+                  <div>{{ $t('tw_pending_step2') }}</div>
+                  <div>{{ $t('tw_pending_step2_tips') }}</div>
+                </div>
+                <div slot="content" style="padding:20px 0px;">
+                  <DataBind
+                    :isHandle="isHandle"
+                    :requestTemplate="requestTemplate"
+                    :requestId="requestId"
+                    :formDisable="formDisable || detailInfo.status !== 'Pending'"
+                    :actionName="actionName"
+                  ></DataBind>
+                </div>
+              </Step>
+            </Steps>
+          </HeaderTitle>
           <!--当前处理-任务审批-->
           <HeaderTitle
             v-if="isHandle && detailInfo.status === 'InProgress'"
@@ -291,46 +347,6 @@
                       >{{ $t('tw_commit') }}</Button
                     >
                   </div>
-                </div>
-              </Step>
-            </Steps>
-          </HeaderTitle>
-          <!--当前处理-请求定版-->
-          <HeaderTitle
-            v-if="isHandle && detailInfo.status === 'Pending'"
-            :title="$t('tw_cur_handle')"
-            :subTitle="$t('tw_request_pending')"
-          >
-            <Steps :current="1" direction="vertical">
-              <Step>
-                <div slot="title" class="task-step">
-                  <div>{{ $t('tw_pending_step1') }}</div>
-                  <div>{{ $t('tw_pending_step1_tips') }}</div>
-                </div>
-                <div slot="content" style="padding:20px 0px;">
-                  <FormItem :label="$t('tw_choose_object')" required>
-                    <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-                      <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                        item.key_name
-                      }}</Option>
-                    </Select>
-                  </FormItem>
-                  <EntityTable :data="historyData[0].formData" :requestId="requestId" :formDisable="true"></EntityTable>
-                </div>
-              </Step>
-              <Step>
-                <div slot="title" class="task-step">
-                  <div>{{ $t('tw_pending_step2') }}</div>
-                  <div>{{ $t('tw_pending_step2_tips') }}</div>
-                </div>
-                <div slot="content" style="padding:20px 0px;">
-                  <DataBind
-                    :isHandle="isHandle"
-                    :requestTemplate="requestTemplate"
-                    :requestId="requestId"
-                    :formDisable="formDisable || detailInfo.status !== 'Pending'"
-                    :actionName="actionName"
-                  ></DataBind>
                 </div>
               </Step>
             </Steps>
@@ -729,6 +745,10 @@ export default {
         color: #515a6e;
         width: calc(100% - 120px);
         word-wrap: break-word;
+        .tag {
+          background: #f7f7f7;
+          padding: 4px 8px;
+        }
       }
     }
     .custom-panel {

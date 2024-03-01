@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-custom-form">
     <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
-      <Row>
+      <Row :gutter="20">
         <template v-for="(i, index) in options">
           <Col :span="disabled ? 12 : 24" :key="index">
             <FormItem

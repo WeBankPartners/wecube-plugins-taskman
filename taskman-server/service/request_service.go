@@ -733,7 +733,8 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	expireTime := calcExpireTime(nowTime, requestTemplateTable[0].ExpireDay)
-	_, err = dao.X.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, strconv.Itoa(result.Id), result.ProcInstKey, nowTime, expireTime, result.Status, string(cacheBytes), operator, nowTime, requestId)
+	procInstId := fmt.Sprintf("%v", result.Id)
+	_, err = dao.X.Exec("update request set handler=?,proc_instance_id=?,proc_instance_key=?,confirm_time=?,expire_time=?,status=?,bind_cache=?,updated_by=?,updated_time=? where id=?", operator, procInstId, result.ProcInstKey, nowTime, expireTime, result.Status, string(cacheBytes), operator, nowTime, requestId)
 	return
 }
 
@@ -1472,6 +1473,9 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 			rootParent.AttrName = v.EntityName
 			rootParent.DataValue = v.DataId
 		}
+	}
+	for _, v := range rootSucceeding {
+		entityDepMap[v] = []string{fmt.Sprintf("%s", rootParent.DataValue)}
 	}
 	// preEntityList -> in preData but no int boundValues
 	if len(preEntityList) == 0 {

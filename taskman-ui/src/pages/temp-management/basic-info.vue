@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row type="flex">
-      <Col span="20" offset="2">
+      <Col span="24">
         <Row>
           <Col span="12">
             <div class="basci-info-left">
@@ -14,14 +14,14 @@
               <div class="basci-info-content">
                 <Form :label-width="120">
                   <FormItem :label="$t('name')">
-                    <Input v-model="basicInfo.name" style="width: 95%" @on-change="paramsChanged"></Input>
+                    <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input>
                     <span style="color: red">*</span>
                     <span v-if="basicInfo.name === ''" style="color: red"
                       >{{ $t('name') }}{{ $t('can_not_be_empty') }}</span
                     >
                   </FormItem>
                   <FormItem :label="$t('group')">
-                    <Select v-model="basicInfo.group" style="width: 95%;" filterable @on-change="paramsChanged">
+                    <Select v-model="basicInfo.group" style="width: 96%;" filterable @on-change="paramsChanged">
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{ item.name }}</Option>
                     </Select>
                     <span style="color: red">*</span>
@@ -30,7 +30,7 @@
                     >
                   </FormItem>
                   <FormItem :label="$t('scene_type')">
-                    <Select v-model="basicInfo.type" style="width: 95%;" filterable @on-change="paramsChanged">
+                    <Select v-model="basicInfo.type" style="width: 96%;" filterable @on-change="paramsChanged">
                       <Option v-for="item in typeOptions" :value="item.value" :key="item.label">{{
                         item.label
                       }}</Option>
@@ -44,7 +44,7 @@
                       @on-open-change="getTags"
                       filterable
                       allow-create
-                      style="width: 95%;"
+                      style="width: 96%;"
                       @on-change="paramsChanged"
                       @on-create="handleCreate"
                     >
@@ -57,7 +57,7 @@
                   <FormItem :label="$t('description')">
                     <Input
                       v-model="basicInfo.description"
-                      style="width: 95%;"
+                      style="width: 96%;"
                       type="textarea"
                       :rows="2"
                       @on-change="paramsChanged"
@@ -70,7 +70,7 @@
                       v-model="basicInfo.mgmtRoles"
                       @on-open-change="getManagementRoles"
                       filterable
-                      style="width: 95%;"
+                      style="width: 96%;"
                       @on-change="changeMgmtRole"
                     >
                       <Option v-for="item in mgmtRolesOptions" :value="item.id" :key="item.id">{{
@@ -88,7 +88,7 @@
                       v-model="basicInfo.handler"
                       @on-open-change="getHandlerRoles"
                       filterable
-                      style="width: 95%;"
+                      style="width: 96%;"
                       @on-change="paramsChanged"
                     >
                       <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
@@ -103,7 +103,7 @@
                       @on-open-change="getUserRoles"
                       filterable
                       multiple
-                      style="width: 95%;"
+                      style="width: 96%;"
                     >
                       <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{
                         item.displayName
@@ -116,7 +116,7 @@
                   </FormItem>
                   <!-- 请求时效 -->
                   <FormItem :label="$t('request_time_limit')">
-                    <Select v-model="basicInfo.expireDay" filterable style="width: 95%;" @on-change="paramsChanged">
+                    <Select v-model="basicInfo.expireDay" filterable style="width: 96%;" @on-change="paramsChanged">
                       <Option v-for="item in expireDayOptions" :value="item" :key="item"
                         >{{ item }}{{ $t('day') }}</Option
                       >
@@ -150,7 +150,7 @@
                     <div>
                       <!-- 处理角色 -->
                       <FormItem :label="$t('handle_role')">
-                        <Select v-model="basicInfo.pendingRole" filterable style="width: 95%;">
+                        <Select v-model="basicInfo.pendingRole" filterable style="width: 96%;">
                           <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{
                             item.displayName
                           }}</Option>
@@ -162,7 +162,7 @@
                           v-model="basicInfo.pendingHandler"
                           @on-open-change="getPendingHandlerRoles"
                           filterable
-                          style="width: 95%;"
+                          style="width: 96%;"
                         >
                           <Option v-for="item in pendingHandlerOptions" :value="item.id" :key="item.id">{{
                             item.displayName
@@ -171,7 +171,7 @@
                       </FormItem>
                       <!-- 节点时效 -->
                       <FormItem :label="$t('节点时效')">
-                        <Select v-model="basicInfo.pendingExpireDay" filterable style="width: 95%;">
+                        <Select v-model="basicInfo.pendingExpireDay" filterable style="width: 96%;">
                           <Option v-for="item in expireDayOptions" :value="item" :key="item"
                             >{{ item }}{{ $t('day') }}</Option
                           >
@@ -191,7 +191,7 @@
                         <Select
                           v-model="basicInfo.procDefId"
                           filterable
-                          style="width: 95%;"
+                          style="width: 96%;"
                           :disabled="basicInfo.mgmtRoles === ''"
                         >
                           <Option v-for="item in procOptions" :value="item.procDefId" :key="item.procDefId">{{
@@ -212,7 +212,7 @@
                   <template v-if="basicInfo.confirmSwitch">
                     <div>
                       <FormItem :label="$t('节点时效')">
-                        <Select v-model="basicInfo.confirmExpireDay" filterable style="width: 95%;">
+                        <Select v-model="basicInfo.confirmExpireDay" filterable style="width: 96%;">
                           <Option v-for="item in expireDayOptions" :value="item" :key="item"
                             >{{ item }}{{ $t('day') }}</Option
                           >
@@ -229,8 +229,8 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="createTemp" type="info" :disabled="isSaveBtnActiv()">{{ $t('save') }}</Button>
-      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
+      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
+      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnActive()">{{ $t('next') }}</Button>
     </div>
   </div>
 </template>
@@ -309,7 +309,7 @@ export default {
       this.getTemplateData()
     },
     // 控制保存按钮
-    isSaveBtnActiv () {
+    isSaveBtnActive () {
       let res = false
       if (this.basicInfo.name === '') {
         return true
@@ -328,7 +328,7 @@ export default {
       }
       return res
     },
-    async createTemp () {
+    async createTemp (isGoToNext) {
       const cacheData = JSON.parse(JSON.stringify(this.basicInfo))
       cacheData.mgmtRoles = [cacheData.mgmtRoles]
       const process = this.procOptions.find(item => item.procDefId === cacheData.procDefId)
@@ -350,7 +350,11 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.loadPage()
+        if (isGoToNext) {
+          this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
+        } else {
+          this.loadPage()
+        }
       }
     },
     async getTemplateData () {
@@ -371,7 +375,6 @@ export default {
       if (statusCode === 'OK') {
         if (data.contents.length === 1) {
           const templateData = data.contents[0]
-          console.log(22, templateData)
           this.basicInfo = templateData
           this.basicInfo.mgmtRoles = templateData.mgmtRoles[0].id
           this.basicInfo.useRoles = templateData.useRoles.map(role => role.id)
@@ -391,7 +394,7 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('tw_abandon'),
           onOk: async () => {
-            this.createTemp()
+            this.createTemp(true)
           },
           onCancel: () => {
             this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
@@ -458,6 +461,9 @@ export default {
             id: d
           }
         })
+        if (this.handlerRolesOptions.length > 0) {
+          this.basicInfo.handler = this.handlerRolesOptions[0].id
+        }
       }
     },
     // 处理人
@@ -485,6 +491,8 @@ export default {
       }
     },
     changeMgmtRole () {
+      this.basicInfo.handler = ''
+      this.getHandlerRoles()
       this.basicInfo.procDefId = ''
       this.getProcess()
       this.paramsChanged()
@@ -498,8 +506,18 @@ export default {
       }
     },
     // 改变管理编排
-    showSwitchChange () {
-      this.basicInfo.procDefId = ''
+    showSwitchChange (val) {
+      this.$Modal.confirm({
+        title: this.$t('[中间]关联编排'),
+        content: this.$t('切换编排会导致已配置的请求表单、审批表单、任务表单数据丢失,确认切换吗?'),
+        'z-index': 1000000,
+        onOk: async () => {
+          this.basicInfo.procDefId = ''
+        },
+        onCancel: () => {
+          this.showFlow = !this.showFlow
+        }
+      })
     },
     // 定版节点切换响应
     pendingSwitchChange () {

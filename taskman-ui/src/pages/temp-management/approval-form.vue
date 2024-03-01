@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row type="flex">
-      <Col span="20" offset="2">
+      <Col span="24" style="padding: 0 20px">
         <div style="margin: 24px 0">
           <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right: 30px;">
             <Tag
@@ -85,42 +85,35 @@
                   </div>
                 </div>
                 <div style="margin-top:16px">
-                  <div
-                    v-for="groupItem in dataFormInfo.groups"
-                    :key="groupItem.itemGroupId"
-                    style="margin-top: 16px;display: inline-block;"
-                  >
-                    <Button
-                      @click.stop="editGroupItem(groupItem)"
-                      type="primary"
-                      size="small"
-                      style="position: relative;left: 16px;bottom: 16px;"
-                      icon="md-create"
-                    ></Button>
-                    <Button
-                      shape="circle"
-                      :style="groupStyle[groupItem.itemGroupType]"
-                      @click="editGroupCustomItems(groupItem)"
-                      >{{ groupItem.itemGroupName }}</Button
+                  <div class="radio-group">
+                    <div
+                      v-for="(groupItem, index) in dataFormInfo.groups"
+                      :key="index"
+                      :class="{
+                        radio: true,
+                        custom: groupItem.itemGroupType === 'custom',
+                        workflow: groupItem.itemGroupType === 'workflow',
+                        optional: groupItem.itemGroupType === 'optional'
+                      }"
+                      :style="activeStyle(groupItem)"
                     >
-                    <Button
-                      @click.stop="removeGroupItem(groupItem)"
-                      type="error"
-                      size="small"
-                      icon="md-trash"
-                      style="position: relative;right: 16px;bottom: 16px;"
-                    ></Button>
+                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
+                      <span @click="editGroupCustomItems(groupItem)">
+                        {{ `${groupItem.itemGroup}` }}
+                      </span>
+                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
+                    </div>
+                    <span>
+                      <Button @click="selectItemGroup" type="primary" ghost icon="md-add"></Button>
+                    </span>
                   </div>
-                  <span>
-                    <Button @click="selectItemGroup" type="primary" icon="md-add"></Button>
-                  </span>
                 </div>
                 <div style="min-height: 200px;">
                   <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
                     <div
                       v-for="(item, itemIndex) in finalElement"
                       :key="itemIndex"
-                      style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
+                      style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
                     >
                       <div :key="itemIndex"></div>
                       <draggable
@@ -209,7 +202,7 @@
                       </Select>
                     </FormItem>
                     <FormItem :label="$t('tw_comments')">
-                      <Input type="textarea" :row="2"></Input>
+                      <Input type="textarea" :rows="2"></Input>
                     </FormItem>
                   </Form>
                 </div>
@@ -409,6 +402,7 @@ import {
   removeApprovalNode,
   getApprovalGlobalForm,
   copyItemGroup,
+  removeEmptyDataForm,
   getApprovalNodeGroups,
   deleteRequestGroupForm,
   getAllDataModels,
@@ -654,12 +648,12 @@ export default {
       allEntityList: [],
       groupStyle: {
         custom: {
-          border: '1px solid #ff9900',
-          color: '#ff9900'
+          border: '1px solid #b886f8',
+          color: '#b886f8'
         },
         workflow: {
-          border: '1px solid #ba89f8',
-          color: '#ba89f8'
+          border: '1px solid #cba43f',
+          color: '#cba43f'
         },
         optional: {
           border: '1px solid #81b337',
@@ -673,12 +667,36 @@ export default {
       nextNodeInfo: {} // 缓存待切换节点信息
     }
   },
+  computed: {
+    activeStyle () {
+      return function (item) {
+        let color = '#fff'
+        let obj = this.finalElement[0]
+        if (item.itemGroupId === obj.itemGroupId) {
+          if (item.itemGroupType === 'workflow') {
+            color = '#ebdcb4'
+          } else if (item.itemGroupType === 'custom') {
+            color = 'rgba(184, 134, 248, 0.6)'
+          } else if (item.itemGroupType === 'optional') {
+            color = 'rgba(129, 179, 55, 0.6)'
+          } else if (!item.itemGroupType) {
+            color = 'rgb(45, 140, 240)'
+          }
+        }
+        return { background: color }
+      }
+    }
+  },
   props: ['requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
+    this.removeEmptyDataForm()
     this.loadPage()
   },
   methods: {
+    async removeEmptyDataForm () {
+      await removeEmptyDataForm(this.requestTemplateId)
+    },
     loadPage (sort) {
       this.cancelGroup()
       this.getApprovalNode(sort)
@@ -689,8 +707,17 @@ export default {
         if (data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
-          this.approvalNodes = data.ids
-          this.activeEditingNode = this.approvalNodes[sort || 0]
+          // this.approvalNodes = data.ids
+          this.approvalNodes = [
+            {
+              id: '65dbf5aeea879865',
+              sort: 1,
+              name: '审批2',
+              formTemplate: '65e04c4a94c4cb4c'
+            }
+          ]
+          const tmpSort = sort === undefined ? 1 : sort
+          this.activeEditingNode = this.approvalNodes.find(node => node.sort === tmpSort)
           this.editNode(this.activeEditingNode)
         }
       }
@@ -767,7 +794,7 @@ export default {
       this.getApprovalNodeGroups(node)
     },
     async getApprovalNodeGroups (node) {
-      const { statusCode, data } = await getApprovalNodeGroups(node.formTemplate)
+      const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
       }
@@ -801,7 +828,8 @@ export default {
     async okSelect () {
       this.showSelectModel = false
       let params = {
-        formTemplateId: this.activeEditingNode.formTemplate,
+        requestTemplateId: this.requestTemplateId,
+        taskTemplateId: this.activeEditingNode.id,
         itemGroupId: this.itemGroup
       }
       const { statusCode } = await copyItemGroup(params)
@@ -947,7 +975,7 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.dataFormInfo.formTemplateId)
+          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.activeEditingNode.id)
           if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
@@ -1021,7 +1049,16 @@ export default {
       }
     },
     cancelGroup () {
-      this.finalElement = []
+      this.finalElement = [
+        {
+          itemGroupId: '',
+          formTemplateId: '',
+          requestTemplateId: '',
+          itemGroup: '',
+          itemGroupName: '',
+          attrs: []
+        }
+      ]
       this.isParmasChanged = false
       this.openPanel = ''
     },
@@ -1112,5 +1149,28 @@ fieldset[disabled] .ivu-input {
 .custom-item {
   width: calc(100% - 130px);
   display: inline-block;
+}
+.radio-group {
+  margin-bottom: 15px;
+  .radio {
+    padding: 5px 15px;
+    border-radius: 32px;
+    font-size: 12px;
+    cursor: pointer;
+    margin: 4px;
+    display: inline-block;
+  }
+  .custom {
+    border: 1px solid #b886f8;
+    color: #b886f8;
+  }
+  .workflow {
+    border: 1px solid #cba43f;
+    color: #cba43f;
+  }
+  .optional {
+    border: 1px solid #81b337;
+    color: #81b337;
+  }
 }
 </style>

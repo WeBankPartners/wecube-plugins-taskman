@@ -443,7 +443,6 @@ export default {
           requestTemplate: row.templateId,
           isCheck: 'Y',
           isHandle: 'N',
-          enforceDisable: 'Y',
           jumpFrom: this.tabName
         }
       })
@@ -463,7 +462,6 @@ export default {
           requestTemplate: row.templateId,
           isCheck: 'N',
           isHandle: 'Y',
-          enforceDisable: 'N',
           jumpFrom: 'group_handle'
         }
       })

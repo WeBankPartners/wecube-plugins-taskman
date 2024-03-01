@@ -38,7 +38,16 @@
               <Input v-model="item.name"></Input>
             </Col>
             <Col span="10">
-              3333
+              <!-- <ItemFilterRulesGroup
+                :isBatch="false"
+                ref="filterRulesGroupRef"
+                @filterRuleChanged="singleFilterRuleChanged"
+                :disabled="false"
+                :routineExpression="itemCustomInfo.customAttrs.routineExpression || currentSelectedEntity"
+                :allEntityType="allEntityType"
+                :currentSelectedEntity="currentSelectedEntity"
+              >
+              </ItemFilterRulesGroup> -->
             </Col>
             <Col span="4">
               <Button type="error" @click="deleteCustomItem(itemIndex)" icon="md-trash"></Button>
@@ -49,7 +58,7 @@
       </Form>
     </div>
     <div class="demo-drawer-footer">
-      <Button type="primary" style="margin-right: 16px" :disabled="isSaveBtnActiv()" @click="saveGroupDrawer">{{
+      <Button type="primary" style="margin-right: 16px" :disabled="isSaveBtnActive()" @click="saveGroupDrawer">{{
         $t('save')
       }}</Button>
       <Button @click="cancelGroupDrawer">{{ $t('cancel') }}</Button>
@@ -58,6 +67,7 @@
 </template>
 
 <script>
+import ItemFilterRulesGroup from './item-filter-rules-group.vue'
 import { saveRequestGroupForm, getRequestGroupForm } from '@/api/server.js'
 export default {
   name: 'workflow',
@@ -72,9 +82,13 @@ export default {
         { label: '选择已有数据', value: 'exist' }
       ],
       groupStyle: {
+        custom: {
+          border: '1px solid #b886f8',
+          color: '#b886f8'
+        },
         workflow: {
-          border: '1px solid #ba89f8',
-          color: '#ba89f8'
+          border: '1px solid #cba43f',
+          color: '#cba43f'
         },
         optional: {
           border: '1px solid #81b337',
@@ -146,11 +160,9 @@ export default {
         // this.group.systemItems = []
         // this.group.customItems = []
       }
-      console.log(55, this.group)
       this.openFormConfig = true
     },
     async getRequestGroupForm (params) {
-      console.log(66, params)
       const { statusCode, data } = await getRequestGroupForm({
         formTemplateId: params.formTemplateId,
         requestTemplateId: params.requestTemplateId,
@@ -167,7 +179,7 @@ export default {
       this.isParmasChanged = true
     },
     // 控制保存按钮
-    isSaveBtnActiv () {
+    isSaveBtnActive () {
       let res = false
       if (this.group.itemGroupName === '') {
         return true
@@ -211,6 +223,9 @@ export default {
       let tmpItem = JSON.parse(JSON.stringify(this.defaultItem))
       this.group.customItems.push(tmpItem)
     }
+  },
+  components: {
+    ItemFilterRulesGroup
   }
 }
 </script>

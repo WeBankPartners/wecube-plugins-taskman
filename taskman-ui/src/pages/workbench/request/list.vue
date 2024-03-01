@@ -1,14 +1,14 @@
 <template>
   <div>
-    <BaseHistory actionName="2"></BaseHistory>
+    <BaseList actionName="2"></BaseList>
   </div>
 </template>
 
 <script>
-import BaseHistory from '../publish/components/base-history.vue'
+import BaseList from '../publish/components/base-list.vue'
 export default {
   components: {
-    BaseHistory
+    BaseList
   }
 }
 </script>

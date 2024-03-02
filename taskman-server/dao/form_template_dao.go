@@ -94,3 +94,9 @@ func (d *FormTemplateDao) QueryListByIdOrRefId(id string) (list []*models.FormTe
 	err = d.DB.Where("id=? or ref_id=?", id, id).Find(&list)
 	return
 }
+
+func (d *FormTemplateDao) QueryListByTaskTemplate(taskTemplateId string) (list []*models.FormTemplateTable, err error) {
+	list = []*models.FormTemplateTable{}
+	err = d.DB.Where("task_template_id=?", taskTemplateId).Find(&list)
+	return
+}

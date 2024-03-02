@@ -10,10 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var (
-	operationLogService = service.GetOperationLogService()
-)
-
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
 	proNodeId := c.Param("proNodeId")
@@ -53,8 +49,7 @@ func UpdateTaskTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-
-	operationLogService.RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
 	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
 	middleware.ReturnData(c, result)
 }
@@ -75,7 +70,7 @@ func validateTaskTemplateParam(param models.TaskTemplateDto) error {
 	return nil
 }
 
-// 新建自定义任务模板
+// CreateCustomTaskTemplate新建自定义任务模板
 func CreateCustomTaskTemplate(c *gin.Context) {
 	var param models.CustomTaskTemplateCreateParam
 	if err := c.ShouldBindJSON(&param); err != nil {

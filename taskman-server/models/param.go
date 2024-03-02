@@ -81,6 +81,7 @@ type RequestHistoryParam struct {
 
 type RequestConfirmParam struct {
 	Id             string   `json:"id"`             // 请求ID
+	TaskId         string   `json:"taskId"`         // 请求确认任务ID
 	MarkTaskId     []string `json:"markTaskId"`     // 任务id
 	CompleteStatus string   `json:"completeStatus"` // 任务完成状态 取值：completed or uncompleted
 	Notes          string   `json:"notes"`          // 备注

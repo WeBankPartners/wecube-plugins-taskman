@@ -1146,3 +1146,9 @@ func (s TaskService) ListTasks(requestId string) ([]*models.TaskDto, error) {
 	}
 	return result, nil
 }
+
+func (s TaskService) ListImplementTasks(requestId string) (list []*models.TaskTable, err error) {
+	list = []*models.TaskTable{}
+	err = dao.X.SQL("select from task where request = ? and type =?", requestId, string(models.TaskTypeImplement)).Find(&list)
+	return
+}

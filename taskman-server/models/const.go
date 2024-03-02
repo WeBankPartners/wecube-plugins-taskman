@@ -185,3 +185,21 @@ const (
 	RequestFormTypeMessage RequestFormType = "message" // 请求表单-信息表单
 	RequestFormTypeData    RequestFormType = "data"    // 请求表单-数据表单
 )
+
+// TaskConfirmResult 任务确认结果
+type TaskConfirmResult string
+
+const (
+	TaskConfirmResultCompleted   TaskConfirmResult = "completed"   //完成
+	TaskConfirmResultUnCompleted TaskConfirmResult = "uncompleted" // 未完成
+)
+
+// TaskStatus 任务状态
+type TaskStatus string
+
+const (
+	TaskStatusCreated TaskStatus = "created" // 任务创建
+	TaskStatusMarked  TaskStatus = "marked"  // 任务认领
+	TaskStatusDoing   TaskStatus = "doing"   // 任务进行中
+	TaskStatusDone    TaskStatus = "done"    // 任务完成
+)

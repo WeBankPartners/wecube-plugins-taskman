@@ -981,6 +981,9 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if request.ProcInstanceId != "" {
 		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken, language)
 	}
+	if template.ProcDefId != "" {
+		form.AssociationWorkflow = true
+	}
 	_, form.Handler = getRequestHandler(request.Id)
 	if request.CustomFormCache != "" {
 		err = json.Unmarshal([]byte(request.CustomFormCache), &customForm)
@@ -1108,13 +1111,32 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 }
 
 // RequestConfirm 请求确认
-func RequestConfirm(param models.RequestConfirmParam) (err error) {
-	var markTaskIds string
-	if len(param.MarkTaskId) > 0 {
-		markTaskIds = strings.Join(param.MarkTaskId, ",")
+func RequestConfirm(param models.RequestConfirmParam, user string) (err error) {
+	var taskList []*models.TaskTable
+	var actions []*dao.ExecAction
+	var action *dao.ExecAction
+	var markTaskIdMap = convertArray2Map(param.MarkTaskId)
+	now := time.Now().Format(models.DateTimeFormat)
+	dao.X.SQL("select * from task where request = ? and type = ?", param.Id, string(models.TaskTypeImplement)).Find(&taskList)
+	if len(taskList) > 0 {
+		// 更新 处理任务表
+		for _, task := range taskList {
+			if markTaskIdMap[task.Id] {
+				action = &dao.ExecAction{Sql: " update task set confirm_result = ? where id = ?"}
+				action.Param = []interface{}{param.CompleteStatus, task.Id}
+				actions = append(actions, action)
+			}
+		}
 	}
-	_, err = dao.X.Exec("update reqeust set mark_task_id=?,complete_status=?,notes=?,updated_time=? where id =?",
-		markTaskIds, param.CompleteStatus, param.Notes, time.Now().Format(models.DateTimeFormat), param.Id)
+	// 更新请求确认任务设置为已完成
+	action = &dao.ExecAction{Sql: "update task set status = ?,updated_by = ?,updated_time = ? where id = ?"}
+	action.Param = []interface{}{models.TaskStatusDone, user, now, param.TaskId}
+	actions = append(actions, action)
+	// 更新请求表状态,设置为完成
+	action = &dao.ExecAction{Sql: "update request set status = ?,notes = ?,updated_by = ?,updated_time= ? where id = ?"}
+	action.Param = []interface{}{models.RequestStatusCompleted, param.Notes, user, now, param.Id}
+	actions = append(actions, action)
+	err = dao.Transaction(actions)
 	return
 }
 
@@ -1129,8 +1151,17 @@ func convertMap2Array(hashMap map[string]bool) (arr []string) {
 
 func convertArray2Map(arr []string) map[string]bool {
 	hashMap := make(map[string]bool, 0)
-	for _, str := range arr {
-		hashMap[str] = true
+	if len(arr) > 0 {
+		for _, str := range arr {
+			hashMap[str] = true
+		}
 	}
 	return hashMap
+}
+
+// HandleRequestControl 控制request流程扭转
+func HandleRequestControl(requestId string) (err error) {
+
+	// 创建 请求确认task
+	return
 }

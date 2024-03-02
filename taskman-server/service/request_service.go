@@ -531,7 +531,8 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		return result, tmpErr
 	}
 	var items []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where form_template in (select data_form_template from request_template where id=?) order by item_group,sort", requestTemplateId).Find(&items)
+	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template=?"+
+		" and request_form_type = ?) order by item_group,sort", requestTemplateId, models.RequestFormTypeData).Find(&items)
 	if err != nil {
 		return
 	}
@@ -578,7 +579,7 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
 		itemGroup := models.FormTemplateTable{}
 		if v.FormTemplate != "" {
-			dao.X.SQL("select * from form_item_template_new where id=?", v.FormTemplate).Get(&itemGroup)
+			dao.X.SQL("select * from form_item_template where id=?", v.FormTemplate).Get(&itemGroup)
 			itemGroupType = itemGroup.ItemGroupType
 			itemGroupRule = itemGroup.ItemGroupRule
 		}

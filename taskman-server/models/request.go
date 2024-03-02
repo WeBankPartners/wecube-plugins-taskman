@@ -38,9 +38,11 @@ type RequestTable struct {
 	Description         string             `json:"description" xorm:"description"` // 请求描述
 	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
 	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`  // 撤回标志 0表示没被撤回,1表示撤回
+	Notes               string             `json:"notes" xorm:"notes"`             // 请求确认备注
 	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`            // 自定义表单
+	AssociationWorkflow bool               `json:"associationWorkflow"`            // 是否关联编排
 }
 
 func (RequestTable) TableName() string {
@@ -252,25 +254,26 @@ type RequestProDataV2Dto struct {
 }
 
 type RequestForm struct {
-	Id                string     `json:"id"`
-	Name              string     `json:"name"`
-	RequestType       int        `json:"requestType"`       // 请求类型,0表示请求,1表示发布
-	Progress          int        `json:"progress"`          // 请求进度
-	Status            string     `json:"status"`            // 请求状态
-	CurNode           string     `json:"curNode"`           // 当前节点
-	Handler           string     `json:"handler"`           // 当前处理人
-	CreatedBy         string     `json:"createdBy"`         // 创建人
-	Role              string     `json:"role"`              // 创建人角色
-	TemplateName      string     `json:"templateName"`      // 使用模板
-	Version           string     `json:"version"`           // 模板版本
-	TemplateGroupName string     `json:"templateGroupName"` // 使用模板组
-	Description       string     `json:"description"`       // 请求描述
-	CreatedTime       string     `json:"createdTime"`       // 创建时间
-	ExpectTime        string     `json:"expectTime" `       // 期望时间
-	OperatorObj       string     `json:"operatorObj"`       // 发布操作对象
-	ProcInstanceId    string     `json:"procInstanceId"`    // 编排实例ID
-	ExpireDay         int        `json:"expireDay"`         // 模板过期时间
-	CustomForm        CustomForm `json:"customForm"`        // 自定义表单
+	Id                  string     `json:"id"`
+	Name                string     `json:"name"`
+	RequestType         int        `json:"requestType"`         // 请求类型,0表示请求,1表示发布
+	Progress            int        `json:"progress"`            // 请求进度
+	Status              string     `json:"status"`              // 请求状态
+	CurNode             string     `json:"curNode"`             // 当前节点
+	Handler             string     `json:"handler"`             // 当前处理人
+	CreatedBy           string     `json:"createdBy"`           // 创建人
+	Role                string     `json:"role"`                // 创建人角色
+	TemplateName        string     `json:"templateName"`        // 使用模板
+	Version             string     `json:"version"`             // 模板版本
+	TemplateGroupName   string     `json:"templateGroupName"`   // 使用模板组
+	Description         string     `json:"description"`         // 请求描述
+	CreatedTime         string     `json:"createdTime"`         // 创建时间
+	ExpectTime          string     `json:"expectTime" `         // 期望时间
+	OperatorObj         string     `json:"operatorObj"`         // 发布操作对象
+	ProcInstanceId      string     `json:"procInstanceId"`      // 编排实例ID
+	ExpireDay           int        `json:"expireDay"`           // 模板过期时间
+	AssociationWorkflow bool       `json:"associationWorkflow"` // 是否关联编排
+	CustomForm          CustomForm `json:"customForm"`          // 自定义表单
 }
 
 type CustomForm struct {

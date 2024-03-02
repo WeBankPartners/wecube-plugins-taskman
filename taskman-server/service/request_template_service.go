@@ -439,7 +439,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	var actions []*dao.ExecAction
 	var taskTemplateList []*models.TaskTemplateTable
 	var requestTemplate *models.RequestTemplateTable
-	var formTemplateList []*models.FormTemplateNewTable
+	var formTemplateList []*models.FormTemplateTable
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
 	if err != nil {
@@ -515,7 +515,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 
 func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAction, err error) {
 	var taskTemplateTable []*models.TaskTemplateTable
-	var formTemplateList []*models.FormTemplateNewTable
+	var formTemplateList []*models.FormTemplateTable
 	var taskHandlerTemplateIds []string
 	var formTemplateIds []string
 	rtObj, err := GetRequestTemplateService().GetRequestTemplate(id)
@@ -537,7 +537,7 @@ func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag 
 		}
 	}
 	// 删除关联 request_template_id的from_template
-	dao.X.SQL("select id,task_template from form_template_new where request_template=?", id).Find(&formTemplateList)
+	dao.X.SQL("select id,task_template from form_template where request_template=?", id).Find(&formTemplateList)
 	if len(formTemplateList) > 0 {
 		for _, formTemplate := range formTemplateList {
 			formTemplateIds = append(formTemplateIds, formTemplate.Id)
@@ -548,7 +548,7 @@ func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag 
 	dao.X.SQL("select id,name from request where request_template=?", id).Find(&requestTable)
 	if len(requestTable) > 0 {
 		var formTable []*models.FormTable
-		dao.X.SQL("select id from form_new where form_template in ('" + strings.Join(formTemplateIds, "','") + "')").Find(&formTable)
+		dao.X.SQL("select id from form where form_template in ('" + strings.Join(formTemplateIds, "','") + "')").Find(&formTable)
 		var formIds []string
 		for _, v := range formTable {
 			formIds = append(formIds, v.Id)
@@ -559,11 +559,11 @@ func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag 
 		actions = append(actions, &dao.ExecAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
 		actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})
-		actions = append(actions, &dao.ExecAction{Sql: "delete from form_new where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
+		actions = append(actions, &dao.ExecAction{Sql: "delete from form where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	}
 	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template_new where id in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template where id in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where request_template=?", Param: []interface{}{id}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{id}})
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template where id=?", Param: []interface{}{id}})
@@ -682,7 +682,7 @@ func (s *RequestTemplateService) getAllRequestTemplate() (templateMap map[string
 }
 
 func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	var actions []*dao.ExecAction
 	var requestTemplateRoles []*models.RequestTemplateRoleTable
 	var taskTemplates []*models.TaskTemplateTable
@@ -762,7 +762,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 
 func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId string) error {
 	var parentId string
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
@@ -1193,7 +1193,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	for _, v := range input.FormTemplate {
-		actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)", Param: []interface{}{v.Id, v.Name, v.Description, operator, nowTime, operator, nowTime}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?)", Param: []interface{}{v.Id, operator, nowTime, operator, nowTime}})
 	}
 	for _, v := range input.FormItemTemplate {
 		tmpAction := dao.ExecAction{Sql: "insert into form_item_template(id,form_template,name,description,item_group,item_group_name,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,in_display_name,is_ref_inside,multiple,default_clear) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}

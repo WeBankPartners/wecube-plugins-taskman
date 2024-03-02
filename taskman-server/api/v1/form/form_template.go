@@ -139,7 +139,7 @@ func GetFormTemplate(c *gin.Context) {
 
 // GetGlobalFormEntity 获取全局表单 entity
 func GetGlobalFormEntity(c *gin.Context) {
-	var result []*models.FormTemplateNewTable
+	var result []*models.FormTemplateTable
 	var err error
 	requestTemplateId := c.Param("id")
 	if requestTemplateId == "" {
@@ -270,14 +270,14 @@ func DeleteFormTemplateItemGroup(c *gin.Context) {
 
 // CopyDataFormTemplateItemGroup 数据表单模板组copy
 func CopyDataFormTemplateItemGroup(c *gin.Context) {
-	requestTemplate := c.Query("request-template-id")
-	taskTemplate := c.Query("task-template-id")
+	requestTemplateId := c.Query("request-template-id")
+	taskTemplateId := c.Query("task-template-id")
 	formTemplateId := c.Query("item-group-id")
-	if formTemplateId == "" || requestTemplate == "" || taskTemplate == "" {
+	if formTemplateId == "" || requestTemplateId == "" || taskTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id or task-template-id")
 		return
 	}
-	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(requestTemplate, formTemplateId, taskTemplate)
+	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

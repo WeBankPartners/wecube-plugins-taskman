@@ -250,7 +250,7 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 }
 
 func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken, language string) error {
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	var actions []*dao.ExecAction
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if err != nil {
@@ -482,7 +482,7 @@ func getRequestTemplateByRequest(requestId string) (templateId string, err error
 }
 
 func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStruct, err error) {
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	var items []*models.FormItemTemplateTable
 	result = models.RequestTemplateFormStruct{}
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
@@ -576,7 +576,7 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
-		itemGroup := models.FormTemplateNewTable{}
+		itemGroup := models.FormTemplateTable{}
 		if v.FormTemplate != "" {
 			dao.X.SQL("select * from form_item_template_new where id=?", v.FormTemplate).Get(&itemGroup)
 			itemGroupType = itemGroup.ItemGroupType

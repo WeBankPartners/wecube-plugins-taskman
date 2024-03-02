@@ -44,12 +44,8 @@ func GetTaskTemplate(requestTemplateId, proNodeId, nodeId string) (result models
 		err = fmt.Errorf("Can not find any form template with id=%s ", taskTemplate.FormTemplate)
 		return
 	}
-	result.Name = formTemplateTable[0].Name
-	result.Description = formTemplateTable[0].Description
-	result.UpdatedTime = formTemplateTable[0].UpdatedTime
-	result.UpdatedBy = formTemplateTable[0].UpdatedBy
 	var formItemTemplate []*models.FormItemTemplateTable
-	var formItemTemplateGroup models.FormTemplateNewTable
+	var formItemTemplateGroup models.FormTemplateTable
 	dao.X.SQL("select * from form_item_template where form_template=?", taskTemplate.FormTemplate).Find(&formItemTemplate)
 	if len(formItemTemplate) > 0 && formItemTemplate[0].FormTemplate != "" {
 		dao.X.SQL("select * from form_item_template_group where id=?", formItemTemplate[0].FormTemplate).Get(&formItemTemplateGroup)
@@ -137,10 +133,6 @@ func getFormTemplateUpdateActions(param models.FormTemplateDto) (actions []*dao.
 	}
 	if len(formTemplateTable) == 0 {
 		err = fmt.Errorf("Can not find any form template with id=%s ", param.Id)
-		return
-	}
-	if param.UpdatedTime != formTemplateTable[0].UpdatedTime {
-		err = fmt.Errorf("Update time validate fail,please refersh data ")
 		return
 	}
 	updateAction := dao.ExecAction{Sql: "update form_template set name=?,description=?,updated_by=?,updated_time=? where id=?"}

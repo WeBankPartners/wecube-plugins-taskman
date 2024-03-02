@@ -69,7 +69,6 @@ func New() (err error) {
 	approvalTemplateRoleDao := &dao.ApprovalTemplateRoleDao{DB: engine}
 	approvalDao := &dao.ApprovalDao{DB: engine}
 	approvalRoleDao := &dao.ApprovalRoleDao{DB: engine}
-	formItemTemplateGroupDao := &dao.FormItemTemplateGroupDao{DB: engine}
 	taskHandleTemplateDao := &dao.TaskHandleTemplateDao{DB: engine}
 	// 初始化Service
 	collectTemplateService = &CollectTemplateService{collectTemplateDao: collectTemplateDao}
@@ -85,8 +84,8 @@ func New() (err error) {
 	requestTemplateService = &RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao,
 		requestTemplateRoleDao: requestTemplateRoleDao, taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao, formTemplateDao: formTemplateDao}
 	requestTemplateGroupService = &RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
-	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
-	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
+	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
+	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formTemplateDao: formTemplateDao}
 	roleService = &RoleService{}
 	approvalTemplateService = &ApprovalTemplateService{approvalTemplateDao: approvalTemplateDao, approvalTemplateRoleDao: approvalTemplateRoleDao}
 	approvalService = &ApprovalService{approvalDao: approvalDao, approvalRoleDao: approvalRoleDao}

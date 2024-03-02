@@ -14,10 +14,9 @@ import (
 )
 
 type FormTemplateService struct {
-	formTemplateDao          *dao.FormTemplateDao
-	formItemTemplateDao      *dao.FormItemTemplateDao
-	formItemTemplateGroupDao *dao.FormItemTemplateGroupDao
-	formDao                  *dao.FormDao
+	formTemplateDao     *dao.FormTemplateDao
+	formItemTemplateDao *dao.FormItemTemplateDao
+	formDao             *dao.FormDao
 }
 
 func (s *FormTemplateService) AddRequestFormTemplate(session *xorm.Session, formTemplateDto models.FormTemplateDto) (newId string, err error) {
@@ -27,7 +26,7 @@ func (s *FormTemplateService) AddRequestFormTemplate(session *xorm.Session, form
 	formTemplateDto.Id = newId
 	// 新建 formTemplate
 	if len(formTemplateDto.Items) > 0 && formTemplateDto.Items[0].FormTemplate == "" {
-		_, err = session.Exec("insert into form_template_new(id,request_template,request_form_type,created_time) values(?,?,?,?)",
+		_, err = session.Exec("insert into form_template(id,request_template,request_form_type,created_time) values(?,?,?,?)",
 			newId, formTemplateDto.RequestTemplate, formTemplateDto.RequestFormType, time.Now().Format(models.DateTimeFormat))
 		if err != nil {
 			return
@@ -97,7 +96,7 @@ func (s *FormTemplateService) UpdateFormTemplateByDto(session *xorm.Session, for
 
 func (s *FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (result *models.FormTemplateDto, err error) {
 	var requestTemplate *models.RequestTemplateTable
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	result = &models.FormTemplateDto{Items: []*models.FormItemTemplateDto{}}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -120,7 +119,7 @@ func (s *FormTemplateService) GetRequestFormTemplate(requestTemplateId string) (
 	return
 }
 
-func (s *FormTemplateService) QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, requestFormType string) (formTemplate *models.FormTemplateNewTable, err error) {
+func (s *FormTemplateService) QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, requestFormType string) (formTemplate *models.FormTemplateTable, err error) {
 	formTemplate, err = s.formTemplateDao.QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, requestFormType)
 	return
 }
@@ -152,7 +151,7 @@ func (s *FormTemplateService) GetFormTemplate(requestTemplateId, taskTemplateId 
 }
 
 func (s *FormTemplateService) getFormTemplateGroups(requestTemplateId, taskTemplateId, requestFormType string) (groups []*models.FormTemplateGroupDto, err error) {
-	var formItemTemplateGroupList []*models.FormTemplateNewTable
+	var formItemTemplateGroupList []*models.FormTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateTable
 	groups = []*models.FormTemplateGroupDto{}
 	formItemTemplateGroupList, err = s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId, requestFormType)
@@ -180,9 +179,9 @@ func (s *FormTemplateService) getFormTemplateGroups(requestTemplateId, taskTempl
 	return
 }
 
-func (s *FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (result []*models.FormTemplateNewTable, err error) {
+func (s *FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId string) (result []*models.FormTemplateTable, err error) {
 	var requestTemplate *models.RequestTemplateTable
-	result = []*models.FormTemplateNewTable{}
+	result = []*models.FormTemplateTable{}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -193,7 +192,7 @@ func (s *FormTemplateService) GetDataFormTemplateItemGroups(requestTemplateId st
 	}
 	result, err = s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, "", string(models.RequestFormTypeData))
 	// 排序
-	sort.Sort(models.FormTemplateNewTableSort(result))
+	sort.Sort(models.FormTemplateTableSort(result))
 	return
 }
 
@@ -230,7 +229,7 @@ func (s *FormTemplateService) CreateRequestFormTemplate(formTemplateDto models.F
 func (s *FormTemplateService) UpdateRequestFormTemplate(formTemplateDto models.FormTemplateDto) (err error) {
 	// 需要对当前用户进行校验&操作时间进行校验
 	var requestTemplate *models.RequestTemplateTable
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(formTemplateDto.RequestTemplate)
 	if err != nil {
 		return
@@ -268,7 +267,7 @@ func (s *FormTemplateService) GetFormConfig(requestTemplateId, taskTemplateId, f
 	var formItemTemplateList []*models.FormItemTemplateDto
 	var existAttrMap = make(map[string]bool)
 	var existCustomItemsMap = make(map[string]string)
-	var formItemTemplateGroup *models.FormTemplateNewTable
+	var formItemTemplateGroup *models.FormTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return
@@ -286,7 +285,7 @@ func (s *FormTemplateService) GetFormConfig(requestTemplateId, taskTemplateId, f
 			return
 		}
 		// 查询表单组
-		formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(formTemplateId)
+		formItemTemplateGroup, err = s.formTemplateDao.Get(formTemplateId)
 		if err != nil {
 			return
 		}
@@ -343,7 +342,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 	var entitiesList []*models.ExpressionEntities
 	var expressEntity *models.ExpressionEntities
 	var existAttrMap = make(map[string]bool)
-	var formItemTemplateGroup *models.FormTemplateNewTable
+	var formItemTemplateGroup *models.FormTemplateTable
 	configureDto = &models.FormTemplateGroupConfigureDto{RequestTemplateId: requestTemplateId, TaskTemplateId: taskTemplateId, FormTemplateId: formTemplateId, SystemItems: []*models.ProcEntityAttributeObj{}, CustomItems: []*models.FormItemTemplateDto{}}
 	// 1.先查询用户配置数据
 	if formTemplateId != "" {
@@ -352,7 +351,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 			return
 		}
 		// 查询表单组
-		formItemTemplateGroup, err = s.formItemTemplateGroupDao.Get(formTemplateId)
+		formItemTemplateGroup, err = s.formTemplateDao.Get(formTemplateId)
 		if err != nil {
 			return
 		}
@@ -405,7 +404,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 }
 
 func (s *FormTemplateService) CleanDataForm(requestTemplateId string) (err error) {
-	var list []*models.FormTemplateNewTable
+	var list []*models.FormTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateTable
 	list, err = s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, "", string(models.RequestFormTypeData))
 	if err != nil {
@@ -430,7 +429,7 @@ func (s *FormTemplateService) CleanDataForm(requestTemplateId string) (err error
 }
 
 func (s *FormTemplateService) DeleteFormTemplateItemGroup(formTemplateId string) (err error) {
-	var formTemplateList []*models.FormTemplateNewTable
+	var formTemplateList []*models.FormTemplateTable
 	formTemplateList, err = s.formTemplateDao.QueryListByIdOrRefId(formTemplateId)
 	if err != nil {
 		return err
@@ -454,7 +453,7 @@ func (s *FormTemplateService) DeleteFormTemplateItemGroup(formTemplateId string)
 }
 
 func (s *FormTemplateService) SortFormTemplateItemGroup(param models.FormTemplateGroupSortDto) (err error) {
-	var formTemplateList []*models.FormTemplateNewTable
+	var formTemplateList []*models.FormTemplateTable
 	var formTemplateSortMap = s.buildFormTemplateGroupSortMap(param.ItemGroupIdSort)
 	formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(param.RequestTemplateId, param.TaskTemplateId, "")
 	if err != nil {

@@ -54,7 +54,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 	}
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	newTaskFormObj := models.FormTable{Id: guid.CreateGuid(), Name: "form_" + input.TaskName}
+	newTaskFormObj := models.FormTable{Id: guid.CreateGuid()}
 	input.RoleName = remakeTaskReportRole(input.RoleName)
 	newTaskObj := models.TaskTable{Id: guid.CreateGuid(), Name: input.TaskName, Status: "created", Form: newTaskFormObj.Id, Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ","), Handler: input.Handler}
 	taskId = newTaskObj.Id
@@ -116,7 +116,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 		input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, "system", nowTime, "system",
 		nowTime, newTaskObj.TemplateType}
 	actions = append(actions, &taskInsertAction)
-	actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,name,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.Name, newTaskFormObj.FormTemplate}})
+	actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {
 		tmpGuidList := guid.CreateGuidList(len(formDataEntity.FormItemValues))
 		for i, formDataItem := range formDataEntity.FormItemValues {

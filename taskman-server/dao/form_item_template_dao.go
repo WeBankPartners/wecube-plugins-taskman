@@ -52,7 +52,7 @@ func (d *FormItemTemplateDao) Get(formItemTemplateId string) (*models.FormItemTe
 
 func (d *FormItemTemplateDao) QueryDtoByFormTemplate(formTemplate string) (formItemTemplateDtoList []*models.FormItemTemplateDto, err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
-	var formItemTemplateGroup models.FormTemplateNewTable
+	var formItemTemplateGroup models.FormTemplateTable
 	formItemTemplateDtoList = []*models.FormItemTemplateDto{}
 	if formTemplate == "" {
 		return

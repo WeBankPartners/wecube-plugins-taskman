@@ -127,8 +127,8 @@ const (
 type TaskResultType string
 
 const (
-	TaskResultTypeComplete   TaskResultType = "complete"   // 完成
-	TaskResultTypeUncomplete TaskResultType = "uncomplete" // 未完成
+	TaskResultTypeComplete    TaskResultType = "complete"    // 完成
+	TaskResultTypeUncompleted TaskResultType = "uncompleted" // 未完成
 )
 
 // TaskHandleResultType 任务处理 处理结果
@@ -159,14 +159,6 @@ const (
 	RequestFormTypeData    RequestFormType = "data"    // 请求表单-数据表单
 )
 
-// TaskConfirmResult 任务确认结果
-type TaskConfirmResult string
-
-const (
-	TaskConfirmResultCompleted   TaskConfirmResult = "completed"   //完成
-	TaskConfirmResultUnCompleted TaskConfirmResult = "uncompleted" // 未完成
-)
-
 // TaskStatus 任务状态
 type TaskStatus string
 
@@ -175,4 +167,16 @@ const (
 	TaskStatusMarked  TaskStatus = "marked"  // 任务认领
 	TaskStatusDoing   TaskStatus = "doing"   // 任务进行中
 	TaskStatusDone    TaskStatus = "done"    // 任务完成
+)
+
+// ProgressStatus 请求状态
+type ProgressStatus int
+
+const (
+	ProgressStatusInProgress                 ProgressStatus = 1 // 进行中
+	ProgressStatusNotStart                   ProgressStatus = 2 // 未开始
+	ProgressStatusCompleted                  ProgressStatus = 3 // 已完成
+	ProgressStatusFail                       ProgressStatus = 4 // 报错失败,被拒绝了
+	ProgressStatusAutoExitStatus             ProgressStatus = 5 // 自动退出
+	ProgressStatusInternallyTerminatedStatus ProgressStatus = 6 // 自动退出
 )

@@ -295,6 +295,7 @@ func (s *RequestTemplateService) CheckRequestTemplateRoles(requestTemplateId str
 }
 
 func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
+	var checkRole, checkHandler string
 	newGuid := guid.CreateGuid()
 	newCheckTaskId := fmt.Sprintf("ch_%s", guid.CreateGuid())
 	newConfirmTaskId := fmt.Sprintf("co_%s", guid.CreateGuid())
@@ -323,13 +324,20 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 		}
 		// 任务模板添加定版任务和确认任务
 		if param.CheckSwitch {
+			checkRole = param.CheckRole
+			checkHandler = param.CheckHandler
+			if checkRole == "" && len(param.MGMTRoles) > 0 {
+				// 定版处理角色为空的话,则取属主角色
+				checkRole = param.MGMTRoles[0]
+				checkHandler = param.Handler
+			}
 			_, err = s.taskTemplateDao.Add(session, &models.TaskTemplateTable{Id: newCheckTaskId, Name: "check", RequestTemplate: newGuid,
 				ExpireDay: param.CheckExpireDay, Type: string(models.TaskTypeCheck), CreatedTime: now, UpdatedTime: now})
 			if err != nil {
 				return err
 			}
 			_, err = s.taskHandleTemplateDao.Add(session, &models.TaskHandleTemplateTable{Id: guid.CreateGuid(), TaskTemplate: newCheckTaskId,
-				Role: param.CheckRole, Handler: param.CheckHandler})
+				Role: checkRole, Handler: checkHandler})
 			if err != nil {
 				return err
 			}
@@ -440,6 +448,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	var taskTemplateList []*models.TaskTemplateTable
 	var requestTemplate *models.RequestTemplateTable
 	var formTemplateList []*models.FormTemplateTable
+	var checkRole, checkHandler string
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
 	if err != nil {
@@ -482,11 +491,18 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where request_template=? and type=?", Param: []interface{}{param.Id, string(models.TaskTypeConfirm)}})
 	// 根据参数重新任务模板添加定版任务和确认任务
 	if param.CheckSwitch {
+		checkRole = param.CheckRole
+		checkHandler = param.CheckHandler
+		if checkRole == "" && len(param.MGMTRoles) > 0 {
+			// 定版处理角色为空的话,则取属主角色
+			checkRole = param.MGMTRoles[0]
+			checkHandler = param.Handler
+		}
 		newCheckTaskId := fmt.Sprintf("ch_%s", guid.CreateGuid())
 		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,request_template,expire_day,type,created_time," +
 			"updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{newCheckTaskId, "check", param.Id, param.CheckExpireDay, string(models.TaskTypeCheck), nowTime, nowTime}})
 		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,handler) values(?,?,?,?)",
-			Param: []interface{}{guid.CreateGuid(), newCheckTaskId, param.CheckRole, param.CheckHandler}})
+			Param: []interface{}{guid.CreateGuid(), newCheckTaskId, checkRole, checkHandler}})
 	}
 	if param.ConfirmSwitch {
 		newConfirmTaskId := fmt.Sprintf("co_%s", guid.CreateGuid())
@@ -1069,7 +1085,7 @@ func (s *RequestTemplateService) RequestTemplateExport(requestTemplateId string)
 	var requestTemplateTable []*models.RequestTemplateTable
 	result.RequestTemplateRole = []*models.RequestTemplateRoleTable{}
 	result.TaskTemplate = []*models.TaskTemplateTable{}
-	result.TaskTemplateRole = []*models.TaskTemplateRoleTable{}
+	result.TaskTemplateRole = []*models.TaskHandleTemplateTable{}
 	result.FormTemplate = []*models.FormTemplateTable{}
 	result.FormItemTemplate = []*models.FormItemTemplateTable{}
 	err = dao.X.SQL("select * from request_template where id=?", requestTemplateId).Find(&requestTemplateTable)
@@ -1237,7 +1253,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	}
 	for _, v := range input.TaskTemplateRole {
 		if _, b := roleMap[v.Role]; b {
-			actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{v.Id, v.TaskTemplate, v.Role, v.RoleType}})
+			//actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{v.Id, v.TaskTemplate, v.Role, v.RoleType}})
 		}
 	}
 	err = dao.Transaction(actions)

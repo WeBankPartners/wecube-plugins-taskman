@@ -25,11 +25,12 @@ func (TaskTemplateTable) TableName() string {
 	return "task_template"
 }
 
-// type TaskTemplateVo struct {
-// 	Id      string `json:"id" xorm:"'id' pk"`
-// 	Handler string `json:"handler" xorm:"handler"`
-// 	Role    string `json:"role" xorm:"role"`
-// }
+type TaskTemplateRoleTable struct {
+	Id           string `json:"id" xorm:"id"`
+	TaskTemplate string `json:"taskTemplate" xorm:"task_template"`
+	Role         string `json:"role" xorm:"role"`
+	RoleType     string `json:"roleType" xorm:"role_type"`
+}
 
 type TaskTemplateDto struct {
 	Id              string                   `json:"id"`
@@ -42,11 +43,6 @@ type TaskTemplateDto struct {
 	ExpireDay       int                      `json:"expireDay"`
 	UpdatedTime     string                   `json:"updatedTime"`
 	UpdatedBy       string                   `json:"updatedBy"`
-	MGMTRoles       []string                 `json:"mgmtRoles"`    // 还有用吗？
-	USERoles        []string                 `json:"useRoles"`     // 还有用吗？
-	MGMTRoleObjs    []*RoleTable             `json:"mgmtRoleObjs"` // 还有用吗？
-	USERoleObjs     []*RoleTable             `json:"useRoleObjs"`  // 还有用吗？
-	Items           []*FormItemTemplateDto   `json:"items"`
 	RequestTemplate string                   `json:"requestTemplate"`
 	Sort            int                      `json:"sort"`
 	HandleMode      string                   `json:"handleMode"`

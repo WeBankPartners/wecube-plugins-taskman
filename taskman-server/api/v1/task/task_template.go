@@ -9,67 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// func GetTaskTemplate(c *gin.Context) {
-// 	requestTemplateId := c.Param("requestTemplateId")
-// 	proNodeId := c.Param("proNodeId")
-// 	result, err := service.GetTaskTemplate(requestTemplateId, proNodeId, "")
-// 	if err != nil {
-// 		middleware.ReturnServerHandleError(c, err)
-// 		return
-// 	}
-// 	middleware.ReturnData(c, result)
-// }
-
-// func UpdateTaskTemplate(c *gin.Context) {
-// 	id := c.Param("requestTemplateId")
-// 	var param models.TaskTemplateDto
-// 	if err := c.ShouldBindJSON(&param); err != nil {
-// 		middleware.ReturnParamValidateError(c, err)
-// 		return
-// 	}
-// 	var err error
-// 	param.UpdatedBy = middleware.GetRequestUser(c)
-// 	err = validateTaskTemplateParam(param)
-// 	if err != nil {
-// 		middleware.ReturnParamValidateError(c, err)
-// 		return
-// 	}
-// 	if param.Id != "" {
-// 		err = service.UpdateTaskTemplate(param)
-// 	} else {
-// 		err = service.CreateTaskTemplate(param, id)
-// 	}
-// 	if err != nil {
-// 		middleware.ReturnServerHandleError(c, err)
-// 		return
-// 	}
-// 	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(id, middleware.GetRequestUser(c))
-// 	if err != nil {
-// 		middleware.ReturnServerHandleError(c, err)
-// 		return
-// 	}
-// 	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
-// 	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
-// 	middleware.ReturnData(c, result)
-// }
-
-// func validateTaskTemplateParam(param models.TaskTemplateDto) error {
-// 	if param.Name == "" {
-// 		return fmt.Errorf("Param name can not empty ")
-// 	}
-// 	if len(param.USERoles) == 0 {
-// 		return fmt.Errorf("Param user roles can not empty ")
-// 	}
-// 	if param.ExpireDay <= 0 {
-// 		return fmt.Errorf("Param expire day can not empty ")
-// 	}
-// 	if param.NodeDefId == "" {
-// 		return fmt.Errorf("Param nodeDefId can not empty ")
-// 	}
-// 	return nil
-// }
-
-// 新建任务模板
+// CreateTaskTemplate 新建任务模板
 func CreateTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")
 	var param models.TaskTemplateDto
@@ -82,6 +22,7 @@ func CreateTaskTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
+	// todo 校验 NodeDefId 有问题,nodeDefId可以是空的
 	if param.Id != "" || param.NodeDefId != "" {
 		middleware.ReturnParamValidateError(c, errors.New("param not empty"))
 		return
@@ -109,7 +50,7 @@ func CreateTaskTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// 更新任务模板/创建编排任务模板
+// UpdateTaskTemplate 更新任务模板/创建编排任务模板
 func UpdateTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")
 	id := c.Param("id")
@@ -186,13 +127,6 @@ func GetTaskTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	// 校验权限
-	user := middleware.GetRequestUser(c)
-	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
 	result, err := service.GetTaskTemplateService().GetTaskTemplate(requestTemplateId, id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -210,13 +144,6 @@ func ListTaskTemplateIds(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	// 校验权限
-	user := middleware.GetRequestUser(c)
-	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
 	result, err := service.GetTaskTemplateService().ListTaskTemplateIds(requestTemplateId, typ, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -232,13 +159,6 @@ func ListTaskTemplates(c *gin.Context) {
 	// 校验参数
 	if requestTemplateId == "" || typ == "" {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
-		return
-	}
-	// 校验权限
-	user := middleware.GetRequestUser(c)
-	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	result, err := service.GetTaskTemplateService().ListTaskTemplates(requestTemplateId, typ, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))

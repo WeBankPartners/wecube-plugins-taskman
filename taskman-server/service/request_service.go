@@ -329,7 +329,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 
 func SaveRequestCacheV2(requestId, operator, userToken string, param *models.RequestProDataV2Dto) error {
 	var customFormCache []byte
-	var approvalAction []*dao.ExecAction
+	var taskApprovalCache string
 	err := ValidateRequestForm(param.Data, userToken)
 	if err != nil {
 		return err
@@ -366,20 +366,16 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 			return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
 		}
 	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions := UpdateRequestFormItem(requestId, newParam)
-	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), requestId}})
-	// 创建请求审批
 	if len(param.ApprovalList) > 0 {
-		approvalAction, err = GetApprovalService().CreateApprovals(param.ApprovalList)
-		if err != nil {
-			return err
-		}
-		if len(approvalAction) > 0 {
-			actions = append(actions, approvalAction...)
+		approvalBytes, _ := json.Marshal(param.ApprovalList)
+		if approvalBytes != nil {
+			taskApprovalCache = string(approvalBytes)
 		}
 	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions := UpdateRequestFormItem(requestId, newParam)
+	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, requestId}})
 	return dao.Transaction(actions)
 }
 
@@ -750,10 +746,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		}
 		bindCacheBytes, _ := json.Marshal(bindData)
 		bindCache := string(bindCacheBytes)
-		_, err = dao.X.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
-		if err == nil {
-			notifyRoleMail(requestId, userToken, language)
-		}
+		// 请求定版, 根据模板配置开启是否确认定版
+		err = GetRequestService().HandleRequestCheck(request, operator, bindCache)
 	} else if status == "Draft" {
 		request, err = GetSimpleRequest(requestId)
 		if request.Handler != operator {

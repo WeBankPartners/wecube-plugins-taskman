@@ -35,14 +35,15 @@ type RequestTable struct {
 	RollbackDesc        string             `json:"rollbackDesc" xorm:"rollback_desc"`
 	Type                int                `json:"type" xorm:"type"`
 	OperatorObj         string             `json:"operatorObj" xorm:"operator_obj"`
-	Description         string             `json:"description" xorm:"description"` // 请求描述
-	Role                string             `json:"role" xorm:"role"`               // 创建请求的role
-	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`  // 撤回标志 0表示没被撤回,1表示撤回
-	Notes               string             `json:"notes" xorm:"notes"`             // 请求确认备注
-	ExpireDay           int                `json:"expireDay" xorm:"-"`             // 模板过期时间
-	TemplateVersion     string             `json:"templateVersion" xorm:"-"`       // 模板版本
-	CustomForm          CustomForm         `json:"customForm" xorm:"-"`            // 自定义表单
-	AssociationWorkflow bool               `json:"associationWorkflow"`            // 是否关联编排
+	Description         string             `json:"description" xorm:"description"`               // 请求描述
+	Role                string             `json:"role" xorm:"role"`                             // 创建请求的role
+	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`                // 撤回标志 0表示没被撤回,1表示撤回
+	Notes               string             `json:"notes" xorm:"notes"`                           // 请求确认备注
+	TaskApprovalCache   string             `json:"taskApprovalCache" xorm:"task_approval_cache"` // 任务审批cache
+	ExpireDay           int                `json:"expireDay" xorm:"-"`                           // 模板过期时间
+	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
+	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
+	AssociationWorkflow bool               `json:"associationWorkflow"`                          // 是否关联编排
 }
 
 func (RequestTable) TableName() string {
@@ -250,7 +251,7 @@ type RequestProDataV2Dto struct {
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
 	CustomForm   CustomForm                `json:"customForm"`   //自定义表单
-	ApprovalList []*ApprovalDto            `json:"approvalList"` //审批列表
+	ApprovalList []*TaskTemplateDto        `json:"approvalList"` //审批列表
 }
 
 type RequestForm struct {

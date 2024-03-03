@@ -1092,17 +1092,18 @@ func (s *TaskService) UpdateTasks(param []*models.TaskDto) (func(*xorm.Session) 
 					updateTaskHandles = append(updateTaskHandles, updateTaskHandle)
 				} else {
 					deleteTaskHandleIds = append(deleteTaskHandleIds, taskHandle.Id)
+				}
 			}
 			for sort := len(taskHandles) + 1; sort <= len(task.Handles); sort++ {
 				handle := task.Handles[sort-1]
 				newTaskHandle := &models.TaskHandleTable{
-					Id: guid.CreateGuid(),
+					Id:                 guid.CreateGuid(),
 					TaskHandleTemplate: handle.TaskHandleTemplate,
-					Task: task.Id,
+					Task:               task.Id,
 					Role:               handle.Role,
 					Handler:            handle.Handler,
 					HandlerType:        taskHandleHandlerTypeMap[i][handle.TaskHandleTemplate],
-					CreatedTime: nowTime,
+					CreatedTime:        nowTime,
 					UpdatedTime:        nowTime,
 					Sort:               sort,
 				}
@@ -1159,7 +1160,6 @@ func (s *TaskService) UpdateTasks(param []*models.TaskDto) (func(*xorm.Session) 
 }
 
 func (s *TaskService) DeleteTasks(requestId, typ string) (func(*xorm.Session) error, error) {
-	actions := []*dao.ExecAction{}
 	// 查询任务列表
 	var tasks []*models.TaskTable
 	tasks, err := s.taskDao.QueryByRequestAndType(requestId, typ)
@@ -1235,13 +1235,13 @@ func (s *TaskService) ListTasks(requestId, typ string) ([]*models.TaskDto, error
 			result[i].Handles = make([]*models.TaskHandleDto, len(taskHandles))
 			for j, taskHandle := range taskHandles {
 				result[i].Handles[j] = &models.TaskHandleDto{
-					Id: taskHandle.Id,
-					Sort: taskHandle.Sort,
+					Id:                 taskHandle.Id,
+					Sort:               taskHandle.Sort,
 					TaskHandleTemplate: taskHandle.TaskHandleTemplate,
-					Role:             taskHandle.Role,
-					Handler:          taskHandle.Handler,
-					HandleResult: taskHandle.HandleResult,
-					UpdatedTime: taskHandle.UpdatedTime,
+					Role:               taskHandle.Role,
+					Handler:            taskHandle.Handler,
+					HandleResult:       taskHandle.HandleResult,
+					UpdatedTime:        taskHandle.UpdatedTime,
 				}
 			}
 		}

@@ -2,7 +2,6 @@ package task
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -10,10 +9,99 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetTaskTemplate(c *gin.Context) {
-	requestTemplateId := c.Param("requestTemplateId")
-	proNodeId := c.Param("proNodeId")
-	result, err := service.GetTaskTemplate(requestTemplateId, proNodeId, "")
+// func GetTaskTemplate(c *gin.Context) {
+// 	requestTemplateId := c.Param("requestTemplateId")
+// 	proNodeId := c.Param("proNodeId")
+// 	result, err := service.GetTaskTemplate(requestTemplateId, proNodeId, "")
+// 	if err != nil {
+// 		middleware.ReturnServerHandleError(c, err)
+// 		return
+// 	}
+// 	middleware.ReturnData(c, result)
+// }
+
+// func UpdateTaskTemplate(c *gin.Context) {
+// 	id := c.Param("requestTemplateId")
+// 	var param models.TaskTemplateDto
+// 	if err := c.ShouldBindJSON(&param); err != nil {
+// 		middleware.ReturnParamValidateError(c, err)
+// 		return
+// 	}
+// 	var err error
+// 	param.UpdatedBy = middleware.GetRequestUser(c)
+// 	err = validateTaskTemplateParam(param)
+// 	if err != nil {
+// 		middleware.ReturnParamValidateError(c, err)
+// 		return
+// 	}
+// 	if param.Id != "" {
+// 		err = service.UpdateTaskTemplate(param)
+// 	} else {
+// 		err = service.CreateTaskTemplate(param, id)
+// 	}
+// 	if err != nil {
+// 		middleware.ReturnServerHandleError(c, err)
+// 		return
+// 	}
+// 	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(id, middleware.GetRequestUser(c))
+// 	if err != nil {
+// 		middleware.ReturnServerHandleError(c, err)
+// 		return
+// 	}
+// 	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
+// 	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
+// 	middleware.ReturnData(c, result)
+// }
+
+// func validateTaskTemplateParam(param models.TaskTemplateDto) error {
+// 	if param.Name == "" {
+// 		return fmt.Errorf("Param name can not empty ")
+// 	}
+// 	if len(param.USERoles) == 0 {
+// 		return fmt.Errorf("Param user roles can not empty ")
+// 	}
+// 	if param.ExpireDay <= 0 {
+// 		return fmt.Errorf("Param expire day can not empty ")
+// 	}
+// 	if param.NodeDefId == "" {
+// 		return fmt.Errorf("Param nodeDefId can not empty ")
+// 	}
+// 	return nil
+// }
+
+// 新建任务模板
+func CreateTaskTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("requestTemplate")
+	var param models.TaskTemplateDto
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	// 校验参数
+	if param.Type == "" || param.RequestTemplate == "" || param.Name == "" || param.ExpireDay <= 0 || param.Sort <= 0 {
+		middleware.ReturnParamValidateError(c, errors.New("param empty"))
+		return
+	}
+	if param.Id != "" || param.NodeDefId != "" {
+		middleware.ReturnParamValidateError(c, errors.New("param not empty"))
+		return
+	}
+	if param.RequestTemplate != requestTemplateId {
+		middleware.ReturnParamValidateError(c, errors.New("param requestTemplate wrong"))
+		return
+	}
+	if param.Type != string(models.TaskTypeApprove) && param.Type != string(models.TaskTypeImplement) {
+		middleware.ReturnParamValidateError(c, errors.New("param type wrong"))
+		return
+	}
+	// 校验权限
+	user := middleware.GetRequestUser(c)
+	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	result, err := service.GetTaskTemplateService().CreateTaskTemplate(&param, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -21,63 +109,43 @@ func GetTaskTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
+// 更新任务模板/创建编排任务模板
 func UpdateTaskTemplate(c *gin.Context) {
-	id := c.Param("requestTemplateId")
+	requestTemplateId := c.Param("requestTemplate")
+	id := c.Param("id")
 	var param models.TaskTemplateDto
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	var err error
-	param.UpdatedBy = middleware.GetRequestUser(c)
-	err = validateTaskTemplateParam(param)
-	if err != nil {
-		middleware.ReturnParamValidateError(c, err)
+	// 校验参数
+	if param.Id == "" || param.Type == "" || param.RequestTemplate == "" || param.Name == "" || param.ExpireDay <= 0 || param.Sort <= 0 {
+		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	if param.Id != "" {
-		err = service.UpdateTaskTemplate(param)
+	if param.Id != id {
+		middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
+		return
+	}
+	if param.RequestTemplate != requestTemplateId {
+		middleware.ReturnParamValidateError(c, errors.New("param requestTemplate wrong"))
+		return
+	}
+	// 校验权限
+	user := middleware.GetRequestUser(c)
+	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	var result *models.TaskTemplateDto
+	if param.Id == "" {
+		// 创建编排任务模板
+		result, err = service.GetTaskTemplateService().CreateProcTaskTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), user)
 	} else {
-		err = service.CreateTaskTemplate(param, id)
+		// 更新任务模板
+		result, err = service.GetTaskTemplateService().UpdateTaskTemplate(&param, user)
 	}
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(id, middleware.GetRequestUser(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateTaskTemplate", c.Request.RequestURI, c.GetString("requestBody"))
-	result, _ := service.GetTaskTemplate(id, param.NodeDefId, "")
-	middleware.ReturnData(c, result)
-}
-
-func validateTaskTemplateParam(param models.TaskTemplateDto) error {
-	if param.Name == "" {
-		return fmt.Errorf("Param name can not empty ")
-	}
-	if len(param.USERoles) == 0 {
-		return fmt.Errorf("Param user roles can not empty ")
-	}
-	if param.ExpireDay <= 0 {
-		return fmt.Errorf("Param expire day can not empty ")
-	}
-	if param.NodeDefId == "" {
-		return fmt.Errorf("Param nodeDefId can not empty ")
-	}
-	return nil
-}
-
-// CreateCustomTaskTemplate新建自定义任务模板
-func CreateCustomTaskTemplate(c *gin.Context) {
-	var param models.CustomTaskTemplateCreateParam
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	result, err := service.GetTaskTemplateService().CreateCustomTaskTemplate(&param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -85,29 +153,23 @@ func CreateCustomTaskTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-// 更新任务模板
-func UpdateCustomTaskTemplate(c *gin.Context) {
-	var param models.TaskTemplateDto
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
+// 删除任务模板
+func DeleteTaskTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("requestTemplate")
+	id := c.Param("id")
+	// 校验参数
+	if requestTemplateId == "" || id == "" {
+		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	err := service.GetTaskTemplateService().UpdateTaskTemplate(&param)
+	// 校验权限
+	user := middleware.GetRequestUser(c)
+	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	middleware.ReturnSuccess(c)
-}
-
-// 删除自定义任务模板
-func DeleteCustomTaskTemplate(c *gin.Context) {
-	id := c.Query("id")
-	if id == "" {
-		middleware.ReturnParamEmptyError(c, "id")
-		return
-	}
-	result, err := service.GetTaskTemplateService().DeleteCustomTaskTemplate(id)
+	result, err := service.GetTaskTemplateService().DeleteTaskTemplate(requestTemplateId, id)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -116,26 +178,46 @@ func DeleteCustomTaskTemplate(c *gin.Context) {
 }
 
 // 读取任务模板
-func GetCustomTaskTemplate(c *gin.Context) {
+func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
-	id := c.Param("id")
-	result, err := service.GetTaskTemplateService().GetTaskTemplate(id)
+	id := c.Param("id") // id是taskTemplateId，或nodeDefId
+	// 校验参数
+	if requestTemplateId == "" || id == "" {
+		middleware.ReturnParamValidateError(c, errors.New("param empty"))
+		return
+	}
+	// 校验权限
+	user := middleware.GetRequestUser(c)
+	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if result.RequestTemplateId != requestTemplateId {
-		err = errors.New("param id and requestTemplateId not match")
-		middleware.ReturnParamValidateError(c, err)
+	result, err := service.GetTaskTemplateService().GetTaskTemplate(requestTemplateId, id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	middleware.ReturnData(c, result)
 }
 
-// 自定义任务模板id列表
-func ListCustomTaskTemplateIds(c *gin.Context) {
+// 任务模板id列表
+func ListTaskTemplateIds(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
-	result, err := service.GetTaskTemplateService().ListCustomTaskTemplateIds(requestTemplateId)
+	typ := c.Query("type")
+	// 校验参数
+	if requestTemplateId == "" || typ == "" {
+		middleware.ReturnParamValidateError(c, errors.New("param empty"))
+		return
+	}
+	// 校验权限
+	user := middleware.GetRequestUser(c)
+	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	result, err := service.GetTaskTemplateService().ListTaskTemplateIds(requestTemplateId, typ, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -146,7 +228,20 @@ func ListCustomTaskTemplateIds(c *gin.Context) {
 // 任务模板列表
 func ListTaskTemplates(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplateId")
-	result, err := service.GetTaskTemplateService().ListTaskTemplates(requestTemplateId)
+	typ := c.Query("type")
+	// 校验参数
+	if requestTemplateId == "" || typ == "" {
+		middleware.ReturnParamValidateError(c, errors.New("param empty"))
+		return
+	}
+	// 校验权限
+	user := middleware.GetRequestUser(c)
+	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	result, err := service.GetTaskTemplateService().ListTaskTemplates(requestTemplateId, typ, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

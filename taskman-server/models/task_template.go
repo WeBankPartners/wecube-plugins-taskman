@@ -2,7 +2,6 @@ package models
 
 type TaskTemplateTable struct {
 	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
-	Type            string `json:"type" xorm:"type"`
 	Name            string `json:"name" xorm:"name"`
 	Description     string `json:"description" xorm:"description"`
 	FormTemplate    string `json:"formTemplate" xorm:"form_template"`
@@ -18,84 +17,60 @@ type TaskTemplateTable struct {
 	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 	Sort            int    `json:"sort" xorm:"sort"`
-	RoleType        string `json:"roleType" xorm:"role_type"`
+	HandleMode      string `json:"handleMode" xorm:"handle_mode"`
+	Type            string `json:"type" xorm:"type"`
 }
 
 func (TaskTemplateTable) TableName() string {
 	return "task_template"
 }
 
-type TaskTemplateVo struct {
-	Id      string `json:"id" xorm:"'id' pk"`
-	Handler string `json:"handler" xorm:"handler"`
-	Role    string `json:"role" xorm:"role"`
-}
-
-type TaskTemplateRoleTable struct {
-	Id             string `json:"id" xorm:"'id' pk" primary-key:"id"`
-	TaskTemplate   string `json:"taskTemplate" xorm:"task_template"`
-	Role           string `json:"role" xorm:"role"`
-	RoleType       string `json:"roleType" xorm:"role_type"`
-	CustomRoleType string `json:"customRoleType" xorm:"custom_role_type"`
-	HandlerType    string `json:"handlerType" xorm:"handler_type"`
-	CustomRole     string `json:"customRole" xorm:"custom_role"`
-	Handler        string `json:"handler" xorm:"handler"`
-}
+// type TaskTemplateVo struct {
+// 	Id      string `json:"id" xorm:"'id' pk"`
+// 	Handler string `json:"handler" xorm:"handler"`
+// 	Role    string `json:"role" xorm:"role"`
+// }
 
 type TaskTemplateDto struct {
-	Id                string                 `json:"id"`
-	Type              string                 `json:"type"`
-	NodeId            string                 `json:"nodeId"`
-	NodeDefId         string                 `json:"nodeDefId"`
-	NodeDefName       string                 `json:"nodeDefName"`
-	Name              string                 `json:"name"`
-	Description       string                 `json:"description"`
-	ExpireDay         int                    `json:"expireDay"`
-	Handler           string                 `json:"handler"`
-	UpdatedTime       string                 `json:"updatedTime"`
-	UpdatedBy         string                 `json:"updatedBy"`
-	MGMTRoles         []string               `json:"mgmtRoles"`
-	USERoles          []string               `json:"useRoles"`
-	MGMTRoleObjs      []*RoleTable           `json:"mgmtRoleObjs"`
-	USERoleObjs       []*RoleTable           `json:"useRoleObjs"`
-	Items             []*FormItemTemplateDto `json:"items"`
-	RequestTemplateId string                 `json:"requestTemplateId"`
-	Sort              int                    `json:"sort"`
-	RoleType          string                 `json:"roleType"`
-	RoleObjs          []*TaskTemplateRoleDto `json:"roleObjs"`
+	Id              string                   `json:"id"`
+	Type            string                   `json:"type"`
+	NodeId          string                   `json:"nodeId"`
+	NodeDefId       string                   `json:"nodeDefId"`
+	NodeDefName     string                   `json:"nodeDefName"`
+	Name            string                   `json:"name"`
+	Description     string                   `json:"description"`
+	ExpireDay       int                      `json:"expireDay"`
+	UpdatedTime     string                   `json:"updatedTime"`
+	UpdatedBy       string                   `json:"updatedBy"`
+	MGMTRoles       []string                 `json:"mgmtRoles"`    // 还有用吗？
+	USERoles        []string                 `json:"useRoles"`     // 还有用吗？
+	MGMTRoleObjs    []*RoleTable             `json:"mgmtRoleObjs"` // 还有用吗？
+	USERoleObjs     []*RoleTable             `json:"useRoleObjs"`  // 还有用吗？
+	Items           []*FormItemTemplateDto   `json:"items"`
+	RequestTemplate string                   `json:"requestTemplate"`
+	Sort            int                      `json:"sort"`
+	HandleMode      string                   `json:"handleMode"`
+	HandleTemplates []*TaskHandleTemplateDto `json:"handleTemplates"`
 }
 
-type TaskTemplateRoleDto struct {
-	RoleType    string `json:"roleType"`
-	HandlerType string `json:"handlerType"`
-	Role        string `json:"role"`
-	Handler     string `json:"handler"`
+type TaskTemplateIdObj struct {
+	Id        string `json:"id"`
+	Sort      int    `json:"sort"`
+	Name      string `json:"name"`
+	NodeDefId string `json:"nodeDefId"`
 }
 
-type CustomTaskTemplateIdObj struct {
-	Id   string `json:"id"`
-	Sort int    `json:"sort"`
-	Name string `json:"name"`
+type TaskTemplateCreateResponse struct {
+	TaskTemplate *TaskTemplateDto     `json:"taskTemplate"`
+	Ids          []*TaskTemplateIdObj `json:"ids"`
 }
 
-type CustomTaskTemplateCreateParam struct {
-	Sort            int    `json:"sort"`
-	RequestTemplate string `json:"requestTemplate"`
-	Name            string `json:"name"`
+type TaskTemplateDeleteResponse struct {
+	Type string               `json:"type"`
+	Ids  []*TaskTemplateIdObj `json:"ids"`
 }
 
-type CustomTaskTemplateCreateResponse struct {
-	Id              string                     `json:"id"`
-	Sort            int                        `json:"sort"`
-	RequestTemplate string                     `json:"requestTemplate"`
-	Name            string                     `json:"name"`
-	Ids             []*CustomTaskTemplateIdObj `json:"ids"`
-}
-
-type CustomTaskTemplateDeleteResponse struct {
-	Ids []*CustomTaskTemplateIdObj `json:"ids"`
-}
-
-type CustomTaskTemplateListIdsResponse struct {
-	Ids []*CustomTaskTemplateIdObj `json:"ids"`
+type TaskTemplateListIdsResponse struct {
+	Type string               `json:"type"`
+	Ids  []*TaskTemplateIdObj `json:"ids"`
 }

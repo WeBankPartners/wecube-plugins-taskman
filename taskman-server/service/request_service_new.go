@@ -1117,6 +1117,12 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	if err != nil {
 		return err
 	}
+	// 新增提交请求任务
+	action = &dao.ExecAction{Sql: "update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?"}
+	action.Param = []interface{}{models.RequestStatusPending, operator, now, bindCache, operator, now, request.Id}
+	actions = append(actions, action)
+	// 新增确认定版任务
+
 	// 先更新请求状态为定版
 	action = &dao.ExecAction{Sql: "update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?"}
 	action.Param = []interface{}{models.RequestStatusPending, operator, now, bindCache, operator, now, request.Id}

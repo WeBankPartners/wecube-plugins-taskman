@@ -322,6 +322,12 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 				return err
 			}
 		}
+		// 添加 提交请求模板
+		_, err = s.taskTemplateDao.Add(session, &models.TaskTemplateTable{Id: newCheckTaskId, Name: "submit", RequestTemplate: "su_" + guid.CreateGuid(),
+			Type: string(models.TaskTypeSubmit), CreatedTime: now, UpdatedTime: now})
+		if err != nil {
+			return err
+		}
 		// 任务模板添加定版任务和确认任务
 		if param.CheckSwitch {
 			checkRole = param.CheckRole

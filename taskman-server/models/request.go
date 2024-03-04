@@ -208,16 +208,17 @@ type RequestProcessTaskNodeBindObj struct {
 }
 
 type RequestPreDataTableObj struct {
-	PackageName   string                 `json:"packageName"`
-	Entity        string                 `json:"entity"`
-	ItemGroup     string                 `json:"itemGroup"`
-	ItemGroupName string                 `json:"itemGroupName"`
-	ItemGroupType string                 `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
-	ItemGroupRule string                 `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
-	RefEntity     []string               `json:"-"`
-	SortLevel     int                    `json:"-"`
-	Title         []*FormItemTemplateDto `json:"title"`
-	Value         []*EntityTreeObj       `json:"value"`
+	PackageName    string                 `json:"packageName"`
+	Entity         string                 `json:"entity"`
+	FormTemplateId string                 `json:"formTemplateId"` //表单模板ID
+	ItemGroup      string                 `json:"itemGroup"`
+	ItemGroupName  string                 `json:"itemGroupName"`
+	ItemGroupType  string                 `json:"itemGroupType"` //表单组类型:workflow 编排数据,optional 自选,custom 自定义
+	ItemGroupRule  string                 `json:"itemGroupRule"` // item_group_rule 新增一行规则,new 输入新数据,exist 选择已有数据
+	RefEntity      []string               `json:"-"`
+	SortLevel      int                    `json:"-"`
+	Title          []*FormItemTemplateDto `json:"title"`
+	Value          []*EntityTreeObj       `json:"value"`
 }
 
 type RequestPreDataSort []*RequestPreDataTableObj

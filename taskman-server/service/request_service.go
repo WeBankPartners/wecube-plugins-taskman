@@ -313,7 +313,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions := UpdateRequestFormItem(requestId, param)
+	actions := UpdateRequestFormItem(requestId, operator, nowTime, param)
 	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,operator_obj=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.EntityName, requestId}})
 	return dao.Transaction(actions)
 }
@@ -326,7 +326,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		return err
 	}
 	var formItemNameQuery []*models.FormItemTemplateTable
-	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_tempalte where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -364,7 +364,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions := UpdateRequestFormItem(requestId, newParam)
+	actions := UpdateRequestFormItem(requestId, operator, nowTime, newParam)
 	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?" +
 		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, requestId}})
 	return dao.Transaction(actions)
@@ -394,24 +394,32 @@ func concatItemDisplayName(rowData map[string]interface{}, nameList []string) st
 	return strings.Join(displayNameList, "__")
 }
 
-func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []*dao.ExecAction {
+func UpdateRequestFormItem(requestId, operator, now string, param *models.RequestPreDataDto) []*dao.ExecAction {
 	var actions []*dao.ExecAction
-	requestObj, _ := GetRequest(requestId)
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in (select form from request where id=?)", Param: []interface{}{requestId}})
+	var newFormId string
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where request = ?", Param: []interface{}{requestId}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form where request = ?", Param: []interface{}{requestId}})
+
 	for _, v := range param.Data {
 		for _, valueObj := range v.Value {
+			// 每行记录新增一个表单
+			newFormId = guid.CreateGuid()
+			actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,created_time,updated_by," +
+				"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, v.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
 				if title.Multiple == "Y" {
 					if tmpV, b := valueObj.EntityData[title.Name]; b {
-						tmpStringV := []string{}
+						var tmpStringV []string
 						for _, interfaceV := range tmpV.([]interface{}) {
 							tmpStringV = append(tmpStringV, fmt.Sprintf("%s", interfaceV))
 						}
-						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) values (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, strings.Join(tmpStringV, ","), title.ItemGroup, valueObj.Id}})
+						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
+							Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, strings.Join(tmpStringV, ","), requestId, now}})
 					}
 				} else {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) values (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
+						Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, valueObj.EntityData[title.Name], requestId, now}})
 				}
 			}
 		}
@@ -555,6 +563,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
 	var result []*models.RequestPreDataTableObj
 	var itemGroupType, itemGroupRule string
+	var formTemplateId string
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
@@ -566,9 +575,10 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
 		itemGroup := models.FormTemplateTable{}
 		if v.FormTemplate != "" {
-			dao.X.SQL("select * from form_item_template where id=?", v.FormTemplate).Get(&itemGroup)
+			dao.X.SQL("select * from form_template where id=?", v.FormTemplate).Get(&itemGroup)
 			itemGroupType = itemGroup.ItemGroupType
 			itemGroupRule = itemGroup.ItemGroupRule
+			formTemplateId = itemGroup.Id
 		}
 		if _, b := existItemMap[tmpKey]; b {
 			continue
@@ -577,9 +587,19 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 		if v.ItemGroup != tmpItemGroup {
 			if tmpItemGroup != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup,
-					ItemGroupName: tmpItemGroupName, ItemGroupType: itemGroupType, ItemGroupRule: itemGroupRule, PackageName: tmpPackageName,
-					Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
+				result = append(result, &models.RequestPreDataTableObj{
+					PackageName:    tmpPackageName,
+					Entity:         tmpEntity,
+					FormTemplateId: formTemplateId,
+					ItemGroup:      tmpItemGroup,
+					ItemGroupName:  tmpItemGroupName,
+					ItemGroupType:  itemGroupType,
+					ItemGroupRule:  itemGroupRule,
+					RefEntity:      tmpRefEntity,
+					SortLevel:      0,
+					Title:          tmpItems,
+					Value:          []*models.EntityTreeObj{},
+				})
 			}
 			tmpItems = []*models.FormItemTemplateDto{}
 			tmpEntity = v.Entity
@@ -616,8 +636,19 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 		tmpItemGroup = items[len(items)-1].ItemGroup
 		tmpItemGroupName = items[len(items)-1].ItemGroupName
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, ItemGroupRule: itemGroupRule,
-			PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, ItemGroupType: itemGroupType, Value: []*models.EntityTreeObj{}})
+		result = append(result, &models.RequestPreDataTableObj{
+			PackageName:    tmpPackageName,
+			Entity:         tmpEntity,
+			FormTemplateId: formTemplateId,
+			ItemGroup:      tmpItemGroup,
+			ItemGroupName:  tmpItemGroupName,
+			ItemGroupType:  itemGroupType,
+			ItemGroupRule:  itemGroupRule,
+			RefEntity:      tmpRefEntity,
+			SortLevel:      0,
+			Title:          tmpItems,
+			Value:          []*models.EntityTreeObj{},
+		})
 	}
 	result = sortRequestEntity(result)
 	for _, v := range result {

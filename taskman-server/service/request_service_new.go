@@ -940,10 +940,22 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		}
 	} else {
 		var items []*models.FormItemTemplateTable
-		dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", request.RequestTemplate).Find(&items)
+		dao.X.SQL("select * from form_item_template where form_template in (select id from form_template  where request_template=? and"+
+			" request_form_type = ?) order by item_group,sort", request.RequestTemplate, models.RequestFormTypeMessage).Find(&items)
 		customForm.Title = items
 	}
 	form.CustomForm = customForm
+	form.AttachFiles = GetRequestAttachFileList(request.Id)
+	if request.Cache != "" {
+		var cacheObj models.RequestPreDataDto
+		err = json.Unmarshal([]byte(request.Cache), &cacheObj)
+		if err != nil {
+			err = fmt.Errorf("Try to json unmarshal cache data fail,%s ", err.Error())
+			return
+		}
+		form.FormData = cacheObj.Data
+		form.RootEntityId = cacheObj.RootEntityId
+	}
 	return
 }
 

@@ -452,7 +452,7 @@ func (s *TaskTemplateService) DeleteTaskTemplate(requestTemplateId, id string) (
 	return result, nil
 }
 
-func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, userToken, language string) (*models.TaskTemplateDto, error) {
+func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, typ, userToken, language string) (*models.TaskTemplateDto, error) {
 	// 查询请求模板
 	requestTemplate, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -462,7 +462,7 @@ func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, userToken, 
 		return nil, errors.New("no request_template record found")
 	}
 	var result *models.TaskTemplateDto
-	if requestTemplate.ProcDefId != "" {
+	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
 		// 编排任务
 		// 查询任务模板
 		taskTemplate, err := s.taskTemplateDao.GetProc(requestTemplateId, id)

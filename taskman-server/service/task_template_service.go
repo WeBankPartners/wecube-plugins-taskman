@@ -553,7 +553,7 @@ func (s *TaskTemplateService) ListTaskTemplateIds(requestTemplateId, typ, userTo
 	if requestTemplate == nil {
 		return nil, errors.New("no request_template record found")
 	}
-	result := &models.TaskTemplateListIdsResponse{Type: typ}
+	result := &models.TaskTemplateListIdsResponse{Type: typ, ProcDefId: requestTemplate.ProcDefId}
 	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
 		// 编排任务
 		// 查询任务节点

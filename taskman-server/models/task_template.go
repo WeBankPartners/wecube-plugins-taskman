@@ -67,6 +67,7 @@ type TaskTemplateDeleteResponse struct {
 }
 
 type TaskTemplateListIdsResponse struct {
-	Type string               `json:"type"`
-	Ids  []*TaskTemplateIdObj `json:"ids"`
+	Type      string               `json:"type"`
+	ProcDefId string               `json:"procDefId"`
+	Ids       []*TaskTemplateIdObj `json:"ids"`
 }

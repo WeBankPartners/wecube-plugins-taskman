@@ -148,6 +148,7 @@ func init() {
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: requestNew.CreateRequest},
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: requestNew.StartRequest},
+		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
 	)
 }
 

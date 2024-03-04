@@ -153,3 +153,13 @@ func StartRequest(c *gin.Context) {
 	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
 }
+
+func GetRequestHistory(c *gin.Context) {
+	requestId := c.Param("requestId")
+	result, err := service.GetRequestHistory(c, requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
+}

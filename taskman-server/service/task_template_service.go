@@ -46,7 +46,7 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 	if requestTemplate == nil {
 		return nil, fmt.Errorf("no request_template record found: %s", param.RequestTemplate)
 	}
-	if requestTemplate.ProcDefId != "" {
+	if requestTemplate.ProcDefId != "" && param.Type == string(models.TaskTypeImplement) {
 		return nil, fmt.Errorf("param requestTemplate type proc: %s", param.RequestTemplate)
 	}
 	// 查询任务模板列表

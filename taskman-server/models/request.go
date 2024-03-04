@@ -43,7 +43,7 @@ type RequestTable struct {
 	ExpireDay           int                `json:"expireDay" xorm:"-"`                           // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
-	AssociationWorkflow bool               `json:"associationWorkflow"`                          // 是否关联编排
+	AssociationWorkflow bool               `json:"associationWorkflow" xorm:"-"`                 // 是否关联编排
 }
 
 func (RequestTable) TableName() string {

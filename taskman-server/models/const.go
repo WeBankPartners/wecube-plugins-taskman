@@ -181,3 +181,8 @@ const (
 	ProgressStatusAutoExitStatus             ProgressStatus = 5 // 自动退出
 	ProgressStatusInternallyTerminatedStatus ProgressStatus = 6 // 自动退出
 )
+
+const (
+	TaskTypeImplementProcess string = "implement_process" // 编排任务
+	TaskTypeImplementCustom  string = "implement_custom"  // 自定义任务
+)

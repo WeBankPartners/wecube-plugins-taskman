@@ -472,7 +472,6 @@ func (s *FormTemplateService) DeleteFormTemplateItemGroupTransaction(session *xo
 	}
 	return
 }
-
 func (s *FormTemplateService) SortFormTemplateItemGroup(param models.FormTemplateGroupSortDto) (err error) {
 	var formTemplateList []*models.FormTemplateTable
 	var formTemplateSortMap = s.buildFormTemplateGroupSortMap(param.ItemGroupIdSort)

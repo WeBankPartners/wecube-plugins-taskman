@@ -125,12 +125,13 @@ func DeleteTaskTemplate(c *gin.Context) {
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")
 	id := c.Param("id") // id是taskTemplateId，或nodeDefId，后者非空时传后者
+	typ := c.Query("type")
 	// 校验参数
-	if requestTemplateId == "" || id == "" {
+	if requestTemplateId == "" || id == "" || typ == "" {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	result, err := service.GetTaskTemplateService().GetTaskTemplate(requestTemplateId, id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, err := service.GetTaskTemplateService().GetTaskTemplate(requestTemplateId, id, typ, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

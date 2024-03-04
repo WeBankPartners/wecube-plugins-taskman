@@ -337,3 +337,19 @@ type RequestDetail struct {
 type UpdateRequestStatusParam struct {
 	Description string `json:"description"`
 }
+
+type RequestHistory struct {
+	Request *RequestForHistory `json:"request"`
+	Data    []*TaskForHistory  `json:"data"`
+}
+
+type RequestForHistory struct {
+	RequestTable
+	Editable string `json:"editable"`
+}
+
+type TaskForHistory struct {
+	TaskTable
+	Editable       string             `json:"editable"`
+	TaskHandleList []*TaskHandleTable `json:"taskHandleList"`
+}

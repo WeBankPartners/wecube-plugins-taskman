@@ -17,6 +17,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/gin-gonic/gin"
 )
 
 type RequestService struct {
@@ -1735,5 +1736,85 @@ func newRequestId() (requestId string) {
 		subId = "0" + subId
 	}
 	requestId = fmt.Sprintf("%s-%s", requestId, subId)
+	return
+}
+
+func GetRequestHistory(c *gin.Context, requestId string) (result *models.RequestHistory, err error) {
+	result = &models.RequestHistory{}
+	// 查询 request
+	var requests []*models.RequestTable
+	err = dao.X.Context(c).Table(models.RequestTable{}.TableName()).
+		Where("id = ?", requestId).
+		Find(&requests)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(requests) == 0 {
+		return result, fmt.Errorf("requestId: %s is invalid", requestId)
+	}
+	result.Request = &models.RequestForHistory{
+		RequestTable: *requests[0],
+	}
+
+	// 查询 task
+	var tasks []*models.TaskTable
+	err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
+		Where("request = ?", requestId).
+		Asc("created_time").
+		Find(&tasks)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	if len(tasks) == 0 {
+		return
+	}
+
+	taskIds := make([]string, 0, len(tasks))
+	for _, task := range tasks {
+		taskIds = append(taskIds, task.Id)
+	}
+
+	// 查询 task handle
+	var taskHandles []*models.TaskHandleTable
+	err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
+		In("task", taskIds).
+		Desc("created_time").
+		Find(&taskHandles)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	taskIdMapHandle := make(map[string][]*models.TaskHandleTable)
+	for _, taskHandle := range taskHandles {
+		if _, isExisted := taskIdMapHandle[taskHandle.Task]; !isExisted {
+			taskIdMapHandle[taskHandle.Task] = []*models.TaskHandleTable{}
+		}
+		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], taskHandle)
+	}
+
+	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
+	for _, task := range tasks {
+		if task.Type == string(models.TaskTypeImplement) {
+			if task.ProcDefId != "" {
+				task.Type = models.TaskTypeImplementProcess
+			} else {
+				task.Type = models.TaskTypeImplementCustom
+			}
+		}
+
+		curTaskForHistory := &models.TaskForHistory{
+			TaskTable:      *task,
+			TaskHandleList: []*models.TaskHandleTable{},
+		}
+		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
+			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
+		}
+		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
+	}
+	result.Data = taskForHistoryList
 	return
 }

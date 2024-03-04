@@ -26,7 +26,7 @@
             v-model="activeApprovalNode.description"
             style="width: 200%"
             type="textarea"
-            :rows="1"
+            :rows="2"
             @on-change="paramsChanged"
           >
           </Input>
@@ -34,13 +34,19 @@
       </Form>
       <Form ref="formInline" inline :label-width="120">
         <FormItem label="分配">
-          <Select v-model="activeApprovalNode.roleType" @on-change="changeRoleType" filterable style="width: 94%;">
+          <Select
+            v-model="activeApprovalNode.handleMode"
+            clearable
+            @on-change="changeRoleType"
+            filterable
+            style="width: 94%;"
+          >
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
         </FormItem>
         <FormItem
-          v-if="['custom', 'any', 'all'].includes(activeApprovalNode.roleType)"
+          v-if="['custom', 'any', 'all'].includes(activeApprovalNode.handleMode)"
           label="审批人"
           style="width:70%"
         >
@@ -52,10 +58,14 @@
             <Col span="5">人员</Col>
             <Col span="2">操作</Col>
           </Row>
-          <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.roleObjs" :key="roleObjIndex" style="margin: 4px 0">
+          <Row
+            v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates"
+            :key="roleObjIndex"
+            style="margin: 4px 0"
+          >
             <Col span="1">{{ roleObjIndex + 1 }}</Col>
             <Col span="5">
-              <Select v-model="roleObj.roleType" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.assign" filterable @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
@@ -64,7 +74,7 @@
             <Col span="5">
               <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
                 <Option
-                  v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.roleType))"
+                  v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
                   :value="item.value"
                   :key="item.value"
                   >{{ item.label }}</Option
@@ -76,7 +86,7 @@
                 v-model="roleObj.role"
                 filterable
                 @on-change="getUserByRole(roleObj.role, roleObjIndex)"
-                :disabled="!(roleObj.roleType === 'template')"
+                :disabled="!(roleObj.assign === 'template')"
               >
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
@@ -86,7 +96,7 @@
                 v-model="roleObj.handler"
                 filterable
                 :disabled="
-                  !(roleObj.roleType === 'template' && ['template_suggest', 'template'].includes(roleObj.handlerType))
+                  !(roleObj.assign === 'template' && ['template_suggest', 'template'].includes(roleObj.handlerType))
                 "
               >
                 <Option v-for="item in roleObj.handlerOptions" :value="item.id" :key="item.id">{{
@@ -96,6 +106,7 @@
             </Col>
             <Col span="2">
               <Button
+                v-if="activeApprovalNode.handleTemplates.length > 1"
                 @click.stop="removeRoleObjItem(roleObjIndex)"
                 type="error"
                 size="small"
@@ -105,7 +116,7 @@
             </Col>
           </Row>
           <Button
-            v-if="['any', 'all'].includes(activeApprovalNode.roleType)"
+            v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
             @click.stop="addRoleObjItem"
             type="primary"
             size="small"
@@ -115,7 +126,7 @@
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" @click="saveNode">{{ $t('save') }}</Button>
+        <Button type="primary" :disabled="isSaveBtnActive()" @click="saveNode">{{ $t('save') }}</Button>
       </div>
     </div>
   </div>
@@ -137,10 +148,10 @@ export default {
         name: '审批1',
         expireDay: 1,
         description: '',
-        roleType: 'auto',
-        roleObjs: [
+        handleMode: 'auto',
+        handleTemplates: [
           {
-            roleType: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+            assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
             handlerType: '', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
@@ -158,7 +169,7 @@ export default {
         { label: '自动通过', value: 'auto' }
       ],
       approvalSingle: {
-        roleType: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+        assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
         handlerType: '', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
@@ -187,14 +198,62 @@ export default {
       this.getUserRoles()
     },
     async getNodeById (params) {
-      const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id)
+      const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'approve')
       if (statusCode === 'OK') {
         this.activeApprovalNode = data
+        Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
+        // this.activeApprovalNode.handleTemplates = data.thandleTemplates
         this.mgmtData()
+      }
+    },
+    // 控制保存按钮
+    isSaveBtnActive () {
+      if (this.activeApprovalNode.name === '') {
+        return true
+      }
+      // 前三种分配类型需要设置角色
+      if (
+        ['custom', 'any', 'all'].includes(this.activeApprovalNode.handleMode) &&
+        this.activeApprovalNode.handleTemplates
+      ) {
+        if (this.activeApprovalNode.handleTemplates.length === 0) {
+          return true
+        } else {
+          console.log(22)
+          let res = false
+          for (let i = 0; i < this.activeApprovalNode.handleTemplates.length; i++) {
+            const item = this.activeApprovalNode.handleTemplates[i]
+            // 人员设置方式 没选
+            if (item.handlerType === '') {
+              res = true
+              break
+            }
+            // 模版建议和模版指定需要选择角色和人员
+            if (
+              item.assign === 'template' &&
+              ['template', 'template_suggest'].includes(item.handlerType) &&
+              (item.role === '' || item.handler === '')
+            ) {
+              res = true
+              break
+            }
+            // 提交人指定/提交人建议/组内系统分配/组内主动认领 需要选择角色
+            if (
+              item.assign === 'template' &&
+              ['custom', 'custom_suggest', 'system', 'claim'].includes(item.handlerType) &&
+              item.role === ''
+            ) {
+              res = true
+              break
+            }
+          }
+          return res
+        }
       }
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
+      console.log(this.activeApprovalNode)
       const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
@@ -230,18 +289,19 @@ export default {
       return this.isParmasChanged
     },
     mgmtData () {
-      this.activeApprovalNode.roleObjs.forEach((roleObj, roleObjIndex) => {
-        if (roleObj.role !== '') {
-          this.getUserByRole(roleObj.role, roleObjIndex)
-        }
-      })
+      this.activeApprovalNode.handleTemplates &&
+        this.activeApprovalNode.handleTemplates.forEach((roleObj, roleObjIndex) => {
+          if (roleObj.role !== '') {
+            this.getUserByRole(roleObj.role, roleObjIndex)
+          }
+        })
     },
     // 新增一组审批人
     addRoleObjItem () {
-      this.activeApprovalNode.roleObjs.push(JSON.parse(JSON.stringify(this.approvalSingle)))
+      this.activeApprovalNode.handleTemplates.push(JSON.parse(JSON.stringify(this.approvalSingle)))
     },
     removeRoleObjItem (index) {
-      this.activeApprovalNode.roleObjs.splice(index, 1)
+      this.activeApprovalNode.handleTemplates.splice(index, 1)
     },
     // 使用角色
     async getUserRoles () {
@@ -251,9 +311,9 @@ export default {
       }
     },
     changeRoleType () {
-      this.activeApprovalNode.roleObjs = [
+      this.activeApprovalNode.handleTemplates = [
         {
-          roleType: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+          assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
           handlerType: '', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
@@ -271,7 +331,7 @@ export default {
       const { statusCode, data } = await getHandlerRoles(params)
       if (statusCode === 'OK') {
         Vue.set(
-          this.activeApprovalNode.roleObjs[roleObjIndex],
+          this.activeApprovalNode.handleTemplates[roleObjIndex],
           'handlerOptions',
           data.map(d => {
             return {

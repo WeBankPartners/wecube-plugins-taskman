@@ -302,5 +302,14 @@
   "tw_comments": "意见",
   "tw_approval": "审批",
   "tw_date_picker": "日期选择器",
-  "tw_clear": "清空"
+  "tw_clear": "清空",
+  "copy": "复制",
+  "copy_success": "复制成功",
+  "filter_rule": "过滤规则",
+  "add_filter_rule": "添加过滤规则",
+  "set_filter_rule": "设置过滤规则",
+  "query_filter_rule": "查看过滤规则",
+  "please_choose": "请选择",
+  "please_paste_here": "请在这粘贴",
+  "delete_node": "删除此节点"
 }

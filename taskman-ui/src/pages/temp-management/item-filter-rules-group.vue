@@ -58,7 +58,7 @@ export default {
       immediate: true
     }
   },
-  props: ['isBatch', 'allEntityType', 'routineExpression', 'currentSelectedEntity', 'disabled'],
+  props: ['isBatch', 'allEntityType', 'routineExpression', 'currentSelectedEntity', 'disabled', 'currentIndex'],
   mounted () {
     this.changeRoutineExpressionItem(this.routineExpression)
   },
@@ -71,10 +71,10 @@ export default {
         if (val === '' || !val.startsWith(this.currentSelectedEntity)) {
           this.$nextTick(() => {
             this.routineExpressionItem[0].routineExpression = this.currentSelectedEntity
-            this.$emit('filterRuleChanged', this.currentSelectedEntity)
+            this.$emit('filterRuleChanged', this.currentSelectedEntity, this.currentIndex)
           })
         } else {
-          this.$emit('filterRuleChanged', val)
+          this.$emit('filterRuleChanged', val, this.currentIndex)
         }
       } else {
         this.$nextTick(() => {

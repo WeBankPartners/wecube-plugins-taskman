@@ -86,6 +86,7 @@ const (
 type TaskType string
 
 const (
+	TaskTypeSubmit    TaskType = "submit"    // 提交
 	TaskTypeCheck     TaskType = "check"     // 定版
 	TaskTypeApprove   TaskType = "approve"   // 审批
 	TaskTypeImplement TaskType = "implement" // 执行类型(任务)

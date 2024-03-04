@@ -143,7 +143,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		IsEdit:          "yes",
 		IsView:          "yes",
 		IsOutput:        "no",
-		InDisplayName:   "no",
+		InDisplayName:   "yes",
 		IsRefInside:     "no",
 		Multiple:        workflowEntityAttribute.Multiple,
 		DefaultClear:    "no",

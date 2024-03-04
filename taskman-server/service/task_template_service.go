@@ -398,6 +398,7 @@ func (s *TaskTemplateService) DeleteTaskTemplate(requestTemplateId, id string) (
 	if taskTemplate.RequestTemplate != requestTemplateId {
 		return nil, fmt.Errorf("param requestTemplate wrong: %s", requestTemplateId)
 	}
+
 	// 删除任务处理模板
 	deleteTaskHandleTemplateAll := true
 	// 删除任务模板

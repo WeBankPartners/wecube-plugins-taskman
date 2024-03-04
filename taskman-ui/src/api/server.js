@@ -173,15 +173,18 @@ export const getRequestGroupForm = params =>
     `/taskman/api/v1/form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}&module=${params.module}`
   )
 // 获取审批节点
-export const getApprovalNode = tmpId => req.get(`/taskman/api/v1/approval-template/${tmpId}/ids`)
+export const getApprovalNode = (tmpId, type) => req.get(`/taskman/api/v1/task-template/${tmpId}/ids?type=${type}`)
 // 保存审批节点
-export const addApprovalNode = data => req.post(`/taskman/api/v1/approval-template`, data)
+export const addApprovalNode = data => req.post(`/taskman/api/v1/task-template/${data.requestTemplate}`, data)
 // 保存审批节点
-export const updateApprovalNode = data => req.put(`/taskman/api/v1/approval-template`, data)
+export const updateApprovalNode = data =>
+  req.put(`/taskman/api/v1/task-template/${data.requestTemplate}/${data.id}`, data)
 // 删除审批节点
-export const removeApprovalNode = id => req.delete(`/taskman/api/v1/approval-template?id=${id}`)
+export const removeApprovalNode = (requestTemplate, id) =>
+  req.delete(`/taskman/api/v1/task-template/${requestTemplate}/${id}`)
 // 获取审批节点
-export const getApprovalNodeById = (tmpId, nodeId) => req.get(`/taskman/api/v1/approval-template/${tmpId}/${nodeId}`)
+export const getApprovalNodeById = (tmpId, nodeId, type) =>
+  req.get(`/taskman/api/v1/task-template/${tmpId}/${nodeId}?type=${type}`)
 // 查询审批中可添加的组
 export const getApprovalGlobalForm = tmpId => req.get(`/taskman/api/v1/request-form-template/${tmpId}/global-form`)
 // 在审批节点中赋值赋值添加数据表单
@@ -196,3 +199,10 @@ export const getApprovalNodeGroups = (tmpId, taskTemplateId) =>
 
 // 获取审批节点
 export const removeEmptyDataForm = tmpId => req.post(`/taskman/api/v1/request-template/${tmpId}/data-form-clean`)
+
+export const getTargetOptions = (pkgName, entityName) =>
+  req.post(`/taskman/api/v1/packages/${pkgName}/entities/${entityName}/query`, {
+    additionalFilters: []
+  })
+export const getEntityRefsByPkgNameAndEntityName = (pkgName, entityName) =>
+  req.get(`/taskman/api/v1/models/package/${pkgName}/entity/${entityName}`)

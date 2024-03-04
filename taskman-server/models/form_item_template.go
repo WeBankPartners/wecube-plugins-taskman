@@ -128,7 +128,7 @@ func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplat
 	}
 }
 
-func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup FormTemplateNewTable) *FormItemTemplateDto {
+func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup FormTemplateTable) *FormItemTemplateDto {
 	dto := &FormItemTemplateDto{
 		Id:              model.Id,
 		Name:            model.Name,
@@ -168,7 +168,7 @@ func ConvertFormItemTemplateModel2Dto(model *FormItemTemplateTable, itemGroup Fo
 	return dto
 }
 
-func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, itemGroup *FormTemplateNewTable) []*FormItemTemplateDto {
+func ConvertFormItemTemplateModelList2Dto(tableList []*FormItemTemplateTable, itemGroup *FormTemplateTable) []*FormItemTemplateDto {
 	var dtoList []*FormItemTemplateDto
 	for _, model := range tableList {
 		dtoList = append(dtoList, ConvertFormItemTemplateModel2Dto(model, *itemGroup))

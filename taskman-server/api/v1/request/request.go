@@ -118,10 +118,10 @@ func Export(c *gin.Context) {
 
 // GetTaskList 获取任务列表
 func GetTaskList(c *gin.Context) {
-	var taskList []*models.TaskDto
+	var taskList []*models.TaskTable
 	var err error
 	requestId := c.Param("requestId")
-	taskList, err = service.GetTaskService().ListTasks(requestId)
+	taskList, err = service.GetTaskService().ListImplementTasks(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -153,7 +153,11 @@ func Confirm(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, exterror.New().ServerHandleError)
 		return
 	}
-	err = service.RequestConfirm(param)
+	if request.Status != string(models.RequestStatusConfirm) {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("request status not confirm"))
+		return
+	}
+	err = service.RequestConfirm(param, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

@@ -17,6 +17,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/gin-gonic/gin"
 )
 
 type RequestService struct {
@@ -250,32 +251,22 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 }
 
 func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken, language string) error {
-	var formTemplate *models.FormTemplateNewTable
 	var actions []*dao.ExecAction
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
-	err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
-	if err != nil {
-		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
+	if requestTemplateObj.ProcDefId != "" {
+		err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
+		if err != nil {
+			return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
+		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	formGuid := guid.CreateGuid()
 	param.Id = newRequestId()
-	formTemplate, err = GetFormTemplateService().QueryRequestFormByRequestTemplateIdAndType(param.RequestTemplate, string(models.RequestFormTypeMessage))
-	if err != nil {
-		return err
-	}
-	if formTemplate != nil {
-		formInsertAction := dao.ExecAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
-		formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", formTemplate.Id,
-			nowTime, param.CreatedBy, nowTime, param.CreatedBy}
-		actions = append(actions, &formInsertAction)
-	}
-	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time," +
-		"expect_time,handler,created_by,created_time,updated_by,updated_time,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency,
+	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status,expire_time," +
+		"expect_time,handler,created_by,created_time,updated_by,updated_time,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, param.RequestTemplate, param.CreatedBy, param.Emergency,
 		strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, requestTemplateObj.Handler, param.CreatedBy, nowTime,
 		param.CreatedBy, nowTime, param.Type, param.Role}
 	actions = append(actions, &requestInsertAction)
@@ -322,20 +313,20 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions := UpdateRequestFormItem(requestId, param)
+	actions := UpdateRequestFormItem(requestId, operator, nowTime, param)
 	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,operator_obj=? where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.EntityName, requestId}})
 	return dao.Transaction(actions)
 }
 
 func SaveRequestCacheV2(requestId, operator, userToken string, param *models.RequestProDataV2Dto) error {
 	var customFormCache []byte
-	var approvalAction []*dao.ExecAction
+	var taskApprovalCache string
 	err := ValidateRequestForm(param.Data, userToken)
 	if err != nil {
 		return err
 	}
 	var formItemNameQuery []*models.FormItemTemplateTable
-	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_tempalte where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -366,20 +357,16 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 			return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
 		}
 	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions := UpdateRequestFormItem(requestId, newParam)
-	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), requestId}})
-	// 创建请求审批
 	if len(param.ApprovalList) > 0 {
-		approvalAction, err = GetApprovalService().CreateApprovals(param.ApprovalList)
-		if err != nil {
-			return err
-		}
-		if len(approvalAction) > 0 {
-			actions = append(actions, approvalAction...)
+		approvalBytes, _ := json.Marshal(param.ApprovalList)
+		if approvalBytes != nil {
+			taskApprovalCache = string(approvalBytes)
 		}
 	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions := UpdateRequestFormItem(requestId, operator, nowTime, newParam)
+	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, requestId}})
 	return dao.Transaction(actions)
 }
 
@@ -407,24 +394,32 @@ func concatItemDisplayName(rowData map[string]interface{}, nameList []string) st
 	return strings.Join(displayNameList, "__")
 }
 
-func UpdateRequestFormItem(requestId string, param *models.RequestPreDataDto) []*dao.ExecAction {
+func UpdateRequestFormItem(requestId, operator, now string, param *models.RequestPreDataDto) []*dao.ExecAction {
 	var actions []*dao.ExecAction
-	requestObj, _ := GetRequest(requestId)
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in (select form from request where id=?)", Param: []interface{}{requestId}})
+	var newFormId string
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where request = ?", Param: []interface{}{requestId}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form where request = ?", Param: []interface{}{requestId}})
+
 	for _, v := range param.Data {
 		for _, valueObj := range v.Value {
+			// 每行记录新增一个表单
+			newFormId = guid.CreateGuid()
+			actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,created_time,updated_by," +
+				"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, v.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
 			for i, title := range v.Title {
 				if title.Multiple == "Y" {
 					if tmpV, b := valueObj.EntityData[title.Name]; b {
-						tmpStringV := []string{}
+						var tmpStringV []string
 						for _, interfaceV := range tmpV.([]interface{}) {
 							tmpStringV = append(tmpStringV, fmt.Sprintf("%s", interfaceV))
 						}
-						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) values (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, strings.Join(tmpStringV, ","), title.ItemGroup, valueObj.Id}})
+						actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
+							Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, strings.Join(tmpStringV, ","), requestId, now}})
 					}
 				} else {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) values (?,?,?,?,?,?,?)", Param: []interface{}{tmpGuidList[i], requestObj.Form, title.Id, title.Name, valueObj.EntityData[title.Name], title.ItemGroup, valueObj.Id}})
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)",
+						Param: []interface{}{tmpGuidList[i], newFormId, title.Id, title.Name, valueObj.EntityData[title.Name], requestId, now}})
 				}
 			}
 		}
@@ -482,7 +477,7 @@ func getRequestTemplateByRequest(requestId string) (templateId string, err error
 }
 
 func GetRequestRootForm(requestId string) (result models.RequestTemplateFormStruct, err error) {
-	var formTemplate *models.FormTemplateNewTable
+	var formTemplate *models.FormTemplateTable
 	var items []*models.FormItemTemplateTable
 	result = models.RequestTemplateFormStruct{}
 	requestTemplateId, tmpErr := getRequestTemplateByRequest(requestId)
@@ -531,7 +526,8 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		return result, tmpErr
 	}
 	var items []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where form_template in (select data_form_template from request_template where id=?) order by item_group,sort", requestTemplateId).Find(&items)
+	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template=?"+
+		" and request_form_type = ?) order by item_group,sort", requestTemplateId, models.RequestFormTypeData).Find(&items)
 	if err != nil {
 		return
 	}
@@ -567,6 +563,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
 	var result []*models.RequestPreDataTableObj
 	var itemGroupType, itemGroupRule string
+	var formTemplateId string
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
@@ -576,11 +573,12 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
-		itemGroup := models.FormTemplateNewTable{}
+		itemGroup := models.FormTemplateTable{}
 		if v.FormTemplate != "" {
-			dao.X.SQL("select * from form_item_template_new where id=?", v.FormTemplate).Get(&itemGroup)
+			dao.X.SQL("select * from form_template where id=?", v.FormTemplate).Get(&itemGroup)
 			itemGroupType = itemGroup.ItemGroupType
 			itemGroupRule = itemGroup.ItemGroupRule
+			formTemplateId = itemGroup.Id
 		}
 		if _, b := existItemMap[tmpKey]; b {
 			continue
@@ -589,9 +587,19 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 		if v.ItemGroup != tmpItemGroup {
 			if tmpItemGroup != "" {
-				result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup,
-					ItemGroupName: tmpItemGroupName, ItemGroupType: itemGroupType, ItemGroupRule: itemGroupRule, PackageName: tmpPackageName,
-					Title: tmpItems, RefEntity: tmpRefEntity, Value: []*models.EntityTreeObj{}})
+				result = append(result, &models.RequestPreDataTableObj{
+					PackageName:    tmpPackageName,
+					Entity:         tmpEntity,
+					FormTemplateId: formTemplateId,
+					ItemGroup:      tmpItemGroup,
+					ItemGroupName:  tmpItemGroupName,
+					ItemGroupType:  itemGroupType,
+					ItemGroupRule:  itemGroupRule,
+					RefEntity:      tmpRefEntity,
+					SortLevel:      0,
+					Title:          tmpItems,
+					Value:          []*models.EntityTreeObj{},
+				})
 			}
 			tmpItems = []*models.FormItemTemplateDto{}
 			tmpEntity = v.Entity
@@ -628,8 +636,19 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		}
 		tmpItemGroup = items[len(items)-1].ItemGroup
 		tmpItemGroupName = items[len(items)-1].ItemGroupName
-		result = append(result, &models.RequestPreDataTableObj{Entity: tmpEntity, ItemGroup: tmpItemGroup, ItemGroupName: tmpItemGroupName, ItemGroupRule: itemGroupRule,
-			PackageName: tmpPackageName, Title: tmpItems, RefEntity: tmpRefEntity, ItemGroupType: itemGroupType, Value: []*models.EntityTreeObj{}})
+		result = append(result, &models.RequestPreDataTableObj{
+			PackageName:    tmpPackageName,
+			Entity:         tmpEntity,
+			FormTemplateId: formTemplateId,
+			ItemGroup:      tmpItemGroup,
+			ItemGroupName:  tmpItemGroupName,
+			ItemGroupType:  itemGroupType,
+			ItemGroupRule:  itemGroupRule,
+			RefEntity:      tmpRefEntity,
+			SortLevel:      0,
+			Title:          tmpItems,
+			Value:          []*models.EntityTreeObj{},
+		})
 	}
 	result = sortRequestEntity(result)
 	for _, v := range result {
@@ -741,20 +760,32 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 func UpdateRequestStatus(requestId, status, operator, userToken, language, description string) error {
 	var err error
 	var request models.RequestTable
+	var requestTemplate *models.RequestTemplateTable
+	var bindCache string
 	nowTime := time.Now().Format(models.DateTimeFormat)
+	request, err = GetSimpleRequest(requestId)
+	if err != nil {
+		return err
+	}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+	if err != nil {
+		return err
+	}
+	if requestTemplate == nil {
+		return fmt.Errorf("requestId:%s is invalid", requestId)
+	}
 	if status == "Pending" {
-		bindData, bindErr := GetRequestPreBindData(requestId, userToken, language)
-		if bindErr != nil {
-			return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
+		if requestTemplate.ProcDefId != "" {
+			bindData, bindErr := GetRequestPreBindData(request, requestTemplate, userToken, language)
+			if bindErr != nil {
+				return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
+			}
+			bindCacheBytes, _ := json.Marshal(bindData)
+			bindCache = string(bindCacheBytes)
 		}
-		bindCacheBytes, _ := json.Marshal(bindData)
-		bindCache := string(bindCacheBytes)
-		_, err = dao.X.Exec("update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?", status, operator, nowTime, bindCache, operator, nowTime, requestId)
-		if err == nil {
-			notifyRoleMail(requestId, userToken, language)
-		}
+		// 请求定版, 根据模板配置开启是否确认定版
+		err = GetRequestService().HandleRequestCheck(request, operator, bindCache)
 	} else if status == "Draft" {
-		request, err = GetSimpleRequest(requestId)
 		if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError
 			return err
@@ -1022,19 +1053,11 @@ func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestPar
 	return
 }
 
-func GetRequestPreBindData(requestId, userToken, language string) (result models.RequestCacheData, err error) {
-	var requestTable []*models.RequestTable
-	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requestTable)
-	if err != nil {
-		return result, fmt.Errorf("Try to query request fail,%s ", err.Error())
+func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.RequestTemplateTable, userToken, language string) (result models.RequestCacheData, err error) {
+	if request.Cache == "" {
+		return result, fmt.Errorf("Can not find request cache data with id:%s ", request.Id)
 	}
-	if len(requestTable) == 0 {
-		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
-	}
-	if requestTable[0].Cache == "" {
-		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
-	}
-	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, language, "bind")
+	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(requestTemplate, userToken, language, "bind")
 	if processErr != nil {
 		return result, processErr
 	}
@@ -1054,7 +1077,7 @@ func GetRequestPreBindData(requestId, userToken, language string) (result models
 		}
 	}
 	var dataCache models.RequestPreDataDto
-	json.Unmarshal([]byte(requestTable[0].Cache), &dataCache)
+	json.Unmarshal([]byte(request.Cache), &dataCache)
 	entityOidMap := make(map[string][]string)
 	entityValueMap := make(map[string]*models.RequestCacheEntityValue)
 	for i, v := range dataCache.Data {
@@ -1080,7 +1103,7 @@ func GetRequestPreBindData(requestId, userToken, language string) (result models
 		}
 	}
 	var entityNodeBind []*models.EntityNodeBindQueryObj
-	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_item_template t2 on t1.form_template=t2.form_template where t1.request_template=?", requestTable[0].RequestTemplate).Find(&entityNodeBind)
+	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_item_template t2 on t1.form_template=t2.form_template where t1.request_template=?", requestTemplate.Id).Find(&entityNodeBind)
 	for _, v := range entityNodeBind {
 		if _, b := entityBindMap[v.NodeDefId]; b {
 			entityBindMap[v.NodeDefId] = append(entityBindMap[v.NodeDefId], v.ItemGroup)
@@ -1243,6 +1266,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	var requests []*models.RequestTable
 	var taskQueryList []*models.TaskQueryObj
 	var actions []*dao.ExecAction
+	var approvalList []*models.TaskTemplateDto
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
@@ -1268,6 +1292,10 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	taskQueryList, err = GetRequestTaskListV2(requestId)
 	if err != nil {
 		return
+	}
+	if requests[0].TaskApprovalCache != "" {
+		json.Unmarshal([]byte(requests[0].TaskApprovalCache), &approvalList)
+		result.ApprovalList = approvalList
 	}
 	result.Data = taskQueryList
 	return
@@ -1719,5 +1747,85 @@ func newRequestId() (requestId string) {
 		subId = "0" + subId
 	}
 	requestId = fmt.Sprintf("%s-%s", requestId, subId)
+	return
+}
+
+func GetRequestHistory(c *gin.Context, requestId string) (result *models.RequestHistory, err error) {
+	result = &models.RequestHistory{}
+	// 查询 request
+	var requests []*models.RequestTable
+	err = dao.X.Context(c).Table(models.RequestTable{}.TableName()).
+		Where("id = ?", requestId).
+		Find(&requests)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(requests) == 0 {
+		return result, fmt.Errorf("requestId: %s is invalid", requestId)
+	}
+	result.Request = &models.RequestForHistory{
+		RequestTable: *requests[0],
+	}
+
+	// 查询 task
+	var tasks []*models.TaskTable
+	err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
+		Where("request = ?", requestId).
+		Asc("created_time").
+		Find(&tasks)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	if len(tasks) == 0 {
+		return
+	}
+
+	taskIds := make([]string, 0, len(tasks))
+	for _, task := range tasks {
+		taskIds = append(taskIds, task.Id)
+	}
+
+	// 查询 task handle
+	var taskHandles []*models.TaskHandleTable
+	err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
+		In("task", taskIds).
+		Desc("created_time").
+		Find(&taskHandles)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+
+	taskIdMapHandle := make(map[string][]*models.TaskHandleTable)
+	for _, taskHandle := range taskHandles {
+		if _, isExisted := taskIdMapHandle[taskHandle.Task]; !isExisted {
+			taskIdMapHandle[taskHandle.Task] = []*models.TaskHandleTable{}
+		}
+		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], taskHandle)
+	}
+
+	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
+	for _, task := range tasks {
+		if task.Type == string(models.TaskTypeImplement) {
+			if task.ProcDefId != "" {
+				task.Type = models.TaskTypeImplementProcess
+			} else {
+				task.Type = models.TaskTypeImplementCustom
+			}
+		}
+
+		curTaskForHistory := &models.TaskForHistory{
+			TaskTable:      *task,
+			TaskHandleList: []*models.TaskHandleTable{},
+		}
+		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
+			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
+		}
+		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
+	}
+	result.Data = taskForHistoryList
 	return
 }

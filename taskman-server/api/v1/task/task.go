@@ -6,7 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	service "github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -119,7 +119,7 @@ func SaveTaskForm(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		operationLogService.RecordTaskLog(taskId, task.Name, operator, "saveTask", c.Request.RequestURI, c.GetString("requestBody"))
+		service.GetOperationLogService().RecordTaskLog(taskId, task.Name, operator, "saveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -190,7 +190,7 @@ func ApproveTask(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		operationLogService.RecordTaskLog(taskId, taskTable.Name, operator, "approveTask", c.Request.RequestURI, c.GetString("requestBody"))
+		service.GetOperationLogService().RecordTaskLog(taskId, taskTable.Name, operator, "approveTask", c.Request.RequestURI, c.GetString("requestBody"))
 		middleware.ReturnSuccess(c)
 	}
 }
@@ -208,7 +208,7 @@ func ChangeTaskStatus(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	operationLogService.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, operation)
+	service.GetOperationLogService().RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, operation)
 	middleware.ReturnData(c, taskObj)
 }
 
@@ -238,7 +238,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		operationLogService.RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
+		service.GetOperationLogService().RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
 		middleware.ReturnData(c, service.GetTaskAttachFileList(taskId))
 	}
 }

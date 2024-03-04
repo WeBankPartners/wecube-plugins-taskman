@@ -57,6 +57,9 @@ func CreateRequest(c *gin.Context) {
 	var items []*models.FormItemTemplateTable
 	dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", template.Id).Find(&items)
 	param.CustomForm.Title = items
+	if template.ProcDefId != "" {
+		param.AssociationWorkflow = true
+	}
 	err = service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -149,4 +152,14 @@ func StartRequest(c *gin.Context) {
 	}
 	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnData(c, instanceId)
+}
+
+func GetRequestHistory(c *gin.Context) {
+	requestId := c.Param("requestId")
+	result, err := service.GetRequestHistory(c, requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, result)
 }

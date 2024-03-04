@@ -19,7 +19,7 @@
           </Select>
           <span style="color: red">*</span>
         </FormItem>
-        <Divider>预制表单字段</Divider>
+        <Divider style="margin-top:40px">预制表单字段</Divider>
         <div>
           <Row>
             <Col span="12" v-for="system in group.systemItems" :key="system.id">
@@ -27,34 +27,37 @@
             </Col>
           </Row>
         </div>
-        <Divider>自定义分析字段</Divider>
+        <Divider style="margin-top:40px">自定义分析字段</Divider>
         <Row>
-          <Col span="10">字段名称</Col>
-          <Col span="10">数据查找规则</Col>
+          <Col span="5">字段名称</Col>
+          <Col span="16">数据查找规则</Col>
         </Row>
         <Row>
-          <span v-for="(item, itemIndex) in group.customItems" :key="itemIndex">
-            <Col span="10">
+          <div v-for="(item, itemIndex) in group.customItems" :key="itemIndex">
+            <Col span="5">
               <Input v-model="item.name"></Input>
             </Col>
-            <Col span="10">
-              <!-- <ItemFilterRulesGroup
+            <Col span="16">
+              <ItemFilterRulesGroup
                 :isBatch="false"
                 ref="filterRulesGroupRef"
+                :currentIndex="itemIndex"
                 @filterRuleChanged="singleFilterRuleChanged"
                 :disabled="false"
-                :routineExpression="itemCustomInfo.customAttrs.routineExpression || currentSelectedEntity"
+                :routineExpression="item.defaultValue || group.itemGroup"
                 :allEntityType="allEntityType"
-                :currentSelectedEntity="currentSelectedEntity"
+                :currentSelectedEntity="group.itemGroup"
               >
-              </ItemFilterRulesGroup> -->
+              </ItemFilterRulesGroup>
             </Col>
-            <Col span="4">
-              <Button type="error" @click="deleteCustomItem(itemIndex)" icon="md-trash"></Button>
+            <Col span="2">
+              <Button type="error" @click="deleteCustomItem(itemIndex)" size="small" icon="md-trash"></Button>
             </Col>
-          </span>
-          <Button style="margin-top:4px" type="primary" size="small" ghost @click="addCustomItem">新增</Button>
+          </div>
         </Row>
+        <div style="text-align: right;margin-right: 40px;">
+          <Button type="primary" ghost @click="addCustomItem" size="small" icon="md-add"></Button>
+        </div>
       </Form>
     </div>
     <div class="demo-drawer-footer">
@@ -68,11 +71,13 @@
 
 <script>
 import ItemFilterRulesGroup from './item-filter-rules-group.vue'
-import { saveRequestGroupForm, getRequestGroupForm } from '@/api/server.js'
+import { saveRequestGroupForm, getRequestGroupForm, getAllDataModels } from '@/api/server.js'
 export default {
   name: 'workflow',
   data () {
     return {
+      allEntityType: [], // 所有模型
+
       isParmasChanged: false,
       openFormConfig: false, // 配置表单控制
       formTemplateId: '', // 数据表单id
@@ -99,12 +104,12 @@ export default {
         // 自定义分析字段信息
         active: false,
         id: '',
-        name: 'default',
+        name: '',
         description: '',
         itemGroup: '',
         itemGroupType: '',
         itemGroupName: '',
-        ItemGroupSort: 1,
+        itemGroupSort: 1,
         itemGroupRule: 'new',
         formTemplate: '',
         defaultValue: '',
@@ -114,8 +119,8 @@ export default {
         attrDefId: '',
         attrDefName: '',
         attrDefDataType: '',
-        elementType: 'textarea',
-        title: 'Textarea16',
+        elementType: 'calculate',
+        title: '',
         width: 24,
         refPackageName: '',
         refEntity: '',
@@ -146,8 +151,23 @@ export default {
   },
   props: ['module'],
   methods: {
+    // 自定义字段获取所有类型
+    async getAllDataModels () {
+      let { data, status } = await getAllDataModels()
+      if (status === 'OK') {
+        this.allEntityType = data
+      }
+    },
+    // 定位规则回传
+    singleFilterRuleChanged (val, index) {
+      console.log(val, index)
+      this.group.customItems[index].defaultValue = val
+      console.log(44, this.group)
+    },
     async loadPage (params) {
       await this.getRequestGroupForm(params)
+      console.log(34, this.group)
+      this.getAllDataModels()
       if (params.isAdd) {
         // this.group = {}
         // this.group.requestTemplateId = params.requestTemplateId
@@ -173,6 +193,7 @@ export default {
       })
       if (statusCode === 'OK') {
         this.group = data
+        console.log(23, data)
       }
     },
     paramsChanged () {
@@ -218,9 +239,14 @@ export default {
         this.openFormConfig = false
       }
     },
-    deleteCustomItem (itemIndex) {},
+    deleteCustomItem (itemIndex) {
+      console.log(itemIndex)
+      this.group.customItems.splice(itemIndex, 1)
+    },
     addCustomItem () {
       let tmpItem = JSON.parse(JSON.stringify(this.defaultItem))
+      tmpItem.name = `default${this.group.customItems.length}`
+      tmpItem.title = `custom${this.group.customItems.length}`
       this.group.customItems.push(tmpItem)
     }
   },

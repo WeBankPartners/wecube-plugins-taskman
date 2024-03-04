@@ -82,100 +82,74 @@ const (
 	FormItemElementTypeCalculate FormItemElementType = "calculate" //计算类型
 )
 
-// ApprovalTemplateRoleType 审批模板 分配方式
-type ApprovalTemplateRoleType string
-
-const (
-	ApprovalTemplateRoleTypeCustom ApprovalTemplateRoleType = "custom" // 单人自定义
-	ApprovalTemplateRoleTypeAny    ApprovalTemplateRoleType = "any"    // 协同
-	ApprovalTemplateRoleTypeAll    ApprovalTemplateRoleType = "all"    // 并行
-	ApprovalTemplateRoleTypeAdmin  ApprovalTemplateRoleType = "admin"  // 提交人角色管理员
-	ApprovalTemplateRoleTypeAuto   ApprovalTemplateRoleType = "auto"   // 自动通过
-)
-
-// ApprovalTemplateRoleRoleType 审批处理模板 角色设置方式
-type ApprovalTemplateRoleRoleType string
-
-const (
-	ApprovalTemplateRoleRoleTypeTemplate ApprovalTemplateRoleRoleType = "template" // 模板指定
-	ApprovalTemplateRoleRoleTypeCustom   ApprovalTemplateRoleRoleType = "custom"   // 提交人指定
-)
-
-// ApprovalTemplateRoleHandlerType 审批处理模板 人员设置方式
-type ApprovalTemplateRoleHandlerType string
-
-const (
-	ApprovalTemplateRoleHandlerTypeTemplate        ApprovalTemplateRoleHandlerType = "template"         // 模板指定
-	ApprovalTemplateRoleHandlerTypeTemplateSuggest ApprovalTemplateRoleHandlerType = "template_suggest" // 模板建议
-	ApprovalTemplateRoleHandlerTypeCustom          ApprovalTemplateRoleHandlerType = "custom"           // 提交人指定
-	ApprovalTemplateRoleHandlerTypeCustomSuggest   ApprovalTemplateRoleHandlerType = "custom_suggest"   // 提交人建议
-	ApprovalTemplateRoleHandlerTypeSystem          ApprovalTemplateRoleHandlerType = "system"           // 组内系统分配
-	ApprovalTemplateRoleHandlerTypeClaim           ApprovalTemplateRoleHandlerType = "claim"            // 组内主动认领
-)
-
-// ApprovalApprove 审批 是否同意
-type ApprovalApprove string
-
-const (
-	ApprovalApproveInit       ApprovalApprove = "init"       // 未处理
-	ApprovalApproveProcessing ApprovalApprove = "processing" // 处理中
-	ApprovalApproveApprove    ApprovalApprove = "approve"    // 同意
-	ApprovalApproveDeny       ApprovalApprove = "deny"       // 拒绝
-)
-
-// ApprovalRoleApprove 审批处理 是否同意
-type ApprovalRoleApprove string
-
-const (
-	ApprovalRoleApproveInit    ApprovalRoleApprove = "init"    // 未处理
-	ApprovalRoleApproveApprove ApprovalRoleApprove = "approve" // 同意
-	ApprovalRoleApproveDeny    ApprovalRoleApprove = "deny"    // 拒绝
-)
-
-// TaskTemplateType 任务模板 类型
-type TaskTemplateType string
-
-const (
-	TaskTemplateTypeProc   TaskTemplateType = "proc"   // 编排
-	TaskTemplateTypeCustom TaskTemplateType = "custom" // 自定义
-)
-
-// TaskTemplateRoleType 任务模板 分配方式
-type TaskTemplateRoleType string
-
-const (
-	TaskTemplateRoleTypeCustom TaskTemplateRoleType = "custom" // 单人自定义
-	TaskTemplateRoleTypeAdmin  TaskTemplateRoleType = "admin"  // 提交人角色管理员
-)
-
-// TaskTemplateRoleRoleType 任务处理模板 角色设置方式
-type TaskTemplateRoleRoleType string
-
-const (
-	TaskTemplateRoleRoleTypeTemplate TaskTemplateRoleRoleType = "template" // 模板指定
-	TaskTemplateRoleRoleTypeCustom   TaskTemplateRoleRoleType = "custom"   // 提交人指定
-)
-
-// TaskTemplateRoleHandlerType 任务处理模板 人员设置方式
-type TaskTemplateRoleHandlerType string
-
-const (
-	TaskTemplateRoleHandlerTypeTemplate        TaskTemplateRoleHandlerType = "template"         // 模板指定
-	TaskTemplateRoleHandlerTypeTemplateSuggest TaskTemplateRoleHandlerType = "template_suggest" // 模板建议
-	TaskTemplateRoleHandlerTypeCustom          TaskTemplateRoleHandlerType = "custom"           // 提交人指定
-	TaskTemplateRoleHandlerTypeCustomSuggest   TaskTemplateRoleHandlerType = "custom_suggest"   // 提交人建议
-	TaskTemplateRoleHandlerTypeSystem          TaskTemplateRoleHandlerType = "system"           // 组内系统分配
-	TaskTemplateRoleHandlerTypeClaim           TaskTemplateRoleHandlerType = "claim"            // 组内主动认领
-)
-
-// TaskType 任务类型
+// TaskType 任务模板、任务 类型
 type TaskType string
 
 const (
+	TaskTypeSubmit    TaskType = "submit"    // 提交
 	TaskTypeCheck     TaskType = "check"     // 定版
 	TaskTypeApprove   TaskType = "approve"   // 审批
 	TaskTypeImplement TaskType = "implement" // 执行类型(任务)
 	TaskTypeConfirm   TaskType = "confirm"   // 请求确认
+)
+
+// TaskTemplateHandleMode 任务模板 处理模式
+type TaskTemplateHandleMode string
+
+const (
+	TaskTemplateHandleModeCustom TaskTemplateHandleMode = "custom" // 单人自定义
+	TaskTemplateHandleModeAny    TaskTemplateHandleMode = "any"    // 协同
+	TaskTemplateHandleModeAll    TaskTemplateHandleMode = "all"    // 并行
+	TaskTemplateHandleModeAdmin  TaskTemplateHandleMode = "admin"  // 提交人角色管理员
+	TaskTemplateHandleModeAuto   TaskTemplateHandleMode = "auto"   // 自动通过
+)
+
+// TaskHandleTemplateAssignType 任务处理模板 分派方式
+type TaskHandleTemplateAssignType string
+
+const (
+	TaskHandleTemplateAssignTypeTemplate TaskHandleTemplateAssignType = "template" // 模板指定
+	TaskHandleTemplateAssignTypeCustom   TaskHandleTemplateAssignType = "custom"   // 提交人指定
+)
+
+// TaskHandleTemplateHandlerType 任务处理模板 人员设置方式
+type TaskHandleTemplateHandlerType string
+
+const (
+	TaskHandleTemplateHandlerTypeTemplate        TaskHandleTemplateHandlerType = "template"         // 模板指定
+	TaskHandleTemplateHandlerTypeTemplateSuggest TaskHandleTemplateHandlerType = "template_suggest" // 模板建议
+	TaskHandleTemplateHandlerTypeCustom          TaskHandleTemplateHandlerType = "custom"           // 提交人指定
+	TaskHandleTemplateHandlerTypeCustomSuggest   TaskHandleTemplateHandlerType = "custom_suggest"   // 提交人建议
+	TaskHandleTemplateHandlerTypeSystem          TaskHandleTemplateHandlerType = "system"           // 组内系统分配
+	TaskHandleTemplateHandlerTypeClaim           TaskHandleTemplateHandlerType = "claim"            // 组内主动认领
+)
+
+// TaskResultType 任务 处理结果
+type TaskResultType string
+
+const (
+	TaskResultTypeComplete    TaskResultType = "complete"    // 完成
+	TaskResultTypeUncompleted TaskResultType = "uncompleted" // 未完成
+)
+
+// TaskHandleResultType 任务处理 处理结果
+type TaskHandleResultType string
+
+const (
+	TaskHandleResultTypeApprove    TaskHandleResultType = "approve"    // 同意
+	TaskHandleResultTypeDeny       TaskHandleResultType = "deny"       // 拒绝
+	TaskHandleResultTypeRedraw     TaskHandleResultType = "redraw"     // 打回
+	TaskHandleResultTypeComplete   TaskHandleResultType = "complete"   // 完成
+	TaskHandleResultTypeUncomplete TaskHandleResultType = "uncomplete" // 未完成
+)
+
+// TaskHandleChangeReason 任务处理 变更原因
+type TaskHandleChangeReason string
+
+const (
+	TaskHandleChangeReasonAssign TaskHandleChangeReason = "assign" // 系统分配
+	TaskHandleChangeReasonClaim  TaskHandleChangeReason = "claim"  // 主动领取
+	TaskHandleChangeReasonGive   TaskHandleChangeReason = "give"   // 转给我
 )
 
 // RequestFormType 请求表单类型
@@ -184,4 +158,31 @@ type RequestFormType string
 const (
 	RequestFormTypeMessage RequestFormType = "message" // 请求表单-信息表单
 	RequestFormTypeData    RequestFormType = "data"    // 请求表单-数据表单
+)
+
+// TaskStatus 任务状态
+type TaskStatus string
+
+const (
+	TaskStatusCreated TaskStatus = "created" // 任务创建
+	TaskStatusMarked  TaskStatus = "marked"  // 任务认领
+	TaskStatusDoing   TaskStatus = "doing"   // 任务进行中
+	TaskStatusDone    TaskStatus = "done"    // 任务完成
+)
+
+// ProgressStatus 请求状态
+type ProgressStatus int
+
+const (
+	ProgressStatusInProgress                 ProgressStatus = 1 // 进行中
+	ProgressStatusNotStart                   ProgressStatus = 2 // 未开始
+	ProgressStatusCompleted                  ProgressStatus = 3 // 已完成
+	ProgressStatusFail                       ProgressStatus = 4 // 报错失败,被拒绝了
+	ProgressStatusAutoExitStatus             ProgressStatus = 5 // 自动退出
+	ProgressStatusInternallyTerminatedStatus ProgressStatus = 6 // 自动退出
+)
+
+const (
+	TaskTypeImplementProcess string = "implement_process" // 编排任务
+	TaskTypeImplementCustom  string = "implement_custom"  // 自定义任务
 )

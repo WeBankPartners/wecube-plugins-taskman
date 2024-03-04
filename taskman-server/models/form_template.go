@@ -3,21 +3,6 @@ package models
 import "github.com/WeBankPartners/go-common-lib/guid"
 
 type FormTemplateTable struct {
-	Id          string `json:"id" xorm:"'id' pk" primary-key:"id"`
-	Name        string `json:"name" xorm:"name"`
-	Description string `json:"description" xorm:"description"`
-	CreatedBy   string `json:"createdBy" xorm:"created_by"`
-	CreatedTime string `json:"createdTime" xorm:"created_time"`
-	UpdatedBy   string `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime string `json:"updatedTime" xorm:"updated_time"`
-	DelFlag     int    `json:"delFlag" xorm:"del_flag"`
-}
-
-func (FormTemplateTable) TableName() string {
-	return "form_template"
-}
-
-type FormTemplateNewTable struct {
 	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
 	RequestTemplate string `json:"requestTemplate" xorm:"request_template"`
 	TaskTemplate    string `json:"taskTemplate" xorm:"task_template"`
@@ -32,21 +17,21 @@ type FormTemplateNewTable struct {
 	DelFlag         int    `json:"delFlag" xorm:"del_flag"`
 }
 
-func (FormTemplateNewTable) TableName() string {
-	return "form_template_new"
+func (FormTemplateTable) TableName() string {
+	return "form_template"
 }
 
-type FormTemplateNewTableSort []*FormTemplateNewTable
+type FormTemplateTableSort []*FormTemplateTable
 
-func (s FormTemplateNewTableSort) Len() int {
+func (s FormTemplateTableSort) Len() int {
 	return len(s)
 }
 
-func (s FormTemplateNewTableSort) Swap(i, j int) {
+func (s FormTemplateTableSort) Swap(i, j int) {
 	s[i], s[j] = s[j], s[i]
 }
 
-func (s FormTemplateNewTableSort) Less(i, j int) bool {
+func (s FormTemplateTableSort) Less(i, j int) bool {
 	if s[i].ItemGroupSort < s[j].ItemGroupSort {
 		return true
 	}
@@ -129,18 +114,6 @@ type TaskFormItemQueryObj struct {
 	ElementType      string `json:"elementType" xorm:"element_type"`
 }
 
-func CovertFormTemplateDto2Model(dto FormTemplateDto) *FormTemplateTable {
-	return &FormTemplateTable{
-		Id:          dto.Id,
-		Name:        dto.Name,
-		Description: dto.Description,
-		CreatedBy:   dto.UpdatedBy,
-		CreatedTime: dto.NowTime,
-		UpdatedBy:   dto.UpdatedBy,
-		UpdatedTime: dto.NowTime,
-	}
-}
-
 func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
 	if workflowEntityAttribute.DataType == "ref" {
@@ -170,7 +143,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		IsEdit:          "yes",
 		IsView:          "yes",
 		IsOutput:        "no",
-		InDisplayName:   "no",
+		InDisplayName:   "yes",
 		IsRefInside:     "no",
 		Multiple:        workflowEntityAttribute.Multiple,
 		DefaultClear:    "no",

@@ -90,7 +90,10 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div class="custom-title">
+                  <div
+                    class="custom-title"
+                    :style="['calculate', 'textarea'].includes(element.elementType) ? 'vertical-align: top;' : ''"
+                  >
                     <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
                     {{ element.title }}:
                   </div>
@@ -102,10 +105,11 @@
                     class="custom-item"
                   />
                   <Input
-                    v-if="element.elementType === 'textarea'"
+                    v-if="['calculate', 'textarea'].includes(element.elementType)"
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
+                    :rows="2"
                     class="custom-item"
                   />
                   <Select
@@ -172,6 +176,7 @@
                       <Option value="textarea">Textarea</Option>
                       <Option value="wecmdbEntity">模型数据项</Option>
                       <Option value="datePicker">DatePicker</Option>
+                      <Option value="calculate">Calculate</Option>
                     </Select>
                   </FormItem>
                   <FormItem
@@ -647,7 +652,7 @@ export default {
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             } else if (d.formType === 'optional') {
-              d.formTypeName = this.$t('自选表单项')
+              d.formTypeName = this.$t('自选entity表单')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             }
@@ -664,7 +669,7 @@ export default {
         this.itemGroupType = 'custom'
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.requestTemplateId,
+          // formTemplateId: this.requestTemplateId,
           isAdd: true,
           itemGroupType: this.itemGroupType,
           itemGroup: this.itemGroup + (this.dataFormInfo.groups.length + 1),
@@ -683,7 +688,7 @@ export default {
           if (['workflow', 'optional'].includes(this.itemGroupType)) {
             let params = {
               requestTemplateId: this.requestTemplateId,
-              formTemplateId: this.requestTemplateId,
+              // formTemplateId: this.requestTemplateId,
               isAdd: true,
               itemGroupType: this.itemGroupType,
               itemGroup: this.itemGroup,

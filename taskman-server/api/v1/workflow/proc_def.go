@@ -104,12 +104,13 @@ func ProcEntityDataQuery(c *gin.Context) {
 	var err error
 	var param models.EntityQueryParam
 	var response models.EntityResponse
+	packageName := c.Param("pluginPackageId")
 	entityName := c.Param("entityName")
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnError(c, exterror.Catch(exterror.New().RequestParamValidateError, err))
 		return
 	}
-	response, err = rpc.CmdbEntitiesQuery(param, entityName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	response, err = rpc.EntitiesQuery(param, packageName, entityName, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnError(c, err)
 		return

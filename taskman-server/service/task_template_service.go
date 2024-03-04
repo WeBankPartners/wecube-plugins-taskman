@@ -541,10 +541,9 @@ func (s *TaskTemplateService) ListTaskTemplateIds(requestTemplateId, typ, userTo
 	if requestTemplate == nil {
 		return nil, errors.New("no request_template record found")
 	}
-	result := &models.TaskTemplateListIdsResponse{}
-	if requestTemplate.ProcDefId != "" {
+	result := &models.TaskTemplateListIdsResponse{Type: typ}
+	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
 		// 编排任务
-		result.Type = string(models.TaskTypeImplement)
 		// 查询任务节点
 		nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
 		if err != nil {
@@ -601,9 +600,6 @@ func (s *TaskTemplateService) ListTaskTemplateIds(requestTemplateId, typ, userTo
 				NodeDefId: taskTemplate.NodeDefId,
 			}
 		}
-		if len(taskTemplates) > 0 {
-			result.Type = taskTemplates[0].Type
-		}
 	}
 	return result, nil
 }
@@ -618,7 +614,7 @@ func (s *TaskTemplateService) ListTaskTemplates(requestTemplateId, typ, userToke
 		return nil, errors.New("no request_template record found")
 	}
 	var result []*models.TaskTemplateDto
-	if requestTemplate.ProcDefId != "" {
+	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
 		// 编排任务
 		// 查询任务节点
 		nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)

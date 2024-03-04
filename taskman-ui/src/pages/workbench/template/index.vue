@@ -38,7 +38,7 @@
           <!--我的草稿-->
           <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
         </Tabs>
-        <Card :bordered="false" dis-hover :padding="0">
+        <Card :bordered="false" dis-hover :padding="0" style="height:400px;">
           <template v-if="cardList.length">
             <Card v-for="(i, index) in cardList" :key="index" style="width:100%;margin-bottom:20px;">
               <div class="w-header" slot="title">
@@ -78,12 +78,10 @@
               </div>
             </Card>
           </template>
-          <div v-else class="template-no-data">
+          <div v-if="!spinShow && !cardList.length" class="template-no-data">
             {{ $t('tw_no_data') }}
           </div>
-          <Spin fix v-if="spinShow">
-            <!-- <Icon type="ios-loading" size="44"></Icon> -->
-          </Spin>
+          <Spin fix v-if="spinShow"></Spin>
         </Card>
       </div>
       <!--收藏列表-->

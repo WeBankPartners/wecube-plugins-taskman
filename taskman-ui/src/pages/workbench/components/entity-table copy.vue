@@ -47,7 +47,7 @@ export default {
       default: false
     },
     // 无数据时，是否默认添加一行
-    isAddRow: {
+    autoAddRow: {
       type: Boolean,
       default: false
     },
@@ -124,7 +124,7 @@ export default {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
             // 新增时，没有配置数据，默认添加一行
-            if (item.value.length === 0 && this.isAddRow) {
+            if (item.value.length === 0 && this.autoAddRow) {
               this.handleAddRow(item)
             }
             item.value.forEach(j => {

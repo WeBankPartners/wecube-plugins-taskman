@@ -2,11 +2,7 @@
 <template>
   <div class="workbench-current-handle">
     <!--请求定版-->
-    <HeaderTitle
-      v-if="isHandle && detailInfo.status === 'Pending'"
-      :title="$t('tw_cur_handle')"
-      :subTitle="$t('tw_request_pending')"
-    >
+    <HeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')" :subTitle="$t('tw_request_pending')">
       <div class="step-item">
         <div class="step-item-left">
           <div class="circle">1</div>
@@ -34,18 +30,18 @@
               :isHandle="isHandle"
               :requestTemplate="requestTemplate"
               :requestId="requestId"
-              :formDisable="detailInfo.status !== 'Pending'"
+              :formDisable="detail.status !== 'Pending'"
               :actionName="actionName"
             ></DataBind>
           </div>
         </div>
       </div>
     </HeaderTitle>
-    <!--任务-->
+    <!--审批和任务-->
     <HeaderTitle
-      v-if="isHandle && detailInfo.status === 'InProgress'"
+      v-else-if="['InApproval', 'InProgress'].includes(detail.status)"
       :title="$t('tw_cur_handle')"
-      :subTitle="handleData.taskName"
+      :subTitle="handleData.name"
     >
       <div class="step-item">
         <div class="step-item-left">
@@ -58,13 +54,7 @@
             <span>{{ $t('tw_approval_step1_tips') }}</span>
           </div>
           <div class="content">
-            <EntityTable
-              ref="entityTable"
-              :data="handleData.formData"
-              :requestId="requestId"
-              :formDisable="!handleData.editable"
-              :isAddRow="true"
-            ></EntityTable>
+            <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId" autoAddRow></EntityTable>
           </div>
         </div>
       </div>
@@ -79,32 +69,23 @@
           </div>
           <div class="content">
             <Form :label-width="80" label-position="left">
-              <FormItem v-if="handleData.requestId === ''" :label="$t('task') + $t('description')">
+              <FormItem :label="$t('task') + $t('description')">
                 <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
-              <FormItem
-                :label="$t('process_result')"
-                v-if="handleData.nextOption && handleData.nextOption.length !== 0"
-              >
+              <FormItem :label="$t('process_result')" v-if="handleData.nextOption && handleData.nextOption.length > 0">
                 <span slot="label">
                   {{ $t('process_result') }}
                   <span style="color: #ed4014"> * </span>
                 </span>
-                <Select v-model="handleData.choseOption" :disabled="!handleData.editable">
+                <Select v-model="handleData.choseOption">
                   <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{ option }}</Option>
                 </Select>
               </FormItem>
               <FormItem :label="$t('process_comments')">
-                <Input
-                  :disabled="!handleData.editable"
-                  v-model="handleData.comment"
-                  type="textarea"
-                  :maxlength="200"
-                  show-word-limit
-                />
+                <Input v-model="handleData.comment" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
-                <UploadFile :id="handleData.taskId" :files="handleData.attachFiles" type="task"></UploadFile>
+                <UploadFile :id="handleData.id" :files="handleData.attachFiles" type="task"></UploadFile>
               </FormItem>
             </Form>
             <div style="text-align: center">
@@ -122,7 +103,7 @@
       </div>
     </HeaderTitle>
     <!--确认请求-->
-    <HeaderTitle v-if="isHandle && detailInfo.status === 'Confirm'" :title="$t('tw_cur_handle')" subTitle="请求确认">
+    <HeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')" subTitle="请求确认">
       <div style="padding:20px 16px;">
         <Form :label-width="80" label-position="left">
           <FormItem label="请求状态">
@@ -150,7 +131,7 @@
             <Input v-model="confirmRequestForm.notes" type="textarea" :maxlength="200" show-word-limit />
           </FormItem>
           <FormItem :label="$t('tw_attach')">
-            <UploadFile :id="handleData.taskId" :files="handleData.attachFiles" type="task"></UploadFile>
+            <UploadFile :id="handleData.id" :files="handleData.attachFiles" type="task"></UploadFile>
           </FormItem>
         </Form>
         <div style="text-align:center;">
@@ -176,7 +157,7 @@ export default {
     UploadFile
   },
   props: {
-    detailInfo: {
+    detail: {
       type: Object,
       default: () => {}
     },
@@ -214,6 +195,7 @@ export default {
     }
   },
   methods: {
+    // 获取关注的任务列表
     async geTaskTagList () {
       const { statusCode, data } = await geTaskTagList(this.requestId)
       if (statusCode === 'OK') {
@@ -224,6 +206,7 @@ export default {
     async confirmRequest () {
       const params = {
         id: this.requestId,
+        taskId: this.handleData.id,
         markTaskId: this.confirmRequestForm.markTaskId,
         completeStatus: this.confirmRequestForm.completeStatus,
         notes: this.confirmRequestForm.notes
@@ -250,12 +233,8 @@ export default {
             }
           })
           if (Array.isArray(item.value)) {
-            // item.value = item.value.filter(j => {
-            //   return j.entityData._checked
-            // })
             // 删除多余的属性
             item.value.forEach(v => {
-              // delete v.entityData._checked
               refKeys.forEach(ref => {
                 delete v.entityData[ref + 'Options']
               })
@@ -278,7 +257,7 @@ export default {
           desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
         })
       }
-      const { statusCode } = await saveTaskData(this.handleData.taskId, this.handleData)
+      const { statusCode } = await saveTaskData(this.handleData.id, this.handleData)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -299,12 +278,8 @@ export default {
             }
           })
           if (Array.isArray(item.value)) {
-            // item.value = item.value.filter(j => {
-            //   return j.entityData._checked
-            // })
             // 删除多余的属性
             item.value.forEach(v => {
-              // delete v.entityData._checked
               refKeys.forEach(ref => {
                 delete v.entityData[ref + 'Options']
               })
@@ -327,7 +302,7 @@ export default {
           desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
         })
       }
-      const { statusCode } = await commitTaskData(this.handleData.taskId, this.handleData)
+      const { statusCode } = await commitTaskData(this.handleData.id, this.handleData)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),

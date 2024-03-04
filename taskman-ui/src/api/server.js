@@ -142,16 +142,16 @@ export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/re
 // 定版暂存新接口
 export const saveRequestNew = (requestId, type, data) =>
   req.post(`/taskman/api/v2/request-data/save/${requestId}/bing/${type}`, data)
-// 审批模板配置
-export const getApprovalConfig = templateId => req.get(`/taskman/api/v1/approval-template/${templateId}`)
-// 任务模板配置
-export const getTaskConfig = templateId => req.get(`/taskman/api/v1/task-template/custom/${templateId}`)
+// 获取模板任务配置
+export const getTaskConfig = (templateId, type) => req.get(`/taskman/api/v1/task-template/${templateId}?type=${type}`)
 // 获取指定角色的管理员
 export const getAdminUserByRole = role => req.get(`/taskman/api/v1/role/administrator/list?role=${role}`)
 // 需关注任务节点列表
 export const geTaskTagList = requestId => req.get(`/taskman/api/v1/request/${requestId}/task/list`)
 // 提交请求确认
 export const confirmRequest = params => req.post(`/taskman/api/v1/request/confirm`, params)
+// 获取请求历史
+export const getRequestHistory = requestId => req.get(`/taskman/api/v2/request/history/${requestId}`)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

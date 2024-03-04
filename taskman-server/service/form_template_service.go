@@ -364,7 +364,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 		}
 		if len(formItemTemplateList) > 0 {
 			for _, formItem := range formItemTemplateList {
-				if formItem.ItemGroupType == string(models.FormItemGroupTypeCustom) {
+				if formItem.ElementType == string(models.FormItemElementTypeCalculate) {
 					configureDto.CustomItems = append(configureDto.CustomItems, formItem)
 				} else {
 					existAttrMap[formItem.AttrDefId] = true

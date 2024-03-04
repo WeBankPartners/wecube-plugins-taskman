@@ -109,12 +109,12 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 		if newItemGroupId != "" {
 			if param.TaskTemplateId != "" {
 				_, err = session.Exec("insert into form_template(id,request_template,task_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,"+
-					"created_time) values(?,?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.TaskTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
-					param.ItemGroupRule, s.CalcItemGroupSort(param.RequestTemplateId, param.TaskTemplateId), time.Now().Format(models.DateTimeFormat))
+					"created_time,request_form_type) values(?,?,?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.TaskTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
+					param.ItemGroupRule, s.CalcItemGroupSort(param.RequestTemplateId, param.TaskTemplateId), time.Now().Format(models.DateTimeFormat), models.RequestFormTypeData)
 			} else {
 				_, err = session.Exec("insert into form_template(id,request_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,"+
-					"created_time) values(?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
-					param.ItemGroupRule, s.CalcItemGroupSort(param.RequestTemplateId, param.TaskTemplateId), time.Now().Format(models.DateTimeFormat))
+					"created_time,request_form_type) values(?,?,?,?,?,?,?,?,?)", newItemGroupId, param.RequestTemplateId, param.ItemGroup, param.ItemGroupName, param.ItemGroupType,
+					param.ItemGroupRule, s.CalcItemGroupSort(param.RequestTemplateId, param.TaskTemplateId), time.Now().Format(models.DateTimeFormat), models.RequestFormTypeData)
 			}
 			if err != nil {
 				return err

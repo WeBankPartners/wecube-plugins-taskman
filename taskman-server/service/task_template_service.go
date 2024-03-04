@@ -195,9 +195,9 @@ func (s *TaskTemplateService) CreateProcTaskTemplate(param *models.TaskTemplateD
 		return nil, err
 	}
 	sort := 0
-	for _, node := range nodeList {
+	for i, node := range nodeList {
 		if node.NodeDefId == param.NodeDefId {
-			sort = node.OrderedNum
+			sort = i + 1
 			if node.NodeId != param.NodeId || node.NodeName != param.NodeDefName {
 				return nil, fmt.Errorf("param nodeId %q or nodeName %q wrong", param.NodeId, param.NodeDefName)
 			}
@@ -493,9 +493,9 @@ func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, typ, userTo
 			if err != nil {
 				return nil, err
 			}
-			for _, node := range nodeList {
+			for i, node := range nodeList {
 				if node.NodeDefId == id {
-					result = s.genProcTaskTemplateDto(node, requestTemplateId)
+					result = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
 					break
 				}
 			}
@@ -583,14 +583,14 @@ func (s *TaskTemplateService) ListTaskTemplateIds(requestTemplateId, typ, userTo
 					taskTemplateIdx++
 				} else {
 					result.Ids[i] = &models.TaskTemplateIdObj{
-						Sort:      node.OrderedNum,
+						Sort:      i + 1,
 						Name:      node.NodeName,
 						NodeDefId: node.NodeDefId,
 					}
 				}
 			} else {
 				result.Ids[i] = &models.TaskTemplateIdObj{
-					Sort:      node.OrderedNum,
+					Sort:      i + 1,
 					Name:      node.NodeName,
 					NodeDefId: node.NodeDefId,
 				}
@@ -653,10 +653,10 @@ func (s *TaskTemplateService) ListTaskTemplates(requestTemplateId, typ, userToke
 					result[i] = dto
 					taskTemplateIdx++
 				} else {
-					result[i] = s.genProcTaskTemplateDto(node, requestTemplateId)
+					result[i] = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
 				}
 			} else {
-				result[i] = s.genProcTaskTemplateDto(node, requestTemplateId)
+				result[i] = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
 			}
 		}
 	} else {
@@ -747,7 +747,7 @@ func (s *TaskTemplateService) genTaskTemplateDto(taskTemplateId string) (*models
 	return result, nil
 }
 
-func (s *TaskTemplateService) genProcTaskTemplateDto(node *models.ProcNodeObj, requestTemplateId string) *models.TaskTemplateDto {
+func (s *TaskTemplateService) genProcTaskTemplateDto(node *models.ProcNodeObj, requestTemplateId string, sort int) *models.TaskTemplateDto {
 	return &models.TaskTemplateDto{
 		Type:            string(models.TaskTypeImplement),
 		NodeId:          node.NodeId,
@@ -756,7 +756,7 @@ func (s *TaskTemplateService) genProcTaskTemplateDto(node *models.ProcNodeObj, r
 		Name:            node.NodeName,
 		ExpireDay:       1,
 		RequestTemplate: requestTemplateId,
-		Sort:            node.OrderedNum,
+		Sort:            sort,
 		HandleMode:      string(models.TaskTemplateHandleModeCustom),
 		HandleTemplates: []*models.TaskHandleTemplateDto{
 			{

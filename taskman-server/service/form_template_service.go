@@ -452,6 +452,26 @@ func (s *FormTemplateService) DeleteFormTemplateItemGroup(formTemplateId string)
 	return
 }
 
+func (s *FormTemplateService) DeleteFormTemplateItemGroupTransaction(session *xorm.Session, formTemplateId string) (err error) {
+	var formTemplateList []*models.FormTemplateTable
+	formTemplateList, err = s.formTemplateDao.QueryListByIdOrRefId(formTemplateId)
+	if err != nil {
+		return
+	}
+	if len(formTemplateList) > 0 {
+		for _, formTemplate := range formTemplateList {
+			err = s.formItemTemplateDao.DeleteByFormTemplate(session, formTemplate.Id)
+			if err != nil {
+				return
+			}
+			err = s.formTemplateDao.Delete(session, formTemplateId)
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
+}
 func (s *FormTemplateService) SortFormTemplateItemGroup(param models.FormTemplateGroupSortDto) (err error) {
 	var formTemplateList []*models.FormTemplateTable
 	var formTemplateSortMap = s.buildFormTemplateGroupSortMap(param.ItemGroupIdSort)

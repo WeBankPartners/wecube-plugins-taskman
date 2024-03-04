@@ -418,8 +418,20 @@ func (s *TaskTemplateService) DeleteTaskTemplate(requestTemplateId, id string) (
 			updateTaskTemplates = append(updateTaskTemplates, updateTaskTemplate)
 		}
 	}
+	// 查询表单模板列表
+	var formTemplateList []*models.FormTemplateTable
+	dao.X.SQL("select * from form_template where request_template = ? and task_template = ?", requestTemplateId, deleteTaskTemplateId).Find(&formTemplateList)
 	// 执行事务
 	err = transaction(func(session *xorm.Session) error {
+		// 先删表单模板
+		if len(formTemplateList) > 0 {
+			for _, formTemplate := range formTemplateList {
+				err = GetFormTemplateService().DeleteFormTemplateItemGroupTransaction(session, formTemplate.Id)
+				if err != nil {
+					return err
+				}
+			}
+		}
 		if deleteTaskHandleTemplateAll {
 			err := s.taskHandleTemplateDao.DeleteByTaskTemplate(session, deleteTaskTemplateId)
 			if err != nil {

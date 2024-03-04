@@ -30,6 +30,7 @@
         >
       </Col> -->
     </Row>
+    <div></div>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
       <BasicInfo
         @gotoNextStep="gotoNextStep"

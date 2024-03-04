@@ -3,27 +3,21 @@
     <Row type="flex">
       <Col span="24" style="padding: 0 20px">
         <div style="margin: 24px 0">
-          <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right: 30px;">
-            <Tag
-              color="primary"
-              checkable
-              @on-change="editNode(approval)"
-              style="cursor: pointer"
-              :checked="approval.id === activeEditingNode.id ? true : false"
-              :type="approval.id === activeEditingNode.id ? 'dot' : 'border'"
+          <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right:6px;">
+            <div
+              :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
+              @click="editNode(approval)"
             >
-              {{ approval.name }}
-            </Tag>
-            <Button
-              v-if="approvalNodes.length > 1"
-              @click.stop="removeNopde(approval)"
-              type="error"
-              size="small"
-              ghost
-              shape="circle"
-              icon="md-trash"
-              style="position: relative;right: 16px;bottom: 16px;"
-            ></Button>
+              <span>{{ approval.name }}</span>
+              <Icon
+                v-if="approvalNodes.length > 1"
+                @click.stop="removeNopde(approval)"
+                type="md-close"
+                color="#ed4014"
+                style="vertical-align: sub;"
+                :size="18"
+              />
+            </div>
             <Button
               @click.stop="addApprovalNode(approval.sort + 1)"
               type="success"
@@ -130,7 +124,12 @@
                           v-for="(element, eleIndex) in item.attrs"
                           :key="element.id"
                         >
-                          <div class="custom-title">
+                          <div
+                            class="custom-title"
+                            :style="
+                              ['calculate', 'textarea'].includes(element.elementType) ? 'vertical-align: top;' : ''
+                            "
+                          >
                             <Icon
                               v-if="element.required === 'yes'"
                               size="8"
@@ -147,7 +146,7 @@
                             class="custom-item"
                           />
                           <Input
-                            v-if="element.elementType === 'textarea'"
+                            v-if="['calculate', 'textarea'].includes(element.elementType)"
                             :disabled="element.isEdit === 'no'"
                             v-model="element.defaultValue"
                             type="textarea"
@@ -175,7 +174,7 @@
                             type="error"
                             size="small"
                             :disabled="$parent.isCheck === 'Y'"
-                            icon="ios-close"
+                            icon="ios-trash"
                           ></Button>
                         </div>
                       </draggable>
@@ -257,6 +256,7 @@
                             <Option value="textarea">Textarea</Option>
                             <Option value="wecmdbEntity">模型数据项</Option>
                             <Option value="datePicker">DatePicker</Option>
+                            <Option value="calculate">Calculate</Option>
                           </Select>
                         </FormItem>
                         <FormItem
@@ -702,20 +702,12 @@ export default {
       this.getApprovalNode(sort)
     },
     async getApprovalNode (sort) {
-      const { statusCode, data } = await getApprovalNode(this.requestTemplateId)
+      const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'approve')
       if (statusCode === 'OK') {
         if (data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
-          // this.approvalNodes = data.ids
-          this.approvalNodes = [
-            {
-              id: '65dbf5aeea879865',
-              sort: 1,
-              name: '审批2',
-              formTemplate: '65e04c4a94c4cb4c'
-            }
-          ]
+          this.approvalNodes = data.ids
           const tmpSort = sort === undefined ? 1 : sort
           this.activeEditingNode = this.approvalNodes.find(node => node.sort === tmpSort)
           this.editNode(this.activeEditingNode)
@@ -729,8 +721,10 @@ export default {
         return
       }
       const params = {
+        type: 'approve',
         requestTemplate: this.requestTemplateId,
         name: this.$t('tw_approval') + sort,
+        expireDay: 1,
         sort: sort
       }
       const { statusCode } = await addApprovalNode(params)
@@ -748,7 +742,7 @@ export default {
           loading: true,
           onOk: async () => {
             this.$Modal.remove()
-            const { statusCode } = await removeApprovalNode(node.id)
+            const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
             if (statusCode === 'OK') {
               this.getApprovalNode()
             }
@@ -1172,5 +1166,34 @@ fieldset[disabled] .ivu-input {
     border: 1px solid #81b337;
     color: #81b337;
   }
+}
+.node-normal {
+  height: 32px;
+  line-height: 32px;
+  display: inline-block;
+  border: 1px solid #e8eaec;
+  border-radius: 3px;
+  background: #f7f7f7;
+  font-size: 12px;
+  vertical-align: middle;
+  opacity: 1;
+  overflow: hidden;
+  padding: 0 12px;
+  cursor: pointer;
+}
+.node-active {
+  height: 32px;
+  line-height: 32px;
+  display: inline-block;
+  border: 1px solid #e8eaec;
+  border-radius: 3px;
+  background: #2d8cf0;
+  font-size: 12px;
+  vertical-align: middle;
+  opacity: 1;
+  overflow: hidden;
+  color: #fff;
+  padding: 0 12px;
+  cursor: pointer;
 }
 </style>

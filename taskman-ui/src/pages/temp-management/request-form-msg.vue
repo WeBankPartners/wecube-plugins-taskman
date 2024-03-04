@@ -54,7 +54,10 @@
                   v-for="(element, eleIndex) in item.attrs"
                   :key="element.id"
                 >
-                  <div class="custom-title">
+                  <div
+                    class="custom-title"
+                    :style="['calculate', 'textarea'].includes(element.elementType) ? 'vertical-align: top;' : ''"
+                  >
                     <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
                     {{ element.title }}:
                   </div>
@@ -70,7 +73,7 @@
                     :disabled="element.isEdit === 'no'"
                     v-model="element.defaultValue"
                     type="textarea"
-                    :rows="1"
+                    :rows="2"
                     class="custom-item"
                   />
                   <Select

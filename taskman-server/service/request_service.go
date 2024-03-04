@@ -250,32 +250,22 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 }
 
 func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken, language string) error {
-	var formTemplate *models.FormTemplateTable
 	var actions []*dao.ExecAction
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
 	if err != nil {
 		return err
 	}
-	err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
-	if err != nil {
-		return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
+	if requestTemplateObj.ProcDefId != "" {
+		err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
+		if err != nil {
+			return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
+		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	formGuid := guid.CreateGuid()
 	param.Id = newRequestId()
-	formTemplate, err = GetFormTemplateService().QueryRequestFormByRequestTemplateIdAndType(param.RequestTemplate, string(models.RequestFormTypeMessage))
-	if err != nil {
-		return err
-	}
-	if formTemplate != nil {
-		formInsertAction := dao.ExecAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
-		formInsertAction.Param = []interface{}{formGuid, param.Name + models.SysTableIdConnector + "form", "", formTemplate.Id,
-			nowTime, param.CreatedBy, nowTime, param.CreatedBy}
-		actions = append(actions, &formInsertAction)
-	}
-	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status,expire_time," +
-		"expect_time,handler,created_by,created_time,updated_by,updated_time,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{param.Id, param.Name, formGuid, param.RequestTemplate, param.CreatedBy, param.Emergency,
+	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status,expire_time," +
+		"expect_time,handler,created_by,created_time,updated_by,updated_time,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{param.Id, param.Name, param.RequestTemplate, param.CreatedBy, param.Emergency,
 		strings.Join(operatorRoles, ","), "Draft", "", param.ExpectTime, requestTemplateObj.Handler, param.CreatedBy, nowTime,
 		param.CreatedBy, nowTime, param.Type, param.Role}
 	actions = append(actions, &requestInsertAction)

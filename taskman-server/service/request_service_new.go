@@ -206,7 +206,7 @@ func collectSQL(templateType int, user string) (sql string, queryParam []interfa
 func DataList(param *models.PlatformRequestParam, userRoles []string, userToken, user, language string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
 	// 先拼接查询条件
 	var templateType int
-	var sql, status string
+	var sql string
 	var queryParam []interface{}
 	where := transPlatConditionToSQL(param)
 	if param.Action == 1 {
@@ -225,21 +225,9 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 			}
 			roleFilterSql = strings.Join(roleFilterList, " or ")
 		}
-		if param.Type == 1 {
-			sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
-			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
-			return
-		} else {
-			switch param.Type {
-			case 1:
-				status = string(models.RequestStatusPending)
-			case 3:
-				status = string(models.RequestStatusInApproval)
-			case 4:
-				status = string(models.RequestStatusConfirm)
-			}
-			sql, queryParam = pendingRequestSQL(templateType, status, userRolesFilterSql, userRolesFilterParam)
-		}
+		sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
+		return
 	case "hasProcessed":
 		if param.Type == 1 {
 			sql, queryParam = hasProcessedRequestSQL(templateType, user)

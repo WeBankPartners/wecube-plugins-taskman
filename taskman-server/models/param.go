@@ -36,7 +36,7 @@ type TransFiltersParam struct {
 type PlatformRequestParam struct {
 	Tab      string `json:"tab"`      // 标签,取值有:pending 待处理    hasProcessed 已处理  submit 我提交的 draft 我的暂存  collect 收藏
 	Action   int    `json:"action"`   // 行为, 1表示发布行为,2请求,3问题,4事件, 5变更
-	Type     int    `json:"type"`     // 0 所有,1表示请求定版,2 任务处理,3 审批 4确认发版
+	Type     int    `json:"type"`     // 0 所有,1表示请求定版,2 任务处理,3 审批 4确认请求
 	Rollback int    `json:"rollback"` // 0代表所有,1表示被退回,2表示其他,3表示自己撤销(submit 我提交的tab下才有这个筛选生效)
 	CommonRequestParam
 }
@@ -81,8 +81,9 @@ type RequestHistoryParam struct {
 
 type RequestConfirmParam struct {
 	Id             string   `json:"id"`             // 请求ID
+	TaskId         string   `json:"taskId"`         // 请求确认任务ID
 	MarkTaskId     []string `json:"markTaskId"`     // 任务id
-	CompleteStatus string   `json:"completeStatus"` // 任务完成状态 取值：completed or uncompleted
+	CompleteStatus string   `json:"completeStatus"` // 任务完成状态 取值：complete or uncompleted
 	Notes          string   `json:"notes"`          // 备注
 }
 

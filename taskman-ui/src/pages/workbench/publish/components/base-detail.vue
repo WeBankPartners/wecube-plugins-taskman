@@ -133,6 +133,7 @@
               </Select>
             </FormItem>
             <EntityTable
+              v-if="historyData[0]"
               :data="historyData[0] && historyData[0].formData"
               :requestId="requestId"
               :formDisable="true"
@@ -186,7 +187,7 @@
                     <EntityTable
                       :data="data.formData"
                       :requestId="requestId"
-                      :formDisable="!data.editable || enforceDisable"
+                      :formDisable="!data.editable"
                     ></EntityTable>
                     <div>
                       <Form :label-width="80" style="margin: 16px 0">
@@ -198,14 +199,14 @@
                             {{ $t('process_result') }}
                             <span style="color: #ed4014"> * </span>
                           </span>
-                          <Select v-model="data.choseOption" :disabled="!data.editable || enforceDisable">
+                          <Select v-model="data.choseOption" disabled>
                             <Option v-for="option in data.nextOption" :value="option" :key="option">{{
                               option
                             }}</Option>
                           </Select>
                         </FormItem>
                         <FormItem :label="$t('process_comments')">
-                          <Input :disabled="!data.editable || enforceDisable" v-model="data.comment" type="textarea" />
+                          <Input disabled v-model="data.comment" type="textarea" />
                         </FormItem>
                       </Form>
                     </div>
@@ -214,143 +215,8 @@
               </Panel>
             </Collapse>
           </HeaderTitle>
-          <!--当前处理-确认请求-->
-          <HeaderTitle
-            v-if="isHandle && detailInfo.status === 'Pending'"
-            :title="$t('tw_cur_handle')"
-            subTitle="请求确认"
-          >
-            <div slot="content" style="padding:20px 0px;">
-              <DataBind
-                :isHandle="isHandle"
-                :requestTemplate="requestTemplate"
-                :requestId="requestId"
-                :formDisable="formDisable || detailInfo.status !== 'Pending'"
-                :actionName="actionName"
-              ></DataBind>
-            </div>
-          </HeaderTitle>
-          <!--当前处理-请求定版-->
-          <HeaderTitle
-            v-if="isHandle && detailInfo.status === 'Pending'"
-            :title="$t('tw_cur_handle')"
-            :subTitle="$t('tw_request_pending')"
-          >
-            <Steps :current="1" direction="vertical">
-              <Step>
-                <div slot="title" class="task-step">
-                  <div>{{ $t('tw_pending_step1') }}</div>
-                  <div>{{ $t('tw_pending_step1_tips') }}</div>
-                </div>
-                <div slot="content" style="padding:20px 0px;">
-                  <FormItem :label="$t('tw_choose_object')" required>
-                    <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-                      <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                        item.key_name
-                      }}</Option>
-                    </Select>
-                  </FormItem>
-                  <EntityTable :data="historyData[0].formData" :requestId="requestId" :formDisable="true"></EntityTable>
-                </div>
-              </Step>
-              <Step>
-                <div slot="title" class="task-step">
-                  <div>{{ $t('tw_pending_step2') }}</div>
-                  <div>{{ $t('tw_pending_step2_tips') }}</div>
-                </div>
-                <div slot="content" style="padding:20px 0px;">
-                  <DataBind
-                    :isHandle="isHandle"
-                    :requestTemplate="requestTemplate"
-                    :requestId="requestId"
-                    :formDisable="formDisable || detailInfo.status !== 'Pending'"
-                    :actionName="actionName"
-                  ></DataBind>
-                </div>
-              </Step>
-            </Steps>
-          </HeaderTitle>
-          <!--当前处理-任务审批-->
-          <HeaderTitle
-            v-if="isHandle && detailInfo.status === 'InProgress'"
-            :title="$t('tw_cur_handle')"
-            :subTitle="handleData.taskName"
-          >
-            <Steps :current="1" direction="vertical">
-              <Step>
-                <div slot="title" class="task-step">
-                  <div>{{ $t('tw_approval_step1') }}</div>
-                  <div>{{ $t('tw_approval_step1_tips') }}</div>
-                </div>
-                <div slot="content" style="padding:20px 0px;">
-                  <EntityTable
-                    ref="entityTable"
-                    :data="handleData.formData"
-                    :requestId="requestId"
-                    :formDisable="!handleData.editable || enforceDisable"
-                    :isAddRow="true"
-                  ></EntityTable>
-                </div>
-              </Step>
-              <Step>
-                <div slot="title" class="task-step">
-                  <div>{{ $t('tw_approval_step2') }}</div>
-                  <div>{{ $t('tw_approval_step2_tips') }}</div>
-                </div>
-                <div slot="content" style="padding:20px 0px;">
-                  <Form :label-width="80" style="margin: 16px 0">
-                    <FormItem v-if="handleData.requestId === ''" :label="$t('task') + $t('description')">
-                      <Input disabled v-model="handleData.description" type="textarea" />
-                    </FormItem>
-                    <FormItem
-                      :label="$t('process_result')"
-                      v-if="handleData.nextOption && handleData.nextOption.length !== 0"
-                    >
-                      <span slot="label">
-                        {{ $t('process_result') }}
-                        <span style="color: #ed4014"> * </span>
-                      </span>
-                      <Select v-model="handleData.choseOption" :disabled="!handleData.editable || enforceDisable">
-                        <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{
-                          option
-                        }}</Option>
-                      </Select>
-                    </FormItem>
-                    <FormItem :label="$t('process_comments')">
-                      <Input
-                        :disabled="!handleData.editable || enforceDisable"
-                        v-model="handleData.comment"
-                        type="textarea"
-                      />
-                    </FormItem>
-                    <FormItem :label="$t('tw_attach')">
-                      <UploadFile
-                        :id="handleData.taskId"
-                        :files="handleData.attachFiles"
-                        :formDisable="enforceDisable"
-                        type="task"
-                      ></UploadFile>
-                    </FormItem>
-                  </Form>
-                  <div style="text-align: center">
-                    <Button v-if="handleData.editable" :disabled="enforceDisable" @click="saveTaskData" type="info">{{
-                      $t('save')
-                    }}</Button>
-                    <Button
-                      v-if="handleData.editable"
-                      :disabled="
-                        enforceDisable ||
-                          (handleData.nextOption && handleData.nextOption.length !== 0 && handleData.choseOption === '')
-                      "
-                      @click="commitTaskData"
-                      type="primary"
-                      >{{ $t('tw_commit') }}</Button
-                    >
-                  </div>
-                </div>
-              </Step>
-            </Steps>
-          </HeaderTitle>
+          <!--当前处理-->
+          <CurrentHandle :detailInfo="detailInfo" :handleData="handleData" :actionName="actionName" />
         </template>
       </Form>
     </div>
@@ -377,18 +243,10 @@ import DynamicFlow from '../../components/flow/dynamic-flow.vue'
 import EntityTable from '../../components/entity-table.vue'
 import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
-import BaseProgress from '../../components/base-progress.vue'
+import BaseProgress from './progress.vue'
 import CustomForm from '../../components/custom-form.vue'
-import { deepClone } from '@/pages/util/index'
-import {
-  getRootEntity,
-  getEntityData,
-  getPublishInfo,
-  getRequestInfo,
-  saveTaskData,
-  commitTaskData,
-  recallRequest
-} from '@/api/server'
+import CurrentHandle from './handle.vue'
+import { getRootEntity, getPublishInfo, getRequestInfo, recallRequest } from '@/api/server'
 export default {
   components: {
     HeaderTitle,
@@ -399,7 +257,8 @@ export default {
     DataBind,
     UploadFile,
     BaseProgress,
-    CustomForm
+    CustomForm,
+    CurrentHandle
   },
   props: {
     // 1发布,2请求(3问题,4事件,5变更)
@@ -410,9 +269,7 @@ export default {
   },
   data () {
     return {
-      enforceDisable: this.$route.query.enforceDisable === 'Y',
-      isHandle: this.$route.query.isHandle === 'Y', // 处理标志(用于请求定版)
-      formDisable: this.$route.query.isCheck === 'Y', // 查看标志
+      isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
@@ -427,10 +284,8 @@ export default {
         data: []
       },
       rootEntityOptions: [],
-      requestData: [], // 发布目标对象表格数据
       historyData: [], // 处理历史数据
       handleData: {},
-      attachFiles: [], // 上传附件
       activeStep: '', // 处理历史当前展开
       errorNode: '',
       flowVisible: false
@@ -470,7 +325,6 @@ export default {
     async getRequestInfo () {
       const { statusCode, data } = await getRequestInfo(this.requestId)
       if (statusCode === 'OK') {
-        this.attachFiles = data.attachFiles
         this.form.rootEntityId = data.cache
       }
     },
@@ -513,167 +367,6 @@ export default {
       const { statusCode, data } = await getRootEntity(params)
       if (statusCode === 'OK') {
         this.rootEntityOptions = data.data || []
-        // this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
-      }
-    },
-    // 获取目标对象对应表单配置
-    async getEntityData () {
-      let params = {
-        params: {
-          requestId: this.requestId,
-          rootEntityId: this.form.rootEntityId
-        }
-      }
-      const { statusCode, data } = await getEntityData(params)
-      if (statusCode === 'OK') {
-        const requestData = data.data || []
-        this.requestData = requestData
-      }
-    },
-    // 校验表格数据必填项
-    requiredCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        let requiredName = []
-        requestData.title.forEach(t => {
-          if (t.required === 'yes') {
-            requiredName.push(t.name)
-          }
-        })
-        requestData.value.forEach(v => {
-          requiredName.forEach(key => {
-            let val = v.entityData[key]
-            if (Array.isArray(val)) {
-              if (val.length === 0) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            } else {
-              if (val === '' || val === undefined) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            }
-          })
-        })
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
-    noChooseCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        if (requestData.value && requestData.value.length === 0) {
-          tabIndex = index
-          result = false
-        }
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
-    // 任务审批保存
-    async saveTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            item.value = item.value.filter(j => {
-              return j.entityData._checked
-            })
-            // 删除多余的属性
-            item.value.forEach(v => {
-              delete v.entityData._checked
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const { statusCode } = await saveTaskData(this.handleData.taskId, this.handleData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-      }
-    },
-    // 任务审批提交
-    async commitTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            item.value = item.value.filter(j => {
-              return j.entityData._checked
-            })
-            // 删除多余的属性
-            item.value.forEach(v => {
-              delete v.entityData._checked
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const { statusCode } = await commitTaskData(this.handleData.taskId, this.handleData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
       }
     },
     // 撤回
@@ -768,17 +461,6 @@ export default {
       padding: 20px;
       border: 1px dashed #d7dadc;
       margin: 16px 0;
-    }
-    .task-step {
-      display: flex;
-      div:first-child {
-        color: #515a6e;
-      }
-      div:last-child {
-        font-weight: 400;
-        font-size: 12px;
-        color: #515a6e;
-      }
     }
   }
   .expand-btn {

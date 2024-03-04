@@ -210,7 +210,6 @@ export default {
           requestTemplate: row.templateId,
           isCheck: 'Y',
           isHandle: 'N',
-          enforceDisable: 'Y',
           jumpFrom: ''
         }
       })

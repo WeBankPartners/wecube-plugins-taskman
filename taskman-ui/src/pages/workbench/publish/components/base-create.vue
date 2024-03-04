@@ -276,7 +276,7 @@ import EntityTable from '../../components/entity-table.vue'
 import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
 import CustomForm from '../../components/custom-form.vue'
-import BaseProgress from '../../components/base-progress.vue'
+import BaseProgress from './progress.vue'
 import { deepClone } from '@/pages/util/index'
 import {
   getCreateInfo,
@@ -823,7 +823,7 @@ export default {
       }
     }
     .step-background {
-      background: #5cadff1a;
+      background: #f0faff;
       padding: 5px 20px;
       width: 660px;
       margin-top: 10px;

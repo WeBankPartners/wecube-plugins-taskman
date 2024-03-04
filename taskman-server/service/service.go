@@ -36,10 +36,6 @@ var (
 	taskTemplateService *TaskTemplateService
 	// 角色 service
 	roleService *RoleService
-	// 审批模板 service
-	approvalTemplateService *ApprovalTemplateService
-	// 审批 service
-	approvalService *ApprovalService
 )
 
 func New() (err error) {
@@ -62,14 +58,8 @@ func New() (err error) {
 	requestTemplateGroupDao := &dao.RequestTemplateGroupDao{DB: engine}
 	requestTemplateRoleDao := &dao.RequestTemplateRoleDao{DB: engine}
 	taskDao := &dao.TaskDao{DB: engine}
-	taskRoleDao := &dao.TaskRoleDao{DB: engine}
+	taskHandleDao := &dao.TaskHandleDao{DB: engine}
 	taskTemplateDao := &dao.TaskTemplateDao{DB: engine}
-	taskTemplateRoleDao := &dao.TaskTemplateRoleDao{DB: engine}
-	approvalTemplateDao := &dao.ApprovalTemplateDao{DB: engine}
-	approvalTemplateRoleDao := &dao.ApprovalTemplateRoleDao{DB: engine}
-	approvalDao := &dao.ApprovalDao{DB: engine}
-	approvalRoleDao := &dao.ApprovalRoleDao{DB: engine}
-	formItemTemplateGroupDao := &dao.FormItemTemplateGroupDao{DB: engine}
 	taskHandleTemplateDao := &dao.TaskHandleTemplateDao{DB: engine}
 	// 初始化Service
 	collectTemplateService = &CollectTemplateService{collectTemplateDao: collectTemplateDao}
@@ -79,17 +69,15 @@ func New() (err error) {
 	procDefService = &ProcDefService{}
 	refSelectService = &RefSelectService{}
 	requestService = &RequestService{requestDao: requestDao}
-	taskService = &TaskService{taskDao: taskDao, taskRoleDao: taskRoleDao}
-	taskTemplateService = &TaskTemplateService{taskTemplateDao: taskTemplateDao, taskTemplateRoleDao: taskTemplateRoleDao}
+	taskService = &TaskService{taskDao: taskDao, taskHandleDao: taskHandleDao}
+	taskTemplateService = &TaskTemplateService{taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao}
 	formService = &FormService{formDao: formDao, formItemDao: formItemDao}
 	requestTemplateService = &RequestTemplateService{requestTemplateDao: requestTemplateDao, operationLogDao: operationLogDao,
 		requestTemplateRoleDao: requestTemplateRoleDao, taskTemplateDao: taskTemplateDao, taskHandleTemplateDao: taskHandleTemplateDao, formTemplateDao: formTemplateDao}
 	requestTemplateGroupService = &RequestTemplateGroupService{requestTemplateGroupDao: requestTemplateGroupDao}
-	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
-	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formItemTemplateGroupDao: formItemTemplateGroupDao}
+	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
+	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formTemplateDao: formTemplateDao}
 	roleService = &RoleService{}
-	approvalTemplateService = &ApprovalTemplateService{approvalTemplateDao: approvalTemplateDao, approvalTemplateRoleDao: approvalTemplateRoleDao}
-	approvalService = &ApprovalService{approvalDao: approvalDao, approvalRoleDao: approvalRoleDao}
 	db = engine
 	return
 }
@@ -152,16 +140,6 @@ func GetTaskTemplateService() *TaskTemplateService {
 // GetRoleService 获取角色 service
 func GetRoleService() *RoleService {
 	return roleService
-}
-
-// GetApprovalTemplateService 获取审批模板 service
-func GetApprovalTemplateService() *ApprovalTemplateService {
-	return approvalTemplateService
-}
-
-// GetApprovalService 获取审批 service
-func GetApprovalService() *ApprovalService {
-	return approvalService
 }
 
 // GetRequestTemplateGroupService 获取请求模板组 service

@@ -22,7 +22,6 @@ func CreateTaskTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	// todo 校验 NodeDefId 有问题,nodeDefId可以是空的
 	if param.Id != "" || param.NodeDefId != "" {
 		middleware.ReturnParamValidateError(c, errors.New("param not empty"))
 		return
@@ -53,19 +52,15 @@ func CreateTaskTemplate(c *gin.Context) {
 // UpdateTaskTemplate 更新任务模板/创建编排任务模板
 func UpdateTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")
-	id := c.Param("id")
+	id := c.Param("id") // id是taskTemplateId，或nodeDefId，前者为空时传后者
 	var param models.TaskTemplateDto
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
 	// 校验参数
-	if param.Id == "" || param.Type == "" || param.RequestTemplate == "" || param.Name == "" || param.ExpireDay <= 0 || param.Sort <= 0 {
+	if id == "" || param.Type == "" || param.RequestTemplate == "" || param.Name == "" || param.ExpireDay <= 0 || param.Sort <= 0 {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
-		return
-	}
-	if param.Id != id {
-		middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
 		return
 	}
 	if param.RequestTemplate != requestTemplateId {
@@ -82,9 +77,17 @@ func UpdateTaskTemplate(c *gin.Context) {
 	var result *models.TaskTemplateDto
 	if param.Id == "" {
 		// 创建编排任务模板
+		if param.NodeDefId != id {
+			middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
+			return
+		}
 		result, err = service.GetTaskTemplateService().CreateProcTaskTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), user)
 	} else {
 		// 更新任务模板
+		if param.Id != id && param.NodeDefId != id {
+			middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
+			return
+		}
 		result, err = service.GetTaskTemplateService().UpdateTaskTemplate(&param, user)
 	}
 	if err != nil {
@@ -120,8 +123,8 @@ func DeleteTaskTemplate(c *gin.Context) {
 
 // 读取任务模板
 func GetTaskTemplate(c *gin.Context) {
-	requestTemplateId := c.Param("requestTemplateId")
-	id := c.Param("id") // id是taskTemplateId，或nodeDefId
+	requestTemplateId := c.Param("requestTemplate")
+	id := c.Param("id") // id是taskTemplateId，或nodeDefId，后者非空时传后者
 	// 校验参数
 	if requestTemplateId == "" || id == "" {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
@@ -137,7 +140,7 @@ func GetTaskTemplate(c *gin.Context) {
 
 // 任务模板id列表
 func ListTaskTemplateIds(c *gin.Context) {
-	requestTemplateId := c.Param("requestTemplateId")
+	requestTemplateId := c.Param("requestTemplate")
 	typ := c.Query("type")
 	// 校验参数
 	if requestTemplateId == "" || typ == "" {
@@ -154,7 +157,7 @@ func ListTaskTemplateIds(c *gin.Context) {
 
 // 任务模板列表
 func ListTaskTemplates(c *gin.Context) {
-	requestTemplateId := c.Param("requestTemplateId")
+	requestTemplateId := c.Param("requestTemplate")
 	typ := c.Query("type")
 	// 校验参数
 	if requestTemplateId == "" || typ == "" {

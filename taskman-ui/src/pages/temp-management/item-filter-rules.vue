@@ -298,8 +298,8 @@ export default {
       const isRef = found.dataType === 'ref'
       rule.isRef = isRef
       if (isRef) {
-        const { status, data } = await getTargetOptions(found.refPackageName, found.refEntityName)
-        if (status === 'OK') {
+        const { statusCode, data } = await getTargetOptions(found.refPackageName, found.refEntityName)
+        if (statusCode === 'OK') {
           rule.enums = data
         }
       }
@@ -371,8 +371,8 @@ export default {
           let [attr, op, value] = r.split(' ')
           const found = this.currentNodeEntityAttrs.find(a => a.name === attr)
           if (found.dataType === 'ref') {
-            const { status, data } = await getTargetOptions(found.refPackageName, found.refEntityName)
-            if (status === 'OK') {
+            const { statusCode, data } = await getTargetOptions(found.refPackageName, found.refEntityName)
+            if (statusCode === 'OK') {
               enums = data
               isRef = true
             }
@@ -437,8 +437,8 @@ export default {
         this.currentRefOptiongs = []
         this.currentLeafOptiongs = []
       } else {
-        const { status, data } = await getEntityRefsByPkgNameAndEntityName(opt.pkg, opt.entity)
-        if (status === 'OK') {
+        const { statusCode, data } = await getEntityRefsByPkgNameAndEntityName(opt.pkg, opt.entity)
+        if (statusCode === 'OK') {
           this.currentRefOptiongs = data.referenceByEntityList.map(e => {
             return {
               pkg: e.packageName,

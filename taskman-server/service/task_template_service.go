@@ -265,6 +265,139 @@ func (s *TaskTemplateService) CreateProcTaskTemplate(param *models.TaskTemplateD
 	return result, nil
 }
 
+func (s *TaskTemplateService) createProcTaskTemplates(procDefId, requestTemplateId, userToken, language, operator string) (func(*xorm.Session) error, error) {
+	// 查询编排任务节点
+	nodeList, err := s.getProcTaskTemplateNodes(procDefId, userToken, language)
+	if err != nil {
+		return nil, err
+	}
+	var newTaskTemplates []*models.TaskTemplateTable
+	var newTaskHandleTemplates []*models.TaskHandleTemplateTable
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	for i, node := range nodeList {
+		// 插入新任务模板
+		newTaskTemplate := &models.TaskTemplateTable{
+			Id:              fmt.Sprintf("ts_%s", guid.CreateGuid()),
+			Type:            string(models.TaskTypeImplement),
+			Sort:            i + 1,
+			RequestTemplate: requestTemplateId,
+			Name:            node.NodeName,
+			Description:     "",
+			NodeId:          node.NodeId,
+			NodeDefId:       node.NodeDefId,
+			NodeName:        node.NodeName,
+			ExpireDay:       1,
+			CreatedBy:       operator,
+			CreatedTime:     nowTime,
+			UpdatedBy:       operator,
+			UpdatedTime:     nowTime,
+			HandleMode:      string(models.TaskTemplateHandleModeCustom),
+		}
+		// 插入新任务处理模板
+		newTaskHandleTemplate := &models.TaskHandleTemplateTable{
+			Id:           guid.CreateGuid(),
+			Sort:         1,
+			TaskTemplate: newTaskTemplate.Id,
+			Assign:       string(models.TaskHandleTemplateAssignTypeTemplate),
+			HandlerType:  string(models.TaskHandleTemplateHandlerTypeTemplate),
+			Role:         "",
+			Handler:      "",
+			HandleMode:   newTaskTemplate.HandleMode,
+		}
+		newTaskTemplates = append(newTaskTemplates, newTaskTemplate)
+		newTaskHandleTemplates = append(newTaskHandleTemplates, newTaskHandleTemplate)
+	}
+	// 构造返回结果
+	result := func(session *xorm.Session) error {
+		for _, newTaskTemplate := range newTaskTemplates {
+			_, err := s.taskTemplateDao.Add(session, newTaskTemplate)
+			if err != nil {
+				return err
+			}
+		}
+		for _, newTaskHandleTemplate := range newTaskHandleTemplates {
+			_, err := s.taskHandleTemplateDao.Add(session, newTaskHandleTemplate)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	return result, nil
+}
+
+func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTemplateId, userToken, language, operator string) ([]*dao.ExecAction, error) {
+	var actions []*dao.ExecAction
+	// 查询编排任务节点
+	nodeList, err := s.getProcTaskTemplateNodes(procDefId, userToken, language)
+	if err != nil {
+		return nil, err
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	for i, node := range nodeList {
+		// 插入新任务模板
+		taskId := fmt.Sprintf("ts_%s", guid.CreateGuid())
+		handleMode := string(models.TaskTemplateHandleModeCustom)
+		action := &dao.ExecAction{Sql: "INSERT INTO task_template (id,type,sort,request_template,name,node_id,node_def_id,node_name,expire_day,created_by,created_time,updated_by,updated_time,handle_mode) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		action.Param = []interface{}{taskId, string(models.TaskTypeImplement), i + 1, requestTemplateId, node.NodeName, node.NodeId, node.NodeDefId, node.NodeName, 1, operator, nowTime, operator, nowTime, handleMode}
+		actions = append(actions, action)
+		// 插入新任务处理模板
+		action = &dao.ExecAction{Sql: "INSERT INTO task_handle_template (id,sort,task_template,assign,handler_type,handle_mode) VALUES (?,?,?,?,?,?)"}
+		action.Param = []interface{}{guid.CreateGuid(), 1, taskId, string(models.TaskHandleTemplateAssignTypeTemplate), string(models.TaskHandleTemplateHandlerTypeTemplate), handleMode}
+		actions = append(actions, action)
+	}
+	return actions, nil
+}
+
+func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, id string) ([]*dao.ExecAction, error) {
+	// 查询任务模版
+	taskTemplate, err := s.taskTemplateDao.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	if taskTemplate == nil {
+		return nil, errors.New("no task_template record found")
+	}
+	// 校验参数
+	if taskTemplate.Type != string(models.TaskTypeImplement) {
+		return nil, fmt.Errorf("type wrong: %s", taskTemplate.Type)
+	}
+	if taskTemplate.NodeDefId == "" {
+		return nil, fmt.Errorf("nodeDefId empty: %s", taskTemplate.NodeDefId)
+	}
+	if taskTemplate.RequestTemplate != requestTemplateId {
+		return nil, fmt.Errorf("param requestTemplate wrong: %s", requestTemplateId)
+	}
+
+	// 删除任务处理模板
+	deleteTaskHandleTemplateAll := true
+	// 删除任务模板
+	deleteTaskTemplateId := id
+	// 查询表单模板列表
+	var formTemplateList []*models.FormTemplateTable
+	dao.X.SQL("select * from form_template where request_template = ? and task_template = ?", requestTemplateId, deleteTaskTemplateId).Find(&formTemplateList)
+
+	var actions []*dao.ExecAction
+	// 先删表单模板
+	if len(formTemplateList) > 0 {
+		// for _, formTemplate := range formTemplateList {
+		// 	err = GetFormTemplateService().DeleteFormTemplateItemGroupTransaction(session, formTemplate.Id)
+		// 	if err != nil {
+		// 		return err
+		// 	}
+		// }
+	}
+	if deleteTaskHandleTemplateAll {
+		action := &dao.ExecAction{Sql: "DELETE FROM task_handle_template WHERE task_template = ?"}
+		action.Param = []interface{}{deleteTaskTemplateId}
+		actions = append(actions, action)
+	}
+	action := &dao.ExecAction{Sql: "DELETE FROM task_template WHERE id = ?"}
+	action.Param = []interface{}{deleteTaskTemplateId}
+	actions = append(actions, action)
+	return actions, nil
+}
+
 func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, operator string) (*models.TaskTemplateDto, error) {
 	// 查询任务模板
 	taskTemplate, err := s.taskTemplateDao.Get(param.Id)

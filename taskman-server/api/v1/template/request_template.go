@@ -117,8 +117,18 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		return
 	}
 	if param.TargetStatus != string(models.RequestTemplateStatusCreated) && param.TargetStatus != string(models.RequestTemplateStatusDisabled) &&
-		param.TargetStatus != string(models.RequestTemplateStatusPending) {
+		param.TargetStatus != string(models.RequestTemplateStatusPending) || param.TargetStatus != string(models.RequestTemplateStatusConfirm) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("param targetStatus invalid"))
+		return
+	}
+	// 模板发布
+	if param.TargetStatus == string(models.RequestTemplateStatusConfirm) {
+		err = service.GetRequestTemplateService().ConfirmRequestTemplate(param.RequestTemplateId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		middleware.ReturnSuccess(c)
 		return
 	}
 	if requestTemplate.Status == string(models.RequestTemplateStatusCreated) {

@@ -326,7 +326,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		return err
 	}
 	var formItemNameQuery []*models.FormItemTemplateTable
-	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_tempalte where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -1784,8 +1784,29 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	}
 
 	taskIds := make([]string, 0, len(tasks))
+	taskTmplIdMap := make(map[string]struct{})
 	for _, task := range tasks {
 		taskIds = append(taskIds, task.Id)
+		taskTmplIdMap[task.TaskTemplate] = struct{}{}
+	}
+
+	taskTmplIds := make([]string, 0, len(taskTmplIdMap))
+	for k := range taskTmplIdMap {
+		taskTmplIds = append(taskTmplIds, k)
+	}
+
+	// 查询 task template
+	var taskTemplates []*models.TaskTemplateTable
+	err = dao.X.Context(c).Table(models.TaskTemplateTable{}.TableName()).
+		In("id", taskTmplIds).
+		Find(&taskTemplates)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	taskTmplIdMapInfo := make(map[string]*models.TaskTemplateTable)
+	for _, taskTmpl := range taskTemplates {
+		taskTmplIdMapInfo[taskTmpl.Id] = taskTmpl
 	}
 
 	// 查询 task handle
@@ -1817,15 +1838,42 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			}
 		}
 
+		nextOptions := make([]string, 0)
+		attachFiles := make([]string, 0)
+		if task.NextOption != "" {
+			nextOptions = strings.Split(task.NextOption, ",")
+		}
+		if task.AttachFile != "" {
+			attachFiles = strings.Split(task.AttachFile, ",")
+		}
+
+		var handleMode string
+		if templateInfo, isExisted := taskTmplIdMapInfo[task.TaskTemplate]; isExisted {
+			handleMode = templateInfo.HandleMode
+		}
+
+		editable := false
+		if task.Status != string(models.TaskStatusDone) {
+			editable = true
+		}
+
+		formData := make([]*models.RequestPreDataTableObj, 0)
+		// todo get formData
+
 		curTaskForHistory := &models.TaskForHistory{
 			TaskTable:      *task,
 			TaskHandleList: []*models.TaskHandleTable{},
+			NextOptions:    nextOptions,
+			AttachFiles:    attachFiles,
+			HandleMode:     handleMode,
+			Editable:       editable,
+			FormData:       formData,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
 		}
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
-	result.Data = taskForHistoryList
+	result.Task = taskForHistoryList
 	return
 }

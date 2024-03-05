@@ -344,16 +344,20 @@ type UpdateRequestStatusParam struct {
 
 type RequestHistory struct {
 	Request *RequestForHistory `json:"request"`
-	Data    []*TaskForHistory  `json:"data"`
+	Task    []*TaskForHistory  `json:"task"`
 }
 
 type RequestForHistory struct {
 	RequestTable
-	Editable string `json:"editable"`
+	Editable bool `json:"editable"`
 }
 
 type TaskForHistory struct {
 	TaskTable
-	Editable       string             `json:"editable"`
-	TaskHandleList []*TaskHandleTable `json:"taskHandleList"`
+	Editable       bool                      `json:"editable"`
+	TaskHandleList []*TaskHandleTable        `json:"taskHandleList"`
+	NextOptions    []string                  `json:"nextOptions"`
+	AttachFiles    []string                  `json:"attachFiles"`
+	HandleMode     string                    `json:"handleMode"`
+	FormData       []*RequestPreDataTableObj `json:"formData"`
 }

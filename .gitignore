@@ -2,6 +2,7 @@
 .idea
 .editorconfig
 .vscode
+.DS_Store
 
 # ignore file
 taskman-server/taskman-server

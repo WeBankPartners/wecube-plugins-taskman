@@ -41,7 +41,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
-	result, err := service.GetRequestTemplateService().CreateRequestTemplate(param)
+	result, err := service.GetRequestTemplateService().CreateRequestTemplate(param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -143,7 +143,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
-	result, err := service.GetRequestTemplateService().UpdateRequestTemplate(&param)
+	result, err := service.GetRequestTemplateService().UpdateRequestTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

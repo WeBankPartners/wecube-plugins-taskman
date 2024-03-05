@@ -256,26 +256,29 @@ type RequestProDataV2Dto struct {
 }
 
 type RequestForm struct {
-	Id                  string     `json:"id"`
-	Name                string     `json:"name"`
-	RequestType         int        `json:"requestType"`         // 请求类型,0表示请求,1表示发布
-	Progress            int        `json:"progress"`            // 请求进度
-	Status              string     `json:"status"`              // 请求状态
-	CurNode             string     `json:"curNode"`             // 当前节点
-	Handler             string     `json:"handler"`             // 当前处理人
-	CreatedBy           string     `json:"createdBy"`           // 创建人
-	Role                string     `json:"role"`                // 创建人角色
-	TemplateName        string     `json:"templateName"`        // 使用模板
-	Version             string     `json:"version"`             // 模板版本
-	TemplateGroupName   string     `json:"templateGroupName"`   // 使用模板组
-	Description         string     `json:"description"`         // 请求描述
-	CreatedTime         string     `json:"createdTime"`         // 创建时间
-	ExpectTime          string     `json:"expectTime" `         // 期望时间
-	OperatorObj         string     `json:"operatorObj"`         // 发布操作对象
-	ProcInstanceId      string     `json:"procInstanceId"`      // 编排实例ID
-	ExpireDay           int        `json:"expireDay"`           // 模板过期时间
-	AssociationWorkflow bool       `json:"associationWorkflow"` // 是否关联编排
-	CustomForm          CustomForm `json:"customForm"`          // 自定义表单
+	Id                  string                    `json:"id"`
+	Name                string                    `json:"name"`
+	RequestType         int                       `json:"requestType"`         // 请求类型,0表示请求,1表示发布
+	Progress            int                       `json:"progress"`            // 请求进度
+	Status              string                    `json:"status"`              // 请求状态
+	CurNode             string                    `json:"curNode"`             // 当前节点
+	Handler             string                    `json:"handler"`             // 当前处理人
+	CreatedBy           string                    `json:"createdBy"`           // 创建人
+	Role                string                    `json:"role"`                // 创建人角色
+	TemplateName        string                    `json:"templateName"`        // 使用模板
+	Version             string                    `json:"version"`             // 模板版本
+	TemplateGroupName   string                    `json:"templateGroupName"`   // 使用模板组
+	Description         string                    `json:"description"`         // 请求描述
+	CreatedTime         string                    `json:"createdTime"`         // 创建时间
+	ExpectTime          string                    `json:"expectTime" `         // 期望时间
+	OperatorObj         string                    `json:"operatorObj"`         // 发布操作对象
+	ProcInstanceId      string                    `json:"procInstanceId"`      // 编排实例ID
+	ExpireDay           int                       `json:"expireDay"`           // 模板过期时间
+	AssociationWorkflow bool                      `json:"associationWorkflow"` // 是否关联编排
+	CustomForm          CustomForm                `json:"customForm"`          // 自定义表单
+	AttachFiles         []*AttachFileTable        `json:"attachFiles"`         // 请求附件
+	FormData            []*RequestPreDataTableObj `json:"formData"`
+	RootEntityId        string                    `json:"rootEntityId"`
 }
 
 type CustomForm struct {
@@ -330,8 +333,9 @@ type FilterObj struct {
 }
 
 type RequestDetail struct {
-	Request RequestForm     `json:"request"` // 请求信息
-	Data    []*TaskQueryObj `json:"data"`
+	Request      RequestForm        `json:"request"` // 请求信息
+	Data         []*TaskQueryObj    `json:"data"`
+	ApprovalList []*TaskTemplateDto `json:"approvalList"` //审批列表
 }
 
 type UpdateRequestStatusParam struct {
@@ -340,16 +344,20 @@ type UpdateRequestStatusParam struct {
 
 type RequestHistory struct {
 	Request *RequestForHistory `json:"request"`
-	Data    []*TaskForHistory  `json:"data"`
+	Task    []*TaskForHistory  `json:"task"`
 }
 
 type RequestForHistory struct {
 	RequestTable
-	Editable string `json:"editable"`
+	Editable bool `json:"editable"`
 }
 
 type TaskForHistory struct {
 	TaskTable
-	Editable       string             `json:"editable"`
-	TaskHandleList []*TaskHandleTable `json:"taskHandleList"`
+	Editable       bool                      `json:"editable"`
+	TaskHandleList []*TaskHandleTable        `json:"taskHandleList"`
+	NextOptions    []string                  `json:"nextOptions"`
+	AttachFiles    []string                  `json:"attachFiles"`
+	HandleMode     string                    `json:"handleMode"`
+	FormData       []*RequestPreDataTableObj `json:"formData"`
 }

@@ -940,10 +940,22 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		}
 	} else {
 		var items []*models.FormItemTemplateTable
-		dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", request.RequestTemplate).Find(&items)
+		dao.X.SQL("select * from form_item_template where form_template in (select id from form_template  where request_template=? and"+
+			" request_form_type = ?) order by item_group,sort", request.RequestTemplate, models.RequestFormTypeMessage).Find(&items)
 		customForm.Title = items
 	}
 	form.CustomForm = customForm
+	form.AttachFiles = GetRequestAttachFileList(request.Id)
+	if request.Cache != "" {
+		var cacheObj models.RequestPreDataDto
+		err = json.Unmarshal([]byte(request.Cache), &cacheObj)
+		if err != nil {
+			err = fmt.Errorf("Try to json unmarshal cache data fail,%s ", err.Error())
+			return
+		}
+		form.FormData = cacheObj.Data
+		form.RootEntityId = cacheObj.RootEntityId
+	}
 	return
 }
 
@@ -1107,21 +1119,36 @@ func convertArray2Map(arr []string) map[string]bool {
 }
 
 // HandleRequestCheck 处理确认定版
-func (s *RequestService) HandleRequestCheck(request models.RequestTable, operator, bindCache string) (err error) {
+func (s *RequestService) HandleRequestCheck(request models.RequestTable, operator, bindCache, userToken, language string) (err error) {
 	now := time.Now().Format(models.DateTimeFormat)
 	var actions []*dao.ExecAction
 	var approvalActions []*dao.ExecAction
 	var action *dao.ExecAction
 	var requestTemplate *models.RequestTemplateTable
+	var submitTaskTemplateList, checkTaskTemplateList []*models.TaskTemplateTable
+	var taskHandleTempalteList []*models.TaskHandleTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	if err != nil {
 		return err
 	}
+	submitTaskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplateAndType(requestTemplate.Id, string(models.TaskTypeSubmit))
+	if err != nil {
+		return
+	}
+	if len(submitTaskTemplateList) == 0 {
+		err = fmt.Errorf("taskTemplate not find submit template")
+		return
+	}
 	// 新增提交请求任务
-	action = &dao.ExecAction{Sql: "update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?"}
-	action.Param = []interface{}{models.RequestStatusPending, operator, now, bindCache, operator, now, request.Id}
+	submitTaskId := "su_" + guid.CreateGuid()
+	action = &dao.ExecAction{Sql: "insert into task(id,name,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{submitTaskId, "submit", models.TaskStatusDone, request.Id, submitTaskTemplateList[0], models.TaskTypeSubmit, "system", now, "system", now}
 	actions = append(actions, action)
-	// 新增确认定版任务
+
+	// 新增提交请求处理人
+	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{guid.CreateGuid(), submitTaskId, request.Role, request.CreatedBy, now, now}
+	actions = append(actions, action)
 
 	// 先更新请求状态为定版
 	action = &dao.ExecAction{Sql: "update request set status=?,reporter=?,report_time=?,bind_cache=?,updated_by=?,updated_time=?,rollback_desc=null,revoke_flag=0 where id=?"}
@@ -1129,11 +1156,31 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	actions = append(actions, action)
 	// 根据读取配置判断是否跳过定版
 	if requestTemplate.CheckSwitch {
+		// 新增确认定版任务
+		checkTaskId := "ch_" + guid.CreateGuid()
+		checkTaskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplateAndType(requestTemplate.Id, string(models.TaskTypeCheck))
+		if err != nil {
+			return
+		}
+		if len(checkTaskTemplateList) == 0 {
+			err = fmt.Errorf("taskTemplate not find check template")
+		}
+		action = &dao.ExecAction{Sql: "insert into task(id,name,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+		action.Param = []interface{}{checkTaskId, "check", models.TaskStatusCreated, request.Id, checkTaskTemplateList[0], models.TaskTypeCheck, operator, now, operator, now}
+		actions = append(actions, action)
+
+		// 新增确认定版处理人
+		dao.X.SQL("select * from task_handle_template where task_template = ?", checkTaskTemplateList[0]).Find(&taskHandleTempalteList)
+		if len(taskHandleTempalteList) > 0 {
+			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{guid.CreateGuid(), taskHandleTempalteList[0].Id, taskHandleTempalteList[0].Role, taskHandleTempalteList[0].Handler, now, now}
+			actions = append(actions, action)
+		}
 		err = dao.Transaction(actions)
 		return
 	}
 	// 没有配置定版,请求继续往后面走
-	approvalActions, err = s.HandleRequestApproval(request)
+	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
 	if err != nil {
 		return
 	}
@@ -1141,18 +1188,19 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		actions = append(actions, approvalActions...)
 	}
 	err = dao.Transaction(actions)
-	return nil
+	return
 }
 
 // HandleRequestApproval 处理请求审批
-func (s *RequestService) HandleRequestApproval(request models.RequestTable) (actions []*dao.ExecAction, err error) {
+func (s *RequestService) HandleRequestApproval(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
-	var newTaskId, newFormId string
+	var newTaskId string
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	actions = []*dao.ExecAction{}
 	now := time.Now().Format(models.DateTimeFormat)
-	err = dao.X.SQL("select * form task_template where request_template = ? and handle_model = ? order by sort asc", request.RequestTemplate, models.TaskTypeApprove).Find(&taskTemplateList)
+	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeApprove).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
@@ -1173,19 +1221,41 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable) (act
 		} else {
 			// 模版没有对应的的任务,需要创建当前任务并设置审批角色和人,同时根据审批方式设置审批状态
 			newTaskId = "ap_" + guid.CreateGuid()
-			newFormId = guid.CreateGuid()
+			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
+			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
+				action = &dao.ExecAction{Sql: "insert into task (id,name,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+				actions = append(actions, action)
+				continue
+			}
+
 			// 新增任务
 			action = &dao.ExecAction{Sql: "insert into task (id,name,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
 			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
-			// 新增任务表单
-			action = &dao.ExecAction{Sql: "insert into form (id,request,task,form_template,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newFormId, request.Id}
-			actions = append(actions, action)
+
 			// 新增任务处理表
+			dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
+			if len(taskHandleTemplateList) > 0 {
+				// 根据任务审批模版表&请求人指定,设置审批处理
+				for _, taskHandleTemplate := range taskHandleTemplateList {
+					createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate, taskHandleTemplate)
+					if len(createTaskHandleAction) > 0 {
+						actions = append(actions, createTaskHandleAction...)
+					}
+				}
+			}
+
+			// 更新请求表为审批状态
+			action = &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?"}
+			action.Param = []interface{}{models.RequestStatusInApproval, now, request.Id}
+			actions = append(actions, action)
+			err = dao.Transaction(actions)
+			return
 		}
 	}
-	return
+	// 所有审批都处理完成,走请求任务处理
+	return s.HandleRequestTask(request)
 }
 
 // HandleRequestTask 处理任务
@@ -1199,5 +1269,11 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable) (actions
 	if len(taskTemplateList) == 0 {
 
 	}
+	return
+}
+
+// HandleRequestConfirm 处理请求确认
+func (s *RequestService) HandleRequestConfirm(request models.RequestTable) (actions []*dao.ExecAction, err error) {
+
 	return
 }

@@ -47,7 +47,7 @@
         :requestTemplateId="requestTemplateId"
         v-if="currentStep === 2"
       ></ApprovalForm>
-      <!-- <TaskForm :requestTemplateId="requestTemplateId" v-if="currentStep === 2"></TaskForm> -->
+      <TaskForm @gotoNextStep="gotoNextStep" :requestTemplateId="requestTemplateId" v-if="currentStep === 3"></TaskForm>
     </div>
   </div>
 </template>

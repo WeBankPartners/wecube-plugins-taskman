@@ -19,7 +19,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.publishNum || '' }}</span>
-            <Badge v-if="i.type === 'pending'" class-name="badge" :count="getPendingNum('1')"></Badge>
+            <span v-if="i.type === 'pending'" class="badge">{{ getPendingNum('1') }}</span>
             <span>{{ $t('tw_publish') }}</span>
           </div>
           <div
@@ -33,7 +33,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.requestNum || '' }}</span>
-            <Badge v-if="i.type === 'pending'" class-name="badge" :count="getPendingNum('2')"></Badge>
+            <span v-if="i.type === 'pending'" class="badge">{{ getPendingNum('2') }}</span>
             <span>{{ $t('tw_request') }}</span>
           </div>
         </div>
@@ -194,12 +194,6 @@ export default {
 .workbench-data-card .ivu-card-body {
   padding: 10px;
 }
-.workbench-data-card .badge {
-  position: absolute;
-  top: -28px;
-  right: -32px;
-  font-size: 10px;
-}
 </style>
 <style lang="scss" scoped>
 .workbench-data-card {
@@ -234,6 +228,20 @@ export default {
         span {
           font-size: 14px;
           font-family: PingFangSC-regular;
+        }
+        .badge {
+          position: absolute;
+          top: -5px;
+          right: -12px;
+          font-size: 11px;
+          background-color: #f56c6c;
+          border-radius: 10px;
+          color: #fff;
+          height: 18px;
+          line-height: 18px;
+          padding: 0 6px;
+          text-align: center;
+          white-space: nowrap;
         }
       }
     }

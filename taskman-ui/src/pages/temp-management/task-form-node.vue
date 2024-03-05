@@ -198,7 +198,7 @@ export default {
       this.getUserRoles()
     },
     async getNodeById (params) {
-      const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'approve')
+      const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
       if (statusCode === 'OK') {
         this.activeApprovalNode = data
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
@@ -219,6 +219,7 @@ export default {
         if (this.activeApprovalNode.handleTemplates.length === 0) {
           return true
         } else {
+          console.log(22)
           let res = false
           for (let i = 0; i < this.activeApprovalNode.handleTemplates.length; i++) {
             const item = this.activeApprovalNode.handleTemplates[i]
@@ -252,7 +253,6 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      this.activeApprovalNode.id = this.activeApprovalNode.nodeDefId
       console.log(this.activeApprovalNode)
       const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
       if (statusCode === 'OK') {

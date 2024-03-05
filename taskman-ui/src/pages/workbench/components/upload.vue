@@ -1,6 +1,7 @@
 <template>
   <div class="workbench-upload">
     <Upload
+      v-if="!onlyShowFile"
       :action="uploadUrl"
       :before-upload="handleUpload"
       :show-upload-list="false"
@@ -13,7 +14,7 @@
     >
       <Button icon="md-cloud-upload" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
     </Upload>
-    <div class="file-list">
+    <div v-else :style="{ marginTop: onlyShowFile ? '0px' : '10px', display: 'flex' }">
       <Tag
         v-for="file in attachFiles"
         :key="file.id"
@@ -52,6 +53,10 @@ export default {
     files: {
       type: Array,
       default: () => []
+    },
+    onlyShowFile: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -65,11 +70,8 @@ export default {
     id: {
       handler (val) {
         if (val) {
-          if (this.type === 'request') {
-            this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${val}`
-          } else if (this.type === 'task') {
-            this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${val}`
-          }
+          // 请求或者任务上传
+          this.uploadUrl = `/taskman/api/v1/${this.type}/attach-file/upload/${val}`
           const accessToken = getCookie('accessToken')
           this.headers = {
             Authorization: 'Bearer ' + accessToken
@@ -173,7 +175,6 @@ export default {
   width: 100%;
   .file-list {
     display: flex;
-    margin-top: 10px;
   }
 }
 </style>

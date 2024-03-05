@@ -46,6 +46,8 @@ export const saveTaskForm = (requestTemplateId, data) =>
 
 export const confirmTemplate = requestTemplateId =>
   req.post(`/taskman/api/v1/request-template/confirm/${requestTemplateId}`)
+// 提交模版审核
+export const submitTemplate = data => req.post(`/taskman/api/v1/request-template/status/update`, data)
 
 export const getTemplateList = data => req.post('/taskman/api/v1/request-template/query', data)
 export const deleteTemplate = data => req.delete('/taskman/api/v1/request-template', data)

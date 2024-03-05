@@ -21,6 +21,9 @@
           </Select>
           <span style="color: red">*</span>
         </FormItem>
+        <FormItem :label="$t('tw_type')">
+          <Input type="text" v-model="nodeType" disabled style="width: 94%;"> </Input>
+        </FormItem>
         <FormItem :label="$t('description')">
           <Input
             v-model="activeApprovalNode.description"
@@ -56,7 +59,7 @@
             <Col span="5">人员设置方式</Col>
             <Col span="5">角色</Col>
             <Col span="5">人员</Col>
-            <Col span="2">操作</Col>
+            <!-- <Col span="2">操作</Col> -->
           </Row>
           <Row
             v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates"
@@ -105,24 +108,24 @@
               </Select>
             </Col>
             <Col span="2">
-              <Button
+              <!-- <Button
                 v-if="activeApprovalNode.handleTemplates.length > 1"
                 @click.stop="removeRoleObjItem(roleObjIndex)"
                 type="error"
                 size="small"
                 ghost
                 icon="md-trash"
-              ></Button>
+              ></Button> -->
             </Col>
           </Row>
-          <Button
+          <!-- <Button
             v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
             @click.stop="addRoleObjItem"
             type="primary"
             size="small"
             ghost
             icon="md-add"
-          ></Button>
+          ></Button> -->
         </FormItem>
       </Form>
       <div style="text-align: center;">
@@ -145,7 +148,7 @@ export default {
         id: '',
         sort: 1,
         requestTemplate: '',
-        name: '审批1',
+        name: '任务1',
         expireDay: 1,
         description: '',
         handleMode: 'auto',
@@ -190,6 +193,7 @@ export default {
       useRolesOptions: [] // 使用角色
     }
   },
+  props: ['nodeType'],
   methods: {
     loadPage (params) {
       this.isParmasChanged = false
@@ -202,7 +206,6 @@ export default {
       if (statusCode === 'OK') {
         this.activeApprovalNode = data
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
-        // this.activeApprovalNode.handleTemplates = data.thandleTemplates
         this.mgmtData()
       }
     },

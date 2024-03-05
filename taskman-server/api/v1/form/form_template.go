@@ -93,7 +93,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("illegal operation"))
 		return
 	}
-	err = service.GetRequestTemplateService().ConfirmRequestTemplate(requestTemplateId)
+	err = service.GetRequestTemplateService().ConfirmRequestTemplate(requestTemplateId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -254,13 +254,20 @@ func SortFormTemplateItemGroup(c *gin.Context) {
 
 // DeleteFormTemplateItemGroup 删除表单组
 func DeleteFormTemplateItemGroup(c *gin.Context) {
+	var err error
 	requestTemplateId := c.Query("request-template-id")
 	formTemplateId := c.Query("item-group-id")
 	if formTemplateId == "" || requestTemplateId == "" {
 		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id")
 		return
 	}
-	err := service.GetFormTemplateService().DeleteFormTemplateItemGroup(formTemplateId)
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(requestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	err = service.GetFormTemplateService().DeleteFormTemplateItemGroup(formTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -270,6 +277,7 @@ func DeleteFormTemplateItemGroup(c *gin.Context) {
 
 // CopyDataFormTemplateItemGroup 数据表单模板组copy
 func CopyDataFormTemplateItemGroup(c *gin.Context) {
+	var err error
 	requestTemplateId := c.Query("request-template-id")
 	taskTemplateId := c.Query("task-template-id")
 	formTemplateId := c.Query("item-group-id")
@@ -277,7 +285,13 @@ func CopyDataFormTemplateItemGroup(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "request-template-id or item-group-id or task-template-id")
 		return
 	}
-	err := service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId)
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(requestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	err = service.GetFormItemTemplateService().CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

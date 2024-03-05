@@ -4,7 +4,7 @@
       $t('back_to_template')
     }}</Button>
     <Row type="flex">
-      <Col span="20" offset="2">
+      <Col span="17" offset="2">
         <Steps :current="currentStep">
           <Step>
             <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
@@ -20,15 +20,15 @@
           </Step>
         </Steps>
       </Col>
-      <!-- <Col span="3">
+      <Col span="3">
         <Button
-          @click="confirmTemplate"
+          @click="submitTemplate"
           :disabled="currentStep !== 3 || $parent.isCheck === 'Y'"
           size="small"
           type="primary"
-          >{{ $t('publish_template') }}</Button
+          >{{ $t('submit_for_review') }}</Button
         >
-      </Col> -->
+      </Col>
     </Row>
     <div></div>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
@@ -57,7 +57,7 @@ import ApprovalForm from './approval-form'
 import RequestForm from './request-form'
 import BasicInfo from './basic-info'
 import TaskForm from './task-form'
-import { confirmTemplate } from '@/api/server.js'
+import { submitTemplate } from '@/api/server.js'
 export default {
   name: '',
   data () {
@@ -75,15 +75,31 @@ export default {
     this.currentStep = 0
   },
   methods: {
-    async confirmTemplate () {
-      const { statusCode } = await confirmTemplate(this.requestTemplateId)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: '/taskman/template-mgmt' })
-      }
+    async submitTemplate () {
+      this.$Modal.confirm({
+        title: `${this.$t('submit_for_review')}`,
+        content: `${this.$t('submit_for_review_tip')}`,
+        'z-index': 1000000,
+        okText: this.$t('confirm'),
+        cancelText: this.$t('cancel'),
+        onOk: async () => {
+          let data = {
+            requestTemplateId: this.requestTemplateId,
+            status: 'created',
+            targetStatus: 'pending',
+            reason: '{}'
+          }
+          const { statusCode } = await submitTemplate(data)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.$router.push({ path: '/taskman/template-mgmt' })
+          }
+        },
+        onCancel: () => {}
+      })
     },
     changeStep (val) {
       this.currentStep = val

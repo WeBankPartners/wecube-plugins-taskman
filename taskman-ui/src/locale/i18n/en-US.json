@@ -60,6 +60,9 @@
   "warning": "Warning",
   "can_not_be_empty": " Can Not Be Empty",
   "publish_template": "Publish Template",
+  "publish_template_tip": "Confirm publishing template? Unsaved information on this page will not be published.",
+  "submit_for_review": "Submit For Review",
+  "submit_for_review_tip": "Confirm submit for review? Unsaved information on this page will not be submit.",
   "confirm_change": "Confirm Change",
   "final_version": "Final Version",
   "initiate_request": "Initiate Request",
@@ -311,5 +314,6 @@
   "query_filter_rule": "View Filtering Rules",
   "please_choose": "Select",
   "please_paste_here": "Please Paste Here",
-  "delete_node": "Delete Node"
+  "delete_node": "Delete Node",
+  "tw_type": "Type"
 }

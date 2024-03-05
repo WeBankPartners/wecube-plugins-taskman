@@ -265,11 +265,12 @@ func (s *TaskTemplateService) CreateProcTaskTemplate(param *models.TaskTemplateD
 	return result, nil
 }
 
-func (s *TaskTemplateService) createProcTaskTemplates(procDefId, requestTemplateId, userToken, language, operator string) (func(*xorm.Session) error, error) {
+func (s *TaskTemplateService) createProcTaskTemplates(session *xorm.Session, procDefId, requestTemplateId, userToken, language, operator string) (err error) {
+	var nodeList []*models.ProcNodeObj
 	// 查询编排任务节点
-	nodeList, err := s.getProcTaskTemplateNodes(procDefId, userToken, language)
+	nodeList, err = s.getProcTaskTemplateNodes(procDefId, userToken, language)
 	if err != nil {
-		return nil, err
+		return
 	}
 	var newTaskTemplates []*models.TaskTemplateTable
 	var newTaskHandleTemplates []*models.TaskHandleTemplateTable
@@ -308,22 +309,19 @@ func (s *TaskTemplateService) createProcTaskTemplates(procDefId, requestTemplate
 		newTaskHandleTemplates = append(newTaskHandleTemplates, newTaskHandleTemplate)
 	}
 	// 构造返回结果
-	result := func(session *xorm.Session) error {
-		for _, newTaskTemplate := range newTaskTemplates {
-			_, err := s.taskTemplateDao.Add(session, newTaskTemplate)
-			if err != nil {
-				return err
-			}
+	for _, newTaskTemplate := range newTaskTemplates {
+		_, err = s.taskTemplateDao.Add(session, newTaskTemplate)
+		if err != nil {
+			return
 		}
-		for _, newTaskHandleTemplate := range newTaskHandleTemplates {
-			_, err := s.taskHandleTemplateDao.Add(session, newTaskHandleTemplate)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
 	}
-	return result, nil
+	for _, newTaskHandleTemplate := range newTaskHandleTemplates {
+		_, err = s.taskHandleTemplateDao.Add(session, newTaskHandleTemplate)
+		if err != nil {
+			return
+		}
+	}
+	return
 }
 
 func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTemplateId, userToken, language, operator string) ([]*dao.ExecAction, error) {
@@ -349,9 +347,12 @@ func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTempl
 	return actions, nil
 }
 
-func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, id string) ([]*dao.ExecAction, error) {
+// deleteProcTaskTemplateSql 删除任务模板,模板没有发布不能创建请求,所以只删除关联模板表
+func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, taskTemplateId string) ([]*dao.ExecAction, error) {
+	var actions []*dao.ExecAction
+	var formTemplateList []*models.FormTemplateTable
 	// 查询任务模版
-	taskTemplate, err := s.taskTemplateDao.Get(id)
+	taskTemplate, err := s.taskTemplateDao.Get(taskTemplateId)
 	if err != nil {
 		return nil, err
 	}
@@ -368,32 +369,28 @@ func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, id st
 	if taskTemplate.RequestTemplate != requestTemplateId {
 		return nil, fmt.Errorf("param requestTemplate wrong: %s", requestTemplateId)
 	}
-
-	// 删除任务处理模板
-	deleteTaskHandleTemplateAll := true
-	// 删除任务模板
-	deleteTaskTemplateId := id
-	// 查询表单模板列表
-	var formTemplateList []*models.FormTemplateTable
-	dao.X.SQL("select * from form_template where request_template = ? and task_template = ?", requestTemplateId, deleteTaskTemplateId).Find(&formTemplateList)
-
-	var actions []*dao.ExecAction
-	// 先删表单模板
+	dao.X.SQL("select * from form_template where request_template = ? and task_template = ?", requestTemplateId, taskTemplateId).Find(&formTemplateList)
 	if len(formTemplateList) > 0 {
-		// for _, formTemplate := range formTemplateList {
-		// 	err = GetFormTemplateService().DeleteFormTemplateItemGroupTransaction(session, formTemplate.Id)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
+		for _, formTemplate := range formTemplateList {
+			// 删除表单项模板表
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template WHERE form_template = ? ", Param: []interface{}{formTemplate.Id}})
+		}
 	}
-	if deleteTaskHandleTemplateAll {
-		action := &dao.ExecAction{Sql: "DELETE FROM task_handle_template WHERE task_template = ?"}
-		action.Param = []interface{}{deleteTaskTemplateId}
-		actions = append(actions, action)
-	}
-	action := &dao.ExecAction{Sql: "DELETE FROM task_template WHERE id = ?"}
-	action.Param = []interface{}{deleteTaskTemplateId}
+	// 删除任务处理模板表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template WHERE task_template = ? ", Param: []interface{}{taskTemplateId}})
+	// 删除表单模板表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template WHERE task_template = ?", Param: []interface{}{taskTemplateId}})
+	// 删除任务模版表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template WHERE id = ?", Param: []interface{}{taskTemplateId}})
+	return actions, nil
+}
+
+func (s *TaskTemplateService) updateProcTaskTemplatesSql(taskTemplateId, nodeId, nodeName string) ([]*dao.ExecAction, error) {
+	var actions []*dao.ExecAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	// 更新任务模板
+	action := &dao.ExecAction{Sql: "UPDATE task_template SET node_id=?, node_name=?, updated_time=? WHERE id=?"}
+	action.Param = []interface{}{nodeId, nodeName, nowTime, taskTemplateId}
 	actions = append(actions, action)
 	return actions, nil
 }
@@ -607,49 +604,20 @@ func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, typ, userTo
 	if requestTemplate == nil {
 		return nil, errors.New("no request_template record found")
 	}
-	var result *models.TaskTemplateDto
-	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
-		// 编排任务
-		// 查询任务模板
-		taskTemplate, err := s.taskTemplateDao.GetProc(requestTemplateId, id)
-		if err != nil {
-			return nil, err
-		}
-		if taskTemplate != nil {
-			result, err = s.genTaskTemplateDto(taskTemplate.Id)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			// 查询任务节点
-			nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
-			if err != nil {
-				return nil, err
-			}
-			for i, node := range nodeList {
-				if node.NodeDefId == id {
-					result = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
-					break
-				}
-			}
-			if result == nil {
-				return nil, errors.New("proc task template not found")
-			}
-		}
-	} else {
-		// 其他类型
-		// 查询任务模板
-		taskTemplate, err := s.taskTemplateDao.Get(id)
-		if err != nil {
-			return nil, err
-		}
-		if taskTemplate == nil {
-			return nil, errors.New("no task_template record found")
-		}
-		result, err = s.genTaskTemplateDto(taskTemplate.Id)
-		if err != nil {
-			return nil, err
-		}
+	// 查询任务模板
+	taskTemplate, err := s.taskTemplateDao.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	if taskTemplate == nil {
+		return nil, errors.New("no task_template record found")
+	}
+	if taskTemplate.RequestTemplate != requestTemplateId || taskTemplate.Type != typ {
+		return nil, errors.New("param requestTemplate or type wrong")
+	}
+	result, err := s.genTaskTemplateDto(taskTemplate.Id)
+	if err != nil {
+		return nil, err
 	}
 	return result, nil
 }

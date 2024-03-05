@@ -222,7 +222,6 @@ export default {
         if (this.activeApprovalNode.handleTemplates.length === 0) {
           return true
         } else {
-          console.log(22)
           let res = false
           for (let i = 0; i < this.activeApprovalNode.handleTemplates.length; i++) {
             const item = this.activeApprovalNode.handleTemplates[i]
@@ -256,7 +255,6 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      console.log(this.activeApprovalNode)
       const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
       if (statusCode === 'OK') {
         this.isParmasChanged = false

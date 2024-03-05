@@ -707,9 +707,7 @@ export default {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'implement')
       if (statusCode === 'OK') {
         this.procDefId = data.procDefId
-        console.log(data)
         if (this.procDefId === '' && data.ids.length === 0) {
-          console.log(22)
           this.addApprovalNode(1)
         } else {
           this.approvalNodes = data.ids
@@ -794,7 +792,6 @@ export default {
       this.getApprovalNodeGroups(node)
     },
     async getApprovalNodeGroups (node) {
-      console.log(55, this.requestTemplateId, node.id)
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
@@ -1020,7 +1017,6 @@ export default {
       this.finalElement[itemIndex].attrs.forEach(item => {
         item.isActive = false
       })
-      console.log(33, this.finalElement[itemIndex].attrs)
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
       this.openPanel = '1'

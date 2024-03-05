@@ -46,7 +46,7 @@
                 :currentIndex="itemIndex"
                 @filterRuleChanged="singleFilterRuleChanged"
                 :disabled="false"
-                :routineExpression="item.defaultValue || group.itemGroup"
+                :routineExpression="item.routineExpression || group.itemGroup"
                 :allEntityType="allEntityType"
                 :currentSelectedEntity="group.itemGroup"
               >
@@ -115,6 +115,7 @@ export default {
         itemGroupRule: 'new',
         formTemplate: '',
         defaultValue: '',
+        routineExpression: '',
         sort: 3,
         packageName: '',
         entity: '',
@@ -162,25 +163,14 @@ export default {
     },
     // 定位规则回传
     singleFilterRuleChanged (val, index) {
-      console.log(val, index)
-      this.group.customItems[index].defaultValue = val
-      console.log(44, this.group)
+      this.group.customItems[index].routineExpression = val
     },
     async loadPage (params) {
       await this.getRequestGroupForm(params)
-      console.log(34, this.group)
       this.getAllDataModels()
       if (params.isAdd) {
-        // this.group = {}
-        // this.group.requestTemplateId = params.requestTemplateId
-        // this.group.formTemplateId = params.formTemplateId
-        // this.group.itemGroupName = params.itemGroup
-        // this.group.itemGroupType = params.itemGroupType
-        // this.group.itemGroup = params.itemGroup
         this.group.itemGroupSort = params.itemGroupSort
         this.group.itemGroupRule = 'new'
-        // this.group.systemItems = []
-        // this.group.customItems = []
       }
       this.openFormConfig = true
     },
@@ -195,7 +185,6 @@ export default {
       })
       if (statusCode === 'OK') {
         this.group = data
-        console.log(23, data)
       }
     },
     paramsChanged () {
@@ -242,14 +231,24 @@ export default {
       }
     },
     deleteCustomItem (itemIndex) {
-      console.log(itemIndex)
       this.group.customItems.splice(itemIndex, 1)
     },
     addCustomItem () {
+      let name = `calculate${this.group.customItems.length}`
+      name = this.nameCheck(name)
       let tmpItem = JSON.parse(JSON.stringify(this.defaultItem))
-      tmpItem.name = `default${this.group.customItems.length}`
-      tmpItem.title = `custom${this.group.customItems.length}`
+      tmpItem.routineExpression = this.group.itemGroup
+      tmpItem.name = name
+      tmpItem.title = name
       this.group.customItems.push(tmpItem)
+    },
+    nameCheck (name) {
+      const findIndex = this.group.customItems.findIndex(item => item.name === name)
+      if (findIndex > -1) {
+        return this.nameCheck(name + '1')
+      } else {
+        return name
+      }
     }
   },
   components: {

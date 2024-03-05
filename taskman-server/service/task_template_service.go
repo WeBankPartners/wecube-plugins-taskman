@@ -374,21 +374,38 @@ func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, taskT
 	}
 	dao.X.SQL("select * from form_template where request_template = ? and task_template = ?", requestTemplateId, taskTemplateId).Find(&formTemplateList)
 	if len(formTemplateList) > 0 {
-		// for _, formTemplate := range formTemplateList {
-		// 	err = GetFormTemplateService().DeleteFormTemplateItemGroupTransaction(session, formTemplate.Id)
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// }
+		for _, formTemplate := range formTemplateList {
+			deleteFormTemplateIds = append(deleteFormTemplateIds, formTemplate.Id)
+			dao.X.SQL("select * from form where form_template = ?", formTemplate.Id).Find(&formList)
+			if len(formList) > 0 {
+				for _, form := range formList {
+					deleteFormIds = append(deleteFormIds, form.Id)
+				}
+			}
+			dao.X.SQL("select * from task_handle_tempalte where task_template = ?", formTemplate.Id).Find(&taskHandleTemplateList)
+			if len(taskHandleTemplateList) > 0 {
+				for _, taskHandleTemplate := range taskHandleTemplateList {
+					deleteTaskHandleTemplateIds = append(deleteTaskHandleTemplateIds, taskHandleTemplate.Id)
+				}
+			}
+		}
 	}
-	if deleteTaskHandleTemplateAll {
-		action := &dao.ExecAction{Sql: "DELETE FROM task_handle_template WHERE task_template = ?"}
-		action.Param = []interface{}{deleteTaskTemplateId}
-		actions = append(actions, action)
-	}
-	action := &dao.ExecAction{Sql: "DELETE FROM task_template WHERE id = ?"}
-	action.Param = []interface{}{deleteTaskTemplateId}
-	actions = append(actions, action)
+
+	// 删除任务表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle WHERE task_handle_template in ('" + strings.Join(deleteTaskHandleTemplateIds, "','") + "')", Param: []interface{}{}})
+	// 删除任务处理模板表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template WHERE id in ('" + strings.Join(deleteTaskHandleTemplateIds, "','") + "')", Param: []interface{}{}})
+
+	// 删除表单项
+
+	// 删除表单
+
+	// 删除表单项模板表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template WHERE form_tempalte in ('" + strings.Join(deleteFormTemplateIds, "','") + "')", Param: []interface{}{}})
+	// 删除表单模板表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_tempalte WHERE task_template = ?", Param: []interface{}{taskTemplateId}})
+	// 删除任务模版表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template WHERE id = ?", Param: []interface{}{taskTemplateId}})
 	return actions, nil
 }
 

@@ -350,24 +350,24 @@ func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTempl
 }
 
 func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, id string) ([]*dao.ExecAction, error) {
-	// 查询任务模版
-	taskTemplate, err := s.taskTemplateDao.Get(id)
-	if err != nil {
-		return nil, err
-	}
-	if taskTemplate == nil {
-		return nil, errors.New("no task_template record found")
-	}
-	// 校验参数
-	if taskTemplate.Type != string(models.TaskTypeImplement) {
-		return nil, fmt.Errorf("type wrong: %s", taskTemplate.Type)
-	}
-	if taskTemplate.NodeDefId == "" {
-		return nil, fmt.Errorf("nodeDefId empty: %s", taskTemplate.NodeDefId)
-	}
-	if taskTemplate.RequestTemplate != requestTemplateId {
-		return nil, fmt.Errorf("param requestTemplate wrong: %s", requestTemplateId)
-	}
+	// // 查询任务模版
+	// taskTemplate, err := s.taskTemplateDao.Get(id)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if taskTemplate == nil {
+	// 	return nil, errors.New("no task_template record found")
+	// }
+	// // 校验参数
+	// if taskTemplate.Type != string(models.TaskTypeImplement) {
+	// 	return nil, fmt.Errorf("type wrong: %s", taskTemplate.Type)
+	// }
+	// if taskTemplate.NodeDefId == "" {
+	// 	return nil, fmt.Errorf("nodeDefId empty: %s", taskTemplate.NodeDefId)
+	// }
+	// if taskTemplate.RequestTemplate != requestTemplateId {
+	// 	return nil, fmt.Errorf("param requestTemplate wrong: %s", requestTemplateId)
+	// }
 
 	// 删除任务处理模板
 	deleteTaskHandleTemplateAll := true
@@ -394,6 +394,16 @@ func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, id st
 	}
 	action := &dao.ExecAction{Sql: "DELETE FROM task_template WHERE id = ?"}
 	action.Param = []interface{}{deleteTaskTemplateId}
+	actions = append(actions, action)
+	return actions, nil
+}
+
+func (s *TaskTemplateService) updateProcTaskTemplatesSql(taskTemplateId, nodeId, nodeName string) ([]*dao.ExecAction, error) {
+	var actions []*dao.ExecAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	// 更新任务模板
+	action := &dao.ExecAction{Sql: "UPDATE task_template SET node_id=?, node_name=?, updated_time=? WHERE id=?"}
+	action.Param = []interface{}{nodeId, nodeName, nowTime, taskTemplateId}
 	actions = append(actions, action)
 	return actions, nil
 }

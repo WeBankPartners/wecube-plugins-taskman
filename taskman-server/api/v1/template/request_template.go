@@ -117,7 +117,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		return
 	}
 	if param.TargetStatus != string(models.RequestTemplateStatusCreated) && param.TargetStatus != string(models.RequestTemplateStatusDisabled) &&
-		param.TargetStatus != string(models.RequestTemplateStatusPending) || param.TargetStatus != string(models.RequestTemplateStatusConfirm) {
+		param.TargetStatus != string(models.RequestTemplateStatusPending) && param.TargetStatus != string(models.RequestTemplateStatusConfirm) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("param targetStatus invalid"))
 		return
 	}

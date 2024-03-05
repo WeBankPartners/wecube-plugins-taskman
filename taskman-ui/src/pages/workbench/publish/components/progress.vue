@@ -34,7 +34,7 @@
       </div>
     </div>
     <!--审批进度-->
-    <div v-if="approvalExpand" class="steps">
+    <div v-if="approvalExpand" class="steps" style="margin-top:5px;">
       <span class="title">审批进度：</span>
       <Steps :current="0" :style="{ width: progress.approvalProgress.length * 120 + 'px' }">
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
@@ -51,7 +51,7 @@
       </Steps>
     </div>
     <!--任务进度-->
-    <div v-if="taskExpand" class="steps">
+    <div v-if="taskExpand" class="steps" style="margin-top:5px;">
       <span class="title">任务进度：</span>
       <Steps :current="0" :style="{ width: progress.taskProgress.length * 120 + 'px' }">
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">

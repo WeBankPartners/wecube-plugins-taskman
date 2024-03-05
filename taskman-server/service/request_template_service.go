@@ -1,13 +1,8 @@
 package service
 
 import (
-	"fmt"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
-
 	"encoding/json"
+	"fmt"
 	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
@@ -15,6 +10,10 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
 	"xorm.io/xorm"
 )
 
@@ -294,7 +293,7 @@ func (s *RequestTemplateService) CheckRequestTemplateRoles(requestTemplateId str
 	return nil
 }
 
-func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
+func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTemplateUpdateParam, userToken, language string) (result models.RequestTemplateQueryObj, err error) {
 	var checkRole, checkHandler string
 	newGuid := guid.CreateGuid()
 	newCheckTaskId := fmt.Sprintf("ch_%s", guid.CreateGuid())
@@ -323,7 +322,7 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 			}
 		}
 		// 添加 提交请求模板
-		_, err = s.taskTemplateDao.Add(session, &models.TaskTemplateTable{Id: newCheckTaskId, Name: "submit", RequestTemplate: "su_" + guid.CreateGuid(),
+		_, err = s.taskTemplateDao.Add(session, &models.TaskTemplateTable{Id: "su_" + guid.CreateGuid(), Name: "submit", RequestTemplate: newGuid,
 			Type: string(models.TaskTypeSubmit), CreatedTime: now, UpdatedTime: now})
 		if err != nil {
 			return err
@@ -351,6 +350,13 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 		if param.ConfirmSwitch {
 			_, err = s.taskTemplateDao.Add(session, &models.TaskTemplateTable{Id: newConfirmTaskId, Name: "confirm", RequestTemplate: newGuid,
 				ExpireDay: param.ConfirmExpireDay, Type: string(models.TaskTypeConfirm), CreatedTime: now, UpdatedTime: now})
+			if err != nil {
+				return err
+			}
+		}
+		// 开启了编排,创建编排任务
+		if param.ProcDefId != "" {
+			err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, "system")
 			if err != nil {
 				return err
 			}
@@ -449,12 +455,13 @@ func (s *RequestTemplateService) getRequestTemplateIdsBySql(sql string, param []
 	return
 }
 
-func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemplateUpdateParam) (result models.RequestTemplateQueryObj, err error) {
-	var actions []*dao.ExecAction
-	var taskTemplateList []*models.TaskTemplateTable
+func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemplateUpdateParam, userToken, language string) (result models.RequestTemplateQueryObj, err error) {
+	var actions, insertTaskTemplateActions, deleteTaskTemplateActions []*dao.ExecAction
+	var taskTemplateList, implementTaskTemplateList []*models.TaskTemplateTable
+	var workflowTaskNodeMap = make(map[string]*models.TaskTemplateTable)
 	var requestTemplate *models.RequestTemplateTable
-	var formTemplateList []*models.FormTemplateTable
 	var checkRole, checkHandler string
+	var workflowTaskNodeList []*models.ProcNodeObj
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
 	if err != nil {
@@ -482,7 +489,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_role(id,request_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{param.Id + models.SysTableIdConnector + v + models.SysTableIdConnector + "USE", param.Id, v, "USE"}})
 	}
 
-	// 删除定版任务和请求确认任务
+	// 删除定版任务和请求确认任务,记录编排任务
 	if len(taskTemplateList) > 0 {
 		for _, taskTemplate := range taskTemplateList {
 			if taskTemplate.Type == string(models.TaskTypeCheck) || taskTemplate.Type == string(models.TaskTypeConfirm) {
@@ -490,6 +497,11 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template where task_template=?", Param: []interface{}{taskTemplate.Id}})
 				}
 				actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where id=?", Param: []interface{}{taskTemplate.Id}})
+			} else if taskTemplate.Type == string(models.TaskTypeImplement) {
+				implementTaskTemplateList = append(implementTaskTemplateList, taskTemplate)
+				if taskTemplate.NodeDefId != "" {
+					workflowTaskNodeMap[taskTemplate.NodeDefId] = taskTemplate
+				}
 			}
 		}
 	}
@@ -515,18 +527,64 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,request_template,expire_day,type,created_time," +
 			"updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{newConfirmTaskId, "confirm", param.Id, param.ConfirmExpireDay, string(models.TaskTypeConfirm), nowTime, nowTime}})
 	}
-
-	// 更新操作关闭了编排,则需要删除 所有跟编排相关的表单
-	if requestTemplate.ProcDefId != "" && param.ProcDefId == "" {
-		formTemplateList, err = s.formTemplateDao.QueryListByRequestTemplateAndItemGroupType(param.Id, string(models.FormItemGroupTypeWorkflow))
+	// 编排处理,(1)新增了编排 (2)编排节点名称有更新 (3)删除编排
+	if requestTemplate.ProcDefId == "" && param.ProcDefId != "" {
+		// 新增编排
+		insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system")
 		if err != nil {
 			return
 		}
-		if len(formTemplateList) > 0 {
-			for _, formTemplate := range formTemplateList {
-				err = GetFormTemplateService().DeleteFormTemplateItemGroup(formTemplate.Id)
+		if len(insertTaskTemplateActions) > 0 {
+			actions = append(actions, insertTaskTemplateActions...)
+		}
+	} else if requestTemplate.ProcDefId != "" {
+		// 删除编排
+		if param.ProcDefId == "" {
+			for _, taskTemplate := range implementTaskTemplateList {
+				deleteTaskTemplateActions = []*dao.ExecAction{}
+				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
 				if err != nil {
 					return
+				}
+				if len(deleteTaskTemplateActions) > 0 {
+					actions = append(actions, deleteTaskTemplateActions...)
+				}
+			}
+		} else if param.ProcDefId != "" {
+			// 换了编排,先删除,再新增
+			if requestTemplate.ProcDefId != param.ProcDefId {
+				for _, taskTemplate := range implementTaskTemplateList {
+					deleteTaskTemplateActions = []*dao.ExecAction{}
+					deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
+					if err != nil {
+						return
+					}
+					if len(deleteTaskTemplateActions) > 0 {
+						actions = append(actions, deleteTaskTemplateActions...)
+					}
+				}
+				insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system")
+				if err != nil {
+					return
+				}
+				if len(insertTaskTemplateActions) > 0 {
+					actions = append(actions, insertTaskTemplateActions...)
+				}
+			} else {
+				// 关联编排无改动,需要查找编排,看编排节点名称是否变更,有变更需要替换
+				// 查询编排任务节点
+				workflowTaskNodeList, err = GetTaskTemplateService().getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
+				if err != nil {
+					return
+				}
+				if len(workflowTaskNodeList) > 0 {
+					for _, taskNode := range workflowTaskNodeList {
+						taskNodeTmp := workflowTaskNodeMap[taskNode.NodeDefId]
+						if taskNodeTmp != nil && (taskNodeTmp.NodeId != taskNode.NodeId || taskNodeTmp.NodeName != taskNode.NodeName) {
+							// 更新任务节点
+
+						}
+					}
 				}
 			}
 		}

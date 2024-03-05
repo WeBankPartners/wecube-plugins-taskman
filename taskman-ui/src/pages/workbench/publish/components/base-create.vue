@@ -389,10 +389,12 @@ export default {
   async created () {
     // 有id调用详情接口，无id调用创建接口
     if (this.requestId) {
-      this.getRequestInfoNew()
+      await this.getRequestInfoNew()
     } else {
       await this.getCreateInfo()
-      // 获取审批和任务流程
+    }
+    // 获取审批和任务流程
+    if (this.form.approvalList.length === 0) {
       this.getApprovalAndTaskList()
     }
     // 获取请求进度
@@ -452,6 +454,7 @@ export default {
           }
         })
         // 初始化审批和任务流程
+        this.form.approvalList = data.approvalList || []
         const approvalList = data.approvalList || []
         this.approvalList = (approvalList && approvalList.filter(i => i.type === 'approve')) || []
         this.taskList = (approvalList && approvalList.filter(i => i.type === 'implement')) || []
@@ -541,7 +544,8 @@ export default {
     // 获取审批流程列表
     getApprovalConfigList () {
       return new Promise(async resolve => {
-        const { statusCode, data } = await getTaskConfig(this.requestTemplate, 'approve') // 任务类型: check 定版, approve 审批, implement 执行类型, confirm 请求确认
+        // 任务类型: check 定版, approve 审批, implement 执行类型, confirm 请求确认
+        const { statusCode, data } = await getTaskConfig(this.requestTemplate, 'approve')
         if (statusCode === 'OK') {
           resolve(data || [])
         } else {
@@ -569,7 +573,7 @@ export default {
         }
         for (let i of response[0]) {
           // 获取提交人角色管理员
-          if (i.roleType === 'admin') {
+          if (i.handleMode === 'admin') {
             const { statusCode, data } = await getAdminUserByRole(this.role)
             const obj = {
               role: this.role,
@@ -578,12 +582,12 @@ export default {
             if (statusCode === 'OK') {
               obj.handler = (data && data[0]) || ''
             }
-            this.$set(i, 'roleObjs', [obj])
+            this.$set(i, 'handleTemplates', [obj])
           }
         }
         for (let i of response[1]) {
           // 获取提交人角色管理员
-          if (i.roleType === 'admin') {
+          if (i.handleMode === 'admin') {
             const { statusCode, data } = await getAdminUserByRole(this.role)
             const obj = {
               role: this.role,
@@ -592,7 +596,7 @@ export default {
             if (statusCode === 'OK') {
               obj.handler = (data && data[0]) || ''
             }
-            this.$set(i, 'roleObjs', [obj])
+            this.$set(i, 'handleTemplates', [obj])
           }
         }
         this.approvalList = response[0]
@@ -687,10 +691,16 @@ export default {
         })
       }
       // 审批任务流程角色和用户必填校验
-      if (!this.approvalCheck(this.form.approvalList)) {
+      if (!this.approvalCheck(this.approvalList)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
-          desc: '审批和任务流程用户和角色必填'
+          desc: '审批流程处理角色和处理人必填'
+        })
+      }
+      if (!this.approvalCheck(this.taskList)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: '任务流程处理角色和处理人必填'
         })
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)

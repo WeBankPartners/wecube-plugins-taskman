@@ -356,7 +356,7 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 		}
 		// 开启了编排,创建编排任务
 		if param.ProcDefId != "" {
-			err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, "system")
+			err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, param.CreatedBy)
 			if err != nil {
 				return err
 			}
@@ -581,8 +581,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					for _, taskNode := range workflowTaskNodeList {
 						taskNodeTmp := workflowTaskNodeMap[taskNode.NodeDefId]
 						if taskNodeTmp != nil && (taskNodeTmp.NodeId != taskNode.NodeId || taskNodeTmp.NodeName != taskNode.NodeName) {
-							// 更新任务节点
-
+							// 更新任务节点@todo 需要调用更新方法
 						}
 					}
 				}

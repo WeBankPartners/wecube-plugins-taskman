@@ -326,7 +326,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 		return err
 	}
 	var formItemNameQuery []*models.FormItemTemplateTable
-	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_tempalte where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")

@@ -116,6 +116,19 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("param status invalid"))
 		return
 	}
+	if param.TargetStatus != string(models.RequestTemplateStatusCreated) && param.TargetStatus != string(models.RequestTemplateStatusDisabled) &&
+		param.TargetStatus != string(models.RequestTemplateStatusPending) {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param targetStatus invalid"))
+		return
+	}
+	if requestTemplate.Status == string(models.RequestTemplateStatusCreated) {
+		// 校验是否有修改权限
+		err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+	}
 	err = service.GetRequestTemplateService().UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)
 	if err != nil {
 		middleware.ReturnError(c, err)
@@ -126,6 +139,8 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 
 func UpdateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
+	var result models.RequestTemplateQueryObj
+	var err error
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -138,12 +153,14 @@ func UpdateRequestTemplate(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "id")
 		return
 	}
-	if err := service.GetRequestTemplateService().CheckRequestTemplateRoles(param.Id, middleware.GetRequestRoles(c)); err != nil {
-		middleware.ReturnDataPermissionError(c, err)
+	// 校验是否有修改权限
+	err = service.GetRequestTemplateService().CheckPermission(param.Id, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
-	result, err := service.GetRequestTemplateService().UpdateRequestTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, err = service.GetRequestTemplateService().UpdateRequestTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

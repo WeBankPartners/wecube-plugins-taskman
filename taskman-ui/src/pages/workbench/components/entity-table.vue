@@ -23,7 +23,7 @@
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
             <Row :key="index">
-              <Col v-for="(i, index) in formOptions" :key="index" :span="i.width">
+              <Col v-for="(i, index) in formOptions" :key="index" :span="i.width || 24">
                 <FormItem
                   :label="i.title"
                   :prop="i.name"
@@ -127,7 +127,7 @@ export default {
       default: false
     },
     // 无数据时，是否默认添加一行
-    isAddRow: {
+    autoAddRow: {
       type: Boolean,
       default: false
     },
@@ -179,7 +179,7 @@ export default {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
             // 新增时，没有配置数据，默认添加一行
-            if (item.value.length === 0 && this.isAddRow) {
+            if (item.value.length === 0 && this.autoAddRow) {
               this.handleAddRow(item)
             }
           })

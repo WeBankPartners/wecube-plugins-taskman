@@ -56,7 +56,7 @@ export default {
   computed: {
     getDiffTime () {
       const newDate = dayjs(this.data.handleTime)
-      const oldDate = dayjs(this.data.createTime)
+      const oldDate = dayjs(this.data.createdTime)
       let subtime = (newDate - oldDate) / 1000
       let days = parseInt(subtime / 86400)
       let hours = parseInt(subtime / 3600) - 24 * days

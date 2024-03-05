@@ -133,8 +133,8 @@ export default {
         return (
           <div>
             <span>{this.$t('tw_task_tab')}</span>
-            {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][0])} class="badge"></Badge>
+            {this.tabName === 'pending' && this.getPendingNumber(0) > 0 && (
+              <span class="badge">{this.getPendingNumber(0)}</span>
             )}
           </div>
         )
@@ -143,8 +143,8 @@ export default {
         return (
           <div>
             <span>审批</span>
-            {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][1])} class="badge"></Badge>
+            {this.tabName === 'pending' && this.getPendingNumber(1) > 0 && (
+              <span class="badge">{this.getPendingNumber(1)}</span>
             )}
           </div>
         )
@@ -153,8 +153,8 @@ export default {
         return (
           <div>
             <span>{this.$t('tw_pending_tab')}</span>
-            {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][2])} class="badge"></Badge>
+            {this.tabName === 'pending' && this.getPendingNumber(2) > 0 && (
+              <span class="badge">{this.getPendingNumber(2)}</span>
             )}
           </div>
         )
@@ -163,11 +163,18 @@ export default {
         return (
           <div>
             <span>请求确认</span>
-            {this.tabName === 'pending' && (
-              <Badge count={Number(this.$refs.dataCard.pendingNumObj[this.actionName][3])} class="badge"></Badge>
+            {this.tabName === 'pending' && this.getPendingNumber(3) > 0 && (
+              <span class="badge">{this.getPendingNumber(3)}</span>
             )}
           </div>
         )
+      }
+    }
+  },
+  computed: {
+    getPendingNumber () {
+      return function (index) {
+        return Number(this.$refs.dataCard.pendingNumObj[this.actionName][index]) || 0
       }
     }
   },
@@ -611,13 +618,23 @@ export default {
   .data-tabs {
     margin-top: 10px;
   }
-  .badge {
-    margin-left: 5px;
-  }
 }
 </style>
 <style lang="scss">
 .workbench {
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    background-color: #f56c6c;
+    border-radius: 10px;
+    color: #fff;
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    text-align: center;
+    white-space: nowrap;
+    margin-left: 5px;
+  }
   .ivu-progress-outer {
     display: flex;
     align-items: center;

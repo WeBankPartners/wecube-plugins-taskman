@@ -3,7 +3,8 @@
     <Row class="back-header">
       <Icon size="22" type="md-arrow-back" class="icon" @click="$router.back()" />
       <span class="name">
-        {{ `${templateName || ''}` }}<Tag size="medium">{{ version }}</Tag>
+        {{ `${detail.templateName || detail.requestTemplateName || ''}` }}
+        <Tag size="medium">{{ detail.version || detail.templateVersion || '' }}</Tag>
       </span>
     </Row>
     <Row class="w-header">
@@ -22,248 +23,256 @@
     </Row>
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
-        <template>
-          <!--请求信息-->
-          <HeaderTitle :title="$t('tw_request_title')">
-            <!--请求名-->
-            <FormItem :label="$t('request_name')" required>
-              <Input
-                v-model="form.name"
-                :maxlength="70"
-                show-word-limit
-                :placeholder="$t('request_name')"
-                style="width:60%;"
-              />
-            </FormItem>
-            <!--请求描述-->
-            <FormItem :label="$t('tw_publish_des')">
-              <Input
-                v-model="form.description"
-                type="textarea"
-                :maxlength="200"
-                show-word-limit
-                :placeholder="$t('tw_publish_des')"
-                style="width:60%;"
-              />
-            </FormItem>
-            <!--期望完成时间-->
-            <FormItem :label="$t('expected_completion_time')" required>
-              <DatePicker
-                type="datetime"
-                :value="form.expectTime"
-                @on-change="
-                  val => {
-                    form.expectTime = val
-                  }
-                "
-                :placeholder="$t('tw_please_select')"
-                :options="{
-                  disabledDate(date) {
-                    return date && date.valueOf() < Date.now() - 86400000
-                  }
-                }"
-                style="width:400px;"
-                :clearable="false"
-              ></DatePicker>
-            </FormItem>
-            <!--附件-->
-            <FormItem :label="$t('tw_attach')">
-              <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
-            </FormItem>
-            <!--自定义信息表单-->
-            <CustomForm
-              v-model="form.customForm.value"
-              :options="form.customForm.title"
-              :requestId="requestId"
-            ></CustomForm>
-          </HeaderTitle>
-          <!--请求表单-->
-          <HeaderTitle title="请求表单">
-            <!--选择目标对象-->
-            <FormItem :label="$t('tw_choose_object')" required>
-              <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
-                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
-                  item.key_name
-                }}</Option>
-              </Select>
-            </FormItem>
-            <EntityTable
-              v-if="requestData.length"
-              ref="entityTable"
-              :data="requestData"
-              :requestId="requestId"
-              :type="actionName"
-              :isAdd="true"
-              :isAddRow="true"
-              style="width:calc(100% - 20px);margin-left:16px;"
-            ></EntityTable>
-          </HeaderTitle>
-          <!--审批流程-->
-          <HeaderTitle v-if="approvalList.length > 0" title="审批流程">
-            <div class="step-wrap">
-              <div v-for="(i, index) in approvalList" :key="index" class="step-item">
-                <div class="step-item-left">
-                  <div class="circle">{{ index + 1 }}</div>
-                  <div v-if="index + 1 !== approvalList.length" class="line" />
+        <!--请求信息-->
+        <HeaderTitle :title="$t('tw_request_title')">
+          <!--请求名-->
+          <FormItem :label="$t('request_name')" required>
+            <Input
+              v-model="form.name"
+              :maxlength="70"
+              show-word-limit
+              :placeholder="$t('request_name')"
+              style="width:60%;"
+            />
+          </FormItem>
+          <!--请求描述-->
+          <FormItem :label="$t('tw_publish_des')">
+            <Input
+              v-model="form.description"
+              type="textarea"
+              :maxlength="200"
+              show-word-limit
+              :placeholder="$t('tw_publish_des')"
+              style="width:60%;"
+            />
+          </FormItem>
+          <!--期望完成时间-->
+          <FormItem :label="$t('expected_completion_time')" required>
+            <DatePicker
+              type="datetime"
+              :value="form.expectTime"
+              @on-change="
+                val => {
+                  form.expectTime = val
+                }
+              "
+              :placeholder="$t('tw_please_select')"
+              :options="{
+                disabledDate(date) {
+                  return date && date.valueOf() < Date.now() - 86400000
+                }
+              }"
+              style="width:400px;"
+              :clearable="false"
+            ></DatePicker>
+          </FormItem>
+          <!--附件-->
+          <FormItem :label="$t('tw_attach')">
+            <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
+          </FormItem>
+          <!--自定义信息表单-->
+          <CustomForm
+            v-model="form.customForm.value"
+            :options="form.customForm.title"
+            :requestId="requestId"
+          ></CustomForm>
+        </HeaderTitle>
+        <!--请求表单-->
+        <HeaderTitle title="请求表单">
+          <!--选择目标对象-->
+          <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+            <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
+              <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
+            </Select>
+          </FormItem>
+          <EntityTable
+            v-if="requestData.length"
+            ref="entityTable"
+            :data="requestData"
+            :requestId="requestId"
+            :type="actionName"
+            isAdd
+            autoAddRow
+            style="width:calc(100% - 20px);margin-left:16px;"
+          ></EntityTable>
+        </HeaderTitle>
+        <!--审批流程-->
+        <HeaderTitle v-if="approvalList.length > 0" title="审批流程">
+          <div class="step-wrap">
+            <div v-for="(i, index) in approvalList" :key="index" class="step-item">
+              <div class="step-item-left">
+                <div class="circle">{{ index + 1 }}</div>
+                <div v-if="index + 1 !== approvalList.length" class="line" />
+              </div>
+              <div class="step-item-content">
+                <div class="title">
+                  {{ i.name }}
+                  <Tag color="default">{{ approvalTypeName[i.handleMode] }}</Tag>
+                  <span style="color:#808695;">{{ i.description }}</span>
+                  <Icon size="24" color="#19be6b" type="md-time" />
+                  <span style="color:#19be6b;">{{ i.expireDay }}天</span>
                 </div>
-                <div class="step-item-content">
-                  <div class="title">
-                    {{ i.name }}
-                    <Tag color="default">{{ approvalTypeName[i.roleType] }}</Tag>
-                    <span style="color:#808695;">{{ i.description }}</span>
-                    <Icon size="24" color="#19be6b" type="md-time" />
-                    <span style="color:#19be6b;">{{ i.expireDay }}天</span>
+                <!--单人自定义、协同、并行-->
+                <div v-if="['custom', 'any', 'all'].includes(i.handleMode)" class="step-background">
+                  <div v-for="(j, idx) in i.handleTemplates" :key="idx" class="form-item">
+                    <!--审批角色设置-->
+                    <FormItem label="" required :label-width="0">
+                      <Select
+                        v-if="['custom', 'template'].includes(j.assign)"
+                        v-model="j.role"
+                        filterable
+                        :disabled="j.assign === 'template' ? true : false"
+                        placeholder="请选择处理角色"
+                        style="width:300px;"
+                        @on-change="j.handler = ''"
+                      >
+                        <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+                      </Select>
+                    </FormItem>
+                    <!--审批人设置-->
+                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                      <Input
+                        v-if="['template', 'template_suggest'].includes(j.handlerType)"
+                        v-model="j.handler"
+                        disabled
+                        placeholder="请选择处理人"
+                        style="width:300px;"
+                      />
+                      <Select
+                        v-else-if="['custom', 'custom_suggest'].includes(j.handlerType)"
+                        v-model="j.handler"
+                        filterable
+                        placeholder="请选择处理人"
+                        style="width:300px;"
+                        @on-open-change="getHandlerByRole(i, j)"
+                      >
+                        <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+                      </Select>
+                    </FormItem>
                   </div>
-                  <!--单人自定义、协同、并行-->
-                  <div v-if="['custom', 'any', 'all'].includes(i.roleType)" class="step-background">
-                    <div v-for="(j, idx) in i.roleObjs" :key="idx" class="form-item">
-                      <!--审批角色设置-->
-                      <FormItem label="" required :label-width="0">
-                        <Select
-                          v-if="['custom', 'template'].includes(j.roleType)"
-                          v-model="j.role"
-                          filterable
-                          :disabled="j.roleType === 'template' ? true : false"
-                          placeholder="请选择处理角色"
-                          style="width:300px;"
-                          @on-change="j.handler = ''"
-                        >
-                          <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
-                        </Select>
-                      </FormItem>
-                      <!--审批人设置-->
-                      <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                        <Input
-                          v-if="['template', 'template_suggest'].includes(j.handlerType)"
-                          v-model="j.handler"
-                          disabled
-                          placeholder="请选择处理人"
-                          style="width:300px;"
-                        />
-                        <Select
-                          v-else-if="['custom', 'custom_suggest'].includes(j.handlerType)"
-                          v-model="j.handler"
-                          filterable
-                          placeholder="请选择处理人"
-                          style="width:300px;"
-                          @on-open-change="getHandlerByRole(i, j)"
-                        >
-                          <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
-                        </Select>
-                      </FormItem>
-                    </div>
-                  </div>
-                  <!--提交人角色管理员-->
-                  <div v-else-if="i.roleType === 'admin'" class="step-background">
-                    <div class="form-item">
-                      <FormItem label="" required :label-width="0">
-                        <Select v-model="i.roleObjs[0].role" disabled placeholder="请选择处理角色" style="width:300px;">
-                          <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
-                        </Select>
-                      </FormItem>
-                      <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                        <Input
-                          v-model="i.roleObjs[0].handler"
-                          disabled
-                          placeholder="请选择处理人"
-                          style="width:300px;"
-                        />
-                      </FormItem>
-                    </div>
+                </div>
+                <!--提交人角色管理员-->
+                <div v-else-if="i.handleMode === 'admin'" class="step-background">
+                  <div class="form-item">
+                    <FormItem label="" required :label-width="0">
+                      <Select
+                        v-model="i.handleTemplates[0].role"
+                        disabled
+                        placeholder="请选择处理角色"
+                        style="width:300px;"
+                      >
+                        <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                      <Input
+                        v-model="i.handleTemplates[0].handler"
+                        disabled
+                        placeholder="请选择处理人"
+                        style="width:300px;"
+                      />
+                    </FormItem>
                   </div>
                 </div>
               </div>
             </div>
-          </HeaderTitle>
-          <!--任务流程-->
-          <HeaderTitle v-if="taskList.length > 0" title="任务流程">
-            <div class="step-wrap">
-              <div v-for="(i, index) in taskList" :key="index" class="step-item">
-                <div class="step-item-left">
-                  <div class="circle">{{ index + 1 }}</div>
-                  <div v-if="index + 1 !== taskList.length" class="line" />
+          </div>
+        </HeaderTitle>
+        <!--任务流程-->
+        <HeaderTitle v-if="taskList.length > 0" title="任务流程">
+          <div class="step-wrap">
+            <div v-for="(i, index) in taskList" :key="index" class="step-item">
+              <div class="step-item-left">
+                <div class="circle">{{ index + 1 }}</div>
+                <div v-if="index + 1 !== taskList.length" class="line" />
+              </div>
+              <div class="step-item-content">
+                <div class="title">
+                  {{ i.name }}
+                  <Tag v-if="approvalTypeName[i.handleMode]" color="default">{{ approvalTypeName[i.handleMode] }}</Tag>
+                  <Tag :color="i.nodeDefId ? 'gold' : 'purple'">{{ i.nodeDefId ? '编排人工任务' : '自定义任务' }}</Tag>
+                  <span style="color:#808695;">{{ i.description }}</span>
+                  <Icon size="24" color="#19be6b" type="md-time" />
+                  <span style="color:#19be6b;">{{ i.expireDay }}天</span>
                 </div>
-                <div class="step-item-content">
-                  <div class="title">
-                    {{ i.name }}
-                    <Tag v-if="approvalTypeName[i.roleType]" color="default">{{ approvalTypeName[i.roleType] }}</Tag>
-                    <Tag :color="i.type === 'custom' ? 'gold' : 'purple'">{{ taskTypeName[i.type] }}</Tag>
-                    <span style="color:#808695;">{{ i.description }}</span>
-                    <Icon size="24" color="#19be6b" type="md-time" />
-                    <span style="color:#19be6b;">{{ i.expireDay }}天</span>
+                <!--单人自定义-->
+                <div v-if="i.handleMode === 'custom'" class="step-background">
+                  <div v-for="(j, idx) in i.handleTemplates" :key="idx" class="form-item">
+                    <!--审批角色设置-->
+                    <FormItem label="" required :label-width="0">
+                      <Select
+                        v-if="['custom', 'template'].includes(j.assign)"
+                        v-model="j.role"
+                        filterable
+                        :disabled="j.assign === 'template' ? true : false"
+                        placeholder="请选择处理角色"
+                        style="width:300px;"
+                        @on-change="j.handler = ''"
+                      >
+                        <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+                      </Select>
+                    </FormItem>
+                    <!--审批人设置-->
+                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                      <Input
+                        v-if="['template', 'template_suggest'].includes(j.handlerType)"
+                        v-model="j.handler"
+                        disabled
+                        placeholder="请选择处理人"
+                        style="width:300px;"
+                      />
+                      <Select
+                        v-else-if="['custom', 'custom_suggest'].includes(j.handlerType)"
+                        v-model="j.handler"
+                        filterable
+                        placeholder="请选择处理人"
+                        style="width:300px;"
+                        @on-open-change="getHandlerByRole(i, j)"
+                      >
+                        <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+                      </Select>
+                    </FormItem>
                   </div>
-                  <!--单人自定义-->
-                  <div v-if="i.roleType === 'custom'" class="step-background">
-                    <div v-for="(j, idx) in i.roleObjs" :key="idx" class="form-item">
-                      <!--审批角色设置-->
-                      <FormItem label="" required :label-width="0">
-                        <Select
-                          v-if="['custom', 'template'].includes(j.roleType)"
-                          v-model="j.role"
-                          filterable
-                          :disabled="j.roleType === 'template' ? true : false"
-                          placeholder="请选择处理角色"
-                          style="width:300px;"
-                          @on-change="j.handler = ''"
-                        >
-                          <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
-                        </Select>
-                      </FormItem>
-                      <!--审批人设置-->
-                      <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                        <Input
-                          v-if="['template', 'template_suggest'].includes(j.handlerType)"
-                          v-model="j.handler"
-                          disabled
-                          placeholder="请选择处理人"
-                          style="width:300px;"
-                        />
-                        <Select
-                          v-else-if="['custom', 'custom_suggest'].includes(j.handlerType)"
-                          v-model="j.handler"
-                          filterable
-                          placeholder="请选择处理人"
-                          style="width:300px;"
-                          @on-open-change="getHandlerByRole(i, j)"
-                        >
-                          <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
-                        </Select>
-                      </FormItem>
-                    </div>
-                  </div>
-                  <!--提交人角色管理员-->
-                  <div v-else-if="i.roleType === 'admin'" class="step-background">
-                    <div class="form-item">
-                      <FormItem label="" required :label-width="0">
-                        <Select v-model="i.roleObjs[0].role" disabled placeholder="请选择处理角色" style="width:300px;">
-                          <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
-                        </Select>
-                      </FormItem>
-                      <FormItem label="" required :label-width="0" style="margin-left:20px;">
-                        <Input
-                          v-model="i.roleObjs[0].handler"
-                          disabled
-                          placeholder="请选择处理人"
-                          style="width:300px;"
-                        />
-                      </FormItem>
-                    </div>
+                </div>
+                <!--提交人角色管理员-->
+                <div v-else-if="i.handleMode === 'admin'" class="step-background">
+                  <div class="form-item">
+                    <FormItem label="" required :label-width="0">
+                      <Select
+                        v-model="i.handleTemplates[0].role"
+                        disabled
+                        placeholder="请选择处理角色"
+                        style="width:300px;"
+                      >
+                        <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
+                      </Select>
+                    </FormItem>
+                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                      <Input
+                        v-model="i.handleTemplates[0].handler"
+                        disabled
+                        placeholder="请选择处理人"
+                        style="width:300px;"
+                      />
+                    </FormItem>
                   </div>
                 </div>
               </div>
             </div>
-          </HeaderTitle>
-        </template>
+          </div>
+        </HeaderTitle>
       </Form>
     </div>
-    <!--编排流程-->
-    <div class="expand-btn" :style="{ right: flowVisible ? '445px' : '0px' }" @click="flowVisible = !flowVisible">
-      <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
-      <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
-    </div>
-    <div v-show="flowVisible" class="flow-expand">
-      <StaticFlow :requestTemplate="requestTemplate"></StaticFlow>
-    </div>
+    <!--编排流程图-->
+    <template v-if="detail.associationWorkflow">
+      <div class="expand-btn" :style="{ right: flowVisible ? '445px' : '0px' }" @click="flowVisible = !flowVisible">
+        <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
+        <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
+      </div>
+      <div v-show="flowVisible" class="flow-expand">
+        <StaticFlow :requestTemplate="requestTemplate"></StaticFlow>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -284,9 +293,7 @@ import {
   getRootEntity,
   getEntityData,
   savePublishData,
-  getRequestInfo,
   updateRequestStatus,
-  getApprovalConfig,
   getTaskConfig,
   getUserRoles,
   getHandlerRoles,
@@ -314,9 +321,6 @@ export default {
   },
   data () {
     return {
-      // actionName: this.$route.query.action, // 1发布,2请求(3问题,4事件,5变更)
-      templateName: '',
-      version: '', // 模板版本号
       formDisable: this.$route.query.isCheck === 'Y', // 查看标志
       jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
       requestTemplate: this.$route.query.requestTemplate,
@@ -333,8 +337,10 @@ export default {
           title: [],
           value: {}
         }, // 自定义表单
-        data: []
+        data: [],
+        approvalList: [] // 审批列表
       },
+      detail: {},
       initExpectTime: '', // 记录初始期望完成时间
       expireDay: '',
       rootEntityOptions: [],
@@ -349,10 +355,6 @@ export default {
         all: '并行',
         admin: '提交人角色管理员',
         auto: '自动通过'
-      },
-      taskTypeName: {
-        custom: '自定义任务',
-        proc: '编排人工任务'
       },
       userRoleList: []
     }
@@ -387,20 +389,16 @@ export default {
   async created () {
     // 有id调用详情接口，无id调用创建接口
     if (this.requestId) {
-      this.getPublishInfo()
-      // 获取附件和操作单元
-      this.getRequestInfo()
+      this.getRequestInfoNew()
     } else {
       await this.getCreateInfo()
+      // 获取审批和任务流程
+      this.getApprovalAndTaskList()
     }
     // 获取请求进度
     this.$nextTick(() => {
       this.$refs.progress.initData(this.requestTemplate, this.requestId)
     })
-    // 获取审批和任务流程
-    this.getApprovalAndTaskList()
-    // 获取目标对象
-    this.getEntity()
   },
   methods: {
     async getCreateInfo () {
@@ -410,9 +408,8 @@ export default {
       }
       const { statusCode, data } = await getCreateInfo(params)
       if (statusCode === 'OK') {
+        this.detail = data || {}
         this.requestId = data.id
-        this.templateName = data.requestTemplateName
-        this.version = data.templateVersion
         this.form.name = (data.name && data.name.substr(0, 70)) || ''
         this.form.expectTime = data.expectTime || ''
         this.form.customForm = {
@@ -424,22 +421,26 @@ export default {
         })
         this.expireDay = data.expireDay
         this.initExpectTime = this.form.expectTime
+        // 模板未关联编排
+        if (!this.detail.associationWorkflow) {
+          this.getEntityData()
+        } else {
+          // 获取目标对象
+          this.getEntity()
+        }
       }
     },
-    async getRequestInfo () {
-      const { statusCode, data } = await getRequestInfo(this.requestId)
-      if (statusCode === 'OK') {
-        this.attachFiles = data.attachFiles
-        this.form.rootEntityId = data.cache
-      }
-    },
-    // 获取发布信息
-    async getPublishInfo () {
+    // 获取请求详情
+    async getRequestInfoNew () {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
-        const { name, description, expireDay, customForm } = data.request || {}
+        this.detail = data.request || {}
+        const { name, description, rootEntityId, expireDay, customForm, attachFiles } = data.request || {}
         this.form.name = (name && name.substr(0, 70)) || ''
         this.form.description = description
+        this.form.rootEntityId = rootEntityId
+        this.attachFiles = attachFiles
+        this.role = data.request.role
         // 初始化customForm
         this.form.customForm = {
           title: customForm.title || [],
@@ -450,14 +451,48 @@ export default {
             this.form.customForm.value[item.name] = ''
           }
         })
+        // 初始化审批和任务流程
+        const approvalList = data.approvalList || []
+        this.approvalList = (approvalList && approvalList.filter(i => i.type === 'approve')) || []
+        this.taskList = (approvalList && approvalList.filter(i => i.type === 'implement')) || []
+        if (approvalList.length > 0) {
+          // 角色下拉列表初始化
+          const { statusCode, data } = await getUserRoles()
+          if (statusCode === 'OK') {
+            this.userRoleList = data
+          }
+          // 用户下拉列表初始化
+          this.taskList.forEach(i => {
+            i.handleTemplates &&
+              i.handleTemplates.forEach(j => {
+                if (j.handler) {
+                  this.$set(j, 'handlerList', [{ displayName: j.handler, id: j.handler }])
+                }
+              })
+          })
+          // 用户下拉列表初始化
+          this.approvalList.forEach(i => {
+            i.handleTemplates &&
+              i.handleTemplates.forEach(j => {
+                if (j.handler) {
+                  this.$set(j, 'handlerList', [{ displayName: j.handler, id: j.handler }])
+                }
+              })
+          })
+        }
+        // 初始化期望完成时间
         this.expireDay = expireDay
         this.form.expectTime = dayjs()
           .add(this.expireDay || 0, 'day')
           .format('YYYY-MM-DD HH:mm:ss')
         this.initExpectTime = this.form.expectTime
-        this.templateName = data.request.templateName
-        this.version = data.request.version
-        this.role = data.request.role
+        // 模板未关联编排
+        if (!this.detail.associationWorkflow) {
+          this.getEntityData()
+        } else {
+          // 获取目标对象
+          this.getEntity()
+        }
       }
     },
     // 操作目标对象
@@ -506,7 +541,7 @@ export default {
     // 获取审批流程列表
     getApprovalConfigList () {
       return new Promise(async resolve => {
-        const { statusCode, data } = await getApprovalConfig(this.requestTemplate)
+        const { statusCode, data } = await getTaskConfig(this.requestTemplate, 'approve') // 任务类型: check 定版, approve 审批, implement 执行类型, confirm 请求确认
         if (statusCode === 'OK') {
           resolve(data || [])
         } else {
@@ -517,7 +552,7 @@ export default {
     // 获取任务流程列表
     getTaskConfigList () {
       return new Promise(async resolve => {
-        const { statusCode, data } = await getTaskConfig(this.requestTemplate)
+        const { statusCode, data } = await getTaskConfig(this.requestTemplate, 'implement')
         if (statusCode === 'OK') {
           resolve(data || [])
         } else {
@@ -580,7 +615,7 @@ export default {
           }
         })
         // 同组下相同角色不能选择同一个处理人
-        group.roleObjs.map(obj => {
+        group.handleTemplates.map(obj => {
           if (obj.handler && item.handler !== obj.handler && item.role === obj.role) {
             handlerList = handlerList.filter(i => i.id !== obj.handler)
           }
@@ -594,11 +629,11 @@ export default {
         this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
         return
       }
-      if (!this.form.rootEntityId) {
+      if (!this.form.rootEntityId && this.detail.associationWorkflow) {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
-      // 请求表单数据整理
+      // 请求表单
       const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
       this.form.data =
         requestData.map(item => {
@@ -609,12 +644,8 @@ export default {
             }
           })
           if (Array.isArray(item.value)) {
-            // item.value = item.value.filter(j => {
-            //   return j.entityData._checked
-            // })
             // 删除多余的属性
             item.value.forEach(v => {
-              // delete v.entityData._checked
               refKeys.forEach(ref => {
                 delete v.entityData[ref + 'Options']
               })
@@ -628,7 +659,9 @@ export default {
           }
           return item
         }) || []
-      // 获取发布目标对象entityName
+      // 审批列表
+      this.form.approvalList = [...this.approvalList, ...this.taskList]
+      // 发布目标对象名称
       const item = this.rootEntityOptions.find(item => item.guid === this.form.rootEntityId) || {}
       this.form.entityName = item.key_name
       // 如果期望时间没有手动更改，提交时自动获取最新的
@@ -638,19 +671,26 @@ export default {
           .format('YYYY-MM-DD HH:mm:ss')
         this.initExpectTime = this.form.expectTime
       }
-      // 必填项校验提示
+      // 请求表单必填项-校验提示
       if (!this.requiredCheck(this.form.data)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
           desc: this.$t('required_tip')
         })
       }
-      // 表格至少勾选一条数据校验
+      // 请求表单至少有一条数据提交-校验提示
       const tabName = this.$refs.entityTable.activeTab
       if (!this.noChooseCheck(this.form.data)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
           desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
+      // 审批任务流程角色和用户必填校验
+      if (!this.approvalCheck(this.form.approvalList)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: '审批和任务流程用户和角色必填'
         })
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
@@ -733,6 +773,19 @@ export default {
         }
       })
       this.$refs.entityTable.validTable(tabIndex)
+      return result
+    },
+    approvalCheck (data) {
+      let result = true
+      data.forEach(i => {
+        if (i.handleTemplates && i.handleTemplates.length > 0) {
+          i.handleTemplates.forEach(j => {
+            if (!j.handler || !j.role) {
+              result = false
+            }
+          })
+        }
+      })
       return result
     }
   }

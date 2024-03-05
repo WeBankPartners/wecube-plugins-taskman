@@ -760,18 +760,32 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 func UpdateRequestStatus(requestId, status, operator, userToken, language, description string) error {
 	var err error
 	var request models.RequestTable
+	var requestTemplate *models.RequestTemplateTable
+	var bindCache string
 	nowTime := time.Now().Format(models.DateTimeFormat)
+	request, err = GetSimpleRequest(requestId)
+	if err != nil {
+		return err
+	}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+	if err != nil {
+		return err
+	}
+	if requestTemplate == nil {
+		return fmt.Errorf("requestId:%s is invalid", requestId)
+	}
 	if status == "Pending" {
-		bindData, bindErr := GetRequestPreBindData(requestId, userToken, language)
-		if bindErr != nil {
-			return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
+		if requestTemplate.ProcDefId != "" {
+			bindData, bindErr := GetRequestPreBindData(request, requestTemplate, userToken, language)
+			if bindErr != nil {
+				return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
+			}
+			bindCacheBytes, _ := json.Marshal(bindData)
+			bindCache = string(bindCacheBytes)
 		}
-		bindCacheBytes, _ := json.Marshal(bindData)
-		bindCache := string(bindCacheBytes)
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().HandleRequestCheck(request, operator, bindCache)
+		err = GetRequestService().HandleRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
-		request, err = GetSimpleRequest(requestId)
 		if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError
 			return err
@@ -1039,19 +1053,11 @@ func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestPar
 	return
 }
 
-func GetRequestPreBindData(requestId, userToken, language string) (result models.RequestCacheData, err error) {
-	var requestTable []*models.RequestTable
-	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requestTable)
-	if err != nil {
-		return result, fmt.Errorf("Try to query request fail,%s ", err.Error())
+func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.RequestTemplateTable, userToken, language string) (result models.RequestCacheData, err error) {
+	if request.Cache == "" {
+		return result, fmt.Errorf("Can not find request cache data with id:%s ", request.Id)
 	}
-	if len(requestTable) == 0 {
-		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
-	}
-	if requestTable[0].Cache == "" {
-		return result, fmt.Errorf("Can not find request cache data with id:%s ", requestId)
-	}
-	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTable[0].RequestTemplate}, userToken, language, "bind")
+	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(requestTemplate, userToken, language, "bind")
 	if processErr != nil {
 		return result, processErr
 	}
@@ -1071,7 +1077,7 @@ func GetRequestPreBindData(requestId, userToken, language string) (result models
 		}
 	}
 	var dataCache models.RequestPreDataDto
-	json.Unmarshal([]byte(requestTable[0].Cache), &dataCache)
+	json.Unmarshal([]byte(request.Cache), &dataCache)
 	entityOidMap := make(map[string][]string)
 	entityValueMap := make(map[string]*models.RequestCacheEntityValue)
 	for i, v := range dataCache.Data {
@@ -1097,7 +1103,7 @@ func GetRequestPreBindData(requestId, userToken, language string) (result models
 		}
 	}
 	var entityNodeBind []*models.EntityNodeBindQueryObj
-	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_item_template t2 on t1.form_template=t2.form_template where t1.request_template=?", requestTable[0].RequestTemplate).Find(&entityNodeBind)
+	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_item_template t2 on t1.form_template=t2.form_template where t1.request_template=?", requestTemplate.Id).Find(&entityNodeBind)
 	for _, v := range entityNodeBind {
 		if _, b := entityBindMap[v.NodeDefId]; b {
 			entityBindMap[v.NodeDefId] = append(entityBindMap[v.NodeDefId], v.ItemGroup)
@@ -1260,6 +1266,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	var requests []*models.RequestTable
 	var taskQueryList []*models.TaskQueryObj
 	var actions []*dao.ExecAction
+	var approvalList []*models.TaskTemplateDto
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
 		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
@@ -1285,6 +1292,10 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	taskQueryList, err = GetRequestTaskListV2(requestId)
 	if err != nil {
 		return
+	}
+	if requests[0].TaskApprovalCache != "" {
+		json.Unmarshal([]byte(requests[0].TaskApprovalCache), &approvalList)
+		result.ApprovalList = approvalList
 	}
 	result.Data = taskQueryList
 	return

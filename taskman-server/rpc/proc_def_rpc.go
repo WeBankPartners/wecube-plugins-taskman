@@ -38,7 +38,7 @@ const (
 	// pathSyncWorkflowUseRole
 	pathSyncWorkflowUseRole = "/platform/v1/public/process/definitions/syncUseRole"
 
-	baseUrl = "http://106.52.160.142:18080/"
+	baseUrl = "http://106.52.160.142:18080"
 )
 
 // QueryProcessDefinitionList 查询当前角色编排列表,并且根据属主角色进行过滤

@@ -72,26 +72,40 @@
               <FormItem :label="$t('task') + $t('description')">
                 <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
-              <FormItem :label="$t('process_result')" v-if="handleData.nextOption && handleData.nextOption.length > 0">
-                <span slot="label">
-                  {{ $t('process_result') }}
-                  <span style="color: #ed4014"> * </span>
-                </span>
-                <Select v-model="handleData.choseOption">
-                  <Option v-for="option in handleData.nextOption" :value="option" :key="option">{{ option }}</Option>
+              <!--处理结果(审批和编排类任务才有)-->
+              <FormItem v-if="['approve', 'implement_process'].includes(handleData.type)" required label="操作">
+                <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
+                  <!--审批枚举写死，编排类任务nextOptions下发-->
+                  <template v-if="handleData.type === 'implement_process'">
+                    <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
+                  </template>
+                  <template v-else-if="handleData.type === 'approve'">
+                    <Option v-for="option in nextOptions" :value="option" :key="option">{{ option }}</Option>
+                  </template>
                 </Select>
               </FormItem>
-              <FormItem :label="$t('process_comments')">
-                <Input v-model="handleData.comment" type="textarea" :maxlength="200" show-word-limit />
+              <!--处理结果(审批和编排类任务才有)-->
+              <FormItem v-if="['implement_custom', 'implement_process'].includes(handleData.type)" label="状态">
+                <Select v-model="handleData.taskHandleList[handleIndex].status">
+                  <Option v-for="option in statusList" :value="option" :key="option">{{ option }}</Option>
+                </Select>
+              </FormItem>
+              <!--处理意见(只有任务有)-->
+              <FormItem label="意见">
+                <Input
+                  v-model="handleData.taskHandleList[handleIndex].resultDesc"
+                  type="textarea"
+                  :maxlength="200"
+                  show-word-limit
+                />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
                 <UploadFile :id="handleData.id" :files="handleData.attachFiles" type="task"></UploadFile>
               </FormItem>
             </Form>
-            <div style="text-align: center">
-              <Button v-if="handleData.editable" @click="saveTaskData" type="info">{{ $t('save') }}</Button>
+            <div v-if="handleData.editable" style="text-align: center">
+              <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button>
               <Button
-                v-if="handleData.editable"
                 :disabled="handleData.nextOption && handleData.nextOption.length !== 0 && handleData.choseOption === ''"
                 @click="commitTaskData"
                 type="primary"
@@ -176,6 +190,7 @@ export default {
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       requestTemplate: this.$route.query.requestTemplate, // 请求模板ID
       requestId: this.$route.query.requestId, // 请求ID
+      handleId: this.$route.query.handleId,
       confirmRequestForm: {
         markTaskId: [], // 关注任务ID
         completeStatus: 'completed', // 请求完成状态completed、uncompleted
@@ -191,7 +206,23 @@ export default {
           label: '未完成/部分完成',
           value: 'uncompleted'
         }
-      ]
+      ],
+      nextOptions: ['同意', '拒绝', '退回'],
+      statusList: ['已完成', '未完成'],
+      handleIndex: 0 // 协同和并行审批，会有多个处理人，需要定位当前处理人的index（其余都是单人，默认为0）
+    }
+  },
+  watch: {
+    handleData: {
+      handler (val) {
+        if (val && this.handleId) {
+          const list = val.taskHandleList || []
+          // 审批的协同和并行涉及多人，工作台点击当前处理传handleId来确认当前编辑数据
+          this.handleIndex = list.findIndex(i => i.id === this.handleId)
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {

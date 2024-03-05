@@ -37,7 +37,7 @@
           <!--已发布-->
           <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
           <!--我的草稿-->
-          <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
+          <!-- <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane> -->
         </Tabs>
         <Card :bordered="false" dis-hover :padding="0" style="height:400px;">
           <template v-if="cardList.length">
@@ -185,8 +185,8 @@ export default {
           render: (h, params) => {
             return (
               <div style="display:flex;flex-direction:column">
-                <span>{params.row.handler}</span>
                 <span>{params.row.role}</span>
+                <span>{params.row.handler}</span>
               </div>
             )
           }

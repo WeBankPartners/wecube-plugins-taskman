@@ -60,11 +60,20 @@
                   </LimitSelect>
                   <Input
                     v-else-if="i.elementType === 'calculate'"
-                    v-model="value[i.name]"
+                    :value="i.routineExpression"
                     type="textarea"
                     :disabled="true"
                     style="width: calc(100% - 20px)"
                   ></Input>
+                  <DatePicker
+                    v-else-if="i.elementType === 'datePicker'"
+                    v-model="value[i.name]"
+                    format="yyyy-MM-dd"
+                    :disabled="i.isEdit === 'no' || formDisable"
+                    type="date"
+                    style="width: calc(100% - 20px)"
+                  >
+                  </DatePicker>
                 </FormItem>
               </Col>
             </Row>

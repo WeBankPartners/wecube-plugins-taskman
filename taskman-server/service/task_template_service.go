@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/WeBankPartners/go-common-lib/guid"
@@ -348,12 +347,10 @@ func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTempl
 	return actions, nil
 }
 
+// deleteProcTaskTemplateSql 删除任务模板,模板没有发布不能创建请求,所以只删除关联模板表
 func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, taskTemplateId string) ([]*dao.ExecAction, error) {
 	var actions []*dao.ExecAction
 	var formTemplateList []*models.FormTemplateTable
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
-	var formList []*models.FormTable
-	var deleteFormTemplateIds, deleteFormIds, deleteTaskHandleTemplateIds []string
 	// 查询任务模版
 	taskTemplate, err := s.taskTemplateDao.Get(taskTemplateId)
 	if err != nil {
@@ -375,35 +372,14 @@ func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, taskT
 	dao.X.SQL("select * from form_template where request_template = ? and task_template = ?", requestTemplateId, taskTemplateId).Find(&formTemplateList)
 	if len(formTemplateList) > 0 {
 		for _, formTemplate := range formTemplateList {
-			deleteFormTemplateIds = append(deleteFormTemplateIds, formTemplate.Id)
-			dao.X.SQL("select * from form where form_template = ?", formTemplate.Id).Find(&formList)
-			if len(formList) > 0 {
-				for _, form := range formList {
-					deleteFormIds = append(deleteFormIds, form.Id)
-				}
-			}
-			dao.X.SQL("select * from task_handle_tempalte where task_template = ?", formTemplate.Id).Find(&taskHandleTemplateList)
-			if len(taskHandleTemplateList) > 0 {
-				for _, taskHandleTemplate := range taskHandleTemplateList {
-					deleteTaskHandleTemplateIds = append(deleteTaskHandleTemplateIds, taskHandleTemplate.Id)
-				}
-			}
+			// 删除表单项模板表
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template WHERE form_template = ? ", Param: []interface{}{formTemplate.Id}})
 		}
 	}
-
-	// 删除任务表
-	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle WHERE task_handle_template in ('" + strings.Join(deleteTaskHandleTemplateIds, "','") + "')", Param: []interface{}{}})
 	// 删除任务处理模板表
-	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template WHERE id in ('" + strings.Join(deleteTaskHandleTemplateIds, "','") + "')", Param: []interface{}{}})
-
-	// 删除表单项
-
-	// 删除表单
-
-	// 删除表单项模板表
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template WHERE form_tempalte in ('" + strings.Join(deleteFormTemplateIds, "','") + "')", Param: []interface{}{}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template WHERE task_template = ? ", Param: []interface{}{taskTemplateId}})
 	// 删除表单模板表
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_tempalte WHERE task_template = ?", Param: []interface{}{taskTemplateId}})
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template WHERE task_template = ?", Param: []interface{}{taskTemplateId}})
 	// 删除任务模版表
 	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template WHERE id = ?", Param: []interface{}{taskTemplateId}})
 	return actions, nil

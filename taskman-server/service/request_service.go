@@ -784,7 +784,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 			bindCache = string(bindCacheBytes)
 		}
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().HandleRequestCheck(request, operator, bindCache)
+		err = GetRequestService().HandleRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
 		if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError

@@ -786,6 +786,8 @@ func (s *TaskTemplateService) genTaskTemplateIds(requestTemplateId, typ string) 
 
 func (s *TaskTemplateService) genTaskIdPrefix(typ string) (string, error) {
 	switch typ {
+	case string(models.TaskTypeSubmit):
+		return "su", nil
 	case string(models.TaskTypeCheck):
 		return "ch", nil
 	case string(models.TaskTypeApprove):
@@ -802,4 +804,8 @@ func (s *TaskTemplateService) genTaskIdPrefix(typ string) (string, error) {
 func (s *TaskTemplateService) getTaskTemplateHandler(requestTemplate string) (taskTemplateMap map[string]*models.TaskTemplateDto, err error) {
 	taskTemplateMap = make(map[string]*models.TaskTemplateDto)
 	return
+}
+
+func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplateAndType(requestTemplateId, templateType string) (list []*models.TaskTemplateTable, err error) {
+	return s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, templateType)
 }

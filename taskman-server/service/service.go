@@ -36,6 +36,8 @@ var (
 	taskTemplateService *TaskTemplateService
 	// 角色 service
 	roleService *RoleService
+	// 任务处理 service
+	taskHandleService *TaskHandleService
 )
 
 func New() (err error) {
@@ -78,6 +80,7 @@ func New() (err error) {
 	formTemplateService = &FormTemplateService{formTemplateDao: formTemplateDao, formItemTemplateDao: formItemTemplateDao, formDao: formDao}
 	formItemTemplateService = &FormItemTemplateService{formItemTemplateDao: formItemTemplateDao, formTemplateDao: formTemplateDao}
 	roleService = &RoleService{}
+	taskHandleService = &TaskHandleService{}
 	db = engine
 	return
 }
@@ -150,6 +153,11 @@ func GetRequestTemplateGroupService() *RequestTemplateGroupService {
 // GetFormItemTemplateService 获取表单项模板 service
 func GetFormItemTemplateService() *FormItemTemplateService {
 	return formItemTemplateService
+}
+
+// GetTaskHandleService 获取任务处理 service
+func GetTaskHandleService() *TaskHandleService {
+	return taskHandleService
 }
 
 // transaction 事务处理

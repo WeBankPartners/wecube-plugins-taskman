@@ -827,18 +827,10 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 
 func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userToken, language string) error {
 	var parentId string
-	var formTemplate *models.FormTemplateTable
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
-	}
-	formTemplate, err = s.formTemplateDao.QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, string(models.RequestFormTypeMessage))
-	if err != nil {
-		return err
-	}
-	if formTemplate == nil {
-		return fmt.Errorf("Please config request template form ")
 	}
 	if requestTemplateObj.Status == "confirm" {
 		return fmt.Errorf("Request template already confirm ")
@@ -857,18 +849,20 @@ func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userT
 		version = "v1"
 	}
 	// 调用编排新增
-	requestTemplateRoleList, err = s.requestTemplateRoleDao.QueryByRequestTemplateAndType(requestTemplateId, string(models.RolePermissionUse))
-	if err != nil {
-		return err
-	}
-	if len(requestTemplateRoleList) > 0 {
-		var userRoles []string
-		for _, roleTable := range requestTemplateRoleList {
-			userRoles = append(userRoles, roleTable.Role)
-		}
-		_, err = rpc.SyncWorkflowUseRole(models.SyncUseRoleParam{ProcDefId: requestTemplateObj.ProcDefId, UseRoles: userRoles}, userToken, language)
+	if requestTemplateObj.ProcDefId != "" {
+		requestTemplateRoleList, err = s.requestTemplateRoleDao.QueryByRequestTemplateAndType(requestTemplateId, string(models.RolePermissionUse))
 		if err != nil {
 			return err
+		}
+		if len(requestTemplateRoleList) > 0 {
+			var userRoles []string
+			for _, roleTable := range requestTemplateRoleList {
+				userRoles = append(userRoles, roleTable.Role)
+			}
+			_, err = rpc.SyncWorkflowUseRole(models.SyncUseRoleParam{ProcDefId: requestTemplateObj.ProcDefId, UseRoles: userRoles}, userToken, language)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	var actions []*dao.ExecAction

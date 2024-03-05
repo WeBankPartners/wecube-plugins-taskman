@@ -545,11 +545,6 @@ export default {
         refEntity: '',
         refPackageName: ''
       },
-      activeTag: {
-        // 正在编辑的组
-        itemGroupIndex: -1,
-        attrIndex: -1
-      },
       allEntityList: [],
       groupStyle: {
         custom: {
@@ -611,8 +606,12 @@ export default {
       newItem.id = 'c_' + idGlobal++
       newItem.title = newItem.title + idGlobal
       newItem.name = newItem.name + idGlobal
+      newItem.isActive = true
       this.specialId = newItem.id
       this.paramsChanged()
+      this.finalElement[0].attrs.forEach(item => {
+        item.isActive = false
+      })
       return newItem
     },
     paramsChanged () {
@@ -806,15 +805,11 @@ export default {
     },
     // 选中自定义表单项
     selectElement (itemIndex, eleIndex) {
-      if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {
-        this.finalElement[this.activeTag.itemGroupIndex].attrs[this.activeTag.attrIndex].isActive = false
-      }
-      this.activeTag = {
-        itemGroupIndex: itemIndex,
-        attrIndex: eleIndex
-      }
+      this.finalElement[itemIndex].attrs.forEach(item => {
+        item.isActive = false
+      })
+      this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
-      this.editElement.isActive = true
       this.openPanel = '1'
     },
     // 删除自定义表单项

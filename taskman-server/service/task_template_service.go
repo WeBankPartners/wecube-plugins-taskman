@@ -604,49 +604,20 @@ func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, typ, userTo
 	if requestTemplate == nil {
 		return nil, errors.New("no request_template record found")
 	}
-	var result *models.TaskTemplateDto
-	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
-		// 编排任务
-		// 查询任务模板
-		taskTemplate, err := s.taskTemplateDao.GetProc(requestTemplateId, id)
-		if err != nil {
-			return nil, err
-		}
-		if taskTemplate != nil {
-			result, err = s.genTaskTemplateDto(taskTemplate.Id)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			// 查询任务节点
-			nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
-			if err != nil {
-				return nil, err
-			}
-			for i, node := range nodeList {
-				if node.NodeDefId == id {
-					result = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
-					break
-				}
-			}
-			if result == nil {
-				return nil, errors.New("proc task template not found")
-			}
-		}
-	} else {
-		// 其他类型
-		// 查询任务模板
-		taskTemplate, err := s.taskTemplateDao.Get(id)
-		if err != nil {
-			return nil, err
-		}
-		if taskTemplate == nil {
-			return nil, errors.New("no task_template record found")
-		}
-		result, err = s.genTaskTemplateDto(taskTemplate.Id)
-		if err != nil {
-			return nil, err
-		}
+	// 查询任务模板
+	taskTemplate, err := s.taskTemplateDao.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	if taskTemplate == nil {
+		return nil, errors.New("no task_template record found")
+	}
+	if taskTemplate.RequestTemplate != requestTemplateId || taskTemplate.Type != typ {
+		return nil, errors.New("param requestTemplate or type wrong")
+	}
+	result, err := s.genTaskTemplateDto(taskTemplate.Id)
+	if err != nil {
+		return nil, err
 	}
 	return result, nil
 }

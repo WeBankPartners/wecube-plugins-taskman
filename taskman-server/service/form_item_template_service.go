@@ -15,7 +15,7 @@ type FormItemTemplateService struct {
 	formTemplateDao     *dao.FormTemplateDao
 }
 
-func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
+func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
 	var formTemplate *models.FormTemplateTable
 	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
 	var formItemTemplateList []*models.FormItemTemplateTable
@@ -52,6 +52,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 			}
 		}
 	} else {
+		param.TaskTemplateId = formTemplate.TaskTemplate
 		// 直接更新表单组
 		formTemplate.ItemGroupName = param.ItemGroupName
 		formTemplate.ItemGroup = param.ItemGroup
@@ -75,6 +76,22 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, param.FormTemplateId))
 			}
 		}
+		// 如果有 taskTemplateId, customItems展示的都是数据表单的 customItems数据,需要做一层转换
+		if param.TaskTemplateId != "" {
+			for _, customItem := range param.CustomItems {
+				exist := false
+				for _, formItem := range formItemTemplateList {
+					if customItem.Id == formItem.RefId {
+						customItem = models.ConvertFormItemTemplateModel2Dto(formItem, *formTemplate)
+						exist = true
+					}
+				}
+				if !exist {
+					// 将 refId 指向 Id
+					customItem.RefId = customItem.Id
+				}
+			}
+		}
 		for _, customItem := range param.CustomItems {
 			customItemExist = false
 			if customItem.Id != "" {
@@ -93,9 +110,8 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 			if !customItemExist {
 				customItem.Id = guid.CreateGuid()
 				customItem.FormTemplate = param.FormTemplateId
-				if customItem.FormTemplate == "" {
-					customItem.FormTemplate = param.FormTemplateId
-				}
+				customItem.ItemGroup = formTemplate.ItemGroup
+				customItem.ItemGroupName = formTemplate.ItemGroupName
 				insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(customItem))
 			}
 		}
@@ -155,7 +171,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.
 	return
 }
 
-func (s FormItemTemplateService) CalcItemGroupSort(requestTemplateId, taskTemplateId string) int {
+func (s *FormItemTemplateService) CalcItemGroupSort(requestTemplateId, taskTemplateId string) int {
 	var max = 0
 	// 如果任务模板ID,则只查询数据模板
 	list, err := s.formTemplateDao.QueryListByRequestTemplateAndTaskTemplate(requestTemplateId, taskTemplateId, string(models.RequestFormTypeData))
@@ -173,7 +189,7 @@ func (s FormItemTemplateService) CalcItemGroupSort(requestTemplateId, taskTempla
 	return max + 1
 }
 
-func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTemplateGroupCustomDataDto) (err error) {
+func (s *FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTemplateGroupCustomDataDto) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
 	var exist bool
@@ -241,7 +257,7 @@ func (s FormItemTemplateService) UpdateFormTemplateItemGroup(param models.FormTe
 	return
 }
 
-func (s FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId string) (err error) {
+func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateId, formTemplateId, taskTemplateId string) (err error) {
 	var formItemTemplateList []*models.FormItemTemplateTable
 	var formTemplate *models.FormTemplateTable
 	var newItemGroupId string

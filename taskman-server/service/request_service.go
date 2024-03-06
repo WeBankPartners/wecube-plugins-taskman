@@ -26,7 +26,7 @@ type RequestService struct {
 
 var (
 	requestIdLock   = new(sync.RWMutex)
-	templateTypeArr = []int{1, 0} // 模版类型: 1表示发布,0表示请求
+	templateTypeArr = []int{int(models.SceneTypeRelease), int(models.SceneTypeRequest)} // 模版类型: 1表示请求,2表示发布
 )
 
 func GetEntityData(requestId, userToken, language string) (result models.EntityQueryResult, err error) {

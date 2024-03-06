@@ -29,16 +29,37 @@ const (
 	InternallyTerminated = "internallyTerminated" // 手动终止
 )
 
+func getTaskTypeByType(uiType int) models.TaskType {
+	// 0 所有,1表示请求定版,2 任务处理,3 审批 4确认请求
+	switch uiType {
+	case 1:
+		return models.TaskTypeCheck
+	case 2:
+		return models.TaskTypeImplement
+	case 3:
+		return models.TaskTypeApprove
+	case 4:
+		return models.TaskTypeConfirm
+	}
+	return models.TaskTypeCheck
+}
+
 // GetRequestCount 工作台请求统计
 func GetRequestCount(user string, userRoles []string) (platformData models.PlatformData, err error) {
-	var pendingTask, pendingApprove, requestPending, requestConfirm, pending []string
-	pendingTask, pendingApprove, requestPending, requestConfirm, pending = GetPendingCount(userRoles)
+	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending []string
+	var hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed []string
+	pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCount(userRoles)
+	hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed = GetHasProcessedCount(user)
 	platformData.Pending = strings.Join(pending, ";")
 	platformData.PendingTask = strings.Join(pendingTask, ";")
 	platformData.PendingApprove = strings.Join(pendingApprove, ";")
-	platformData.RequestPending = strings.Join(requestPending, ";")
-	platformData.RequestConfirm = strings.Join(requestConfirm, ";")
-	platformData.HasProcessed = strings.Join(GetHasProcessedCount(user), ";")
+	platformData.PendingCheck = strings.Join(pendingCheck, ";")
+	platformData.PendingConfirm = strings.Join(pendingConfirm, ";")
+	platformData.HasProcessed = strings.Join(hasProcessed, ";")
+	platformData.HasProcessedTask = strings.Join(hasProcessedTask, ";")
+	platformData.HasProcessedApprove = strings.Join(hasProcessedApprove, ";")
+	platformData.HasProcessedCheck = strings.Join(hasProcessedCheck, ";")
+	platformData.HasProcessedConfirm = strings.Join(hasProcessedConfirm, ";")
 	platformData.Submit = strings.Join(GetSubmitCount(user), ";")
 	platformData.Draft = strings.Join(GetDraftCount(user), ";")
 	platformData.Collect = strings.Join(GetCollectCount(user), ";")
@@ -68,65 +89,41 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 	return
 }
 
-// GetPendingCount 统计待处理,包括:(1)待定版 (2)任务待审批 分配给本组、本人的所有请求,此处按照角色去统计
-func GetPendingCount(userRoles []string) (pendingTask, pendingApprove, requestPending, requestConfirm, pending []string) {
+// GetPendingCount 统计待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
+func GetPendingCount(userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending []string) {
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
-	var requestQueryParam, taskQueryParam, approveQueryParam, requestConfirmQueryParam []interface{}
-	var roleFilterList []string
-	var requestSQL, taskSQL, approveSQL, requestConfirmSQL string
-	var requestSQLCount, taskSQLCount, approveSQLCount, requestConfirmSQLCount int
-	roleFilterSql := "1=1"
-	if len(userRoles) > 0 {
-		for _, v := range userRoles {
-			roleFilterList = append(roleFilterList, "report_role like '%,"+v+",%'")
-		}
-		roleFilterSql = strings.Join(roleFilterList, " or ")
-	}
+	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
+	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
+	var pTaskCount, pendingApproveCount, pendingCheckCount, pendingConfirmCount int
 	for i := 0; i < len(templateTypeArr); i++ {
-		requestSQL, requestQueryParam = pendingRequestSQL(templateTypeArr[i], string(models.RequestStatusPending), userRolesFilterSql, userRolesFilterParam)
-		taskSQL, taskQueryParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, roleFilterSql)
-		approveSQL, approveQueryParam = pendingRequestSQL(templateTypeArr[i], string(models.RequestStatusInApproval), userRolesFilterSql, userRolesFilterParam)
-		requestConfirmSQL, requestConfirmQueryParam = pendingRequestSQL(templateTypeArr[i], string(models.RequestStatusConfirm), userRolesFilterSql, userRolesFilterParam)
-		requestSQLCount = dao.QueryCount(requestSQL, requestQueryParam...)
-		taskSQLCount = dao.QueryCount(taskSQL, taskQueryParam...)
-		approveSQLCount = dao.QueryCount(approveSQL, approveQueryParam...)
-		requestConfirmSQLCount = dao.QueryCount(requestConfirmSQL, requestConfirmQueryParam...)
-		requestPending = append(requestPending, strconv.Itoa(requestSQLCount))
-		pendingTask = append(pendingTask, strconv.Itoa(taskSQLCount))
-		pendingApprove = append(pendingApprove, strconv.Itoa(approveSQLCount))
-		requestConfirm = append(requestConfirm, strconv.Itoa(requestConfirmSQLCount))
-		pending = append(pending, strconv.Itoa(requestSQLCount+approveSQLCount+requestConfirmSQLCount+taskSQLCount))
+		pTaskSQL, pendingTaskParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+		pTaskCount = dao.QueryCount(pTaskSQL, pendingTaskParam...)
+		pendingTask = append(pendingTask, strconv.Itoa(pTaskCount))
+
+		pendingApproveSQL, pendingApproveParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+		pendingApproveCount = dao.QueryCount(pendingApproveSQL, pendingApproveParam)
+		pendingApprove = append(pendingApprove, strconv.Itoa(pendingApproveCount))
+
+		pendingCheckSQL, pendingCheckParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+		pendingCheckCount = dao.QueryCount(pendingCheckSQL, pendingCheckParam)
+		pendingCheck = append(pendingCheck, strconv.Itoa(pendingCheckCount))
+
+		pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+		pendingConfirmCount = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam)
+		pendingConfirm = append(pendingConfirm, strconv.Itoa(pendingConfirmCount))
+
+		pending = append(pending, strconv.Itoa(pTaskCount+pendingApproveCount+pendingCheckCount+pendingConfirmCount))
 	}
 	return
 }
 
-func pendingRequestSQL(templateType int, status, userRolesFilterSql string, userRolesFilterParam []interface{}) (sql string, queryParam []interface{}) {
+/*func pendingRequestSQL(templateType int, status, userRolesFilterSql string, userRolesFilterParam []interface{}) (sql string, queryParam []interface{}) {
 	sql = "select id from request where del_flag = 0 and status = ? and type = ? and request_template in (select id " +
 		"from request_template where  id in (select request_template from request_template_role where role_type= 'MGMT' " +
 		"and `role` in (" + userRolesFilterSql + "))) "
 	queryParam = append([]interface{}{status, templateType}, userRolesFilterParam...)
 	return
-}
-
-func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, roleFilterSql string) (sql string, queryParam []interface{}) {
-	sql = fmt.Sprintf("select id from task where del_flag = 0 and status <> 'done' and template_type = ? and task_template "+
-		"in (select task_template from task_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+")"+
-		" union select id from task where task_template is null and (%s) and del_flag=0 and template_type = ?)", roleFilterSql)
-	queryParam = append(append([]interface{}{templateType}, userRolesFilterParam...), templateType)
-	return
-}
-
-// GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
-func GetHasProcessedCount(user string) (resultArr []string) {
-	var requestSQL, taskSQL string
-	var requestQueryParam, taskQueryParam []interface{}
-	for i := 0; i < len(templateTypeArr); i++ {
-		requestSQL, requestQueryParam = hasProcessedRequestSQL(templateTypeArr[i], user)
-		taskSQL, taskQueryParam = hasProcessedTaskSQL(templateTypeArr[i], user)
-		resultArr = append(resultArr, strconv.Itoa(dao.QueryCount(requestSQL, requestQueryParam...)+dao.QueryCount(taskSQL, taskQueryParam...)))
-	}
-	return
-}
+}*/
 
 func hasProcessedRequestSQL(templateType int, user string) (sql string, queryParam []interface{}) {
 	sql = "select id from request where del_flag= 0 and type = ? and handler = ?  and status not in ('Pending','Draft') " +
@@ -135,9 +132,50 @@ func hasProcessedRequestSQL(templateType int, user string) (sql string, queryPar
 	return
 }
 
-func hasProcessedTaskSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+/*func hasProcessedTaskSQL(templateType int, user string) (sql string, queryParam []interface{}) {
 	sql = "select id from task where handler= ? and del_flag = 0 and status ='done' and template_type = ? and request is not null"
 	queryParam = append([]interface{}{user, templateType})
+	return
+}*/
+
+func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
+	queryParam = []interface{}{}
+	sql = "select * from (select t.id as task_id,t.template_type as task_template_type,t.name as task_name,t.type as task_type,t.report_time as task_created_time,th.updated_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,th.role as task_handle_role,th.handler as task_handler,t.del_flag as task_del_flag from task t right join task_handle th ON t.id = th.task) tha where task_del_flag = 0 and task_status <> 'done' and task_template_type = ? and task_type = ? and task_handle_role in (" + userRolesFilterSql + ")"
+	queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
+	return
+}
+
+func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
+	queryParam = []interface{}{}
+	sql = "select * from (select t.id as task_id,t.template_type as task_template_type,t.name as task_name,t.type as task_type,t.report_time as task_created_time,th.updated_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,th.role as task_handle_role,th.handler as task_handler,t.del_flag as task_del_flag from task t right join task_handle th ON t.id = th.task) tha where task_del_flag = 0 and task_status = 'done' and task_template_type = ? and task_type = ? and task_handler =?"
+	queryParam = append([]interface{}{templateType, taskType, user})
+	return
+}
+
+// GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
+func GetHasProcessedCount(user string) (hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed []string) {
+	var hasProcessedTaskParam, hasProcessedApproveParam, hasProcessedCheckParam, hasProcessedConfirmParam []interface{}
+	var hpTaskSQL, hasProcessedApproveSQL, hasProcessedCheckSQL, hasProcessedConfirmSQL string
+	var hpTaskCount, hasProcessedApproveCount, hasProcessedCheckCount, hasProcessedConfirmCount int
+	for i := 0; i < len(templateTypeArr); i++ {
+		hpTaskSQL, hasProcessedTaskParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeImplement)
+		hpTaskCount = dao.QueryCount(hpTaskSQL, hasProcessedTaskParam...)
+		hasProcessedTask = append(hasProcessedTask, strconv.Itoa(hpTaskCount))
+
+		hasProcessedApproveSQL, hasProcessedApproveParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeApprove)
+		hasProcessedApproveCount = dao.QueryCount(hasProcessedApproveSQL, hasProcessedApproveParam...)
+		hasProcessedApprove = append(hasProcessedApprove, strconv.Itoa(hasProcessedApproveCount))
+
+		hasProcessedCheckSQL, hasProcessedCheckParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeCheck)
+		hasProcessedCheckCount = dao.QueryCount(hasProcessedCheckSQL, hasProcessedCheckParam...)
+		hasProcessedCheck = append(hasProcessedCheck, strconv.Itoa(hasProcessedCheckCount))
+
+		hasProcessedConfirmSQL, hasProcessedConfirmParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeConfirm)
+		hasProcessedConfirmCount = dao.QueryCount(hasProcessedConfirmSQL, hasProcessedConfirmParam...)
+		hasProcessedConfirm = append(hasProcessedConfirm, strconv.Itoa(hasProcessedConfirmCount))
+
+		hasProcessed = append(hasProcessed, strconv.Itoa(hpTaskCount+hasProcessedApproveCount+hasProcessedCheckCount+hasProcessedConfirmCount))
+	}
 	return
 }
 
@@ -205,41 +243,24 @@ func collectSQL(templateType int, user string) (sql string, queryParam []interfa
 // DataList 首页工作台数据列表
 func DataList(param *models.PlatformRequestParam, userRoles []string, userToken, user, language string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
 	// 先拼接查询条件
-	var templateType int
 	var sql string
 	var queryParam []interface{}
+	var taskType = getTaskTypeByType(param.Type)
 	where := transPlatConditionToSQL(param)
-	if param.Action == 1 {
-		templateType = 1
-	} else if param.Action == 2 {
-		templateType = 0
-	}
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	switch param.Tab {
 	case "pending":
-		var roleFilterList []string
-		roleFilterSql := "1=1"
-		if len(userRoles) > 0 {
-			for _, v := range userRoles {
-				roleFilterList = append(roleFilterList, "report_role like '%,"+v+",%'")
-			}
-			roleFilterSql = strings.Join(roleFilterList, " or ")
-		}
-		sql, queryParam = pendingTaskSQL(templateType, userRolesFilterSql, userRolesFilterParam, roleFilterSql)
+		sql, queryParam = pendingTaskSQL(param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
 		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 		return
 	case "hasProcessed":
-		if param.Type == 1 {
-			sql, queryParam = hasProcessedRequestSQL(templateType, user)
-		} else if param.Type == 2 {
-			sql, queryParam = hasProcessedTaskSQL(templateType, user)
-			pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
-			return
-		}
+		sql, queryParam = hasProcessedTaskSQL(param.Action, user, taskType)
+		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
+		return
 	case "submit":
-		sql, queryParam = submitSQL(param.Rollback, templateType, user)
+		sql, queryParam = submitSQL(param.Rollback, param.Action, user)
 	case "draft":
-		sql, queryParam = draftSQL(templateType, user)
+		sql, queryParam = draftSQL(param.Action, user)
 	default:
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
@@ -850,19 +871,19 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: RequestPending, Handler: pendingHandler})
 	}
 	/*approvalTemplateList, err = GetApprovalTemplateService().ListApprovalTemplates(requestTemplate.Id)
-	if len(approvalTemplateList) > 0 {
-		rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: Approval, Handler: ""})
-		approvalList, err = GetApprovalService().ListApprovals(requestId)
-		// 新建请求还未创建审批
-		if len(approvalList) == 0 {
+	  if len(approvalTemplateList) > 0 {
+	  	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: Approval, Handler: ""})
+	  	approvalList, err = GetApprovalService().ListApprovals(requestId)
+	  	// 新建请求还未创建审批
+	  	if len(approvalList) == 0 {
 
-		}
-	}*/
+	  	}
+	  }*/
 	// 任务进度
 	/*taskTemplateList, err = GetTaskTemplateService().ListTaskTemplates(requestTemplate.Id)
-	if len(taskTemplateList) > 0 {
-		rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: Task, Handler: ""})
-	}*/
+	  if len(taskTemplateList) > 0 {
+	  	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: Task, Handler: ""})
+	  }*/
 	// 请求完成
 	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{
 		Node:    RequestComplete,
@@ -1088,12 +1109,12 @@ func RequestConfirm(param models.RequestConfirmParam, user string) (err error) {
 		}
 	}
 	// 更新请求确认任务设置为已完成
-	action = &dao.ExecAction{Sql: "update task set status = ?,updated_by = ?,updated_time = ? where id = ?"}
-	action.Param = []interface{}{models.TaskStatusDone, user, now, param.TaskId}
+	action = &dao.ExecAction{Sql: "update task set status = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?"}
+	action.Param = []interface{}{models.TaskStatusDone, param.Notes, user, now, param.TaskId}
 	actions = append(actions, action)
 	// 更新请求表状态,设置为完成
-	action = &dao.ExecAction{Sql: "update request set status = ?,notes = ?,updated_by = ?,updated_time= ? where id = ?"}
-	action.Param = []interface{}{models.RequestStatusCompleted, param.Notes, user, now, param.Id}
+	action = &dao.ExecAction{Sql: "update request set status = ?,complete_status = ?,updated_by = ?,updated_time= ? where id = ?"}
+	action.Param = []interface{}{models.RequestStatusCompleted, param.CompleteStatus, user, now, param.Id}
 	actions = append(actions, action)
 	err = dao.Transaction(actions)
 	return
@@ -1131,6 +1152,14 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	if err != nil {
 		return err
 	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate is empty")
+		return
+	}
+	if requestTemplate.ProcDefId != "" {
+		// 关联编排
+		request.AssociationWorkflow = true
+	}
 	submitTaskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplateAndType(requestTemplate.Id, string(models.TaskTypeSubmit))
 	if err != nil {
 		return
@@ -1141,8 +1170,8 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	}
 	// 新增提交请求任务
 	submitTaskId := "su_" + guid.CreateGuid()
-	action = &dao.ExecAction{Sql: "insert into task(id,name,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{submitTaskId, "submit", models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, "system", now, "system", now}
+	action = &dao.ExecAction{Sql: "insert into task(id,name,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{submitTaskId, "submit", request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, "system", now, "system", now}
 	actions = append(actions, action)
 
 	// 新增提交请求处理人
@@ -1165,15 +1194,16 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		if len(checkTaskTemplateList) == 0 {
 			err = fmt.Errorf("taskTemplate not find check template")
 		}
-		action = &dao.ExecAction{Sql: "insert into task(id,name,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
-		action.Param = []interface{}{checkTaskId, "check", models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, now, operator, now}
+		checkTime := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
+		action = &dao.ExecAction{Sql: "insert into task(id,name,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+		action.Param = []interface{}{checkTaskId, "check", request.Type, models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, checkTime, operator, checkTime}
 		actions = append(actions, action)
 
 		// 新增确认定版处理人
 		dao.X.SQL("select * from task_handle_template where task_template = ?", checkTaskTemplateList[0].Id).Find(&taskHandleTemplateList)
 		if len(taskHandleTemplateList) > 0 {
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, now, now}
+			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, checkTime, checkTime}
 			actions = append(actions, action)
 		}
 		err = dao.Transaction(actions)
@@ -1206,7 +1236,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 	}
 	// 没有审批,直接跳过到下一步,到任务
 	if len(taskTemplateList) == 0 {
-		return s.HandleRequestTask(request)
+		return s.HandleRequestTask(request, userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
 		dao.X.SQL("select * form task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
@@ -1223,15 +1253,15 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 			newTaskId = "ap_" + guid.CreateGuid()
 			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
-				action = &dao.ExecAction{Sql: "insert into task (id,name,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+				action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 				actions = append(actions, action)
 				continue
 			}
 
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
 			// 新增任务处理表
@@ -1255,25 +1285,92 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.HandleRequestTask(request)
+	return s.HandleRequestTask(request, userToken, language)
 }
 
 // HandleRequestTask 处理任务
-func (s *RequestService) HandleRequestTask(request models.RequestTable) (actions []*dao.ExecAction, err error) {
+func (s *RequestService) HandleRequestTask(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
+	var taskList []*models.TaskTable
+	var newTaskId string
+	var action *dao.ExecAction
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
-	err = dao.X.SQL("select * form task_template where request_template = ? and handle_model = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
+	if request.AssociationWorkflow && request.ProcInstanceId == "" {
+		// 关联编排,调用编排启动
+		return
+	}
+	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeImplement)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
+	// 没有任务,直接跳过到下一步,到请求确认
 	if len(taskTemplateList) == 0 {
-
+		return s.HandleRequestConfirm(request)
 	}
-	return
+	for _, taskTemplate := range taskTemplateList {
+		dao.X.SQL("select * form task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		if len(taskList) > 0 {
+			// 取最新的任务
+			if taskList[0].Status == string(models.TaskStatusDone) {
+				// 任务已完成,continue
+				continue
+			}
+			// 任务状态未完成,break等待当前任务处理完
+			break
+		} else {
+			// 模版没有对应的的任务,需要创建当前任务
+			newTaskId = "im_" + guid.CreateGuid()
+			// 新增任务
+			action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+			actions = append(actions, action)
+
+			// 新增任务处理表
+			dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
+			if len(taskHandleTemplateList) > 0 {
+				// 根据任务审批模版表&请求人指定,设置审批处理
+				for _, taskHandleTemplate := range taskHandleTemplateList {
+					createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate, taskHandleTemplate)
+					if len(createTaskHandleAction) > 0 {
+						actions = append(actions, createTaskHandleAction...)
+					}
+				}
+			}
+
+			// 更新请求表为审批状态
+			actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusInProgress), now, request.Id}})
+			err = dao.Transaction(actions)
+			return
+		}
+	}
+	// 所有审批都处理完成,走请求任务处理
+	return s.HandleRequestConfirm(request)
 }
 
 // HandleRequestConfirm 处理请求确认
 func (s *RequestService) HandleRequestConfirm(request models.RequestTable) (actions []*dao.ExecAction, err error) {
-
+	var newTaskId string
+	var action *dao.ExecAction
+	var taskTemplateList []*models.TaskTemplateTable
+	actions = []*dao.ExecAction{}
+	now := time.Now().Format(models.DateTimeFormat)
+	// 创建请求确认任务
+	newTaskId = "co_" + guid.CreateGuid()
+	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)
+	if err != nil {
+		return
+	}
+	if len(taskTemplateList) == 0 {
+		err = fmt.Errorf("taskTemplate not find confirm template")
+		return
+	}
+	// 新增任务
+	action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,status,request,task_template,type,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{newTaskId, "confirm", request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0], models.TaskTypeConfirm, "system", now}
+	actions = append(actions, action)
+	// 更新请求表状态为请求确认
+	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})
 	return
 }

@@ -19,10 +19,10 @@
               />
             </div>
             <Button
+              class="custom-add-btn"
               @click.stop="addApprovalNode(approval.sort + 1)"
               type="success"
               size="small"
-              ghost
               shape="circle"
               icon="md-add"
             ></Button>
@@ -1109,6 +1109,9 @@ fieldset[disabled] .ivu-input {
 }
 </style>
 <style lang="scss" scoped>
+.custom-add-btn > .ivu-icon {
+  vertical-align: middle !important;
+}
 .ivu-form-item {
   margin-bottom: 16px;
 }

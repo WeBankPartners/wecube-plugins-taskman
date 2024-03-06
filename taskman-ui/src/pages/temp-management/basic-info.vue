@@ -346,7 +346,7 @@ export default {
           desc: this.$t('successful')
         })
         if (isGoToNext) {
-          this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
+          this.$emit('gotoNextStep', data.id)
         } else {
           this.loadPage(data.id)
         }

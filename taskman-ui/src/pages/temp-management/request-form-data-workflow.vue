@@ -221,6 +221,7 @@ export default {
     async saveGroupDrawer () {
       let finalData = JSON.parse(JSON.stringify(this.group))
       finalData.systemItems = finalData.systemItems.filter(system => system.active === true)
+      finalData.customItems = finalData.customItems.filter(custom => custom.active === true)
       const { statusCode } = await saveRequestGroupForm(finalData)
       if (statusCode === 'OK') {
         this.$Notice.success({

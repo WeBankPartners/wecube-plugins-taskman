@@ -600,7 +600,8 @@ export default {
     color: rgb(33, 42, 119);
   }
   .even_span {
-    color: rgb(39, 25, 17);
+    color: #515a6e;
+    line-height: 30px;
   }
   button {
     border: none;

@@ -37,7 +37,12 @@
             :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
           ></TaskFormNode>
         </div>
-        <Divider />
+        <div class="title" style="font-size: 16px;">
+          <div class="title-text">
+            {{ $t('表单配置') }}
+            <span class="underline"></span>
+          </div>
+        </div>
         <div>
           <Row>
             <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
@@ -95,7 +100,7 @@
                     >
                       <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
                       <span @click="editGroupCustomItems(groupItem)">
-                        {{ `${groupItem.itemGroup}` }}
+                        {{ `${groupItem.itemGroupName}` }}
                       </span>
                       <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
                     </div>
@@ -129,7 +134,9 @@
                           <div
                             class="custom-title"
                             :style="
-                              ['calculate', 'textarea'].includes(element.elementType) ? 'vertical-align: top;' : ''
+                              ['calculate', 'textarea'].includes(element.elementType)
+                                ? 'vertical-align: top;word-break: break-all;'
+                                : ''
                             "
                           >
                             <Icon
@@ -193,7 +200,7 @@
                     <span class="underline"></span>
                   </div>
                 </div>
-                <div style="margin-top: 24px;">
+                <div style="margin: 12px 0 0 8px;">
                   <Form :label-width="90">
                     <FormItem v-if="procDefId !== ''" :label="$t('判断分支')">
                       <Select style="width: 94%;">
@@ -213,9 +220,9 @@
                   </Form>
                 </div>
               </div>
-              <Modal v-model="showSelectModel" title="选择组信息" :mask-closable="false">
+              <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
                 <Form :label-width="120">
-                  <FormItem :label="$t('选择组')">
+                  <FormItem :label="$t('全局请求表单')">
                     <Select style="width: 80%" v-model="itemGroup" filterable>
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
                         item.itemGroupName
@@ -387,6 +394,7 @@
       <!-- 编排表单配置 -->
       <RequestFormDataWorkflow
         ref="requestFormDataWorkflowRef"
+        :isCustomItemEditable="false"
         @reloadParentPage="loadPage"
         module="other"
         v-show="['workflow', 'optional'].includes(itemGroupType)"
@@ -898,6 +906,7 @@ export default {
           attrs: groupItem.items || []
         }
       ]
+      this.openPanel = ''
     },
     // 编辑组弹出信息
     editGroupItem (groupItem) {
@@ -1120,7 +1129,7 @@ fieldset[disabled] .ivu-input {
 .title {
   font-size: 14px;
   font-weight: bold;
-  margin: 0 10px;
+  margin: 12px 0;
   display: inline-block;
   .title-text {
     display: inline-block;
@@ -1197,7 +1206,6 @@ fieldset[disabled] .ivu-input {
   height: 32px;
   line-height: 32px;
   display: inline-block;
-  border: 1px solid #e8eaec;
   border-radius: 3px;
   background: #2d8cf0;
   font-size: 12px;

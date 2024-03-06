@@ -7,16 +7,16 @@
       </div>
     </div>
     <div>
-      <Form ref="formInline" inline :label-width="120">
+      <Form ref="formInline" inline :label-width="100">
         <FormItem :label="$t('name')">
           <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 94%;"> </Input>
           <span style="color: red">*</span>
-          <span v-if="activeApprovalNode.name === ''" style="color: red"
-            >{{ $t('name') }}{{ $t('can_not_be_empty') }}</span
-          >
+          <div v-if="activeApprovalNode.name === ''" style="color: red">
+            {{ $t('name') }}{{ $t('can_not_be_empty') }}
+          </div>
         </FormItem>
         <FormItem label="时效">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 94%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 85%;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -32,15 +32,9 @@
           </Input>
         </FormItem>
       </Form>
-      <Form ref="formInline" inline :label-width="120">
+      <Form ref="formInline" inline :label-width="100">
         <FormItem label="分配">
-          <Select
-            v-model="activeApprovalNode.handleMode"
-            clearable
-            @on-change="changeRoleType"
-            filterable
-            style="width: 94%;"
-          >
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" filterable style="width: 85%;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -148,7 +142,7 @@ export default {
         name: '审批1',
         expireDay: 1,
         description: '',
-        handleMode: 'auto',
+        handleMode: 'custom',
         handleTemplates: [
           {
             assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
@@ -370,7 +364,7 @@ fieldset[disabled] .ivu-input {
 .title {
   font-size: 16px;
   font-weight: bold;
-  margin: 0 10px;
+  margin: 12px 0;
   display: inline-block;
   .title-text {
     display: inline-block;

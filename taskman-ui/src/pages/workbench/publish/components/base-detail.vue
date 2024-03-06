@@ -152,7 +152,7 @@
               :hide-arrow="index === 0 ? true : false"
             >
               <!--提交请求-->
-              <template v-if="index === 0">
+              <template v-if="data.type === 'submit'">
                 <div class="custom-panel">
                   <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
                   <HeaderTag
@@ -161,6 +161,13 @@
                     :data="data"
                     :operation="$t('tw_submit_approval')"
                   ></HeaderTag>
+                </div>
+              </template>
+              <!--请求撤回-->
+              <template v-if="data.type === 'revoke'">
+                <div class="custom-panel">
+                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" operation="请求撤回"></HeaderTag>
                 </div>
               </template>
               <!--请求定版-->
@@ -193,29 +200,21 @@
                   <EntityTable :data="data.formData" :requestId="requestId" :formDisable="true"></EntityTable>
                 </div>
               </template>
+              <!--请求确认-->
               <template v-else-if="data.type === 'confirm'">
                 <div class="custom-panel">
                   <div class="custom-panel-title">请求确认</div>
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
-                  <!-- <Form :label-width="80" label-position="left">
+                  <Form :label-width="80" label-position="left">
                     <FormItem label="请求状态">
-                      <Select v-model="confirmRequestForm.completeStatus">
-                        <Option v-for="(i, index) in completeStatusList" :value="i.value" :key="index">{{ i.label }}</Option>
-                      </Select>
+                      <Input disabled value="未完成" />
                     </FormItem>
-                    <template v-if="confirmRequestForm.completeStatus === 'uncompleted'">
-                      <FormItem label="未完成任务节点">
-                        <Select v-model="confirmRequestForm.markTaskId" multiple clearable>
-                          <Option v-for="i in taskTagList" :value="i.id" :key="i.id">{{ i.name }}</Option>
-                        </Select>
-                      </FormItem>
-                    </template>
-                    <FormItem :label="$t('process_comments')">
-                      <Input v-model="confirmRequestForm.notes" disabled type="textarea" :maxlength="200" show-word-limit />
+                    <FormItem label="未完成任务节点">
+                      <Input disabled :value="uncompletedTasks.join(', ')" />
                     </FormItem>
-                  </Form> -->
+                  </Form>
                 </div>
               </template>
             </Panel>
@@ -291,9 +290,10 @@ export default {
       rootEntityOptions: [],
       historyData: [], // 处理历史数据
       handleData: {}, // 当前处理数据
-      activeStep: '',
-      attachFiles: [], // 上传附件
-      errorNode: '',
+      activeStep: '', // 处理历史展开项
+      attachFiles: [], // 请求附件
+      completeStatus: '', // 请求确认-状态
+      uncompletedTasks: [], // 请求确认-未完成任务
       flowVisible: false,
       approvalTypeName: {
         custom: '单人',
@@ -356,8 +356,13 @@ export default {
     async getRequestHistory () {
       const { statusCode, data } = await getRequestHistory(this.requestId)
       if (statusCode === 'OK') {
-        const history = data.task || []
-        this.historyData = [data.request || {}, ...history]
+        this.historyData = data.task || []
+        const statusMap = {
+          complete: '已完成',
+          uncompleted: '未完成'
+        }
+        this.completeStatus = statusMap[data.request.completeStatus] || ''
+        this.uncompletedTasks = data.request.uncompletedTasks || []
         // 当前处理-请求定版
         if (this.detail.status === 'Pending') {
           if (this.historyData && this.historyData.length > 1) {

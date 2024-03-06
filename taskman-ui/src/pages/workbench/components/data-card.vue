@@ -130,7 +130,7 @@ export default {
     getPendingNum () {
       return function (type) {
         return this.pendingNumObj[type].reduce((sum, cur) => {
-          return Number(sum) + Number(cur)
+          return Number(sum) + Number(cur || 0)
         }, 0)
       }
     }

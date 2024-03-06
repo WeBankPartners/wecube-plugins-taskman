@@ -92,10 +92,16 @@
                 >
                   <div
                     class="custom-title"
-                    :style="['calculate', 'textarea'].includes(element.elementType) ? 'vertical-align: top;' : ''"
+                    :style="
+                      ['calculate', 'textarea'].includes(element.elementType)
+                        ? 'vertical-align: top;word-break: break-all;'
+                        : ''
+                    "
                   >
-                    <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
-                    {{ element.title }}:
+                    <span v-if="element.required === 'yes'" style="color: red;">
+                      *
+                    </span>
+                    {{ element.title }}
                   </div>
                   <Input
                     v-if="element.elementType === 'input'"
@@ -283,16 +289,18 @@
         </div>
       </Col>
     </Row>
-    <Modal v-model="showSelectModel" title="选择组信息" :mask-closable="false">
-      <Form :label-width="120">
-        <FormItem :label="$t('选择组')">
-          <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
-            <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
-              <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
-            </OptionGroup>
-          </Select>
-        </FormItem>
-      </Form>
+    <Modal v-model="showSelectModel" title="创建表单" :mask-closable="false">
+      <div style="margin: 40px 0 60px 0">
+        <Form :label-width="120">
+          <FormItem :label="$t('表单模版类型')">
+            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
+              <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
+                <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
+              </OptionGroup>
+            </Select>
+          </FormItem>
+        </Form>
+      </div>
       <template #footer>
         <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
         <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
@@ -943,7 +951,7 @@ fieldset[disabled] .ivu-input {
 .title {
   font-size: 14px;
   font-weight: bold;
-  margin: 0 10px;
+  margin: 12px 0;
   display: inline-block;
   .title-text {
     display: inline-block;

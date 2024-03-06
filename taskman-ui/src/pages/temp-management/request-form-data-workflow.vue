@@ -35,7 +35,7 @@
           <Col span="6">字段名称</Col>
           <Col span="16">数据查找规则</Col>
         </Row>
-        <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex">
+        <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex" style="margin:6px 0">
           <Col span="1">
             <div style="margin-top: 6px;">
               <Checkbox v-model="item.active" @on-change="paramsChanged"></Checkbox>

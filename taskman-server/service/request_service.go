@@ -525,17 +525,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 	if tmpErr != nil {
 		return result, tmpErr
 	}
-	var items []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template=?"+
-		" and request_form_type = ?) order by item_group,sort", requestTemplateId, models.RequestFormTypeData).Find(&items)
-	if err != nil {
-		return
-	}
-	if len(items) == 0 {
-		err = exterror.New().GetRequestPreviewDataError
-		return
-	}
-	result = getItemTemplateTitle(items)
+	result = getRequestPreDataByTemplateId(requestTemplateId)
 	if entityDataId == "" {
 		return
 	}
@@ -558,6 +548,43 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		}
 	}
 	return
+}
+
+func getRequestPreDataByTemplateId(requestTemplateId string) []*models.RequestPreDataTableObj {
+	var result []*models.RequestPreDataTableObj
+	var formTemplateList []*models.FormTemplateTable
+	dao.X.SQL("select * from form_template where request_template=? and request_form_type = ? order by item_group_sort", requestTemplateId, models.RequestFormTypeData).Find(&formTemplateList)
+	if len(formTemplateList) > 0 {
+		for _, formTemplate := range formTemplateList {
+			var formItemTemplateList []*models.FormItemTemplateTable
+			var packageName, entity string
+			var title []*models.FormItemTemplateDto
+			dao.X.SQL("select * from form_item_template where form_template=?  order by sort", formTemplate.Id).Find(&formItemTemplateList)
+			if len(formItemTemplateList) > 0 {
+				for _, formItem := range formItemTemplateList {
+					title = append(title, models.ConvertFormItemTemplateModel2Dto(formItem, *formTemplate))
+					if packageName == "" && formItem.PackageName != "" {
+						packageName = formItem.PackageName
+					}
+					if entity == "" && formItem.Entity != "" {
+						entity = formItem.Entity
+					}
+				}
+			}
+			result = append(result, &models.RequestPreDataTableObj{
+				PackageName:    packageName,
+				Entity:         entity,
+				FormTemplateId: formTemplate.Id,
+				ItemGroup:      formTemplate.ItemGroup,
+				ItemGroupName:  formTemplate.ItemGroupName,
+				ItemGroupType:  formTemplate.ItemGroupType,
+				ItemGroupRule:  formTemplate.ItemGroupType,
+				Title:          title,
+				Value:          []*models.EntityTreeObj{},
+			})
+		}
+	}
+	return result
 }
 
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {

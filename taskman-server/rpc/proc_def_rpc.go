@@ -37,8 +37,6 @@ const (
 	pathQueryEntityModel = "/platform/v1/models/package/%s/entity/%s"
 	// pathSyncWorkflowUseRole
 	pathSyncWorkflowUseRole = "/platform/v1/public/process/definitions/syncUseRole"
-
-	baseUrl = "http://106.52.160.142:18080"
 )
 
 // QueryProcessDefinitionList 查询当前角色编排列表,并且根据属主角色进行过滤
@@ -47,7 +45,7 @@ func QueryProcessDefinitionList(userToken, language, manageRole string, param mo
 	var procDefMap = make(map[string]*models.ProcDefDto)
 	processList = make([]*models.ProcDefDto, 0)
 	postBytes, _ := json.Marshal(param)
-	byteArr, err := HttpPost(baseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
+	byteArr, err := HttpPost(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
 	if err != nil {
 		return
 	}
@@ -87,7 +85,7 @@ func QueryProcessDefinitionList(userToken, language, manageRole string, param mo
 func GetProcessDefineTaskNodes(procDefId, userToken, language string) (list []*models.ProcNodeObj, err error) {
 	var response models.ProcDefTaskNodesResponse
 	list = make([]*models.ProcNodeObj, 0)
-	byteArr, err := HttpGet(fmt.Sprintf(baseUrl+pathQueryProcessDefinitionsTaskNodes, procDefId), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitionsTaskNodes, procDefId), userToken, language)
 	if err != nil {
 		return
 	}
@@ -110,7 +108,7 @@ func GetProcessDefineTaskNodes(procDefId, userToken, language string) (list []*m
 func QueryAllProcessDefinitionList(userToken, language string) (processList []*models.ProcDef, err error) {
 	var response models.QueryProcessAllDefinitionResponse
 	processList = make([]*models.ProcDef, 0)
-	byteArr, err := HttpGet(fmt.Sprintf(baseUrl+pathAllQueryProcessDefinitions, "taskman"), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathAllQueryProcessDefinitions, "taskman"), userToken, language)
 	if err != nil {
 		return
 	}
@@ -133,7 +131,7 @@ func QueryAllProcessDefinitionList(userToken, language string) (processList []*m
 func QueryAllModels(userToken, language string) (nodesList []*models.DataModel, err error) {
 	var response models.QueryAllModelsResponse
 	nodesList = make([]*models.DataModel, 0)
-	byteArr, err := HttpGet(baseUrl+pathQueryModel, userToken, language)
+	byteArr, err := HttpGet(models.Config.Wecube.BaseUrl+pathQueryModel, userToken, language)
 	if err != nil {
 		return
 	}
@@ -156,7 +154,7 @@ func QueryEntityAttributes(param models.QueryExpressionDataParam, userToken, lan
 	var response models.QueryExpressionEntitiesResponse
 	postBytes, _ := json.Marshal(param)
 	entitiesList = []*models.ExpressionEntities{}
-	byteArr, err := HttpPost(baseUrl+pathQueryEntities, userToken, language, postBytes)
+	byteArr, err := HttpPost(models.Config.Wecube.BaseUrl+pathQueryEntities, userToken, language, postBytes)
 	if err != nil {
 		return
 	}
@@ -177,7 +175,7 @@ func QueryEntityAttributes(param models.QueryExpressionDataParam, userToken, lan
 // GetProcessInstance 查询编排实例
 func GetProcessInstance(userToken, language, instanceId string) (processInstance *models.ProcessInstance, err error) {
 	var response models.ProcessInstanceResponse
-	byteArr, err := HttpGet(fmt.Sprintf(baseUrl+pathQueryProcessDefinitionsInstance, instanceId), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitionsInstance, instanceId), userToken, language)
 	if err != nil {
 		return
 	}
@@ -196,7 +194,7 @@ func GetProcessInstance(userToken, language, instanceId string) (processInstance
 // GetProcessDefine 查询编排详情
 func GetProcessDefine(procDefId, userToken, language string) (result *models.DefinitionsData, err error) {
 	var response models.ProcessDefinitionsResponse
-	byteArr, err := HttpGet(fmt.Sprintf(baseUrl+pathGetProcessDefinitions, procDefId), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathGetProcessDefinitions, procDefId), userToken, language)
 	if err != nil {
 		return
 	}
@@ -215,7 +213,7 @@ func GetProcessDefine(procDefId, userToken, language string) (result *models.Def
 // GetProcDefRootEntities 查询编排实例RootEntity
 func GetProcDefRootEntities(procDefId, userToken, language string) (list []*models.ProcDefEntityDataObj, err error) {
 	var response models.ProcDefRootEntityResponse
-	byteArr, err := HttpGet(fmt.Sprintf(baseUrl+pathQueryProcessDefinitionsEntityData, procDefId), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitionsEntityData, procDefId), userToken, language)
 	if err != nil {
 		return
 	}
@@ -234,7 +232,7 @@ func GetProcDefRootEntities(procDefId, userToken, language string) (list []*mode
 // GetProcDefDataPreview 查询编排设计 RootEntity
 func GetProcDefDataPreview(procDefId, entityDataId, userToken, language string) (result *models.EntityTreeData, err error) {
 	var response models.EntityTreeResponse
-	byteArr, err := HttpGet(fmt.Sprintf(baseUrl+pathQueryPreviewProcessDefinitionsEntity, procDefId, entityDataId), userToken, language)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathQueryPreviewProcessDefinitionsEntity, procDefId, entityDataId), userToken, language)
 	if err != nil {
 		return
 	}
@@ -254,7 +252,7 @@ func GetProcDefDataPreview(procDefId, entityDataId, userToken, language string) 
 func GetProcDefTaskNodeContext(procInstanceId, taskNodeId, userToken, language string) (data interface{}, err error) {
 	var byteArr []byte
 	var response models.ProcDefTaskNodeContextResponse
-	byteArr, err = HttpGet(fmt.Sprintf(baseUrl+pathQueryProcessDefinitionsInstanceTaskNodeContext, procInstanceId, taskNodeId), userToken, language)
+	byteArr, err = HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitionsInstanceTaskNodeContext, procInstanceId, taskNodeId), userToken, language)
 	if err != nil {
 		return
 	}
@@ -275,7 +273,7 @@ func TerminationsProcDefInstance(param models.TerminateInstanceParam, userToken,
 	var byteArr []byte
 	var response models.StartInstanceResponse
 	postBytes, _ := json.Marshal(param)
-	byteArr, err = HttpPost(fmt.Sprintf(baseUrl+pathTerminationsProcessDefinitionsInstance, param.ProcInstId), userToken, language, postBytes)
+	byteArr, err = HttpPost(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathTerminationsProcessDefinitionsInstance, param.ProcInstId), userToken, language, postBytes)
 	if err != nil {
 		return
 	}
@@ -296,7 +294,7 @@ func StartProcDefInstances(param models.RequestProcessData, userToken, language 
 	var response models.StartInstanceResponse
 	postBytes, _ := json.Marshal(param)
 	log.Logger.Info("Start request", log.String("param", string(postBytes)))
-	byteArr, err = HttpPost(baseUrl+pathStartProcDefInstance, userToken, language, postBytes)
+	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathStartProcDefInstance, userToken, language, postBytes)
 	if err != nil {
 		return
 	}
@@ -316,7 +314,7 @@ func StartProcDefInstances(param models.RequestProcessData, userToken, language 
 func GetEntityModel(packageName, entityName, userToken, language string) (data interface{}, err error) {
 	var byteArr []byte
 	var response models.DataModelEntityResponse
-	byteArr, err = HttpGet(fmt.Sprintf(baseUrl+pathQueryEntityModel, packageName, entityName), userToken, language)
+	byteArr, err = HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathQueryEntityModel, packageName, entityName), userToken, language)
 	if err != nil {
 		return
 	}
@@ -336,7 +334,7 @@ func GetEntityModel(packageName, entityName, userToken, language string) (data i
 func SyncWorkflowUseRole(param models.SyncUseRoleParam, userToken, language string) (response models.HttpResponseMeta, err error) {
 	var byteArr []byte
 	postBytes, _ := json.Marshal(param)
-	byteArr, err = HttpPost(baseUrl+pathSyncWorkflowUseRole, userToken, language, postBytes)
+	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathSyncWorkflowUseRole, userToken, language, postBytes)
 	if err != nil {
 		return
 	}

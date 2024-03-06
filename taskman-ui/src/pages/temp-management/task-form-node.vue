@@ -166,10 +166,7 @@ export default {
       roleTypeOptions: [
         // custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
         { label: '单人:自定义', value: 'custom' },
-        { label: '协同:任意审批人处理', value: 'any' },
-        { label: '并行:全部审批人处理', value: 'all' },
-        { label: '提交人角色管理员', value: 'admin' },
-        { label: '自动通过', value: 'auto' }
+        { label: '提交人角色管理员', value: 'admin' }
       ],
       approvalSingle: {
         assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
@@ -324,6 +321,7 @@ export default {
       this.paramsChanged()
     },
     async getUserByRole (role, roleObjIndex) {
+      console.log(11)
       const params = {
         params: {
           roles: role
@@ -331,6 +329,7 @@ export default {
       }
       const { statusCode, data } = await getHandlerRoles(params)
       if (statusCode === 'OK') {
+        console.log(22, data)
         Vue.set(
           this.activeApprovalNode.handleTemplates[roleObjIndex],
           'handlerOptions',

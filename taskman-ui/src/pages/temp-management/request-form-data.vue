@@ -61,7 +61,7 @@
               >
                 <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
                 <span @click="editGroupCustomItems(groupItem)">
-                  {{ `${groupItem.itemGroup}` }}
+                  {{ `${groupItem.itemGroupName}` }}
                 </span>
                 <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
               </div>
@@ -309,6 +309,7 @@
     <!-- 编排表单配置 -->
     <RequestFormDataWorkflow
       ref="requestFormDataWorkflowRef"
+      :isCustomItemEditable="true"
       @reloadParentPage="loadPage"
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
@@ -730,6 +731,7 @@ export default {
           attrs: groupItem.items || []
         }
       ]
+      this.openPanel = ''
     },
     // 删除组
     async removeGroupItem (groupItem) {

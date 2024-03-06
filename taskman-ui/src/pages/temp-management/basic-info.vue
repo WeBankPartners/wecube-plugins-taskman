@@ -84,13 +84,7 @@
                   </FormItem>
                   <!-- 模版属主 -->
                   <FormItem :label="$t('handlerNew')">
-                    <Select
-                      v-model="basicInfo.handler"
-                      @on-open-change="getHandlerRoles"
-                      filterable
-                      style="width: 96%;"
-                      @on-change="paramsChanged"
-                    >
+                    <Select v-model="basicInfo.handler" filterable style="width: 96%;" @on-change="paramsChanged">
                       <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                         item.displayName
                       }}</Option>
@@ -297,10 +291,11 @@ export default {
   },
   props: ['requestTemplateId'],
   mounted () {
-    this.loadPage()
+    this.loadPage(this.requestTemplateId)
   },
   methods: {
-    loadPage () {
+    loadPage (val) {
+      this.requestTemplateId = val
       this.isParmasChanged = false
       this.getGroupOptions()
       this.getManagementRoles()
@@ -344,7 +339,7 @@ export default {
         cacheData.procDefName = ''
       }
       const method = this.basicInfo.id === '' ? createTemp : updateTemp
-      const { statusCode } = await method(cacheData)
+      const { statusCode, data } = await method(cacheData)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -353,7 +348,7 @@ export default {
         if (isGoToNext) {
           this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
         } else {
-          this.loadPage()
+          this.loadPage(data.id)
         }
       }
     },

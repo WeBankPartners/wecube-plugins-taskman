@@ -1813,19 +1813,49 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	var taskHandles []*models.TaskHandleTable
 	err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
 		In("task", taskIds).
-		Desc("created_time").
+		Asc("created_time").
 		Find(&taskHandles)
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
 
-	taskIdMapHandle := make(map[string][]*models.TaskHandleTable)
+	taskHandleIds := make([]string, 0, len(taskHandles))
+	for _, taskHandle := range taskHandles {
+		taskHandleIds = append(taskHandleIds, taskHandle.Id)
+	}
+
+	// 查询 attach file
+	attachFileTaskHandleIdMap := make(map[string][]*models.AttachFileTable)
+	if len(taskHandleIds) > 0 {
+		attachFiles, tmpErr := GetTaskHandleAttachFileList(c, taskHandleIds)
+		if tmpErr != nil {
+			err = tmpErr
+			return
+		}
+		for _, attachFile := range attachFiles {
+			if _, isExisted := attachFileTaskHandleIdMap[attachFile.TaskHandle]; !isExisted {
+				attachFileTaskHandleIdMap[attachFile.TaskHandle] = []*models.AttachFileTable{}
+			}
+			attachFileTaskHandleIdMap[attachFile.TaskHandle] = append(attachFileTaskHandleIdMap[attachFile.TaskHandle], attachFile)
+		}
+	}
+
+	taskIdMapHandle := make(map[string][]*models.TaskHandleForHistory)
 	for _, taskHandle := range taskHandles {
 		if _, isExisted := taskIdMapHandle[taskHandle.Task]; !isExisted {
-			taskIdMapHandle[taskHandle.Task] = []*models.TaskHandleTable{}
+			taskIdMapHandle[taskHandle.Task] = []*models.TaskHandleForHistory{}
 		}
-		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], taskHandle)
+
+		attachFiles := make([]*models.AttachFileTable, 0)
+		if _, isExisted := attachFileTaskHandleIdMap[taskHandle.Id]; isExisted {
+			attachFiles = attachFileTaskHandleIdMap[taskHandle.Id]
+		}
+		curTaskHandleForHistory := &models.TaskHandleForHistory{
+			TaskHandleTable: *taskHandle,
+			AttachFiles:     attachFiles,
+		}
+		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)
 	}
 
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
@@ -1839,12 +1869,8 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		}
 
 		nextOptions := make([]string, 0)
-		attachFiles := make([]string, 0)
 		if task.NextOption != "" {
 			nextOptions = strings.Split(task.NextOption, ",")
-		}
-		if task.AttachFile != "" {
-			attachFiles = strings.Split(task.AttachFile, ",")
 		}
 
 		var handleMode string
@@ -1858,13 +1884,11 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		}
 
 		formData := make([]*models.RequestPreDataTableObj, 0)
-		// todo get formData
-
 		curTaskForHistory := &models.TaskForHistory{
 			TaskTable:      *task,
-			TaskHandleList: []*models.TaskHandleTable{},
+			TaskHandleList: []*models.TaskHandleForHistory{},
 			NextOptions:    nextOptions,
-			AttachFiles:    attachFiles,
+			AttachFiles:    []*models.AttachFileTable{},
 			HandleMode:     handleMode,
 			Editable:       editable,
 			FormData:       formData,
@@ -1872,8 +1896,159 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
 		}
+
+		formData, err = getTaskFormData(c, curTaskForHistory, taskTmplIdMapInfo)
+		if err != nil {
+			return
+		}
+		curTaskForHistory.FormData = formData
+
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
 	result.Task = taskForHistoryList
+	return
+}
+
+func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdMapInfo map[string]*models.TaskTemplateTable) (result []*models.RequestPreDataTableObj, err error) {
+	result = []*models.RequestPreDataTableObj{}
+
+	// 查询 form template
+	var formTemplates []*models.FormTemplateTable
+	err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
+		Where("task_template = ?", taskObj.TaskTemplate).
+		Find(&formTemplates)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(formTemplates) == 0 {
+		log.Logger.Error(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
+		return
+	}
+
+	formTemplateIds := make([]string, 0, len(formTemplates))
+	formTemplateRefIds := make([]string, 0, len(formTemplates))
+	for _, formTmpl := range formTemplates {
+		formTemplateIds = append(formTemplateIds, formTmpl.Id)
+		formTemplateRefIds = append(formTemplateRefIds, formTmpl.RefId)
+	}
+
+	formTemplateIdsToFilter := formTemplateIds
+	if taskObj.ProcDefId == "" {
+		// 非编排任务, 表单form的 form_template 用的数据表单的 form_template,
+		// 需要在 form_template 里面通过id -> ref_id，这个 ref_id 才是 form 的 form_template
+		formTemplateIdsToFilter = formTemplateRefIds
+	}
+	// 查询 form
+	var forms []*models.FormTable
+	err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
+		Where("request = ?", taskObj.Request).
+		In("form_template", formTemplateIdsToFilter).
+		Find(&forms)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(forms) == 0 {
+		log.Logger.Error(fmt.Sprintf("can not find any forms with request: %s and formTemplates: [%s]",
+			taskObj.Request, strings.Join(formTemplateIdsToFilter, ",")))
+		return
+	}
+
+	// 查询 request 的 form item
+	taskUpdatedTime := taskObj.UpdatedTime
+	taskHandleCnt := len(taskObj.TaskHandleList)
+	if taskHandleCnt > 0 {
+		taskUpdatedTime = taskObj.TaskHandleList[taskHandleCnt-1].UpdatedTime
+	}
+	var formItems []*models.FormItemTable
+	err = dao.X.Context(c).Table(models.FormItemTable{}.TableName()).
+		Where("request = ? AND updated_time <= ?", taskObj.Request, taskUpdatedTime).
+		Find(&formItems)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(formItems) == 0 {
+		log.Logger.Error(fmt.Sprintf("can not find any form items with request: %s and updatedTime <= %s",
+			taskObj.Request, taskUpdatedTime))
+		return
+	}
+
+	// 查询 form item template
+	var itemTemplates []*models.FormItemTemplateTable
+	// err = dao.X.Context(c).SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
+	err = dao.X.Context(c).Table(models.FormItemTemplateTable{}.TableName()).
+		In("form_template", formTemplateIdsToFilter).
+		OrderBy("item_group,sort").
+		Find(&itemTemplates)
+	if err != nil {
+		return
+	}
+	if len(itemTemplates) == 0 {
+		// err = fmt.Errorf("can not find any form item template with task: %s", taskObj.Id)
+		log.Logger.Error(fmt.Sprintf("can not find any form item templates with formTemplates: %s",
+			strings.Join(formTemplateIdsToFilter, ",")))
+		return
+	}
+	formResult := getItemTemplateTitle(itemTemplates)
+	result = formResult
+
+	// todo need to update
+	var items []*models.FormItemTable
+	dao.X.Context(c).SQL("select * from form_item where form=? order by item_group,row_data_id", taskObj.Form).Find(&items)
+	if len(items) == 0 {
+		return
+	}
+	itemRowMap := make(map[string][]string)
+	rowItemMap := make(map[string][]*models.FormItemTable)
+	for _, item := range items {
+		if tmpRows, b := itemRowMap[item.ItemGroup]; b {
+			existFlag := false
+			for _, v := range tmpRows {
+				if item.RowDataId == v {
+					existFlag = true
+					break
+				}
+			}
+			if !existFlag {
+				itemRowMap[item.ItemGroup] = append(itemRowMap[item.ItemGroup], item.RowDataId)
+			}
+		} else {
+			itemRowMap[item.ItemGroup] = []string{item.RowDataId}
+		}
+		if _, b := rowItemMap[item.RowDataId]; b {
+			rowItemMap[item.RowDataId] = append(rowItemMap[item.RowDataId], item)
+		} else {
+			rowItemMap[item.RowDataId] = []*models.FormItemTable{item}
+		}
+	}
+
+	for _, formTable := range formResult {
+		if rows, b := itemRowMap[formTable.ItemGroup]; b {
+			for _, row := range rows {
+				tmpRowObj := models.EntityTreeObj{Id: row, DataId: row, PackageName: formTable.PackageName, EntityName: formTable.Entity}
+				tmpRowObj.EntityData = make(map[string]interface{})
+				for _, rowItem := range rowItemMap[row] {
+					isMulti := false
+					for _, tmpTitle := range formTable.Title {
+						if tmpTitle.Name == rowItem.Name {
+							if tmpTitle.Multiple == "Y" {
+								isMulti = true
+								break
+							}
+						}
+					}
+					if isMulti {
+						tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
+					} else {
+						tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
+					}
+				}
+				formTable.Value = append(formTable.Value, &tmpRowObj)
+			}
+		}
+	}
+	// taskForm.FormData = formResult
 	return
 }

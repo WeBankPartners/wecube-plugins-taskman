@@ -462,6 +462,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	var requestTemplate *models.RequestTemplateTable
 	var checkRole, checkHandler string
 	var workflowTaskNodeList []*models.ProcNodeObj
+	var updateActions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
 	if err != nil {
@@ -581,7 +582,11 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					for _, taskNode := range workflowTaskNodeList {
 						taskNodeTmp := workflowTaskNodeMap[taskNode.NodeDefId]
 						if taskNodeTmp != nil && (taskNodeTmp.NodeId != taskNode.NodeId || taskNodeTmp.NodeName != taskNode.NodeName) {
-							// 更新任务节点@todo 需要调用更新方法
+							updateActions, err = GetTaskTemplateService().updateProcTaskTemplatesSql(taskNodeTmp.Id, taskNode.NodeId, taskNode.NodeName)
+							if err != nil {
+								return
+							}
+							actions = append(actions, updateActions...)
 						}
 					}
 				}
@@ -593,58 +598,39 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 }
 
 func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag bool) (actions []*dao.ExecAction, err error) {
-	var taskTemplateTable []*models.TaskTemplateTable
+	var taskTemplateList []*models.TaskTemplateTable
 	var formTemplateList []*models.FormTemplateTable
-	var taskHandlerTemplateIds []string
-	var formTemplateIds []string
-	rtObj, err := GetRequestTemplateService().GetRequestTemplate(id)
+	var requestTemplate *models.RequestTemplateTable
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(id)
 	if err != nil {
 		return actions, err
 	}
-	if rtObj.Status == "confirm" {
+	if requestTemplate.Status == "confirm" {
 		return actions, fmt.Errorf("confirm status can not delete")
 	}
-	dao.X.SQL("select id,form_template from task_template where request_template=?", id).Find(&taskTemplateTable)
-
-	for _, v := range taskTemplateTable {
-		var taskHandleTemplateList []*models.TaskHandleTemplateTable
-		dao.X.SQL("select id,task_template from task_handle_template where task_template=?", v.Id).Find(&taskHandleTemplateList)
-		if len(taskHandleTemplateList) > 0 {
-			for _, taskHandleTemplate := range taskHandleTemplateList {
-				taskHandlerTemplateIds = append(taskHandlerTemplateIds, taskHandleTemplate.Id)
-			}
-		}
-	}
-	// 删除关联 request_template_id的from_template
-	dao.X.SQL("select id,task_template from form_template where request_template=?", id).Find(&formTemplateList)
+	dao.X.SQL("select * from form_template where request_template = ?", id).Find(&formTemplateList)
 	if len(formTemplateList) > 0 {
 		for _, formTemplate := range formTemplateList {
-			formTemplateIds = append(formTemplateIds, formTemplate.Id)
+			// 删除表单项模板表
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template WHERE form_template = ? ", Param: []interface{}{formTemplate.Id}})
 		}
 	}
-	actions = []*dao.ExecAction{}
-	var requestTable []*models.RequestTable
-	dao.X.SQL("select id,name from request where request_template=?", id).Find(&requestTable)
-	if len(requestTable) > 0 {
-		var formTable []*models.FormTable
-		dao.X.SQL("select id from form where form_template in ('" + strings.Join(formTemplateIds, "','") + "')").Find(&formTable)
-		var formIds []string
-		for _, v := range formTable {
-			formIds = append(formIds, v.Id)
+	// 删除 表单模板
+	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template WHERE request_template = ? ", Param: []interface{}{id}})
+
+	dao.X.SQL("select * from task_template where request_template = ?", id).Find(&taskTemplateList)
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			// 删除任务处理模板表
+			actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template WHERE task_template = ? ", Param: []interface{}{taskTemplate.Id}})
+			// 删除表单模板表
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_template WHERE task_template = ?", Param: []interface{}{taskTemplate.Id}})
 		}
-		if len(taskHandlerTemplateIds) > 0 {
-			actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle where task_handle_template in ('" + strings.Join(taskHandlerTemplateIds, "','") + "')", Param: []interface{}{}})
-		}
-		actions = append(actions, &dao.ExecAction{Sql: "delete from task where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
-		actions = append(actions, &dao.ExecAction{Sql: "delete from request where request_template=?", Param: []interface{}{id}})
-		actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where form in ('" + strings.Join(formIds, "','") + "')", Param: []interface{}{}})
-		actions = append(actions, &dao.ExecAction{Sql: "delete from form where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "delete from task_handle_template where task_template in (select id from task_template where request_template=?)", Param: []interface{}{id}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from form_template where id in ('" + strings.Join(formTemplateIds, "','") + "')", Param: []interface{}{}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template where request_template=?", Param: []interface{}{id}})
-	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{id}})
+	// 删除任务模版表
+	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template WHERE request_template = ?", Param: []interface{}{id}})
+
+	// 删除请求模板
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template where id=?", Param: []interface{}{id}})
 	if !getActionFlag {
 		err = dao.Transaction(actions)
@@ -839,19 +825,12 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	return dao.TransactionWithoutForeignCheck(actions)
 }
 
-func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId string) error {
+func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userToken, language string) error {
 	var parentId string
-	var formTemplate *models.FormTemplateTable
+	var requestTemplateRoleList []*models.RequestTemplateRoleTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
-	}
-	formTemplate, err = s.formTemplateDao.QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, string(models.RequestFormTypeMessage))
-	if err != nil {
-		return err
-	}
-	if formTemplate == nil {
-		return fmt.Errorf("Please config request template form ")
 	}
 	if requestTemplateObj.Status == "confirm" {
 		return fmt.Errorf("Request template already confirm ")
@@ -868,6 +847,23 @@ func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId string
 	version := requestTemplateObj.Version
 	if version == "" {
 		version = "v1"
+	}
+	// 调用编排新增
+	if requestTemplateObj.ProcDefId != "" {
+		requestTemplateRoleList, err = s.requestTemplateRoleDao.QueryByRequestTemplateAndType(requestTemplateId, string(models.RolePermissionUse))
+		if err != nil {
+			return err
+		}
+		if len(requestTemplateRoleList) > 0 {
+			var userRoles []string
+			for _, roleTable := range requestTemplateRoleList {
+				userRoles = append(userRoles, roleTable.Role)
+			}
+			_, err = rpc.SyncWorkflowUseRole(models.SyncUseRoleParam{ProcDefId: requestTemplateObj.ProcDefId, UseRoles: userRoles}, userToken, language)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	var actions []*dao.ExecAction
 	actions = append(actions, &dao.ExecAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=? where id=?", Param: []interface{}{version, nowTime, parentId, requestTemplateObj.Id}})
@@ -1488,10 +1484,10 @@ func (s *RequestTemplateService) CheckPermission(requestTemplateId, user string)
 		err = exterror.Catch(exterror.New().RequestParamValidateError, fmt.Errorf("param requestTemplateId is invalid"))
 		return
 	}
-	// 请求模板的处理不是当前用户,不允许操作
-	/*if requestTemplate.CreatedBy != user {
+	// 请求模板的更新人不是当前用户,不允许操作
+	if requestTemplate.UpdatedBy != user {
 		err = exterror.New().DataPermissionDeny
-	}*/
+	}
 	return
 }
 

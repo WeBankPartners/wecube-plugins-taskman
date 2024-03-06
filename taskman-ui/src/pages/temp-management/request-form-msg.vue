@@ -56,10 +56,14 @@
                 >
                   <div
                     class="custom-title"
-                    :style="['calculate', 'textarea'].includes(element.elementType) ? 'vertical-align: top;' : ''"
+                    :style="
+                      ['calculate', 'textarea'].includes(element.elementType)
+                        ? 'vertical-align: top;word-break: break-all;'
+                        : ''
+                    "
                   >
                     <Icon v-if="element.required === 'yes'" size="8" style="color: #ed4014" type="ios-medical" />
-                    {{ element.title }}:
+                    {{ element.title }}
                   </div>
                   <Input
                     v-if="element.elementType === 'input'"
@@ -674,7 +678,7 @@ fieldset[disabled] .ivu-input {
 .title {
   font-size: 14px;
   font-weight: bold;
-  margin: 0 10px;
+  margin: 12px 0;
   display: inline-block;
   .title-text {
     display: inline-block;

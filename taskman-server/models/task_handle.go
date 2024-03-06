@@ -15,6 +15,7 @@ type TaskHandleTable struct {
 	CreatedTime        string `json:"createdTime" xorm:"created_time"`
 	UpdatedTime        string `json:"updatedTime" xorm:"updated_time"`
 	Sort               int    `json:"sort" xorm:"sort"`
+	HandleStatus       string `json:"handleStatus" xorm:"handle_status"` // 处理状态：complete 完成, uncomplete 未完成
 }
 
 func (TaskHandleTable) TableName() string {

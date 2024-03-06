@@ -29,36 +29,53 @@
             </Col>
           </Row>
         </div>
-        <Divider style="margin-top:40px">自定义分析字段</Divider>
+        <Divider @click="test" style="margin-top:40px">自定义分析字段</Divider>
         <Row>
-          <Col span="5">字段名称</Col>
+          <Col span="1">&nbsp;&nbsp;&nbsp;&nbsp;</Col>
+          <Col span="6">字段名称</Col>
           <Col span="16">数据查找规则</Col>
         </Row>
-        <Row>
-          <div v-for="(item, itemIndex) in group.customItems" :key="itemIndex">
-            <Col span="5">
-              <Input v-model="item.name"></Input>
-            </Col>
-            <Col span="16">
-              <ItemFilterRulesGroup
-                :isBatch="false"
-                ref="filterRulesGroupRef"
-                :currentIndex="itemIndex"
-                @filterRuleChanged="singleFilterRuleChanged"
-                :disabled="false"
-                :routineExpression="item.routineExpression || group.itemGroup"
-                :allEntityType="allEntityType"
-                :currentSelectedEntity="group.itemGroup"
-              >
-              </ItemFilterRulesGroup>
-            </Col>
-            <Col span="2">
-              <Button type="error" @click="deleteCustomItem(itemIndex)" size="small" icon="md-trash"></Button>
-            </Col>
-          </div>
+        <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex" style="margin:6px 0">
+          <Col span="1">
+            <div style="margin-top: 6px;">
+              <Checkbox v-model="item.active" @on-change="paramsChanged"></Checkbox>
+            </div>
+          </Col>
+          <Col span="5">
+            <Input v-model="item.name" :disabled="!isCustomItemEditable"></Input>
+          </Col>
+          <Col span="16">
+            <ItemFilterRulesGroup
+              :isBatch="false"
+              ref="filterRulesGroupRef"
+              :currentIndex="itemIndex"
+              @filterRuleChanged="singleFilterRuleChanged"
+              :disabled="!isCustomItemEditable"
+              :routineExpression="item.routineExpression || group.itemGroup"
+              :allEntityType="allEntityType"
+              :currentSelectedEntity="group.itemGroup"
+            >
+            </ItemFilterRulesGroup>
+          </Col>
+          <Col span="2">
+            <Button
+              type="error"
+              :disabled="!isCustomItemEditable"
+              @click="deleteCustomItem(itemIndex)"
+              size="small"
+              icon="md-trash"
+            ></Button>
+          </Col>
         </Row>
-        <div style="text-align: right;margin-right: 40px;">
-          <Button type="primary" ghost @click="addCustomItem" size="small" icon="md-add"></Button>
+        <div style="text-align: right;margin-right: 18px;">
+          <Button
+            type="primary"
+            ghost
+            :disabled="!isCustomItemEditable"
+            @click="addCustomItem"
+            size="small"
+            icon="md-add"
+          ></Button>
         </div>
       </Form>
     </div>
@@ -152,8 +169,11 @@ export default {
       }
     }
   },
-  props: ['module'],
+  props: ['module', 'isCustomItemEditable'],
   methods: {
+    test () {
+      console.log(11, this.group.customItems)
+    },
     // 自定义字段获取所有类型
     async getAllDataModels () {
       let { data, status } = await getAllDataModels()

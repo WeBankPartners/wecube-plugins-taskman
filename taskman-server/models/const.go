@@ -178,6 +178,11 @@ const (
 	TaskTypeImplementCustom  string = "implement_custom"  // 自定义任务
 )
 
+const (
+	TaskConfirmResultComplete    string = "complete"    // 任务已完成
+	TaskConfirmResultUncompleted string = "uncompleted" // 任务未完成
+)
+
 // SceneType 场景类型
 type SceneType int
 

@@ -343,8 +343,9 @@ type UpdateRequestStatusParam struct {
 }
 
 type RequestHistory struct {
-	Request *RequestForHistory `json:"request"`
-	Task    []*TaskForHistory  `json:"task"`
+	Request         *RequestForHistory `json:"request"`
+	Task            []*TaskForHistory  `json:"task"`
+	UncompleteTasks []string           `json:"uncompleteTasks"`
 }
 
 type RequestForHistory struct {

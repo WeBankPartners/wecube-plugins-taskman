@@ -252,7 +252,6 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      this.activeApprovalNode.id = this.activeApprovalNode.nodeDefId
       console.log(this.activeApprovalNode)
       const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
       if (statusCode === 'OK') {

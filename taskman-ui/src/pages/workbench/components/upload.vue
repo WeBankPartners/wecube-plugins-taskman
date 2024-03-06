@@ -14,7 +14,7 @@
     >
       <Button icon="md-cloud-upload" :disabled="formDisable">{{ $t('upload_attachment') }}</Button>
     </Upload>
-    <div v-else :style="{ marginTop: onlyShowFile ? '0px' : '10px', display: 'flex' }">
+    <div :style="{ marginTop: onlyShowFile ? '0px' : '10px', display: 'flex' }">
       <Tag
         v-for="file in attachFiles"
         :key="file.id"

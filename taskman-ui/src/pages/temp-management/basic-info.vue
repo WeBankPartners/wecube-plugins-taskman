@@ -542,7 +542,7 @@ fieldset[disabled] .ivu-input {
 </style>
 <style lang="scss" scoped>
 .ivu-form-item {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 .basci-info-right {
   margin-left: 60px;

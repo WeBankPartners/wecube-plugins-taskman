@@ -1126,7 +1126,7 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	var action *dao.ExecAction
 	var requestTemplate *models.RequestTemplateTable
 	var submitTaskTemplateList, checkTaskTemplateList []*models.TaskTemplateTable
-	var taskHandleTempalteList []*models.TaskHandleTemplateTable
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	if err != nil {
 		return err
@@ -1142,11 +1142,11 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	// 新增提交请求任务
 	submitTaskId := "su_" + guid.CreateGuid()
 	action = &dao.ExecAction{Sql: "insert into task(id,name,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{submitTaskId, "submit", models.TaskStatusDone, request.Id, submitTaskTemplateList[0], models.TaskTypeSubmit, "system", now, "system", now}
+	action.Param = []interface{}{submitTaskId, "submit", models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, "system", now, "system", now}
 	actions = append(actions, action)
 
 	// 新增提交请求处理人
-	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
+	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?)"}
 	action.Param = []interface{}{guid.CreateGuid(), submitTaskId, request.Role, request.CreatedBy, now, now}
 	actions = append(actions, action)
 
@@ -1166,14 +1166,14 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 			err = fmt.Errorf("taskTemplate not find check template")
 		}
 		action = &dao.ExecAction{Sql: "insert into task(id,name,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
-		action.Param = []interface{}{checkTaskId, "check", models.TaskStatusCreated, request.Id, checkTaskTemplateList[0], models.TaskTypeCheck, operator, now, operator, now}
+		action.Param = []interface{}{checkTaskId, "check", models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, now, operator, now}
 		actions = append(actions, action)
 
 		// 新增确认定版处理人
-		dao.X.SQL("select * from task_handle_template where task_template = ?", checkTaskTemplateList[0]).Find(&taskHandleTempalteList)
-		if len(taskHandleTempalteList) > 0 {
-			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{guid.CreateGuid(), taskHandleTempalteList[0].Id, taskHandleTempalteList[0].Role, taskHandleTempalteList[0].Handler, now, now}
+		dao.X.SQL("select * from task_handle_template where task_template = ?", checkTaskTemplateList[0].Id).Find(&taskHandleTemplateList)
+		if len(taskHandleTemplateList) > 0 {
+			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, now, now}
 			actions = append(actions, action)
 		}
 		err = dao.Transaction(actions)
@@ -1200,7 +1200,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	actions = []*dao.ExecAction{}
 	now := time.Now().Format(models.DateTimeFormat)
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeApprove).Find(&taskTemplateList)
+	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
@@ -1248,7 +1248,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 
 			// 更新请求表为审批状态
 			action = &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?"}
-			action.Param = []interface{}{models.RequestStatusInApproval, now, request.Id}
+			action.Param = []interface{}{string(models.RequestStatusInApproval), now, request.Id}
 			actions = append(actions, action)
 			err = dao.Transaction(actions)
 			return
@@ -1262,7 +1262,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 func (s *RequestService) HandleRequestTask(request models.RequestTable) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	actions = []*dao.ExecAction{}
-	err = dao.X.SQL("select * form task_template where request_template = ? and handle_model = ? order by sort asc", request.RequestTemplate, models.TaskTypeApprove).Find(&taskTemplateList)
+	err = dao.X.SQL("select * form task_template where request_template = ? and handle_model = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}

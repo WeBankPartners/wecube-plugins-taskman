@@ -8,6 +8,7 @@
             v-model="form.templateName"
             @on-change="filterData"
             style="width:300px"
+            clearable
             :placeholder="$t('tw_template_placeholder')"
           >
             <template #suffix>
@@ -36,7 +37,7 @@
           <!--已发布-->
           <TabPane :label="$t('tw_template_publish_tab')" name="confirm"></TabPane>
           <!--我的草稿-->
-          <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane>
+          <!-- <TabPane v-if="draftCardList.length" :label="$t('tw_template_draft_tab')" name="created"></TabPane> -->
         </Tabs>
         <Card :bordered="false" dis-hover :padding="0" style="height:400px;">
           <template v-if="cardList.length">
@@ -184,8 +185,8 @@ export default {
           render: (h, params) => {
             return (
               <div style="display:flex;flex-direction:column">
-                <span>{params.row.handler}</span>
                 <span>{params.row.role}</span>
+                <span>{params.row.handler}</span>
               </div>
             )
           }
@@ -247,6 +248,9 @@ export default {
       this.collectList = []
       this.cardList = []
       this.type = this.$route.query.type || ''
+      this.activeName = 'confirm'
+      this.form.templateName = ''
+      this.form.operatorObjType = ''
       this.getTemplateData()
       this.getCollectTemplate()
     }
@@ -268,34 +272,33 @@ export default {
         1: 'publish'
       }
       if (statusCode === 'OK') {
-        this.cardList =
-          Array.isArray(data) &&
-          data.map(i => {
-            i.expand = true
-            i.groups.forEach(j => {
-              j.templates.forEach(m => {
-                m.manageRole = i.manageRole
-                if (m.operatorObjType && typeMap[m.type] === this.type) {
-                  this.operateOptions.push(m.operatorObjType)
-                }
-              })
+        let templateList = data || []
+        templateList = templateList.map(i => {
+          i.expand = true
+          i.groups.forEach(j => {
+            j.templates.forEach(template => {
+              template.manageRole = i.manageRole
+              if (template.operatorObjType && typeMap[template.type] === this.type) {
+                this.operateOptions.push(template.operatorObjType)
+              }
             })
-            return i
           })
-        this.originCardList = this.cardList
+          return i
+        })
         // 数据去重
         this.operateOptions = Array.from(new Set(this.operateOptions))
+        this.originCardList = deepClone(templateList)
         this.filterData()
         // 获取草稿态数据，没有则隐藏草稿标签
-        const cardList = deepClone(this.cardList)
+        let cardList = deepClone(this.originCardList)
         this.draftCardList = cardList.filter(i => {
           i.groups =
             (Array.isArray(i.groups) &&
               i.groups.filter(j => {
                 j.templates =
                   (Array.isArray(j.templates) &&
-                    j.templates.filter(k => {
-                      return k.status === 'created'
+                    j.templates.filter(template => {
+                      return template.status === 'created' && typeMap[template.type] === this.type
                     })) ||
                   []
                 // 没有模板的组不显示

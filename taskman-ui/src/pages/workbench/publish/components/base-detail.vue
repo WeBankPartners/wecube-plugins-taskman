@@ -164,7 +164,7 @@
                 </div>
               </template>
               <!--请求定版-->
-              <template v-else-if="index === 1">
+              <template v-else-if="data.type === 'check'">
                 <div class="custom-panel">
                   <div class="custom-panel-title">{{ $t('tw_request_pending') }}</div>
                   <HeaderTag class="custom-panel-header" :data="data" :operation="$t('final_version')"></HeaderTag>
@@ -179,35 +179,43 @@
                   ></DataBind>
                 </div>
               </template>
-              <!--任务审批-->
-              <template v-else>
+              <!--审批和任务-->
+              <template v-else-if="['approve', 'implement_process', 'implement_custom'].includes(data.type)">
                 <div class="custom-panel">
-                  <div class="custom-panel-title">{{ data.name }}</div>
+                  <div class="custom-panel-title">
+                    <span class="type">{{ data.type === 'approve' ? '审批' : '任务' }}</span>
+                    <span class="mode">{{ approvalTypeName[data.handleMode] || '' }}</span>
+                    {{ data.name }}
+                  </div>
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
                   <EntityTable :data="data.formData" :requestId="requestId" :formDisable="true"></EntityTable>
-                  <div>
-                    <Form :label-width="80" style="margin: 16px 0">
-                      <FormItem :label="$t('task') + $t('description')">
-                        <Input disabled v-model="data.description" type="textarea" />
-                      </FormItem>
-                      <!--处理结果-->
-                      <FormItem :label="$t('process_result')" v-if="data.nextOption && data.nextOption.length !== 0">
-                        <span slot="label">
-                          {{ $t('process_result') }}
-                          <span style="color: #ed4014"> * </span>
-                        </span>
-                        <Select v-model="data.choseOption" disabled>
-                          <Option v-for="option in data.nextOption" :value="option" :key="option">{{ option }}</Option>
+                </div>
+              </template>
+              <template v-else-if="data.type === 'confirm'">
+                <div class="custom-panel">
+                  <div class="custom-panel-title">请求确认</div>
+                  <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
+                </div>
+                <div slot="content" class="history">
+                  <!-- <Form :label-width="80" label-position="left">
+                    <FormItem label="请求状态">
+                      <Select v-model="confirmRequestForm.completeStatus">
+                        <Option v-for="(i, index) in completeStatusList" :value="i.value" :key="index">{{ i.label }}</Option>
+                      </Select>
+                    </FormItem>
+                    <template v-if="confirmRequestForm.completeStatus === 'uncompleted'">
+                      <FormItem label="未完成任务节点">
+                        <Select v-model="confirmRequestForm.markTaskId" multiple clearable>
+                          <Option v-for="i in taskTagList" :value="i.id" :key="i.id">{{ i.name }}</Option>
                         </Select>
                       </FormItem>
-                      <!--处理意见-->
-                      <FormItem :label="$t('process_comments')">
-                        <Input disabled v-model="data.comment" type="textarea" />
-                      </FormItem>
-                    </Form>
-                  </div>
+                    </template>
+                    <FormItem :label="$t('process_comments')">
+                      <Input v-model="confirmRequestForm.notes" disabled type="textarea" :maxlength="200" show-word-limit />
+                    </FormItem>
+                  </Form> -->
                 </div>
               </template>
             </Panel>
@@ -243,6 +251,7 @@ import BaseProgress from './progress.vue'
 import CustomForm from '../../components/custom-form.vue'
 import CurrentHandle from './handle.vue'
 import { getRootEntity, getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
+// import historyMockData from './mock.js'
 export default {
   components: {
     HeaderTitle,
@@ -281,11 +290,18 @@ export default {
       },
       rootEntityOptions: [],
       historyData: [], // 处理历史数据
-      handleData: {},
-      activeStep: '', // 处理历史当前展开
+      handleData: {}, // 当前处理数据
+      activeStep: '',
       attachFiles: [], // 上传附件
       errorNode: '',
-      flowVisible: false
+      flowVisible: false,
+      approvalTypeName: {
+        custom: '单人',
+        any: '协同',
+        all: '并行',
+        admin: '提交人角色管理员',
+        auto: '自动通过'
+      }
     }
   },
   computed: {
@@ -340,16 +356,16 @@ export default {
     async getRequestHistory () {
       const { statusCode, data } = await getRequestHistory(this.requestId)
       if (statusCode === 'OK') {
-        const history = data.data || []
+        const history = data.task || []
         this.historyData = [data.request || {}, ...history]
-        // 请求定版-当前处理
+        // 当前处理-请求定版
         if (this.detail.status === 'Pending') {
           if (this.historyData && this.historyData.length > 1) {
             this.handleData = this.historyData[1]
             this.historyData.splice(1, 1)
           }
-          // 任务处理-当前处理
-        } else if (this.detail.status === 'InProgress') {
+          // 当前处理-任务、审批、请求确认
+        } else if (['InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
           const index = this.historyData.findIndex(item => item.editable)
           this.handleData = this.historyData[index]
           this.historyData.splice(index, 1)
@@ -451,9 +467,19 @@ export default {
       align-items: center;
       width: 100%;
       &-title {
-        width: 70px;
+        width: 100px;
         font-weight: bold;
         line-height: 22px;
+        .type {
+          font-size: 12px;
+          display: inline-block;
+          color: #19be6b;
+        }
+        .mode {
+          font-size: 12px;
+          display: inline-block;
+          color: #2db7f5;
+        }
       }
       &-header {
         width: calc(100% - 70px);

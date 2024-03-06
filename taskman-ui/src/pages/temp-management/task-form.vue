@@ -2,7 +2,7 @@
   <div>
     <Row type="flex">
       <Col span="24" style="padding: 0 20px">
-        <div style="margin: 24px 0">
+        <div style="margin-bottom: 12px">
           <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right:6px;">
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
@@ -10,7 +10,7 @@
             >
               <span>{{ approval.name }}</span>
               <Icon
-                v-if="approvalNodes.length > 1"
+                v-if="approvalNodes.length > 1 && procDefId === ''"
                 @click.stop="removeNopde(approval)"
                 type="md-close"
                 color="#ed4014"
@@ -19,6 +19,7 @@
               />
             </div>
             <Button
+              v-if="procDefId === ''"
               @click.stop="addApprovalNode(approval.sort + 1)"
               type="success"
               size="small"
@@ -29,7 +30,12 @@
           </span>
         </div>
         <div>
-          <TaskFormNode ref="approvalFormNodeRef" @jumpToNode="jumpToNode" @reloadParentPage="loadPage"></TaskFormNode>
+          <TaskFormNode
+            ref="approvalFormNodeRef"
+            @jumpToNode="jumpToNode"
+            @reloadParentPage="loadPage"
+            :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
+          ></TaskFormNode>
         </div>
         <Divider />
         <div>
@@ -70,7 +76,7 @@
                 <Divider>预览</Divider>
                 <div class="title">
                   <div class="title-text">
-                    {{ $t('审批内容') }}
+                    {{ $t('处理内容') }}
                     <span class="underline"></span>
                   </div>
                 </div>
@@ -183,21 +189,26 @@
                 </div>
                 <div class="title">
                   <div class="title-text">
-                    {{ $t('审批结果') }}
+                    {{ $t('处理结果') }}
                     <span class="underline"></span>
                   </div>
                 </div>
-                <div>
-                  <Form :label-width="120">
+                <div style="margin-top: 24px;">
+                  <Form :label-width="90">
+                    <FormItem v-if="procDefId !== ''" :label="$t('判断分支')">
+                      <Select style="width: 94%;">
+                        <Option value="1"></Option>
+                      </Select>
+                    </FormItem>
                     <FormItem :label="$t('t_action')">
-                      <Select>
+                      <Select style="width: 94%;">
                         <Option value="1">{{ $t('tw_approve') }}</Option>
                         <Option value="2">{{ $t('tw_reject') }}</Option>
                         <Option value="3">{{ $t('tw_send_back') }}</Option>
                       </Select>
                     </FormItem>
                     <FormItem :label="$t('tw_comments')">
-                      <Input type="textarea" :rows="2"></Input>
+                      <Input type="textarea" :rows="2" style="width: 94%;"></Input>
                     </FormItem>
                   </Form>
                 </div>
@@ -381,9 +392,7 @@
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
     </Row>
-    <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
-    </div>
+    <div style="text-align: center;margin-top: 16px;"></div>
   </div>
 </template>
 
@@ -685,21 +694,20 @@ export default {
   },
   props: ['requestTemplateId'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 400
+    this.MODALHEIGHT = document.body.scrollHeight - 500
     this.loadPage()
   },
   methods: {
     loadPage (sort) {
       this.cancelGroup()
       this.getApprovalNode(sort)
+      this.getAllDataModels()
     },
     async getApprovalNode (sort) {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'implement')
       if (statusCode === 'OK') {
         this.procDefId = data.procDefId
-        console.log(data)
         if (this.procDefId === '' && data.ids.length === 0) {
-          console.log(22)
           this.addApprovalNode(1)
         } else {
           this.approvalNodes = data.ids
@@ -773,7 +781,7 @@ export default {
       this.cancelGroup()
       let params = {
         requestTemplateId: this.requestTemplateId,
-        id: node.id || node.nodeDefId
+        id: node.id
       }
       this.nextNodeInfo = node
       const res = this.preApprovalNodeChange()
@@ -784,8 +792,7 @@ export default {
       this.getApprovalNodeGroups(node)
     },
     async getApprovalNodeGroups (node) {
-      console.log(55, this.requestTemplateId, node.id)
-      const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id || node.nodeDefId)
+      const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
       }
@@ -1010,7 +1017,6 @@ export default {
       this.finalElement[itemIndex].attrs.forEach(item => {
         item.isActive = false
       })
-      console.log(33, this.finalElement[itemIndex].attrs)
       this.finalElement[itemIndex].attrs[eleIndex].isActive = true
       this.editElement = this.finalElement[itemIndex].attrs[eleIndex]
       this.openPanel = '1'
@@ -1094,6 +1100,10 @@ fieldset[disabled] .ivu-input {
 }
 </style>
 <style lang="scss" scoped>
+.ivu-form-item {
+  margin-bottom: 16px;
+}
+
 .active-zone {
   color: #338cf0;
 }

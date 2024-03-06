@@ -286,6 +286,11 @@ type ProcDefEntityDataObj struct {
 	DisplayName string `json:"displayName"`
 }
 
+type SyncUseRoleParam struct {
+	ProcDefId string   `json:"procDefId"` // 编排ID
+	UseRoles  []string `json:"useRoles"`  // 使用角色
+}
+
 type ProcNodeObjList []*ProcNodeObj
 
 func (s ProcNodeObjList) Len() int {

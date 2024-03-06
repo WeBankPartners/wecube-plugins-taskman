@@ -52,7 +52,7 @@ func CreateTaskTemplate(c *gin.Context) {
 // UpdateTaskTemplate 更新任务模板/创建编排任务模板
 func UpdateTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")
-	id := c.Param("id") // id是taskTemplateId，或nodeDefId，前者为空时传后者
+	id := c.Param("id")
 	var param models.TaskTemplateDto
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
@@ -67,6 +67,10 @@ func UpdateTaskTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, errors.New("param requestTemplate wrong"))
 		return
 	}
+	if param.Id != id {
+		middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
+		return
+	}
 	// 校验权限
 	user := middleware.GetRequestUser(c)
 	err := service.GetRequestTemplateService().CheckPermission(requestTemplateId, user)
@@ -74,22 +78,8 @@ func UpdateTaskTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	var result *models.TaskTemplateDto
-	if param.Id == "" {
-		// 创建编排任务模板
-		if param.NodeDefId != id {
-			middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
-			return
-		}
-		result, err = service.GetTaskTemplateService().CreateProcTaskTemplate(&param, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), user)
-	} else {
-		// 更新任务模板
-		if param.Id != id && param.NodeDefId != id {
-			middleware.ReturnParamValidateError(c, errors.New("param id wrong"))
-			return
-		}
-		result, err = service.GetTaskTemplateService().UpdateTaskTemplate(&param, user)
-	}
+	// 更新任务模板
+	result, err := service.GetTaskTemplateService().UpdateTaskTemplate(&param, user)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -124,7 +114,7 @@ func DeleteTaskTemplate(c *gin.Context) {
 // 读取任务模板
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")
-	id := c.Param("id") // id是taskTemplateId，或nodeDefId，后者非空时传后者
+	id := c.Param("id")
 	typ := c.Query("type")
 	// 校验参数
 	if requestTemplateId == "" || id == "" || typ == "" {

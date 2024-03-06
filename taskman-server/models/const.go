@@ -28,15 +28,6 @@ const (
 
 const ProcDefStatusTimeout = "Timeouted" //编排状态超时
 
-// TemplateType 模板类型
-type TemplateType string
-
-const (
-	RequestType TemplateType = "request" // 请求
-	ReleaseType TemplateType = "release" // 发布
-	OtherType   TemplateType = "other"   // 其他
-)
-
 // RequestTemplateStatus 请求模板状态
 type RequestTemplateStatus string
 
@@ -185,4 +176,15 @@ const (
 const (
 	TaskTypeImplementProcess string = "implement_process" // 编排任务
 	TaskTypeImplementCustom  string = "implement_custom"  // 自定义任务
+)
+
+// SceneType 场景类型
+type SceneType int
+
+const (
+	SceneTypeRequest SceneType = 1 // 请求
+	SceneTypeRelease SceneType = 2 // 发布
+	SceneTypeProblem SceneType = 3 // 问题
+	SceneTypeEvent   SceneType = 4 // 事件
+	SceneTypeChange  SceneType = 5 // 变更
 )

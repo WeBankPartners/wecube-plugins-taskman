@@ -9,12 +9,31 @@
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_attach') }}</Col>
     </Row>
-    <Row class="content" :gutter="10">
+    <template v-if="data.taskHandleList && data.taskHandleList.length > 0">
+      <Row v-for="i in data.taskHandleList" :key="i.id" class="content" :gutter="10">
+        <Col :span="3" class="line">{{ i.role || '-' }}</Col>
+        <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
+        <Col :span="2" class="line">{{ i.handleResult || operation || '-' }}</Col>
+        <Col :span="4" class="line">{{ i.updatedTime }}</Col>
+        <Col :span="3" class="line">{{ getDiffTime(i) }}</Col>
+        <Col :span="5" class="line"
+          ><div class="text-overflow">{{ i.resultDesc || '-' }}</div></Col
+        >
+        <Col :span="5" class="line">
+          <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
+            <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
+              file.name
+            }}</Tag>
+          </div>
+        </Col>
+      </Row>
+    </template>
+    <Row v-else class="content" :gutter="10">
       <Col :span="3" class="line">{{ data.handleRoleName || '-' }}</Col>
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
-      <Col :span="2" class="line">{{ data.choseOption || operation }}</Col>
+      <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
       <Col :span="4" class="line">{{ data.handleTime }}</Col>
-      <Col :span="3" class="line">{{ getDiffTime }}</Col>
+      <Col :span="3" class="line">{{ getDiffTime(data) }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
       >
@@ -55,19 +74,21 @@ export default {
   },
   computed: {
     getDiffTime () {
-      const newDate = dayjs(this.data.handleTime)
-      const oldDate = dayjs(this.data.createdTime)
-      let subtime = (newDate - oldDate) / 1000
-      let days = parseInt(subtime / 86400)
-      let hours = parseInt(subtime / 3600) - 24 * days
-      let mins = parseInt((subtime % 3600) / 60)
-      let secs = parseInt(subtime % 60)
-      return (
-        (days > 0 ? days + this.$t('tw_day') : '') +
-        (hours > 0 ? hours + this.$t('tw_hour') : '') +
-        (mins > 0 ? mins + this.$t('tw_minute') : '') +
-        (secs > 0 ? secs + this.$t('tw_second') : '')
-      )
+      return function (data) {
+        const newDate = dayjs(data.updatedTime)
+        const oldDate = dayjs(data.createdTime)
+        let subtime = (newDate - oldDate) / 1000
+        let days = parseInt(subtime / 86400)
+        let hours = parseInt(subtime / 3600) - 24 * days
+        let mins = parseInt((subtime % 3600) / 60)
+        let secs = parseInt(subtime % 60)
+        return (
+          (days > 0 ? days + this.$t('tw_day') : '') +
+          (hours > 0 ? hours + this.$t('tw_hour') : '') +
+          (mins > 0 ? mins + this.$t('tw_minute') : '') +
+          (secs > 0 ? secs + this.$t('tw_second') : '')
+        )
+      }
     }
   },
   mounted () {

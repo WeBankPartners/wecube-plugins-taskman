@@ -60,6 +60,9 @@
   "warning": "警告",
   "can_not_be_empty": " 不能为空",
   "publish_template": "发布模板",
+  "publish_template_tip": "确定发布模版？本页面未保存信息将不回被发布",
+  "submit_for_review": "提交审核",
+  "submit_for_review_tip": "确定提交审核？本页面未保存信息将不回被提交",
   "confirm_change": "确认变更",
   "final_version": "确认定版",
   "initiate_request": "发起请求上报",
@@ -242,7 +245,7 @@
   "tw_my_collect": "我的收藏",
   "tw_collec_tooltip": "收藏",
   "tw_uncollec_tooltip": "取消收藏",
-  "tw_owner_role": "属主/角色",
+  "tw_owner_role": "属主角色/属主",
   "tw_template_status": "模板状态",
   "tw_template_status_use": "可使用",
   "tw_template_status_disable": "已禁用",
@@ -311,5 +314,6 @@
   "query_filter_rule": "查看过滤规则",
   "please_choose": "请选择",
   "please_paste_here": "请在这粘贴",
-  "delete_node": "删除此节点"
+  "delete_node": "删除此节点",
+  "tw_type": "类型"
 }

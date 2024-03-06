@@ -2,7 +2,7 @@
   <div>
     <Row type="flex">
       <Col span="24" style="padding: 0 20px">
-        <div style="margin: 24px 0">
+        <div style="margin-bottom: 12px">
           <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right:6px;">
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
@@ -191,17 +191,17 @@
                     <span class="underline"></span>
                   </div>
                 </div>
-                <div>
-                  <Form :label-width="120">
+                <div style="margin-top: 24px;">
+                  <Form :label-width="90">
                     <FormItem :label="$t('t_action')">
-                      <Select>
+                      <Select style="width:94%">
                         <Option value="1">{{ $t('tw_approve') }}</Option>
                         <Option value="2">{{ $t('tw_reject') }}</Option>
                         <Option value="3">{{ $t('tw_send_back') }}</Option>
                       </Select>
                     </FormItem>
                     <FormItem :label="$t('tw_comments')">
-                      <Input type="textarea" :rows="2"></Input>
+                      <Input type="textarea" :rows="2" style="width:94%"></Input>
                     </FormItem>
                   </Form>
                 </div>
@@ -689,7 +689,7 @@ export default {
   },
   props: ['requestTemplateId'],
   mounted () {
-    this.MODALHEIGHT = document.body.scrollHeight - 400
+    this.MODALHEIGHT = document.body.scrollHeight - 500
     this.removeEmptyDataForm()
     this.loadPage()
   },
@@ -700,6 +700,7 @@ export default {
     loadPage (sort) {
       this.cancelGroup()
       this.getApprovalNode(sort)
+      this.getAllDataModels()
     },
     async getApprovalNode (sort) {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'approve')
@@ -1097,6 +1098,9 @@ fieldset[disabled] .ivu-input {
 }
 </style>
 <style lang="scss" scoped>
+.ivu-form-item {
+  margin-bottom: 16px;
+}
 .active-zone {
   color: #338cf0;
 }

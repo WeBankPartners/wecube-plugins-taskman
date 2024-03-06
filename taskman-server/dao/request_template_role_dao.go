@@ -24,3 +24,9 @@ func (d *RequestTemplateRoleDao) Add(session *xorm.Session, requestTemplateRole 
 	logExecuteSql(session, "RequestTemplateRoleDao", "Add", requestTemplateRole, affected, err)
 	return
 }
+
+func (d *RequestTemplateRoleDao) QueryByRequestTemplateAndType(requestTemplateId, roleType string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
+	requestTemplateRoleList = []*models.RequestTemplateRoleTable{}
+	d.DB.Where("request_template = ? and role_type = ?", requestTemplateId, roleType).Find(&requestTemplateRoleList)
+	return
+}

@@ -1910,7 +1910,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
 	result.Task = taskForHistoryList
-	result.UncompletedTasks = uncompletedTasks
+	result.Request.UncompletedTasks = uncompletedTasks
 	return
 }
 

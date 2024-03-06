@@ -348,14 +348,14 @@ type UpdateRequestStatusParam struct {
 }
 
 type RequestHistory struct {
-	Request          *RequestForHistory `json:"request"`
-	Task             []*TaskForHistory  `json:"task"`
-	UncompletedTasks []string           `json:"uncompletedTasks"`
+	Request *RequestForHistory `json:"request"`
+	Task    []*TaskForHistory  `json:"task"`
 }
 
 type RequestForHistory struct {
 	RequestTable
-	Editable bool `json:"editable"`
+	Editable         bool     `json:"editable"`
+	UncompletedTasks []string `json:"uncompletedTasks"`
 }
 
 type TaskHandleForHistory struct {

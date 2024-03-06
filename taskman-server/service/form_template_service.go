@@ -266,7 +266,7 @@ func (s *FormTemplateService) GetFormConfig(requestTemplateId, taskTemplateId, f
 	var dataFormConfigureDto *models.FormTemplateGroupConfigureDto
 	var formItemTemplateList []*models.FormItemTemplateDto
 	var existAttrMap = make(map[string]bool)
-	var existCustomItemsMap = make(map[string]string)
+	var existCustomItemsMap = make(map[string]bool)
 	var formItemTemplateGroup *models.FormTemplateTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -300,8 +300,7 @@ func (s *FormTemplateService) GetFormConfig(requestTemplateId, taskTemplateId, f
 			if formItemTemplate.AttrDefId != "" {
 				existAttrMap[formItemTemplate.AttrDefId] = true
 			} else {
-				configureDto.CustomItems = append(configureDto.CustomItems, formItemTemplate)
-				existCustomItemsMap[formItemTemplate.RefId] = formItemTemplate.Id
+				existCustomItemsMap[formItemTemplate.RefId] = true
 			}
 		}
 		// 2. 查询数据表单
@@ -322,13 +321,12 @@ func (s *FormTemplateService) GetFormConfig(requestTemplateId, taskTemplateId, f
 				}
 			}
 			if len(dataFormConfigureDto.CustomItems) > 0 {
+				configureDto.CustomItems = dataFormConfigureDto.CustomItems
 				for _, customItem := range dataFormConfigureDto.CustomItems {
-					if existCustomItemsMap[customItem.Id] != "" {
-						customItem.Id = existCustomItemsMap[customItem.Id]
-					} else {
-						customItem.Id = ""
+					customItem.Active = false
+					if existCustomItemsMap[customItem.Id] {
+						customItem.Active = true
 					}
-					configureDto.CustomItems = append(configureDto.CustomItems, customItem)
 				}
 			}
 		}
@@ -365,6 +363,7 @@ func (s *FormTemplateService) GetDataFormConfig(requestTemplateId, taskTemplateI
 		if len(formItemTemplateList) > 0 {
 			for _, formItem := range formItemTemplateList {
 				if formItem.ElementType == string(models.FormItemElementTypeCalculate) {
+					formItem.Active = true
 					configureDto.CustomItems = append(configureDto.CustomItems, formItem)
 				} else {
 					existAttrMap[formItem.AttrDefId] = true

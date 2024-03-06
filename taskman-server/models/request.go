@@ -40,6 +40,7 @@ type RequestTable struct {
 	RevokeFlag          int                `json:"revokeFlag" xorm:"revoke_flag"`                // 撤回标志 0表示没被撤回,1表示撤回
 	Notes               string             `json:"notes" xorm:"notes"`                           // 请求确认备注
 	TaskApprovalCache   string             `json:"taskApprovalCache" xorm:"task_approval_cache"` // 任务审批cache
+	CompleteStatus      string             `json:"completeStatus" xorm:"complete_status"`        // 任务完成状态
 	ExpireDay           int                `json:"expireDay" xorm:"-"`                           // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
@@ -70,15 +71,19 @@ type CreateRequestDto struct {
 
 // PlatformData  工作台数据
 type PlatformData struct {
-	Pending        string `json:"pending"`        // 待处理, eg:7;2 使用;分割开 7表示发布个数,2表示请求个数
-	PendingTask    string `json:"pendingTask"`    // 待处理任务
-	PendingApprove string `json:"pendingApprove"` // 待处理审批
-	RequestPending string `json:"requestPending"` // 请求定版
-	RequestConfirm string `json:"requestConfirm"` // 请求确认
-	HasProcessed   string `json:"hasProcessed"`   // 已处理
-	Submit         string `json:"submit"`         // 我提交的
-	Draft          string `json:"draft"`          // 我暂存的
-	Collect        string `json:"collect"`        // 收藏模板
+	Pending             string `json:"pending"`             // 待处理, eg:7;2 使用;分割开 7表示发布个数,2表示请求个数
+	PendingTask         string `json:"pendingTask"`         // 待处理任务
+	PendingApprove      string `json:"pendingApprove"`      // 待处理审批
+	PendingCheck        string `json:"pendingCheck"`        // 待处理定版
+	PendingConfirm      string `json:"pendingConfirm"`      // 待处理请求确认
+	HasProcessed        string `json:"hasProcessed"`        // 已处理
+	HasProcessedTask    string `json:"hasProcessedTask"`    // 已处理任务
+	HasProcessedApprove string `json:"hasProcessedApprove"` // 已处理审批
+	HasProcessedCheck   string `json:"hasProcessedCheck"`   // 已处理请求定版
+	HasProcessedConfirm string `json:"hasProcessedConfirm"` // 已处理请求确认
+	Submit              string `json:"submit"`              // 我提交的
+	Draft               string `json:"draft"`               // 我暂存的
+	Collect             string `json:"collect"`             // 收藏模板
 }
 
 // PlatformDataObj 工作台返回数据
@@ -349,7 +354,8 @@ type RequestHistory struct {
 
 type RequestForHistory struct {
 	RequestTable
-	Editable bool `json:"editable"`
+	Editable         bool     `json:"editable"`
+	UncompletedTasks []string `json:"uncompletedTasks"`
 }
 
 type TaskHandleForHistory struct {

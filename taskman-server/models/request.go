@@ -44,6 +44,7 @@ type RequestTable struct {
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
 	AssociationWorkflow bool               `json:"associationWorkflow" xorm:"-"`                 // 是否关联编排
+	CompleteStatus      string             `json:"completeStatus" xorm:"complete_status"`        // 已完成 complete, 未完成 uncompleted
 }
 
 func (RequestTable) TableName() string {
@@ -343,9 +344,9 @@ type UpdateRequestStatusParam struct {
 }
 
 type RequestHistory struct {
-	Request         *RequestForHistory `json:"request"`
-	Task            []*TaskForHistory  `json:"task"`
-	UncompleteTasks []string           `json:"uncompleteTasks"`
+	Request          *RequestForHistory `json:"request"`
+	Task             []*TaskForHistory  `json:"task"`
+	UncompletedTasks []string           `json:"uncompletedTasks"`
 }
 
 type RequestForHistory struct {

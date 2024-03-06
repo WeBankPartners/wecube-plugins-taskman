@@ -1858,8 +1858,12 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)
 	}
 
+	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
 	for _, task := range tasks {
+		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
+			uncompletedTasks = append(uncompletedTasks, task.Name)
+		}
 		if task.Type == string(models.TaskTypeImplement) {
 			if task.ProcDefId != "" {
 				task.Type = models.TaskTypeImplementProcess
@@ -1906,6 +1910,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
 	result.Task = taskForHistoryList
+	result.UncompletedTasks = uncompletedTasks
 	return
 }
 

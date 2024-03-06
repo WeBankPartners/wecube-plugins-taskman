@@ -352,12 +352,17 @@ type RequestForHistory struct {
 	Editable bool `json:"editable"`
 }
 
+type TaskHandleForHistory struct {
+	TaskHandleTable
+	AttachFiles []*AttachFileTable `json:"attachFiles"`
+}
+
 type TaskForHistory struct {
 	TaskTable
 	Editable       bool                      `json:"editable"`
-	TaskHandleList []*TaskHandleTable        `json:"taskHandleList"`
+	TaskHandleList []*TaskHandleForHistory   `json:"taskHandleList"`
 	NextOptions    []string                  `json:"nextOptions"`
-	AttachFiles    []string                  `json:"attachFiles"`
+	AttachFiles    []*AttachFileTable        `json:"attachFiles"`
 	HandleMode     string                    `json:"handleMode"`
 	FormData       []*RequestPreDataTableObj `json:"formData"`
 }

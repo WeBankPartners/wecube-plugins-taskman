@@ -8,6 +8,7 @@ type AttachFileTable struct {
 	DelFlag      int    `json:"delFlag" xorm:"del_flag"`
 	Request      string `json:"request" xorm:"request"`
 	Task         string `json:"task" xorm:"task"`
+	TaskHandle   string `json:"taskHandle" xorm:"task_handle"`
 }
 
 func (AttachFileTable) TableName() string {

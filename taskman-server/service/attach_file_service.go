@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/file_server"
 	"github.com/WeBankPartners/go-common-lib/guid"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"time"
@@ -223,4 +224,20 @@ func getAttachFileRequestTemplate(requestId, taskId string) string {
 		return requestTable[0].RequestTemplate
 	}
 	return ""
+}
+
+func GetTaskHandleAttachFileList(ctx context.Context, taskHandleIds []string) (result []*models.AttachFileTable, err error) {
+	result = make([]*models.AttachFileTable, 0)
+	var attachFiles []*models.AttachFileTable
+	err = dao.X.Context(ctx).Table(models.AttachFileTable{}.TableName()).
+		In("task_handle", taskHandleIds).
+		Find(&attachFiles)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(attachFiles) > 0 {
+		result = attachFiles
+	}
+	return
 }

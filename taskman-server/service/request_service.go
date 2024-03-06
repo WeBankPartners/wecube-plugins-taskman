@@ -1820,13 +1820,42 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		return
 	}
 
-	taskIdMapHandle := make(map[string][]*models.TaskHandleTable)
+	taskHandleIds := make([]string, 0, len(taskHandles))
 	for _, taskHandle := range taskHandles {
-		// todo: attachFiles // GetTaskAttachFileList(taskHandleId)
-		if _, isExisted := taskIdMapHandle[taskHandle.Task]; !isExisted {
-			taskIdMapHandle[taskHandle.Task] = []*models.TaskHandleTable{}
+		taskHandleIds = append(taskHandleIds, taskHandle.Id)
+	}
+
+	// 查询 attach file
+	attachFileTaskHandleIdMap := make(map[string][]*models.AttachFileTable)
+	if len(taskHandleIds) > 0 {
+		attachFiles, tmpErr := GetTaskHandleAttachFileList(c, taskHandleIds)
+		if tmpErr != nil {
+			err = tmpErr
+			return
 		}
-		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], taskHandle)
+		for _, attachFile := range attachFiles {
+			if _, isExisted := attachFileTaskHandleIdMap[attachFile.TaskHandle]; !isExisted {
+				attachFileTaskHandleIdMap[attachFile.TaskHandle] = []*models.AttachFileTable{}
+			}
+			attachFileTaskHandleIdMap[attachFile.TaskHandle] = append(attachFileTaskHandleIdMap[attachFile.TaskHandle], attachFile)
+		}
+	}
+
+	taskIdMapHandle := make(map[string][]*models.TaskHandleForHistory)
+	for _, taskHandle := range taskHandles {
+		if _, isExisted := taskIdMapHandle[taskHandle.Task]; !isExisted {
+			taskIdMapHandle[taskHandle.Task] = []*models.TaskHandleForHistory{}
+		}
+
+		attachFiles := make([]*models.AttachFileTable, 0)
+		if _, isExisted := attachFileTaskHandleIdMap[taskHandle.Id]; isExisted {
+			attachFiles = attachFileTaskHandleIdMap[taskHandle.Id]
+		}
+		curTaskHandleForHistory := &models.TaskHandleForHistory{
+			TaskHandleTable: *taskHandle,
+			AttachFiles:     attachFiles,
+		}
+		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)
 	}
 
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
@@ -1840,16 +1869,9 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		}
 
 		nextOptions := make([]string, 0)
-		// attachFiles := make([]string, 0)
 		if task.NextOption != "" {
 			nextOptions = strings.Split(task.NextOption, ",")
 		}
-		/*
-			if task.AttachFile != "" {
-				attachFiles = strings.Split(task.AttachFile, ",")
-			}
-		*/
-		// GetTaskAttachFileList(taskObj.Id)
 
 		var handleMode string
 		if templateInfo, isExisted := taskTmplIdMapInfo[task.TaskTemplate]; isExisted {
@@ -1864,12 +1886,12 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		formData := make([]*models.RequestPreDataTableObj, 0)
 		curTaskForHistory := &models.TaskForHistory{
 			TaskTable:      *task,
-			TaskHandleList: []*models.TaskHandleTable{},
+			TaskHandleList: []*models.TaskHandleForHistory{},
 			NextOptions:    nextOptions,
-			// AttachFiles:    attachFiles,
-			HandleMode: handleMode,
-			Editable:   editable,
-			FormData:   formData,
+			AttachFiles:    []*models.AttachFileTable{},
+			HandleMode:     handleMode,
+			Editable:       editable,
+			FormData:       formData,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]

@@ -296,7 +296,7 @@
   "tw_commit": "提交",
   "tw_confirm_commit": "确认提交",
   "tw_confirm": "确认 ",
-  "tw_confirm_discarding_changes": "确认放弃改动",
+  "tw_confirm_discarding_changes": "确认保存当前修改",
   "tw_params_edit_confirm": "数据发生变化，选择放弃则变化信息不会被保存！",
   "tw_abandon": "放弃",
   "tw_approve": "同意",
@@ -315,5 +315,8 @@
   "please_choose": "请选择",
   "please_paste_here": "请在这粘贴",
   "delete_node": "删除此节点",
-  "tw_type": "类型"
+  "tw_type": "类型",
+  "tw_template": "模版",
+  "tw_limit_30": "长度需在0到30之间",
+  "tw_limit_200": "长度需小于200"
 }

@@ -1,6 +1,6 @@
 <template>
   <Drawer title="配置表单" :closable="false" :mask-closable="false" :width="550" v-model="openFormConfig">
-    <div>
+    <div class="wf-entity-config">
       <Form :label-width="120">
         <FormItem :label="$t('表单类型')">
           <Button shape="circle" :style="groupStyle[group.itemGroupType]">{{
@@ -29,7 +29,7 @@
             </Col>
           </Row>
         </div>
-        <Divider @click="test" style="margin-top:40px">自定义分析字段</Divider>
+        <Divider style="margin-top:40px">自定义分析字段</Divider>
         <Row>
           <Col span="1">&nbsp;&nbsp;&nbsp;&nbsp;</Col>
           <Col span="6">字段名称</Col>
@@ -171,9 +171,6 @@ export default {
   },
   props: ['module', 'isCustomItemEditable'],
   methods: {
-    test () {
-      console.log(11, this.group.customItems)
-    },
     // 自定义字段获取所有类型
     async getAllDataModels () {
       let { data, status } = await getAllDataModels()
@@ -279,6 +276,11 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.wf-entity-config {
+  height: calc(100vh - 150px);
+  overflow: auto;
+}
+
 .demo-drawer-footer {
   width: 100%;
   position: absolute;

@@ -1107,11 +1107,11 @@ fieldset[disabled] .ivu-input {
   color: #757575;
   -webkit-text-fill-color: #757575;
 }
-</style>
-<style lang="scss" scoped>
-.custom-add-btn > .ivu-icon {
+.ivu-btn-icon-only.ivu-btn-circle > .ivu-icon {
   vertical-align: middle !important;
 }
+</style>
+<style lang="scss" scoped>
 .ivu-form-item {
   margin-bottom: 16px;
 }
@@ -1200,7 +1200,7 @@ fieldset[disabled] .ivu-input {
   vertical-align: middle;
   opacity: 1;
   overflow: hidden;
-  padding: 0 12px;
+  padding: 0 6px 0 12px;
   cursor: pointer;
 }
 .node-active {
@@ -1214,7 +1214,7 @@ fieldset[disabled] .ivu-input {
   opacity: 1;
   overflow: hidden;
   color: #fff;
-  padding: 0 12px;
+  padding: 0 6px 0 12px;
   cursor: pointer;
 }
 </style>

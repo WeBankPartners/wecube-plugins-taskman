@@ -4,7 +4,9 @@
       <Icon v-if="expand" size="26" type="md-arrow-dropdown" @click="handleExpand" style="cursor:pointer" />
       <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
-      <span v-if="subTitle" class="sub-title">{{ '(' + subTitle + ')' }}</span>
+      <span class="sub-title">
+        <slot name="sub-title"></slot>
+      </span>
     </div>
     <div v-show="expand" class="content">
       <slot></slot>

@@ -217,6 +217,8 @@ export default {
       this.activeTab = item.entity || item.itemGroup
       this.activeItem = item
       this.initTableData()
+      this.addRowSource = ''
+      this.addRowSourceOptions = []
     }, 100),
     async initTableData () {
       // 当前选择tab数据
@@ -298,7 +300,8 @@ export default {
       delete cache._checked
       delete cache._disabled
       const filterValue = row[titleObj.name]
-      const attr = titleObj.entity + '__' + titleObj.name
+      // const attr = titleObj.entity + '__' + titleObj.name
+      const attr = titleObj.id
       const params = {
         filters: [
           {

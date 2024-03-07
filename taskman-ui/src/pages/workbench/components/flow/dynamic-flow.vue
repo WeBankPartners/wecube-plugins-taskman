@@ -177,10 +177,11 @@ export default {
         // 定时拿状态
         this.start()
         let { statusCode, data } = await getFlowByInstanceId(this.flowId)
+        const flowData = data || {}
         if (statusCode === 'OK') {
           this.flowData = {
-            ...data,
-            flowNodes: data.taskNodeInstances
+            ...flowData,
+            flowNodes: flowData.taskNodeInstances
           }
           removeEvent('.retry', 'click', this.retryHandler)
           this.initFlowGraph(true)

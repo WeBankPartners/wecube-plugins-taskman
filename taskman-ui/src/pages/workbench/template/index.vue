@@ -268,7 +268,7 @@ export default {
       const { statusCode, data } = await getTemplateTree()
       this.spinShow = false
       const typeMap = {
-        0: 'request',
+        2: 'request',
         1: 'publish'
       }
       if (statusCode === 'OK') {
@@ -378,7 +378,7 @@ export default {
                 (Array.isArray(j.templates) &&
                   j.templates.filter(k => {
                     const typeMap = {
-                      0: 'request',
+                      2: 'request',
                       1: 'publish'
                     }
                     // 根据模板名、标签名、模版发布状态组合搜索

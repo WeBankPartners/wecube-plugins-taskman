@@ -282,7 +282,8 @@
         <Icon v-if="flowVisible" type="ios-arrow-dropright-circle" :size="28" />
         <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
       </div>
-      <div v-show="flowVisible" class="flow-expand">
+      <!--使用v-show会导致流程图加载不出来-->
+      <div v-if="flowVisible" class="flow-expand">
         <StaticFlow :requestTemplate="requestTemplate"></StaticFlow>
       </div>
     </template>

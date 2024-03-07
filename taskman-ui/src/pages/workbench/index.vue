@@ -1,20 +1,6 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <!-- <div class="header">
-      <div class="left">
-        <Icon size="32" type="md-desktop" />
-        <span class="ml">个人工作台</span>
-      </div>
-      <div class="right">
-        <Icon v-if="expand" @click="expand = !expand" size="30" type="ios-arrow-down" />
-        <Icon v-else @click="expand = !expand" size="30" type="ios-arrow-up" />
-        <Icon @click="expand = !expand"  class='ml' size="32" type="ios-refresh" />
-      </div>
-    </div> -->
-    <!-- <div class="hot-link">
-      <HotLink></HotLink>
-    </div> -->
     <DataCard
       ref="dataCard"
       :initTab="initTab"

@@ -140,7 +140,7 @@ export const getPublishInfo = requestId => req.get(`/taskman/api/v2/request/deta
 // 发布历史页面
 export const getPublishList = params => req.post(`/taskman/api/v1/request/history/list`, params)
 // 确认定版新接口
-export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/request/start/${requestId}`, data)
+export const startRequestNew = (requestId, data) => req.post(`/taskman/api/v2/request-check/confirm/${requestId}`, data)
 // 定版暂存新接口
 export const saveRequestNew = (requestId, type, data) =>
   req.post(`/taskman/api/v2/request-data/save/${requestId}/bing/${type}`, data)

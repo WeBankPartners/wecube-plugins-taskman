@@ -48,6 +48,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				customItem.ItemGroup = param.ItemGroup
 				customItem.ItemGroupName = param.ItemGroupName
 				customItem.ElementType = string(models.FormItemElementTypeCalculate)
+
 				insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(customItem))
 			}
 		}

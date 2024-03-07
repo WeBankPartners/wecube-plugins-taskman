@@ -578,7 +578,7 @@ func getRequestPreDataByTemplateId(requestTemplateId string) []*models.RequestPr
 				ItemGroup:      formTemplate.ItemGroup,
 				ItemGroupName:  formTemplate.ItemGroupName,
 				ItemGroupType:  formTemplate.ItemGroupType,
-				ItemGroupRule:  formTemplate.ItemGroupType,
+				ItemGroupRule:  formTemplate.ItemGroupRule,
 				Title:          title,
 				Value:          []*models.EntityTreeObj{},
 			})

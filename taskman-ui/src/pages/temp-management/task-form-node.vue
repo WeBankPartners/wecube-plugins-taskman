@@ -315,7 +315,6 @@ export default {
       this.paramsChanged()
     },
     async getUserByRole (role, roleObjIndex) {
-      console.log(11)
       const params = {
         params: {
           roles: role
@@ -323,7 +322,6 @@ export default {
       }
       const { statusCode, data } = await getHandlerRoles(params)
       if (statusCode === 'OK') {
-        console.log(22, data)
         Vue.set(
           this.activeApprovalNode.handleTemplates[roleObjIndex],
           'handlerOptions',

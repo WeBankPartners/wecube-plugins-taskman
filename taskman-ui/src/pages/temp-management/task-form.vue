@@ -3,7 +3,7 @@
     <Row type="flex">
       <Col span="24" style="padding: 0 20px">
         <div style="margin-bottom: 12px">
-          <span v-for="approval in approvalNodes" :key="approval.id" style="margin-right:6px;">
+          <span v-for="(approval, approvalIndex) in approvalNodes" :key="approval.id" style="margin-right:6px;">
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
               @click="editNode(approval)"
@@ -14,10 +14,11 @@
                 @click.stop="removeNopde(approval)"
                 type="md-close"
                 color="#ed4014"
-                style="vertical-align: sub;"
+                style="vertical-align: sub;margin-left: 4px;"
                 :size="18"
               />
             </div>
+            <div class="ivu-divider-dashed dash-line"></div>
             <Button
               class="custom-add-btn"
               v-if="procDefId === ''"
@@ -27,6 +28,7 @@
               shape="circle"
               icon="md-add"
             ></Button>
+            <div v-if="approvalIndex !== approvalNodes.length - 1" class="ivu-divider-dashed dash-line"></div>
           </span>
         </div>
         <div>
@@ -740,7 +742,7 @@ export default {
       }
       const { statusCode } = await addApprovalNode(params)
       if (statusCode === 'OK') {
-        this.getApprovalNode(sort - 1)
+        this.getApprovalNode(sort)
       }
     },
     async removeNopde (node) {
@@ -1158,6 +1160,17 @@ fieldset[disabled] .ivu-input {
   display: inline-block;
   margin: 8px 0;
 }
+.custom-add-btn {
+  // margin: 0 24px;
+}
+.dash-line {
+  display: inline-block;
+  width: 24px;
+  vertical-align: middle;
+  margin: 0 4px;
+  border-color: #dcdee2;
+}
+
 .custom-title {
   width: 90px;
   display: inline-block;
@@ -1202,7 +1215,7 @@ fieldset[disabled] .ivu-input {
   vertical-align: middle;
   opacity: 1;
   overflow: hidden;
-  padding: 0 6px 0 12px;
+  padding: 0 12px;
   cursor: pointer;
 }
 .node-active {
@@ -1216,7 +1229,7 @@ fieldset[disabled] .ivu-input {
   opacity: 1;
   overflow: hidden;
   color: #fff;
-  padding: 0 6px 0 12px;
+  padding: 0 12px;
   cursor: pointer;
 }
 </style>

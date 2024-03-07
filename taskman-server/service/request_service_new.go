@@ -252,17 +252,17 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	switch param.Tab {
 	case "pending":
-		sql, queryParam = pendingTaskSQL(param.Type, userRolesFilterSql, userRolesFilterParam, taskType)
+		sql, queryParam = pendingTaskSQL(param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
 		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 		return
 	case "hasProcessed":
-		sql, queryParam = hasProcessedTaskSQL(param.Type, user, taskType)
+		sql, queryParam = hasProcessedTaskSQL(param.Action, user, taskType)
 		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 		return
 	case "submit":
-		sql, queryParam = submitSQL(param.Rollback, param.Type, user)
+		sql, queryParam = submitSQL(param.Rollback, param.Action, user)
 	case "draft":
-		sql, queryParam = draftSQL(param.Type, user)
+		sql, queryParam = draftSQL(param.Action, user)
 	default:
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return

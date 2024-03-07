@@ -1256,6 +1256,11 @@ func (s *TaskService) ListImplementTasks(requestId string) (list []*models.TaskT
 }
 
 func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTable, err error) {
-	_, err = dao.X.SQL("select from task where request = ? and type =? order by created_time desc limit 0,1", requestId, models.TaskTypeCheck).Get(task)
+	var taskList []*models.TaskTable
+	err = dao.X.SQL("select * from task where request = ? and type = ? order by created_time desc limit 0,1", requestId, models.TaskTypeCheck).Find(&taskList)
+	if err != nil {
+		return
+	}
+	task = taskList[0]
 	return
 }

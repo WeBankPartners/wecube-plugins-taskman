@@ -1198,7 +1198,9 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		err = dao.Transaction(actions)
 		return
 	}
-	// 没有配置定版,请求继续往后面走
+
+	// 没有配置定版,设置定版数据,请求继续往后面走
+
 	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
 	if err != nil {
 		return

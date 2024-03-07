@@ -128,15 +128,18 @@ func SaveRequestCache(c *gin.Context) {
 	}
 }
 
-func StartRequest(c *gin.Context) {
+// CheckRequest 确认定版
+func CheckRequest(c *gin.Context) {
 	requestId := c.Param("requestId")
 	var param models.RequestCacheData
+	var request models.RequestTable
 	var operator = middleware.GetRequestUser(c)
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	request, err := service.GetSimpleRequest(requestId)
+	request, err = service.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -145,13 +148,13 @@ func StartRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
 		return
 	}
-	instanceId, err := service.StartRequest(requestId, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+	err = service.CheckRequest(request, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "startRequest", c.Request.RequestURI, c.GetString("requestBody"))
-	middleware.ReturnData(c, instanceId)
+	service.GetOperationLogService().RecordRequestLog(requestId, "", middleware.GetRequestUser(c), "checkRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	middleware.ReturnSuccess(c)
 }
 
 func GetRequestHistory(c *gin.Context) {

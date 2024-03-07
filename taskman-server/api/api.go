@@ -147,7 +147,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestDetail},
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: requestNew.CreateRequest},
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
-		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: requestNew.StartRequest},
+		&handlerFuncObj{Url: "/request-check/confirm/:requestId", Method: "POST", HandlerFunc: requestNew.CheckRequest}, // 确认定版
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
 	)
 }

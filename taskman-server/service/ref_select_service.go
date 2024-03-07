@@ -17,6 +17,13 @@ type RefSelectService struct {
 
 func GetCMDBRefSelectResult(input *models.RefSelectParam) (result []*models.EntityDataObj, err error) {
 	result = []*models.EntityDataObj{}
+	formItemTemplateObj, getErr := getSimpleFormItemTemplate(input.FormItemTemplateId)
+	if getErr != nil {
+		err = getErr
+		return
+	}
+	input.FormItemTemplate = formItemTemplateObj
+	input.AttrId = fmt.Sprintf("%s%s%s", formItemTemplateObj.Entity, models.SysTableIdConnector, formItemTemplateObj.Name)
 	// if param map data have no new data -> get rpc data + same entity new data
 	refFlag, options, tmpErr := checkIfNeedAnalyze(input)
 	log.Logger.Info("isContainNewMap", log.String("isContainNewMap", fmt.Sprintf("%d", refFlag)))
@@ -59,7 +66,8 @@ func checkIfNeedAnalyze(input *models.RefSelectParam) (refFlag int, options []*m
 	}
 	var formItemTemplates []*models.FormItemTemplateTable
 	//x.SQL("select id,name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entity, input.RequestId).Find(&formItemTemplates)
-	dao.X.SQL("select distinct name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?) union select form_template from task_template where id in (select task_template from task where request=?))", entity, input.RequestId, input.RequestId).Find(&formItemTemplates)
+	//dao.X.SQL("select distinct name,ref_package_name,ref_entity,data_options from form_item_template where entity=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?) union select form_template from task_template where id in (select task_template from task where request=?))", entity, input.RequestId, input.RequestId).Find(&formItemTemplates)
+	dao.X.SQL("select distinct name,ref_package_name,ref_entity,data_options from form_item_template where form_template in (select id from form_template where request_template in (select request_template  from request where id=?) and item_group=?)", input.RequestId, input.FormItemTemplate.ItemGroup).Find(&formItemTemplates)
 	refColumnMap := make(map[string]int)
 	for _, v := range formItemTemplates {
 		if v.Name == attrName {
@@ -541,15 +549,14 @@ func getRequestNewData(requestId string) (result map[string]map[string]interface
 	return
 }
 
-func FilterInSideData(input []*models.EntityDataObj, attrId, requestId string) (output []*models.EntityDataObj) {
+func FilterInSideData(input []*models.EntityDataObj, formItemTemplate *models.FormItemTemplateTable, requestId string) (output []*models.EntityDataObj) {
 	output = input
-	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
-	var formItemTemplate []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId).Find(&formItemTemplate)
-	if len(formItemTemplate) == 0 {
-		return output
-	}
-	if formItemTemplate[0].IsRefInside == "no" {
+	//var formItemTemplate []*models.FormItemTemplateTable
+	//dao.X.SQL("select * from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?))", entityName, attrName, requestId).Find(&formItemTemplate)
+	//if len(formItemTemplate) == 0 {
+	//	return output
+	//}
+	if formItemTemplate.IsRefInside == "no" {
 		return output
 	}
 	var formItems []*models.FormItemTable
@@ -649,4 +656,15 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 		result = append(result, &models.EntityDataObj{Id: v.Id, DisplayName: v.DisplayName})
 	}
 	return result, nil
+}
+
+func getSimpleFormItemTemplate(formItemTemplateId string) (formItemTemplateObj *models.FormItemTemplateTable, err error) {
+	var itemTemplateRows []*models.FormItemTemplateTable
+	err = dao.X.SQL("select * from form_item_template where id=?", formItemTemplateId).Find(&itemTemplateRows)
+	if len(itemTemplateRows) == 0 {
+		err = fmt.Errorf("can not find form item template with id:%s ", formItemTemplateId)
+		return
+	}
+	formItemTemplateObj = itemTemplateRows[0]
+	return
 }

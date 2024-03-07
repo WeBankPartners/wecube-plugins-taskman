@@ -48,7 +48,7 @@ export default {
     async getFlowOutlineData () {
       let { statusCode, data } = await getFlowByTemplateId(this.requestTemplate)
       if (statusCode === 'OK') {
-        this.flowData = data
+        this.flowData = data || {}
         this.initFlowGraph()
       }
     },

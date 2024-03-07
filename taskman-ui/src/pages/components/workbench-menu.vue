@@ -87,9 +87,19 @@ export default {
     })
   },
   mounted () {
+    if (this.$eventBusP) {
+      this.$eventBusP.$emit('expand-menu', this.expand)
+    } else {
+      this.$bus.$emit('expand-menu', this.expand)
+    }
     window.addEventListener('scroll', this.getScrollTop)
   },
   beforeDestroy () {
+    if (this.$eventBusP) {
+      this.$eventBusP.$emit('expand-menu', false)
+    } else {
+      this.$bus.$emit('expand-menu', false)
+    }
     window.removeEventListener('scroll', this.getScrollTop)
   },
   methods: {

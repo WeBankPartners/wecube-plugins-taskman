@@ -104,7 +104,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType", Method: "POST", HandlerFunc: request.SaveRequestCache},
 		&handlerFuncObj{Url: "/request-data/get/:requestId/:cacheType", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
-		&handlerFuncObj{Url: "/request-data/reference/query/:attrId/:requestId", Method: "POST", HandlerFunc: request.GetReferenceData},
+		&handlerFuncObj{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData},
 
 		&handlerFuncObj{Url: "/user/platform", Method: "POST", HandlerFunc: request.CountRequest},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},

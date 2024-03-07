@@ -192,7 +192,8 @@ export default {
       delete cache._checked
       delete cache._disabled
       const filterValue = this.entityData[titleObj.name]
-      const attr = titleObj.entity + '__' + titleObj.name
+      // const attr = titleObj.entity + '__' + titleObj.name
+      const attr = titleObj.id
       const params = {
         filters: [
           {

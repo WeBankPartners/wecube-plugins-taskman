@@ -1218,7 +1218,6 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
 	var newTaskId string
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	actions = []*dao.ExecAction{}
 	now := time.Now().Format(models.DateTimeFormat)
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
@@ -1255,16 +1254,10 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
-			// 新增任务处理表
-			dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
-			if len(taskHandleTemplateList) > 0 {
-				// 根据任务审批模版表&请求人指定,设置审批处理
-				for _, taskHandleTemplate := range taskHandleTemplateList {
-					createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate, taskHandleTemplate)
-					if len(createTaskHandleAction) > 0 {
-						actions = append(actions, createTaskHandleAction...)
-					}
-				}
+			// 根据任务审批模版表&请求人指定,设置审批处理
+			createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate)
+			if len(createTaskHandleAction) > 0 {
+				actions = append(actions, createTaskHandleAction...)
 			}
 
 			// 更新请求表为审批状态
@@ -1284,7 +1277,6 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
 	if request.AssociationWorkflow && request.ProcInstanceId == "" {
@@ -1317,16 +1309,10 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
-			// 新增任务处理表
-			dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
-			if len(taskHandleTemplateList) > 0 {
-				// 根据任务审批模版表&请求人指定,设置审批处理
-				for _, taskHandleTemplate := range taskHandleTemplateList {
-					createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate, taskHandleTemplate)
-					if len(createTaskHandleAction) > 0 {
-						actions = append(actions, createTaskHandleAction...)
-					}
-				}
+			// 根据任务审批模版表&请求人指定,设置审批处理
+			createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate)
+			if len(createTaskHandleAction) > 0 {
+				actions = append(actions, createTaskHandleAction...)
 			}
 
 			// 更新请求表为审批状态

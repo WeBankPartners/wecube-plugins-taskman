@@ -17,6 +17,7 @@ func (TaskHandleTemplateTable) TableName() string {
 }
 
 type TaskHandleTemplateDto struct {
+	Id          string `json:"id"`
 	Role        string `json:"role"`
 	Assign      string `json:"assign"`
 	HandlerType string `json:"handlerType"`

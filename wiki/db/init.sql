@@ -431,6 +431,7 @@ CREATE TABLE IF NOT EXISTS  `form_template` (
   `item_group_rule` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '新增一行规则',
   `item_group_sort` tinyint(4) DEFAULT '0' COMMENT '排序',
   `ref_id` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '引用ID',
+  `request_form_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求表单类型:message 信息表单 data 数据表单',
   `del_flag` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `created_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -477,6 +478,8 @@ CREATE TABLE IF NOT EXISTS `task_handle_template` (
   `assign` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分派方式:template.模板指定 custom.提交人指定',
   `handler_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领',
   `handler` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '处理人',
+  `handle_mode` varchar(255) default null COMMENT '处理模式：custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过',
+  `sort` int  DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `force_task_template_new` (`task_template`),
   CONSTRAINT `force_task_template_new` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)

@@ -115,8 +115,8 @@
                 <!--单人自定义、协同、并行-->
                 <div v-if="['custom', 'any', 'all'].includes(i.handleMode)" class="step-background">
                   <div v-for="(j, idx) in i.handleTemplates" :key="idx" class="form-item">
-                    <!--审批角色设置-->
-                    <FormItem label="" required :label-width="0">
+                    <!--审批角色设置(模板指定/提交人指定)-->
+                    <FormItem label=" " required :label-width="15">
                       <Select
                         v-if="['custom', 'template'].includes(j.assign)"
                         v-model="j.role"
@@ -129,8 +129,8 @@
                         <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
                     </FormItem>
-                    <!--审批人设置-->
-                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                    <!--审批人设置(模板指定/建议/提交人指定/建议/组内系统分配/组内主动认领)-->
+                    <FormItem label=" " required :label-width="15" style="margin-left:20px;">
                       <Input
                         v-if="['template', 'template_suggest'].includes(j.handlerType)"
                         v-model="j.handler"
@@ -148,13 +148,20 @@
                       >
                         <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
+                      <Input
+                        v-else-if="j.handlerType === 'system'"
+                        value="组内系统分配"
+                        disabled
+                        style="width:300px;"
+                      />
+                      <Input v-else-if="j.handlerType === 'claim'" value="组内主动认领" disabled style="width:300px;" />
                     </FormItem>
                   </div>
                 </div>
                 <!--提交人角色管理员-->
                 <div v-else-if="i.handleMode === 'admin'" class="step-background">
                   <div class="form-item">
-                    <FormItem label="" required :label-width="0">
+                    <FormItem label=" " required :label-width="15">
                       <Select
                         v-model="i.handleTemplates[0].role"
                         disabled
@@ -164,7 +171,7 @@
                         <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
                     </FormItem>
-                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                    <FormItem label=" " required :label-width="15" style="margin-left:20px;">
                       <Input
                         v-model="i.handleTemplates[0].handler"
                         disabled
@@ -199,7 +206,7 @@
                 <div v-if="i.handleMode === 'custom'" class="step-background">
                   <div v-for="(j, idx) in i.handleTemplates" :key="idx" class="form-item">
                     <!--审批角色设置-->
-                    <FormItem label="" required :label-width="0">
+                    <FormItem label=" " required :label-width="15">
                       <Select
                         v-if="['custom', 'template'].includes(j.assign)"
                         v-model="j.role"
@@ -213,7 +220,7 @@
                       </Select>
                     </FormItem>
                     <!--审批人设置-->
-                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                    <FormItem label=" " required :label-width="15" style="margin-left:20px;">
                       <Input
                         v-if="['template', 'template_suggest'].includes(j.handlerType)"
                         v-model="j.handler"
@@ -231,13 +238,20 @@
                       >
                         <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
+                      <Input
+                        v-else-if="j.handlerType === 'system'"
+                        value="组内系统分配"
+                        disabled
+                        style="width:300px;"
+                      />
+                      <Input v-else-if="j.handlerType === 'claim'" value="组内主动认领" disabled style="width:300px;" />
                     </FormItem>
                   </div>
                 </div>
                 <!--提交人角色管理员-->
                 <div v-else-if="i.handleMode === 'admin'" class="step-background">
                   <div class="form-item">
-                    <FormItem label="" required :label-width="0">
+                    <FormItem label=" " required :label-width="15">
                       <Select
                         v-model="i.handleTemplates[0].role"
                         disabled
@@ -247,7 +261,7 @@
                         <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
                     </FormItem>
-                    <FormItem label="" required :label-width="0" style="margin-left:20px;">
+                    <FormItem label=" " required :label-width="15" style="margin-left:20px;">
                       <Input
                         v-model="i.handleTemplates[0].handler"
                         disabled
@@ -633,6 +647,7 @@ export default {
         this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
         return
       }
+      // 关联编排没有选择目标对象校验
       if (!this.form.rootEntityId && this.detail.associationWorkflow) {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
@@ -790,7 +805,7 @@ export default {
       data.forEach(i => {
         if (i.handleTemplates && i.handleTemplates.length > 0) {
           i.handleTemplates.forEach(j => {
-            if (!j.handler || !j.role) {
+            if (!j.role || (!j.handler && !['system', 'claim'].includes(j.handlerType))) {
               result = false
             }
           })
@@ -888,7 +903,7 @@ export default {
     .step-background {
       background: #f0faff;
       padding: 5px 20px;
-      width: 660px;
+      width: 690px;
       margin-top: 10px;
       border-radius: 4px;
     }

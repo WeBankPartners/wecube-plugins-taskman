@@ -1,5 +1,5 @@
 <template>
-  <div class="workbench-data-card">
+  <div class="taskman-workbench-data-card">
     <Card v-for="(i, index) in data" :key="index" border :style="activeStyles(i)">
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
@@ -130,7 +130,7 @@ export default {
     getPendingNum () {
       return function (type) {
         return this.pendingNumObj[type].reduce((sum, cur) => {
-          return Number(sum) + Number(cur)
+          return Number(sum) + Number(cur || 0)
         }, 0)
       }
     }
@@ -189,18 +189,18 @@ export default {
   }
 }
 </script>
-
 <style lang="scss">
-.workbench-data-card .ivu-card-body {
-  padding: 10px;
-}
-</style>
-<style lang="scss" scoped>
-.workbench-data-card {
+.taskman-workbench-data-card {
+  .ivu-card-body {
+    padding: 10px;
+  }
   display: flex;
+  flex-direction: row;
+  margin-top: 20px;
   .content {
     .w-header {
       display: flex;
+      flex-direction: row;
       align-items: center;
       img {
         width: 24px;
@@ -216,6 +216,7 @@ export default {
     }
     .data {
       display: flex;
+      flex-direction: row;
       justify-content: space-around;
       align-items: center;
       margin-top: 10px;

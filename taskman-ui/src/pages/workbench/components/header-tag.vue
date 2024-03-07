@@ -13,7 +13,7 @@
       <Row v-for="i in data.taskHandleList" :key="i.id" class="content" :gutter="10">
         <Col :span="3" class="line">{{ i.role || '-' }}</Col>
         <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
-        <Col :span="2" class="line">{{ i.handleResult || operation || '-' }}</Col>
+        <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
         <Col :span="4" class="line">{{ i.updatedTime }}</Col>
         <Col :span="3" class="line">{{ getDiffTime(i) }}</Col>
         <Col :span="5" class="line"
@@ -29,10 +29,10 @@
       </Row>
     </template>
     <Row v-else class="content" :gutter="10">
-      <Col :span="3" class="line">{{ data.handleRoleName || '-' }}</Col>
+      <Col :span="3" class="line">{{ data.role || '-' }}</Col>
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
       <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
-      <Col :span="4" class="line">{{ data.handleTime }}</Col>
+      <Col :span="4" class="line">{{ data.updatedTime }}</Col>
       <Col :span="3" class="line">{{ getDiffTime(data) }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
@@ -52,6 +52,11 @@
 import axios from 'axios'
 import { getCookie } from '@/pages/util/cookie'
 import dayjs from 'dayjs'
+const approvalOperation = {
+  deny: '拒绝',
+  approve: '同意',
+  redraw: '退回'
+}
 export default {
   props: {
     data: {
@@ -73,6 +78,17 @@ export default {
     }
   },
   computed: {
+    getOperationName () {
+      return function (i) {
+        let name = ''
+        if (this.data.type === 'approve' || this.data.type === 'check') {
+          name = approvalOperation[i.handleResult]
+        } else if (this.data.type === 'implement_process') {
+          name = i.handleResult
+        }
+        return name || this.operation || '-'
+      }
+    },
     getDiffTime () {
       return function (data) {
         const newDate = dayjs(data.updatedTime)
@@ -86,7 +102,7 @@ export default {
           (days > 0 ? days + this.$t('tw_day') : '') +
           (hours > 0 ? hours + this.$t('tw_hour') : '') +
           (mins > 0 ? mins + this.$t('tw_minute') : '') +
-          (secs > 0 ? secs + this.$t('tw_second') : '')
+          (secs > 0 ? secs + this.$t('tw_second') : 0 + this.$t('tw_second'))
         )
       }
     }

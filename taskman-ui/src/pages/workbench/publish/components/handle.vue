@@ -2,7 +2,10 @@
 <template>
   <div class="workbench-current-handle">
     <!--请求定版-->
-    <HeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')" :subTitle="$t('tw_request_pending')">
+    <HeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')">
+      <div class="sub-title" slot="sub-title">
+        <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_pending') }}</Tag>
+      </div>
       <div class="step-item">
         <div class="step-item-left">
           <div class="circle">1</div>
@@ -38,11 +41,13 @@
       </div>
     </HeaderTitle>
     <!--审批和任务-->
-    <HeaderTitle
-      v-else-if="['InApproval', 'InProgress'].includes(detail.status)"
-      :title="$t('tw_cur_handle')"
-      :subTitle="handleData.name"
-    >
+    <HeaderTitle v-else-if="['InApproval', 'InProgress'].includes(detail.status)" :title="$t('tw_cur_handle')">
+      <div class="sub-title" slot="sub-title">
+        <Tag class="tag">{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
+        <Tag class="tag" :color="handleTypeColor[handleData.type]">{{
+          `${handleData.type === 'approve' ? '审批' : '任务'}：${handleData.name}`
+        }}</Tag>
+      </div>
       <div class="step-item">
         <div class="step-item-left">
           <div class="circle">1</div>
@@ -72,26 +77,36 @@
               <FormItem :label="$t('task') + $t('description')">
                 <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
-              <!--处理结果(审批和编排类任务才有)-->
-              <FormItem v-if="['approve', 'implement_process'].includes(handleData.type)" required label="操作">
+              <!--处理结果-审批类型-->
+              <FormItem v-if="handleData.type === 'approve'" required label="操作">
                 <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
-                  <!--审批枚举写死，编排类任务nextOptions下发-->
-                  <template v-if="handleData.type === 'implement_process'">
-                    <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
-                  </template>
-                  <template v-else-if="handleData.type === 'approve'">
-                    <Option v-for="option in nextOptions" :value="option" :key="option">{{ option }}</Option>
-                  </template>
+                  <Option v-for="(item, index) in approvalNextOptions" :value="item.value" :key="index">{{
+                    item.label
+                  }}</Option>
                 </Select>
               </FormItem>
-              <!--处理结果(审批和编排类任务才有)-->
-              <FormItem v-if="['implement_custom', 'implement_process'].includes(handleData.type)" label="状态">
-                <Select v-model="handleData.taskHandleList[handleIndex].status">
-                  <Option v-for="option in statusList" :value="option" :key="option">{{ option }}</Option>
+              <!--处理结果-编排任务-->
+              <FormItem
+                v-if="
+                  handleData.type === 'implement_process' && handleData.nextOptions && handleData.nextOptions.length > 0
+                "
+                required
+                label="操作"
+              >
+                <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
+                  <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
                 </Select>
               </FormItem>
-              <!--处理意见(只有任务有)-->
-              <FormItem label="意见">
+              <!--完成状态(只有任务有)-->
+              <FormItem v-if="['implement_custom', 'implement_process'].includes(handleData.type)" label="完成状态">
+                <Select v-model="handleData.taskHandleList[handleIndex].handleStatus">
+                  <Option v-for="(item, index) in taskStatusList" :value="item.value" :key="index">{{
+                    item.label
+                  }}</Option>
+                </Select>
+              </FormItem>
+              <!--处理意见-->
+              <FormItem :label="$t('process_comments')">
                 <Input
                   v-model="handleData.taskHandleList[handleIndex].resultDesc"
                   type="textarea"
@@ -100,24 +115,28 @@
                 />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
-                <UploadFile :id="handleData.id" :files="handleData.attachFiles" type="task"></UploadFile>
+                <UploadFile
+                  :id="handleData.taskHandleList[handleIndex].id"
+                  :files="handleData.taskHandleList[handleIndex].attachFiles"
+                  type="task"
+                ></UploadFile>
               </FormItem>
             </Form>
             <div v-if="handleData.editable" style="text-align: center">
               <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button>
-              <Button
-                :disabled="handleData.nextOption && handleData.nextOption.length !== 0 && handleData.choseOption === ''"
-                @click="commitTaskData"
-                type="primary"
-                >{{ $t('tw_commit') }}</Button
-              >
+              <Button :disabled="commitTaskDisabled" @click="commitTaskData" type="primary">{{
+                $t('tw_commit')
+              }}</Button>
             </div>
           </div>
         </div>
       </div>
     </HeaderTitle>
     <!--确认请求-->
-    <HeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')" subTitle="请求确认">
+    <HeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')">
+      <div class="sub-title" slot="sub-title">
+        <Tag class="tag" :color="handleTypeColor[handleData.type]">请求确认</Tag>
+      </div>
       <div style="padding:20px 16px;">
         <Form :label-width="80" label-position="left">
           <FormItem label="请求状态">
@@ -145,7 +164,11 @@
             <Input v-model="confirmRequestForm.notes" type="textarea" :maxlength="200" show-word-limit />
           </FormItem>
           <FormItem :label="$t('tw_attach')">
-            <UploadFile :id="handleData.id" :files="handleData.attachFiles" type="task"></UploadFile>
+            <UploadFile
+              :id="handleData.taskHandleList[handleIndex].id"
+              :files="handleData.taskHandleList[handleIndex].attachFiles"
+              type="task"
+            ></UploadFile>
           </FormItem>
         </Form>
         <div style="text-align:center;">
@@ -193,23 +216,75 @@ export default {
       handleId: this.$route.query.handleId,
       confirmRequestForm: {
         markTaskId: [], // 关注任务ID
-        completeStatus: 'completed', // 请求完成状态completed、uncompleted
+        completeStatus: 'complete', // 请求完成状态complete、uncompleted
         notes: ''
       },
       taskTagList: [],
       completeStatusList: [
         {
           label: '已完成',
-          value: 'completed'
+          value: 'complete'
         },
         {
           label: '未完成/部分完成',
           value: 'uncompleted'
         }
       ],
-      nextOptions: ['同意', '拒绝', '退回'],
-      statusList: ['已完成', '未完成'],
+      approvalNextOptions: [
+        {
+          label: '拒绝',
+          value: 'deny'
+        },
+        {
+          label: '同意',
+          value: 'approve'
+        },
+        {
+          label: '退回',
+          value: 'redraw'
+        }
+      ],
+      taskStatusList: [
+        {
+          label: '已完成',
+          value: 'complete'
+        },
+        {
+          label: '未完成',
+          value: 'uncompleted'
+        }
+      ],
+      approvalTypeName: {
+        custom: '单人',
+        any: '协同',
+        all: '并行',
+        admin: '提交人角色管理员',
+        auto: '自动通过'
+      },
+      handleTypeColor: {
+        check: '#ffa2d3',
+        approve: '#2d8cf0',
+        implement_process: '#cba43f',
+        implement_custom: '#b886f8',
+        confirm: '#19be6b'
+      },
       handleIndex: 0 // 协同和并行审批，会有多个处理人，需要定位当前处理人的index（其余都是单人，默认为0）
+    }
+  },
+  computed: {
+    commitTaskDisabled () {
+      const approveFlag =
+        this.handleData.type === 'approve' && !this.handleData.taskHandleList[this.handleIndex].handleResult
+      const processFlag =
+        this.handleData.type === 'implement_process' &&
+        this.handleData.nextOptions &&
+        this.handleData.nextOptions.length > 0 &&
+        !this.handleData.taskHandleList[this.handleIndex].handleResult
+      if (approveFlag || processFlag) {
+        return true
+      } else {
+        return false
+      }
     }
   },
   watch: {
@@ -440,6 +515,10 @@ export default {
         padding: 20px 0;
       }
     }
+  }
+  .sub-title {
+    font-size: 14px;
+    margin-left: 5px;
   }
 }
 </style>

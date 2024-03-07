@@ -55,7 +55,7 @@ func CreateRequest(c *gin.Context) {
 		param.TemplateVersion = template.Version
 	}
 	var items []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id=?) order by item_group,sort", template.Id).Find(&items)
+	dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template=? and request_form_type = ?) order by sort", template.Id, models.RequestFormTypeMessage).Find(&items)
 	param.CustomForm.Title = items
 	if template.ProcDefId != "" {
 		param.AssociationWorkflow = true

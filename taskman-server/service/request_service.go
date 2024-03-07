@@ -1901,7 +1901,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
 		}
 
-		formData, err = getTaskFormData(c, curTaskForHistory, taskTmplIdMapInfo)
+		formData, err = getTaskFormData(c, curTaskForHistory)
 		if err != nil {
 			return
 		}
@@ -1914,7 +1914,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	return
 }
 
-func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdMapInfo map[string]*models.TaskTemplateTable) (result []*models.RequestPreDataTableObj, err error) {
+func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*models.RequestPreDataTableObj, err error) {
 	result = []*models.RequestPreDataTableObj{}
 
 	// 查询 form template
@@ -1927,7 +1927,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 		return
 	}
 	if len(formTemplates) == 0 {
-		log.Logger.Error(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
+		log.Logger.Debug(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
 		return
 	}
 
@@ -1935,7 +1935,9 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 	formTemplateRefIds := make([]string, 0, len(formTemplates))
 	for _, formTmpl := range formTemplates {
 		formTemplateIds = append(formTemplateIds, formTmpl.Id)
-		formTemplateRefIds = append(formTemplateRefIds, formTmpl.RefId)
+		if formTmpl.RefId != "" {
+			formTemplateRefIds = append(formTemplateRefIds, formTmpl.RefId)
+		}
 	}
 
 	var actualFormTemplates []*models.FormTemplateTable
@@ -1960,11 +1962,12 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 	} else {
 		actualFormTemplates = formTemplates
 	}
-
-	actualFormTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)
-	for _, formTemplate := range actualFormTemplates {
-		actualFormTemplateIdMapInfo[formTemplate.Id] = formTemplate
-	}
+	/*
+		actualFormTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)
+		for _, formTemplate := range actualFormTemplates {
+			actualFormTemplateIdMapInfo[formTemplate.Id] = formTemplate
+		}
+	*/
 
 	// 查询 form
 	var taskForms []*models.FormTable
@@ -1981,10 +1984,12 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 			taskObj.Request, strings.Join(actualFormTemplateIds, ",")))
 		return
 	}
-	taskFormIdMapInfo := make(map[string]*models.FormTable)
-	for _, form := range taskForms {
-		taskFormIdMapInfo[form.Id] = form
-	}
+	/*
+		taskFormIdMapInfo := make(map[string]*models.FormTable)
+		for _, form := range taskForms {
+			taskFormIdMapInfo[form.Id] = form
+		}
+	*/
 
 	// 查询 request 的 form item
 	taskUpdatedTime := taskObj.UpdatedTime
@@ -2019,7 +2024,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 	}
 	if len(itemTemplates) == 0 {
 		// err = fmt.Errorf("can not find any form item template with task: %s", taskObj.Id)
-		log.Logger.Error(fmt.Sprintf("can not find any form item templates with formTemplates: %s",
+		log.Logger.Error(fmt.Sprintf("can not find any form item templates with formTemplates: [%s]",
 			strings.Join(actualFormTemplateIds, ",")))
 		return
 	}
@@ -2032,8 +2037,18 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 	*/
 	taskFormItems := getTaskFormItems(requestFormItems, taskForms)
 	if len(taskFormItems) == 0 {
+		log.Logger.Error(fmt.Sprintf("can not find any form item for task: %s", taskObj.Id))
 		return
 	}
+
+	formIdMapInfo := make(map[string]*models.FormTable)
+	formTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)
+	formIdMapInfo, formTemplateIdMapInfo, err = getFormAndTemplateMapInfo(c, taskFormItems)
+	if err != nil {
+		err = fmt.Errorf("get form and form template map info failed: %s", err.Error())
+		return
+	}
+
 	// itemGroup map data_ids
 	itemRowMap := make(map[string][]string)
 	// data_id map item
@@ -2041,9 +2056,9 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 	for _, item := range taskFormItems {
 		itemGroup := ""
 		itemDataId := ""
-		if tmpForm, isExisted := taskFormIdMapInfo[item.Form]; isExisted {
+		if tmpForm, isExisted := formIdMapInfo[item.Form]; isExisted {
 			itemDataId = tmpForm.DataId
-			if tmpFormTemplate, isExisted2 := actualFormTemplateIdMapInfo[tmpForm.FormTemplate]; isExisted2 {
+			if tmpFormTemplate, isExisted2 := formTemplateIdMapInfo[tmpForm.FormTemplate]; isExisted2 {
 				itemGroup = tmpFormTemplate.ItemGroup
 			} else {
 				log.Logger.Error(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
@@ -2097,6 +2112,65 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory, taskTmplIdM
 					}
 				}
 				formTable.Value = append(formTable.Value, &tmpRowObj)
+			}
+		}
+	}
+	return
+}
+
+func getFormAndTemplateMapInfo(c *gin.Context, taskFormItems []*models.FormItemTable) (formIdMapInfo map[string]*models.FormTable, formTemplateIdMapInfo map[string]*models.FormTemplateTable, err error) {
+	formIdMapInfo = make(map[string]*models.FormTable)
+	formTemplateIdMapInfo = make(map[string]*models.FormTemplateTable)
+
+	formIdMap := make(map[string]struct{})
+	for _, formItem := range taskFormItems {
+		if formItem.Form != "" {
+			formIdMap[formItem.Form] = struct{}{}
+		}
+	}
+
+	if len(formIdMap) > 0 {
+		formIds := make([]string, 0, len(formIdMap))
+		for k := range formIdMap {
+			formIds = append(formIds, k)
+		}
+
+		var forms []*models.FormTable
+		err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
+			In("id", formIds).
+			Find(&forms)
+		if err != nil {
+			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+			return
+		}
+
+		if len(forms) > 0 {
+			formTemplateIdMap := make(map[string]struct{})
+			for _, form := range forms {
+				if form.FormTemplate != "" {
+					formTemplateIdMap[form.FormTemplate] = struct{}{}
+				}
+				formIdMapInfo[form.Id] = form
+			}
+
+			if len(formTemplateIdMap) > 0 {
+				formTemplateIds := make([]string, 0, len(formTemplateIdMap))
+				for k := range formTemplateIdMap {
+					formTemplateIds = append(formTemplateIds, k)
+				}
+
+				var formTemplates []*models.FormTemplateTable
+				err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
+					In("id", formTemplateIds).
+					Find(&formTemplates)
+				if err != nil {
+					err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+					return
+				}
+
+				for _, formTemplate := range formTemplates {
+					formTemplateIdMapInfo[formTemplate.Id] = formTemplate
+				}
 			}
 		}
 	}

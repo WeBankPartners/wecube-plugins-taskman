@@ -384,7 +384,6 @@ alter table task_template add column handle_mode  varchar(255) default null COMM
 alter table task_template add column type  varchar(64) default null COMMENT '任务类型: check 定版, approve 审批, implement 执行类型, confirm 请求确认';
 
 
-alter table task add column notify_count  int default 0 COMMENT '通知计数器';
 alter table task add column type varchar(64) default null COMMENT '任务类型:submit 提交 check 定版, approve 审批, implement执行类型, confirm 请求确认 revoke 撤回';
 alter table task add column sort int default '0' COMMENT '任务序号';
 alter table task add column task_result  varchar(64) default null COMMENT '处理结果:approve同意,deny拒绝,redraw打回,complete完成,uncompleted未完成';

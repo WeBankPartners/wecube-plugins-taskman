@@ -8,6 +8,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/login"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/role"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
@@ -139,6 +140,10 @@ func init() {
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId/:latestUpdateTime", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
 		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
+
+		// login
+		&handlerFuncObj{Url: "/login/seed", Method: "GET", HandlerFunc: login.GetSeed},
+		&handlerFuncObj{Url: "/login", Method: "POST", HandlerFunc: login.Login},
 	)
 
 	// v2 版本

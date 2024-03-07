@@ -18,15 +18,31 @@ func GetRequestRoles(c *gin.Context) []string {
 	return c.GetStringSlice("roles")
 }
 
+var (
+	whiteListUrl = map[string]struct{}{
+		models.UrlPrefix + "/api/v1/login/seed": {},
+		models.UrlPrefix + "/api/v1/login":      {},
+	}
+)
+
+func isWhiteListUrl(url string) (result bool) {
+	_, result = whiteListUrl[url]
+	return
+}
+
 func AuthCoreRequestToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := authCoreRequest(c)
-		if err != nil {
-			log.Logger.Error("Validate core token fail", log.Error(err))
-			c.JSON(http.StatusUnauthorized, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
-			c.Abort()
-		} else {
+		if isWhiteListUrl(c.Request.RequestURI) {
 			c.Next()
+		} else {
+			err := authCoreRequest(c)
+			if err != nil {
+				log.Logger.Error("Validate core token fail", log.Error(err))
+				c.JSON(http.StatusUnauthorized, models.EntityResponse{Status: "ERROR", Message: "Core token validate fail "})
+				c.Abort()
+			} else {
+				c.Next()
+			}
 		}
 	}
 }

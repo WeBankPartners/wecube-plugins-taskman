@@ -59,7 +59,16 @@
             <span>{{ $t('tw_approval_step1_tips') }}</span>
           </div>
           <div class="content">
-            <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId" autoAddRow></EntityTable>
+            <EntityTable
+              v-if="handleData.formData && handleData.formData.length"
+              ref="entityTable"
+              :data="handleData.formData"
+              :requestId="requestId"
+              autoAddRow
+            ></EntityTable>
+            <div v-else class="no-data">
+              暂未配置表单
+            </div>
           </div>
         </div>
       </div>
@@ -513,12 +522,21 @@ export default {
       }
       .content {
         padding: 20px 0;
+        .no-data {
+          height: 60px;
+          line-height: 60px;
+          color: #515a6e;
+        }
       }
     }
   }
   .sub-title {
     font-size: 14px;
     margin-left: 5px;
+  }
+  .ivu-tag {
+    line-height: 24px !important;
+    padding: 0px 5px !important;
   }
 }
 </style>

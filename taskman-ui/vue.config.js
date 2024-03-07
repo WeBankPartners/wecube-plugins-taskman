@@ -1,6 +1,6 @@
 const CompressionPlugin = require('compression-webpack-plugin')
 const path = require('path')
-const baseUrl = 'http://106.52.160.142:19090'
+const baseUrl = 'http://106.52.160.142:18080'
 module.exports = {
   devServer: {
     // hot: true,

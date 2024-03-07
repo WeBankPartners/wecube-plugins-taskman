@@ -14,11 +14,9 @@
       </Col>
       <Col span="5" class="btn-group">
         <!--保存草稿-->
-        <Button :disabled="!requestData.length" @click="handleDraft(false)" style="margin-right:10px;">{{
-          $t('tw_save_draft')
-        }}</Button>
+        <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
         <!--提交-->
-        <Button :disabled="!requestData.length" type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
+        <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
       </Col>
     </Row>
     <div class="content">
@@ -95,6 +93,7 @@
             autoAddRow
             style="width:calc(100% - 20px);margin-left:16px;"
           ></EntityTable>
+          <div v-if="noRequestForm" class="no-data">暂未配置表单</div>
         </HeaderTitle>
         <!--审批流程-->
         <HeaderTitle v-if="approvalList.length > 0" title="审批流程">
@@ -370,7 +369,8 @@ export default {
         admin: '提交人角色管理员',
         auto: '自动通过'
       },
-      userRoleList: []
+      userRoleList: [], // 用户角色列表
+      noRequestForm: false // 请求表单为空标识
     }
   },
   computed: {
@@ -396,6 +396,7 @@ export default {
       if (val) {
         this.getEntityData()
       } else {
+        this.noRequestForm = false
         this.requestData = []
       }
     }
@@ -535,10 +536,10 @@ export default {
       }
       const { statusCode, data } = await getEntityData(params)
       if (statusCode === 'OK') {
-        const requestData = data.data || []
+        this.requestData = data.data || []
         // 新建操作，默认值赋值逻辑
         if (this.jumpFrom !== 'my_drafts') {
-          requestData.forEach(i => {
+          this.requestData.forEach(i => {
             i.value.forEach(v => {
               i.title.forEach(t => {
                 // 默认清空标志为false, 且初始值为空，赋值默认值
@@ -552,7 +553,11 @@ export default {
             })
           })
         }
-        this.requestData = requestData
+        if (this.requestData.length === 0) {
+          this.noRequestForm = true
+        } else {
+          this.noRequestForm = false
+        }
       }
     },
     // 获取审批流程列表
@@ -643,17 +648,8 @@ export default {
     },
     // 保存草稿
     async handleDraft (noJump) {
-      if (!this.form.name) {
-        this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
-        return
-      }
-      // 关联编排没有选择目标对象校验
-      if (!this.form.rootEntityId && this.detail.associationWorkflow) {
-        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
-        return
-      }
       // 请求表单
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
+      const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
       this.form.data =
         requestData.map(item => {
           let refKeys = []
@@ -690,33 +686,27 @@ export default {
           .format('YYYY-MM-DD HH:mm:ss')
         this.initExpectTime = this.form.expectTime
       }
+      // 请求名称必填校验
+      if (!this.form.name) {
+        this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
+        return
+      }
+      // 操作目标对象必填校验
+      if (!this.form.rootEntityId && this.detail.associationWorkflow) {
+        this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
+        return
+      }
       // 请求表单必填项-校验提示
       if (!this.requiredCheck(this.form.data)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 请求表单至少有一条数据提交-校验提示
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.form.data)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
       // 审批任务流程角色和用户必填校验
       if (!this.approvalCheck(this.approvalList)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: '审批流程处理角色和处理人必填'
-        })
+        return this.$Message.warning('审批流程处理角色和处理人必填')
       }
       if (!this.approvalCheck(this.taskList)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: '任务流程处理角色和处理人必填'
-        })
+        return this.$Message.warning('任务流程处理角色和处理人必填')
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
       if (statusCode === 'OK') {
@@ -753,7 +743,7 @@ export default {
         onCancel: () => {}
       })
     },
-    // 校验表格数据必填项
+    // 请求表单数据必填项校验
     requiredCheck (data) {
       let tabIndex = ''
       let result = true
@@ -784,18 +774,6 @@ export default {
             }
           })
         })
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
-    noChooseCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        if (requestData.value && requestData.value.length === 0) {
-          tabIndex = index
-          result = false
-        }
       })
       this.$refs.entityTable.validTable(tabIndex)
       return result
@@ -851,6 +829,12 @@ export default {
   .content {
     display: flex;
     min-height: 500px;
+    .no-data {
+      padding-left: 20px;
+      height: 60px;
+      line-height: 60px;
+      color: #515a6e;
+    }
   }
   .step-wrap {
     .step-item {

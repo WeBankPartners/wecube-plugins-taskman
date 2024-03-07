@@ -395,19 +395,28 @@ alter table form_item_template add column ref_id varchar(64) default null COMMEN
 
 ALTER TABLE task_template_role DROP FOREIGN KEY fore_task_role_ref_template;
 ALTER TABLE task_template_role DROP FOREIGN KEY fore_task_template_ref_role;
+ALTER TABLE task_template_role DROP INDEX fore_task_role_ref_template;
+ALTER TABLE task_template_role DROP INDEX fore_task_template_ref_role;
 
 
 ALTER TABLE form_item DROP FOREIGN KEY fore_form_item_form;
 ALTER TABLE request DROP FOREIGN KEY fore_request_form;
 ALTER TABLE task DROP FOREIGN KEY fore_task_form;
+ALTER TABLE form_item DROP INDEX fore_form_item_form;
+ALTER TABLE request DROP INDEX fore_request_form;
+ALTER TABLE task DROP INDEX fore_task_form;
 
 ALTER TABLE form_item_template DROP FOREIGN KEY fore_form_item_template;
 ALTER TABLE form DROP FOREIGN KEY fore_form_form_template;
 ALTER TABLE request_template DROP FOREIGN KEY fore_request_template_form;
 ALTER TABLE task_template DROP FOREIGN KEY fore_task_template_form;
+ALTER TABLE form_item_template DROP INDEX fore_form_item_template;
+ALTER TABLE form DROP INDEX fore_form_form_template;
+ALTER TABLE request_template DROP INDEX fore_request_template_form;
+ALTER TABLE task_template DROP INDEX fore_task_template_form;
 
-alter table form_item_template rename column form_template to form_template_old;
-alter table form_item rename column form  to form_old;
+alter table form_item_template change form_template form_template_old varchar(64) default null comment '表单模板(废弃)';
+alter table form_item change form form_old varchar(64) default null comment '表单(废弃)';
 
 
 alter table form rename to form_old;
@@ -503,7 +512,6 @@ alter table form_item add column task_handle varchar(64) DEFAULT NULL COMMENT '�
 alter table form_item add column del_falg tinyint(2) DEFAULT '0' COMMENT '删除标识';
 
 alter table form_item add constraint fore_form_item_request foreign key(request) REFERENCES request(id);
-alter table form_item add constraint fore_form_item_form foreign key(form) REFERENCES form(id);
 alter table form_item add constraint fore_form_item_task_handle foreign key(task_handle) REFERENCES task_handle(id);
 
 alter table attach_file add column task_handle varchar(64) default null COMMENT '任务处理';

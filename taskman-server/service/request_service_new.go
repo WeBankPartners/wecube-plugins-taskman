@@ -252,17 +252,17 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	switch param.Tab {
 	case "pending":
-		sql, queryParam = pendingTaskSQL(param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
+		sql, queryParam = pendingTaskSQL(param.Type, userRolesFilterSql, userRolesFilterParam, taskType)
 		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 		return
 	case "hasProcessed":
-		sql, queryParam = hasProcessedTaskSQL(param.Action, user, taskType)
+		sql, queryParam = hasProcessedTaskSQL(param.Type, user, taskType)
 		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
 		return
 	case "submit":
-		sql, queryParam = submitSQL(param.Rollback, param.Action, user)
+		sql, queryParam = submitSQL(param.Rollback, param.Type, user)
 	case "draft":
-		sql, queryParam = draftSQL(param.Action, user)
+		sql, queryParam = draftSQL(param.Type, user)
 	default:
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
@@ -1200,6 +1200,7 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	}
 
 	// 没有配置定版,设置定版数据,请求继续往后面走 @todo 添加定版数据
+
 	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
 	if err != nil {
 		return
@@ -1220,7 +1221,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	actions = []*dao.ExecAction{}
 	now := time.Now().Format(models.DateTimeFormat)
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
@@ -1229,7 +1230,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 		return s.HandleRequestTask(request, userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
-		dao.X.SQL("select * form task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) {
@@ -1290,7 +1291,7 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 		// 关联编排,调用编排启动
 		return
 	}
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeImplement)).Find(&taskTemplateList)
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeImplement).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
@@ -1299,7 +1300,7 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 		return s.HandleRequestConfirm(request)
 	}
 	for _, taskTemplate := range taskTemplateList {
-		dao.X.SQL("select * form task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) {
@@ -1346,7 +1347,7 @@ func (s *RequestService) HandleRequestConfirm(request models.RequestTable) (acti
 	now := time.Now().Format(models.DateTimeFormat)
 	// 创建请求确认任务
 	newTaskId = "co_" + guid.CreateGuid()
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}

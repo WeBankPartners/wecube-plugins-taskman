@@ -135,6 +135,7 @@ func CheckRequest(c *gin.Context) {
 	var request models.RequestTable
 	var operator = middleware.GetRequestUser(c)
 	var err error
+	var task *models.TaskTable
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -144,11 +145,26 @@ func CheckRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	task, err = service.GetTaskService().GetLatestCheckTask(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if task == nil {
+		err = fmt.Errorf("requestId:%s not has check task")
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if task.Status == string(models.TaskStatusDone) {
+		err = fmt.Errorf("taskId:%s status  is done", task.Id)
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	if request.Handler != operator {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
 		return
 	}
-	err = service.CheckRequest(request, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+	err = service.CheckRequest(request, task, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

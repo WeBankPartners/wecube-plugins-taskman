@@ -140,7 +140,7 @@ func getRefDataWithoutFilter(input *models.RefSelectParam) (result []*models.Ent
 	for _, v := range remoteRefData {
 		result = append(result, &models.EntityDataObj{Id: v.Guid, DisplayName: v.KeyName, IsNew: v.IsNew})
 	}
-	cacheData, cacheErr := getRequestCacheNewData(input.RequestId, input.AttrId)
+	cacheData, cacheErr := getRequestCacheNewData(input.RequestId, input.FormItemTemplate)
 	if cacheErr != nil {
 		err = cacheErr
 		return
@@ -192,11 +192,12 @@ func getRefSelectEntity(requestId, attrId string) (refEntity string, err error) 
 	return formItemTemplates[0].RefEntity, nil
 }
 
-func getRequestCacheNewData(requestId, attrId string) (result []*models.CiReferenceDataQueryObj, err error) {
-	refEntity, tmpErr := getRefSelectEntity(requestId, attrId)
-	if tmpErr != nil {
-		return result, tmpErr
-	}
+func getRequestCacheNewData(requestId string, formItemTemplate *models.FormItemTemplateTable) (result []*models.CiReferenceDataQueryObj, err error) {
+	//refEntity, tmpErr := getRefSelectEntity(requestId, attrId)
+	//if tmpErr != nil {
+	//	return result, tmpErr
+	//}
+	refEntity := formItemTemplate.RefEntity
 	cacheDataObj, cacheErr := GetRequestCache(requestId, "data")
 	if cacheErr != nil {
 		return result, cacheErr
@@ -230,10 +231,11 @@ func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDat
 	if tmpErr != nil {
 		return result, fmt.Errorf("Try to get request new data fail,%s ", tmpErr.Error())
 	}
-	refEntity, tmpErr := getRefSelectEntity(input.RequestId, input.AttrId)
-	if tmpErr != nil {
-		return result, tmpErr
-	}
+	//refEntity, tmpErr := getRefSelectEntity(input.RequestId, input.AttrId)
+	//if tmpErr != nil {
+	//	return result, tmpErr
+	//}
+	refEntity := input.FormItemTemplate.RefEntity
 	attrName := strings.Split(input.AttrId, models.SysTableIdConnector)[1]
 	filterMap := input.Param.Dialect.AssociatedData
 	if _, b := filterMap[attrName]; b {

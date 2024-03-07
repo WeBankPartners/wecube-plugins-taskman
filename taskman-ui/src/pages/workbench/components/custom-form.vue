@@ -3,7 +3,7 @@
     <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
       <Row :gutter="20">
         <template v-for="(i, index) in options">
-          <Col :span="disabled ? 12 : 24" :key="index">
+          <Col :span="24" :key="index">
             <FormItem
               :label="i.title"
               :prop="i.name"
@@ -192,7 +192,7 @@ export default {
       delete cache._checked
       delete cache._disabled
       const filterValue = this.entityData[titleObj.name]
-      // const attr = titleObj.entity + '__' + titleObj.name
+      const attrName = titleObj.entity + '__' + titleObj.name
       const attr = titleObj.id
       const params = {
         filters: [
@@ -209,7 +209,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params, attrName)
       if (statusCode === 'OK') {
         this.$set(this.entityData, titleObj.name + 'Options', data)
       }

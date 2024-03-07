@@ -300,7 +300,7 @@ export default {
       delete cache._checked
       delete cache._disabled
       const filterValue = row[titleObj.name]
-      // const attr = titleObj.entity + '__' + titleObj.name
+      const attrName = titleObj.entity + '__' + titleObj.name
       const attr = titleObj.id
       const params = {
         filters: [
@@ -317,7 +317,7 @@ export default {
           }
         }
       }
-      const { statusCode, data } = await getRefOptions(this.requestId, attr, params)
+      const { statusCode, data } = await getRefOptions(this.requestId, attr, params, attrName)
       if (statusCode === 'OK') {
         row[titleObj.name + 'Options'] = data
         this.$set(this.tableData, index, row)

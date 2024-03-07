@@ -83,8 +83,8 @@ export const terminateRequest = id => req.post(`/taskman/api/v1/request/terminat
 export const startRequest = (requestId, data) => req.post(`/taskman/api/v1/request/start/${requestId}`, data)
 export const getRequestInfo = requestId => req.get(`/taskman/api/v1/request/${requestId}`)
 
-export const getRefOptions = (requestId, attr, params) =>
-  req.post(`/taskman/api/v1/request-data/reference/query/${attr}/${requestId}`, params)
+export const getRefOptions = (requestId, attr, params, attrName) =>
+  req.post(`/taskman/api/v1/request-data/reference/query/${attr}/${requestId}/${attrName}`, params)
 
 export const getWeCmdbOptions = (packageName, ciType, params) =>
   req.post(`/${packageName}/entities/${ciType}/query`, params)

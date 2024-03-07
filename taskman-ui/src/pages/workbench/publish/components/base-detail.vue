@@ -136,11 +136,13 @@
             </Select>
           </FormItem>
           <EntityTable
+            v-if="form.data.length"
             :data="form.data"
             :requestId="requestId"
             formDisable
             style="width:calc(100% - 20px);margin-left:16px;"
           ></EntityTable>
+          <div v-else class="no-data">暂未配置表单</div>
         </HeaderTitle>
         <!--处理历史-->
         <HeaderTitle :title="$t('tw_handle_history')">
@@ -197,7 +199,15 @@
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
-                  <EntityTable :data="data.formData" :requestId="requestId" :formDisable="true"></EntityTable>
+                  <EntityTable
+                    v-if="data.formData && data.formData.length"
+                    :data="data.formData"
+                    :requestId="requestId"
+                    :formDisable="true"
+                  ></EntityTable>
+                  <div v-else class="no-data">
+                    暂未配置表单
+                  </div>
                 </div>
               </template>
               <!--请求确认-->
@@ -450,6 +460,12 @@ export default {
   .content {
     min-height: 500px;
     display: flex;
+    .no-data {
+      padding-left: 20px;
+      height: 60px;
+      line-height: 60px;
+      color: #515a6e;
+    }
     .info-item {
       display: flex;
       &-label {
@@ -494,6 +510,11 @@ export default {
       padding: 20px;
       border: 1px dashed #d7dadc;
       margin: 16px 0;
+      .no-data {
+        height: 60px;
+        line-height: 60px;
+        color: #515a6e;
+      }
     }
   }
   .expand-btn {

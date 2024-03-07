@@ -1199,8 +1199,7 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		return
 	}
 
-	// 没有配置定版,设置定版数据,请求继续往后面走
-
+	// 没有配置定版,设置定版数据,请求继续往后面走 @todo 添加定版数据
 	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
 	if err != nil {
 		return
@@ -1271,7 +1270,6 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 			action = &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?"}
 			action.Param = []interface{}{string(models.RequestStatusInApproval), now, request.Id}
 			actions = append(actions, action)
-			err = dao.Transaction(actions)
 			return
 		}
 	}
@@ -1332,7 +1330,6 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 
 			// 更新请求表为审批状态
 			actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusInProgress), now, request.Id}})
-			err = dao.Transaction(actions)
 			return
 		}
 	}

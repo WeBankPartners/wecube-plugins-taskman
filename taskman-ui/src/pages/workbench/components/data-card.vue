@@ -19,7 +19,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.publishNum || '' }}</span>
-            <span v-if="i.type === 'pending'" class="badge">{{ getPendingNum('1') }}</span>
+            <span v-if="i.type === 'pending' && getPendingNum('1') > 0" class="badge">{{ getPendingNum('1') }}</span>
             <span>{{ $t('tw_publish') }}</span>
           </div>
           <div
@@ -33,7 +33,7 @@
             "
           >
             <span style="font-weight:bold;">{{ i.requestNum || '' }}</span>
-            <span v-if="i.type === 'pending'" class="badge">{{ getPendingNum('2') }}</span>
+            <span v-if="i.type === 'pending' && getPendingNum('2') > 0" class="badge">{{ getPendingNum('2') }}</span>
             <span>{{ $t('tw_request') }}</span>
           </div>
         </div>

@@ -366,19 +366,19 @@ func GetCmdbReferenceData(c *gin.Context) {
 }
 
 func GetReferenceData(c *gin.Context) {
-	attrId := c.Param("attrId")
+	formItemTemplateId := c.Param("formItemTemplateId")
 	requestId := c.Param("requestId")
 	var param models.QueryRequestParam
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	input := models.RefSelectParam{AttrId: attrId, RequestId: requestId, Param: &param, UserToken: c.GetHeader("Authorization")}
+	input := models.RefSelectParam{FormItemTemplateId: formItemTemplateId, RequestId: requestId, Param: &param, UserToken: c.GetHeader("Authorization")}
 	result, err := service.GetCMDBRefSelectResult(&input)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		result = service.FilterInSideData(result, attrId, requestId)
+		result = service.FilterInSideData(result, input.FormItemTemplate, requestId)
 		middleware.ReturnData(c, result)
 	}
 }

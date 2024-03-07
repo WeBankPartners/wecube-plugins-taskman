@@ -265,11 +265,6 @@ func UpdateRequestTemplateEntityAttrs(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(id, user)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
 	service.GetOperationLogService().RecordRequestTemplateLog(id, "", middleware.GetRequestUser(c), "updateRequestTemplateAttr", c.Request.RequestURI, c.GetString("requestBody"))
 	middleware.ReturnSuccess(c)
 }

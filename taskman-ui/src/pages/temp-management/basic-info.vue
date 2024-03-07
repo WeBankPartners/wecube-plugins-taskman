@@ -16,18 +16,18 @@
                   <FormItem :label="$t('name')">
                     <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input>
                     <span style="color: red">*</span>
-                    <span v-if="basicInfo.name === ''" style="color: red"
-                      >{{ $t('name') }}{{ $t('can_not_be_empty') }}</span
-                    >
+                    <div v-if="basicInfo.name.length === 0 || basicInfo.name.length > 30" style="color: red">
+                      {{ $t('name') }}{{ $t('tw_limit_30') }}
+                    </div>
                   </FormItem>
                   <FormItem :label="$t('group')">
                     <Select v-model="basicInfo.group" style="width: 96%;" filterable @on-change="paramsChanged">
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{ item.name }}</Option>
                     </Select>
                     <span style="color: red">*</span>
-                    <span v-if="basicInfo.group === ''" style="color: red"
-                      >{{ $t('group') }}{{ $t('can_not_be_empty') }}</span
-                    >
+                    <div v-if="basicInfo.group === ''" style="color: red">
+                      {{ $t('group') }}{{ $t('can_not_be_empty') }}
+                    </div>
                   </FormItem>
                   <FormItem :label="$t('scene_type')">
                     <Select v-model="basicInfo.type" style="width: 96%;" filterable @on-change="paramsChanged">
@@ -63,6 +63,9 @@
                       @on-change="paramsChanged"
                     >
                     </Input>
+                    <div v-if="basicInfo.description.length > 200" style="color: red">
+                      {{ $t('description') }}{{ $t('tw_limit_200') }}
+                    </div>
                   </FormItem>
                   <!-- 属主角色 -->
                   <FormItem :label="$t('mgmtRolesNew')">
@@ -78,9 +81,9 @@
                       }}</Option>
                     </Select>
                     <span style="color: red">*</span>
-                    <span v-if="basicInfo.mgmtRoles === ''" style="color: red"
-                      >{{ $t('mgmtRolesNew') }}{{ $t('can_not_be_empty') }}</span
-                    >
+                    <div v-if="basicInfo.mgmtRoles === ''" style="color: red">
+                      {{ $t('mgmtRolesNew') }}{{ $t('can_not_be_empty') }}
+                    </div>
                   </FormItem>
                   <!-- 模版属主 -->
                   <FormItem :label="$t('handlerNew')">
@@ -104,9 +107,9 @@
                       }}</Option>
                     </Select>
                     <span style="color: red">*</span>
-                    <span v-if="basicInfo.useRoles.length === 0" style="color: red"
-                      >{{ $t('useRoles') }}{{ $t('can_not_be_empty') }}</span
-                    >
+                    <div v-if="basicInfo.useRoles.length === 0" style="color: red">
+                      {{ $t('useRoles') }}{{ $t('can_not_be_empty') }}
+                    </div>
                   </FormItem>
                   <!-- 请求时效 -->
                   <FormItem :label="$t('request_time_limit')">
@@ -193,9 +196,9 @@
                           }}</Option>
                         </Select>
                         <span style="color: red">*</span>
-                        <span v-if="basicInfo.procDefId === ''" style="color: red"
-                          >{{ $t('procDefId') }}{{ $t('can_not_be_empty') }}</span
-                        >
+                        <div v-if="basicInfo.procDefId === ''" style="color: red">
+                          {{ $t('procDefId') }}{{ $t('can_not_be_empty') }}
+                        </div>
                       </FormItem>
                     </div>
                   </template>
@@ -230,6 +233,7 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
 import {
   getTempGroupList,
   getManagementRoles,
@@ -291,6 +295,7 @@ export default {
   },
   props: ['requestTemplateId'],
   mounted () {
+    this.basicInfo.name = `${this.$t('tw_template')}_${dayjs().format('YYMMDDHHmmss')}`
     this.loadPage(this.requestTemplateId)
   },
   methods: {
@@ -306,7 +311,10 @@ export default {
     // 控制保存按钮
     isSaveBtnActive () {
       let res = false
-      if (this.basicInfo.name === '') {
+      if (this.basicInfo.name.length === 0 || this.basicInfo.name.length > 30) {
+        return true
+      }
+      if (this.basicInfo.description.length > 200) {
         return true
       }
       if (this.basicInfo.group === '') {
@@ -381,22 +389,27 @@ export default {
       }
     },
     gotoNext () {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('tw_confirm_discarding_changes')}`,
-          content: `${this.$t('tw_params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('tw_abandon'),
-          onOk: async () => {
-            this.createTemp(true)
-          },
-          onCancel: () => {
-            this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
-          }
-        })
+      if (this.basicInfo.id === '') {
+        this.createTemp(true)
       } else {
-        this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
+        if (this.isParmasChanged) {
+          this.$Modal.confirm({
+            title: `${this.$t('tw_confirm_discarding_changes')}`,
+            content: `${this.$t('tw_params_edit_confirm')}`,
+            'z-index': 1000000,
+            closable: true,
+            okText: this.$t('save'),
+            cancelText: this.$t('tw_abandon'),
+            onOk: async () => {
+              this.createTemp(true)
+            },
+            onCancel: () => {
+              this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
+            }
+          })
+        } else {
+          this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
+        }
       }
     },
     // 获取模版组信息

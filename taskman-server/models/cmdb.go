@@ -65,11 +65,13 @@ type CiDataRefFilterObj struct {
 }
 
 type RefSelectParam struct {
-	AttrId    string             `json:"attrId"`
-	RequestId string             `json:"requestId"`
-	UserToken string             `json:"-"`
-	Filter    string             `json:"filter"`
-	Param     *QueryRequestParam `json:"param"`
+	AttrId             string                 `json:"attrId"`
+	RequestId          string                 `json:"requestId"`
+	UserToken          string                 `json:"-"`
+	Filter             string                 `json:"filter"`
+	Param              *QueryRequestParam     `json:"param"`
+	FormItemTemplateId string                 `json:"formItemTemplateId"`
+	FormItemTemplate   *FormItemTemplateTable `json:"formItemTemplate"`
 }
 
 type GetExpressResultParam struct {

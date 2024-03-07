@@ -578,7 +578,7 @@ func getRequestPreDataByTemplateId(requestTemplateId string) []*models.RequestPr
 				ItemGroup:      formTemplate.ItemGroup,
 				ItemGroupName:  formTemplate.ItemGroupName,
 				ItemGroupType:  formTemplate.ItemGroupType,
-				ItemGroupRule:  formTemplate.ItemGroupType,
+				ItemGroupRule:  formTemplate.ItemGroupRule,
 				Title:          title,
 				Value:          []*models.EntityTreeObj{},
 			})
@@ -751,6 +751,52 @@ func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPre
 	}
 	sort.Sort(result)
 	return result
+}
+
+func CheckRequest(request models.RequestTable, task *models.TaskTable, operator, userToken, language string, cacheData models.RequestCacheData) (err error) {
+	var entityDepMap map[string][]string
+	var requestTemplate *models.RequestTemplateTable
+	var actions, approvalActions []*dao.ExecAction
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		return
+	}
+	entityDepMap, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData)
+	if err != nil {
+		err = fmt.Errorf("Try to append useless entity fail,%s ", err.Error())
+		return
+	}
+	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
+	cacheBytes, _ := json.Marshal(cacheData)
+	/*startParam := BuildRequestProcessData(cacheData)
+	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
+	if err != nil {
+		return
+	}
+	if result == nil {
+		err = fmt.Errorf("StartProcDefInstances response empty")
+		return
+	}*/
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	expireTime := calcExpireTime(nowTime, requestTemplate.ExpireDay)
+	// 更新表状态
+	actions = append(actions, &dao.ExecAction{Sql: "update request set handler=?,confirm_time=?,expire_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?",
+		Param: []interface{}{operator, nowTime, expireTime, string(cacheBytes), operator, nowTime, request.Id}})
+	// 更新任务为完成
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
+		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})
+	approvalActions, err = GetRequestService().HandleRequestApproval(request, userToken, language)
+	if err != nil {
+		return
+	}
+	if len(approvalActions) > 0 {
+		actions = append(actions, approvalActions...)
+	}
+	err = dao.Transaction(actions)
+	return
 }
 
 func StartRequest(requestId, operator, userToken, language string, cacheData models.RequestCacheData) (result *models.StartInstanceResultData, err error) {

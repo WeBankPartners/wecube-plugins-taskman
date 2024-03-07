@@ -15,15 +15,13 @@
     <!-- <div class="hot-link">
       <HotLink></HotLink>
     </div> -->
-    <div class="data-card">
-      <DataCard
-        ref="dataCard"
-        :initTab="initTab"
-        :initAction="initAction"
-        @initFetch="initData"
-        @fetchData="handleOverviewChange"
-      ></DataCard>
-    </div>
+    <DataCard
+      ref="dataCard"
+      :initTab="initTab"
+      :initAction="initAction"
+      @initFetch="initData"
+      @fetchData="handleOverviewChange"
+    ></DataCard>
     <div class="data-tabs">
       <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
         <!--任务处理-->
@@ -611,9 +609,6 @@ export default {
   }
   .hot-link {
     margin-top: 12px;
-  }
-  .data-card {
-    margin-top: 24px;
   }
   .data-tabs {
     margin-top: 10px;

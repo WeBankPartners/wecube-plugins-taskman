@@ -217,6 +217,8 @@ export default {
       this.activeTab = item.entity || item.itemGroup
       this.activeItem = item
       this.initTableData()
+      this.addRowSource = ''
+      this.addRowSourceOptions = []
     }, 100),
     async initTableData () {
       // 当前选择tab数据

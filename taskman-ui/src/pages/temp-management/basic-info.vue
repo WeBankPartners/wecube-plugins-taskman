@@ -346,7 +346,7 @@ export default {
           desc: this.$t('successful')
         })
         if (isGoToNext) {
-          this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
+          this.$emit('gotoNextStep', data.id)
         } else {
           this.loadPage(data.id)
         }
@@ -552,7 +552,7 @@ fieldset[disabled] .ivu-input {
 .title {
   font-size: 16px;
   font-weight: bold;
-  margin: 0 10px;
+  margin: 12px 0;
   display: inline-block;
   .title-text {
     display: inline-block;

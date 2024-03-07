@@ -630,6 +630,8 @@ func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag 
 	// 删除任务模版表
 	actions = append(actions, &dao.ExecAction{Sql: "delete from task_template WHERE request_template = ?", Param: []interface{}{id}})
 
+	// 删除模板角色
+	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template_role WHERE request_template = ?", Param: []interface{}{id}})
 	// 删除请求模板
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template where id=?", Param: []interface{}{id}})
 	if !getActionFlag {

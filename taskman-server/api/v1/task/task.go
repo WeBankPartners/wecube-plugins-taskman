@@ -177,6 +177,11 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	if param.TaskHandleId == "" {
+		err = fmt.Errorf("param taskHandleId is empty")
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
 	taskTable, err := service.GetSimpleTask(taskId)
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)
@@ -186,7 +191,7 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}
-	err = service.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
+	err = service.ApproveTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

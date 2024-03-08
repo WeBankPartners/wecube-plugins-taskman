@@ -771,15 +771,6 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
-	/*startParam := BuildRequestProcessData(cacheData)
-	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
-	if err != nil {
-		return
-	}
-	if result == nil {
-		err = fmt.Errorf("StartProcDefInstances response empty")
-		return
-	}*/
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	expireTime := calcExpireTime(nowTime, requestTemplate.ExpireDay)
 	// 更新表状态
@@ -788,7 +779,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})
-	approvalActions, err = GetRequestService().HandleRequestApproval(request, userToken, language)
+	approvalActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
 	if err != nil {
 		return
 	}
@@ -830,6 +821,39 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	return
 }
 
+func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (actions []*dao.ExecAction, err error) {
+	var requestTemplateTable []*models.RequestTemplateTable
+	var result *models.StartInstanceResultData
+	actions = []*dao.ExecAction{}
+	dao.X.SQL("select * from request_template where  id=?)", request.RequestTemplate).Find(&requestTemplateTable)
+	if len(requestTemplateTable) == 0 {
+		err = fmt.Errorf("Can not find requestTemplate with request:%s ", request.Id)
+		return
+	}
+	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
+	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
+	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
+	if tmpErr != nil {
+		err = fmt.Errorf("Try to append useless entity fail,%s ", tmpErr.Error())
+		return
+	}
+	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
+	startParam := BuildRequestProcessData(cacheData)
+	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
+	if err != nil {
+		return
+	}
+	if result == nil {
+		err = fmt.Errorf("StartProcDefInstances response empty")
+		return
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	procInstId := fmt.Sprintf("%v", result.Id)
+	actions = append(actions, &dao.ExecAction{Sql: "update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? " +
+		"where id=?", Param: []interface{}{procInstId, result.ProcInstKey, result.Status, nowTime, request.Id}})
+	return
+}
+
 func UpdateRequestStatus(requestId, status, operator, userToken, language, description string) error {
 	var err error
 	var request models.RequestTable
@@ -857,7 +881,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 			bindCache = string(bindCacheBytes)
 		}
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().HandleRequestCheck(request, operator, bindCache, userToken, language)
+		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
 		if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError

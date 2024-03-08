@@ -43,12 +43,12 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		}
 		if len(param.CustomItems) > 0 {
 			for _, customItem := range param.CustomItems {
+				customItem.RefId = customItem.Id
 				customItem.Id = guid.CreateGuid()
 				customItem.FormTemplate = newItemGroupId
 				customItem.ItemGroup = param.ItemGroup
 				customItem.ItemGroupName = param.ItemGroupName
 				customItem.ElementType = string(models.FormItemElementTypeCalculate)
-
 				insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(customItem))
 			}
 		}
@@ -109,6 +109,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				}
 			}
 			if !customItemExist {
+				customItem.RefId = customItem.Id
 				customItem.Id = guid.CreateGuid()
 				customItem.FormTemplate = param.FormTemplateId
 				customItem.ItemGroup = formTemplate.ItemGroup
@@ -117,6 +118,11 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 			}
 		}
 		for _, formItemTemplate := range formItemTemplateList {
+			// 过滤掉自定义类型
+			if formItemTemplate.AttrDefId == "" && formItemTemplate.ElementType != "calculate" {
+				continue
+			}
+			// 这块只判断,编排类型和 自定义计算类型
 			if existMap[formItemTemplate.Id] == false && existMap[formItemTemplate.AttrDefId] == false {
 				deleteItems = append(deleteItems, formItemTemplate)
 			}

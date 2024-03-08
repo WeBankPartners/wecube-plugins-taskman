@@ -172,7 +172,7 @@ export const deleteRequestGroupForm = (itemGroupId, tmpId) =>
 export const saveRequestGroupCustomForm = data => req.post(`/taskman/api/v1/form-template/item-group`, data)
 export const getRequestGroupForm = params =>
   req.get(
-    `/taskman/api/v1/form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&form-template-id=${params.formTemplateId}&item-group-id=${params.itemGroupId}&module=${params.module}`
+    `/taskman/api/v1/form-template/item-group-config?entity=${params.entity}&form-type=${params.formType}&request-template-id=${params.requestTemplateId}&task-template-id=${params.taskTemplateId}&item-group-id=${params.itemGroupId}&module=${params.module}`
   )
 // 获取审批节点
 export const getApprovalNode = (tmpId, type) => req.get(`/taskman/api/v1/task-template/${tmpId}/ids?type=${type}`)

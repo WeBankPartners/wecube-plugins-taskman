@@ -192,8 +192,9 @@ export default {
       this.openFormConfig = true
     },
     async getRequestGroupForm (params) {
+      console.log(params)
       const { statusCode, data } = await getRequestGroupForm({
-        formTemplateId: params.formTemplateId,
+        taskTemplateId: params.taskTemplateId,
         requestTemplateId: params.requestTemplateId,
         entity: params.itemGroup,
         formType: params.itemGroupType,

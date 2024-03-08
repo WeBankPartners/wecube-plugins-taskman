@@ -824,12 +824,13 @@ export default {
       }
     },
     openDrawer (groupItem) {
+      console.log(34, groupItem)
       this.editGroupCustomItems(groupItem)
       if (groupItem.itemGroupType === 'custom') {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.requestTemplateId,
+          taskTemplateId: '',
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -842,7 +843,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.requestTemplateId,
+          taskTemplateId: '',
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,

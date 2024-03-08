@@ -980,7 +980,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.dataFormInfo.formTemplateId,
+          taskTemplateId: this.activeEditingNode.id,
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -993,7 +993,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          formTemplateId: this.dataFormInfo.formTemplateId,
+          taskTemplateId: this.activeEditingNode.id,
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,

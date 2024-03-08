@@ -43,12 +43,12 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		}
 		if len(param.CustomItems) > 0 {
 			for _, customItem := range param.CustomItems {
+				customItem.RefId = customItem.Id
 				customItem.Id = guid.CreateGuid()
 				customItem.FormTemplate = newItemGroupId
 				customItem.ItemGroup = param.ItemGroup
 				customItem.ItemGroupName = param.ItemGroupName
 				customItem.ElementType = string(models.FormItemElementTypeCalculate)
-
 				insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(customItem))
 			}
 		}
@@ -109,6 +109,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				}
 			}
 			if !customItemExist {
+				customItem.RefId = customItem.Id
 				customItem.Id = guid.CreateGuid()
 				customItem.FormTemplate = param.FormTemplateId
 				customItem.ItemGroup = formTemplate.ItemGroup

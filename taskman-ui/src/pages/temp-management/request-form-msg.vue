@@ -113,19 +113,19 @@
               {{ $t('general_attributes') }}
               <div slot="content">
                 <Form :label-width="80">
-                  <FormItem :label="$t('field_name')">
-                    <Input
-                      v-model="editElement.name"
-                      @on-change="paramsChanged"
-                      :disabled="$parent.isCheck === 'Y'"
-                      placeholder=""
-                    ></Input>
-                  </FormItem>
                   <FormItem :label="$t('display_name')">
                     <Input
                       v-model="editElement.title"
                       @on-change="paramsChanged"
                       :disabled="$parent.isCheck === 'Y'"
+                      placeholder=""
+                    ></Input>
+                  </FormItem>
+                  <FormItem :label="$t('tw_code')">
+                    <Input
+                      v-model="editElement.name"
+                      @on-change="paramsChanged"
+                      :disabled="$parent.isCheck === 'Y' || editElement.entity !== ''"
                       placeholder=""
                     ></Input>
                   </FormItem>
@@ -456,7 +456,8 @@ export default {
         refEntity: '',
         refPackageName: ''
       },
-      allEntityList: []
+      allEntityList: [],
+      formId: '' // 缓存表单id，供编辑使用
     }
   },
   mounted () {
@@ -468,6 +469,7 @@ export default {
       this.isParmasChanged = false
       const { statusCode, data } = await getRequestFormTemplateData(this.requestTemplateId)
       if (statusCode === 'OK') {
+        this.formId = data.id
         if (data.items !== null && data.items.length > 0) {
           data.items.sort(this.compare('sort'))
           this.finalElement = [
@@ -493,6 +495,7 @@ export default {
       })
       tmp.sort(this.compare('sort'))
       let res = {
+        id: this.formId,
         items: tmp
       }
       const { statusCode } = await saveRequsetForm(this.requestTemplateId, res)

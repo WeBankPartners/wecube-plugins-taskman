@@ -105,7 +105,7 @@ export default {
           desc: this.$t('successful')
         })
         this.openFormConfig = false
-        this.$emit('reloadParentPage')
+        this.$emit('reloadParentPage', !this.group.itemGroupId)
       }
     },
     cancelGroupDrawer () {

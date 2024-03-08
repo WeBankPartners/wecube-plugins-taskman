@@ -100,14 +100,20 @@
                       }"
                       :style="activeStyle(groupItem)"
                     >
-                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
+                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
                       <span @click="editGroupCustomItems(groupItem)">
                         {{ `${groupItem.itemGroupName}` }}
                       </span>
-                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
+                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
                     </div>
                     <span>
-                      <Button @click="selectItemGroup" type="primary" ghost icon="md-add"></Button>
+                      <Button
+                        style="margin-top: -5px;"
+                        @click="selectItemGroup"
+                        type="primary"
+                        shape="circle"
+                        icon="md-add"
+                      ></Button>
                     </span>
                   </div>
                 </div>
@@ -185,7 +191,8 @@
                             type="error"
                             size="small"
                             :disabled="$parent.isCheck === 'Y'"
-                            icon="ios-trash"
+                            icon="ios-close"
+                            ghost
                           ></Button>
                         </div>
                       </draggable>
@@ -245,19 +252,19 @@
                     {{ $t('general_attributes') }}
                     <div slot="content">
                       <Form :label-width="80">
-                        <FormItem :label="$t('field_name')">
-                          <Input
-                            v-model="editElement.name"
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
-                            placeholder=""
-                          ></Input>
-                        </FormItem>
                         <FormItem :label="$t('display_name')">
                           <Input
                             v-model="editElement.title"
                             @on-change="paramsChanged"
                             :disabled="$parent.isCheck === 'Y'"
+                            placeholder=""
+                          ></Input>
+                        </FormItem>
+                        <FormItem :label="$t('tw_code')">
+                          <Input
+                            v-model="editElement.name"
+                            @on-change="paramsChanged"
+                            :disabled="$parent.isCheck === 'Y' || editElement.entity !== ''"
                             placeholder=""
                           ></Input>
                         </FormItem>

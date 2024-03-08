@@ -38,7 +38,7 @@
               <span class="underline"></span>
             </div>
           </div>
-          <Form :label-width="120" v-if="dataFormInfo.associationWorkflow">
+          <Form :label-width="100" v-if="dataFormInfo.associationWorkflow">
             <FormItem>
               <span slot="label" style="font-size: 12px;">{{ $t('tw_choose_object') }}</span>
               <Select style="width: 30%">
@@ -59,14 +59,20 @@
                 }"
                 :style="activeStyle(groupItem)"
               >
-                <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
+                <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
                 <span @click="editGroupCustomItems(groupItem)">
                   {{ `${groupItem.itemGroupName}` }}
                 </span>
-                <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
+                <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
               </div>
               <span>
-                <Button @click="selectItemGroup" type="primary" ghost icon="md-add"></Button>
+                <Button
+                  style="margin-top: -5px;"
+                  @click="selectItemGroup"
+                  type="primary"
+                  shape="circle"
+                  icon="md-add"
+                ></Button>
               </span>
             </div>
           </div>
@@ -136,14 +142,15 @@
                     type="error"
                     size="small"
                     :disabled="$parent.isCheck === 'Y'"
-                    icon="ios-trash"
+                    icon="ios-close"
+                    ghost
                   ></Button>
                 </div>
               </draggable>
             </div>
             <div style="text-align: right;">
               <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
-              <Button size="small" @click="cancelGroup">{{ $t('tw_abandon') }}</Button>
+              <Button size="small" @click="restoreGroup">{{ $t('tw_restore') }}</Button>
             </div>
           </template>
         </div>
@@ -155,19 +162,19 @@
               {{ $t('general_attributes') }}
               <div slot="content">
                 <Form :label-width="80">
-                  <FormItem :label="$t('field_name')">
-                    <Input
-                      v-model="editElement.name"
-                      @on-change="paramsChanged"
-                      :disabled="$parent.isCheck === 'Y'"
-                      placeholder=""
-                    ></Input>
-                  </FormItem>
                   <FormItem :label="$t('display_name')">
                     <Input
                       v-model="editElement.title"
                       @on-change="paramsChanged"
                       :disabled="$parent.isCheck === 'Y'"
+                      placeholder=""
+                    ></Input>
+                  </FormItem>
+                  <FormItem :label="$t('tw_code')">
+                    <Input
+                      v-model="editElement.name"
+                      @on-change="paramsChanged"
+                      :disabled="$parent.isCheck === 'Y' || editElement.entity !== ''"
                       placeholder=""
                     ></Input>
                   </FormItem>
@@ -293,7 +300,13 @@
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
           <FormItem :label="$t('表单模版类型')">
-            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
+            <Select
+              style="width: 80%"
+              v-model="itemGroup"
+              v-if="showSelectModel"
+              filterable
+              :size="{ height: '500px' }"
+            >
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
               </OptionGroup>
@@ -309,7 +322,7 @@
     <!-- 自定义表单配置 -->
     <RequestFormDataCustom
       ref="requestFormDataCustomRef"
-      @reloadParentPage="loadPage"
+      @reloadParentPage="isLoadLastGroup"
       module="data-form"
       v-show="['custom'].includes(itemGroupType)"
     ></RequestFormDataCustom>
@@ -318,12 +331,11 @@
     <RequestFormDataWorkflow
       ref="requestFormDataWorkflowRef"
       :isCustomItemEditable="true"
-      @reloadParentPage="loadPage"
+      @reloadParentPage="isLoadLastGroup"
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
     <div style="text-align: center;margin-top: 16px;">
-      {{ isParmasChanged }}
       <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
     </div>
   </div>
@@ -571,7 +583,8 @@ export default {
           color: '#81b337',
           'border-radius': '14px'
         }
-      }
+      },
+      displayLastGroup: false // 控制group显示，在新增时显示最后一个，其余显示当前值
     }
   },
   computed: {
@@ -606,8 +619,32 @@ export default {
       const { statusCode, data } = await getRequestDataForm(this.requestTemplateId)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
+        let groups = this.dataFormInfo.groups
+        if (this.displayLastGroup) {
+          const group = groups[groups.length - 1]
+          this.editGroupCustomItems(group)
+          // this.displayLastGroup = false
+        } else {
+          let itemGroupId = this.finalElement[0].itemGroupId
+          const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
+          if (findGroup) {
+            this.editGroupCustomItems(findGroup)
+          } else {
+            if (groups.length > 0) {
+              this.editGroupCustomItems(groups[0])
+            }
+          }
+        }
       }
       this.getAllDataModels()
+    },
+    // 放弃编辑，重新加载group
+    restoreGroup () {
+      this.loadPage()
+    },
+    isLoadLastGroup (val) {
+      this.displayLastGroup = val
+      this.loadPage()
     },
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
@@ -656,7 +693,7 @@ export default {
               d.formTypeName = this.$t('自定义表单')
               d.entities = ['custom']
             } else if (d.formType === 'workflow') {
-              d.formTypeName = this.$t('编排数据项表单')
+              d.formTypeName = this.$t('编排entity表单')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             } else if (d.formType === 'optional') {
@@ -710,6 +747,7 @@ export default {
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem) {
+      this.displayLastGroup = false
       if (this.isParmasChanged) {
         this.$Modal.confirm({
           title: `${this.$t('confirm_discarding_changes')}`,
@@ -718,7 +756,8 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveGroup(1)
+            // this.saveGroup(1)
+            this.saveGroup(4, groupItem)
           },
           onCancel: () => {
             this.updateFinalElement(groupItem)
@@ -763,6 +802,51 @@ export default {
     },
     // 编辑组信息
     editGroupItem (groupItem) {
+      if (this.isParmasChanged) {
+        this.$Modal.confirm({
+          title: `${this.$t('confirm_discarding_changes')}`,
+          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
+          'z-index': 1000000,
+          okText: this.$t('save'),
+          cancelText: this.$t('abandon'),
+          onOk: async () => {
+            this.saveGroup(5, groupItem)
+          },
+          onCancel: () => {
+            this.isParmasChanged = false
+            // this.editGroupCustomItems(groupItem)
+            this.openDraw(groupItem)
+          }
+        })
+      } else {
+        // this.editGroupCustomItems(groupItem)
+        this.openDraw(groupItem)
+      }
+
+      //   editGroupCustomItems (groupItem) {
+      //   this.displayLastGroup = false
+      //   if (this.isParmasChanged) {
+      //     this.$Modal.confirm({
+      //       title: `${this.$t('confirm_discarding_changes')}`,
+      //       content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
+      //       'z-index': 1000000,
+      //       okText: this.$t('save'),
+      //       cancelText: this.$t('abandon'),
+      //       onOk: async () => {
+      //         // this.saveGroup(1)
+      //         this.saveGroup(4, groupItem)
+      //       },
+      //       onCancel: () => {
+      //         this.updateFinalElement(groupItem)
+      //       }
+      //     })
+      //   } else {
+      //     this.updateFinalElement(groupItem)
+      //   }
+      // },
+    },
+    openDraw (groupItem) {
+      this.editGroupCustomItems(groupItem)
       if (groupItem.itemGroupType === 'custom') {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
@@ -829,8 +913,8 @@ export default {
       this.paramsChanged()
     },
     // 保存自定义表单项
-    async saveGroup (nextStep) {
-      // nextStep 1新增 2下一步 3切换tab
+    async saveGroup (nextStep, elememt) {
+      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       finalData.items = finalData.attrs.map(attr => {
         if (attr.id.startsWith('c_')) {
@@ -847,12 +931,16 @@ export default {
         })
         this.isParmasChanged = false
         if (nextStep === 1) {
-          this.cancelGroup()
+          // this.cancelGroup()
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoNextStep', this.requestTemplateId)
         } else if (nextStep === 3) {
           this.$emit('changTab', 'msgForm')
+        } else if (nextStep === 4) {
+          this.updateFinalElement(elememt)
+        } else if (nextStep === 5) {
+          this.openDraw(elememt)
         }
       }
     },

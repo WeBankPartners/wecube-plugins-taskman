@@ -98,14 +98,20 @@
                       }"
                       :style="activeStyle(groupItem)"
                     >
-                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="16" />
+                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
                       <span @click="editGroupCustomItems(groupItem)">
                         {{ `${groupItem.itemGroupName}` }}
                       </span>
-                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="18" />
+                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
                     </div>
                     <span>
-                      <Button @click="selectItemGroup" type="primary" ghost icon="md-add"></Button>
+                      <Button
+                        style="margin-top: -5px;"
+                        @click="selectItemGroup"
+                        type="primary"
+                        shape="circle"
+                        icon="md-add"
+                      ></Button>
                     </span>
                   </div>
                 </div>
@@ -183,7 +189,8 @@
                             type="error"
                             size="small"
                             :disabled="$parent.isCheck === 'Y'"
-                            icon="ios-trash"
+                            icon="ios-close"
+                            ghost
                           ></Button>
                         </div>
                       </draggable>
@@ -238,19 +245,19 @@
                     {{ $t('general_attributes') }}
                     <div slot="content">
                       <Form :label-width="80">
-                        <FormItem :label="$t('field_name')">
-                          <Input
-                            v-model="editElement.name"
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
-                            placeholder=""
-                          ></Input>
-                        </FormItem>
                         <FormItem :label="$t('display_name')">
                           <Input
                             v-model="editElement.title"
                             @on-change="paramsChanged"
                             :disabled="$parent.isCheck === 'Y'"
+                            placeholder=""
+                          ></Input>
+                        </FormItem>
+                        <FormItem :label="$t('tw_code')">
+                          <Input
+                            v-model="editElement.name"
+                            @on-change="paramsChanged"
+                            :disabled="$parent.isCheck === 'Y' || editElement.entity !== ''"
                             placeholder=""
                           ></Input>
                         </FormItem>
@@ -381,7 +388,7 @@
       <!-- 自定义表单配置 -->
       <RequestFormDataCustom
         ref="requestFormDataCustomRef"
-        @reloadParentPage="loadPage"
+        @reloadParentPage="reloadGroup"
         module="other"
         v-show="['custom'].includes(itemGroupType)"
       ></RequestFormDataCustom>
@@ -390,7 +397,7 @@
       <RequestFormDataWorkflow
         ref="requestFormDataWorkflowRef"
         :isCustomItemEditable="false"
-        @reloadParentPage="loadPage"
+        @reloadParentPage="reloadGroup"
         module="other"
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
@@ -708,7 +715,8 @@ export default {
       await removeEmptyDataForm(this.requestTemplateId)
     },
     loadPage (sort) {
-      this.cancelGroup()
+      this.isParmasChanged = false
+      // this.cancelGroup()
       this.getApprovalNode(sort)
       this.getAllDataModels()
     },
@@ -785,8 +793,12 @@ export default {
       }
       return false
     },
+    // 在弹窗关闭、保存、还原状态下回显group内容
+    reloadGroup () {
+      this.getApprovalNodeGroups(this.activeEditingNode)
+    },
     editNode (node) {
-      this.cancelGroup()
+      // this.cancelGroup()
       let params = {
         requestTemplateId: this.requestTemplateId,
         id: node.id
@@ -803,6 +815,16 @@ export default {
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
+        let groups = this.dataFormInfo.groups
+        let itemGroupId = this.finalElement[0].itemGroupId
+        const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
+        if (findGroup) {
+          this.editGroupCustomItems(findGroup)
+        } else {
+          if (groups.length > 0) {
+            this.editGroupCustomItems(groups[0])
+          }
+        }
       }
     },
     jumpToNode () {
@@ -876,7 +898,7 @@ export default {
     editGroupCustomItems (groupItem) {
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
+          title: `${this.$t('confirm_discarding_changes123')}`,
           content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),
@@ -886,7 +908,6 @@ export default {
           },
           onCancel: () => {
             this.getApprovalNodeGroups(this.activeEditingNode)
-            this.cancelGroup()
             this.updateFinalElement(groupItem)
           }
         })
@@ -912,7 +933,7 @@ export default {
     editGroupItem (groupItem) {
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
+          title: `${this.$t('confirm_discarding_changes456')}`,
           content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),

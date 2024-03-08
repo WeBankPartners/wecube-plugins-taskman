@@ -32,7 +32,7 @@
         <Divider style="margin-top:40px">自定义分析字段</Divider>
         <Row>
           <Col span="1">&nbsp;&nbsp;&nbsp;&nbsp;</Col>
-          <Col span="6">字段名称</Col>
+          <Col span="6">编码</Col>
           <Col span="16">数据查找规则</Col>
         </Row>
         <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex" style="margin:6px 0">
@@ -226,7 +226,7 @@ export default {
           desc: this.$t('successful')
         })
         this.openFormConfig = false
-        this.$emit('reloadParentPage')
+        this.$emit('reloadParentPage', finalData.itemGroupId === '')
       }
     },
     cancelGroupDrawer () {

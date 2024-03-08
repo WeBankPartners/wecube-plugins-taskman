@@ -48,27 +48,23 @@
           style="width:70%"
         >
           <Row>
-            <Col span="1">序号</Col>
-            <Col span="5">角色设置方式</Col>
-            <Col span="5">人员设置方式</Col>
-            <Col span="5">角色</Col>
-            <Col span="5">人员</Col>
-            <!-- <Col span="2">操作</Col> -->
+            <Col class="cutom-table-border" span="1">序号</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">角色设置方式</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">角色</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">人员</Col>
+            <!-- <Col class="cutom-table-border margin-left--1" span="2">操作</Col> -->
           </Row>
-          <Row
-            v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates"
-            :key="roleObjIndex"
-            style="margin: 4px 0"
-          >
-            <Col span="1">{{ roleObjIndex + 1 }}</Col>
-            <Col span="5">
+          <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
+            <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select v-model="roleObj.assign" filterable @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
               </Select>
             </Col>
-            <Col span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
                 <Option
                   v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
@@ -78,7 +74,7 @@
                 >
               </Select>
             </Col>
-            <Col span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select
                 v-model="roleObj.role"
                 filterable
@@ -88,7 +84,7 @@
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
-            <Col span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select
                 v-model="roleObj.handler"
                 filterable
@@ -101,16 +97,16 @@
                 }}</Option>
               </Select>
             </Col>
-            <Col span="2">
-              <!-- <Button
-                v-if="activeApprovalNode.handleTemplates.length > 1"
+            <!-- <Col class="cutom-table-border margin-top--1 margin-left--1" span="2">
+              <Button
+                :disabled="activeApprovalNode.handleTemplates.length < 2"
                 @click.stop="removeRoleObjItem(roleObjIndex)"
                 type="error"
                 size="small"
                 ghost
                 icon="md-trash"
-              ></Button> -->
-            </Col>
+              ></Button>
+            </Col> -->
           </Row>
           <!-- <Button
             v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
@@ -384,5 +380,17 @@ fieldset[disabled] .ivu-input {
 
 .basci-info-content {
   margin: 16px 64px;
+}
+
+.cutom-table-border {
+  border: 1px solid #dcdee2;
+  padding: 4px;
+  text-align: center;
+}
+.margin-left--1 {
+  margin-left: -1px;
+}
+.margin-top--1 {
+  margin-top: -1px;
 }
 </style>

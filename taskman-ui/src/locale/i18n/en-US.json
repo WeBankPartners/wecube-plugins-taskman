@@ -318,5 +318,7 @@
   "tw_type": "Type",
   "tw_template": "template",
   "tw_limit_30": " should have a length between 0 and 30",
-  "tw_limit_200": " must be less than 200"
+  "tw_limit_200": " must be less than 200",
+  "tw_code": "Code",
+  "tw_restore": "Restore"
 }

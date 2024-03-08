@@ -45,27 +45,23 @@
           style="width:70%"
         >
           <Row>
-            <Col span="1">序号</Col>
-            <Col span="5">角色设置方式</Col>
-            <Col span="5">人员设置方式</Col>
-            <Col span="5">角色</Col>
-            <Col span="5">人员</Col>
-            <Col span="2">操作</Col>
+            <Col class="cutom-table-border" span="1">序号</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">角色设置方式</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">角色</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">人员</Col>
+            <Col class="cutom-table-border margin-left--1" span="2">操作</Col>
           </Row>
-          <Row
-            v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates"
-            :key="roleObjIndex"
-            style="margin: 4px 0"
-          >
-            <Col span="1">{{ roleObjIndex + 1 }}</Col>
-            <Col span="5">
+          <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
+            <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select v-model="roleObj.assign" filterable @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
               </Select>
             </Col>
-            <Col span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
                 <Option
                   v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
@@ -75,7 +71,7 @@
                 >
               </Select>
             </Col>
-            <Col span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select
                 v-model="roleObj.role"
                 filterable
@@ -85,7 +81,7 @@
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
-            <Col span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select
                 v-model="roleObj.handler"
                 filterable
@@ -98,9 +94,9 @@
                 }}</Option>
               </Select>
             </Col>
-            <Col span="2">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="2">
               <Button
-                v-if="activeApprovalNode.handleTemplates.length > 1"
+                :disabled="activeApprovalNode.handleTemplates.length < 2"
                 @click.stop="removeRoleObjItem(roleObjIndex)"
                 type="error"
                 size="small"
@@ -116,11 +112,15 @@
             size="small"
             ghost
             icon="md-add"
+            :disabled="isAddRoleObjDisable()"
           ></Button>
+          <span style="color: red" v-if="isAddRoleObjDisable()">处理人设置存在重复数据，请修改</span>
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveBtnActive()" @click="saveNode">{{ $t('save') }}</Button>
+        <Button type="primary" :disabled="isSaveBtnActive() || isAddRoleObjDisable()" @click="saveNode">{{
+          $t('save')
+        }}</Button>
       </div>
     </div>
   </div>
@@ -246,7 +246,6 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      console.log(this.activeApprovalNode)
       const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
@@ -289,9 +288,28 @@ export default {
           }
         })
     },
+    isAddRoleObjDisable () {
+      let res = false
+      if (this.activeApprovalNode.handleTemplates.length > 1) {
+        res = this.hasDuplicateObjects()
+      }
+      return res
+    },
+    hasDuplicateObjects () {
+      let objectStrings = new Set() // 使用 Set 存储对象的字符串表示
+      for (let obj of this.activeApprovalNode.handleTemplates) {
+        let objString = JSON.stringify(obj) // 将对象转换为字符串
+        if (objectStrings.has(objString)) {
+          return true // 存在相同的对象
+        }
+        objectStrings.add(objString)
+      }
+      return false // 不存在相同的对象
+    },
     // 新增一组审批人
     addRoleObjItem () {
       this.activeApprovalNode.handleTemplates.push(JSON.parse(JSON.stringify(this.approvalSingle)))
+      this.getUserRoles()
     },
     removeRoleObjItem (index) {
       this.activeApprovalNode.handleTemplates.splice(index, 1)
@@ -385,5 +403,17 @@ fieldset[disabled] .ivu-input {
 
 .basci-info-content {
   margin: 16px 64px;
+}
+
+.cutom-table-border {
+  border: 1px solid #dcdee2;
+  padding: 4px;
+  text-align: center;
+}
+.margin-left--1 {
+  margin-left: -1px;
+}
+.margin-top--1 {
+  margin-top: -1px;
 }
 </style>

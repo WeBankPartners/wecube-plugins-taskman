@@ -318,5 +318,7 @@
   "tw_type": "类型",
   "tw_template": "模版",
   "tw_limit_30": "长度需在0到30之间",
-  "tw_limit_200": "长度需小于200"
+  "tw_limit_200": "长度需小于200",
+  "tw_code": "编码",
+  "tw_restore": "还原"
 }

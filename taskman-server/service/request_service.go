@@ -779,7 +779,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})
-	approvalActions, err = GetRequestService().HandleRequestApproval(request, userToken, language)
+	approvalActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
 	if err != nil {
 		return
 	}
@@ -881,7 +881,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 			bindCache = string(bindCacheBytes)
 		}
 		// 请求定版, 根据模板配置开启是否确认定版
-		err = GetRequestService().HandleRequestCheck(request, operator, bindCache, userToken, language)
+		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
 		if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError

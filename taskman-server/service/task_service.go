@@ -579,35 +579,100 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 	return
 }
 
-func getTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTable, err error) {
-	taskMap = make(map[string]*models.TaskTable)
-	var taskTable []*models.TaskTable
-	err = dao.X.SQL("select * from task where request = ?", requestId).Find(&taskTable)
+func GetTaskListByRequestId(requestId string) (taskList []*models.TaskTable, err error) {
+	err = dao.X.SQL("select * from task where request = ? order by created_time desc ", requestId).Find(&taskList)
 	if err != nil {
 		return
-	}
-	if len(taskTable) == 0 {
-		err = fmt.Errorf("Can not find any task with request:%s ", requestId)
-		return
-	}
-	for _, task := range taskTable {
-		taskMap[task.NodeDefId] = task
 	}
 	return
 }
 
-func ApproveTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam) error {
-	err := SaveTaskForm(task.Id, operator, param)
+func ApproveTask(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam) error {
+	var err error
+	err = SaveTaskForm(task.Id, operator, param)
 	if err != nil {
 		return err
 	}
+
 	switch models.TaskType(task.Type) {
 	case models.TaskTypeApprove:
-
+		return handleApprove(task, operator, userToken, language, param)
 	case models.TaskTypeImplement:
-
+		// 编排任务,走编排逻辑. @todo 怎么知道编排走完了？？
+		if task.ProcDefKey != "" && task.ProcDefId != "" {
+			// @todo 编排处理要更新处理节点
+			return handleWorkflowTask(task, operator, userToken, param)
+		}
 	}
 	return nil
+}
+
+// handleApprove 处理审批
+func handleApprove(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam) (err error) {
+	var actions, newApproveActions []*dao.ExecAction
+	var request models.RequestTable
+	now := time.Now().Format(models.DateTimeFormat)
+	request, err = GetSimpleRequest(task.Request)
+	if err != nil {
+		return
+	}
+	switch param.ChoseOption {
+	case string(models.TaskHandleResultTypeApprove):
+		// 当前审批通过,需要通过查看 task_template里面handle_mode 判断协同,并行
+		var taskHandleList []*models.TaskHandleTable
+		var taskTemplateList []*models.TaskTemplateTable
+		err = dao.X.SQL("select * from task_template where id = ?", task.TaskTemplate).Find(&taskTemplateList)
+		if err != nil {
+			return
+		}
+		if len(taskTemplateList) == 0 {
+			err = fmt.Errorf("task:%s taskTemplate is empty", task.Id)
+			return
+		}
+		if taskTemplateList[0].HandleMode == string(models.TaskTemplateHandleModeAll) {
+			// 并行模式,都要审批完成才能到下一步
+			err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList)
+			if err != nil {
+				return
+			}
+			if len(taskHandleList) == 0 {
+				err = fmt.Errorf("task:%s taskHandleList is empty", task.Id)
+				return
+			}
+			for _, taskHandle := range taskHandleList {
+				if taskHandle.HandleResult != string(models.TaskHandleResultTypeApprove) && taskHandle.Id != param.TaskHandleId {
+					_, err = dao.X.Exec("update task_handle set handle_result = ?,result_desc = ?,updated_time =? where id = ?", models.TaskHandleResultTypeApprove, param.Comment, now, param.TaskHandleId)
+					if err != nil {
+						return
+					}
+					return
+				}
+			}
+		}
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeApprove, param.Comment, now, param.TaskHandleId}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_reuslt = ?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeApprove, now, task.Id}})
+		newApproveActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
+		if len(newApproveActions) > 0 {
+			actions = append(actions, newApproveActions...)
+		}
+		err = dao.Transaction(actions)
+		return
+	case string(models.TaskHandleResultTypeDeny):
+		// 拒绝, 任务处理结果设置为拒绝,请求状态设置自动退回
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,result_desc=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, param.Comment, operator, now, param.TaskHandleId}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeDeny, operator, now, task.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusFaulted, operator, now, task.Request}})
+
+	case string(models.TaskHandleResultTypeRedraw):
+		// 退回,请求变草稿,任务设置为处理完成
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,result_desc=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeRedraw, param.Comment, operator, now, param.TaskHandleId}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, operator, now, task.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusDraft, operator, now, task.Request}})
+	}
+	if len(actions) > 0 {
+		err = dao.Transaction(actions)
+	}
+	return
 }
 
 // handleWorkflowTask 处理编排任务
@@ -1267,6 +1332,16 @@ func (s *TaskService) ListImplementTasks(requestId string) (list []*models.TaskT
 func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTable, err error) {
 	var taskList []*models.TaskTable
 	err = dao.X.SQL("select * from task where request = ? and type = ? order by created_time desc limit 0,1", requestId, models.TaskTypeCheck).Find(&taskList)
+	if err != nil {
+		return
+	}
+	task = taskList[0]
+	return
+}
+
+func (s *TaskService) GetLatestTask(requestId string) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	err = dao.X.SQL("select * from task where request = ? order by created_time desc limit 0,1", requestId, models.TaskTypeCheck).Find(&taskList)
 	if err != nil {
 		return
 	}

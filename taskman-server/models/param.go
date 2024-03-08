@@ -124,6 +124,7 @@ type PlatDataParam struct {
 	QueryParam []interface{}
 	User       string
 	UserToken  string
+	Tab        string // 标签,取值有:pending 待处理    hasProcessed 已处理  submit 我提交的 draft 我的暂存  collect 收藏
 }
 
 type RequestQueryParam struct {

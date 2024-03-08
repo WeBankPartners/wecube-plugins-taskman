@@ -137,7 +137,7 @@ func getPlatRequestSQL(where, sql string) string {
 }
 
 func getPlatTaskSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
 }
 
 func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
@@ -245,7 +245,7 @@ func collectSQL(templateType int, user string) (sql string, queryParam []interfa
 // DataList 首页工作台数据列表
 func DataList(param *models.PlatformRequestParam, userRoles []string, userToken, user, language string) (pageInfo models.PageInfo, rowData []*models.PlatformDataObj, err error) {
 	// 先拼接查询条件
-	var sql string
+	var sql, execSql string
 	var queryParam []interface{}
 	var taskType = getTaskTypeByType(param.Type)
 	where := transPlatConditionToSQL(param)
@@ -253,21 +253,27 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	switch param.Tab {
 	case "pending":
 		sql, queryParam = pendingTaskSQL(param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
-		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
-		return
+		execSql = getPlatTaskSQL(where, sql)
 	case "hasProcessed":
 		sql, queryParam = hasProcessedTaskSQL(param.Action, user, taskType)
-		pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatTaskSQL(where, sql), language, true)
-		return
+		execSql = getPlatTaskSQL(where, sql)
 	case "submit":
 		sql, queryParam = submitSQL(param.Rollback, param.Action, user)
+		execSql = getPlatRequestSQL(where, sql)
 	case "draft":
 		sql, queryParam = draftSQL(param.Action, user)
+		execSql = getPlatRequestSQL(where, sql)
 	default:
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
 		return
 	}
-	pageInfo, rowData, err = getPlatData(models.PlatDataParam{Param: param.CommonRequestParam, QueryParam: queryParam, UserToken: userToken}, getPlatRequestSQL(where, sql), language, true)
+	pageInfo, rowData, err = getPlatData(models.PlatDataParam{
+		Param:      param.CommonRequestParam,
+		QueryParam: queryParam,
+		User:       user,
+		UserToken:  userToken,
+		Tab:        param.Tab,
+	}, execSql, language, true)
 	return
 }
 
@@ -568,6 +574,11 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				}
 			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
+			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
+			if req.Tab == "pending" {
+				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
+				platformDataObj.Handler = platformDataObj.TaskHandler
+			}
 			// 计算请求/任务停留时长
 			calcRequestStayTime(platformDataObj)
 		}
@@ -965,37 +976,35 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	return
 }
 
-// getRequestHandler 获取请求处理人,如果处于任务执行状态,查询任务处理人
+// getRequestHandler 获取请求处理人,如果处于任务执行状态
 func getRequestHandler(requestId string) (role, handler string) {
-	request, _ := GetSimpleRequest(requestId)
-	if request.Status == "Draft" || request.Status == "Pending" {
-		// 请求在定版状态,从模板角色表中读取
-		rtRoleMap := getRequestTemplateMGMTRole()
-		roles := rtRoleMap[request.RequestTemplate]
-		if len(roles) > 0 {
-			role = roles[0]
-		}
-		handler = request.Handler
-		return
+	var request models.RequestTable
+	var task *models.TaskTable
+	var taskHandleList []*models.TaskHandleTable
+	var roleArr, handlerArr []string
+	request, _ = GetSimpleRequest(requestId)
+	if request.Status == string(models.RequestStatusDraft) {
+		return request.Role, request.CreatedBy
 	}
-	// 请求在任务状态,需要从模板配置的任务表中获取
-	taskTemplateMap, _ := GetTaskTemplateService().getTaskTemplateHandler(request.RequestTemplate)
-	if len(taskTemplateMap) > 0 {
-		taskMap, _ := getTaskMapByRequestId(requestId)
-		if len(taskMap) > 0 {
-			for _, task := range taskMap {
-				if task.Status != "done" && taskTemplateMap[task.TaskTemplate] != nil {
-					//taskTemplate := taskTemplateMap[task.TaskTemplate]
-					//role = taskTemplate.Role
-					// 任务处理人已任务处理为主,可以通过认领转给我修改.空的时候才取模板配置值
-					handler = task.Handler
-					if handler == "" {
-						//handler = taskTemplate.Handler
-					}
-					break
+	task, _ = GetTaskService().GetLatestTask(requestId)
+	if task != nil {
+		// 根据任务查询 任务处理人
+		dao.X.SQL("select * from task_handle where task = ?").Find(&taskHandleList)
+		if len(taskHandleList) > 0 {
+			for _, taskHandle := range taskHandleList {
+				// 待处理 任务节点和角色都要统计
+				if taskHandle.HandleResult == "" {
+					roleArr = append(roleArr, taskHandle.Role)
+					handlerArr = append(handlerArr, taskHandle.Handler)
 				}
 			}
 		}
+	}
+	if len(roleArr) > 0 {
+		role = strings.Join(roleArr, ",")
+	}
+	if len(handlerArr) > 0 {
+		handler = strings.Join(handlerArr, ",")
 	}
 	return
 }
@@ -1124,8 +1133,8 @@ func convertArray2Map(arr []string) map[string]bool {
 	return hashMap
 }
 
-// HandleRequestCheck 处理确认定版
-func (s *RequestService) HandleRequestCheck(request models.RequestTable, operator, bindCache, userToken, language string) (err error) {
+// CreateRequestCheck 创建确认定版
+func (s *RequestService) CreateRequestCheck(request models.RequestTable, operator, bindCache, userToken, language string) (err error) {
 	now := time.Now().Format(models.DateTimeFormat)
 	var actions []*dao.ExecAction
 	var approvalActions []*dao.ExecAction
@@ -1198,7 +1207,7 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	}
 
 	// 没有配置定版,请求继续往后面走
-	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
+	approvalActions, err = s.CreateRequestApproval(request, userToken, language)
 	if err != nil {
 		return
 	}
@@ -1209,8 +1218,8 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 	return
 }
 
-// HandleRequestApproval 处理请求审批
-func (s *RequestService) HandleRequestApproval(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
+// CreateRequestApproval 创建请求审批
+func (s *RequestService) CreateRequestApproval(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
@@ -1223,7 +1232,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 	}
 	// 没有审批,直接跳过到下一步,到任务
 	if len(taskTemplateList) == 0 {
-		return s.HandleRequestTask(request, userToken, language)
+		return s.CreateRequestTask(request, userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
@@ -1266,11 +1275,11 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.HandleRequestTask(request, userToken, language)
+	return s.CreateRequestTask(request, userToken, language)
 }
 
-// HandleRequestTask 处理任务
-func (s *RequestService) HandleRequestTask(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
+// CreateRequestTask 创建任务
+func (s *RequestService) CreateRequestTask(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var requestTemplate *models.RequestTemplateTable
 	var taskList []*models.TaskTable
@@ -1299,7 +1308,7 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 	}
 	// 没有任务,直接跳过到下一步,到请求确认
 	if len(taskTemplateList) == 0 {
-		return s.HandleRequestConfirm(request)
+		return s.CreateRequestConfirm(request)
 	}
 	for _, taskTemplate := range taskTemplateList {
 		taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
@@ -1332,11 +1341,11 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.HandleRequestConfirm(request)
+	return s.CreateRequestConfirm(request)
 }
 
-// HandleRequestConfirm 处理请求确认
-func (s *RequestService) HandleRequestConfirm(request models.RequestTable) (actions []*dao.ExecAction, err error) {
+// CreateRequestConfirm 创建请求确认
+func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (actions []*dao.ExecAction, err error) {
 	var newTaskId string
 	var action *dao.ExecAction
 	var taskTemplateList []*models.TaskTemplateTable

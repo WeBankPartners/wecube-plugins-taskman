@@ -124,6 +124,7 @@ type PlatformDataObj struct {
 	TaskCreatedTime      string `json:"taskCreatedTime" xorm:"task_created_time"`   // task创建时间
 	TaskApprovalTime     string `json:"taskApprovalTime" xorm:"task_approval_time"` // 任务处理时间
 	TaskExpectTime       string `json:"taskExpectTime" xorm:"task_expect_time"`     // 任务期望完成时间
+	TaskHandleRole       string `json:"taskHandleRole" xorm:"task_handle_role"`     // 任务处理角色
 	TaskHandler          string `json:"taskHandler" xorm:"task_handler"`            // 任务审批人
 	TaskHandleId         string `json:"taskHandleId" xorm:"task_handle_id"`         // 任务处理ID
 	TaskUpdatedTime      string `json:"taskUpdatedTime" xorm:"task_updated_time"`   // 任务更新时间

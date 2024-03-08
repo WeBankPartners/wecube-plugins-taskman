@@ -216,6 +216,7 @@ func ConvertRequestTemplateUpdateParam2RequestTemplate(param RequestTemplateUpda
 		Name:            param.Name,
 		Description:     param.Description,
 		Tags:            param.Tags,
+		Status:          param.Status,
 		PackageName:     param.PackageName,
 		EntityName:      param.EntityName,
 		ProcDefKey:      param.ProcDefKey,

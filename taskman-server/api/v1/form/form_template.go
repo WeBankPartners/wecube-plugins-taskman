@@ -62,11 +62,6 @@ func UpdateRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	err = service.GetRequestTemplateService().UpdateRequestTemplateStatusToCreated(requestTemplateId, user)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
 	result, _ := service.GetFormTemplateService().GetRequestFormTemplate(requestTemplateId)
 	middleware.ReturnData(c, result)
 }

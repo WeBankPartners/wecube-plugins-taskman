@@ -1,6 +1,6 @@
 <template>
   <div class="workbench-data-bind" style="margin: 0 auto;min-width: 700px">
-    <Tabs>
+    <Tabs v-if="nodes.length">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
           <ul v-if="node.classification && node.classification.length > 0">
@@ -35,10 +35,16 @@
         </TabPane>
       </template>
     </Tabs>
+    <div v-else class="no-data">暂未关联编排</div>
     <div v-if="showBtn" style="text-align: center;margin-top:12px">
-      <Button @click="saveRequest('save')" :disabled="formDisable" type="primary">{{ $t('temporary_storage') }}</Button>
+      <!--暂存-->
+      <Button @click="saveRequest('save')" :disabled="formDisable">{{ $t('tw_save_draft') }}</Button>
+      <!--确认定版-->
+      <Button @click="startRequest" :disabled="formDisable" v-if="isHandle" type="primary">{{
+        $t('tw_confirm')
+      }}</Button>
+      <!--回退-->
       <Button @click="rollbackRequest" type="error" :disabled="formDisable" v-if="isHandle">{{ $t('go_back') }}</Button>
-      <Button @click="startRequest" :disabled="formDisable" v-if="isHandle">{{ $t('final_version') }}</Button>
       <!-- <Button @click="checkHistory" v-if="requestHistory" type="success" style="margin-left:30px">{{
         $t('pr-vision')
       }}</Button> -->
@@ -395,6 +401,11 @@ export default {
   display: inline-block;
   text-overflow: ellipsis;
   vertical-align: bottom;
+}
+.no-data {
+  height: 60px;
+  line-height: 30px;
+  color: #515a6e;
 }
 </style>
 <style lang="scss">

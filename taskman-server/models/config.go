@@ -72,6 +72,7 @@ type GlobalConfig struct {
 	Wecube          WecubeConfig     `json:"wecube"`
 	Mail            MailConfig       `json:"mail"`
 	AttachFile      AttachFileConfig `json:"attach_file"`
+	EncryptSeed     string           `json:"encrypt_seed"`
 }
 
 var (

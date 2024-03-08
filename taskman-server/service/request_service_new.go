@@ -1198,7 +1198,9 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		err = dao.Transaction(actions)
 		return
 	}
-	// 没有配置定版,请求继续往后面走
+
+	// 没有配置定版,设置定版数据,请求继续往后面走 @todo 添加定版数据
+
 	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
 	if err != nil {
 		return
@@ -1216,10 +1218,9 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
 	var newTaskId string
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	actions = []*dao.ExecAction{}
 	now := time.Now().Format(models.DateTimeFormat)
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
@@ -1228,7 +1229,7 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 		return s.HandleRequestTask(request, userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
-		dao.X.SQL("select * form task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) {
@@ -1253,23 +1254,16 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
-			// 新增任务处理表
-			dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
-			if len(taskHandleTemplateList) > 0 {
-				// 根据任务审批模版表&请求人指定,设置审批处理
-				for _, taskHandleTemplate := range taskHandleTemplateList {
-					createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate, taskHandleTemplate)
-					if len(createTaskHandleAction) > 0 {
-						actions = append(actions, createTaskHandleAction...)
-					}
-				}
+			// 根据任务审批模版表&请求人指定,设置审批处理
+			createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate)
+			if len(createTaskHandleAction) > 0 {
+				actions = append(actions, createTaskHandleAction...)
 			}
 
 			// 更新请求表为审批状态
 			action = &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?"}
 			action.Param = []interface{}{string(models.RequestStatusInApproval), now, request.Id}
 			actions = append(actions, action)
-			err = dao.Transaction(actions)
 			return
 		}
 	}
@@ -1283,14 +1277,13 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
 	if request.AssociationWorkflow && request.ProcInstanceId == "" {
 		// 关联编排,调用编排启动
 		return
 	}
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeImplement)).Find(&taskTemplateList)
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeImplement).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}
@@ -1299,7 +1292,7 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 		return s.HandleRequestConfirm(request)
 	}
 	for _, taskTemplate := range taskTemplateList {
-		dao.X.SQL("select * form task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) {
@@ -1316,21 +1309,14 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
-			// 新增任务处理表
-			dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
-			if len(taskHandleTemplateList) > 0 {
-				// 根据任务审批模版表&请求人指定,设置审批处理
-				for _, taskHandleTemplate := range taskHandleTemplateList {
-					createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate, taskHandleTemplate)
-					if len(createTaskHandleAction) > 0 {
-						actions = append(actions, createTaskHandleAction...)
-					}
-				}
+			// 根据任务审批模版表&请求人指定,设置审批处理
+			createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskId, userToken, language, &request, taskTemplate)
+			if len(createTaskHandleAction) > 0 {
+				actions = append(actions, createTaskHandleAction...)
 			}
 
 			// 更新请求表为审批状态
 			actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusInProgress), now, request.Id}})
-			err = dao.Transaction(actions)
 			return
 		}
 	}
@@ -1347,7 +1333,7 @@ func (s *RequestService) HandleRequestConfirm(request models.RequestTable) (acti
 	now := time.Now().Format(models.DateTimeFormat)
 	// 创建请求确认任务
 	newTaskId = "co_" + guid.CreateGuid()
-	err = dao.X.SQL("select * form task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)
 	if err != nil {
 		return
 	}

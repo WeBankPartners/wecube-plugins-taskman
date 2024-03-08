@@ -839,6 +839,7 @@ func (s *TaskTemplateService) genTaskTemplateDto(taskTemplateId string) (*models
 	}
 	for i, taskTemplateHandle := range taskTemplateHandles {
 		result.HandleTemplates[i] = &models.TaskHandleTemplateDto{
+			Id:          taskTemplateHandle.Id,
 			Role:        taskTemplateHandle.Role,
 			Assign:      taskTemplateHandle.Assign,
 			HandlerType: taskTemplateHandle.HandlerType,

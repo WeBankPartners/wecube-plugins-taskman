@@ -130,3 +130,8 @@ type DataModelEntityResponse struct {
 	HttpResponseMeta
 	Data *DataModelEntity `json:"data"`
 }
+
+type RemoteLoginResp struct {
+	HttpResponseMeta
+	Data interface{} `json:"data"`
+}

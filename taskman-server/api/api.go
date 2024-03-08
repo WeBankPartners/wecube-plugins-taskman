@@ -8,6 +8,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/collect"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/form"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/login"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/request"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/role"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/v1/task"
@@ -74,8 +75,6 @@ func init() {
 		&handlerFuncObj{Url: "/form-template/item-group", Method: "POST", HandlerFunc: form.UpdateFormTemplateItemGroup},
 		&handlerFuncObj{Url: "/form-template/item-group/sort", Method: "POST", HandlerFunc: form.SortFormTemplateItemGroup},
 
-		// &handlerFuncObj{Url: "/task-template/:requestTemplateId/:proNodeId", Method: "GET", HandlerFunc: task.GetTaskTemplate},
-		// &handlerFuncObj{Url: "/task-template/:requestTemplateId", Method: "POST", HandlerFunc: task.UpdateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "POST", HandlerFunc: task.CreateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "PUT", HandlerFunc: task.UpdateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "DELETE", HandlerFunc: task.DeleteTaskTemplate},
@@ -139,6 +138,10 @@ func init() {
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId/:latestUpdateTime", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
 		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
+
+		// login
+		&handlerFuncObj{Url: "/login/seed", Method: "GET", HandlerFunc: login.GetSeed},
+		&handlerFuncObj{Url: "/login", Method: "POST", HandlerFunc: login.Login},
 	)
 
 	// v2 版本
@@ -147,7 +150,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestDetail},
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: requestNew.CreateRequest},
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
-		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: requestNew.StartRequest},
+		&handlerFuncObj{Url: "/request-check/confirm/:requestId", Method: "POST", HandlerFunc: requestNew.CheckRequest}, // 确认定版
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
 	)
 }

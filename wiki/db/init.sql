@@ -384,7 +384,6 @@ alter table task_template add column handle_mode  varchar(255) default null COMM
 alter table task_template add column type  varchar(64) default null COMMENT '任务类型: check 定版, approve 审批, implement 执行类型, confirm 请求确认';
 
 
-alter table task add column notify_count  int default 0 COMMENT '通知计数器';
 alter table task add column type varchar(64) default null COMMENT '任务类型:submit 提交 check 定版, approve 审批, implement执行类型, confirm 请求确认 revoke 撤回';
 alter table task add column sort int default '0' COMMENT '任务序号';
 alter table task add column task_result  varchar(64) default null COMMENT '处理结果:approve同意,deny拒绝,redraw打回,complete完成,uncompleted未完成';
@@ -395,19 +394,28 @@ alter table form_item_template add column ref_id varchar(64) default null COMMEN
 
 ALTER TABLE task_template_role DROP FOREIGN KEY fore_task_role_ref_template;
 ALTER TABLE task_template_role DROP FOREIGN KEY fore_task_template_ref_role;
+ALTER TABLE task_template_role DROP INDEX fore_task_role_ref_template;
+ALTER TABLE task_template_role DROP INDEX fore_task_template_ref_role;
 
 
 ALTER TABLE form_item DROP FOREIGN KEY fore_form_item_form;
 ALTER TABLE request DROP FOREIGN KEY fore_request_form;
 ALTER TABLE task DROP FOREIGN KEY fore_task_form;
+ALTER TABLE form_item DROP INDEX fore_form_item_form;
+ALTER TABLE request DROP INDEX fore_request_form;
+ALTER TABLE task DROP INDEX fore_task_form;
 
 ALTER TABLE form_item_template DROP FOREIGN KEY fore_form_item_template;
 ALTER TABLE form DROP FOREIGN KEY fore_form_form_template;
 ALTER TABLE request_template DROP FOREIGN KEY fore_request_template_form;
 ALTER TABLE task_template DROP FOREIGN KEY fore_task_template_form;
+ALTER TABLE form_item_template DROP INDEX fore_form_item_template;
+ALTER TABLE form DROP INDEX fore_form_form_template;
+ALTER TABLE request_template DROP INDEX fore_request_template_form;
+ALTER TABLE task_template DROP INDEX fore_task_template_form;
 
-alter table form_item_template rename column form_template to form_template_old;
-alter table form_item rename column form  to form_old;
+alter table form_item_template change form_template form_template_old varchar(64) default null comment '表单模板(废弃)';
+alter table form_item change form form_old varchar(64) default null comment '表单(废弃)';
 
 
 alter table form rename to form_old;
@@ -423,6 +431,7 @@ CREATE TABLE IF NOT EXISTS  `form_template` (
   `item_group_rule` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '新增一行规则',
   `item_group_sort` tinyint(4) DEFAULT '0' COMMENT '排序',
   `ref_id` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '引用ID',
+  `request_form_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求表单类型:message 信息表单 data 数据表单',
   `del_flag` tinyint(4) DEFAULT '0' COMMENT '是否删除',
   `created_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -469,6 +478,8 @@ CREATE TABLE IF NOT EXISTS `task_handle_template` (
   `assign` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '分派方式:template.模板指定 custom.提交人指定',
   `handler_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领',
   `handler` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '处理人',
+  `handle_mode` varchar(255) default null COMMENT '处理模式：custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过',
+  `sort` int  DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `force_task_template_new` (`task_template`),
   CONSTRAINT `force_task_template_new` FOREIGN KEY (`task_template`) REFERENCES `task_template` (`id`)
@@ -503,7 +514,6 @@ alter table form_item add column task_handle varchar(64) DEFAULT NULL COMMENT '�
 alter table form_item add column del_falg tinyint(2) DEFAULT '0' COMMENT '删除标识';
 
 alter table form_item add constraint fore_form_item_request foreign key(request) REFERENCES request(id);
-alter table form_item add constraint fore_form_item_form foreign key(form) REFERENCES form(id);
 alter table form_item add constraint fore_form_item_task_handle foreign key(task_handle) REFERENCES task_handle(id);
 
 alter table attach_file add column task_handle varchar(64) default null COMMENT '任务处理';

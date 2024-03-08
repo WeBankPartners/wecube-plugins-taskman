@@ -815,37 +815,15 @@ export default {
           onCancel: () => {
             this.isParmasChanged = false
             // this.editGroupCustomItems(groupItem)
-            this.openDraw(groupItem)
+            this.openDrawer(groupItem)
           }
         })
       } else {
         // this.editGroupCustomItems(groupItem)
-        this.openDraw(groupItem)
+        this.openDrawer(groupItem)
       }
-
-      //   editGroupCustomItems (groupItem) {
-      //   this.displayLastGroup = false
-      //   if (this.isParmasChanged) {
-      //     this.$Modal.confirm({
-      //       title: `${this.$t('confirm_discarding_changes')}`,
-      //       content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-      //       'z-index': 1000000,
-      //       okText: this.$t('save'),
-      //       cancelText: this.$t('abandon'),
-      //       onOk: async () => {
-      //         // this.saveGroup(1)
-      //         this.saveGroup(4, groupItem)
-      //       },
-      //       onCancel: () => {
-      //         this.updateFinalElement(groupItem)
-      //       }
-      //     })
-      //   } else {
-      //     this.updateFinalElement(groupItem)
-      //   }
-      // },
     },
-    openDraw (groupItem) {
+    openDrawer (groupItem) {
       this.editGroupCustomItems(groupItem)
       if (groupItem.itemGroupType === 'custom') {
         this.itemGroupType = groupItem.itemGroupType
@@ -940,7 +918,7 @@ export default {
         } else if (nextStep === 4) {
           this.updateFinalElement(elememt)
         } else if (nextStep === 5) {
-          this.openDraw(elememt)
+          this.openDrawer(elememt)
         }
       }
     },

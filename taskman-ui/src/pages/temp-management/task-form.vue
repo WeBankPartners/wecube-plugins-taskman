@@ -11,7 +11,7 @@
               <span>{{ approval.name }}</span>
               <Icon
                 v-if="approvalNodes.length > 1 && procDefId === ''"
-                @click.stop="removeNopde(approval)"
+                @click.stop="removeNode(approval)"
                 type="md-close"
                 color="#ed4014"
                 style="vertical-align: sub;margin-left: 4px;"
@@ -752,7 +752,7 @@ export default {
         this.getApprovalNode(sort)
       }
     },
-    async removeNopde (node) {
+    async removeNode (node) {
       this.nextNodeInfo = JSON.parse(JSON.stringify(this.activeEditingNode))
       const res = this.preApprovalNodeChange()
       if (!res) {

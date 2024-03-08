@@ -11,7 +11,7 @@
               <span>{{ approval.name }}</span>
               <Icon
                 v-if="approvalNodes.length > 1"
-                @click.stop="removeNopde(approval)"
+                @click.stop="removeNode(approval)"
                 type="md-close"
                 color="#ed4014"
                 style="vertical-align: sub;margin-left: 4px;"
@@ -196,8 +196,8 @@
                       </draggable>
                     </div>
                     <div style="text-align: right;">
-                      <Button type="primary" size="small" ghost @click="saveGroup">{{ $t('save') }}</Button>
-                      <Button size="small" @click="cancelGroup">{{ $t('tw_abandon') }}</Button>
+                      <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
+                      <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
                     </div>
                   </template>
                 </div>
@@ -681,7 +681,8 @@ export default {
       showSelectModel: false, // 组选择框
       itemGroupType: '', // 选中的组类型
       itemGroup: '', // 选中的组信息
-      nextNodeInfo: {} // 缓存待切换节点信息
+      nextNodeInfo: {}, // 缓存待切换节点信息
+      displayLastGroup: false // 控制group显示，在新增时显示最后一个，其余显示当前值
     }
   },
   computed: {
@@ -735,7 +736,7 @@ export default {
     },
     async addApprovalNode (sort) {
       this.nextNodeInfo = JSON.parse(JSON.stringify(this.activeEditingNode))
-      const res = this.preApprovalNodeChange()
+      const res = this.preApprovalNodeChange(1)
       if (res) {
         return
       }
@@ -751,9 +752,13 @@ export default {
         this.getApprovalNode(sort)
       }
     },
-    async removeNopde (node) {
+    isLoadLastGroup (val) {
+      this.displayLastGroup = val
+      // this.loadPage()
+    },
+    async removeNode (node) {
       this.nextNodeInfo = JSON.parse(JSON.stringify(this.activeEditingNode))
-      const res = this.preApprovalNodeChange()
+      const res = this.preApprovalNodeChange(3)
       if (!res) {
         this.$Modal.confirm({
           title: this.$t('confirm_delete'),
@@ -770,19 +775,24 @@ export default {
         })
       }
     },
-    preApprovalNodeChange () {
+    preApprovalNodeChange (type) {
+      // type 1新增 2编辑 3删除
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
+          title: `${this.$t('confirm_discarding_changes44')}`,
           content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveGroup()
+            this.saveGroup(4, this.nextNodeInfo)
           },
           onCancel: () => {
-            this.cancelGroup()
+            if (type === 2) {
+              this.isParmasChanged = false
+              this.activeEditingNode = this.nextNodeInfo
+              this.editNode(this.activeEditingNode)
+            }
           }
         })
         return true
@@ -795,35 +805,45 @@ export default {
     },
     // 在弹窗关闭、保存、还原状态下回显group内容
     reloadGroup () {
+      this.isParmasChanged = false
       this.getApprovalNodeGroups(this.activeEditingNode)
     },
     editNode (node) {
-      // this.cancelGroup()
       let params = {
         requestTemplateId: this.requestTemplateId,
         id: node.id
       }
       this.nextNodeInfo = node
-      const res = this.preApprovalNodeChange()
+      const res = this.preApprovalNodeChange(2)
       if (!res) {
         this.activeEditingNode = node
         this.$refs.approvalFormNodeRef.loadPage(params)
+        this.getApprovalNodeGroups(node)
       }
-      this.getApprovalNodeGroups(node)
+      // this.getApprovalNodeGroups(node)
     },
     async getApprovalNodeGroups (node) {
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
       if (statusCode === 'OK') {
         this.dataFormInfo = data
         let groups = this.dataFormInfo.groups
-        let itemGroupId = this.finalElement[0].itemGroupId
-        const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
-        if (findGroup) {
-          this.editGroupCustomItems(findGroup)
-        } else {
-          if (groups.length > 0) {
-            this.editGroupCustomItems(groups[0])
+        if (groups.length !== 0) {
+          if (this.displayLastGroup) {
+            const group = groups[groups.length - 1]
+            this.editGroupCustomItems(group)
+          } else {
+            let itemGroupId = this.finalElement[0].itemGroupId
+            const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
+            if (findGroup) {
+              this.editGroupCustomItems(findGroup)
+            } else {
+              if (groups.length > 0) {
+                this.editGroupCustomItems(groups[0])
+              }
+            }
           }
+        } else {
+          this.cancelGroup()
         }
       }
     },
@@ -862,6 +882,7 @@ export default {
       }
       const { statusCode } = await copyItemGroup(params)
       if (statusCode === 'OK') {
+        this.displayLastGroup = true
         this.getApprovalNodeGroups(this.activeEditingNode)
       }
     },
@@ -896,6 +917,7 @@ export default {
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem) {
+      this.displayLastGroup = false
       if (this.isParmasChanged) {
         this.$Modal.confirm({
           title: `${this.$t('confirm_discarding_changes123')}`,
@@ -904,7 +926,7 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveGroup()
+            this.saveGroup(4, groupItem)
           },
           onCancel: () => {
             this.getApprovalNodeGroups(this.activeEditingNode)
@@ -912,7 +934,6 @@ export default {
           }
         })
       } else {
-        this.cancelGroup()
         this.updateFinalElement(groupItem)
       }
     },
@@ -939,22 +960,22 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveGroup()
+            this.saveGroup(5, groupItem)
           },
           onCancel: () => {
-            this.getApprovalNodeGroups(this.activeEditingNode)
+            this.isParmasChanged = false
             this.openDrawer(groupItem)
-            this.editGroupCustomItems(groupItem)
           }
         })
       } else {
         this.openDrawer(groupItem)
-        this.editGroupCustomItems(groupItem)
+        // this.editGroupCustomItems(groupItem)
       }
     },
     openDrawer (groupItem) {
+      this.editGroupCustomItems(groupItem)
       // 隐藏自定义表单项配置
-      this.cancelGroup()
+      // this.cancelGroup()
       if (groupItem.itemGroupType === 'custom') {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
@@ -1060,7 +1081,8 @@ export default {
       this.paramsChanged()
     },
     // 保存自定义表单项
-    async saveGroup () {
+    async saveGroup (nextStep, elememt) {
+      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       finalData.items = finalData.attrs.map(attr => {
         if (attr.id.startsWith('c_')) {
@@ -1075,7 +1097,20 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.loadPage()
+        this.isParmasChanged = false
+        if (nextStep === 1) {
+          // this.cancelGroup()
+          this.loadPage()
+        } else if (nextStep === 2) {
+          this.$emit('gotoNextStep', this.requestTemplateId)
+        } else if (nextStep === 4) {
+          this.activeEditingNode = elememt
+          this.updateFinalElement(elememt)
+          this.getApprovalNodeGroups(elememt)
+        } else if (nextStep === 5) {
+          this.openDrawer(elememt)
+        }
+        // this.loadPage()
       }
     },
     cancelGroup () {
@@ -1101,7 +1136,7 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveGroup()
+            this.saveGroup(2)
             this.$refs.approvalFormNodeRef.saveNode()
           },
           onCancel: () => {

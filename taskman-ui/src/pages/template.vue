@@ -284,7 +284,7 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
-                {/* 确认发布 */ this.status === 'pending' && (
+                {/* 确认发布 */ this.status === 'pending' && this.username === params.row.administrator && (
                   <Tooltip content={this.$t('确认发布')} placement="top">
                     <Button
                       size="small"
@@ -296,7 +296,7 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
-                {/* 退回草稿 */ this.status === 'pending' && (
+                {/* 退回草稿 */ this.status === 'pending' && this.username === params.row.administrator && (
                   <Tooltip content={this.$t('退回草稿')} placement="top">
                     <Button
                       size="small"

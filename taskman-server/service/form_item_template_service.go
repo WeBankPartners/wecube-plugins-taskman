@@ -117,6 +117,11 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 			}
 		}
 		for _, formItemTemplate := range formItemTemplateList {
+			// 过滤掉自定义类型
+			if formItemTemplate.AttrDefId == "" && formItemTemplate.ElementType != "calculate" {
+				continue
+			}
+			// 这块只判断,编排类型和 自定义计算类型
 			if existMap[formItemTemplate.Id] == false && existMap[formItemTemplate.AttrDefId] == false {
 				deleteItems = append(deleteItems, formItemTemplate)
 			}

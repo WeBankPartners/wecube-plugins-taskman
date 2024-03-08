@@ -137,19 +137,19 @@ func getPlatRequestSQL(where, sql string) string {
 }
 
 func getPlatTaskSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.report_time as task_created_time,t.updated_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
 }
 
 func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.report_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.handler as task_handler,t.del_flag from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and task_handle_role in (" + userRolesFilterSql + ")"
+	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and task_handle_role in (" + userRolesFilterSql + ")"
 	queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
 	return
 }
 
 func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.report_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.handler as task_handler,t.del_flag from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status = 'done' and template_type = ? and type = ? and task_handler =?"
+	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status = 'done' and template_type = ? and type = ? and task_handler =?"
 	queryParam = append([]interface{}{templateType, taskType, user})
 	return
 }
@@ -708,11 +708,7 @@ func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string
 	} else if param.Tab == "revoke" {
 		where = where + " and status = 'Draft' and revoke_flag = 1"
 	}
-	if param.Action == 1 {
-		where = where + " and type = 1"
-	} else if param.Action == 2 {
-		where = where + " and type = 0"
-	}
+	where = where + fmt.Sprintf(" and type = %d", param.Action)
 	where = where + transCommonRequestToSQL(param.CommonRequestParam)
 	return
 }
@@ -763,8 +759,8 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.ApprovalStartTime != "" && param.ApprovalEndTime != "" {
 		where = where + " and approval_time >= '" + param.ApprovalStartTime + "' and approval_time <= '" + param.ApprovalEndTime + "'"
 	}
-	if param.TaskReportStartTime != "" && param.TaskReportEndTime != "" {
-		where = where + " and task_created_time >= '" + param.TaskReportStartTime + "' and task_created_time <= '" + param.TaskReportEndTime + "'"
+	if param.TaskCreatedStartTime != "" && param.TaskCreatedEndTime != "" {
+		where = where + " and task_created_time >= '" + param.TaskCreatedStartTime + "' and task_created_time <= '" + param.TaskCreatedEndTime + "'"
 	}
 	if param.TaskApprovalStartTime != "" && param.TaskApprovalEndTime != "" {
 		where = where + " and task_approval_time >= '" + param.TaskApprovalStartTime + "' and task_approval_time <= '" + param.TaskApprovalEndTime + "'"
@@ -1157,10 +1153,11 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		err = fmt.Errorf("taskTemplate not find submit template")
 		return
 	}
+	expireTime := calcExpireTime(now, requestTemplate.ExpireDay)
 	// 新增提交请求任务
 	submitTaskId := "su_" + guid.CreateGuid()
-	action = &dao.ExecAction{Sql: "insert into task(id,name,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{submitTaskId, "submit", request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, "system", now, "system", now}
+	action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{submitTaskId, "submit", expireTime, request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, "system", now, "system", now}
 	actions = append(actions, action)
 
 	// 新增提交请求处理人
@@ -1184,8 +1181,9 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 			err = fmt.Errorf("taskTemplate not find check template")
 		}
 		checkTime := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
-		action = &dao.ExecAction{Sql: "insert into task(id,name,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?,?)"}
-		action.Param = []interface{}{checkTaskId, "check", request.Type, models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, checkTime, operator, checkTime}
+		checkExpireTime := calcExpireTime(checkTime, checkTaskTemplateList[0].ExpireDay)
+		action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?,?,?)"}
+		action.Param = []interface{}{checkTaskId, "check", checkExpireTime, request.Type, models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, checkTime, operator, checkTime}
 		actions = append(actions, action)
 
 		// 新增确认定版处理人
@@ -1199,8 +1197,7 @@ func (s *RequestService) HandleRequestCheck(request models.RequestTable, operato
 		return
 	}
 
-	// 没有配置定版,设置定版数据,请求继续往后面走 @todo 添加定版数据
-
+	// 没有配置定版,请求继续往后面走
 	approvalActions, err = s.HandleRequestApproval(request, userToken, language)
 	if err != nil {
 		return
@@ -1241,17 +1238,18 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 		} else {
 			// 模版没有对应的的任务,需要创建当前任务并设置审批角色和人,同时根据审批方式设置审批状态
 			newTaskId = "ap_" + guid.CreateGuid()
+			taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
-				action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 				actions = append(actions, action)
 				continue
 			}
 
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
 			// 根据任务审批模版表&请求人指定,设置审批处理
@@ -1274,13 +1272,25 @@ func (s *RequestService) HandleRequestApproval(request models.RequestTable, user
 // HandleRequestTask 处理任务
 func (s *RequestService) HandleRequestTask(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
+	var requestTemplate *models.RequestTemplateTable
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
 	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
-	if request.AssociationWorkflow && request.ProcInstanceId == "" {
+	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
 		// 关联编排,调用编排启动
+		var bindCache models.RequestCacheData
+		json.Unmarshal([]byte(request.BindCache), &bindCache)
+		_, err = StartRequestNew(request, userToken, language, bindCache)
+		return
+	}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate is empty")
 		return
 	}
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeImplement).Find(&taskTemplateList)
@@ -1292,6 +1302,7 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 		return s.HandleRequestConfirm(request)
 	}
 	for _, taskTemplate := range taskTemplateList {
+		taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
@@ -1305,8 +1316,8 @@ func (s *RequestService) HandleRequestTask(request models.RequestTable, userToke
 			// 模版没有对应的的任务,需要创建当前任务
 			newTaskId = "im_" + guid.CreateGuid()
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
 			actions = append(actions, action)
 
 			// 根据任务审批模版表&请求人指定,设置审批处理
@@ -1342,8 +1353,9 @@ func (s *RequestService) HandleRequestConfirm(request models.RequestTable) (acti
 		return
 	}
 	// 新增任务
-	action = &dao.ExecAction{Sql: "insert into task (id,name,template_type,status,request,task_template,type,created_by,created_time) values(?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{newTaskId, "confirm", request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0], models.TaskTypeConfirm, "system", now}
+	taskExpireTime := calcExpireTime(now, taskTemplateList[0].ExpireDay)
+	action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0], models.TaskTypeConfirm, "system", now}
 	actions = append(actions, action)
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})

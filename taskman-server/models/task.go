@@ -227,9 +227,10 @@ type TaskQueryObj struct {
 }
 
 type TaskApproveParam struct {
-	FormData    []*RequestPreDataTableObj `json:"formData"`
-	Comment     string                    `json:"comment"`
-	ChoseOption string                    `json:"choseOption"`
+	FormData     []*RequestPreDataTableObj `json:"formData"`
+	Comment      string                    `json:"comment"`
+	ChoseOption  string                    `json:"choseOption"`
+	TaskHandleId string                    `json:"taskHandleId"` // 任务处理ID
 }
 
 type TaskHandlerQueryData struct {

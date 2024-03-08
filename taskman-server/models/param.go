@@ -108,8 +108,8 @@ type CommonRequestParam struct {
 	ExpectStartTime       string               `json:"expectTimeStart" `       // 期望开始时间
 	ExpectEndTime         string               `json:"expectTimeEnd" `         // 期望结束时间
 	TaskName              string               `json:"taskName"`               // 任务名称
-	TaskReportStartTime   string               `json:"taskReportTimeStart" `   // 任务提交开始时间
-	TaskReportEndTime     string               `json:"taskReportTimeEnd" `     // 任务提交结束时间
+	TaskCreatedStartTime  string               `json:"taskCreatedTimeStart" `  // 任务提交开始时间
+	TaskCreatedEndTime    string               `json:"taskCreatedTimeEnd" `    // 任务提交结束时间
 	TaskApprovalStartTime string               `json:"taskApprovalTimeStart" ` // 任务审批开始时间
 	TaskApprovalEndTime   string               `json:"taskApprovalTimeEnd" `   // 任务审批结束时间
 	TaskExpectStartTime   string               `json:"taskExpectTimeStart" `   // 任务期望开始时间

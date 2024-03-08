@@ -596,12 +596,24 @@ func getTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTab
 	return
 }
 
-func ApproveTask(taskId, operator, userToken string, param models.TaskApproveParam) error {
-	err := SaveTaskForm(taskId, operator, param)
+func ApproveTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam) error {
+	err := SaveTaskForm(task.Id, operator, param)
 	if err != nil {
 		return err
 	}
-	requestParam, callbackUrl, getDataErr := getApproveCallbackParam(taskId)
+	switch models.TaskType(task.Type) {
+	case models.TaskTypeApprove:
+
+	case models.TaskTypeImplement:
+
+	}
+	return nil
+}
+
+// handleWorkflowTask 处理编排任务
+func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam) error {
+	var err error
+	requestParam, callbackUrl, getDataErr := getApproveCallbackParam(task.Id)
 	if getDataErr != nil {
 		return getDataErr
 	}
@@ -622,15 +634,12 @@ func ApproveTask(taskId, operator, userToken string, param models.TaskApprovePar
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
 		if strings.Contains(respResult.Message, "None process instance found") {
-			dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, taskId)
+			dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
 		}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
-	_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, taskId)
-	if err != nil {
-		return fmt.Errorf("Callback succeed,but update database task row fail,%s ", err.Error())
-	}
-	return nil
+	_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id)
+	return err
 }
 
 func getApproveCallbackParam(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {

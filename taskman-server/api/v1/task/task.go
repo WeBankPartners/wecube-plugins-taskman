@@ -186,7 +186,7 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}
-	err = service.ApproveTask(taskId, operator, c.GetHeader("Authorization"), param)
+	err = service.ApproveTask(taskTable, operator, c.GetHeader("Authorization"), param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

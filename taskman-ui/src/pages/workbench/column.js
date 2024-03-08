@@ -35,9 +35,6 @@ export default {
                 >
                   {params.row.name}
                 </span>
-                {/* {this.username === params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
-                  this.tabName === 'pending' && <Tag color="#ed4014">{this.$t('tw_only_me')}</Tag>} */}
               </div>
             )
           }
@@ -50,7 +47,9 @@ export default {
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+              { label: '审批中', value: 'InApproval', color: '#1990ff' },
               { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+              { label: '请求确认', value: 'Confirm', color: '#b886f8' },
               { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
               { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
@@ -85,11 +84,15 @@ export default {
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
             }
-            return (
-              <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
-                <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
-              </Tooltip>
-            )
+            if (map[params.row.curNode] || params.row.curNode) {
+              return (
+                <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
+                  <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
+                </Tooltip>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         handler: {
@@ -109,7 +112,7 @@ export default {
             return (
               <div style="display:flex;flex-direction:column">
                 <span>{params.row.handler}</span>
-                <span>{params.row.handleRole}</span>
+                <span>{params.row.handleRole || '-'}</span>
               </div>
             )
           }
@@ -129,14 +132,18 @@ export default {
         // 任务停留时长
         effectiveDays: {
           renderHeader: () => {
-            return <span>{this.type === '2' ? this.$t('tw_task_stay_time') : this.$t('tw_request_stay_time')}</span>
+            return (
+              <span>
+                {['2', '3'].includes(this.type) ? this.$t('tw_task_stay_time') : this.$t('tw_request_stay_time')}
+              </span>
+            )
           },
           minWidth: 140,
           key: 'effectiveDays',
           render: (h, params) => {
             let stayTime = '' // 停留时长
             let totalTime = '' // 预期停留时长
-            if (this.type === '2') {
+            if (['2', '3'].includes(this.type)) {
               stayTime = params.row.taskStayTime
               totalTime = params.row.taskStayTimeTotal
             } else {
@@ -243,7 +250,7 @@ export default {
                   )}
                 {// 处理
                   this.username === params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
                     <Tooltip content={this.$t('tw_action_handle')} placement="top">
                       <Button
@@ -259,7 +266,7 @@ export default {
                   )}
                 {// 认领
                   !params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
                     <Tooltip content={this.$t('tw_action_claim')} placement="top">
                       <Button
@@ -276,7 +283,7 @@ export default {
                 {// 转给我
                   params.row.handler &&
                   this.username !== params.row.handler &&
-                  ['Pending', 'InProgress'].includes(params.row.status) &&
+                  ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
                   this.tabName === 'pending' && (
                     <Tooltip content={this.$t('tw_action_give')} placement="top">
                       <Button

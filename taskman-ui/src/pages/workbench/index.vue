@@ -1,6 +1,11 @@
 <!--工作台-->
 <template>
   <div class="workbench">
+    <div class="scene-select">
+      <Select v-model="actionName" @on-change="handleActionChange">
+        <Option v-for="i in actionList" :key="i.value" :value="i.value">{{ i.label }}</Option>
+      </Select>
+    </div>
     <DataCard
       ref="dataCard"
       :initTab="initTab"
@@ -99,7 +104,7 @@ export default {
         expectTime: [], // 期望时间
         reportTime: [], // 请求提交时间
         approvalTime: [], // 请求处理时间
-        taskReportTime: [], // 任务提交时间
+        taskCreatedTime: [], // 任务提交时间
         taskApprovalTime: [], // 任务审批时间
         taskExpectTime: [] // 任务期望时间
       },
@@ -113,6 +118,13 @@ export default {
         pageSize: 10
       },
       sorting: {}, // 表格默认排序
+      actionList: [
+        { label: '发布', value: '1' },
+        { label: '请求', value: '2' },
+        { label: '问题', value: '3' },
+        { label: '事件', value: '4' },
+        { label: '变更', value: '5' }
+      ],
       taskLabel: () => {
         return (
           <div>
@@ -173,6 +185,9 @@ export default {
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
+    handleActionChange () {
+      this.handleOverviewChange(this.tabName)
+    },
     // 初始化加载数据(链接携带参数，跳转到指定标签)
     initData (val, action) {
       this.tabName = val
@@ -180,7 +195,7 @@ export default {
       const type = this.$route.query.type
       const rollback = this.$route.query.rollback
       if (['pending', 'hasProcessed'].includes(val)) {
-        if (['1', '2'].includes(type)) {
+        if (['1', '2', '3', '4'].includes(type)) {
           this.type = type
         } else {
           this.type = '2'
@@ -212,9 +227,8 @@ export default {
       }
     },
     // 点击视图卡片触发查询
-    handleOverviewChange (val, action) {
+    handleOverviewChange (val) {
       this.tabName = val
-      this.actionName = action
       if (['pending', 'hasProcessed'].includes(val)) {
         this.type = '2'
         this.rollback = ''
@@ -243,20 +257,21 @@ export default {
       this.handleReset()
       this.handleQuery()
     },
+    // 待处理、已处理表格差异化配置
     getTypeConfig () {
       if (this.tabName === 'pending') {
-        if (this.type === '1') {
+        if (['1', '4'].includes(this.type)) {
           this.tableColumn = this.pendingColumn
           this.searchOptions = this.pendingSearch
-        } else if (this.type === '2') {
+        } else if (['2', '3'].includes(this.type)) {
           this.tableColumn = this.pendingTaskColumn
           this.searchOptions = this.pendingTaskSearch
         }
       } else if (this.tabName === 'hasProcessed') {
-        if (this.type === '1') {
+        if (['1', '4'].includes(this.type)) {
           this.tableColumn = this.hasProcessedColumn
           this.searchOptions = this.hasProcessedSearch
-        } else if (this.type === '2') {
+        } else if (['2', '3'].includes(this.type)) {
           this.tableColumn = this.hasProcessedTaskColumn
           this.searchOptions = this.hasProcessedTaskSearch
         }
@@ -268,6 +283,7 @@ export default {
       this.handleReset()
       this.handleQuery()
     },
+    // 我提交的表格差异化配置
     getRollbackConfig () {
       if (this.tabName === 'submit') {
         if (this.rollback === '1' || this.rollback === '0') {
@@ -315,28 +331,14 @@ export default {
     // 表格默认排序
     initSortTable () {
       if (this.tabName === 'pending') {
-        if (this.type === '1') {
-          this.sorting = {
-            asc: false,
-            field: 'reportTime'
-          }
-        } else if (this.type === '2') {
-          this.sorting = {
-            asc: false,
-            field: 'taskCreatedTime'
-          }
+        this.sorting = {
+          asc: false,
+          field: 'taskCreatedTime'
         }
       } else if (this.tabName === 'hasProcessed') {
-        if (this.type === '1') {
-          this.sorting = {
-            asc: false,
-            field: 'approvalTime'
-          }
-        } else if (this.type === '2') {
-          this.sorting = {
-            asc: false,
-            field: 'taskApprovalTime'
-          }
+        this.sorting = {
+          asc: false,
+          field: 'taskApprovalTime'
         }
       } else if (this.tabName === 'submit') {
         this.sorting = {
@@ -355,14 +357,10 @@ export default {
       const form = deepClone(this.form)
       // 过滤掉多余时间
       var dateTransferArr = []
-      if (this.tabName === 'pending' && this.type === '2') {
-        dateTransferArr = ['taskExpectTime', 'taskReportTime']
-      } else if (this.tabName === 'pending' && this.type === '1') {
-        dateTransferArr = ['expectTime', 'reportTime']
-      } else if (this.tabName === 'hasProcessed' && this.type === '2') {
-        dateTransferArr = ['taskExpectTime', 'taskReportTime', 'taskApprovalTime']
-      } else if (this.tabName === 'hasProcessed' && this.type === '1') {
-        dateTransferArr = ['expectTime', 'reportTime', 'approvalTime']
+      if (this.tabName === 'pending') {
+        dateTransferArr = ['taskExpectTime', 'taskCreatedTime']
+      } else if (this.tabName === 'hasProcessed') {
+        dateTransferArr = ['taskExpectTime', 'taskCreatedTime', 'taskApprovalTime']
       } else if (this.tabName === 'submit') {
         dateTransferArr = ['expectTime', 'reportTime']
       } else if (this.tabName === 'draft') {
@@ -576,6 +574,13 @@ export default {
 
 <style lang="scss" scoped>
 .workbench {
+  position: relative;
+  .scene-select {
+    width: 200px;
+    position: absolute;
+    top: -40px;
+    right: 0px;
+  }
   .header {
     display: flex;
     justify-content: space-between;

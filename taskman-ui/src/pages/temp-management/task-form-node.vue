@@ -242,7 +242,11 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
+      let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
+      if (['admin', 'auto'].includes(tmpData.handleMode)) {
+        delete tmpData.handleTemplates
+      }
+      const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
         this.$Notice.success({

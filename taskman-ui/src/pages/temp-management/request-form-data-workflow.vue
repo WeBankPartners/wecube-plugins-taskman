@@ -121,7 +121,7 @@ export default {
       },
       defaultItem: {
         // 自定义分析字段信息
-        active: false,
+        active: true,
         id: '',
         name: '',
         description: '',

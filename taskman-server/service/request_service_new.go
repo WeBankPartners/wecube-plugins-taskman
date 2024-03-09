@@ -1102,8 +1102,10 @@ func RequestConfirm(param models.RequestConfirmParam, user string) error {
 			}
 		}
 	}
+	// 更新处理节点
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,updated_by = ?,updated_time = ? where tak = ?", Param: []interface{}{models.TaskHandleResultTypeApprove, user, now, param.TaskId}})
 	// 更新请求确认任务设置为已完成
-	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?", Param: []interface{}{models.TaskStatusDone, param.Notes, user, now, param.TaskId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,tak_result = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskResultTypeComplete, param.Notes, user, now, param.TaskId}})
 	// 更新请求表状态,设置为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,complete_status = ?,updated_by = ?,updated_time= ? where id = ?", Param: []interface{}{models.RequestStatusCompleted, param.CompleteStatus, user, now, param.Id}})
 	return dao.Transaction(actions)

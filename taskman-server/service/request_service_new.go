@@ -989,7 +989,7 @@ func getRequestHandler(requestId string) (role, handler string) {
 	task, _ = GetTaskService().GetLatestTask(requestId)
 	if task != nil {
 		// 根据任务查询 任务处理人
-		dao.X.SQL("select * from task_handle where task = ?").Find(&taskHandleList)
+		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
 		if len(taskHandleList) > 0 {
 			for _, taskHandle := range taskHandleList {
 				// 待处理 任务节点和角色都要统计
@@ -1170,7 +1170,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	actions = append(actions, action)
 
 	// 新增提交请求处理人
-	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handler_result,created_time,updated_time) values (?,?,?,?,?,?)"}
+	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handler_result,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 	action.Param = []interface{}{guid.CreateGuid(), submitTaskId, request.Role, request.CreatedBy, models.TaskHandleResultTypeApprove, now, now}
 	actions = append(actions, action)
 

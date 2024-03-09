@@ -1382,7 +1382,7 @@ func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTab
 
 func (s *TaskService) GetLatestTask(requestId string) (task *models.TaskTable, err error) {
 	var taskList []*models.TaskTable
-	err = dao.X.SQL("select * from task where request = ? order by created_time desc limit 0,1", requestId, models.TaskTypeCheck).Find(&taskList)
+	err = dao.X.SQL("select * from task where request = ? order by created_time desc limit 0,1", requestId).Find(&taskList)
 	if err != nil {
 		return
 	}

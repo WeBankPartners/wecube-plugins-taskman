@@ -76,19 +76,13 @@
                 v-model="roleObj.role"
                 filterable
                 @on-change="getUserByRole(roleObj.role, roleObjIndex)"
-                :disabled="!(roleObj.assign === 'template')"
+                :disabled="isRoleDisable(roleObj, roleObjIndex)"
               >
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select
-                v-model="roleObj.handler"
-                filterable
-                :disabled="
-                  !(roleObj.assign === 'template' && ['template_suggest', 'template'].includes(roleObj.handlerType))
-                "
-              >
+              <Select v-model="roleObj.handler" filterable :disabled="isHandlerDisable(roleObj, roleObjIndex)">
                 <Option v-for="item in roleObj.handlerOptions" :value="item.id" :key="item.id">{{
                   item.displayName
                 }}</Option>
@@ -351,6 +345,7 @@ export default {
       }
     },
     changeRoleType () {
+      console.log(1)
       this.activeApprovalNode.handleTemplates = [
         {
           assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
@@ -363,6 +358,8 @@ export default {
       this.paramsChanged()
     },
     async getUserByRole (role, roleObjIndex) {
+      // 猥琐，下方赋值会使该变量丢失
+      const handler = this.activeApprovalNode.handleTemplates[roleObjIndex].handler
       const params = {
         params: {
           roles: role
@@ -380,10 +377,25 @@ export default {
             }
           })
         )
+        this.activeApprovalNode.handleTemplates[roleObjIndex].handler = handler
       }
     },
     paramsChanged () {
       this.isParmasChanged = true
+    },
+    isRoleDisable (roleObj, roleObjIndex) {
+      const res = !(roleObj.assign === 'template')
+      if (res) {
+        this.activeApprovalNode.handleTemplates[roleObjIndex].role = ''
+      }
+      return res
+    },
+    isHandlerDisable (roleObj, roleObjIndex) {
+      const res = !(roleObj.assign === 'template' && ['template_suggest', 'template'].includes(roleObj.handlerType))
+      if (res) {
+        this.activeApprovalNode.handleTemplates[roleObjIndex].handler = ''
+      }
+      return res
     }
   }
 }

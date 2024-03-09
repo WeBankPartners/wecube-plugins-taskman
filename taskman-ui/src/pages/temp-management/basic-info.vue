@@ -37,36 +37,6 @@
                     </Select>
                     <span style="color: red">*</span>
                   </FormItem>
-                  <!-- 标签 -->
-                  <FormItem :label="$t('tags')">
-                    <Select
-                      v-model="basicInfo.tags"
-                      @on-open-change="getTags"
-                      filterable
-                      allow-create
-                      style="width: 96%;"
-                      @on-change="paramsChanged"
-                      @on-create="handleCreate"
-                    >
-                      <Option v-for="(item, tagIndex) in tagOptions" :value="item.value" :key="tagIndex">{{
-                        item.label
-                      }}</Option>
-                    </Select>
-                  </FormItem>
-                  <!-- 描述 -->
-                  <FormItem :label="$t('description')">
-                    <Input
-                      v-model="basicInfo.description"
-                      style="width: 96%;"
-                      type="textarea"
-                      :rows="2"
-                      @on-change="paramsChanged"
-                    >
-                    </Input>
-                    <div v-if="basicInfo.description.length > 200" style="color: red">
-                      {{ $t('description') }}{{ $t('tw_limit_200') }}
-                    </div>
-                  </FormItem>
                   <!-- 属主角色 -->
                   <FormItem :label="$t('mgmtRolesNew')">
                     <Select
@@ -119,6 +89,36 @@
                       >
                     </Select>
                     <span style="color: red">*</span>
+                  </FormItem>
+                  <!-- 标签 -->
+                  <FormItem :label="$t('tags')">
+                    <Select
+                      v-model="basicInfo.tags"
+                      @on-open-change="getTags"
+                      filterable
+                      allow-create
+                      style="width: 96%;"
+                      @on-change="paramsChanged"
+                      @on-create="handleCreate"
+                    >
+                      <Option v-for="(item, tagIndex) in tagOptions" :value="item.value" :key="tagIndex">{{
+                        item.label
+                      }}</Option>
+                    </Select>
+                  </FormItem>
+                  <!-- 描述 -->
+                  <FormItem :label="$t('description')">
+                    <Input
+                      v-model="basicInfo.description"
+                      style="width: 96%;"
+                      type="textarea"
+                      :rows="2"
+                      @on-change="paramsChanged"
+                    >
+                    </Input>
+                    <div v-if="basicInfo.description.length > 200" style="color: red">
+                      {{ $t('description') }}{{ $t('tw_limit_200') }}
+                    </div>
                   </FormItem>
                 </Form>
               </div>
@@ -204,7 +204,7 @@
                   </template>
                   <!-- [结束]确认节点 -->
                   <FormItem :label="$t('[结束]确认节点')">
-                    <i-switch v-model="basicInfo.confirmSwitch" />
+                    <i-switch v-model="basicInfo.confirmSwitch" @on-change="basicInfo.confirmExpireDay = 1" />
                   </FormItem>
                   <template v-if="basicInfo.confirmSwitch">
                     <div>

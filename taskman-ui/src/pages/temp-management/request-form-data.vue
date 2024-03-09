@@ -901,6 +901,9 @@ export default {
         return attr
       })
       delete finalData.attrs
+      finalData.items.forEach((item, itemIndex) => {
+        item.sort = itemIndex
+      })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
         this.$Notice.success({
@@ -919,6 +922,23 @@ export default {
           this.updateFinalElement(elememt)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)
+        }
+      }
+    },
+    compare (prop) {
+      return function (obj1, obj2) {
+        var val1 = obj1[prop]
+        var val2 = obj2[prop]
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+          val1 = Number(val1)
+          val2 = Number(val2)
+        }
+        if (val1 < val2) {
+          return -1
+        } else if (val1 > val2) {
+          return 1
+        } else {
+          return 0
         }
       }
     },

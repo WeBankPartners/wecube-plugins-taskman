@@ -193,7 +193,7 @@ export default {
     },
     async getRequestGroupForm (params) {
       const { statusCode, data } = await getRequestGroupForm({
-        taskTemplateId: params.taskTemplateId,
+        taskTemplateId: params.taskTemplateId || '',
         requestTemplateId: params.requestTemplateId,
         entity: params.itemGroup,
         formType: params.itemGroupType,

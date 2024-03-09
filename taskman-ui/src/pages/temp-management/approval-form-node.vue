@@ -117,9 +117,8 @@
           <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span>
         </FormItem>
       </Form>
-      {{ isSaveNodeDisable }} -- {{ isHandlerAddDisable }}
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveNodeDisable || isHandlerAddDisable" @click="saveNode">{{
+        <Button type="primary" :disabled="isSaveNodeDisable || isHandlerAddDisable" @click="saveNode(1)">{{
           $t('save')
         }}</Button>
       </div>
@@ -257,7 +256,8 @@ export default {
         }
       }
     },
-    async saveNode () {
+    async saveNode (type, nextNodeId) {
+      // type 1自我更新 2转到目标节点
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
       let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
       if (['admin', 'auto'].includes(tmpData.handleMode)) {
@@ -270,19 +270,23 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$emit('reloadParentPage', this.activeApprovalNode.sort)
+        if (type === 1) {
+          this.$emit('reloadParentPage', this.activeApprovalNode.id)
+        } else if (type === 2) {
+          this.$emit('reloadParentPage', nextNodeId)
+        }
       }
     },
-    isNeedConfirm () {
+    isNeedConfirm (nextNodeId) {
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
+          title: `${this.$t('confirm_discarding_changes888')}`,
           content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
-            this.saveNode()
+            this.saveNode(2, nextNodeId)
           },
           onCancel: () => {
             this.$emit('jumpToNode')

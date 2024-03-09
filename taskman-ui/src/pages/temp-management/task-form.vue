@@ -6,6 +6,7 @@
           <span v-for="(approval, approvalIndex) in approvalNodes" :key="approval.id" style="margin-right:6px;">
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
+              :style="nodeStyle(approval)"
               @click="editNode(approval)"
             >
               <span>{{ approval.name }}</span>
@@ -721,13 +722,13 @@ export default {
     async removeEmptyDataForm () {
       await removeEmptyDataForm(this.requestTemplateId)
     },
-    loadPage (sort) {
+    loadPage (id = '') {
       this.isParmasChanged = false
       // this.cancelGroup()
-      this.getApprovalNode(sort)
+      this.getApprovalNode(id)
       this.getAllDataModels()
     },
-    async getApprovalNode (sort) {
+    async getApprovalNode (id = '') {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'implement')
       if (statusCode === 'OK') {
         this.procDefId = data.procDefId
@@ -735,8 +736,7 @@ export default {
           this.addApprovalNode(1)
         } else {
           this.approvalNodes = data.ids
-          const tmpSort = sort === undefined ? 1 : sort
-          this.activeEditingNode = this.approvalNodes.find(node => node.sort === tmpSort)
+          this.activeEditingNode = id === '' ? this.approvalNodes[0] : this.approvalNodes.find(node => node.id === id)
           this.editNode(this.activeEditingNode)
         }
       }
@@ -754,9 +754,9 @@ export default {
         expireDay: 1,
         sort: sort
       }
-      const { statusCode } = await addApprovalNode(params)
+      const { statusCode, data } = await addApprovalNode(params)
       if (statusCode === 'OK') {
-        this.getApprovalNode(sort)
+        this.getApprovalNode(data.taskTemplate.id)
       }
     },
     isLoadLastGroup (val) {
@@ -805,7 +805,7 @@ export default {
         return true
       }
       if (this.$refs.approvalFormNodeRef.panalStatus()) {
-        this.$refs.approvalFormNodeRef.isNeedConfirm()
+        this.$refs.approvalFormNodeRef.isNeedConfirm(this.nextNodeInfo.id)
         return true
       }
       return false
@@ -884,7 +884,7 @@ export default {
       this.showSelectModel = false
       let params = {
         requestTemplateId: this.requestTemplateId,
-        taskTemplateId: this.activeEditingNode.id,
+        taskTemplateId: this.activeEditingNode.id || '',
         itemGroupId: this.itemGroup
       }
       const { statusCode } = await copyItemGroup(params)
@@ -987,7 +987,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          taskTemplateId: this.activeEditingNode.id,
+          taskTemplateId: this.activeEditingNode.id || '',
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -1000,7 +1000,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          taskTemplateId: this.activeEditingNode.id,
+          taskTemplateId: this.activeEditingNode.id || '',
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -1098,6 +1098,9 @@ export default {
         return attr
       })
       delete finalData.attrs
+      finalData.items.forEach((item, itemIndex) => {
+        item.sort = itemIndex
+      })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
         this.$Notice.success({
@@ -1153,6 +1156,13 @@ export default {
       } else {
         this.$emit('gotoNextStep', this.requestTemplateId)
       }
+    },
+    nodeStyle (approval) {
+      let res = ''
+      if (approval.id === this.activeEditingNode.id) {
+        res = this.procDefId === '' ? 'background:#b886f8;' : 'background:#cba43f;'
+      }
+      return res
     }
   },
   components: {

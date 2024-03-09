@@ -715,21 +715,20 @@ export default {
     async removeEmptyDataForm () {
       await removeEmptyDataForm(this.requestTemplateId)
     },
-    loadPage (sort) {
+    loadPage (id = '') {
       this.isParmasChanged = false
       // this.cancelGroup()
-      this.getApprovalNode(sort)
+      this.getApprovalNode(id)
       this.getAllDataModels()
     },
-    async getApprovalNode (sort) {
+    async getApprovalNode (id = '') {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'approve')
       if (statusCode === 'OK') {
         if (data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
           this.approvalNodes = data.ids
-          const tmpSort = sort === undefined ? 1 : sort
-          this.activeEditingNode = this.approvalNodes.find(node => node.sort === tmpSort)
+          this.activeEditingNode = id === '' ? this.approvalNodes[0] : this.approvalNodes.find(node => node.id === id)
           this.editNode(this.activeEditingNode)
         }
       }
@@ -747,9 +746,9 @@ export default {
         expireDay: 1,
         sort: sort
       }
-      const { statusCode } = await addApprovalNode(params)
+      const { statusCode, data } = await addApprovalNode(params)
       if (statusCode === 'OK') {
-        this.getApprovalNode(sort)
+        this.getApprovalNode(data.taskTemplate.id)
       }
     },
     isLoadLastGroup (val) {
@@ -798,7 +797,7 @@ export default {
         return true
       }
       if (this.$refs.approvalFormNodeRef.panalStatus()) {
-        this.$refs.approvalFormNodeRef.isNeedConfirm()
+        this.$refs.approvalFormNodeRef.isNeedConfirm(this.nextNodeInfo.id)
         return true
       }
       return false
@@ -820,7 +819,6 @@ export default {
         this.$refs.approvalFormNodeRef.loadPage(params)
         this.getApprovalNodeGroups(node)
       }
-      // this.getApprovalNodeGroups(node)
     },
     async getApprovalNodeGroups (node) {
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
@@ -877,7 +875,7 @@ export default {
       this.showSelectModel = false
       let params = {
         requestTemplateId: this.requestTemplateId,
-        taskTemplateId: this.activeEditingNode.id,
+        taskTemplateId: this.activeEditingNode.id || '',
         itemGroupId: this.itemGroup
       }
       const { statusCode } = await copyItemGroup(params)
@@ -980,7 +978,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          taskTemplateId: this.activeEditingNode.id,
+          taskTemplateId: this.activeEditingNode.id || '',
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -993,7 +991,7 @@ export default {
         this.itemGroupType = groupItem.itemGroupType
         let params = {
           requestTemplateId: this.requestTemplateId,
-          taskTemplateId: this.activeEditingNode.id,
+          taskTemplateId: this.activeEditingNode.id || '',
           isAdd: false,
           itemGroupName: groupItem.itemGroupName,
           itemGroupType: groupItem.itemGroupType,
@@ -1091,6 +1089,9 @@ export default {
         return attr
       })
       delete finalData.attrs
+      finalData.items.forEach((item, itemIndex) => {
+        item.sort = itemIndex
+      })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
         this.$Notice.success({

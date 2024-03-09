@@ -43,7 +43,7 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 	for _, input := range param.Inputs {
-		output, taskId, tmpErr := service.PluginTaskCreate(input, param.RequestId, param.DueDate, param.AllowedOptions)
+		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()

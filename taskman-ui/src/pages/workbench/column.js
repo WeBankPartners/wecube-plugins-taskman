@@ -132,11 +132,7 @@ export default {
         // 任务停留时长
         effectiveDays: {
           renderHeader: () => {
-            return (
-              <span>
-                {['2', '3'].includes(this.type) ? this.$t('tw_task_stay_time') : this.$t('tw_request_stay_time')}
-              </span>
-            )
+            return <span>{['2', '3'].includes(this.type) ? '任务停留/有效期' : this.$t('tw_request_stay_time')}</span>
           },
           minWidth: 140,
           key: 'effectiveDays',
@@ -211,7 +207,7 @@ export default {
           key: 'operatorObj'
         },
         createdBy: {
-          title: this.$t('createdBy'),
+          title: '请求提交人',
           sortable: 'custom',
           minWidth: 140,
           key: 'createdBy',
@@ -273,7 +269,7 @@ export default {
                         type="info"
                         size="small"
                         onClick={() => {
-                          this.handleTransfer(params.row, 'mark')
+                          this.handleTransfer(params.row, 'claim')
                         }}
                       >
                         <Icon type="ios-hand" size="16"></Icon>
@@ -382,9 +378,11 @@ export default {
     }
   },
   mounted () {
-    // 待处理-任务处理
+    // 待处理
     this.pendingTaskColumn = [
       this.baseColumn.id,
+      this.baseColumn.name,
+      this.baseColumn.status,
       {
         title: this.$t('task_name'),
         sortable: 'custom',
@@ -403,24 +401,22 @@ export default {
           )
         }
       },
-      this.baseColumn.name,
-      this.baseColumn.status,
-      this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
-      this.baseColumn.effectiveDays,
       {
-        title: this.$t('tw_task_commit_time'),
+        title: '任务创建',
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: this.$t('tw_task_expect_time'),
+        title: '任务截止',
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
       },
+      this.baseColumn.effectiveDays,
+      this.baseColumn.progress,
+      this.baseColumn.curNode,
+      this.baseColumn.handler,
       this.baseColumn.createdBy,
       this.baseColumn.templateName,
       this.baseColumn.procDefName,

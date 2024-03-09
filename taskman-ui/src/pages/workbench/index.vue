@@ -69,7 +69,7 @@ import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
-import { getPlatformList, tansferToMe, recallRequest, changeTaskStatus, deleteRequest, reRequest } from '@/api/server'
+import { getPlatformList, recallRequest, pendingHandle, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
 import column from './column.js'
 import search from './search.js'
@@ -260,11 +260,10 @@ export default {
     // 待处理、已处理表格差异化配置
     getTypeConfig () {
       if (this.tabName === 'pending') {
+        this.tableColumn = this.pendingTaskColumn
         if (['1', '4'].includes(this.type)) {
-          this.tableColumn = this.pendingColumn
           this.searchOptions = this.pendingSearch
         } else if (['2', '3'].includes(this.type)) {
-          this.tableColumn = this.pendingTaskColumn
           this.searchOptions = this.pendingTaskSearch
         }
       } else if (this.tabName === 'hasProcessed') {
@@ -436,12 +435,8 @@ export default {
         }
       })
     },
-    // 表格操作-处理(任务处理和请求定版)
+    // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
-      // 处理任务需要更新任务状态
-      if (row.status === 'InProgress') {
-        await changeTaskStatus('start', row.taskId, new Date(row.taskUpdatedTime).getTime())
-      }
       const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -449,6 +444,7 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
+          taskHandleId: row.taskHandleId, // 任务处理ID
           isCheck: 'N',
           isHandle: 'Y',
           jumpFrom: 'group_handle'
@@ -463,14 +459,14 @@ export default {
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          // 请求定版的新接口，任务处理的老接口
-          let res = null
-          if (row.status === 'Pending') {
-            res = await tansferToMe(row.id, new Date(row.updatedTime).getTime())
-          } else if (row.status === 'InProgress') {
-            res = await changeTaskStatus(type, row.taskId, new Date(row.taskUpdatedTime).getTime())
+          const params = {
+            taskId: row.taskId,
+            taskHandleId: row.taskHandleId,
+            latestUpdateTime: new Date(row.taskUpdatedTime).getTime(),
+            changeReason: type
           }
-          if (res.statusCode === 'OK') {
+          const { statusCode } = await pendingHandle(params)
+          if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
               desc: this.$t('successful')

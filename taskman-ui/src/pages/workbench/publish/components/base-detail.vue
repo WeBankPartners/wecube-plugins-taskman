@@ -31,7 +31,7 @@
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
                 <div class="info-item-value">
-                  {{ { 0: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '--' }}
+                  {{ { 2: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '--' }}
                 </div>
               </Col>
             </Row>
@@ -319,7 +319,9 @@ export default {
       return function (val) {
         const list = [
           { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
+          { label: '审批中', value: 'InApproval', color: '#1990ff' },
           { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
+          { label: '请求确认', value: 'Confirm', color: '#b886f8' },
           { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
           { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
           { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },

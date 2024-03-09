@@ -757,6 +757,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	var entityDepMap map[string][]string
 	var requestTemplate *models.RequestTemplateTable
 	var actions, approvalActions []*dao.ExecAction
+	var checkTaskHandle *models.TaskHandleTable
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	if err != nil {
 		return
@@ -773,9 +774,20 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	cacheBytes, _ := json.Marshal(cacheData)
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	expireTime := calcExpireTime(nowTime, requestTemplate.ExpireDay)
-	// 更新表状态
+	checkTaskHandle, err = GetTaskHandleService().GetRequestCheckTaskHandle(task.Id)
+	if err != nil {
+		return
+	}
+	if checkTaskHandle == nil {
+		err = fmt.Errorf("check taskhandle is empty")
+		return
+	}
+	// 更新请求表
 	actions = append(actions, &dao.ExecAction{Sql: "update request set handler=?,confirm_time=?,expire_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{operator, nowTime, expireTime, string(cacheBytes), operator, nowTime, request.Id}})
+	// 更新请求处理状态为完成
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_reuslt=?,updated_by=?,updated_time=? where id=?",
+		Param: []interface{}{models.TaskHandleResultTypeApprove, operator, nowTime, checkTaskHandle.Id}})
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})

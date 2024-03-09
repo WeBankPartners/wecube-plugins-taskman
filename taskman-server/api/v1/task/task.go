@@ -115,7 +115,7 @@ func SaveTaskForm(c *gin.Context) {
 		middleware.ReturnTaskSaveNotPermissionError(c)
 		return
 	}
-	err = service.SaveTaskForm(taskId, operator, param)
+	err = service.SaveTaskFormNew(&task, operator, &param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

@@ -1200,7 +1200,7 @@ func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.
 		}
 	}
 	var entityNodeBind []*models.EntityNodeBindQueryObj
-	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_item_template t2 on t1.form_template=t2.form_template where t1.request_template=?", requestTemplate.Id).Find(&entityNodeBind)
+	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_template t2 on t2.task_template=t1.id where t1.request_template=? and t1.node_def_id<>''", requestTemplate.Id).Find(&entityNodeBind)
 	for _, v := range entityNodeBind {
 		if _, b := entityBindMap[v.NodeDefId]; b {
 			entityBindMap[v.NodeDefId] = append(entityBindMap[v.NodeDefId], v.ItemGroup)

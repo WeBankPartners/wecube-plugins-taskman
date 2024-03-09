@@ -59,3 +59,15 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 	}
 	return
 }
+
+func (s *TaskHandleService) GetRequestCheckTaskHandle(taskId string) (taskHandle *models.TaskHandleTable, err error) {
+	var taskHandleList []*models.TaskHandleTable
+	err = dao.X.SQL("select * from task_handle where task = ?", taskId).Find(&taskHandleList)
+	if err != nil {
+		return
+	}
+	if len(taskHandleList) > 0 {
+		taskHandle = taskHandleList[0]
+	}
+	return
+}

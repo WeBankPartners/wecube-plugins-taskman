@@ -126,6 +126,8 @@ export const getTemplateFilter = params => req.post(`/taskman/api/v1/user/templa
 // 工作台转给我
 export const tansferToMe = (templateId, timestamp) =>
   req.post(`/taskman/api/v1/request/handler/${templateId}/${timestamp}`)
+// 工作台处理接口
+export const pendingHandle = params => req.post(`/taskman/api/v1/task-handle/update`, params)
 // 工作台撤回
 export const recallRequest = id => req.post(`/taskman/api/v1/user/request/revoke/${id}`)
 // 新建发布-发布信息获取

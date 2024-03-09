@@ -374,24 +374,6 @@ export default {
       noRequestForm: false // 请求表单为空标识
     }
   },
-  computed: {
-    getStatusName () {
-      return function (val) {
-        const list = [
-          { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-          { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
-          { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
-          { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
-          { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
-          { label: this.$t('status_inProgress_timeouted'), value: 'InProgress(Timeouted)', color: '#f26161' },
-          { label: this.$t('status_faulted'), value: 'Faulted', color: '#e29836' },
-          { label: this.$t('status_draft'), value: 'Draft', color: '#808695' }
-        ]
-        const item = list.find(i => i.value === val) || {}
-        return item.label
-      }
-    }
-  },
   watch: {
     'form.rootEntityId' (val) {
       if (val) {

@@ -1,14 +1,16 @@
 <template>
   <div class="taskman-workbench-data-card">
-    <Card v-for="(i, index) in data" :key="index" border :style="activeStyles(i)" class="card">
+    <Card v-for="(i, index) in cardList" :key="index" border :style="activeStyles(i)" class="card">
       <div class="content" @click="handleTabChange(i)">
         <div class="content-left">
           <Icon :type="i.icon" :color="i.color" size="28"></Icon>
           <span style="margin-left:10px;">{{ `${i.label}` }}</span>
         </div>
         <div class="content-right">
-          <span class="number">{{ i.publishNum || '' }}</span>
-          <span v-if="i.type === 'pending' && getPendingNum('1') > 0" class="badge">{{ getPendingNum('1') }}</span>
+          <span class="number">{{ i[$parent.actionName] || 0 }}</span>
+          <span v-if="i.type === 'pending' && getPendingNum($parent.actionName) > 0" class="badge">{{
+            getPendingNum($parent.actionName)
+          }}</span>
         </div>
       </div>
     </Card>
@@ -33,51 +35,69 @@ export default {
     return {
       active: '',
       action: '',
-      data: [
+      cardList: [
         {
           type: 'pending',
           label: this.$t('tw_pending'),
           icon: 'ios-alert',
           color: '#ed4014',
-          requestNum: 0,
-          publishNum: 0
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
         },
         {
           type: 'hasProcessed',
           label: this.$t('tw_hasProcessed'),
           icon: 'ios-checkmark-circle',
           color: '#1990ff',
-          requestNum: 0,
-          publishNum: 0
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
         },
         {
           type: 'submit',
           label: this.$t('tw_submit'),
           icon: 'ios-send',
           color: '#19be6b',
-          requestNum: 0,
-          publishNum: 0
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
         },
         {
           type: 'draft',
           label: this.$t('tw_draft'),
           icon: 'ios-archive',
           color: '#b886f8',
-          requestNum: 0,
-          publishNum: 0
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
         },
         {
           type: 'collect',
           label: this.$t('tw_collect'),
           icon: 'ios-star',
           color: '#ff9900',
-          requestNum: 0,
-          publishNum: 0
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
         }
       ],
       pendingNumObj: {
-        '1': [], // 发布待处理数量统计
-        '2': [] // 请求待处理数量统计
+        '1': [], // 发布
+        '2': [], // 请求
+        '3': [], // 问题
+        '4': [], // 事件
+        '5': [] // 变更
       }
     }
   },
@@ -127,21 +147,27 @@ export default {
       const { statusCode, data } = await overviewData()
       if (statusCode === 'OK') {
         for (let key in data) {
-          this.data.forEach(i => {
+          this.cardList.forEach(i => {
             if (i.type === key) {
               const numArr = (data[key] && data[key].split(';')) || []
-              i.publishNum = numArr[0]
-              i.requestNum = numArr[1]
-              i.total = Number(i.publishNum) + Number(i.requestNum)
+              numArr.forEach((item, index) => {
+                i[String(index + 1)] = numArr[index]
+              })
             }
           })
         }
-        const pendingTaskArr = (data.pendingTask && data.pendingTask.split(';')) || []
+        const pendingTask = (data.pendingTask && data.pendingTask.split(';')) || []
         const pendingApprove = (data.pendingApprove && data.pendingApprove.split(';')) || []
         const requestPending = (data.requestPending && data.requestPending.split(';')) || []
         const requestConfirm = (data.requestConfirm && data.requestConfirm.split(';')) || []
-        this.pendingNumObj['1'] = [pendingTaskArr[0], pendingApprove[0], requestPending[0], requestConfirm[0]]
-        this.pendingNumObj['2'] = [pendingTaskArr[1], pendingApprove[1], requestPending[1], requestConfirm[1]]
+        pendingTask.forEach((item, index) => {
+          this.pendingNumObj[String(index + 1)] = [
+            pendingTask[index],
+            pendingApprove[index],
+            requestPending[index],
+            requestConfirm[index]
+          ]
+        })
       }
     },
     handleTabChange: debounce(function (item) {

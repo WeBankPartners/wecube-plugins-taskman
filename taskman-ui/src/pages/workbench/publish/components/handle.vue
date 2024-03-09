@@ -45,7 +45,13 @@
       <div class="sub-title" slot="sub-title">
         <Tag class="tag">{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
         <Tag class="tag" :color="handleTypeColor[handleData.type]">{{
-          `${handleData.type === 'approve' ? '审批' : '任务'}：${handleData.name}`
+          `${{
+            approve: '审批',
+            implement_custom: '自定义任务',
+            implement_process: '编排任务'
+          }[handleData.type] || '-'}
+            ：
+            ${handleData.name}`
         }}</Tag>
       </div>
       <div class="step-item">

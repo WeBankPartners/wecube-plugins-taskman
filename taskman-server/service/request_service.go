@@ -786,7 +786,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	actions = append(actions, &dao.ExecAction{Sql: "update request set handler=?,confirm_time=?,expire_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{operator, nowTime, expireTime, string(cacheBytes), operator, nowTime, request.Id}})
 	// 更新请求处理状态为完成
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_reuslt=?,updated_by=?,updated_time=? where id=?",
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskHandleResultTypeApprove, operator, nowTime, checkTaskHandle.Id}})
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",

@@ -1085,7 +1085,7 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 }
 
 // RequestConfirm 请求确认
-func RequestConfirm(param models.RequestConfirmParam, user string) (err error) {
+func RequestConfirm(param models.RequestConfirmParam, user string) error {
 	var taskList []*models.TaskTable
 	var actions []*dao.ExecAction
 	var action *dao.ExecAction
@@ -1103,15 +1103,10 @@ func RequestConfirm(param models.RequestConfirmParam, user string) (err error) {
 		}
 	}
 	// 更新请求确认任务设置为已完成
-	action = &dao.ExecAction{Sql: "update task set status = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?"}
-	action.Param = []interface{}{models.TaskStatusDone, param.Notes, user, now, param.TaskId}
-	actions = append(actions, action)
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?", Param: []interface{}{models.TaskStatusDone, param.Notes, user, now, param.TaskId}})
 	// 更新请求表状态,设置为完成
-	action = &dao.ExecAction{Sql: "update request set status = ?,complete_status = ?,updated_by = ?,updated_time= ? where id = ?"}
-	action.Param = []interface{}{models.RequestStatusCompleted, param.CompleteStatus, user, now, param.Id}
-	actions = append(actions, action)
-	err = dao.Transaction(actions)
-	return
+	actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,complete_status = ?,updated_by = ?,updated_time= ? where id = ?", Param: []interface{}{models.RequestStatusCompleted, param.CompleteStatus, user, now, param.Id}})
+	return dao.Transaction(actions)
 }
 
 func convertMap2Array(hashMap map[string]bool) (arr []string) {
@@ -1347,7 +1342,6 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 // CreateRequestConfirm 创建请求确认
 func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (actions []*dao.ExecAction, err error) {
 	var newTaskId string
-	var action *dao.ExecAction
 	var taskTemplateList []*models.TaskTemplateTable
 	actions = []*dao.ExecAction{}
 	now := time.Now().Format(models.DateTimeFormat)
@@ -1363,9 +1357,9 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 	}
 	// 新增任务
 	taskExpireTime := calcExpireTime(now, taskTemplateList[0].ExpireDay)
-	action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0].Id, models.TaskTypeConfirm, "system", now, "system", now}
-	actions = append(actions, action)
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+		newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0].Id, models.TaskTypeConfirm, "system", now, "system", now}})
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), newTaskId, request.Role, request.CreatedBy, now, now}})
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})
 	return

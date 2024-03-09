@@ -4,7 +4,7 @@
       <Form :label-width="120">
         <FormItem :label="$t('表单类型')">
           <Button shape="circle" :style="groupStyle[group.itemGroupType]">{{
-            group.itemGroupType === 'workflow' ? '编排数据项' : '自选数据项'
+            group.itemGroupType === 'workflow' ? '编排entity' : '自选entity'
           }}</Button>
         </FormItem>
         <FormItem :label="$t('表单名')">
@@ -121,7 +121,7 @@ export default {
       },
       defaultItem: {
         // 自定义分析字段信息
-        active: false,
+        active: true,
         id: '',
         name: '',
         description: '',
@@ -192,7 +192,6 @@ export default {
       this.openFormConfig = true
     },
     async getRequestGroupForm (params) {
-      console.log(params)
       const { statusCode, data } = await getRequestGroupForm({
         taskTemplateId: params.taskTemplateId,
         requestTemplateId: params.requestTemplateId,

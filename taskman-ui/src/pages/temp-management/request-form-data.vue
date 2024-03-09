@@ -824,7 +824,6 @@ export default {
       }
     },
     openDrawer (groupItem) {
-      console.log(34, groupItem)
       this.editGroupCustomItems(groupItem)
       if (groupItem.itemGroupType === 'custom') {
         this.itemGroupType = groupItem.itemGroupType

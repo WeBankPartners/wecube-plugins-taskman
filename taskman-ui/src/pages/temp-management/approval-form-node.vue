@@ -112,13 +112,14 @@
             size="small"
             ghost
             icon="md-add"
-            :disabled="isAddRoleObjDisable()"
+            :disabled="isHandlerAddDisable"
           ></Button>
-          <span style="color: red" v-if="isAddRoleObjDisable()">处理人设置存在重复数据，请修改</span>
+          <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span>
         </FormItem>
       </Form>
+      {{ isSaveNodeDisable }} -- {{ isHandlerAddDisable }}
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveBtnActive() || isAddRoleObjDisable()" @click="saveNode">{{
+        <Button type="primary" :disabled="isSaveNodeDisable || isHandlerAddDisable" @click="saveNode">{{
           $t('save')
         }}</Button>
       </div>
@@ -181,7 +182,19 @@ export default {
         { label: '组内系统分配', value: 'system', used: ['template', 'custom'] },
         { label: '组内主动认领', value: 'claim', used: ['template', 'custom'] }
       ],
-      useRolesOptions: [] // 使用角色
+      useRolesOptions: [], // 使用角色
+      isHandlerAddDisable: true,
+      isSaveNodeDisable: true
+    }
+  },
+  watch: {
+    activeApprovalNode: {
+      handler (val) {
+        this.isSaveNodeDisable = this.isSaveBtnActive()
+        this.isHandlerAddDisable = this.isAddRoleObjDisable()
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {
@@ -217,7 +230,7 @@ export default {
           for (let i = 0; i < this.activeApprovalNode.handleTemplates.length; i++) {
             const item = this.activeApprovalNode.handleTemplates[i]
             // 人员设置方式 没选
-            if (item.handlerType === '') {
+            if (!item.handlerType) {
               res = true
               break
             }
@@ -225,7 +238,7 @@ export default {
             if (
               item.assign === 'template' &&
               ['template', 'template_suggest'].includes(item.handlerType) &&
-              (item.role === '' || item.handler === '')
+              (!item.role || !item.handler)
             ) {
               res = true
               break
@@ -234,7 +247,7 @@ export default {
             if (
               item.assign === 'template' &&
               ['custom', 'custom_suggest', 'system', 'claim'].includes(item.handlerType) &&
-              item.role === ''
+              !item.role
             ) {
               res = true
               break
@@ -246,7 +259,11 @@ export default {
     },
     async saveNode () {
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
-      const { statusCode } = await updateApprovalNode(this.activeApprovalNode)
+      let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
+      if (['admin', 'auto'].includes(tmpData.handleMode)) {
+        delete tmpData.handleTemplates
+      }
+      const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
         this.$Notice.success({
@@ -296,8 +313,16 @@ export default {
       return res
     },
     hasDuplicateObjects () {
+      const tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode.handleTemplates)).map(data => {
+        return {
+          assign: data.assign,
+          handler: data.handler,
+          handlerType: data.handlerType,
+          role: data.role
+        }
+      })
       let objectStrings = new Set() // 使用 Set 存储对象的字符串表示
-      for (let obj of this.activeApprovalNode.handleTemplates) {
+      for (let obj of tmpData) {
         let objString = JSON.stringify(obj) // 将对象转换为字符串
         if (objectStrings.has(objString)) {
           return true // 存在相同的对象

@@ -1,41 +1,14 @@
 <template>
   <div class="taskman-workbench-data-card">
-    <Card v-for="(i, index) in data" :key="index" border :style="activeStyles(i)">
+    <Card v-for="(i, index) in data" :key="index" border :style="activeStyles(i)" class="card">
       <div class="content" @click="handleTabChange(i)">
-        <div class="w-header">
-          <!-- <img :src="i.icon" /> -->
-          <Icon :type="i.icon" :color="i.color" size="26"></Icon>
-          <span style="margin-left:5px;">{{ `${i.label}(${i.total || 0})` }}</span>
+        <div class="content-left">
+          <Icon :type="i.icon" :color="i.color" size="28"></Icon>
+          <span style="margin-left:10px;">{{ `${i.label}` }}</span>
         </div>
-        <div class="data">
-          <div
-            class="list"
-            :style="actionStyles(i, '1')"
-            @click="
-              e => {
-                e.stopPropagation()
-                handleTabChange(i, '1')
-              }
-            "
-          >
-            <span style="font-weight:bold;">{{ i.publishNum || '' }}</span>
-            <span v-if="i.type === 'pending' && getPendingNum('1') > 0" class="badge">{{ getPendingNum('1') }}</span>
-            <span>{{ $t('tw_publish') }}</span>
-          </div>
-          <div
-            class="list"
-            :style="actionStyles(i, '2')"
-            @click="
-              e => {
-                e.stopPropagation()
-                handleTabChange(i, '2')
-              }
-            "
-          >
-            <span style="font-weight:bold;">{{ i.requestNum || '' }}</span>
-            <span v-if="i.type === 'pending' && getPendingNum('2') > 0" class="badge">{{ getPendingNum('2') }}</span>
-            <span>{{ $t('tw_request') }}</span>
-          </div>
+        <div class="content-right">
+          <span class="number">{{ i.publishNum || '' }}</span>
+          <span v-if="i.type === 'pending' && getPendingNum('1') > 0" class="badge">{{ getPendingNum('1') }}</span>
         </div>
       </div>
     </Card>
@@ -73,15 +46,15 @@ export default {
           type: 'hasProcessed',
           label: this.$t('tw_hasProcessed'),
           icon: 'ios-checkmark-circle',
-          color: '#19be6b',
+          color: '#1990ff',
           requestNum: 0,
           publishNum: 0
         },
         {
           type: 'submit',
           label: this.$t('tw_submit'),
-          icon: 'ios-cloud-upload',
-          color: '#1990ff',
+          icon: 'ios-send',
+          color: '#19be6b',
           requestNum: 0,
           publishNum: 0
         },
@@ -112,18 +85,8 @@ export default {
     activeStyles () {
       return function (i) {
         return {
-          width: '100%',
-          height: '110px',
           marginRight: i.type === 'collect' ? '0px' : '20px',
-          cursor: 'pointer',
           borderTop: i.type === this.active ? '4px solid #e59e2d' : ''
-        }
-      }
-    },
-    actionStyles () {
-      return function (i, val) {
-        return {
-          color: this.action === val && i.type === this.active ? '#e59e2d' : 'rgba(16, 16, 16, 1)'
         }
       }
     },
@@ -181,10 +144,9 @@ export default {
         this.pendingNumObj['2'] = [pendingTaskArr[1], pendingApprove[1], requestPending[1], requestConfirm[1]]
       }
     },
-    handleTabChange: debounce(function (item, subType) {
+    handleTabChange: debounce(function (item) {
       this.active = item.type
-      this.action = subType || '1'
-      this.$emit('fetchData', item.type, subType)
+      this.$emit('fetchData', item.type)
     }, 300)
   }
 }
@@ -192,49 +154,54 @@ export default {
 <style lang="scss">
 .taskman-workbench-data-card {
   .ivu-card-body {
+    width: 100%;
     padding: 10px;
   }
   display: flex;
   flex-direction: row;
   margin-top: 20px;
-  .content {
-    .w-header {
+  .card {
+    width: 100%;
+    height: 80px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .content {
+      width: 100%;
       display: flex;
-      flex-direction: row;
-      align-items: center;
-      img {
-        width: 24px;
-        height: 24px;
-        margin-right: 5px;
-      }
-      span {
+      justify-content: space-between;
+      &-left {
+        display: flex;
+        align-items: center;
+        width: calc(100% - 50px);
         color: rgba(16, 16, 16, 1);
-        font-size: 14px;
+        font-size: 15px;
         font-family: PingFangSC-regular;
         font-weight: bold;
       }
-    }
-    .data {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      align-items: center;
-      margin-top: 10px;
-      .list {
+      &-right {
         position: relative;
+        width: 50px;
+        height: 60px;
+        margin-right: 30px;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        padding: 0 10px;
-        span {
+        align-items: flex-end;
+        justify-content: space-around;
+        .name {
           font-size: 14px;
-          font-family: PingFangSC-regular;
+          color: rgba(16, 16, 16, 1);
+        }
+        .number {
+          font-size: 20px;
+          color: #e59e2d;
         }
         .badge {
           position: absolute;
-          top: -5px;
-          right: -12px;
-          font-size: 11px;
+          top: 10px;
+          right: -20px;
+          font-size: 10px;
           background-color: #f56c6c;
           border-radius: 10px;
           color: #fff;

@@ -1170,7 +1170,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	actions = append(actions, action)
 
 	// 新增提交请求处理人
-	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handler_result,created_time,updated_time) values (?,?,?,?,?,?,?)"}
+	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handle_result,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 	action.Param = []interface{}{guid.CreateGuid(), submitTaskId, request.Role, request.CreatedBy, models.TaskHandleResultTypeApprove, now, now}
 	actions = append(actions, action)
 

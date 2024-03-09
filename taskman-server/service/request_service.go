@@ -1879,14 +1879,16 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	// 查询 task
 	var tasks []*models.TaskTable
-	err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
-		Where("request = ?", requestId).
-		Asc("created_time").
-		Find(&tasks)
+	err = dao.X.SQL("select * from task where request=? order by created_time", requestId).Find(&tasks)
+	//err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
+	//	Where("request = ?", requestId).
+	//	Asc("created_time").
+	//	Find(&tasks)
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
+	log.Logger.Info("history task", log.Int("taskLen", len(tasks)))
 
 	if len(tasks) == 0 {
 		return

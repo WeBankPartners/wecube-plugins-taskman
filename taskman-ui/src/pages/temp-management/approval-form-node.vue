@@ -117,10 +117,12 @@
         }}</Button>
       </div>
     </div>
+    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
+import CustomConfirmModel from './custom-confirm-model'
 import Vue from 'vue'
 import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
 export default {
@@ -273,19 +275,32 @@ export default {
     },
     isNeedConfirm (nextNodeId) {
       if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
+        // this.$Modal.confirm({
+        //   title: `${this.$t('confirm_discarding_changes')}`,
+        //   content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
+        //   'z-index': 1000000,
+        //   okText: this.$t('save'),
+        //   cancelText: this.$t('abandon'),
+        //   onOk: async () => {
+        //     this.saveNode(2, nextNodeId)
+        //   },
+        //   onCancel: () => {
+        //     this.$emit('jumpToNode')
+        //   }
+        // })
+        this.$refs.customConfirmModelRef.open({
+          title: `${this.$t('tw_confirm_discarding_changes')}`,
           content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
           okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
+          cancelText: this.$t('tw_abandon'),
+          okFunc: () => {
             this.saveNode(2, nextNodeId)
           },
-          onCancel: () => {
+          cancelFunc: () => {
             this.$emit('jumpToNode')
           }
         })
+
         return true
       } else {
         return false
@@ -397,6 +412,9 @@ export default {
       }
       return res
     }
+  },
+  components: {
+    CustomConfirmModel
   }
 }
 </script>

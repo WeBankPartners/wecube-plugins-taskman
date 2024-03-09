@@ -902,7 +902,7 @@ export default {
       })
       delete finalData.attrs
       finalData.items.forEach((item, itemIndex) => {
-        item.sort = itemIndex
+        item.sort = itemIndex + 1
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {

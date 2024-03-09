@@ -229,11 +229,13 @@
       <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
       <Button @click="gotoNext" type="primary" :disabled="isSaveBtnActive()">{{ $t('next') }}</Button>
     </div>
+    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs'
+import CustomConfirmModel from './custom-confirm-model'
 import {
   getTempGroupList,
   getManagementRoles,
@@ -393,17 +395,15 @@ export default {
         this.createTemp(true)
       } else {
         if (this.isParmasChanged) {
-          this.$Modal.confirm({
+          this.$refs.customConfirmModelRef.open({
             title: `${this.$t('tw_confirm_discarding_changes')}`,
             content: `${this.$t('tw_params_edit_confirm')}`,
-            'z-index': 1000000,
-            closable: true,
             okText: this.$t('save'),
             cancelText: this.$t('tw_abandon'),
-            onOk: async () => {
+            okFunc: () => {
               this.createTemp(true)
             },
-            onCancel: () => {
+            cancelFunc: () => {
               this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
             }
           })
@@ -542,6 +542,9 @@ export default {
     paramsChanged () {
       this.isParmasChanged = true
     }
+  },
+  components: {
+    CustomConfirmModel
   }
 }
 </script>

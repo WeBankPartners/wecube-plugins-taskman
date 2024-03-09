@@ -1162,13 +1162,13 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	expireTime := calcExpireTime(now, requestTemplate.ExpireDay)
 	// 新增提交请求任务
 	submitTaskId := "su_" + guid.CreateGuid()
-	action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{submitTaskId, "submit", expireTime, request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, "system", now, "system", now}
+	action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,task_result,created_by,created_time,updated_by,updated_time) values (?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{submitTaskId, "submit", expireTime, request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, models.TaskResultTypeComplete, "system", now, "system", now}
 	actions = append(actions, action)
 
 	// 新增提交请求处理人
-	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handle_result,created_time,updated_time) values (?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{guid.CreateGuid(), submitTaskId, request.Role, request.CreatedBy, models.TaskHandleResultTypeApprove, now, now}
+	action = &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handle_result,handle_status,created_time,updated_time) values (?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{guid.CreateGuid(), submitTaskId, request.Role, request.CreatedBy, models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, now, now}
 	actions = append(actions, action)
 
 	// 先更新请求状态为定版
@@ -1247,8 +1247,8 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 			taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
-				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now, "system", now}
+				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,task_result,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, models.TaskHandleResultTypeApprove, "system", now, "system", now}
 				actions = append(actions, action)
 				continue
 			}

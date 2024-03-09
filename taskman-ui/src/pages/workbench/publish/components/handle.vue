@@ -43,16 +43,15 @@
     <!--审批和任务-->
     <HeaderTitle v-else-if="['InApproval', 'InProgress'].includes(detail.status)" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
-        <Tag class="tag">{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
-        <Tag class="tag" :color="handleTypeColor[handleData.type]">{{
+        <Tag>{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
+        <Tag style="margin-left:5px;" :color="handleTypeColor[handleData.type]">{{
           `${{
             approve: '审批',
             implement_custom: '自定义任务',
             implement_process: '编排任务'
-          }[handleData.type] || '-'}
-            ：
-            ${handleData.name}`
+          }[handleData.type] || '-'}：${handleData.name}`
         }}</Tag>
+        <span class="description">{{ $t('description') }}：{{ handleData.description }}</span>
       </div>
       <div class="step-item">
         <div class="step-item-left">
@@ -89,9 +88,9 @@
           </div>
           <div class="content">
             <Form :label-width="80" label-position="left">
-              <FormItem :label="$t('task') + $t('description')">
+              <!-- <FormItem :label="$t('task') + $t('description')">
                 <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
-              </FormItem>
+              </FormItem> -->
               <!--处理结果-审批类型-->
               <FormItem v-if="handleData.type === 'approve'" required label="操作">
                 <Select v-model="taskForm.choseOption">
@@ -278,7 +277,8 @@ export default {
         implement_process: '#cba43f',
         implement_custom: '#b886f8',
         confirm: '#19be6b'
-      }
+      },
+      hasRunOnce: false
     }
   },
   computed: {
@@ -300,6 +300,8 @@ export default {
     handleData: {
       handler (val) {
         if (val && this.taskHandleId) {
+          if (this.hasRunOnce) return
+          this.hasRunOnce = true
           const list = val.taskHandleList || []
           list.forEach(item => {
             if (item.id === this.taskHandleId) {
@@ -500,6 +502,7 @@ export default {
 </script>
 <style lang="scss">
 .workbench-current-handle {
+  margin-top: 10px;
   .task-step {
     display: flex;
     div:first-child {
@@ -553,8 +556,20 @@ export default {
     }
   }
   .sub-title {
+    width: calc(100% - 150px);
     font-size: 14px;
     margin-left: 5px;
+    display: flex;
+    align-items: center;
+    .description {
+      margin-left: 10px;
+      color: #808695;
+      max-width: calc(100% - 300px);
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
   .ivu-tag {
     line-height: 24px !important;

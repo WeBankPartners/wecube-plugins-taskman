@@ -462,7 +462,7 @@ export default {
           const params = {
             taskId: row.taskId,
             taskHandleId: row.taskHandleId,
-            latestUpdateTime: new Date(row.taskUpdatedTime).getTime(),
+            latestUpdateTime: (row.taskUpdatedTime && String(new Date(row.taskUpdatedTime).getTime())) || '',
             changeReason: type
           }
           const { statusCode } = await pendingHandle(params)

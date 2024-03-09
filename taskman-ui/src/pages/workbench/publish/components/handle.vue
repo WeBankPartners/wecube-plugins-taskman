@@ -94,7 +94,7 @@
               </FormItem>
               <!--处理结果-审批类型-->
               <FormItem v-if="handleData.type === 'approve'" required label="操作">
-                <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
+                <Select v-model="taskForm.choseOption">
                   <Option v-for="(item, index) in approvalNextOptions" :value="item.value" :key="index">{{
                     item.label
                   }}</Option>
@@ -108,13 +108,13 @@
                 required
                 label="操作"
               >
-                <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
+                <Select v-model="taskForm.choseOption">
                   <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
                 </Select>
               </FormItem>
               <!--完成状态(只有任务有)-->
               <FormItem v-if="['implement_custom', 'implement_process'].includes(handleData.type)" label="完成状态">
-                <Select v-model="handleData.taskHandleList[handleIndex].handleStatus">
+                <Select v-model="taskForm.handleStatus">
                   <Option v-for="(item, index) in taskStatusList" :value="item.value" :key="index">{{
                     item.label
                   }}</Option>
@@ -122,19 +122,10 @@
               </FormItem>
               <!--处理意见-->
               <FormItem :label="$t('process_comments')">
-                <Input
-                  v-model="handleData.taskHandleList[handleIndex].resultDesc"
-                  type="textarea"
-                  :maxlength="200"
-                  show-word-limit
-                />
+                <Input v-model="taskForm.comment" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
-                <UploadFile
-                  :id="handleData.taskHandleList[handleIndex].id"
-                  :files="handleData.taskHandleList[handleIndex].attachFiles"
-                  type="task"
-                ></UploadFile>
+                <UploadFile :id="taskHandleId" :files="taskForm.attachFiles" type="task"></UploadFile>
               </FormItem>
             </Form>
             <div v-if="handleData.editable" style="text-align: center">
@@ -179,11 +170,7 @@
             <Input v-model="confirmRequestForm.notes" type="textarea" :maxlength="200" show-word-limit />
           </FormItem>
           <FormItem :label="$t('tw_attach')">
-            <UploadFile
-              :id="handleData.taskHandleList[handleIndex].id"
-              :files="handleData.taskHandleList[handleIndex].attachFiles"
-              type="task"
-            ></UploadFile>
+            <UploadFile :id="taskHandleId" type="task"></UploadFile>
           </FormItem>
         </Form>
         <div style="text-align:center;">
@@ -215,7 +202,7 @@ export default {
     },
     handleData: {
       type: Object,
-      default: () => {}
+      default: () => ({ taskHandleList: [] })
     },
     // 1发布,2请求(3问题,4事件,5变更)
     actionName: {
@@ -228,13 +215,22 @@ export default {
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       requestTemplate: this.$route.query.requestTemplate, // 请求模板ID
       requestId: this.$route.query.requestId, // 请求ID
-      handleId: this.$route.query.handleId,
+      taskHandleId: this.$route.query.taskHandleId,
+      // 任务和审批表单
+      taskForm: {
+        comment: '', // 处理意见
+        choseOption: '', // 处理结果
+        handleStatus: '', // 处理状态
+        attachFiles: []
+      },
+      // 请求确认表单
       confirmRequestForm: {
         markTaskId: [], // 关注任务ID
         completeStatus: 'complete', // 请求完成状态complete、uncompleted
-        notes: ''
+        notes: '',
+        attachFiles: []
       },
-      taskTagList: [],
+      taskTagList: [], // 任务节点列表
       completeStatusList: [
         {
           label: '已完成',
@@ -282,19 +278,17 @@ export default {
         implement_process: '#cba43f',
         implement_custom: '#b886f8',
         confirm: '#19be6b'
-      },
-      handleIndex: 0 // 协同和并行审批，会有多个处理人，需要定位当前处理人的index（其余都是单人，默认为0）
+      }
     }
   },
   computed: {
     commitTaskDisabled () {
-      const approveFlag =
-        this.handleData.type === 'approve' && !this.handleData.taskHandleList[this.handleIndex].handleResult
+      const approveFlag = this.handleData.type === 'approve' && !this.taskForm.choseOption
       const processFlag =
         this.handleData.type === 'implement_process' &&
         this.handleData.nextOptions &&
         this.handleData.nextOptions.length > 0 &&
-        !this.handleData.taskHandleList[this.handleIndex].handleResult
+        !this.taskForm.choseOption
       if (approveFlag || processFlag) {
         return true
       } else {
@@ -305,10 +299,18 @@ export default {
   watch: {
     handleData: {
       handler (val) {
-        if (val && this.handleId) {
+        if (val && this.taskHandleId) {
           const list = val.taskHandleList || []
-          // 审批的协同和并行涉及多人，工作台点击当前处理传handleId来确认当前编辑数据
-          this.handleIndex = list.findIndex(i => i.id === this.handleId)
+          list.forEach(item => {
+            if (item.id === this.taskHandleId) {
+              if (['InApproval', 'InProgress'].includes(this.detail.status)) {
+                this.taskForm.comment = item.resultDesc
+                this.taskForm.choseOption = item.handleResult
+                this.taskForm.handleStatus = item.handleStatus
+                this.taskForm.attachFiles = item.attachFiles
+              }
+            }
+          })
         }
       },
       immediate: true,
@@ -316,31 +318,6 @@ export default {
     }
   },
   methods: {
-    // 获取关注的任务列表
-    async geTaskTagList () {
-      const { statusCode, data } = await geTaskTagList(this.requestId)
-      if (statusCode === 'OK') {
-        this.taskTagList = data || []
-      }
-    },
-    // 请求确认提交
-    async confirmRequest () {
-      const params = {
-        id: this.requestId,
-        taskId: this.handleData.id,
-        markTaskId: this.confirmRequestForm.markTaskId,
-        completeStatus: this.confirmRequestForm.completeStatus,
-        notes: this.confirmRequestForm.notes
-      }
-      const { statusCode } = await confirmRequest(params)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=4` })
-      }
-    },
     // 任务审批保存
     async saveTaskData () {
       // 提取表格勾选的数据
@@ -378,7 +355,14 @@ export default {
           desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
         })
       }
-      const { statusCode } = await saveTaskData(this.handleData.id, this.handleData)
+      const params = {
+        formData: this.handleData.formData,
+        comment: this.taskForm.comment,
+        choseOption: this.taskForm.choseOption,
+        handleStatus: this.taskForm.handleStatus,
+        taskHandleId: this.taskHandleId
+      }
+      const { statusCode } = await saveTaskData(this.handleData.id, params)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
@@ -423,13 +407,45 @@ export default {
           desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
         })
       }
-      const { statusCode } = await commitTaskData(this.handleData.id, this.handleData)
+      const params = {
+        formData: this.handleData.formData,
+        comment: this.taskForm.comment,
+        choseOption: this.taskForm.choseOption,
+        handleStatus: this.taskForm.handleStatus,
+        taskHandleId: this.taskHandleId
+      }
+      const { statusCode } = await commitTaskData(this.handleData.id, params)
       if (statusCode === 'OK') {
         this.$Notice.success({
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
         this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
+      }
+    },
+    // 获取关注的任务列表
+    async geTaskTagList () {
+      const { statusCode, data } = await geTaskTagList(this.requestId)
+      if (statusCode === 'OK') {
+        this.taskTagList = data || []
+      }
+    },
+    // 请求确认提交
+    async confirmRequest () {
+      const params = {
+        id: this.requestId,
+        taskId: this.handleData.id,
+        markTaskId: this.confirmRequestForm.markTaskId,
+        completeStatus: this.confirmRequestForm.completeStatus,
+        notes: this.confirmRequestForm.notes
+      }
+      const { statusCode } = await confirmRequest(params)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=4` })
       }
     },
     // 校验表格数据必填项

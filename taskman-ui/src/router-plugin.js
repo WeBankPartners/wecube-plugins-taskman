@@ -100,6 +100,60 @@ const router = [
         path: '/taskman/workbench/requestHistory',
         name: '/taskman/workbench/requestHistory',
         component: () => import('@/pages/workbench/request/list')
+      },
+      // 新建问题
+      {
+        path: '/taskman/workbench/createProblem',
+        name: '/taskman/workbench/createProblem',
+        component: () => import('@/pages/workbench/problem/create')
+      },
+      // 问题详情
+      {
+        path: '/taskman/workbench/detailProblem',
+        name: '/taskman/workbench/detailProblem',
+        component: () => import('@/pages/workbench/problem/detail')
+      },
+      // 问题历史
+      {
+        path: '/taskman/workbench/problemHistory',
+        name: '/taskman/workbench/problemHistory',
+        component: () => import('@/pages/workbench/problem/list')
+      },
+      // 新建事件
+      {
+        path: '/taskman/workbench/createEvent',
+        name: '/taskman/workbench/createEvent',
+        component: () => import('@/pages/workbench/event/create')
+      },
+      // 事件详情
+      {
+        path: '/taskman/workbench/detailEvent',
+        name: '/taskman/workbench/detailEvent',
+        component: () => import('@/pages/workbench/event/detail')
+      },
+      // 事件历史
+      {
+        path: '/taskman/workbench/eventHistory',
+        name: '/taskman/workbench/eventHistory',
+        component: () => import('@/pages/workbench/event/list')
+      },
+      // 新建变更
+      {
+        path: '/taskman/workbench/createChange',
+        name: '/taskman/workbench/createChange',
+        component: () => import('@/pages/workbench/change/create')
+      },
+      // 变更详情
+      {
+        path: '/taskman/workbench/detailChange',
+        name: '/taskman/workbench/detailChange',
+        component: () => import('@/pages/workbench/change/detail')
+      },
+      // 变更历史
+      {
+        path: '/taskman/workbench/changeHistory',
+        name: '/taskman/workbench/changeHistory',
+        component: () => import('@/pages/workbench/change/list')
       }
     ]
   },

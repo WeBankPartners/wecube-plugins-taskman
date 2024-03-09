@@ -487,7 +487,7 @@ export default {
     }
     .custom-panel {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       width: 100%;
       &-title {
         width: 100px;
@@ -564,8 +564,11 @@ export default {
   .ivu-collapse-header {
     height: auto !important;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding-left: 0px !important;
+    i {
+      margin-top: 4px;
+    }
   }
   .ivu-collapse-content-box {
     padding-bottom: 0px;

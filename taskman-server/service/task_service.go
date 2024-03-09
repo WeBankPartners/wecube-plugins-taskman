@@ -662,7 +662,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 			}
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeApprove, param.Comment, now, param.TaskHandleId}})
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_reuslt = ?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeApprove, now, task.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_reuslt = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeApprove, operator, now, task.Id}})
 		newApproveActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
 		if len(newApproveActions) > 0 {
 			actions = append(actions, newApproveActions...)

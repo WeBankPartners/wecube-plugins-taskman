@@ -1250,15 +1250,15 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, user
 			taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
-				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now, "system", now}
 				actions = append(actions, action)
 				continue
 			}
 
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now, "system", now}
 			actions = append(actions, action)
 
 			// 根据任务审批模版表&请求人指定,设置审批处理
@@ -1325,8 +1325,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, userToke
 			// 模版没有对应的的任务,需要创建当前任务
 			newTaskId = "im_" + guid.CreateGuid()
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now, "system", now}
 			actions = append(actions, action)
 
 			// 根据任务审批模版表&请求人指定,设置审批处理
@@ -1363,8 +1363,8 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 	}
 	// 新增任务
 	taskExpireTime := calcExpireTime(now, taskTemplateList[0].ExpireDay)
-	action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time) values(?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0], models.TaskTypeConfirm, "system", now}
+	action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0], models.TaskTypeConfirm, "system", now, "system", now}
 	actions = append(actions, action)
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})

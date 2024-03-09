@@ -1207,7 +1207,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	}
 
 	// 没有配置定版,请求继续往后面走
-	approvalActions, err = s.CreateRequestApproval(request, userToken, language)
+	approvalActions, err = s.CreateRequestApproval(request, "", userToken, language)
 	if err != nil {
 		return
 	}
@@ -1219,7 +1219,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 }
 
 // CreateRequestApproval 创建请求审批
-func (s *RequestService) CreateRequestApproval(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
+func (s *RequestService) CreateRequestApproval(request models.RequestTable, curTaskId, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
@@ -1232,18 +1232,18 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, user
 	}
 	// 没有审批,直接跳过到下一步,到任务
 	if len(taskTemplateList) == 0 {
-		return s.CreateRequestTask(request, userToken, language)
+		return s.CreateRequestTask(request, "", userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
-			if taskList[0].Status == string(models.TaskStatusDone) {
-				// 任务已完成,continue
+			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {
+				// 任务已完成,或者当前正在处理任务
 				continue
 			}
-			// 任务状态未完成,break等待当前任务处理完
-			break
+			// 有未处理完成任务,直接return
+			return
 		} else {
 			// 模版没有对应的的任务,需要创建当前任务并设置审批角色和人,同时根据审批方式设置审批状态
 			newTaskId = "ap_" + guid.CreateGuid()
@@ -1275,11 +1275,11 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, user
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.CreateRequestTask(request, userToken, language)
+	return s.CreateRequestTask(request, "", userToken, language)
 }
 
 // CreateRequestTask 创建任务
-func (s *RequestService) CreateRequestTask(request models.RequestTable, userToken, language string) (actions []*dao.ExecAction, err error) {
+func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskId, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var requestTemplate *models.RequestTemplateTable
 	var taskList []*models.TaskTable
@@ -1315,12 +1315,12 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, userToke
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
-			if taskList[0].Status == string(models.TaskStatusDone) {
-				// 任务已完成,continue
+			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {
+				// 任务已完成,或者当前任务正在处理,直接下一步
 				continue
 			}
-			// 任务状态未完成,break等待当前任务处理完
-			break
+			// 任务状态未完成,直接return
+			return
 		} else {
 			// 模版没有对应的的任务,需要创建当前任务
 			newTaskId = "im_" + guid.CreateGuid()
@@ -1364,7 +1364,7 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 	// 新增任务
 	taskExpireTime := calcExpireTime(now, taskTemplateList[0].ExpireDay)
 	action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0], models.TaskTypeConfirm, "system", now, "system", now}
+	action.Param = []interface{}{newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0].Id, models.TaskTypeConfirm, "system", now, "system", now}
 	actions = append(actions, action)
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})

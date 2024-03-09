@@ -791,7 +791,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})
-	approvalActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
+	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language)
 	if err != nil {
 		return
 	}

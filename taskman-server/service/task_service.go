@@ -787,7 +787,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeApprove, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeApprove, operator, now, task.Id}})
-		newApproveActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
+		newApproveActions, err = GetRequestService().CreateRequestApproval(request, task.Id, userToken, language)
 		if len(newApproveActions) > 0 {
 			actions = append(actions, newApproveActions...)
 		}
@@ -822,7 +822,7 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	}
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.HandleStatus, param.Comment, now, param.TaskHandleId}})
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, param.HandleStatus, operator, now, task.Id}})
-	newApproveActions, err = GetRequestService().CreateRequestTask(request, userToken, language)
+	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}

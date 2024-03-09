@@ -280,7 +280,7 @@ export default {
     isNeedConfirm (nextNodeId) {
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes888')}`,
+          title: `${this.$t('confirm_discarding_changes')}`,
           content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),

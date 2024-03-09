@@ -786,7 +786,7 @@ export default {
       // type 1新增 2编辑 3删除
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes44')}`,
+          title: `${this.$t('confirm_discarding_changes')}`,
           content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),
@@ -927,7 +927,7 @@ export default {
       this.displayLastGroup = false
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes123')}`,
+          title: `${this.$t('confirm_discarding_changes')}`,
           content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),
@@ -961,7 +961,7 @@ export default {
     editGroupItem (groupItem) {
       if (this.isParmasChanged) {
         this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes456')}`,
+          title: `${this.$t('confirm_discarding_changes')}`,
           content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
           'z-index': 1000000,
           okText: this.$t('save'),

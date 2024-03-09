@@ -1969,6 +1969,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
+	log.Logger.Debug(fmt.Sprintf("start handle tasks: [%s]", strings.Join(taskIds, ",")))
 	for _, task := range tasks {
 		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
 			uncompletedTasks = append(uncompletedTasks, task.Name)
@@ -2010,14 +2011,17 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
 		}
 
+		log.Logger.Debug(fmt.Sprintf("get task: %s form data", task.Id))
 		formData, err = getTaskFormData(c, curTaskForHistory)
 		if err != nil {
+			log.Logger.Error(fmt.Sprintf("get task form data for task: %s error", task.Id), log.Error(err))
 			return
 		}
 		curTaskForHistory.FormData = formData
 
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
+	log.Logger.Debug(fmt.Sprintf("finish handle tasks: [%s]", strings.Join(taskIds, ",")))
 	result.Task = taskForHistoryList
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
@@ -2036,7 +2040,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		return
 	}
 	if len(formTemplates) == 0 {
-		log.Logger.Debug(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
+		log.Logger.Error(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
 		return
 	}
 
@@ -2129,6 +2133,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		OrderBy("item_group,sort").
 		Find(&itemTemplates)
 	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
 	if len(itemTemplates) == 0 {

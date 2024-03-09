@@ -29,8 +29,7 @@ func (d *FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *mo
 	if formItemTemplate.Id == "" {
 		return
 	}
-	// sort 要强制更新,不然传递0不更新
-	affected, err = session.ID(formItemTemplate.Id).Cols("sort").Update(formItemTemplate)
+	affected, err = session.ID(formItemTemplate.Id).Update(formItemTemplate)
 	// 打印日志
 	logExecuteSql(session, "FormItemTemplateDao", "Update", formItemTemplate, affected, err)
 	return

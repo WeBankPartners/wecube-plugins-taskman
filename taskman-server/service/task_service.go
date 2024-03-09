@@ -1141,8 +1141,8 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator string) (err 
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked",
 		operator, operator, nowTime, param.TaskId}})
 	//添加认领记录
-	actions = append(actions, &dao.ExecAction{Sql: "insert task_handle(id,task_handle_template,task,role,handle,handler_type,parent_id,created_time," +
-		"updated_time,change_reason)", Param: []interface{}{guid.CreateGuid(), taskHandleList[0].TaskHandleTemplate, taskHandleList[0].Task,
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,handler_type,parent_id,created_time," +
+		"updated_time,change_reason) values(?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskHandleList[0].TaskHandleTemplate, taskHandleList[0].Task,
 		taskHandleList[0].Role, operator, taskHandleList[0].HandlerType, param.TaskHandleId, nowTime, nowTime, param.ChangeReason}})
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set latest_flag = 0 where id = ?", Param: []interface{}{param.TaskHandleId}})
 	return dao.Transaction(actions)

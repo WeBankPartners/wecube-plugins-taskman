@@ -374,7 +374,21 @@ export default {
       submitAllColumn: [],
       submitColumn: [],
       draftColumn: [],
-      username: window.localStorage.getItem('username')
+      username: window.localStorage.getItem('username'),
+      createRouteMap: {
+        '1': 'createPublish',
+        '2': 'createRequest',
+        '3': 'createProblem',
+        '4': 'createEvent',
+        '5': 'createChange'
+      },
+      detailRouteMap: {
+        '1': 'detailPublish',
+        '2': 'detailRequest',
+        '3': 'detailProblem',
+        '4': 'detailEvent',
+        '5': 'detailChange'
+      }
     }
   },
   mounted () {

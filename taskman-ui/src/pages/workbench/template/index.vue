@@ -118,7 +118,7 @@ export default {
   data () {
     return {
       activeName: 'confirm', // confirm已发布，created我的草稿(未发布)
-      type: '', // publish发布，request请求
+      type: '', // 1发布,2请求,3问题,4事件,5变更
       form: {
         templateName: '',
         operatorObjType: '' // 操作对象类型
@@ -239,7 +239,14 @@ export default {
           key: 'useRole'
         }
       ],
-      lang: window.localStorage.getItem('lang')
+      lang: window.localStorage.getItem('lang'),
+      createRouteMap: {
+        '1': 'createPublish',
+        '2': 'createRequest',
+        '3': 'createProblem',
+        '4': 'createEvent',
+        '5': 'createChange'
+      }
     }
   },
   watch: {
@@ -267,10 +274,6 @@ export default {
       this.spinShow = true
       const { statusCode, data } = await getTemplateTree()
       this.spinShow = false
-      const typeMap = {
-        2: 'request',
-        1: 'publish'
-      }
       if (statusCode === 'OK') {
         let templateList = data || []
         templateList = templateList.map(i => {
@@ -278,7 +281,7 @@ export default {
           i.groups.forEach(j => {
             j.templates.forEach(template => {
               template.manageRole = i.manageRole
-              if (template.operatorObjType && typeMap[template.type] === this.type) {
+              if (template.operatorObjType && template.type === Number(this.type)) {
                 this.operateOptions.push(template.operatorObjType)
               }
             })
@@ -298,7 +301,7 @@ export default {
                 j.templates =
                   (Array.isArray(j.templates) &&
                     j.templates.filter(template => {
-                      return template.status === 'created' && typeMap[template.type] === this.type
+                      return template.status === 'created' && template.type === Number(this.type)
                     })) ||
                   []
                 // 没有模板的组不显示
@@ -329,7 +332,8 @@ export default {
           desc: this.$t('tw_template_role_tips')
         })
       }
-      const path = this.type === 'request' ? 'createRequest' : 'createPublish'
+      // const path = this.type === '2' ? 'createRequest' : 'createPublish'
+      const path = this.createRouteMap[this.type]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
@@ -357,7 +361,7 @@ export default {
     // 收藏模板列表
     async getCollectTemplate () {
       const params = {
-        action: this.type === 'publish' ? 1 : 2, // 1发布2请求
+        action: Number(this.type),
         startIndex: 0,
         pageSize: 500
       }
@@ -377,14 +381,10 @@ export default {
               j.templates =
                 (Array.isArray(j.templates) &&
                   j.templates.filter(k => {
-                    const typeMap = {
-                      2: 'request',
-                      1: 'publish'
-                    }
                     // 根据模板名、标签名、模版发布状态组合搜索
                     const nameFilter = k.name.toLowerCase().indexOf(templateName.toLowerCase()) > -1
                     const operatorFilter = operatorObjType ? k.operatorObjType === operatorObjType : true
-                    const typeFilter = this.type === typeMap[k.type]
+                    const typeFilter = Number(this.type) === k.type
                     return nameFilter && operatorFilter && typeFilter && this.activeName === k.status
                   })) ||
                 []

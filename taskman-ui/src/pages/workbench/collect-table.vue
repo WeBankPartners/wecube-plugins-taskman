@@ -289,6 +289,13 @@ export default {
         total: 0,
         currentPage: 1,
         pageSize: 10
+      },
+      createRouteMap: {
+        '1': 'createPublish',
+        '2': 'createRequest',
+        '3': 'createProblem',
+        '4': 'createEvent',
+        '5': 'createChange'
       }
     }
   },
@@ -445,7 +452,8 @@ export default {
           desc: this.$t('tw_template_role_tips')
         })
       }
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.createRouteMap[this.actionName]
+      // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,

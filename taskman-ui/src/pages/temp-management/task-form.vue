@@ -730,12 +730,10 @@ export default {
     async getApprovalNode (sort) {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'implement')
       if (statusCode === 'OK') {
-        console.log(data)
         this.procDefId = data.procDefId
         if (this.procDefId === '' && data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
-          console.log(2)
           this.approvalNodes = data.ids
           const tmpSort = sort === undefined ? 1 : sort
           this.activeEditingNode = this.approvalNodes.find(node => node.sort === tmpSort)

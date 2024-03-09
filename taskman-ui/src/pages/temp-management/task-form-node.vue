@@ -213,7 +213,7 @@ export default {
           for (let i = 0; i < this.activeApprovalNode.handleTemplates.length; i++) {
             const item = this.activeApprovalNode.handleTemplates[i]
             // 人员设置方式 没选
-            if (item.handlerType === '') {
+            if (!item.handlerType) {
               res = true
               break
             }
@@ -221,7 +221,7 @@ export default {
             if (
               item.assign === 'template' &&
               ['template', 'template_suggest'].includes(item.handlerType) &&
-              (item.role === '' || item.handler === '')
+              (!item.role || !item.handler)
             ) {
               res = true
               break
@@ -230,7 +230,7 @@ export default {
             if (
               item.assign === 'template' &&
               ['custom', 'custom_suggest', 'system', 'claim'].includes(item.handlerType) &&
-              item.role === ''
+              !item.role
             ) {
               res = true
               break

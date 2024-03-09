@@ -147,7 +147,12 @@
                     <div>
                       <!-- 处理角色 -->
                       <FormItem :label="$t('handle_role')">
-                        <Select v-model="basicInfo.pendingRole" filterable style="width: 96%;">
+                        <Select
+                          v-model="basicInfo.pendingRole"
+                          filterable
+                          style="width: 96%;"
+                          @on-change="pendingRoleChange"
+                        >
                           <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{
                             item.displayName
                           }}</Option>
@@ -155,12 +160,7 @@
                       </FormItem>
                       <!-- 处理人 -->
                       <FormItem :label="$t('handler')">
-                        <Select
-                          v-model="basicInfo.pendingHandler"
-                          @on-open-change="getPendingHandlerRoles"
-                          filterable
-                          style="width: 96%;"
-                        >
+                        <Select v-model="basicInfo.pendingHandler" filterable style="width: 96%;">
                           <Option v-for="item in pendingHandlerOptions" :value="item.id" :key="item.id">{{
                             item.displayName
                           }}</Option>
@@ -489,6 +489,13 @@ export default {
             id: d
           }
         })
+      }
+    },
+    async pendingRoleChange () {
+      this.basicInfo.pendingHandler = ''
+      await this.getPendingHandlerRoles()
+      if (this.pendingHandlerOptions.length > 0) {
+        this.basicInfo.pendingHandler = this.pendingHandlerOptions[0].id
       }
     },
     // 使用角色

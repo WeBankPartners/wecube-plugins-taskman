@@ -4,7 +4,7 @@
       <Form :label-width="120">
         <FormItem :label="$t('表单类型')">
           <Button shape="circle" :style="groupStyle[group.itemGroupType]">{{
-            group.itemGroupType === 'workflow' ? '编排数据项' : '自选数据项'
+            group.itemGroupType === 'workflow' ? '编排entity' : '自选entity'
           }}</Button>
         </FormItem>
         <FormItem :label="$t('表单名')">

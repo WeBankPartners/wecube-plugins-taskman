@@ -217,6 +217,27 @@ func ChangeTaskStatus(c *gin.Context) {
 	middleware.ReturnData(c, taskObj)
 }
 
+// UpdateTaskHandle 更新任务处理节点
+func UpdateTaskHandle(c *gin.Context) {
+	var param models.TaskHandleUpdateParam
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	if param.TaskId == "" || param.TaskHandleId == "" {
+		middleware.ReturnParamEmptyError(c, "taskId or taskHandleId")
+		return
+	}
+	err = service.UpdateTaskHandle(param, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	service.GetOperationLogService().RecordTaskLog(param.TaskId, "", middleware.GetRequestUser(c), "changeTaskStatus", c.Request.RequestURI, middleware.GetRequestUser(c))
+	middleware.ReturnSuccess(c)
+}
+
 func UploadTaskAttachFile(c *gin.Context) {
 	taskId := c.Param("taskId")
 	file, err := c.FormFile("file")

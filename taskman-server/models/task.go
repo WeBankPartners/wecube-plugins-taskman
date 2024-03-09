@@ -239,3 +239,10 @@ type TaskHandlerQueryData struct {
 	Handler     string `xorm:"handler"`
 	DisplayName string `xorm:"display_name"`
 }
+
+type TaskHandleUpdateParam struct {
+	TaskId           string `json:"taskId"`
+	TaskHandleId     string `json:"taskHandleId"` // 任务处理Id
+	LatestUpdateTime string `json:"latestUpdateTime"`
+	ChangeReason     string `json:"changeReason"` //变更原因: assign 系统分配、claim 主动领取、give 转给我
+}

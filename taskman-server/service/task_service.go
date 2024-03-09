@@ -75,9 +75,21 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 		if dueMin > 0 {
 			customExpireTime = time.Now().Add(time.Duration(dueMin) * time.Minute).Format(models.DateTimeFormat)
 		}
-		taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url,callback_parameter,reporter,report_role,report_time,expire_time,emergency,callback_request_id,next_option,handler,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, customExpireTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, newTaskObj.Handler, "system", nowTime, "system", nowTime}
+
+		taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,status,proc_def_id,proc_def_key,node_def_id,node_name,callback_url," +
+			"callback_parameter,reporter,report_role,report_time,expire_time,emergency,callback_request_id,next_option,handler,created_by,created_time," +
+			"updated_by,updated_time,type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Status, newTaskObj.ProcDefId,
+			newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName, newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter,
+			newTaskObj.ReportRole, nowTime, customExpireTime, newTaskObj.Emergency, callRequestId, newTaskObj.NextOption, newTaskObj.Handler, "system",
+			nowTime, "system", nowTime, models.TaskTypeImplement}
 		actions = append(actions, &taskInsertAction)
+
+		// 根据任务审批模版表&请求人指定,设置审批处理
+		/*createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskObj.Id, userToken, language, &request, taskTemplate)
+		if len(createTaskHandleAction) > 0 {
+			actions = append(actions, createTaskHandleAction...)
+		}*/
 		err = dao.Transaction(actions)
 		return
 	}
@@ -110,12 +122,12 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 	log.Logger.Debug("debug1", log.JsonObj("newTaskFormObj", newTaskFormObj))
 	taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id," +
 		"node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time," +
-		"handler,created_by,created_time,updated_by,updated_time,template_type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		"handler,created_by,created_time,updated_by,updated_time,template_type,type) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status,
 		newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName,
 		newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency,
 		input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, "system", nowTime, "system",
-		nowTime, newTaskObj.TemplateType}
+		nowTime, newTaskObj.TemplateType, models.TaskTypeImplement}
 	actions = append(actions, &taskInsertAction)
 	actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,form_template) value (?,?,?)", Param: []interface{}{newTaskFormObj.Id, newTaskFormObj.FormTemplate}})
 	for _, formDataEntity := range taskFormInput.FormDataEntities {
@@ -806,6 +818,35 @@ func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error 
 			}
 		}
 	}
+	return dao.Transaction(actions)
+}
+
+func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator string) (err error) {
+	var task models.TaskTable
+	var taskHandleList []*models.TaskHandleTable
+	task, err = getSimpleTask(param.TaskId)
+	if common.GetLowVersionUnixMillis(task.UpdatedTime) != param.LatestUpdateTime {
+		err = exterror.New().DealWithAtTheSameTimeError
+		return
+	}
+	if task.Status == string(models.TaskStatusDone) {
+		err = fmt.Errorf("Task already done with %s %s ", task.UpdatedBy, task.UpdatedTime)
+		return
+	}
+	dao.X.SQL("select * from task_handle where id = ?", param.TaskHandleId).Find(&taskHandleList)
+	if len(taskHandleList) == 0 {
+		err = fmt.Errorf("taskHandle is empty")
+		return
+	}
+	var actions []*dao.ExecAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked",
+		operator, operator, nowTime, param.TaskId}})
+	//添加认领记录
+	actions = append(actions, &dao.ExecAction{Sql: "insert task_handle(id,task_handle_template,task,role,handle,handler_type,parent_id,created_time," +
+		"updated_time,change_reason)", Param: []interface{}{guid.CreateGuid(), taskHandleList[0].TaskHandleTemplate, taskHandleList[0].Task,
+		taskHandleList[0].Role, operator, taskHandleList[0].HandlerType, param.TaskHandleId, nowTime, nowTime, param.ChangeReason}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set latest_flag = 0 where id = ?", Param: []interface{}{param.TaskHandleId}})
 	return dao.Transaction(actions)
 }
 

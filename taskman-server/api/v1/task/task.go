@@ -163,6 +163,7 @@ func ApproveTask(c *gin.Context) {
 	}
 	var err error
 	var operator = middleware.GetRequestUser(c)
+	var taskHandle *models.TaskHandleTable
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -177,6 +178,15 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	taskHandle, err = service.GetTaskHandleService().Get(param.TaskHandleId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if taskHandle == nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("taskHandleId is invalid"))
+		return
+	}
 	if param.TaskHandleId == "" {
 		err = fmt.Errorf("param taskHandleId is empty")
 		middleware.ReturnParamValidateError(c, err)
@@ -187,7 +197,7 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if taskTable.Handler != operator {
+	if taskHandle.Handler != operator {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}

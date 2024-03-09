@@ -733,11 +733,12 @@ func ApproveTask(task models.TaskTable, operator, userToken, language string, pa
 	case models.TaskTypeApprove:
 		return handleApprove(task, operator, userToken, language, param)
 	case models.TaskTypeImplement:
-		// 编排任务,走编排逻辑. @todo 怎么知道编排走完了？？
+		// 编排任务,走编排逻辑.
 		if task.ProcDefKey != "" && task.ProcDefId != "" {
-			// @todo 编排处理要更新处理节点
 			return handleWorkflowTask(task, operator, userToken, param)
 		}
+		// 处理自定义任务
+		return handleCustomTask(task, operator, userToken, language, param)
 	}
 	return nil
 }
@@ -807,6 +808,25 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
 	}
+	return
+}
+
+// handleCustomTask 处理自定义任务
+func handleCustomTask(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam) (err error) {
+	var actions, newApproveActions []*dao.ExecAction
+	var request models.RequestTable
+	now := time.Now().Format(models.DateTimeFormat)
+	request, err = GetSimpleRequest(task.Request)
+	if err != nil {
+		return
+	}
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.HandleStatus, param.Comment, now, param.TaskHandleId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, param.HandleStatus, operator, now, task.Id}})
+	newApproveActions, err = GetRequestService().CreateRequestTask(request, userToken, language)
+	if len(newApproveActions) > 0 {
+		actions = append(actions, newApproveActions...)
+	}
+	err = dao.Transaction(actions)
 	return
 }
 

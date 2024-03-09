@@ -250,10 +250,12 @@
       <Button @click="saveMsgForm(1)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
       <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
     </div>
+    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
+import CustomConfirmModel from './custom-confirm-model'
 import { saveRequsetForm, getRequestFormTemplateData, getAllDataModels } from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 8
@@ -488,7 +490,7 @@ export default {
       // nextStep 1新增 2下一步 3切换tab
       let tmp = [].concat(...JSON.parse(JSON.stringify(this.finalElement)).map(l => l.attrs))
       tmp.forEach((l, index) => {
-        l.sort = index
+        l.sort = index + 1
         if (!isNaN(l.id) || l.id.startsWith('c_')) {
           l.id = ''
         }
@@ -557,17 +559,30 @@ export default {
     },
     tabChange () {
       if (this.isParmasChanged) {
-        this.$Modal.confirm({
+        // this.$Modal.confirm({
+        //   title: `${this.$t('tw_confirm_discarding_changes111')}`,
+        //   content: `${this.$t('tw_params_edit_confirm')}`,
+        //   'z-index': 1000000,
+        //   okText: this.$t('save'),
+        //   cancelText: this.$t('tw_abandon'),
+        //   closable: true,
+        //   onOk: async () => {
+        //     this.saveMsgForm(3)
+        //   },
+        //   onCancel: () => {
+        //     this.isParmasChanged = false
+        //     this.$emit('changTab', 'dataForm')
+        //   }
+        // })
+        this.$refs.customConfirmModelRef.open({
           title: `${this.$t('tw_confirm_discarding_changes')}`,
           content: `${this.$t('tw_params_edit_confirm')}`,
-          'z-index': 1000000,
           okText: this.$t('save'),
           cancelText: this.$t('tw_abandon'),
-          closable: true,
-          onOk: async () => {
+          okFunc: () => {
             this.saveMsgForm(3)
           },
-          onCancel: () => {
+          cancelFunc: () => {
             this.isParmasChanged = false
             this.$emit('changTab', 'dataForm')
           }
@@ -579,17 +594,30 @@ export default {
     },
     gotoNext () {
       if (this.isParmasChanged) {
-        this.$Modal.confirm({
+        // this.$Modal.confirm({
+        //   title: `${this.$t('tw_confirm_discarding_changes')}`,
+        //   content: `${this.$t('tw_params_edit_confirm')}`,
+        //   'z-index': 1000000,
+        //   okText: this.$t('save'),
+        //   cancelText: this.$t('tw_abandon'),
+        //   closable: true,
+        //   onOk: async () => {
+        //     this.saveMsgForm(2)
+        //   },
+        //   onCancel: () => {
+        //     this.isParmasChanged = false
+        //     this.$emit('gotoNextStep', this.requestTemplateId)
+        //   }
+        // })
+        this.$refs.customConfirmModelRef.open({
           title: `${this.$t('tw_confirm_discarding_changes')}`,
           content: `${this.$t('tw_params_edit_confirm')}`,
-          'z-index': 1000000,
           okText: this.$t('save'),
           cancelText: this.$t('tw_abandon'),
-          closable: true,
-          onOk: async () => {
+          okFunc: () => {
             this.saveMsgForm(2)
           },
-          onCancel: () => {
+          cancelFunc: () => {
             this.isParmasChanged = false
             this.$emit('gotoNextStep', this.requestTemplateId)
           }
@@ -650,7 +678,8 @@ export default {
     }
   },
   components: {
-    draggable
+    draggable,
+    CustomConfirmModel
   }
 }
 </script>

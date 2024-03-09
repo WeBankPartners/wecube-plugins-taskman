@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type TaskTable struct {
 	Id                string   `json:"id" xorm:"'id' pk" primary-key:"id"`
 	Name              string   `json:"name" xorm:"name"`
@@ -238,4 +240,61 @@ type TaskHandlerQueryData struct {
 	Id          string `xorm:"id"`
 	Handler     string `xorm:"handler"`
 	DisplayName string `xorm:"display_name"`
+}
+
+type TaskHandleUpdateParam struct {
+	TaskId           string `json:"taskId"`
+	TaskHandleId     string `json:"taskHandleId"` // 任务处理Id
+	LatestUpdateTime string `json:"latestUpdateTime"`
+	ChangeReason     string `json:"changeReason"` //变更原因: assign 系统分配、claim 主动领取、give 转给我
+}
+
+type RequestPoolDataQueryRow struct {
+	FormId           string    `xorm:"form_id"`
+	Task             string    `xorm:"task"`
+	FormTemplate     string    `xorm:"form_template"`
+	ItemGroup        string    `xorm:"item_group"`
+	ItemGroupType    string    `xorm:"item_group_type"`
+	DataId           string    `xorm:"data_id"`
+	FormItemId       string    `xorm:"form_item_id"`
+	FormItemTemplate string    `xorm:"form_item_template"`
+	Name             string    `xorm:"name"`
+	Value            string    `xorm:"value"`
+	UpdatedTime      time.Time `xorm:"updated_time"`
+}
+
+type RequestPoolDataQueryRows []*RequestPoolDataQueryRow
+
+func (r RequestPoolDataQueryRows) DataParse() []*RequestPoolForm {
+	forms := []*RequestPoolForm{}
+	formItemMap := make(map[string][]*RequestPoolDataQueryRow)
+	for _, v := range r {
+		if itemList, ok := formItemMap[v.FormId]; ok {
+			formItemMap[v.FormId] = append(itemList, v)
+		} else {
+			forms = append(forms, &RequestPoolForm{
+				FormId:        v.FormId,
+				Task:          v.Task,
+				FormTemplate:  v.FormTemplate,
+				ItemGroup:     v.ItemGroup,
+				ItemGroupType: v.ItemGroupType,
+				DataId:        v.DataId,
+			})
+			formItemMap[v.FormId] = []*RequestPoolDataQueryRow{v}
+		}
+	}
+	for _, v := range forms {
+		v.Items = formItemMap[v.FormId]
+	}
+	return forms
+}
+
+type RequestPoolForm struct {
+	FormId        string                     `json:"formId"`
+	Task          string                     `json:"task"`
+	FormTemplate  string                     `json:"formTemplate"`
+	ItemGroup     string                     `json:"itemGroup"`
+	ItemGroupType string                     `json:"itemGroupType"`
+	DataId        string                     `json:"dataId"`
+	Items         []*RequestPoolDataQueryRow `json:"items"`
 }

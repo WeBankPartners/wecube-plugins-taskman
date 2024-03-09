@@ -29,7 +29,8 @@ func (d *FormItemTemplateDao) Update(session *xorm.Session, formItemTemplate *mo
 	if formItemTemplate.Id == "" {
 		return
 	}
-	affected, err = session.ID(formItemTemplate.Id).Update(formItemTemplate)
+	// sort 要强制更新,不然传递0不更新
+	affected, err = session.ID(formItemTemplate.Id).Cols("sort").Update(formItemTemplate)
 	// 打印日志
 	logExecuteSql(session, "FormItemTemplateDao", "Update", formItemTemplate, affected, err)
 	return
@@ -57,7 +58,7 @@ func (d *FormItemTemplateDao) QueryDtoByFormTemplate(formTemplate string) (formI
 	if formTemplate == "" {
 		return
 	}
-	err = d.DB.Where("form_template = ?", formTemplate).Find(&formItemTemplateList)
+	err = d.DB.Where("form_template = ?", formTemplate).OrderBy("sort").Find(&formItemTemplateList)
 	if err != nil {
 		return
 	}

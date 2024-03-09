@@ -911,3 +911,10 @@ func (s *TaskTemplateService) getTaskTemplateHandler(requestTemplate string) (ta
 func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplateAndType(requestTemplateId, templateType string) (list []*models.TaskTemplateTable, err error) {
 	return s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, templateType)
 }
+
+func (s *TaskTemplateService) Get(taskTemplateId string) (result *models.TaskTemplateTable, err error) {
+	if taskTemplateId == "" {
+		return
+	}
+	return s.taskTemplateDao.Get(taskTemplateId)
+}

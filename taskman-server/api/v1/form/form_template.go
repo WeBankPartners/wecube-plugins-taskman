@@ -195,6 +195,15 @@ func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	// 防止前端传递 taskTemplateId有问题
+	taskTemplate, err := service.GetTaskTemplateService().Get(param.TaskTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if taskTemplate == nil {
+		param.TaskTemplateId = ""
+	}
 	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroupConfig(param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

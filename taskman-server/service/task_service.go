@@ -272,6 +272,14 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			}})
 		}
 	}
+	// 新增确认定版处理人
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	dao.X.SQL("select * from task_handle_template where task_template = ?", newTaskObj.TaskTemplate).Find(&taskHandleTemplateList)
+	if len(taskHandleTemplateList) > 0 {
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
+			guid.CreateGuid(), taskHandleTemplateList[0].Id, newTaskObj.Id, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, nowTime, nowTime,
+		}})
+	}
 	err = dao.TransactionWithoutForeignCheck(actions)
 	return
 }

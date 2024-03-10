@@ -1127,6 +1127,10 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 			}
 		}
 	}
+	err = dao.Transaction(actions)
+	if err != nil {
+		err = fmt.Errorf("save task:%s form data fail,%s ", task.Id, err.Error())
+	}
 	return
 }
 

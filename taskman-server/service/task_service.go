@@ -762,6 +762,14 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 	if err != nil {
 		return
 	}
+	if requestTemplate, getTemplateErr := GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate); getTemplateErr != nil {
+		err = getTemplateErr
+		return
+	} else {
+		if requestTemplate.ProcDefId != "" {
+			request.AssociationWorkflow = true
+		}
+	}
 	switch param.ChoseOption {
 	case string(models.TaskHandleResultTypeApprove):
 		// 当前审批通过,需要通过查看 task_template里面handle_mode 判断协同,并行

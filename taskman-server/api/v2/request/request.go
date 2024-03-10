@@ -167,7 +167,16 @@ func CheckRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if request.Handler != operator {
+	taskHandle, err := service.GetTaskHandleService().GetLatestRequestCheckTaskHandleByRequestId(requestId)
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	if taskHandle == nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("requestId:%s not has check taskHandle", requestId))
+		return
+	}
+	if taskHandle.Handler != operator {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
 		return
 	}

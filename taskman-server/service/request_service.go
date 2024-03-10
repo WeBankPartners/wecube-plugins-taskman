@@ -898,10 +898,10 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		// 请求定版, 根据模板配置开启是否确认定版
 		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
-		if request.Handler != operator {
+		/*if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError
 			return err
-		}
+		}*/
 		_, err = dao.X.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", status, description, operator, operator, nowTime, nowTime, requestId)
 	} else {
 		_, err = dao.X.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)

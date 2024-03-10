@@ -1277,6 +1277,7 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 
 // CreateRequestTask 创建任务
 func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskId, userToken, language string) (actions []*dao.ExecAction, err error) {
+	log.Logger.Debug("CreateRequestTask", log.String("taskId", curTaskId))
 	var taskTemplateList []*models.TaskTemplateTable
 	var requestTemplate *models.RequestTemplateTable
 	var taskList []*models.TaskTable

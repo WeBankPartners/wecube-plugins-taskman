@@ -7,6 +7,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/tealeg/xlsx"
 	"math"
 	"net/http"
@@ -44,25 +45,25 @@ func getTaskTypeByType(uiType int) models.TaskType {
 	return models.TaskTypeCheck
 }
 
-// GetRequestCount 工作台请求统计
-func GetRequestCount(user string, userRoles []string) (platformData models.PlatformData, err error) {
-	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending []string
-	var hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed []string
-	pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCount(userRoles)
-	hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed = GetHasProcessedCount(user)
-	platformData.Pending = strings.Join(pending, ";")
-	platformData.PendingTask = strings.Join(pendingTask, ";")
-	platformData.PendingApprove = strings.Join(pendingApprove, ";")
-	platformData.PendingCheck = strings.Join(pendingCheck, ";")
-	platformData.PendingConfirm = strings.Join(pendingConfirm, ";")
-	platformData.HasProcessed = strings.Join(hasProcessed, ";")
-	platformData.HasProcessedTask = strings.Join(hasProcessedTask, ";")
-	platformData.HasProcessedApprove = strings.Join(hasProcessedApprove, ";")
-	platformData.HasProcessedCheck = strings.Join(hasProcessedCheck, ";")
-	platformData.HasProcessedConfirm = strings.Join(hasProcessedConfirm, ";")
-	platformData.Submit = strings.Join(GetSubmitCount(user), ";")
-	platformData.Draft = strings.Join(GetDraftCount(user), ";")
-	platformData.Collect = strings.Join(GetCollectCount(user), ";")
+// GetPlatformCount 工作台数量统计
+func GetPlatformCount(scene int, user string, userRoles []string) (platformData models.PlatformData, err error) {
+	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int
+	var hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed int
+	pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCount(scene, userRoles)
+	hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed = GetHasProcessedCount(scene, user)
+	platformData.Pending = pending
+	platformData.PendingTask = pendingTask
+	platformData.PendingApprove = pendingApprove
+	platformData.PendingCheck = pendingCheck
+	platformData.PendingConfirm = pendingConfirm
+	platformData.HasProcessed = hasProcessed
+	platformData.HasProcessedTask = hasProcessedTask
+	platformData.HasProcessedApprove = hasProcessedApprove
+	platformData.HasProcessedCheck = hasProcessedCheck
+	platformData.HasProcessedConfirm = hasProcessedConfirm
+	platformData.Submit = GetSubmitCount(scene, user)
+	platformData.Draft = GetDraftCount(scene, user)
+	platformData.Collect = GetCollectCount(scene, user)
 	return
 }
 
@@ -90,45 +91,25 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 }
 
 // GetPendingCount 统计待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
-func GetPendingCount(userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending []string) {
+func GetPendingCount(scene int, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int) {
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
 	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
-	var pTaskCount, pendingApproveCount, pendingCheckCount, pendingConfirmCount int
-	for i := 0; i < len(templateTypeArr); i++ {
-		pTaskSQL, pendingTaskParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
-		pTaskCount = dao.QueryCount(pTaskSQL, pendingTaskParam...)
-		pendingTask = append(pendingTask, strconv.Itoa(pTaskCount))
+	pTaskSQL, pendingTaskParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+	pendingTask = dao.QueryCount(pTaskSQL, pendingTaskParam...)
 
-		pendingApproveSQL, pendingApproveParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
-		pendingApproveCount = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
-		pendingApprove = append(pendingApprove, strconv.Itoa(pendingApproveCount))
+	pendingApproveSQL, pendingApproveParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+	pendingApprove = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
 
-		pendingCheckSQL, pendingCheckParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
-		pendingCheckCount = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
-		pendingCheck = append(pendingCheck, strconv.Itoa(pendingCheckCount))
+	pendingCheckSQL, pendingCheckParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+	pendingCheck = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
 
-		pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
-		pendingConfirmCount = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
-		pendingConfirm = append(pendingConfirm, strconv.Itoa(pendingConfirmCount))
+	pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+	pendingConfirm = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
 
-		pending = append(pending, strconv.Itoa(pTaskCount+pendingApproveCount+pendingCheckCount+pendingConfirmCount))
-	}
+	pending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
 	return
 }
-
-func hasProcessedRequestSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag= 0 and type = ? and handler = ?  and status not in ('Pending','Draft') " +
-		"union select id from request where del_flag = 0 and type = ? and handler = ? and status='Draft' and rollback_desc is not null"
-	queryParam = append([]interface{}{templateType, user, templateType, user})
-	return
-}
-
-/*func hasProcessedTaskSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from task where handler= ? and del_flag = 0 and status ='done' and template_type = ? and request is not null"
-	queryParam = append([]interface{}{user, templateType})
-	return
-}*/
 
 func getPlatRequestSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
@@ -155,41 +136,29 @@ func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType
 }
 
 // GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
-func GetHasProcessedCount(user string) (hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed []string) {
+func GetHasProcessedCount(scene int, user string) (hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed int) {
 	var hasProcessedTaskParam, hasProcessedApproveParam, hasProcessedCheckParam, hasProcessedConfirmParam []interface{}
 	var hpTaskSQL, hasProcessedApproveSQL, hasProcessedCheckSQL, hasProcessedConfirmSQL string
-	var hpTaskCount, hasProcessedApproveCount, hasProcessedCheckCount, hasProcessedConfirmCount int
-	for i := 0; i < len(templateTypeArr); i++ {
-		hpTaskSQL, hasProcessedTaskParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeImplement)
-		hpTaskCount = dao.QueryCount(hpTaskSQL, hasProcessedTaskParam...)
-		hasProcessedTask = append(hasProcessedTask, strconv.Itoa(hpTaskCount))
+	hpTaskSQL, hasProcessedTaskParam = hasProcessedTaskSQL(scene, user, models.TaskTypeImplement)
+	hasProcessedTask = dao.QueryCount(hpTaskSQL, hasProcessedTaskParam...)
 
-		hasProcessedApproveSQL, hasProcessedApproveParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeApprove)
-		hasProcessedApproveCount = dao.QueryCount(hasProcessedApproveSQL, hasProcessedApproveParam...)
-		hasProcessedApprove = append(hasProcessedApprove, strconv.Itoa(hasProcessedApproveCount))
+	hasProcessedApproveSQL, hasProcessedApproveParam = hasProcessedTaskSQL(scene, user, models.TaskTypeApprove)
+	hasProcessedApprove = dao.QueryCount(hasProcessedApproveSQL, hasProcessedApproveParam...)
 
-		hasProcessedCheckSQL, hasProcessedCheckParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeCheck)
-		hasProcessedCheckCount = dao.QueryCount(hasProcessedCheckSQL, hasProcessedCheckParam...)
-		hasProcessedCheck = append(hasProcessedCheck, strconv.Itoa(hasProcessedCheckCount))
+	hasProcessedCheckSQL, hasProcessedCheckParam = hasProcessedTaskSQL(scene, user, models.TaskTypeCheck)
+	hasProcessedCheck = dao.QueryCount(hasProcessedCheckSQL, hasProcessedCheckParam...)
 
-		hasProcessedConfirmSQL, hasProcessedConfirmParam = hasProcessedTaskSQL(templateTypeArr[i], user, models.TaskTypeConfirm)
-		hasProcessedConfirmCount = dao.QueryCount(hasProcessedConfirmSQL, hasProcessedConfirmParam...)
-		hasProcessedConfirm = append(hasProcessedConfirm, strconv.Itoa(hasProcessedConfirmCount))
+	hasProcessedConfirmSQL, hasProcessedConfirmParam = hasProcessedTaskSQL(scene, user, models.TaskTypeConfirm)
+	hasProcessedConfirm = dao.QueryCount(hasProcessedConfirmSQL, hasProcessedConfirmParam...)
 
-		hasProcessed = append(hasProcessed, strconv.Itoa(hpTaskCount+hasProcessedApproveCount+hasProcessedCheckCount+hasProcessedConfirmCount))
-	}
+	hasProcessed = hasProcessedTask + hasProcessedApprove + hasProcessedCheck + hasProcessedConfirm
 	return
 }
 
 // GetSubmitCount  统计用户提交
-func GetSubmitCount(user string) (resultArr []string) {
-	var queryParam []interface{}
-	var sql string
-	for i := 0; i < len(templateTypeArr); i++ {
-		sql, queryParam = submitSQL(0, templateTypeArr[i], user)
-		resultArr = append(resultArr, strconv.Itoa(dao.QueryCount(sql, queryParam...)))
-	}
-	return
+func GetSubmitCount(scene int, user string) int {
+	sql, queryParam := submitSQL(0, scene, user)
+	return dao.QueryCount(sql, queryParam...)
 }
 
 func submitSQL(rollback, templateType int, user string) (sql string, queryParam []interface{}) {
@@ -209,14 +178,9 @@ func submitSQL(rollback, templateType int, user string) (sql string, queryParam 
 }
 
 // GetDraftCount 统计用户暂存
-func GetDraftCount(user string) (resultArr []string) {
-	var queryParam []interface{}
-	var sql string
-	for i := 0; i < len(templateTypeArr); i++ {
-		sql, queryParam = draftSQL(templateTypeArr[i], user)
-		resultArr = append(resultArr, strconv.Itoa(dao.QueryCount(sql, queryParam...)))
-	}
-	return
+func GetDraftCount(scene int, user string) int {
+	sql, queryParam := draftSQL(scene, user)
+	return dao.QueryCount(sql, queryParam...)
 }
 
 func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {
@@ -226,19 +190,14 @@ func draftSQL(templateType int, user string) (sql string, queryParam []interface
 }
 
 // GetCollectCount 统计用户收藏
-func GetCollectCount(user string) (resultArr []string) {
-	var queryParam []interface{}
-	var sql string
-	for i := 0; i < len(templateTypeArr); i++ {
-		sql, queryParam = collectSQL(templateTypeArr[i], user)
-		resultArr = append(resultArr, strconv.Itoa(dao.QueryCount(sql, queryParam...)))
-	}
-	return
+func GetCollectCount(scene int, user string) int {
+	sql, queryParam := collectSQL(scene, user)
+	return dao.QueryCount(sql, queryParam...)
 }
 
-func collectSQL(templateType int, user string) (sql string, queryParam []interface{}) {
+func collectSQL(scene int, user string) (sql string, queryParam []interface{}) {
 	sql = "select id from collect_template where user = ? and type= ?"
-	queryParam = append([]interface{}{user, templateType})
+	queryParam = append([]interface{}{user, scene})
 	return
 }
 
@@ -494,6 +453,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 
 func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var operatorObjTypeMap = make(map[string]string)
+	var roleDtoMap map[string]*models.SimpleLocalRoleDto
 	// 排序处理
 	if req.Param.Sorting != nil {
 		hashMap, _ := dao.GetJsonToXormMap(models.PlatformDataObj{})
@@ -522,6 +482,10 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 		// 查询当前用户所有收藏模板记录
 		collectMap, _ := QueryAllTemplateCollect(req.User)
 		templateMap, _ := GetRequestTemplateService().getAllRequestTemplate()
+		// 查询所有角色管理员
+		if roleDtoMap, _ = rpc.QueryAllRoles("Y", req.UserToken, language); len(roleDtoMap) == 0 {
+			roleDtoMap = make(map[string]*models.SimpleLocalRoleDto)
+		}
 		var actions []*dao.ExecAction
 		for _, platformDataObj := range rowsData {
 			// 获取 使用编排
@@ -559,6 +523,18 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			}
 			if platformDataObj.OperatorObjType == "" {
 				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
+			}
+			// 人员设置方式: 模板指定,提交人指定, 只能: 处理人(处理)和角色管理员(转给我),需要RoleAdministrator、HandlerType返回给前端判断
+			// 设置角色管理员
+			if v, ok := roleDtoMap[platformDataObj.Role]; ok {
+				platformDataObj.RoleAdministrator = v.Administrator
+			}
+			// 设置人员设置方式
+			if platformDataObj.TaskHandleId != "" {
+				taskHandle, _ := GetTaskHandleService().Get(platformDataObj.TaskHandleId)
+				if taskHandle != nil {
+					platformDataObj.HandlerType = taskHandle.HandlerType
+				}
 			}
 			if platformDataObj.OperatorObj == "" && platformDataObj.Cache != "" {
 				result, _ := GetEntityData(platformDataObj.Id, req.UserToken, language)

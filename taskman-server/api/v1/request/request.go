@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -23,9 +24,19 @@ func GetRequestPreviewData(c *gin.Context) {
 	middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
 }
 
-// CountRequest 个人工作台统计
-func CountRequest(c *gin.Context) {
-	platformData, err := service.GetRequestCount(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+// CountPlatform 个人工作台数量统计-new
+func CountPlatform(c *gin.Context) {
+	scene := c.Param("scene")
+	if scene == "" {
+		middleware.ReturnParamEmptyError(c, "scene")
+		return
+	}
+	sceneInt, err := strconv.Atoi(scene)
+	if err != nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("scene invalid"))
+		return
+	}
+	platformData, err := service.GetPlatformCount(sceneInt, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

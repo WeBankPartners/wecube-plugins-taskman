@@ -1289,7 +1289,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		// 关联编排,调用编排启动
 		var bindCache models.RequestCacheData
 		json.Unmarshal([]byte(request.BindCache), &bindCache)
-		_, err = StartRequestNew(request, userToken, language, bindCache)
+		err = StartRequestNew(request, userToken, language, bindCache)
 		return
 	}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)

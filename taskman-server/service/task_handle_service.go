@@ -83,3 +83,23 @@ func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, 
 	}
 	return
 }
+
+func (s *TaskHandleService) GetLatestRequestCheckTaskHandleByRequestId(requestId string) (taskHandle *models.TaskHandleTable, err error) {
+	var taskList []*models.TaskTable
+	var taskHandleList []*models.TaskHandleTable
+	if requestId == "" {
+		return
+	}
+	err = dao.X.SQL("select * from task   where request = ? and type = ?", requestId, models.TaskTypeCheck).Find(&taskList)
+	if err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		dao.X.SQL("select * from task_handle   where task = ? and latest_flag = 1", taskList[0].Id).Find(&taskHandleList)
+	}
+	if len(taskHandleList) > 0 {
+		taskHandle = taskHandleList[0]
+		return
+	}
+	return
+}

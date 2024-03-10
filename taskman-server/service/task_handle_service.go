@@ -32,6 +32,7 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 						if len(result) > 0 && result[0] != "" {
 							action := &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)"}
 							action.Param = []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}
+							actions = append(actions, action)
 						}
 						continue
 					}

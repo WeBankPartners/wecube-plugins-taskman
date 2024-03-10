@@ -1397,7 +1397,7 @@ func (s *RequestTemplateService) DisableRequestTemplate(requestTemplateId, opera
 		err = fmt.Errorf("only confirm status template can disable")
 		return
 	}
-	_, err = dao.X.Exec("update request_template set status='disable' where id=?", requestTemplateId)
+	_, err = dao.X.Exec("update request_template set status='disable',updated_by = ?,updated_time =? where id=?", requestTemplateId, operator, time.Now().Format(models.DateTimeFormat))
 	return
 }
 

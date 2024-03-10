@@ -250,6 +250,7 @@ func UpdateTaskHandle(c *gin.Context) {
 
 func UploadTaskAttachFile(c *gin.Context) {
 	taskId := c.Param("taskId")
+	taskHandleId := c.Param("taskHandleId")
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
@@ -270,7 +271,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
 		return
 	}
-	err = service.UploadAttachFile("", taskId, file.Filename, middleware.GetRequestUser(c), b)
+	err = service.UploadAttachFile("", taskId, taskHandleId, file.Filename, middleware.GetRequestUser(c), b)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

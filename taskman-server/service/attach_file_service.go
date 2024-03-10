@@ -15,7 +15,7 @@ type AttachFileService struct {
 	attachFileDao *dao.AttachFileDao
 }
 
-func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent []byte) error {
+func UploadAttachFile(requestId, taskId, taskHandleId, fileName, operator string, fileContent []byte) error {
 	if requestId == "" && taskId == "" {
 		return fmt.Errorf("requestId or taskId can not empty ")
 	}
@@ -33,7 +33,7 @@ func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent 
 	if requestId != "" {
 		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, requestId)
 	} else {
-		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, taskId)
+		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, taskHandleId)
 	}
 	err = ms.Upload(uploadParam)
 	if err != nil {
@@ -44,7 +44,7 @@ func UploadAttachFile(requestId, taskId, fileName, operator string, fileContent 
 	if requestId != "" {
 		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, requestId, operator, nowTime, operator, nowTime}})
 	} else if taskId != "" {
-		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,task,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, taskId, operator, nowTime, operator, nowTime}})
+		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,task,created_by,created_time,updated_by,updated_time,task_handle) value (?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, taskId, operator, nowTime, operator, nowTime, taskHandleId}})
 	}
 	return dao.Transaction(actions)
 }

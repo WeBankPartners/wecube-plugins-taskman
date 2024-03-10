@@ -405,7 +405,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
 		return
 	}
-	err = service.UploadAttachFile(requestId, "", file.Filename, middleware.GetRequestUser(c), b)
+	err = service.UploadAttachFile(requestId, "", "", file.Filename, middleware.GetRequestUser(c), b)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

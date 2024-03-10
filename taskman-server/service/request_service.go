@@ -837,12 +837,13 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 }
 
 func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (actions []*dao.ExecAction, err error) {
+	log.Logger.Debug("StartRequestNew", log.JsonObj("request", request))
 	var requestTemplateTable []*models.RequestTemplateTable
 	var result *models.StartInstanceResultData
 	actions = []*dao.ExecAction{}
 	dao.X.SQL("select * from request_template where  id=?)", request.RequestTemplate).Find(&requestTemplateTable)
 	if len(requestTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find requestTemplate with request:%s ", request.Id)
+		err = fmt.Errorf("Can not find requestTemplate with request:%s ,requestTemplateId:%s ", request.Id, request.RequestTemplate)
 		return
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
@@ -854,6 +855,7 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	startParam := BuildRequestProcessData(cacheData)
+	log.Logger.Debug("start proc instance", log.JsonObj("startParam", startParam))
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
 		return

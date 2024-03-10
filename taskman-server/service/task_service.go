@@ -26,7 +26,8 @@ type TaskService struct {
 func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResult, err error) {
 	result = models.TaskMetaResult{Status: "OK", Message: "Success"}
 	var items []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from task_template where node_def_id=? and request_template in (select request_template from request where proc_instance_id=?))", nodeDefId, procInstId).Find(&items)
+	//err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from task_template where node_def_id=? and request_template in (select request_template from request where proc_instance_id=?))", nodeDefId, procInstId).Find(&items)
+	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where task_template in (select id from task_template where node_def_id=?) and request_template in (select request_template from request where proc_instance_id=?))", nodeDefId, procInstId).Find(&items)
 	if err != nil {
 		return
 	}

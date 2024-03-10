@@ -123,7 +123,16 @@ func GetCoreProcNodes(c *gin.Context) {
 	var err error
 	requestTemplateId := c.Param("id")
 	getType := c.Param("type")
-	nodeList, err = service.GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: requestTemplateId}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), getType)
+	requestTemplate, getTemplateErr := service.GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if getTemplateErr != nil {
+		middleware.ReturnServerHandleError(c, getTemplateErr)
+		return
+	}
+	if requestTemplate.ProcDefId == "" {
+		middleware.ReturnData(c, []*models.ProcNodeObj{})
+		return
+	}
+	nodeList, err = service.GetProcDefService().GetProcessDefineTaskNodes(requestTemplate, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), getType)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

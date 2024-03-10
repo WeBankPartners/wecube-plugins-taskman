@@ -1357,7 +1357,8 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 		return
 	}
 	if len(taskTemplateList) == 0 {
-		err = fmt.Errorf("taskTemplate not find confirm template")
+		// 请求没有开启请求确认,直接更新请求到完成
+		actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusCompleted), now, request.Id}})
 		return
 	}
 	// 新增任务

@@ -1232,6 +1232,7 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 		return s.CreateRequestTask(request, "", userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
+		taskList = []*models.TaskTable{}
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {
 			// 取最新的任务
@@ -1309,6 +1310,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		return s.CreateRequestConfirm(request)
 	}
 	for _, taskTemplate := range taskTemplateList {
+		taskList = []*models.TaskTable{}
 		taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
 		if len(taskList) > 0 {

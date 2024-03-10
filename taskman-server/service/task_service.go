@@ -776,6 +776,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 				return
 			}
 			for _, taskHandle := range taskHandleList {
+				// 存在任务节点 没有审批通过,并且不是当前节点,更新当前处理节点为完成后,return 等待其他审批人处理
 				if taskHandle.HandleResult != string(models.TaskHandleResultTypeApprove) && taskHandle.Id != param.TaskHandleId {
 					_, err = dao.X.Exec("update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id = ?", models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId)
 					if err != nil {

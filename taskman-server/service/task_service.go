@@ -618,7 +618,8 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 		return
 	}
 	var itemTemplates []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
+	//err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
+	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where task_template=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
 	if err != nil {
 		return
 	}

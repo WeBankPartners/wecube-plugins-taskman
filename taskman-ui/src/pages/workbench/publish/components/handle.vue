@@ -323,7 +323,7 @@ export default {
     // 任务审批保存
     async saveTaskData () {
       // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
+      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData) || []
       this.handleData.formData =
         requestData.map(item => {
           let refKeys = []
@@ -375,7 +375,7 @@ export default {
     // 任务审批提交
     async commitTaskData () {
       // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
+      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData) || []
       this.handleData.formData =
         requestData.map(item => {
           let refKeys = []

@@ -159,7 +159,7 @@
                   <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
                   <HeaderTag
                     class="custom-panel-header"
-                    :showHeader="true"
+                    :showHeader="index === 0 ? true : false"
                     :data="data"
                     :operation="$t('tw_submit_approval')"
                   ></HeaderTag>

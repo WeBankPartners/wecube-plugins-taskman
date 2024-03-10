@@ -836,11 +836,10 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	return
 }
 
-func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (actions []*dao.ExecAction, err error) {
+func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (err error) {
 	log.Logger.Debug("StartRequestNew", log.JsonObj("request", request))
 	var requestTemplateTable []*models.RequestTemplateTable
 	var result *models.StartInstanceResultData
-	actions = []*dao.ExecAction{}
 	err = dao.X.SQL("select * from request_template where id=?", request.RequestTemplate).Find(&requestTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("query request_template with id:%s fail,%s ", request.RequestTemplate, err.Error())
@@ -870,8 +869,10 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	procInstId := fmt.Sprintf("%v", result.Id)
-	actions = append(actions, &dao.ExecAction{Sql: "update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? " +
-		"where id=?", Param: []interface{}{procInstId, result.ProcInstKey, result.Status, nowTime, request.Id}})
+	_, err = dao.X.Exec("update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? where id=?", procInstId, result.ProcInstKey, result.Status, nowTime, request.Id)
+	if err != nil {
+		err = fmt.Errorf("update request:%s proc instance message fail,%s ", request.Id, err.Error())
+	}
 	return
 }
 

@@ -770,6 +770,9 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 		err = fmt.Errorf("Try to append useless entity fail,%s ", err.Error())
 		return
 	}
+	if requestTemplate.ProcDefId != "" {
+		request.AssociationWorkflow = true
+	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
 	nowTime := time.Now().Format(models.DateTimeFormat)

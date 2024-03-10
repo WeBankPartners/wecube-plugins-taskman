@@ -101,15 +101,15 @@ func GetPendingCount(userRoles []string) (pendingTask, pendingApprove, pendingCh
 		pendingTask = append(pendingTask, strconv.Itoa(pTaskCount))
 
 		pendingApproveSQL, pendingApproveParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
-		pendingApproveCount = dao.QueryCount(pendingApproveSQL, pendingApproveParam)
+		pendingApproveCount = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
 		pendingApprove = append(pendingApprove, strconv.Itoa(pendingApproveCount))
 
 		pendingCheckSQL, pendingCheckParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
-		pendingCheckCount = dao.QueryCount(pendingCheckSQL, pendingCheckParam)
+		pendingCheckCount = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
 		pendingCheck = append(pendingCheck, strconv.Itoa(pendingCheckCount))
 
 		pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(templateTypeArr[i], userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
-		pendingConfirmCount = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam)
+		pendingConfirmCount = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
 		pendingConfirm = append(pendingConfirm, strconv.Itoa(pendingConfirmCount))
 
 		pending = append(pending, strconv.Itoa(pTaskCount+pendingApproveCount+pendingCheckCount+pendingConfirmCount))

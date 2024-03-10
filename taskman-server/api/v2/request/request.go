@@ -105,12 +105,16 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		request, err := service.GetSimpleRequest(requestId)
+		taskHandle, err := service.GetTaskHandleService().GetLatestRequestCheckTaskHandleByRequestId(requestId)
 		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
+			middleware.ReturnError(c, err)
 			return
 		}
-		if request.Handler != operator {
+		if taskHandle == nil {
+			middleware.ReturnParamValidateError(c, fmt.Errorf("requestId:%s not has check taskHandle", requestId))
+			return
+		}
+		if taskHandle.Handler != operator {
 			switch event {
 			// 暂存
 			case "save":

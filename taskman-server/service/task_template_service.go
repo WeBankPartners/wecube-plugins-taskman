@@ -241,8 +241,8 @@ func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTempl
 	return actions, nil
 }
 
-// deleteProcTaskTemplateSql 删除任务模板,模板没有发布不能创建请求,所以只删除关联模板表
-func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, taskTemplateId string) ([]*dao.ExecAction, error) {
+// deleteTaskTemplateSql 删除任务模板,模板没有发布不能创建请求,所以只删除关联模板表
+func (s *TaskTemplateService) deleteTaskTemplateSql(requestTemplateId, taskTemplateId string) ([]*dao.ExecAction, error) {
 	var actions []*dao.ExecAction
 	var formTemplateList []*models.FormTemplateTable
 	// 查询任务模版
@@ -256,9 +256,6 @@ func (s *TaskTemplateService) deleteProcTaskTemplateSql(requestTemplateId, taskT
 	// 校验参数
 	if taskTemplate.Type != string(models.TaskTypeImplement) {
 		return nil, fmt.Errorf("type wrong: %s", taskTemplate.Type)
-	}
-	if taskTemplate.NodeDefId == "" {
-		return nil, fmt.Errorf("nodeDefId empty: %s", taskTemplate.NodeDefId)
 	}
 	if taskTemplate.RequestTemplate != requestTemplateId {
 		return nil, fmt.Errorf("param requestTemplate wrong: %s", requestTemplateId)

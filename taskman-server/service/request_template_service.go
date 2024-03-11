@@ -534,7 +534,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		// 先删除已有任务
 		for _, taskTemplate := range implementTaskTemplateList {
 			deleteTaskTemplateActions = []*dao.ExecAction{}
-			deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
+			deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 			if err != nil {
 				return
 			}
@@ -555,7 +555,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		if param.ProcDefId == "" {
 			for _, taskTemplate := range implementTaskTemplateList {
 				deleteTaskTemplateActions = []*dao.ExecAction{}
-				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
+				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 				if err != nil {
 					return
 				}
@@ -568,7 +568,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 			if requestTemplate.ProcDefId != param.ProcDefId {
 				for _, taskTemplate := range implementTaskTemplateList {
 					deleteTaskTemplateActions = []*dao.ExecAction{}
-					deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
+					deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 					if err != nil {
 						return
 					}

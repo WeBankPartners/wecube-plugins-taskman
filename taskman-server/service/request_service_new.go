@@ -28,6 +28,7 @@ const (
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出
 	InternallyTerminated = "internallyTerminated" // 手动终止
+	AutoNode             = "autoNode"             //自动节点
 )
 
 func getTaskTypeByType(uiType int) models.TaskType {
@@ -980,24 +981,40 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		return
 	}
 	if len(taskProgress) > 0 {
-		if request.ProcInstanceId != "" {
+		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) {
 			response, err := rpc.GetProcessInstance(language, userToken, request.ProcInstanceId)
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
 			if response != nil {
-				for _, progress := range taskProgress {
-					if progress.Status == int(models.TaskExecStatusCompleted) {
-						continue
+				// 自动退出
+				if response.Status == string(models.RequestStatusFaulted) {
+					taskProgress = append(taskProgress, &models.ProgressObj{Node: AutoExit, Status: int(models.TaskExecStatusAutoExitStatus)})
+				} else {
+					if response.Status == InternallyTerminated {
+						taskProgress = append(taskProgress, &models.ProgressObj{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
 					}
-					// 自动退出
-					if response.Status == string(models.RequestStatusFaulted) {
-						progress.Node = AutoExit
-						progress.Status = int(models.TaskExecStatusAutoExitStatus)
-					} else {
-						if response.Status == "InternallyTerminated" {
-							progress.Node = InternallyTerminated
-							progress.Status = int(models.TaskExecStatusInternallyTerminated)
+					// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
+					var exist bool
+					for _, v := range response.TaskNodeInstances {
+						exist = false
+						if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
+							for _, rowData := range taskProgress {
+								if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
+									exist = true
+									rowData.Status = int(models.TaskExecStatusFail)
+									break
+								}
+							}
+							if !exist {
+								taskProgress = append(taskProgress, &models.ProgressObj{
+									NodeId:    v.NodeId,
+									NodeDefId: v.NodeDefId,
+									Node:      v.NodeName,
+									Handler:   AutoNode,
+									Status:    int(models.TaskExecStatusFail),
+								})
+							}
 						}
 					}
 				}

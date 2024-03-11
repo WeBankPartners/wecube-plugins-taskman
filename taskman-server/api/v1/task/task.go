@@ -49,7 +49,7 @@ func CreateTask(c *gin.Context) {
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
 		} else {
-			notifyErr := service.NotifyTaskMail(taskId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+			notifyErr := service.NotifyTaskMail(taskId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", "")
 			if notifyErr != nil {
 				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
 			}

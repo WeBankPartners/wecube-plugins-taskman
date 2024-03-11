@@ -1270,7 +1270,7 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	}
 }
 
-func NotifyTaskMail(taskId, userToken, language string) error {
+func NotifyTaskMail(taskId, userToken, language, mailSubject, mailContent string) error {
 	if !models.MailEnable {
 		return nil
 	}
@@ -1302,6 +1302,12 @@ func NotifyTaskMail(taskId, userToken, language string) error {
 	var subject, content string
 	subject = fmt.Sprintf("Taskman task [%s] %s[%s]", models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request)
 	content = fmt.Sprintf("Taskman task \nID:%s \nPriority:%s \nName:%s \nRequest:%s \nDescription:%s \nReporter:%s \nCreateTime:%s \n", taskTable[0].Id, models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request, taskTable[0].Description, taskTable[0].Reporter, taskTable[0].CreatedTime)
+	if mailSubject != "" {
+		subject = mailSubject
+	}
+	if mailContent != "" {
+		content = mailContent
+	}
 	err := models.MailSender.Send(subject, content, mailList)
 	if err != nil {
 		return fmt.Errorf("send notify email fail:%s ", err.Error())

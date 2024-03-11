@@ -594,36 +594,6 @@ func (s *TaskTemplateService) ListTaskTemplates(requestTemplateId, typ, userToke
 	return result, nil
 }
 
-func (s *TaskTemplateService) DeleteTaskTemplates(requestTemplateId string) (func(*xorm.Session) error, error) {
-	// 查询任务模板列表
-	taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplate(requestTemplateId)
-	if err != nil {
-		return nil, err
-	}
-	if len(taskTemplates) == 0 {
-		return nil, nil
-	}
-	// 汇总任务模板列表
-	taskTemplateIds := make([]string, len(taskTemplates))
-	for i, taskTemplate := range taskTemplates {
-		taskTemplateIds[i] = taskTemplate.Id
-	}
-	result := func(session *xorm.Session) error {
-		// 删除任务处理模板
-		err := s.taskHandleTemplateDao.DeleteByTaskTemplates(session, taskTemplateIds)
-		if err != nil {
-			return err
-		}
-		// 删除任务模板
-		err = s.taskTemplateDao.Deletes(session, taskTemplateIds)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	return result, nil
-}
-
 func (s *TaskTemplateService) genTaskTemplateDto(taskTemplateId string) (*models.TaskTemplateDto, error) {
 	taskTemplate, err := s.taskTemplateDao.Get(taskTemplateId)
 	if err != nil {

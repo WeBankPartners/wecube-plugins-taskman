@@ -538,7 +538,7 @@ func GetExpressionItemData(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("expression is empty"))
 		return
 	}
-	result, queryErr := rpc.QueryEntityExpressionData(formItemTemplateRow.RoutineExpression, rootDataId, c.GetHeader("Authorization"))
+	result, queryErr := rpc.QueryEntityExpressionData(formItemTemplateRow.RoutineExpression, rootDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if queryErr != nil {
 		middleware.ReturnError(c, queryErr)
 	} else {

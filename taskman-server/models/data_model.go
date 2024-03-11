@@ -162,3 +162,8 @@ type PluginQueryExpressionDataResponse struct {
 	HttpResponseMeta
 	Data []map[string]interface{} `json:"data"`
 }
+
+type GetProcessNodeAllowOptionsResponse struct {
+	HttpResponseMeta
+	Data []string `json:"data"`
+}

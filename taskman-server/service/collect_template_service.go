@@ -42,16 +42,8 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	var templateUserRoleMap = make(map[string]bool)
 	var userRoleMap = convertArray2Map(userRoles)
 	var resultList []string
-	var templateType int
-	if param.Action == 1 {
-		// 发布
-		templateType = 1
-	} else if param.Action == 2 {
-		// 请求
-		templateType = 0
-	}
 	// 查询该用户收藏的所有模板id
-	err = dao.X.SQL("select * from collect_template where user = ? and type = ?", user, templateType).Find(&collectTemplateList)
+	err = dao.X.SQL("select * from collect_template where user = ? and type = ?", user, param.Action).Find(&collectTemplateList)
 	if err != nil {
 		return
 	}

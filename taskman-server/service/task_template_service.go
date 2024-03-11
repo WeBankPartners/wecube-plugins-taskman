@@ -918,3 +918,17 @@ func (s *TaskTemplateService) Get(taskTemplateId string) (result *models.TaskTem
 	}
 	return s.taskTemplateDao.Get(taskTemplateId)
 }
+
+func (s *TaskTemplateService) GetTaskTemplateListByRequestId(requestId string) (list []*models.TaskTemplateTable, err error) {
+	var requestList []*models.RequestTable
+	var requestTemplate string
+	err = dao.X.SQL("select * from request where id = ?", requestId).Find(&requestList)
+	if err != nil {
+		return
+	}
+	if len(requestList) > 0 {
+		requestTemplate = requestList[0].RequestTemplate
+	}
+	err = dao.X.SQL("select * from task_template where request_template = ?", requestTemplate).Find(&list)
+	return
+}

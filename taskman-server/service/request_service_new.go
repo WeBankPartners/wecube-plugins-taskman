@@ -47,11 +47,10 @@ func getTaskTypeByType(uiType int) models.TaskType {
 
 // GetPlatformCount 工作台数量统计
 func GetPlatformCount(scene int, user string, userRoles []string) (platformData models.PlatformData, err error) {
-	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, myPending, pending, hasProcessed int
-	pendingTask, pendingApprove, pendingCheck, pendingConfirm, myPending, pending = GetPendingCount(scene, user, userRoles)
+	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending, hasProcessed int
+	pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCount(scene, user, userRoles)
 	hasProcessed = GetHasProcessedCount(scene, user)
 	platformData.Pending = pending
-	platformData.MyPending = myPending
 	platformData.PendingTask = pendingTask
 	platformData.PendingApprove = pendingApprove
 	platformData.PendingCheck = pendingCheck
@@ -87,7 +86,7 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 }
 
 // GetPendingCount 统计待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
-func GetPendingCount(scene int, user string, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, myPending, pending int) {
+func GetPendingCount(scene int, user string, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int) {
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam, pendingParam []interface{}
 	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL, pendingSQL string
@@ -105,7 +104,6 @@ func GetPendingCount(scene int, user string, userRoles []string) (pendingTask, p
 
 	pendingSQL, pendingParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeNone)
 	pending = dao.QueryCount(pendingSQL, pendingParam...)
-	myPending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
 	return
 }
 
@@ -818,26 +816,56 @@ func getSQL(status []string) string {
 
 // GetRequestProgress  请求已创建时,获取请求进度
 func GetRequestProgress(requestId, userToken, language string) (rowData *models.RequestProgressObj, err error) {
-	/*	var taskList []*models.TaskTable
-		var taskHandleList []*models.TaskHandleTable
-		rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
-		err = dao.X.SQL("select * from task where request = ? order by created_time asc", requestId).Find(&taskList)
-		if err != nil {
-			return
-		}
-		for _, task := range taskList {
-			progressObj := &models.ProgressObj{}
-			taskHandleList = []*models.TaskHandleTable{}
-			taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(task.Id)
-			if err != nil {
-				return
+	var taskTemplateList []*models.TaskTemplateTable
+	var taskMap map[string]*models.TaskTable
+	var taskHandleList []*models.TaskHandleTable
+	var handler string
+	rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
+	taskTemplateList, err = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
+	if err != nil {
+		return
+	}
+	taskMap, err = GetTaskService().GetTaskMapByRequestId(requestId)
+	if err != nil {
+		return
+	}
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			handler = ""
+			requestProgress := &models.ProgressObj{}
+			requestProgress.Node = taskTemplate.Name
+			requestProgress.Status = 2
+			requestProgress.ApproveType = taskTemplate.HandleMode
+			if v, ok := taskMap[taskTemplate.Id]; ok {
+				taskHandleList = []*models.TaskHandleTable{}
+				// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
+				if v.Status == string(models.TaskStatusDone) {
+					requestProgress.Status = 3
+				} else {
+					requestProgress.Status = 1
+				}
+				taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
+				if err != nil {
+					return
+				}
+				handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
+				requestProgress.Handler = handler
 			}
-			progressObj.Node = task.Name
-			progressObj.Handler =
-
-				rowData.RequestProgress = append(rowData.RequestProgress, progressObj)
-		}*/
+			rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
+		}
+	}
 	return
+}
+
+func getTaskHandlerArr(taskHandleList []*models.TaskHandleTable) []string {
+	var arr []string
+	if len(taskHandleList) == 0 {
+		return arr
+	}
+	for _, taskHandle := range taskHandleList {
+		arr = append(arr, taskHandle.Handler)
+	}
+	return arr
 }
 
 func GetProcessDefinitions(templateId, userToken, language string) (rowData *models.DefinitionsData, err error) {

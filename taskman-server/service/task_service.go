@@ -1727,6 +1727,25 @@ func (s *TaskService) GetLatestTask(requestId string) (task *models.TaskTable, e
 	if err != nil {
 		return
 	}
-	task = taskList[0]
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
+	return
+}
+
+func (s *TaskService) GetTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	taskMap = make(map[string]*models.TaskTable)
+	err = dao.X.SQL("select * from task where request = ? order by created_time desc", requestId).Find(&taskList)
+	if err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		for _, task := range taskList {
+			if _, ok := taskMap[task.TaskTemplate]; !ok {
+				taskMap[task.TaskTemplate] = task
+			}
+		}
+	}
 	return
 }

@@ -314,3 +314,8 @@ func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateI
 	})
 	return
 }
+
+func (s *FormItemTemplateService) GetFormItemTemplate(formItemTemplateId string) (result *models.FormItemTemplateTable, err error) {
+	result, err = s.formItemTemplateDao.Get(formItemTemplateId)
+	return
+}

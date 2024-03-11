@@ -1736,7 +1736,9 @@ func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTab
 	if err != nil {
 		return
 	}
-	task = taskList[0]
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
 	return
 }
 
@@ -1775,6 +1777,8 @@ func (s *TaskService) GetDoingTaskByRequestIdAndType(requestId string, taskType 
 	if err != nil {
 		return
 	}
-	task = taskList[0]
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
 	return
 }

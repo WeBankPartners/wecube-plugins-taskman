@@ -818,21 +818,61 @@ func getSQL(status []string) string {
 func GetRequestProgress(requestId, userToken, language string) (rowData *models.RequestProgressObj, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskTemplateProgressList []*models.TaskTemplateProgressDto
-	var taskApproveList []*models.TaskTemplateTable
-	var taskImplementList []*models.TaskTemplateTable
+	var taskApproveTemplateList []*models.TaskTemplateTable
+	var taskImplementTemplateList []*models.TaskTemplateTable
 	var taskMap map[string]*models.TaskTable
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
+	var taskApproveList, taskImplementList []*models.TaskTable
 	var handler string
 	var taskSort int
+	var request models.RequestTable
+	// 初始化成未开始
+	approveCompleteStatus := int(models.TaskExecStatusNotStart)
+	taskCompleteStatus := int(models.TaskExecStatusNotStart)
+	completeStatus := int(models.TaskExecStatusNotStart)
 	rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
 	taskTemplateList, err = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
+	if err != nil {
+		return
+	}
+	request, err = GetSimpleRequest(requestId)
 	if err != nil {
 		return
 	}
 	taskMap, err = GetTaskService().GetTaskMapByRequestId(requestId)
 	if err != nil {
 		return
+	}
+	// 读取审批任务状态&任务状态
+	for _, task := range taskMap {
+		if task.Type == string(models.TaskTypeApprove) {
+			taskApproveList = append(taskApproveList, task)
+		} else if task.Type == string(models.TaskTypeImplement) {
+			taskImplementList = append(taskImplementList, task)
+		}
+	}
+	if len(taskApproveList) > 0 {
+		// 有创建任务,则状态设置为完成
+		approveCompleteStatus = int(models.TaskExecStatusCompleted)
+		for _, taskApprove := range taskApproveList {
+			// 有任务未完成,则设置成 进行中
+			if taskApprove.Status != string(models.TaskStatusDone) {
+				approveCompleteStatus = int(models.TaskExecStatusDoing)
+				break
+			}
+		}
+	}
+	if len(taskImplementList) > 0 {
+		// 有创建任务,则状态设置为完成
+		taskCompleteStatus = int(models.TaskExecStatusCompleted)
+		for _, taskImplement := range taskImplementList {
+			// 有任务未完成,则设置成 进行中
+			if taskImplement.Status != string(models.TaskStatusDone) {
+				taskCompleteStatus = int(models.TaskExecStatusDoing)
+				break
+			}
+		}
 	}
 	if len(taskTemplateList) > 0 {
 		for _, taskTemplate := range taskTemplateList {
@@ -847,10 +887,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			case string(models.TaskTypeConfirm):
 				taskSort = 5
 			case string(models.TaskTypeApprove):
-				taskApproveList = append(taskApproveList, taskTemplate)
+				taskApproveTemplateList = append(taskApproveTemplateList, taskTemplate)
 				continue
 			case string(models.TaskTypeImplement):
-				taskImplementList = append(taskImplementList, taskTemplate)
+				taskImplementTemplateList = append(taskImplementTemplateList, taskTemplate)
 				continue
 			default:
 			}
@@ -869,32 +909,35 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				Type:        taskTemplate.Type,
 				Node:        taskTemplate.Name,
 				Handler:     handler,
-				Status:      2, //初始化成未开始
+				Status:      int(models.TaskExecStatusNotStart), //初始化成未开始
 				ApproveType: taskTemplate.HandleMode,
 				Sort:        taskSort,
 			})
 		}
 	}
-	if len(taskApproveList) > 0 {
+	if len(taskApproveTemplateList) > 0 {
 		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
 			Type:   string(models.TaskTypeApprove),
 			Node:   Approval,
-			Status: 2, //初始化成未开始
+			Status: approveCompleteStatus,
 			Sort:   3,
 		})
 	}
-	if len(taskImplementList) > 0 {
+	if len(taskImplementTemplateList) > 0 {
 		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
 			Type:   string(models.TaskTypeImplement),
 			Node:   Task,
-			Status: 2, //初始化成未开始
+			Status: taskCompleteStatus,
 			Sort:   4,
 		})
 	}
 	// 添加请求完成
+	if request.Status == string(models.RequestStatusCompleted) {
+		completeStatus = int(models.TaskExecStatusCompleted)
+	}
 	taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
 		Node:   RequestComplete,
-		Status: 2, //初始化成未开始
+		Status: completeStatus,
 		Sort:   6,
 	})
 	sort.Sort(models.TaskTemplateProgressDtoSort(taskTemplateProgressList))
@@ -902,16 +945,16 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	for _, taskTemplateProgress := range taskTemplateProgressList {
 		handler = ""
 		requestProgress := &models.ProgressObj{}
+		requestProgress.Status = taskTemplateProgress.Status
+		requestProgress.Node = taskTemplateProgress.Node
 		if v, ok := taskMap[taskTemplateProgress.Id]; ok {
 			taskHandleList = []*models.TaskHandleTable{}
-			requestProgress.Status = taskTemplateProgress.Status
 			// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
 			if v.Status == string(models.TaskStatusDone) {
 				requestProgress.Status = 3
 			} else {
 				requestProgress.Status = 1
 			}
-			requestProgress.Node = taskTemplateProgress.Node
 			taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
 			if err != nil {
 				return

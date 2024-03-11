@@ -194,3 +194,13 @@ const (
 	SceneTypeEvent   SceneType = 4 // 事件
 	SceneTypeChange  SceneType = 5 // 变更
 )
+
+// TaskExecStatus 任务执行状态       // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
+type TaskExecStatus int
+
+const (
+	TaskExecStatusDoing     TaskExecStatus = 1
+	TaskExecStatusNotStart  TaskExecStatus = 2
+	TaskExecStatusCompleted TaskExecStatus = 3
+	TaskExecStatusFail      TaskExecStatus = 4
+)

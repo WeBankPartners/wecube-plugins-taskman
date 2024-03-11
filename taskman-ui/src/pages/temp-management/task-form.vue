@@ -40,6 +40,7 @@
             ref="approvalFormNodeRef"
             @jumpToNode="jumpToNode"
             @reloadParentPage="loadPage"
+            :procDefId="procDefId"
             :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
           ></TaskFormNode>
         </div>
@@ -68,7 +69,7 @@
                     <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
                     <DatePicker
                       v-if="element.elementType === 'datePicker'"
-                      type="date"
+                      :type="element.type"
                       :placeholder="$t('tw_date_picker')"
                       style="width:100%"
                     ></DatePicker>
@@ -87,7 +88,7 @@
                 <Divider>预览</Divider>
                 <div class="title">
                   <div class="title-text">
-                    {{ $t('审批内容') }}
+                    {{ $t('任务内容') }}
                     <span class="underline"></span>
                   </div>
                 </div>
@@ -188,7 +189,7 @@
                           <DatePicker
                             v-if="element.elementType === 'datePicker'"
                             class="custom-item"
-                            type="date"
+                            :type="element.type"
                           ></DatePicker>
                           <Button
                             @click.stop="removeForm(itemIndex, eleIndex, element)"
@@ -209,7 +210,7 @@
                 </div>
                 <div class="title">
                   <div class="title-text">
-                    {{ $t('审批结果') }}
+                    {{ $t('任务结果') }}
                     <span class="underline"></span>
                   </div>
                 </div>
@@ -409,7 +410,7 @@
       ></RequestFormDataWorkflow>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
+      <Button @click="submitTemplate" size="small" type="primary">{{ $t('submit_for_review') }}</Button>
     </div>
   </div>
 </template>
@@ -429,7 +430,8 @@ import {
   getApprovalNodeGroups,
   deleteRequestGroupForm,
   getAllDataModels,
-  saveRequestGroupCustomForm
+  saveRequestGroupCustomForm,
+  submitTemplate
 } from '@/api/server.js'
 let idGlobal = 118
 export default {
@@ -444,7 +446,7 @@ export default {
           id: '',
           sort: 1,
           requestTemplate: '',
-          name: '审批1',
+          name: '任务1',
           expireDay: 1,
           description: '',
           roleType: '',
@@ -588,7 +590,7 @@ export default {
           name: 'datePicker',
           title: 'datePicker',
           elementType: 'datePicker',
-          abc: 'datePicker',
+          type: 'datetime',
           defaultValue: '',
           defaultClear: 'no',
           // tag: '',
@@ -818,7 +820,8 @@ export default {
     editNode (node) {
       let params = {
         requestTemplateId: this.requestTemplateId,
-        id: node.id
+        id: node.id,
+        procDefId: this.procDefId
       }
       this.nextNodeInfo = node
       const res = this.preApprovalNodeChange(2)
@@ -858,7 +861,8 @@ export default {
       this.cancelGroup()
       let params = {
         requestTemplateId: this.requestTemplateId,
-        id: this.nextNodeInfo.id
+        id: this.nextNodeInfo.id,
+        procDefId: this.procDefId
       }
       this.activeEditingNode = this.nextNodeInfo
       this.$refs.approvalFormNodeRef.loadPage(params)
@@ -1163,6 +1167,32 @@ export default {
         res = this.procDefId === '' ? 'background:#b886f8;' : 'background:#cba43f;'
       }
       return res
+    },
+    async submitTemplate () {
+      this.$Modal.confirm({
+        title: `${this.$t('submit_for_review')}`,
+        content: `${this.$t('submit_for_review_tip')}`,
+        'z-index': 1000000,
+        okText: this.$t('confirm'),
+        cancelText: this.$t('cancel'),
+        onOk: async () => {
+          let data = {
+            requestTemplateId: this.requestTemplateId,
+            status: 'created',
+            targetStatus: 'pending',
+            reason: '{}'
+          }
+          const { statusCode } = await submitTemplate(data)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.$router.push({ path: '/taskman/template-mgmt' })
+          }
+        },
+        onCancel: () => {}
+      })
     }
   },
   components: {

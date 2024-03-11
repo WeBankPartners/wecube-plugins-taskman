@@ -111,7 +111,7 @@
               <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
               <DatePicker
                 v-if="element.elementType === 'datePicker'"
-                type="date"
+                :type="element.type"
                 :placeholder="$t('tw_date_picker')"
                 style="width:100%"
               ></DatePicker>
@@ -197,7 +197,7 @@
                   <DatePicker
                     v-if="element.elementType === 'datePicker'"
                     style="width: calc(100% - 30px)"
-                    type="date"
+                    :type="element.type"
                   ></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"

@@ -502,14 +502,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					platformDataObj.Version = template.Version
 				}
 			}
-			if platformDataObj.Status == "Draft" {
-				platformDataObj.CurNode = WaitCommit
-			} else if platformDataObj.Status == "Pending" {
-				platformDataObj.CurNode = RequestPending
-			}
-			if platformDataObj.ProcInstanceId != "" {
-				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken, language)
-			}
+			platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.Id, platformDataObj.ProcInstanceId, req.UserToken, language)
 			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken, language)
 				if newStatus == "InternallyTerminated" {
@@ -598,7 +591,28 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 	return status
 }
 
-func getCurNodeName(instanceId, userToken, language string) (progress int, curNode string) {
+func getCurNodeName(requestId, instanceId, userToken, language string) (progress int, curNode string) {
+	var task *models.TaskTable
+	if instanceId == "" {
+		// 无编排
+		request, _ := GetSimpleRequest(requestId)
+		switch request.Status {
+		case string(models.RequestStatusDraft):
+			curNode = WaitCommit
+		case string(models.RequestStatusPending):
+			curNode = RequestPending
+		case string(models.RequestStatusInApproval):
+			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeApprove)
+		case string(models.RequestStatusInProgress):
+			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeImplement)
+		case string(models.RequestStatusConfirm):
+			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeConfirm)
+		}
+		if task != nil {
+			curNode = task.Name
+		}
+		return
+	}
 	var total int
 	processInstance, err := GetProcDefService().GetProcessDefineInstance(instanceId, userToken, language)
 	if err != nil || processInstance == nil || len(processInstance.TaskNodeInstances) == 0 {
@@ -1144,9 +1158,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if request.Status == "Pending" {
 		form.CurNode = RequestPending
 	}
-	if request.ProcInstanceId != "" {
-		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken, language)
-	}
+	form.Progress, form.CurNode = getCurNodeName(request.Id, request.ProcInstanceId, userToken, language)
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}

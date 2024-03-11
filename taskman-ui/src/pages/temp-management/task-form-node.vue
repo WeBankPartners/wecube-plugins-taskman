@@ -9,7 +9,14 @@
     <div>
       <Form ref="formInline" inline :label-width="100">
         <FormItem :label="$t('name')">
-          <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 94%;"> </Input>
+          <Input
+            type="text"
+            :disabled="procDefId !== ''"
+            v-model="activeApprovalNode.name"
+            @on-change="paramsChanged"
+            style="width: 94%;"
+          >
+          </Input>
           <span style="color: red">*</span>
           <div v-if="activeApprovalNode.name === ''" style="color: red">
             {{ $t('name') }}{{ $t('can_not_be_empty') }}
@@ -128,6 +135,7 @@ export default {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
       requestTemplateId: '',
+      procDefId: '',
       activeApprovalNode: {
         id: '',
         sort: 1,
@@ -177,6 +185,7 @@ export default {
   props: ['nodeType'],
   methods: {
     loadPage (params) {
+      this.procDefId = params.procDefId
       this.isParmasChanged = false
       this.requestTemplateId = params.requestTemplateId
       this.getNodeById(params)

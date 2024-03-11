@@ -43,7 +43,7 @@ func (d *TaskHandleTemplateDao) Delete(session *xorm.Session, id string) (err er
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(id).Delete(&models.TaskHandleTemplateTable{})
+	_, err = session.ID(id).Delete(&models.TaskHandleTemplateTable{})
 	return
 }
 
@@ -55,7 +55,7 @@ func (d *TaskHandleTemplateDao) Deletes(session *xorm.Session, ids []string) (er
 	if len(ids) == 0 {
 		return
 	}
-	_, err = d.DB.In("id", ids).Delete(&models.TaskHandleTemplateTable{})
+	_, err = session.In("id", ids).Delete(&models.TaskHandleTemplateTable{})
 	return
 }
 
@@ -64,7 +64,7 @@ func (d *TaskHandleTemplateDao) DeleteByTaskTemplate(session *xorm.Session, task
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.Where("task_template=?", taskTemplateId).Delete(&models.TaskHandleTemplateTable{})
+	_, err = session.Where("task_template=?", taskTemplateId).Delete(&models.TaskHandleTemplateTable{})
 	return
 }
 
@@ -76,7 +76,7 @@ func (d *TaskHandleTemplateDao) DeleteByTaskTemplates(session *xorm.Session, tas
 	if len(taskTemplateIds) == 0 {
 		return
 	}
-	_, err = d.DB.In("task_template", taskTemplateIds).Delete(&models.TaskHandleTemplateTable{})
+	_, err = session.In("task_template", taskTemplateIds).Delete(&models.TaskHandleTemplateTable{})
 	return
 }
 

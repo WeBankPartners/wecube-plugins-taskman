@@ -72,7 +72,6 @@ type CreateRequestDto struct {
 // PlatformData  工作台数据
 type PlatformData struct {
 	Pending        int `json:"pending"`        // 待处理
-	MyPending      int `json:"myPending"`      // 我的待处理
 	PendingTask    int `json:"pendingTask"`    // 待处理任务
 	PendingApprove int `json:"pendingApprove"` // 待处理审批
 	PendingCheck   int `json:"pendingCheck"`   // 待处理定版

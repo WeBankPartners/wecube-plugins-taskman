@@ -39,7 +39,7 @@ func (d *TaskTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(id).Delete(&models.TaskTemplateTable{})
+	_, err = session.ID(id).Delete(&models.TaskTemplateTable{})
 	return
 }
 
@@ -48,7 +48,7 @@ func (d *TaskTemplateDao) Deletes(session *xorm.Session, ids []string) (err erro
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.In("id", ids).Delete(&models.TaskTemplateTable{})
+	_, err = session.In("id", ids).Delete(&models.TaskTemplateTable{})
 	return
 }
 

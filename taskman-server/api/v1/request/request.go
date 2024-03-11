@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
@@ -26,7 +27,7 @@ func GetRequestPreviewData(c *gin.Context) {
 
 // CountPlatform 个人工作台数量统计-new
 func CountPlatform(c *gin.Context) {
-	scene := c.Param("scene")
+	scene := c.Query("scene")
 	if scene == "" {
 		middleware.ReturnParamEmptyError(c, "scene")
 		return
@@ -516,17 +517,31 @@ func GetRequestParent(c *gin.Context) {
 
 // GetRequestProgress  获取请求进度
 func GetRequestProgress(c *gin.Context) {
-	var param models.RequestQueryParam
-	var rowData *models.RequestProgressObj
-	var err error
-	if err = c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	rowData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	requestId := c.Query("requestId")
+	rowData, err := service.GetRequestProgress(requestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	middleware.ReturnData(c, rowData)
+}
+
+func GetExpressionItemData(c *gin.Context) {
+	formItemTemplateId := c.Param("formItemTemplateId")
+	rootDataId := c.Param("rootDataId")
+	formItemTemplateRow, err := service.GetFormItemTemplateService().GetFormItemTemplate(formItemTemplateId)
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	if formItemTemplateRow.RoutineExpression == "" {
+		middleware.ReturnError(c, fmt.Errorf("expression is empty"))
+		return
+	}
+	result, queryErr := rpc.QueryEntityExpressionData(formItemTemplateRow.RoutineExpression, rootDataId, c.GetHeader("Authorization"))
+	if queryErr != nil {
+		middleware.ReturnError(c, queryErr)
+	} else {
+		middleware.ReturnData(c, result)
+	}
 }

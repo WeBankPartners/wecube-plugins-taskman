@@ -745,7 +745,7 @@ func ApproveTask(task models.TaskTable, operator, userToken, language string, pa
 	case models.TaskTypeImplement:
 		// 编排任务,走编排逻辑.
 		if task.ProcDefKey != "" && task.ProcDefId != "" {
-			return handleWorkflowTask(task, operator, userToken, param)
+			return handleWorkflowTask(task, operator, userToken, param, language)
 		}
 		// 处理自定义任务
 		return handleCustomTask(task, operator, userToken, language, param)
@@ -850,7 +850,7 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 }
 
 // handleWorkflowTask 处理编排任务
-func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam) error {
+func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam, language string) error {
 	var err error
 	requestParam, callbackUrl, getDataErr := getApproveCallbackParamNew(task.Id)
 	if getDataErr != nil {
@@ -877,7 +877,20 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
-	_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id)
+	request, getRequestErr := GetSimpleRequest(task.Request)
+	if getRequestErr != nil {
+		return getRequestErr
+	}
+	var actions, newApproveActions []*dao.ExecAction
+	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
+		string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id,
+	}})
+	//_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id)
+	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language)
+	if len(newApproveActions) > 0 {
+		actions = append(actions, newApproveActions...)
+	}
+	err = dao.Transaction(actions)
 	return err
 }
 
@@ -1257,7 +1270,7 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	}
 }
 
-func NotifyTaskMail(taskId, userToken, language string) error {
+func NotifyTaskMail(taskId, userToken, language, mailSubject, mailContent string) error {
 	if !models.MailEnable {
 		return nil
 	}
@@ -1289,6 +1302,12 @@ func NotifyTaskMail(taskId, userToken, language string) error {
 	var subject, content string
 	subject = fmt.Sprintf("Taskman task [%s] %s[%s]", models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request)
 	content = fmt.Sprintf("Taskman task \nID:%s \nPriority:%s \nName:%s \nRequest:%s \nDescription:%s \nReporter:%s \nCreateTime:%s \n", taskTable[0].Id, models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request, taskTable[0].Description, taskTable[0].Reporter, taskTable[0].CreatedTime)
+	if mailSubject != "" {
+		subject = mailSubject
+	}
+	if mailContent != "" {
+		content = mailContent
+	}
 	err := models.MailSender.Send(subject, content, mailList)
 	if err != nil {
 		return fmt.Errorf("send notify email fail:%s ", err.Error())
@@ -1727,6 +1746,25 @@ func (s *TaskService) GetLatestTask(requestId string) (task *models.TaskTable, e
 	if err != nil {
 		return
 	}
-	task = taskList[0]
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
+	return
+}
+
+func (s *TaskService) GetTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	taskMap = make(map[string]*models.TaskTable)
+	err = dao.X.SQL("select * from task where request = ? order by created_time desc", requestId).Find(&taskList)
+	if err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		for _, task := range taskList {
+			if _, ok := taskMap[task.TaskTemplate]; !ok {
+				taskMap[task.TaskTemplate] = task
+			}
+		}
+	}
 	return
 }

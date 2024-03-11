@@ -37,6 +37,8 @@ const (
 	pathQueryEntityModel = "/platform/v1/models/package/%s/entity/%s"
 	// pathSyncWorkflowUseRole
 	pathSyncWorkflowUseRole = "/platform/v1/public/process/definitions/syncUseRole"
+	// pathQueryEntityExpressionData 查询表达式数据
+	pathQueryEntityExpressionData = "/platform/v1/process/public/data-model/dme/integrated-query"
 )
 
 // QueryProcessDefinitionList 查询当前角色编排列表,并且根据属主角色进行过滤
@@ -345,6 +347,32 @@ func SyncWorkflowUseRole(param models.SyncUseRoleParam, userToken, language stri
 	}
 	if response.Status != "OK" {
 		err = fmt.Errorf(response.Message)
+	}
+	return
+}
+
+func QueryEntityExpressionData(expression, rootDataId, userToken string) (result []map[string]interface{}, err error) {
+	param := models.PluginQueryExpressionDataParam{
+		DataModelExpression: expression,
+		RootDataId:          rootDataId,
+		Token:               userToken,
+	}
+	var response models.PluginQueryExpressionDataResponse
+	var byteArr []byte
+	postBytes, _ := json.Marshal(param)
+	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathQueryEntityExpressionData, userToken, "", postBytes)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if response.Status != "OK" {
+		err = fmt.Errorf(response.Message)
+	} else {
+		result = response.Data
 	}
 	return
 }

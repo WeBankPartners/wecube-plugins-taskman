@@ -104,8 +104,9 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/get/:requestId/:cacheType", Method: "GET", HandlerFunc: request.GetRequestCache},
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
 		&handlerFuncObj{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData},
+		&handlerFuncObj{Url: "/request-data/entity/expression/query/:formItemTemplateId/:rootDataId", Method: "GET", HandlerFunc: request.GetExpressionItemData},
 
-		&handlerFuncObj{Url: "/user/platform/count/:scene", Method: "GET", HandlerFunc: request.CountPlatform},
+		&handlerFuncObj{Url: "/user/platform/count", Method: "GET", HandlerFunc: request.CountPlatform},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
 		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},
@@ -118,7 +119,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/attach-file/download/:fileId", Method: "GET", HandlerFunc: request.DownloadAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/remove/:fileId", Method: "DELETE", HandlerFunc: request.RemoveAttachFile},
 		&handlerFuncObj{Url: "/request/handler/:requestId/:latestUpdateTime", Method: "POST", HandlerFunc: request.UpdateRequestHandler},
-		&handlerFuncObj{Url: "/request/progress", Method: "POST", HandlerFunc: request.GetRequestProgress},
+		&handlerFuncObj{Url: "/request/progress", Method: "GET", HandlerFunc: request.GetRequestProgress},
 		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: workflow.GetProcessDefinitions},
 		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: workflow.GetProcessInstance},
 		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: workflow.GetProcDefTaskNodeContext},
@@ -153,6 +154,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
 		&handlerFuncObj{Url: "/request-check/confirm/:requestId", Method: "POST", HandlerFunc: requestNew.CheckRequest}, // 确认定版
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
+		&handlerFuncObj{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest},
 	)
 }
 

@@ -208,7 +208,7 @@ func GetRequestHistory(c *gin.Context) {
 }
 
 func PluginCreateRequest(c *gin.Context) {
-	response := models.PluginTaskCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginTaskCreateOutput{}}
+	response := models.PluginRequestCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginRequestCreateOutput{}}
 	var err error
 	defer func() {
 		if err != nil {
@@ -220,23 +220,25 @@ func PluginCreateRequest(c *gin.Context) {
 		c.Set("responseBody", string(bodyBytes))
 		c.JSON(http.StatusOK, response)
 	}()
-	var param models.PluginTaskCreateRequest
-	c.ShouldBindJSON(&param)
+	var param models.PluginRequestCreateParam
+	if err = c.ShouldBindJSON(&param); err != nil {
+		return
+	}
 	if len(param.Inputs) == 0 {
 		return
 	}
 	for _, input := range param.Inputs {
-		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions)
+		output, tmpErr := handlePluginRequestCreate(input, param.RequestId)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
-		} else {
-			notifyErr := service.NotifyTaskMail(taskId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", "")
-			if notifyErr != nil {
-				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
-			}
 		}
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}
+}
+
+func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId string) (result *models.PluginRequestCreateOutputObj, err error) {
+
+	return
 }

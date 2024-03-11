@@ -372,3 +372,35 @@ type TaskForHistory struct {
 	HandleMode     string                    `json:"handleMode"`
 	FormData       []*RequestPreDataTableObj `json:"formData"`
 }
+
+type PluginRequestCreateParam struct {
+	RequestId string                         `json:"requestId"`
+	Inputs    []*PluginRequestCreateParamObj `json:"inputs"`
+}
+
+type PluginRequestCreateParamObj struct {
+	CallbackParameter string `json:"callbackParameter"`
+	CallbackUrl       string `json:"callbackUrl"`
+	ProcInstId        string `json:"procInstId"`
+	RequestTemplate   string `json:"requestTemplate"`
+	RootDataId        string `json:"rootDataId"`
+}
+
+type PluginRequestCreateResp struct {
+	ResultCode    string                    `json:"resultCode"`
+	ResultMessage string                    `json:"resultMessage"`
+	Results       PluginRequestCreateOutput `json:"results"`
+}
+
+type PluginRequestCreateOutput struct {
+	RequestId string                          `json:"requestId"`
+	Outputs   []*PluginRequestCreateOutputObj `json:"outputs"`
+}
+
+type PluginRequestCreateOutputObj struct {
+	CallbackParameter string `json:"callbackParameter"`
+	RequestId         string `json:"requestId"`
+	ErrorCode         string `json:"errorCode"`
+	ErrorMessage      string `json:"errorMessage"`
+	ErrorDetail       string `json:"errorDetail,omitempty"`
+}

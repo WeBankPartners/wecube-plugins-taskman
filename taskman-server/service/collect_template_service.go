@@ -41,7 +41,8 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	var roleTemplateMap = make(map[string]string)
 	var templateUserRoleMap = make(map[string]bool)
 	var userRoleMap = convertArray2Map(userRoles)
-	var resultList []string
+	var resultList, approves, tasks []string
+	var taskTemplateList []*models.TaskTemplateTable
 	// 查询该用户收藏的所有模板id
 	err = dao.X.SQL("select * from collect_template where user = ? and type = ?", user, param.Action).Find(&collectTemplateList)
 	if err != nil {
@@ -81,10 +82,27 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	}
 	if len(rowData) > 0 {
 		for _, collectObj := range rowData {
+			approves = []string{}
+			tasks = []string{}
 			templateUserRoleMap = make(map[string]bool, 0)
 			template, err := GetRequestTemplateService().GetRequestTemplate(collectObj.Id)
 			if err != nil {
 				continue
+			}
+			taskTemplateList, err = GetTaskTemplateService().QueryTaskTemplateListByRequestTemplate(collectObj.Id)
+			if err != nil {
+				continue
+			}
+			if len(taskTemplateList) > 0 {
+				for _, taskTemplate := range taskTemplateList {
+					if taskTemplate.Type == string(models.TaskTypeApprove) {
+						approves = append(approves, taskTemplate.Name)
+					} else if taskTemplate.Type == string(models.TaskTypeImplement) {
+						tasks = append(tasks, taskTemplate.Name)
+					}
+				}
+				collectObj.Approves = approves
+				collectObj.Tasks = tasks
 			}
 			if template.Status != "confirm" {
 				collectObj.Version = "beta"
@@ -113,12 +131,14 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 				// 模板使用权限变更,导致收藏模板时候角色,没权限新建请求
 				collectObj.Status = 3
 			}
-			result, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: collectObj.Id}, userToken, language, "template")
-			if err != nil {
-				continue
-			}
-			for _, item := range result {
-				collectObj.WorkNode = append(collectObj.WorkNode, item.NodeName)
+			if template.ProcDefId != "" {
+				result, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: collectObj.Id}, userToken, language, "template")
+				if err != nil {
+					continue
+				}
+				for _, item := range result {
+					collectObj.WorkNode = append(collectObj.WorkNode, item.NodeName)
+				}
 			}
 		}
 	}

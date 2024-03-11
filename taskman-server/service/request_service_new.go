@@ -817,9 +817,14 @@ func getSQL(status []string) string {
 // GetRequestProgress  请求已创建时,获取请求进度
 func GetRequestProgress(requestId, userToken, language string) (rowData *models.RequestProgressObj, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
+	var taskTemplateProgressList []*models.TaskTemplateProgressDto
+	var taskApproveList []*models.TaskTemplateTable
+	var taskImplementList []*models.TaskTemplateTable
 	var taskMap map[string]*models.TaskTable
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var handler string
+	var taskSort int
 	rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
 	taskTemplateList, err = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
 	if err != nil {
@@ -831,28 +836,90 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	}
 	if len(taskTemplateList) > 0 {
 		for _, taskTemplate := range taskTemplateList {
+			taskSort = 0
+			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
 			handler = ""
-			requestProgress := &models.ProgressObj{}
-			requestProgress.Node = taskTemplate.Name
-			requestProgress.Status = 2
-			requestProgress.ApproveType = taskTemplate.HandleMode
-			if v, ok := taskMap[taskTemplate.Id]; ok {
-				taskHandleList = []*models.TaskHandleTable{}
-				// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
-				if v.Status == string(models.TaskStatusDone) {
-					requestProgress.Status = 3
-				} else {
-					requestProgress.Status = 1
-				}
-				taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
-				if err != nil {
-					return
-				}
-				handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
-				requestProgress.Handler = handler
+			switch taskTemplate.Type {
+			case string(models.TaskTypeSubmit):
+				taskSort = 1
+			case string(models.TaskTypeCheck):
+				taskSort = 2
+			case string(models.TaskTypeConfirm):
+				taskSort = 5
+			case string(models.TaskTypeApprove):
+				taskApproveList = append(taskApproveList, taskTemplate)
+				continue
+			case string(models.TaskTypeImplement):
+				taskImplementList = append(taskImplementList, taskTemplate)
+				continue
+			default:
 			}
-			rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
+			err = dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
+			if err != nil {
+				return
+			}
+			if len(taskHandleTemplateList) > 0 {
+				handler = taskHandleTemplateList[0].Handler
+				if handler == "" {
+					handler = taskHandleTemplateList[0].Role
+				}
+			}
+			taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+				Id:          taskTemplate.Id,
+				Type:        taskTemplate.Type,
+				Node:        taskTemplate.Name,
+				Handler:     handler,
+				Status:      2, //初始化成未开始
+				ApproveType: taskTemplate.HandleMode,
+				Sort:        taskSort,
+			})
 		}
+	}
+	if len(taskApproveList) > 0 {
+		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+			Type:   string(models.TaskTypeApprove),
+			Node:   Approval,
+			Status: 2, //初始化成未开始
+			Sort:   3,
+		})
+	}
+	if len(taskImplementList) > 0 {
+		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+			Type:   string(models.TaskTypeImplement),
+			Node:   Task,
+			Status: 2, //初始化成未开始
+			Sort:   4,
+		})
+	}
+	// 添加请求完成
+	taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+		Node:   RequestComplete,
+		Status: 2, //初始化成未开始
+		Sort:   6,
+	})
+	sort.Sort(models.TaskTemplateProgressDtoSort(taskTemplateProgressList))
+
+	for _, taskTemplateProgress := range taskTemplateProgressList {
+		handler = ""
+		requestProgress := &models.ProgressObj{}
+		if v, ok := taskMap[taskTemplateProgress.Id]; ok {
+			taskHandleList = []*models.TaskHandleTable{}
+			requestProgress.Status = taskTemplateProgress.Status
+			// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
+			if v.Status == string(models.TaskStatusDone) {
+				requestProgress.Status = 3
+			} else {
+				requestProgress.Status = 1
+			}
+			requestProgress.Node = taskTemplateProgress.Node
+			taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
+			if err != nil {
+				return
+			}
+			handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
+			requestProgress.Handler = handler
+		}
+		rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
 	}
 	return
 }

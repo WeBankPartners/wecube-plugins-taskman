@@ -49,6 +49,16 @@ type TaskTemplateDto struct {
 	HandleTemplates []*TaskHandleTemplateDto `json:"handleTemplates"`
 }
 
+type TaskTemplateProgressDto struct {
+	Id          string `json:"id"`
+	Type        string `json:"type"`
+	Node        string `json:"node"`
+	Handler     string `json:"handler"`
+	Status      int    `json:"status"`      // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
+	ApproveType string `json:"approveType"` // 审批类型:custom.单人自定义 any.协同 all.并行
+	Sort        int    `json:"sort"`        // 排序
+}
+
 type TaskTemplateIdObj struct {
 	Id        string `json:"id"`
 	Sort      int    `json:"sort"`
@@ -70,4 +80,21 @@ type TaskTemplateListIdsResponse struct {
 	Type      string               `json:"type"`
 	ProcDefId string               `json:"procDefId"`
 	Ids       []*TaskTemplateIdObj `json:"ids"`
+}
+
+type TaskTemplateProgressDtoSort []*TaskTemplateProgressDto
+
+func (s TaskTemplateProgressDtoSort) Len() int {
+	return len(s)
+}
+
+func (s TaskTemplateProgressDtoSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s TaskTemplateProgressDtoSort) Less(i, j int) bool {
+	if s[i].Sort < s[j].Sort {
+		return true
+	}
+	return false
 }

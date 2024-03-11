@@ -118,7 +118,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/attach-file/download/:fileId", Method: "GET", HandlerFunc: request.DownloadAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/remove/:fileId", Method: "DELETE", HandlerFunc: request.RemoveAttachFile},
 		&handlerFuncObj{Url: "/request/handler/:requestId/:latestUpdateTime", Method: "POST", HandlerFunc: request.UpdateRequestHandler},
-		&handlerFuncObj{Url: "/request/progress", Method: "POST", HandlerFunc: request.GetRequestProgress},
+		&handlerFuncObj{Url: "/request/progress", Method: "GET", HandlerFunc: request.GetRequestProgress},
 		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: workflow.GetProcessDefinitions},
 		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: workflow.GetProcessInstance},
 		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: workflow.GetProcDefTaskNodeContext},

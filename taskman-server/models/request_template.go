@@ -94,6 +94,8 @@ type CollectDataObj struct {
 	UseRole           string   `json:"useRole" xorm:"use_role"`                      // 使用角色
 	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
 	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
+	Approves          []string `json:"approves" xorm:"-"`                            // 审批列表
+	Tasks             []string `json:"tasks" xorm:"-"`                               // 任务节点
 	CreatedTime       string   `json:"createdTime" xorm:"created_time"`              // 创建时间
 	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`              // 更新时间
 }

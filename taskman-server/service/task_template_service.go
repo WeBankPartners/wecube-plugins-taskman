@@ -932,3 +932,7 @@ func (s *TaskTemplateService) GetTaskTemplateListByRequestId(requestId string) (
 	err = dao.X.SQL("select * from task_template where request_template = ?", requestTemplate).Find(&list)
 	return
 }
+
+func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplate(requestTemplateId string) (list []*models.TaskTemplateTable, err error) {
+	return s.taskTemplateDao.QueryByRequestTemplate(requestTemplateId)
+}

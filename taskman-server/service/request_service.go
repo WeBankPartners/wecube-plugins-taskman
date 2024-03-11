@@ -1920,7 +1920,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	// 查询 task
 	var tasks []*models.TaskTable
-	err = dao.X.SQL("select * from task where request=? order by created_time", requestId).Find(&tasks)
+	err = dao.X.SQL("select * from task where request=? and del_flag=0 order by created_time", requestId).Find(&tasks)
 	//err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
 	//	Where("request = ?", requestId).
 	//	Asc("created_time").

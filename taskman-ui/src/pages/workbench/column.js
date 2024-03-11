@@ -22,7 +22,7 @@ export default {
         name: {
           title: this.$t('request_name'),
           sortable: 'custom',
-          minWidth: 250,
+          minWidth: 220,
           key: 'name',
           render: (h, params) => {
             return (
@@ -132,7 +132,13 @@ export default {
         // 任务停留时长
         effectiveDays: {
           renderHeader: () => {
-            return <span>{['2', '3'].includes(this.type) ? '任务停留/有效期' : this.$t('tw_request_stay_time')}</span>
+            return (
+              <span>
+                {['pending', 'hasProcessed'].includes(this.tabName)
+                  ? '任务停留/有效期'
+                  : this.$t('tw_request_stay_time')}
+              </span>
+            )
           },
           minWidth: 140,
           key: 'effectiveDays',
@@ -368,9 +374,7 @@ export default {
       },
       // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       pendingTaskColumn: [],
-      pendingColumn: [],
       hasProcessedTaskColumn: [],
-      hasProcessedColumn: [],
       submitAllColumn: [],
       submitColumn: [],
       draftColumn: [],
@@ -403,6 +407,10 @@ export default {
         minWidth: 120,
         key: 'taskName',
         render: (h, params) => {
+          const taskNameMap = {
+            check: this.$t('tw_pending_tab'),
+            confirm: this.$t('tw_approve_tab')
+          }
           return (
             <span
               style="cursor:pointer;"
@@ -410,7 +418,7 @@ export default {
                 this.handleDbClick(params.row)
               }}
             >
-              {params.row.taskName}
+              {taskNameMap[params.row.taskName] || params.row.taskName || '-'}
             </span>
           )
         }
@@ -439,44 +447,22 @@ export default {
       this.baseColumn.action
     ]
 
-    // 待处理-请求定版
-    this.pendingColumn = [
+    // 已处理
+    this.hasProcessedTaskColumn = [
       this.baseColumn.id,
       this.baseColumn.name,
       this.baseColumn.status,
       this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
-      this.baseColumn.effectiveDays,
-      {
-        title: this.$t('tw_task_commit_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'reportTime'
-      },
-      {
-        title: this.$t('tw_request_expect_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'expectTime'
-      },
-      this.baseColumn.createdBy,
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
-      this.baseColumn.action
-    ]
-
-    // 已处理-任务处理
-    this.hasProcessedTaskColumn = [
-      this.baseColumn.id,
       {
         title: this.$t('task_name'),
         sortable: 'custom',
         minWidth: 120,
         key: 'taskName',
         render: (h, params) => {
+          const taskNameMap = {
+            check: this.$t('tw_pending_tab'),
+            confirm: this.$t('tw_approve_tab')
+          }
           return (
             <span
               style="cursor:pointer;"
@@ -484,67 +470,36 @@ export default {
                 this.handleDbClick(params.row)
               }}
             >
-              {params.row.taskName}
+              {taskNameMap[params.row.taskName] || params.row.taskName || '-'}
             </span>
           )
         }
       },
-      this.baseColumn.name,
-      this.baseColumn.status,
-      this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
-      this.baseColumn.effectiveDays,
       {
-        title: this.$t('tw_task_commit_time'),
+        title: '任务创建',
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: this.$t('tw_task_expect_time'),
+        title: '任务截止',
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
       },
-      this.baseColumn.createdBy,
-      this.baseColumn.templateName,
-      this.baseColumn.procDefName,
-      this.baseColumn.operatorObjType,
-      this.baseColumn.operatorObj,
       {
         title: this.$t('handle_time'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskApprovalTime'
       },
-      this.baseColumn.action
-    ]
-
-    // 已处理-请求定版
-    this.hasProcessedColumn = [
-      this.baseColumn.id,
-      this.baseColumn.name,
-      this.baseColumn.status,
-      this.baseColumn.curNode,
-      this.baseColumn.handler,
-      this.baseColumn.progress,
       this.baseColumn.effectiveDays,
-      {
-        title: this.$t('tw_task_commit_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'reportTime'
-      },
-      {
-        title: this.$t('tw_request_expect_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'expectTime'
-      },
+      this.baseColumn.progress,
+      this.baseColumn.handler,
       this.baseColumn.createdBy,
       {
         title: this.$t('tw_rollback_reason'),
+        isShow: this.type === 1,
         sortable: 'custom',
         minWidth: 150,
         key: 'rollbackDesc',
@@ -562,12 +517,6 @@ export default {
       this.baseColumn.procDefName,
       this.baseColumn.operatorObjType,
       this.baseColumn.operatorObj,
-      {
-        title: this.$t('handle_time'),
-        sortable: 'custom',
-        minWidth: 150,
-        key: 'approvalTime'
-      },
       this.baseColumn.action
     ]
 

@@ -429,7 +429,7 @@ CREATE TABLE IF NOT EXISTS  `form_template` (
   `item_group_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表单组名',
   `item_group_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '表单组类型:workflow 编排数据,optional 自选,custom 自定义,request 请求信息',
   `item_group_rule` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '新增一行规则',
-  `item_group_sort` tinyint(4) DEFAULT '0' COMMENT '排序',
+  `item_group_sort` tinyint(4) DEFAULT '1' COMMENT '排序',
   `ref_id` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '引用ID',
   `request_form_type` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '请求表单类型:message 信息表单 data 数据表单',
   `del_flag` tinyint(4) DEFAULT '0' COMMENT '是否删除',
@@ -494,13 +494,14 @@ CREATE TABLE IF NOT EXISTS `task_handle` (
     `handler` varchar(64)  DEFAULT NULL,
     `handler_type` varchar(255)  DEFAULT NULL,
     `handler_result` varchar(64)  DEFAULT NULL,
-    `handler_status` varchar(64)  DEFAULT NULL,
+    `handle_status` varchar(64)  DEFAULT 'uncompleted',
     `parent_id` varchar(64)  DEFAULT NULL,
     `created_time` datetime  NULL,
     `updated_time` datetime  NULL,
     `result_desc` text  DEFAULT NULL,
     `change_reason` varchar(64)  DEFAULT NULL,
     `sort` int  DEFAULT '0',
+    `latest_flag` tinyint  DEFAULT '1',
     PRIMARY KEY (`id`),
     CONSTRAINT `fore_task_handle_template` FOREIGN KEY (`task_handle_template`) REFERENCES `task_handle_template` (`id`),
     CONSTRAINT `fore_task_handle_task` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
@@ -518,4 +519,5 @@ alter table form_item add constraint fore_form_item_task_handle foreign key(task
 
 alter table attach_file add column task_handle varchar(64) default null COMMENT '任务处理';
 alter table attach_file add constraint fore_attach_file_task_handle foreign key(task_handle) REFERENCES task_handle(id);
+alter table form_item_template add column routine_expression text default null COMMENT '表单项计算表达式';
 #@v1.0.5-end@;

@@ -26,7 +26,7 @@ func GetRequestPreviewData(c *gin.Context) {
 
 // CountPlatform 个人工作台数量统计-new
 func CountPlatform(c *gin.Context) {
-	scene := c.Param("scene")
+	scene := c.Query("scene")
 	if scene == "" {
 		middleware.ReturnParamEmptyError(c, "scene")
 		return

@@ -110,7 +110,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 							for _, refFormItemTemplate := range refFormItemTemplateList {
 								// 主要更新 routineExpression 值
 								refFormItemTemplate.RoutineExpression = customItem.RoutineExpression
-								updateItems = append(updateItems, models.ConvertFormItemTemplateDto2Model(refFormItemTemplate))
+								updateItems = append(updateItems, refFormItemTemplate)
 							}
 						}
 						updateItems = append(updateItems, models.ConvertFormItemTemplateDto2Model(customItem))

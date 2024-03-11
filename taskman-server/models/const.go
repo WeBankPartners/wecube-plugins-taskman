@@ -83,6 +83,7 @@ const (
 	TaskTypeApprove   TaskType = "approve"   // 审批
 	TaskTypeImplement TaskType = "implement" // 执行类型(任务)
 	TaskTypeConfirm   TaskType = "confirm"   // 请求确认
+	TaskTypeRevoke    TaskType = "revoke"    // 请求撤回
 )
 
 // TaskTemplateHandleMode 任务模板 处理模式

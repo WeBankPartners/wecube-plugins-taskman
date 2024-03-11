@@ -189,6 +189,7 @@ func calcExpireTime(reportTime string, expireDay int) (expire string) {
 
 func RevokeRequest(requestId, user string) (err error) {
 	var request models.RequestTable
+	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	request, err = GetSimpleRequest(requestId)
 	if err != nil {
@@ -206,7 +207,15 @@ func RevokeRequest(requestId, user string) (err error) {
 		err = fmt.Errorf("request not yours")
 		return
 	}
-	_, err = dao.X.Exec("update request set status ='Draft',revoke_flag=1,updated_time=? where id=?", nowTime, request.Id)
+	// 添加撤回 任务
+	newTaskId := "re_" + guid.CreateGuid()
+	now := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,status,request,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?)",
+		Param: []interface{}{newTaskId, "revoke", models.TaskStatusDone, request.Id, models.TaskTypeRevoke, "system", now, "system", now}})
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
+		Param: []interface{}{guid.CreateGuid(), newTaskId, request.Role, request.CreatedBy, now, now}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request set status ='Draft',revoke_flag=1,updated_time=? where id=?", Param: []interface{}{nowTime, request.Id}})
+	err = dao.Transaction(actions)
 	return
 }
 

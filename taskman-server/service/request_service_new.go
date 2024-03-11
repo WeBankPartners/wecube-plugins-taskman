@@ -964,6 +964,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		}
 		rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
 	}
+
 	return
 }
 

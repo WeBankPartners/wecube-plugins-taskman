@@ -103,70 +103,15 @@ export default {
   },
   methods: {
     // 获取请求进度
-    async initData (requestTemplate, requestId) {
+    async initData (requestId) {
       const params = {
-        templateId: requestTemplate,
-        requestId
+        params: {
+          requestId: requestId
+        }
       }
       const { statusCode, data } = await getProgressInfo(params)
       if (statusCode === 'OK') {
         const { approvalProgress, requestProgress, taskProgress } = data
-        // const approvalProgress = [
-        //   {
-        //     handler: 'admin',
-        //     node: '审批1',
-        //     status: 1
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: '审批2',
-        //     status: 2
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: '审批3',
-        //     status: 2
-        //   }
-        // ]
-        // const requestProgress = [
-        //   {
-        //     handler: 'admin',
-        //     node: 'sendRequest',
-        //     status: 3
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: 'requestPending',
-        //     status: 3
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: 'approval',
-        //     status: 1
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: 'task',
-        //     status: 2
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: 'confirm',
-        //     status: 2
-        //   }
-        // ]
-        // const taskProgress = [
-        //   {
-        //     handler: 'admin',
-        //     node: '任务1',
-        //     status: 1
-        //   },
-        //   {
-        //     handler: 'admin',
-        //     node: '任务2',
-        //     status: 2
-        //   }
-        // ]
         this.progress.approvalProgress = approvalProgress || [] // 审批进度
         this.progress.requestProgress = requestProgress || [] // 请求进度
         this.progress.taskProgress = taskProgress || [] // 任务进度

@@ -18,7 +18,7 @@ type FormItemTemplateService struct {
 func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
 	var formTemplate *models.FormTemplateTable
 	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
-	var formItemTemplateList []*models.FormItemTemplateTable
+	var formItemTemplateList, refFormItemTemplateList []*models.FormItemTemplateTable
 	var newItemGroupId string
 	var systemItemExist, customItemExist bool
 	var existMap = make(map[string]bool)
@@ -96,12 +96,22 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		for _, customItem := range param.CustomItems {
 			customItemExist = false
 			if customItem.Id != "" {
+				refFormItemTemplateList = []*models.FormItemTemplateTable{}
 				existMap[customItem.Id] = true
 				for _, formItemTemplate := range formItemTemplateList {
 					if customItem.Id == formItemTemplate.Id {
 						customItemExist = true
 						if customItem.FormTemplate == "" {
 							customItem.FormTemplate = param.FormTemplateId
+						}
+						// 查询 refId指向当前ID的数据
+						refFormItemTemplateList, _ = s.formItemTemplateDao.QueryByRefId(customItem.Id)
+						if len(refFormItemTemplateList) > 0 {
+							for _, refFormItemTemplate := range refFormItemTemplateList {
+								// 主要更新 routineExpression 值
+								refFormItemTemplate.RoutineExpression = customItem.RoutineExpression
+								updateItems = append(updateItems, refFormItemTemplate)
+							}
 						}
 						updateItems = append(updateItems, models.ConvertFormItemTemplateDto2Model(customItem))
 						break
@@ -167,7 +177,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		}
 		if len(deleteItems) > 0 {
 			for _, item := range deleteItems {
-				err = s.formItemTemplateDao.Delete(session, item.Id)
+				err = s.formItemTemplateDao.DeleteByIdOrRefId(session, item.Id)
 				if err != nil {
 					return err
 				}
@@ -312,5 +322,10 @@ func (s *FormItemTemplateService) CopyDataFormTemplateItemGroup(requestTemplateI
 		}
 		return nil
 	})
+	return
+}
+
+func (s *FormItemTemplateService) GetFormItemTemplate(formItemTemplateId string) (result *models.FormItemTemplateTable, err error) {
+	result, err = s.formItemTemplateDao.Get(formItemTemplateId)
 	return
 }

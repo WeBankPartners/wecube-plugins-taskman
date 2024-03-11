@@ -531,6 +531,17 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	}
 	// 编排处理,(1)新增了编排 (2)编排节点名称有更新 (3)删除编排
 	if requestTemplate.ProcDefId == "" && param.ProcDefId != "" {
+		// 先删除已有任务
+		for _, taskTemplate := range implementTaskTemplateList {
+			deleteTaskTemplateActions = []*dao.ExecAction{}
+			deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
+			if err != nil {
+				return
+			}
+			if len(deleteTaskTemplateActions) > 0 {
+				actions = append(actions, deleteTaskTemplateActions...)
+			}
+		}
 		// 新增编排
 		insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system")
 		if err != nil {
@@ -544,7 +555,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		if param.ProcDefId == "" {
 			for _, taskTemplate := range implementTaskTemplateList {
 				deleteTaskTemplateActions = []*dao.ExecAction{}
-				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
+				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 				if err != nil {
 					return
 				}
@@ -557,7 +568,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 			if requestTemplate.ProcDefId != param.ProcDefId {
 				for _, taskTemplate := range implementTaskTemplateList {
 					deleteTaskTemplateActions = []*dao.ExecAction{}
-					deleteTaskTemplateActions, err = GetTaskTemplateService().deleteProcTaskTemplateSql(param.Id, taskTemplate.Id)
+					deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 					if err != nil {
 						return
 					}

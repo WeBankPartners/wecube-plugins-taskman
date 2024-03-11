@@ -151,3 +151,19 @@ type ProcEntity struct {
 	DisplayName string                    `json:"displayName"`
 	Attributes  []*ProcEntityAttributeObj `json:"attributes"`
 }
+
+type PluginQueryExpressionDataParam struct {
+	DataModelExpression string `json:"dataModelExpression" binding:"required"`
+	RootDataId          string `json:"rootDataId" binding:"required"`
+	Token               string `json:"token"`
+}
+
+type PluginQueryExpressionDataResponse struct {
+	HttpResponseMeta
+	Data []map[string]interface{} `json:"data"`
+}
+
+type GetProcessNodeAllowOptionsResponse struct {
+	HttpResponseMeta
+	Data []string `json:"data"`
+}

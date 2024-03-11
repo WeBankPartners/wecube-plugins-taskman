@@ -133,7 +133,7 @@ export const recallRequest = id => req.post(`/taskman/api/v1/user/request/revoke
 // 新建发布-发布信息获取
 export const getCreateInfo = params => req.post(`/taskman/api/v2/request`, params)
 // 新建发布-请求进度
-export const getProgressInfo = params => req.post(`/taskman/api/v1/request/progress`, params)
+export const getProgressInfo = params => req.get(`/taskman/api/v1/request/progress`, params)
 // 新建发布-保存数据
 export const savePublishData = (requestId, params) =>
   req.post(`/taskman/api/v2/request-data/save/${requestId}/data/save`, params)

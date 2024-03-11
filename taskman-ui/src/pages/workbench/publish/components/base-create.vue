@@ -397,7 +397,7 @@ export default {
     }
     // 获取请求进度
     this.$nextTick(() => {
-      this.$refs.progress.initData(this.requestTemplate, this.requestId)
+      this.$refs.progress.initData(this.requestId)
     })
   },
   methods: {

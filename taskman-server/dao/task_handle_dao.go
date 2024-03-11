@@ -39,7 +39,7 @@ func (d *TaskHandleDao) Delete(session *xorm.Session, id string) (err error) {
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(id).Delete(&models.TaskHandleTable{})
+	_, err = session.ID(id).Delete(&models.TaskHandleTable{})
 	return
 }
 
@@ -51,7 +51,7 @@ func (d *TaskHandleDao) Deletes(session *xorm.Session, ids []string) (err error)
 	if len(ids) == 0 {
 		return
 	}
-	_, err = d.DB.In("id", ids).Delete(&models.TaskHandleTable{})
+	_, err = session.In("id", ids).Delete(&models.TaskHandleTable{})
 	return
 }
 
@@ -60,7 +60,7 @@ func (d *TaskHandleDao) DeleteByTask(session *xorm.Session, taskId string) (err 
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.Where("task=?", taskId).Delete(&models.TaskHandleTable{})
+	_, err = session.Where("task=?", taskId).Delete(&models.TaskHandleTable{})
 	return
 }
 
@@ -72,7 +72,7 @@ func (d *TaskHandleDao) DeleteByTasks(session *xorm.Session, taskIds []string) (
 	if len(taskIds) == 0 {
 		return
 	}
-	_, err = d.DB.In("task", taskIds).Delete(&models.TaskHandleTable{})
+	_, err = session.In("task", taskIds).Delete(&models.TaskHandleTable{})
 	return
 }
 

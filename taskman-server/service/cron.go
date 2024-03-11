@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -32,13 +33,21 @@ func notifyAction() {
 		return
 	}
 	for _, v := range taskTable {
-		if v.NotifyCount >= 1 {
+		if v.NotifyCount >= 2 {
 			continue
 		}
 		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime, NowTime: time.Now().Format(models.DateTimeFormat)}
 		calcExpireObj(&tmpExpireObj)
-		if tmpExpireObj.Percent > 75 {
-			tmpErr := NotifyTaskMail(v.Id, models.CoreToken.GetCoreToken(), "")
+		if ((tmpExpireObj.Percent >= 75) && (v.NotifyCount == 0)) || ((tmpExpireObj.Percent >= 100) && (v.NotifyCount < 2)) {
+			mailSubject := "【任务超时提醒】"
+			mailContent := ""
+			if (tmpExpireObj.Percent >= 75) && (v.NotifyCount == 0) {
+				mailContent = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]快过期了,有效期到%s,请点击链接处理", v.Request, v.Name, v.ExpireTime)
+			} else {
+				mailContent = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]已过期,请点击链接尽快处理", v.Request, v.Name)
+			}
+
+			tmpErr := NotifyTaskMail(v.Id, models.CoreToken.GetCoreToken(), "", mailSubject, mailContent)
 			if tmpErr != nil {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			} else {

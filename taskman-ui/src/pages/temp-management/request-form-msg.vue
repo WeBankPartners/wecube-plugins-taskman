@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row>
-      <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
+      <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Divider plain>{{ $t('custom_form') }}</Divider>
           <draggable
@@ -29,7 +29,7 @@
           </draggable>
         </div>
       </Col>
-      <Col span="12" style="border: 1px solid #dcdee2; padding: 0 16px; width: 48%; margin: 0 4px">
+      <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
           <Divider>预览</Divider>
           <div class="title">
@@ -110,7 +110,7 @@
           </template>
         </div>
       </Col>
-      <Col span="6" style="border: 1px solid #dcdee2">
+      <Col span="5" style="border: 1px solid #dcdee2">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Collapse v-model="openPanel">
             <Panel name="1">
@@ -251,6 +251,7 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
+      <Button @click="gotoForward" ghost type="primary">{{ $t('forward') }}</Button>
       <Button @click="saveMsgForm(1)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
       <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
     </div>
@@ -492,7 +493,7 @@ export default {
     },
     // 保存表单信息
     async saveMsgForm (nextStep) {
-      // nextStep 1新增 2下一步 3切换tab
+      // nextStep 1新增 2下一步 3切换tab 4上一步
       let tmp = [].concat(...JSON.parse(JSON.stringify(this.finalElement)).map(l => l.attrs))
       tmp.forEach((l, index) => {
         l.sort = index + 1
@@ -515,9 +516,11 @@ export default {
         if (nextStep === 1) {
           this.loadPage(this.requestTemplateId)
         } else if (nextStep === 2) {
-          this.$emit('gotoNextStep', this.requestTemplateId)
+          this.$emit('gotoStep', this.requestTemplateId, 'forward')
         } else if (nextStep === 3) {
           this.$emit('changTab', 'dataForm')
+        } else if (nextStep === 4) {
+          this.$emit('gotoStep', this.requestTemplateId, 'backward')
         }
       }
     },
@@ -563,74 +566,13 @@ export default {
       return this.isParmasChanged
     },
     tabChange () {
-      if (this.isParmasChanged) {
-        // this.$Modal.confirm({
-        //   title: `${this.$t('tw_confirm_discarding_changes111')}`,
-        //   content: `${this.$t('tw_params_edit_confirm')}`,
-        //   'z-index': 1000000,
-        //   okText: this.$t('save'),
-        //   cancelText: this.$t('tw_abandon'),
-        //   closable: true,
-        //   onOk: async () => {
-        //     this.saveMsgForm(3)
-        //   },
-        //   onCancel: () => {
-        //     this.isParmasChanged = false
-        //     this.$emit('changTab', 'dataForm')
-        //   }
-        // })
-        this.$refs.customConfirmModelRef.open({
-          title: `${this.$t('tw_confirm_discarding_changes')}`,
-          content: `${this.$t('tw_params_edit_confirm')}`,
-          okText: this.$t('save'),
-          cancelText: this.$t('tw_abandon'),
-          okFunc: () => {
-            this.saveMsgForm(3)
-          },
-          cancelFunc: () => {
-            this.isParmasChanged = false
-            this.$emit('changTab', 'dataForm')
-          }
-        })
-      } else {
-        this.isParmasChanged = false
-        this.$emit('gotoNextStep', this.requestTemplateId)
-      }
+      this.saveMsgForm(3)
     },
     gotoNext () {
-      if (this.isParmasChanged) {
-        // this.$Modal.confirm({
-        //   title: `${this.$t('tw_confirm_discarding_changes')}`,
-        //   content: `${this.$t('tw_params_edit_confirm')}`,
-        //   'z-index': 1000000,
-        //   okText: this.$t('save'),
-        //   cancelText: this.$t('tw_abandon'),
-        //   closable: true,
-        //   onOk: async () => {
-        //     this.saveMsgForm(2)
-        //   },
-        //   onCancel: () => {
-        //     this.isParmasChanged = false
-        //     this.$emit('gotoNextStep', this.requestTemplateId)
-        //   }
-        // })
-        this.$refs.customConfirmModelRef.open({
-          title: `${this.$t('tw_confirm_discarding_changes')}`,
-          content: `${this.$t('tw_params_edit_confirm')}`,
-          okText: this.$t('save'),
-          cancelText: this.$t('tw_abandon'),
-          okFunc: () => {
-            this.saveMsgForm(2)
-          },
-          cancelFunc: () => {
-            this.isParmasChanged = false
-            this.$emit('gotoNextStep', this.requestTemplateId)
-          }
-        })
-      } else {
-        this.isParmasChanged = false
-        this.$emit('gotoNextStep', this.requestTemplateId)
-      }
+      this.saveMsgForm(2)
+    },
+    gotoForward () {
+      this.saveMsgForm(4)
     },
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
@@ -734,7 +676,7 @@ fieldset[disabled] .ivu-input {
   }
 }
 .custom-title {
-  width: 90px;
+  width: 80px;
   display: inline-block;
   text-align: right;
   word-wrap: break-word;

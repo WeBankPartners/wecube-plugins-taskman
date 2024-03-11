@@ -371,7 +371,7 @@ export default {
           desc: this.$t('successful')
         })
         if (isGoToNext) {
-          this.$emit('gotoNextStep', data.id)
+          this.$emit('gotoStep', data.id, 'forward')
         } else {
           this.loadPage(data.id)
         }
@@ -406,26 +406,27 @@ export default {
       }
     },
     gotoNext () {
-      if (this.basicInfo.id === '') {
-        this.createTemp(true)
-      } else {
-        if (this.isParmasChanged) {
-          this.$refs.customConfirmModelRef.open({
-            title: `${this.$t('tw_confirm_discarding_changes')}`,
-            content: `${this.$t('tw_params_edit_confirm')}`,
-            okText: this.$t('save'),
-            cancelText: this.$t('tw_abandon'),
-            okFunc: () => {
-              this.createTemp(true)
-            },
-            cancelFunc: () => {
-              this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
-            }
-          })
-        } else {
-          this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
-        }
-      }
+      this.createTemp(true)
+      // if (this.basicInfo.id === '') {
+      //   this.createTemp(true)
+      // } else {
+      //   if (this.isParmasChanged) {
+      //     this.$refs.customConfirmModelRef.open({
+      //       title: `${this.$t('tw_confirm_discarding_changes')}`,
+      //       content: `${this.$t('tw_params_edit_confirm')}`,
+      //       okText: this.$t('save'),
+      //       cancelText: this.$t('tw_abandon'),
+      //       okFunc: () => {
+      //         this.createTemp(true)
+      //       },
+      //       cancelFunc: () => {
+      //         this.$emit('gotoStep', this.requestTemplateId || this.basicInfo.id)
+      //       }
+      //     })
+      //   } else {
+      //     this.$emit('gotoStep', this.requestTemplateId || this.basicInfo.id)
+      //   }
+      // }
     },
     // 获取模版组信息
     async getGroupOptions () {

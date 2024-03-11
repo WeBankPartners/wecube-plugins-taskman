@@ -45,7 +45,7 @@
         </div>
         <div>
           <Row>
-            <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
+            <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
               <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
                 <Divider plain>{{ $t('custom_form') }}</Divider>
                 <draggable
@@ -76,7 +76,7 @@
                 </draggable>
               </div>
             </Col>
-            <Col span="12" style="border: 1px solid #dcdee2; padding: 0 16px; width: 48%; margin: 0 4px">
+            <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
               <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
                 <Divider>预览</Divider>
                 <div class="title">
@@ -238,7 +238,7 @@
                 </template>
               </Modal>
             </Col>
-            <Col span="6" style="border: 1px solid #dcdee2">
+            <Col span="5" style="border: 1px solid #dcdee2">
               <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
                 <Collapse v-model="openPanel">
                   <Panel name="1">
@@ -1104,7 +1104,7 @@ export default {
           // this.cancelGroup()
           this.loadPage()
         } else if (nextStep === 2) {
-          this.$emit('gotoNextStep', this.requestTemplateId)
+          this.$emit('gotoStep', this.requestTemplateId)
         } else if (nextStep === 4) {
           this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
@@ -1142,11 +1142,11 @@ export default {
             this.$refs.approvalFormNodeRef.saveNode()
           },
           onCancel: () => {
-            this.$emit('gotoNextStep', this.requestTemplateId)
+            this.$emit('gotoStep', this.requestTemplateId)
           }
         })
       } else {
-        this.$emit('gotoNextStep', this.requestTemplateId)
+        this.$emit('gotoStep', this.requestTemplateId)
       }
     }
   },
@@ -1227,7 +1227,7 @@ fieldset[disabled] .ivu-input {
   border-color: #dcdee2;
 }
 .custom-title {
-  width: 90px;
+  width: 80px;
   display: inline-block;
   text-align: right;
   word-wrap: break-word;

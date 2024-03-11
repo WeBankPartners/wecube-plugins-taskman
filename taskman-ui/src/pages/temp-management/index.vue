@@ -6,21 +6,13 @@
     <Row type="flex">
       <Col span="17" offset="2">
         <Steps :current="currentStep">
-          <Step>
-            <span slot="title" @click="changeStep(0)">{{ $t('basic_information_settings') }}</span>
-          </Step>
-          <Step>
-            <span slot="title" @click="changeStep(1)">{{ $t('request_form_settings') }}</span>
-          </Step>
-          <Step>
-            <span slot="title" @click="changeStep(2)">{{ $t('approval_form_settings') }}</span>
-          </Step>
-          <Step>
-            <span slot="title" @click="changeStep(3)">{{ $t('task_form_settings') }}</span>
-          </Step>
+          <Step :title="$t('basic_information_settings')"></Step>
+          <Step :title="$t('request_form_settings')"></Step>
+          <Step :title="$t('approval_form_settings')"></Step>
+          <Step :title="$t('task_form_settings')"></Step>
         </Steps>
       </Col>
-      <Col span="3">
+      <!-- <Col span="3">
         <Button
           @click="submitTemplate"
           :disabled="currentStep !== 3 || $parent.isCheck === 'Y'"
@@ -28,26 +20,14 @@
           type="primary"
           >{{ $t('submit_for_review') }}</Button
         >
-      </Col>
+      </Col> -->
     </Row>
     <div></div>
     <div v-if="currentStep !== -1" style="margin-top:16px;">
-      <BasicInfo
-        @gotoNextStep="gotoNextStep"
-        :requestTemplateId="requestTemplateId"
-        v-if="currentStep === 0"
-      ></BasicInfo>
-      <RequestForm
-        @gotoNextStep="gotoNextStep"
-        :requestTemplateId="requestTemplateId"
-        v-if="currentStep === 1"
-      ></RequestForm>
-      <ApprovalForm
-        @gotoNextStep="gotoNextStep"
-        :requestTemplateId="requestTemplateId"
-        v-if="currentStep === 2"
-      ></ApprovalForm>
-      <TaskForm @gotoNextStep="gotoNextStep" :requestTemplateId="requestTemplateId" v-if="currentStep === 3"></TaskForm>
+      <BasicInfo @gotoStep="gotoStep" :requestTemplateId="requestTemplateId" v-if="currentStep === 0"></BasicInfo>
+      <RequestForm @gotoStep="gotoStep" :requestTemplateId="requestTemplateId" v-if="currentStep === 1"></RequestForm>
+      <ApprovalForm @gotoStep="gotoStep" :requestTemplateId="requestTemplateId" v-if="currentStep === 2"></ApprovalForm>
+      <TaskForm @gotoStep="gotoStep" :requestTemplateId="requestTemplateId" v-if="currentStep === 3"></TaskForm>
     </div>
   </div>
 </template>
@@ -122,9 +102,14 @@ export default {
         onCancel: () => {}
       })
     },
-    gotoNextStep (tmpId) {
+    gotoStep (tmpId, stepDirection) {
+      console.log(77, stepDirection)
       this.requestTemplateId = tmpId
-      this.currentStep++
+      if (stepDirection === 'forward') {
+        this.currentStep++
+      } else if (stepDirection === 'backward') {
+        this.currentStep--
+      }
     }
   },
   components: {

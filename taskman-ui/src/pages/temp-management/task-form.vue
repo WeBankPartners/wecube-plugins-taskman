@@ -1122,7 +1122,7 @@ export default {
           // this.cancelGroup()
           this.loadPage()
         } else if (nextStep === 2) {
-          this.$emit('gotoNextStep', this.requestTemplateId)
+          this.$emit('gotoStep', this.requestTemplateId)
         } else if (nextStep === 4) {
           this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
@@ -1160,11 +1160,11 @@ export default {
             this.$refs.approvalFormNodeRef.saveNode()
           },
           onCancel: () => {
-            this.$emit('gotoNextStep', this.requestTemplateId)
+            this.$emit('gotoStep', this.requestTemplateId)
           }
         })
       } else {
-        this.$emit('gotoNextStep', this.requestTemplateId)
+        this.$emit('gotoStep', this.requestTemplateId)
       }
     },
     nodeStyle (approval) {
@@ -1278,7 +1278,7 @@ fieldset[disabled] .ivu-input {
   border-color: #dcdee2;
 }
 .custom-title {
-  width: 90px;
+  width: 80px;
   display: inline-block;
   text-align: right;
   word-wrap: break-word;

@@ -9,6 +9,7 @@
   "delete": "删除",
   "reset": "重置",
   "next": "下一步",
+  "forward": "前一步",
   "confirm": "确定",
   "confirm_delete": "确定删除？",
   "confirm_termination": "确定终止？",

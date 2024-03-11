@@ -71,19 +71,16 @@ type CreateRequestDto struct {
 
 // PlatformData  工作台数据
 type PlatformData struct {
-	Pending             int `json:"pending"`             // 待处理
-	PendingTask         int `json:"pendingTask"`         // 待处理任务
-	PendingApprove      int `json:"pendingApprove"`      // 待处理审批
-	PendingCheck        int `json:"pendingCheck"`        // 待处理定版
-	PendingConfirm      int `json:"pendingConfirm"`      // 待处理请求确认
-	HasProcessed        int `json:"hasProcessed"`        // 已处理
-	HasProcessedTask    int `json:"hasProcessedTask"`    // 已处理任务
-	HasProcessedApprove int `json:"hasProcessedApprove"` // 已处理审批
-	HasProcessedCheck   int `json:"hasProcessedCheck"`   // 已处理请求定版
-	HasProcessedConfirm int `json:"hasProcessedConfirm"` // 已处理请求确认
-	Submit              int `json:"submit"`              // 我提交的
-	Draft               int `json:"draft"`               // 我暂存的
-	Collect             int `json:"collect"`             // 收藏模板
+	Pending        int `json:"pending"`        // 待处理
+	MyPending      int `json:"myPending"`      // 我的待处理
+	PendingTask    int `json:"pendingTask"`    // 待处理任务
+	PendingApprove int `json:"pendingApprove"` // 待处理审批
+	PendingCheck   int `json:"pendingCheck"`   // 待处理定版
+	PendingConfirm int `json:"pendingConfirm"` // 待处理请求确认
+	HasProcessed   int `json:"hasProcessed"`   // 已处理
+	Submit         int `json:"submit"`         // 我提交的
+	Draft          int `json:"draft"`          // 我暂存的
+	Collect        int `json:"collect"`        // 收藏模板
 }
 
 // PlatformDataObj 工作台返回数据

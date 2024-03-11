@@ -77,6 +77,7 @@ const (
 type TaskType string
 
 const (
+	TaskTypeNone      TaskType = ""          // 空
 	TaskTypeSubmit    TaskType = "submit"    // 提交
 	TaskTypeCheck     TaskType = "check"     // 定版
 	TaskTypeApprove   TaskType = "approve"   // 审批

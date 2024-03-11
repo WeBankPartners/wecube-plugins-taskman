@@ -47,20 +47,16 @@ func getTaskTypeByType(uiType int) models.TaskType {
 
 // GetPlatformCount 工作台数量统计
 func GetPlatformCount(scene int, user string, userRoles []string) (platformData models.PlatformData, err error) {
-	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int
-	var hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed int
-	pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCount(scene, userRoles)
-	hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed = GetHasProcessedCount(scene, user)
+	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, myPending, pending, hasProcessed int
+	pendingTask, pendingApprove, pendingCheck, pendingConfirm, myPending, pending = GetPendingCount(scene, user, userRoles)
+	hasProcessed = GetHasProcessedCount(scene, user)
 	platformData.Pending = pending
+	platformData.MyPending = myPending
 	platformData.PendingTask = pendingTask
 	platformData.PendingApprove = pendingApprove
 	platformData.PendingCheck = pendingCheck
 	platformData.PendingConfirm = pendingConfirm
 	platformData.HasProcessed = hasProcessed
-	platformData.HasProcessedTask = hasProcessedTask
-	platformData.HasProcessedApprove = hasProcessedApprove
-	platformData.HasProcessedCheck = hasProcessedCheck
-	platformData.HasProcessedConfirm = hasProcessedConfirm
 	platformData.Submit = GetSubmitCount(scene, user)
 	platformData.Draft = GetDraftCount(scene, user)
 	platformData.Collect = GetCollectCount(scene, user)
@@ -91,23 +87,25 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 }
 
 // GetPendingCount 统计待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
-func GetPendingCount(scene int, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int) {
+func GetPendingCount(scene int, user string, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, myPending, pending int) {
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
-	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
-	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
-	pTaskSQL, pendingTaskParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam, pendingParam []interface{}
+	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL, pendingSQL string
+	pTaskSQL, pendingTaskParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
 	pendingTask = dao.QueryCount(pTaskSQL, pendingTaskParam...)
 
-	pendingApproveSQL, pendingApproveParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+	pendingApproveSQL, pendingApproveParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
 	pendingApprove = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
 
-	pendingCheckSQL, pendingCheckParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+	pendingCheckSQL, pendingCheckParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
 	pendingCheck = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
 
-	pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+	pendingConfirmSQL, pendingConfirmParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
 	pendingConfirm = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
 
-	pending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
+	pendingSQL, pendingParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeNone)
+	pending = dao.QueryCount(pendingSQL, pendingParam...)
+	myPending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
 	return
 }
 
@@ -123,35 +121,41 @@ func getPlatTaskSQL(where, sql string) string {
 
 func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_status = 'uncompleted' and task_handle_role in (" + userRolesFilterSql + ")"
-	queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
+	if taskType == models.TaskTypeNone {
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_status = 'uncompleted' and task_handle_role in (" + userRolesFilterSql + ")"
+		queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
+	} else {
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_status = 'uncompleted' and task_handle_role in (" + userRolesFilterSql + ")"
+		queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
+	}
+	return
+}
+
+func pendingMyTaskSQL(templateType int, user, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
+	queryParam = []interface{}{}
+	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_status = 'uncompleted' and (task_handler =? or task_handler is null) and task_handle_role in (" + userRolesFilterSql + ")"
+	queryParam = append([]interface{}{templateType, taskType, user}, userRolesFilterParam...)
 	return
 }
 
 func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status = 'done' and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
-	queryParam = append([]interface{}{templateType, taskType, user})
+	if taskType == models.TaskTypeNone {
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status = 'done' and template_type = ? and task_handler =? and latest_flag = 1 "
+		queryParam = append([]interface{}{templateType, user})
+	} else {
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status = 'done' and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
+		queryParam = append([]interface{}{templateType, taskType, user})
+	}
 	return
 }
 
 // GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
-func GetHasProcessedCount(scene int, user string) (hasProcessedTask, hasProcessedApprove, hasProcessedCheck, hasProcessedConfirm, hasProcessed int) {
-	var hasProcessedTaskParam, hasProcessedApproveParam, hasProcessedCheckParam, hasProcessedConfirmParam []interface{}
-	var hpTaskSQL, hasProcessedApproveSQL, hasProcessedCheckSQL, hasProcessedConfirmSQL string
-	hpTaskSQL, hasProcessedTaskParam = hasProcessedTaskSQL(scene, user, models.TaskTypeImplement)
-	hasProcessedTask = dao.QueryCount(hpTaskSQL, hasProcessedTaskParam...)
-
-	hasProcessedApproveSQL, hasProcessedApproveParam = hasProcessedTaskSQL(scene, user, models.TaskTypeApprove)
-	hasProcessedApprove = dao.QueryCount(hasProcessedApproveSQL, hasProcessedApproveParam...)
-
-	hasProcessedCheckSQL, hasProcessedCheckParam = hasProcessedTaskSQL(scene, user, models.TaskTypeCheck)
-	hasProcessedCheck = dao.QueryCount(hasProcessedCheckSQL, hasProcessedCheckParam...)
-
-	hasProcessedConfirmSQL, hasProcessedConfirmParam = hasProcessedTaskSQL(scene, user, models.TaskTypeConfirm)
-	hasProcessedConfirm = dao.QueryCount(hasProcessedConfirmSQL, hasProcessedConfirmParam...)
-
-	hasProcessed = hasProcessedTask + hasProcessedApprove + hasProcessedCheck + hasProcessedConfirm
+func GetHasProcessedCount(scene int, user string) (hasProcessed int) {
+	var hasProcessedParam []interface{}
+	var hasProcessedSQL string
+	hasProcessedSQL, hasProcessedParam = hasProcessedTaskSQL(scene, user, models.TaskTypeNone)
+	hasProcessed = dao.QueryCount(hasProcessedSQL, hasProcessedParam...)
 	return
 }
 
@@ -814,54 +818,25 @@ func getSQL(status []string) string {
 
 // GetRequestProgress  请求已创建时,获取请求进度
 func GetRequestProgress(requestId, userToken, language string) (rowData *models.RequestProgressObj, err error) {
-	var request models.RequestTable
-	var requestTemplate *models.RequestTemplateTable
-	var pendingRole, pendingHandler string
-	var requestTemplateService = GetRequestTemplateService()
-	//var taskList []*models.TaskTable
-	rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
-	request, err = GetSimpleRequest(requestId)
-	if err != nil {
-		return
-	}
-	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
-	if err != nil {
-		return
-	}
-	if requestTemplate == nil {
-		return
-	}
-	// 添加提交请求
-	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: SendRequest, Handler: request.CreatedBy})
-	// 配置了请求定版
-	if requestTemplate.CheckSwitch {
-		pendingRole, pendingHandler = requestTemplateService.GetRequestPendingRoleAndHandler(requestTemplateService.GetDtoByRequestTemplate(requestTemplate))
-		// 没有处理人,展示处理角色
-		if pendingHandler == "" {
-			pendingHandler = pendingRole
+	/*	var taskList []*models.TaskTable
+		var taskHandleList []*models.TaskHandleTable
+		rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
+		err = dao.X.SQL("select * from task where request = ? order by created_time asc", requestId).Find(&taskList)
+		if err != nil {
+			return
 		}
-		rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: RequestPending, Handler: pendingHandler})
-	}
-	/*approvalTemplateList, err = GetApprovalTemplateService().ListApprovalTemplates(requestTemplate.Id)
-	  if len(approvalTemplateList) > 0 {
-	  	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: Approval, Handler: ""})
-	  	approvalList, err = GetApprovalService().ListApprovals(requestId)
-	  	// 新建请求还未创建审批
-	  	if len(approvalList) == 0 {
+		for _, task := range taskList {
+			progressObj := &models.ProgressObj{}
+			taskHandleList = []*models.TaskHandleTable{}
+			taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(task.Id)
+			if err != nil {
+				return
+			}
+			progressObj.Node = task.Name
+			progressObj.Handler =
 
-	  	}
-	  }*/
-	// 任务进度
-	/*taskTemplateList, err = GetTaskTemplateService().ListTaskTemplates(requestTemplate.Id)
-	  if len(taskTemplateList) > 0 {
-	  	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{Node: Task, Handler: ""})
-	  }*/
-	// 请求完成
-	rowData.RequestProgress = append(rowData.RequestProgress, &models.ProgressObj{
-		Node:    RequestComplete,
-		Handler: "",
-		Status:  int(models.ProgressStatusNotStart),
-	})
+				rowData.RequestProgress = append(rowData.RequestProgress, progressObj)
+		}*/
 	return
 }
 

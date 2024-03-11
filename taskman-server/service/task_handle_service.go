@@ -74,6 +74,11 @@ func (s *TaskHandleService) GetRequestCheckTaskHandle(taskId string) (taskHandle
 	return
 }
 
+func (s *TaskHandleService) GetTaskHandleListByTaskId(taskId string) (taskHandleList []*models.TaskHandleTable, err error) {
+	err = dao.X.SQL("select * from task_handle where task = ?", taskId).Find(&taskHandleList)
+	return
+}
+
 func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskHandleList []*models.TaskHandleTable
 	err = dao.X.SQL("select * from task_handle where id = ?", id).Find(&taskHandleList)

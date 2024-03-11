@@ -18,7 +18,7 @@
               <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
               <DatePicker
                 v-if="element.elementType === 'datePicker'"
-                type="date"
+                :type="element.type"
                 :placeholder="$t('tw_date_picker')"
                 style="width:100%"
               ></DatePicker>
@@ -136,7 +136,11 @@
                     v-model="element.defaultValue"
                     class="custom-item"
                   ></Select>
-                  <DatePicker v-if="element.elementType === 'datePicker'" class="custom-item" type="date"></DatePicker>
+                  <DatePicker
+                    v-if="element.elementType === 'datePicker'"
+                    class="custom-item"
+                    :type="element.type"
+                  ></DatePicker>
                   <Button
                     @click.stop="removeForm(itemIndex, eleIndex, element)"
                     type="error"
@@ -486,7 +490,7 @@ export default {
           name: 'datePicker',
           title: 'datePicker',
           elementType: 'datePicker',
-          abc: 'datePicker',
+          type: 'datetime',
           defaultValue: '',
           defaultClear: 'no',
           // tag: '',

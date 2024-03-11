@@ -226,8 +226,8 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
-      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnActive()">{{ $t('next') }}</Button>
+      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnDisable">{{ $t('save') }}</Button>
+      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable">{{ $t('next') }}</Button>
     </div>
     <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
@@ -292,7 +292,22 @@ export default {
       expireDayOptions: [1, 2, 3, 4, 5, 6, 7], // 请求时效
       pendingHandlerOptions: [], // 处理人
       showFlow: false, // 是否显示编排选项
-      procOptions: [] // 编排列表
+      procOptions: [], // 编排列表
+      isSaveBtnDisable: true
+    }
+  },
+  watch: {
+    showFlow: {
+      handler (val) {
+        this.isSaveBtnDisable = this.isSaveBtnActive()
+      }
+    },
+    basicInfo: {
+      handler (val) {
+        this.isSaveBtnDisable = this.isSaveBtnActive()
+      },
+      immediate: true,
+      deep: true
     }
   },
   props: ['requestTemplateId'],
@@ -328,7 +343,7 @@ export default {
       if (this.basicInfo.useRoles.length === 0) {
         return true
       }
-      if (this.showFlow && this.basicInfo.procDefId === '') {
+      if (this.showFlow && !this.basicInfo.procDefId) {
         return true
       }
       return res
@@ -528,6 +543,7 @@ export default {
         'z-index': 1000000,
         onOk: async () => {
           this.basicInfo.procDefId = ''
+          this.isParmasChanged = true
         },
         onCancel: () => {
           this.showFlow = !this.showFlow

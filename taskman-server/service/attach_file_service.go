@@ -229,9 +229,13 @@ func getAttachFileRequestTemplate(requestId, taskId string) string {
 func GetTaskHandleAttachFileList(ctx context.Context, taskHandleIds []string) (result []*models.AttachFileTable, err error) {
 	result = make([]*models.AttachFileTable, 0)
 	var attachFiles []*models.AttachFileTable
-	err = dao.X.Context(ctx).Table(models.AttachFileTable{}.TableName()).
-		In("task_handle", taskHandleIds).
-		Find(&attachFiles)
+	taskHandleIdsFilterSql, taskHandleIdsFilterParams := dao.CreateListParams(taskHandleIds, "")
+	err = dao.X.SQL("select * from attach_file where task_handle in ("+taskHandleIdsFilterSql+")", taskHandleIdsFilterParams...).Find(&attachFiles)
+	/*
+		err = dao.X.Context(ctx).Table(models.AttachFileTable{}.TableName()).
+			In("task_handle", taskHandleIds).
+			Find(&attachFiles)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return

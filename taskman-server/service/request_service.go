@@ -2142,10 +2142,12 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 
 	// 查询 request 的 form item
 	taskUpdatedTime := taskObj.UpdatedTime
-	taskHandleCnt := len(taskObj.TaskHandleList)
-	if taskHandleCnt > 0 {
-		taskUpdatedTime = taskObj.TaskHandleList[taskHandleCnt-1].UpdatedTime
-	}
+	/*
+		taskHandleCnt := len(taskObj.TaskHandleList)
+		if taskHandleCnt > 0 {
+			taskUpdatedTime = taskObj.TaskHandleList[taskHandleCnt-1].UpdatedTime
+		}
+	*/
 	var requestFormItems []*models.FormItemTable
 	requestFormItemsParamList := []interface{}{taskObj.Request, taskUpdatedTime}
 	err = dao.X.SQL("select * from form_item where request = ? AND updated_time <= ? order by updated_time desc", requestFormItemsParamList...).Find(&requestFormItems)

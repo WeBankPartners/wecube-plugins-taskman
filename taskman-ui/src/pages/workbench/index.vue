@@ -267,11 +267,10 @@ export default {
           this.searchOptions = this.pendingTaskSearch
         }
       } else if (this.tabName === 'hasProcessed') {
+        this.tableColumn = this.hasProcessedTaskColumn
         if (['1', '4'].includes(this.type)) {
-          this.tableColumn = this.hasProcessedColumn
           this.searchOptions = this.hasProcessedSearch
         } else if (['2', '3'].includes(this.type)) {
-          this.tableColumn = this.hasProcessedTaskColumn
           this.searchOptions = this.hasProcessedTaskSearch
         }
       }

@@ -370,6 +370,7 @@ export default {
     }
   },
   mounted () {
+    this.status = this.$route.query.status || 'confirm'
     const accessToken = getCookie('accessToken')
     this.headers = {
       Authorization: 'Bearer ' + accessToken

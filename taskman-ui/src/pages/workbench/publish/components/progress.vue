@@ -112,17 +112,18 @@ export default {
       const { statusCode, data } = await getProgressInfo(params)
       if (statusCode === 'OK') {
         const { approvalProgress, requestProgress, taskProgress } = data
-        this.progress.approvalProgress = approvalProgress || [] // 审批进度
         this.progress.requestProgress = requestProgress || [] // 请求进度
+        this.progress.approvalProgress = approvalProgress || [] // 审批进度
         this.progress.taskProgress = taskProgress || [] // 任务进度
+        // 请求进度节点处理
         this.progress.requestProgress.forEach(item => {
           item.icon = statusIcon[item.status]
           item.color = statusColor[item.status]
           switch (item.node) {
-            case 'sendRequest':
+            case 'submit':
               item.name = this.$t('tw_commit_request') // 提交请求
               break
-            case 'requestPending':
+            case 'check':
               item.name = this.$t('tw_request_pending') // 请求定版
               break
             case 'approval':

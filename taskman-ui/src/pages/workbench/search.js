@@ -33,7 +33,7 @@ export default {
         },
         createdBy: {
           key: 'createdBy',
-          placeholder: this.$t('createdBy'),
+          placeholder: '请求提交人',
           component: 'select',
           multiple: true,
           list: []
@@ -157,17 +157,17 @@ export default {
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
       {
-        key: 'taskExpectTime',
-        label: '任务截止',
-        dateType: 4,
-        labelWidth: 140,
-        component: 'custom-time'
-      },
-      {
         key: 'taskCreatedTime',
         label: '任务创建',
         dateType: 4,
         labelWidth: 110,
+        component: 'custom-time'
+      },
+      {
+        key: 'taskExpectTime',
+        label: '任务截止',
+        dateType: 4,
+        labelWidth: 140,
         component: 'custom-time'
       }
     ]
@@ -190,17 +190,17 @@ export default {
       this.baseSearch.procDefName,
       this.baseSearch.operatorObjType,
       {
-        key: 'taskExpectTime',
-        label: '任务截止',
-        dateType: 4,
-        labelWidth: 140,
-        component: 'custom-time'
-      },
-      {
         key: 'taskCreatedTime',
         label: '任务创建',
         dateType: 4,
         labelWidth: 110,
+        component: 'custom-time'
+      },
+      {
+        key: 'taskExpectTime',
+        label: '任务截止',
+        dateType: 4,
+        labelWidth: 140,
         component: 'custom-time'
       }
     ]

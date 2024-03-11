@@ -40,6 +40,7 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param role can not empty "))
 		return
 	}
+	param.CreatedBy = middleware.GetRequestUser(c)
 	err := handleCreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

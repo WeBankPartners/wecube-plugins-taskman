@@ -46,6 +46,10 @@ export default {
       type: String,
       default: ''
     },
+    taskHandleId: {
+      type: String,
+      default: ''
+    },
     formDisable: {
       type: Boolean,
       default: false
@@ -69,16 +73,33 @@ export default {
   watch: {
     id: {
       handler (val) {
-        if (val) {
-          // 请求或者任务上传
-          this.uploadUrl = `/taskman/api/v1/${this.type}/attach-file/upload/${val}`
+        if (val && this.type === 'request') {
+          this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${val}`
+          const accessToken = getCookie('accessToken')
+          this.headers = {
+            Authorization: 'Bearer ' + accessToken
+          }
+        }
+        if (val && this.taskHandleId && this.type === 'task') {
+          this.uploadUrl = `/taskman/api/v1/task/attach-file/${val}/upload/${this.taskHandleId}`
           const accessToken = getCookie('accessToken')
           this.headers = {
             Authorization: 'Bearer ' + accessToken
           }
         }
       },
-      deep: true,
+      immediate: true
+    },
+    taskHandleId: {
+      handler (val) {
+        if (val && this.id && this.type === 'task') {
+          this.uploadUrl = `/taskman/api/v1/task/attach-file/${this.id}/upload/${val}`
+          const accessToken = getCookie('accessToken')
+          this.headers = {
+            Authorization: 'Bearer ' + accessToken
+          }
+        }
+      },
       immediate: true
     },
     files: {

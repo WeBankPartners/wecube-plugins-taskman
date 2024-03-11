@@ -118,11 +118,16 @@
                 <Input v-model="taskForm.comment" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
-                <UploadFile :id="taskHandleId" :files="taskForm.attachFiles" type="task"></UploadFile>
+                <UploadFile
+                  :id="handleData.id"
+                  :taskHandleId="taskHandleId"
+                  :files="taskForm.attachFiles"
+                  type="task"
+                ></UploadFile>
               </FormItem>
             </Form>
             <div v-if="handleData.editable" style="text-align: center">
-              <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button>
+              <!-- <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button> -->
               <Button :disabled="commitTaskDisabled" @click="commitTaskData" type="primary">{{
                 $t('tw_commit')
               }}</Button>
@@ -163,7 +168,7 @@
             <Input v-model="confirmRequestForm.notes" type="textarea" :maxlength="200" show-word-limit />
           </FormItem>
           <FormItem :label="$t('tw_attach')">
-            <UploadFile :id="taskHandleId" type="task"></UploadFile>
+            <UploadFile :id="handleData.id" :taskHandleId="taskHandleId" type="task"></UploadFile>
           </FormItem>
         </Form>
         <div style="text-align:center;">
@@ -309,7 +314,6 @@ export default {
           })
         }
       },
-      immediate: true,
       deep: true
     }
   },

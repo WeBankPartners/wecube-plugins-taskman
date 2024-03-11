@@ -76,8 +76,8 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 	newTaskHandleTemplate := &models.TaskHandleTemplateTable{
 		Id:           guid.CreateGuid(),
 		TaskTemplate: newTaskTemplate.Id,
-		Assign:       string(models.TaskHandleTemplateAssignTypeTemplate),
-		HandlerType:  string(models.TaskHandleTemplateHandlerTypeTemplateSuggest),
+		Assign:       string(models.TaskHandleTemplateAssignTypeCustom),
+		HandlerType:  string(models.TaskHandleTemplateHandlerTypeCustom),
 		HandleMode:   newTaskTemplate.HandleMode,
 	}
 	// 如果不是尾插，则需更新现有任务模板的序号
@@ -299,8 +299,8 @@ func (s *TaskTemplateService) createProcTaskTemplates(session *xorm.Session, pro
 			Id:           guid.CreateGuid(),
 			Sort:         1,
 			TaskTemplate: newTaskTemplate.Id,
-			Assign:       string(models.TaskHandleTemplateAssignTypeTemplate),
-			HandlerType:  string(models.TaskHandleTemplateHandlerTypeTemplateSuggest),
+			Assign:       string(models.TaskHandleTemplateAssignTypeCustom),
+			HandlerType:  string(models.TaskHandleTemplateHandlerTypeCustom),
 			Role:         "",
 			Handler:      "",
 			HandleMode:   newTaskTemplate.HandleMode,
@@ -341,7 +341,7 @@ func (s *TaskTemplateService) createProcTaskTemplatesSql(procDefId, requestTempl
 		actions = append(actions, action)
 		// 插入新任务处理模板
 		action = &dao.ExecAction{Sql: "INSERT INTO task_handle_template (id,sort,task_template,assign,handler_type,handle_mode) VALUES (?,?,?,?,?,?)"}
-		action.Param = []interface{}{guid.CreateGuid(), 1, taskId, string(models.TaskHandleTemplateAssignTypeTemplate), string(models.TaskHandleTemplateHandlerTypeTemplateSuggest), handleMode}
+		action.Param = []interface{}{guid.CreateGuid(), 1, taskId, string(models.TaskHandleTemplateAssignTypeCustom), string(models.TaskHandleTemplateHandlerTypeCustom), handleMode}
 		actions = append(actions, action)
 	}
 	return actions, nil
@@ -862,8 +862,8 @@ func (s *TaskTemplateService) genProcTaskTemplateDto(node *models.ProcNodeObj, r
 		HandleMode:      string(models.TaskTemplateHandleModeCustom),
 		HandleTemplates: []*models.TaskHandleTemplateDto{
 			{
-				Assign:      string(models.TaskHandleTemplateAssignTypeTemplate),
-				HandlerType: string(models.TaskHandleTemplateHandlerTypeTemplateSuggest),
+				Assign:      string(models.TaskHandleTemplateAssignTypeCustom),
+				HandlerType: string(models.TaskHandleTemplateHandlerTypeCustom),
 			},
 		},
 	}

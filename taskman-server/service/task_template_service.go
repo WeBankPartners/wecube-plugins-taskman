@@ -159,112 +159,6 @@ func (s *TaskTemplateService) checkHandleTemplates(param *models.TaskTemplateDto
 	return nil
 }
 
-func (s *TaskTemplateService) CreateProcTaskTemplate(param *models.TaskTemplateDto, userToken, language, operator string) (*models.TaskTemplateDto, error) {
-	// 校验参数
-	if param.Type != string(models.TaskTypeImplement) {
-		return nil, fmt.Errorf("param type wrong: %s", param.Type)
-	}
-	if param.NodeDefId == "" {
-		return nil, errors.New("param empty")
-	}
-	if err := s.checkHandleTemplates(param); err != nil {
-		return nil, err
-	}
-	// 查询请求模板
-	requestTemplate, err := GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
-	if err != nil {
-		return nil, err
-	}
-	if requestTemplate == nil {
-		return nil, errors.New("no request_template record found")
-	}
-	if requestTemplate.ProcDefId == "" {
-		return nil, fmt.Errorf("param requestTemplate not type proc")
-	}
-	// 查询现有任务模板
-	taskTemplate, err := s.taskTemplateDao.GetProc(param.RequestTemplate, param.NodeDefId)
-	if err != nil {
-		return nil, err
-	}
-	if taskTemplate != nil {
-		return nil, errors.New("task_template record already exist")
-	}
-	// 查询编排任务节点
-	nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
-	if err != nil {
-		return nil, err
-	}
-	sort := 0
-	for i, node := range nodeList {
-		if node.NodeDefId == param.NodeDefId {
-			sort = i + 1
-			if node.NodeId != param.NodeId || node.NodeName != param.NodeDefName {
-				return nil, fmt.Errorf("param nodeId %q or nodeName %q wrong", param.NodeId, param.NodeDefName)
-			}
-			break
-		}
-	}
-	if param.Sort <= 0 || sort != param.Sort {
-		return nil, fmt.Errorf("param sort %d or nodeDefId %s wrong", param.Sort, param.NodeDefId)
-	}
-	// 插入新任务模板
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	newTaskTemplate := &models.TaskTemplateTable{
-		Id:              fmt.Sprintf("ts_%s", guid.CreateGuid()),
-		Type:            param.Type,
-		Sort:            param.Sort,
-		RequestTemplate: param.RequestTemplate,
-		Name:            param.Name,
-		Description:     param.Description,
-		NodeId:          param.NodeId,
-		NodeDefId:       param.NodeDefId,
-		NodeName:        param.NodeDefName,
-		ExpireDay:       param.ExpireDay,
-		CreatedBy:       operator,
-		CreatedTime:     nowTime,
-		UpdatedBy:       operator,
-		UpdatedTime:     nowTime,
-		HandleMode:      param.HandleMode,
-	}
-	// 插入新任务处理模板
-	newTaskHandleTemplates := make([]*models.TaskHandleTemplateTable, len(param.HandleTemplates))
-	for i, handleTemplate := range param.HandleTemplates {
-		newTaskHandleTemplates[i] = &models.TaskHandleTemplateTable{
-			Id:           guid.CreateGuid(),
-			Sort:         i + 1,
-			TaskTemplate: newTaskTemplate.Id,
-			Assign:       handleTemplate.Assign,
-			HandlerType:  handleTemplate.HandlerType,
-			Role:         handleTemplate.Role,
-			Handler:      handleTemplate.Handler,
-			HandleMode:   param.HandleMode,
-		}
-	}
-	// 执行事务
-	err = transaction(func(session *xorm.Session) error {
-		_, err := s.taskTemplateDao.Add(session, newTaskTemplate)
-		if err != nil {
-			return err
-		}
-		for _, newTaskHandleTemplate := range newTaskHandleTemplates {
-			_, err = s.taskHandleTemplateDao.Add(session, newTaskHandleTemplate)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	// 构造返回结果
-	result, err := s.genTaskTemplateDto(newTaskTemplate.Id)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func (s *TaskTemplateService) createProcTaskTemplates(session *xorm.Session, procDefId, requestTemplateId, userToken, language, operator string) (err error) {
 	var nodeList []*models.ProcNodeObj
 	// 查询编排任务节点
@@ -656,63 +550,19 @@ func (s *TaskTemplateService) ListTaskTemplateIds(requestTemplateId, typ, userTo
 		return nil, errors.New("no request_template record found")
 	}
 	result := &models.TaskTemplateListIdsResponse{Type: typ, ProcDefId: requestTemplate.ProcDefId}
-	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
-		// 编排任务
-		// 查询任务节点
-		nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
-		if err != nil {
-			return nil, err
-		}
-		// 查询任务模板列表
-		taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, typ)
-		if err != nil {
-			return nil, err
-		}
-		// 构造返回结果
-		result.Ids = make([]*models.TaskTemplateIdObj, len(nodeList))
-		taskTemplateIdx := 0
-		for i, node := range nodeList {
-			if taskTemplateIdx < len(taskTemplates) {
-				taskTemplate := taskTemplates[taskTemplateIdx]
-				if node.NodeDefId == taskTemplate.NodeDefId {
-					result.Ids[i] = &models.TaskTemplateIdObj{
-						Id:        taskTemplate.Id,
-						Sort:      taskTemplate.Sort,
-						Name:      taskTemplate.Name,
-						NodeDefId: taskTemplate.NodeDefId,
-					}
-					taskTemplateIdx++
-				} else {
-					result.Ids[i] = &models.TaskTemplateIdObj{
-						Sort:      i + 1,
-						Name:      node.NodeName,
-						NodeDefId: node.NodeDefId,
-					}
-				}
-			} else {
-				result.Ids[i] = &models.TaskTemplateIdObj{
-					Sort:      i + 1,
-					Name:      node.NodeName,
-					NodeDefId: node.NodeDefId,
-				}
-			}
-		}
-	} else {
-		// 其他类型
-		// 查询任务模板列表
-		taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, typ)
-		if err != nil {
-			return nil, err
-		}
-		// 构造返回结果
-		result.Ids = make([]*models.TaskTemplateIdObj, len(taskTemplates))
-		for i, taskTemplate := range taskTemplates {
-			result.Ids[i] = &models.TaskTemplateIdObj{
-				Id:        taskTemplate.Id,
-				Sort:      taskTemplate.Sort,
-				Name:      taskTemplate.Name,
-				NodeDefId: taskTemplate.NodeDefId,
-			}
+	// 查询任务模板列表
+	taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, typ)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result.Ids = make([]*models.TaskTemplateIdObj, len(taskTemplates))
+	for i, taskTemplate := range taskTemplates {
+		result.Ids[i] = &models.TaskTemplateIdObj{
+			Id:        taskTemplate.Id,
+			Sort:      taskTemplate.Sort,
+			Name:      taskTemplate.Name,
+			NodeDefId: taskTemplate.NodeDefId,
 		}
 	}
 	return result, nil
@@ -728,52 +578,17 @@ func (s *TaskTemplateService) ListTaskTemplates(requestTemplateId, typ, userToke
 		return nil, errors.New("no request_template record found")
 	}
 	var result []*models.TaskTemplateDto
-	if requestTemplate.ProcDefId != "" && typ == string(models.TaskTypeImplement) {
-		// 编排任务
-		// 查询任务节点
-		nodeList, err := s.getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
+	// 查询任务模板列表
+	taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, typ)
+	if err != nil {
+		return nil, err
+	}
+	// 构造返回结果
+	result = make([]*models.TaskTemplateDto, len(taskTemplates))
+	for i, taskTemplate := range taskTemplates {
+		result[i], err = s.genTaskTemplateDto(taskTemplate.Id)
 		if err != nil {
 			return nil, err
-		}
-		// 查询任务模板列表
-		taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, typ)
-		if err != nil {
-			return nil, err
-		}
-		// 构造返回结果
-		result = make([]*models.TaskTemplateDto, len(nodeList))
-		taskTemplateIdx := 0
-		for i, node := range nodeList {
-			if taskTemplateIdx < len(taskTemplates) {
-				taskTemplate := taskTemplates[taskTemplateIdx]
-				if node.NodeDefId == taskTemplate.NodeDefId {
-					dto, err := s.genTaskTemplateDto(taskTemplate.Id)
-					if err != nil {
-						return nil, err
-					}
-					result[i] = dto
-					taskTemplateIdx++
-				} else {
-					result[i] = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
-				}
-			} else {
-				result[i] = s.genProcTaskTemplateDto(node, requestTemplateId, i+1)
-			}
-		}
-	} else {
-		// 其他类型
-		// 查询任务模板列表
-		taskTemplates, err := s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, typ)
-		if err != nil {
-			return nil, err
-		}
-		// 构造返回结果
-		result = make([]*models.TaskTemplateDto, len(taskTemplates))
-		for i, taskTemplate := range taskTemplates {
-			result[i], err = s.genTaskTemplateDto(taskTemplate.Id)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 	return result, nil
@@ -847,26 +662,6 @@ func (s *TaskTemplateService) genTaskTemplateDto(taskTemplateId string) (*models
 		}
 	}
 	return result, nil
-}
-
-func (s *TaskTemplateService) genProcTaskTemplateDto(node *models.ProcNodeObj, requestTemplateId string, sort int) *models.TaskTemplateDto {
-	return &models.TaskTemplateDto{
-		Type:            string(models.TaskTypeImplement),
-		NodeId:          node.NodeId,
-		NodeDefId:       node.NodeDefId,
-		NodeDefName:     node.NodeName,
-		Name:            node.NodeName,
-		ExpireDay:       1,
-		RequestTemplate: requestTemplateId,
-		Sort:            sort,
-		HandleMode:      string(models.TaskTemplateHandleModeCustom),
-		HandleTemplates: []*models.TaskHandleTemplateDto{
-			{
-				Assign:      string(models.TaskHandleTemplateAssignTypeCustom),
-				HandlerType: string(models.TaskHandleTemplateHandlerTypeCustom),
-			},
-		},
-	}
 }
 
 func (s *TaskTemplateService) genTaskTemplateIds(requestTemplateId, typ string) ([]*models.TaskTemplateIdObj, error) {

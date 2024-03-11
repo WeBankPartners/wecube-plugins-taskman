@@ -144,30 +144,26 @@ export default {
   },
   methods: {
     async getData () {
-      const { statusCode, data } = await overviewData()
+      const params = {
+        params: {
+          scene: Number(this.$parent.actionName)
+        }
+      }
+      const { statusCode, data } = await overviewData(params)
       if (statusCode === 'OK') {
         for (let key in data) {
-          this.cardList.forEach(i => {
-            if (i.type === key) {
-              const numArr = (data[key] && data[key].split(';')) || []
-              numArr.forEach((item, index) => {
-                i[String(index + 1)] = numArr[index]
-              })
+          this.cardList.forEach(item => {
+            if (item.type === key) {
+              item[this.$parent.actionName] = data[key]
             }
           })
         }
-        const pendingTask = (data.pendingTask && data.pendingTask.split(';')) || []
-        const pendingApprove = (data.pendingApprove && data.pendingApprove.split(';')) || []
-        const requestPending = (data.requestPending && data.requestPending.split(';')) || []
-        const requestConfirm = (data.requestConfirm && data.requestConfirm.split(';')) || []
-        pendingTask.forEach((item, index) => {
-          this.pendingNumObj[String(index + 1)] = [
-            pendingTask[index],
-            pendingApprove[index],
-            requestPending[index],
-            requestConfirm[index]
-          ]
-        })
+        this.pendingNumObj[this.$parent.actionName] = [
+          data.pendingTask,
+          data.pendingApprove,
+          data.pendingCheck,
+          data.pendingConfirm
+        ]
       }
     },
     handleTabChange: debounce(function (item) {

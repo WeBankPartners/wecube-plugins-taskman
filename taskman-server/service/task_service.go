@@ -745,7 +745,7 @@ func ApproveTask(task models.TaskTable, operator, userToken, language string, pa
 	case models.TaskTypeImplement:
 		// 编排任务,走编排逻辑.
 		if task.ProcDefKey != "" && task.ProcDefId != "" {
-			return handleWorkflowTask(task, operator, userToken, param)
+			return handleWorkflowTask(task, operator, userToken, param, language)
 		}
 		// 处理自定义任务
 		return handleCustomTask(task, operator, userToken, language, param)
@@ -850,7 +850,7 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 }
 
 // handleWorkflowTask 处理编排任务
-func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam) error {
+func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam, language string) error {
 	var err error
 	requestParam, callbackUrl, getDataErr := getApproveCallbackParamNew(task.Id)
 	if getDataErr != nil {
@@ -877,7 +877,20 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
-	_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id)
+	request, getRequestErr := GetSimpleRequest(task.Request)
+	if getRequestErr != nil {
+		return getRequestErr
+	}
+	var actions, newApproveActions []*dao.ExecAction
+	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
+		string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id,
+	}})
+	//_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id)
+	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language)
+	if len(newApproveActions) > 0 {
+		actions = append(actions, newApproveActions...)
+	}
+	err = dao.Transaction(actions)
 	return err
 }
 

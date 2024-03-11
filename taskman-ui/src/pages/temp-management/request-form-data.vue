@@ -798,6 +798,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
+            this.cancelGroup()
             this.loadPage()
           }
         },

@@ -29,54 +29,56 @@
             </Col>
           </Row>
         </div>
-        <Divider style="margin-top:40px">自定义分析字段</Divider>
-        <Row>
-          <Col span="1">&nbsp;&nbsp;&nbsp;&nbsp;</Col>
-          <Col span="6">编码</Col>
-          <Col span="16">数据查找规则</Col>
-        </Row>
-        <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex" style="margin:6px 0">
-          <Col span="1">
-            <div style="margin-top: 6px;">
-              <Checkbox v-model="item.active" @on-change="paramsChanged"></Checkbox>
-            </div>
-          </Col>
-          <Col span="5">
-            <Input v-model="item.name" :disabled="!isCustomItemEditable"></Input>
-          </Col>
-          <Col span="16">
-            <ItemFilterRulesGroup
-              :isBatch="false"
-              ref="filterRulesGroupRef"
-              :currentIndex="itemIndex"
-              @filterRuleChanged="singleFilterRuleChanged"
-              :disabled="!isCustomItemEditable"
-              :routineExpression="item.routineExpression || group.itemGroup"
-              :allEntityType="allEntityType"
-              :currentSelectedEntity="group.itemGroup"
-            >
-            </ItemFilterRulesGroup>
-          </Col>
-          <Col span="2">
+        <template v-if="!(isCustomItemEditable === false && group.customItems.length === 0)">
+          <Divider style="margin-top:40px">自定义分析字段</Divider>
+          <Row>
+            <Col span="1">&nbsp;&nbsp;&nbsp;&nbsp;</Col>
+            <Col span="6">{{ $t('display_name') }}</Col>
+            <Col span="16">数据查找规则</Col>
+          </Row>
+          <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex" style="margin:6px 0">
+            <Col span="1">
+              <div style="margin-top: 6px;">
+                <Checkbox v-model="item.active" @on-change="paramsChanged"></Checkbox>
+              </div>
+            </Col>
+            <Col span="5">
+              <Input v-model="item.title" :disabled="!isCustomItemEditable"></Input>
+            </Col>
+            <Col span="16">
+              <ItemFilterRulesGroup
+                :isBatch="false"
+                ref="filterRulesGroupRef"
+                :currentIndex="itemIndex"
+                @filterRuleChanged="singleFilterRuleChanged"
+                :disabled="!isCustomItemEditable"
+                :routineExpression="item.routineExpression || group.itemGroup"
+                :allEntityType="allEntityType"
+                :currentSelectedEntity="group.itemGroup"
+              >
+              </ItemFilterRulesGroup>
+            </Col>
+            <Col span="2">
+              <Button
+                type="error"
+                v-if="isCustomItemEditable"
+                @click="deleteCustomItem(itemIndex)"
+                size="small"
+                icon="md-trash"
+              ></Button>
+            </Col>
+          </Row>
+          <div v-if="isCustomItemEditable" style="text-align: right;margin-right: 18px;">
             <Button
-              type="error"
+              type="primary"
+              ghost
               :disabled="!isCustomItemEditable"
-              @click="deleteCustomItem(itemIndex)"
+              @click="addCustomItem"
               size="small"
-              icon="md-trash"
+              icon="md-add"
             ></Button>
-          </Col>
-        </Row>
-        <div style="text-align: right;margin-right: 18px;">
-          <Button
-            type="primary"
-            ghost
-            :disabled="!isCustomItemEditable"
-            @click="addCustomItem"
-            size="small"
-            icon="md-add"
-          ></Button>
-        </div>
+          </div>
+        </template>
       </Form>
     </div>
     <div class="demo-drawer-footer">
@@ -129,7 +131,7 @@ export default {
         itemGroupType: '',
         itemGroupName: '',
         itemGroupSort: 1,
-        itemGroupRule: 'new',
+        itemGroupRule: 'exist',
         formTemplate: '',
         defaultValue: '',
         routineExpression: '',
@@ -163,7 +165,7 @@ export default {
         itemGroupType: '', // 组类型
         itemGroupName: '', // 组名称
         itemGroupSort: -1, // 组顺序
-        itemGroupRule: 'new', // 新增一行
+        itemGroupRule: 'exist', // 新增一行
         systemItems: [], // 预制表单字段
         customItems: [] // 自定义分析字段
       }
@@ -187,7 +189,7 @@ export default {
       this.getAllDataModels()
       if (params.isAdd) {
         this.group.itemGroupSort = params.itemGroupSort
-        this.group.itemGroupRule = 'new'
+        this.group.itemGroupRule = 'exist'
       }
       this.openFormConfig = true
     },
@@ -252,20 +254,20 @@ export default {
       this.group.customItems.splice(itemIndex, 1)
     },
     addCustomItem () {
-      let name = `calculate${this.group.customItems.length}`
-      name = this.nameCheck(name)
+      let title = `calculate${this.group.customItems.length}`
+      title = this.nameCheck(title)
       let tmpItem = JSON.parse(JSON.stringify(this.defaultItem))
       tmpItem.routineExpression = this.group.itemGroup
-      tmpItem.name = name
-      tmpItem.title = name
+      tmpItem.name = title
+      tmpItem.title = title
       this.group.customItems.push(tmpItem)
     },
-    nameCheck (name) {
-      const findIndex = this.group.customItems.findIndex(item => item.name === name)
+    nameCheck (title) {
+      const findIndex = this.group.customItems.findIndex(item => item.title === title)
       if (findIndex > -1) {
-        return this.nameCheck(name + '1')
+        return this.nameCheck(title + '1')
       } else {
-        return name
+        return title
       }
     }
   },

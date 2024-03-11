@@ -216,6 +216,11 @@
                 </div>
                 <div style="margin: 12px 0 0 8px;">
                   <Form :label-width="90">
+                    <FormItem :label="$t('判断分支')">
+                      <Select style="width:94%">
+                        <Option value="1">{{ $t('测试分支') }}</Option>
+                      </Select>
+                    </FormItem>
                     <FormItem :label="$t('t_action')">
                       <Select style="width:94%">
                         <Option value="1">{{ $t('tw_approve') }}</Option>
@@ -1024,6 +1029,7 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
+            this.cancelGroup()
             this.saveGroup()
           },
           onCancel: () => {

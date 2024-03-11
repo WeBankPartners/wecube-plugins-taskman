@@ -28,6 +28,7 @@ const (
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出
 	InternallyTerminated = "internallyTerminated" // 手动终止
+	AutoNode             = "autoNode"             //自动节点
 )
 
 func getTaskTypeByType(uiType int) models.TaskType {
@@ -501,14 +502,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					platformDataObj.Version = template.Version
 				}
 			}
-			if platformDataObj.Status == "Draft" {
-				platformDataObj.CurNode = WaitCommit
-			} else if platformDataObj.Status == "Pending" {
-				platformDataObj.CurNode = RequestPending
-			}
-			if platformDataObj.ProcInstanceId != "" {
-				platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.ProcInstanceId, req.UserToken, language)
-			}
+			platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.Id, platformDataObj.ProcInstanceId, req.UserToken, language)
 			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken, language)
 				if newStatus == "InternallyTerminated" {
@@ -597,7 +591,28 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 	return status
 }
 
-func getCurNodeName(instanceId, userToken, language string) (progress int, curNode string) {
+func getCurNodeName(requestId, instanceId, userToken, language string) (progress int, curNode string) {
+	var task *models.TaskTable
+	if instanceId == "" {
+		// 无编排
+		request, _ := GetSimpleRequest(requestId)
+		switch request.Status {
+		case string(models.RequestStatusDraft):
+			curNode = WaitCommit
+		case string(models.RequestStatusPending):
+			curNode = RequestPending
+		case string(models.RequestStatusInApproval):
+			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeApprove)
+		case string(models.RequestStatusInProgress):
+			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeImplement)
+		case string(models.RequestStatusConfirm):
+			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeConfirm)
+		}
+		if task != nil {
+			curNode = task.Name
+		}
+		return
+	}
 	var total int
 	processInstance, err := GetProcDefService().GetProcessDefineInstance(instanceId, userToken, language)
 	if err != nil || processInstance == nil || len(processInstance.TaskNodeInstances) == 0 {
@@ -980,24 +995,40 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		return
 	}
 	if len(taskProgress) > 0 {
-		if request.ProcInstanceId != "" {
+		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) {
 			response, err := rpc.GetProcessInstance(language, userToken, request.ProcInstanceId)
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
 			if response != nil {
-				for _, progress := range taskProgress {
-					if progress.Status == int(models.TaskExecStatusCompleted) {
-						continue
+				// 自动退出
+				if response.Status == string(models.RequestStatusFaulted) {
+					taskProgress = append(taskProgress, &models.ProgressObj{Node: AutoExit, Status: int(models.TaskExecStatusAutoExitStatus)})
+				} else {
+					if response.Status == InternallyTerminated {
+						taskProgress = append(taskProgress, &models.ProgressObj{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
 					}
-					// 自动退出
-					if response.Status == string(models.RequestStatusFaulted) {
-						progress.Node = AutoExit
-						progress.Status = int(models.TaskExecStatusAutoExitStatus)
-					} else {
-						if response.Status == "InternallyTerminated" {
-							progress.Node = InternallyTerminated
-							progress.Status = int(models.TaskExecStatusInternallyTerminated)
+					// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
+					var exist bool
+					for _, v := range response.TaskNodeInstances {
+						exist = false
+						if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
+							for _, rowData := range taskProgress {
+								if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
+									exist = true
+									rowData.Status = int(models.TaskExecStatusFail)
+									break
+								}
+							}
+							if !exist {
+								taskProgress = append(taskProgress, &models.ProgressObj{
+									NodeId:    v.NodeId,
+									NodeDefId: v.NodeDefId,
+									Node:      v.NodeName,
+									Handler:   AutoNode,
+									Status:    int(models.TaskExecStatusFail),
+								})
+							}
 						}
 					}
 				}
@@ -1127,9 +1158,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if request.Status == "Pending" {
 		form.CurNode = RequestPending
 	}
-	if request.ProcInstanceId != "" {
-		form.Progress, form.CurNode = getCurNodeName(request.ProcInstanceId, userToken, language)
-	}
+	form.Progress, form.CurNode = getCurNodeName(request.Id, request.ProcInstanceId, userToken, language)
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}
@@ -1407,7 +1436,8 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	var action *dao.ExecAction
 	var newTaskId string
 	actions = []*dao.ExecAction{}
-	now := time.Now().Format(models.DateTimeFormat)
+	// 加1s
+	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
 	if err != nil {
 		return
@@ -1469,7 +1499,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
-	now := time.Now().Format(models.DateTimeFormat)
+	// 加1s
+	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
 	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
 		// 关联编排,调用编排启动
@@ -1534,7 +1565,8 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 	var newTaskId string
 	var taskTemplateList []*models.TaskTemplateTable
 	actions = []*dao.ExecAction{}
-	now := time.Now().Format(models.DateTimeFormat)
+	// 加1s
+	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	// 创建请求确认任务
 	newTaskId = "co_" + guid.CreateGuid()
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)

@@ -1768,3 +1768,13 @@ func (s *TaskService) GetTaskMapByRequestId(requestId string) (taskMap map[strin
 	}
 	return
 }
+
+func (s *TaskService) GetDoingTaskByRequestIdAndType(requestId string, taskType models.TaskType) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	err = dao.X.SQL("select * from task where request = ? and type = ? and status != ?", requestId, taskType, models.TaskStatusDone).Find(&taskList)
+	if err != nil {
+		return
+	}
+	task = taskList[0]
+	return
+}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -541,7 +542,17 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 			if tmpData.EntityName == entity.Entity {
 				tmpValueData := make(map[string]interface{})
 				for _, title := range entity.Title {
-					tmpValueData[title.Name] = tmpData.EntityData[title.Name]
+					if title.RoutineExpression != "" {
+						tmpEntityData, tmpQueryErr := rpc.QueryEntityExpressionData(title.RoutineExpression, tmpData.DataId, userToken)
+						if tmpQueryErr != nil {
+							err = tmpQueryErr
+							return
+						}
+						tmpEntityDataBytes, _ := json.Marshal(tmpEntityData)
+						tmpValueData[title.Name] = string(tmpEntityDataBytes)
+					} else {
+						tmpValueData[title.Name] = tmpData.EntityData[title.Name]
+					}
 				}
 				entity.Value = append(entity.Value, &models.EntityTreeObj{Id: tmpData.Id, PackageName: tmpData.PackageName, EntityName: tmpData.EntityName, DataId: tmpData.DataId, PreviousIds: tmpData.PreviousIds, SucceedingIds: tmpData.SucceedingIds, DisplayName: tmpData.DisplayName, FullDataId: tmpData.FullDataId, EntityData: tmpValueData})
 			}

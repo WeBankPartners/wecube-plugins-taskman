@@ -126,3 +126,8 @@ func (d *FormItemTemplateDao) DeleteByFormTemplate(session *xorm.Session, formTe
 	logExecuteSql(session, "FormItemTemplateDao", "DeleteByFormTemplate", formTemplate, affected, err)
 	return
 }
+
+func (d *FormItemTemplateDao) QueryByRefId(refId string) (formItemTemplateList []*models.FormItemTemplateTable, err error) {
+	err = d.DB.Where("ref_id = ?", refId).Find(&formItemTemplateList)
+	return
+}

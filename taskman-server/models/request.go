@@ -384,6 +384,7 @@ type PluginRequestCreateParamObj struct {
 	ProcInstId        string `json:"procInstId"`
 	RequestTemplate   string `json:"requestTemplate"`
 	RootDataId        string `json:"rootDataId"`
+	Role              string `json:"role"`
 }
 
 type PluginRequestCreateResp struct {

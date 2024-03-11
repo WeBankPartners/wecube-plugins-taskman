@@ -1011,6 +1011,7 @@ export default {
           okText: this.$t('save'),
           cancelText: this.$t('abandon'),
           onOk: async () => {
+            this.cancelGroup()
             this.saveGroup()
           },
           onCancel: () => {

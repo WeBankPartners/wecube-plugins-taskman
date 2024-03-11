@@ -542,7 +542,7 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 				tmpValueData := make(map[string]interface{})
 				for _, title := range entity.Title {
 					if title.RoutineExpression != "" {
-						tmpEntityData, tmpQueryErr := rpc.QueryEntityExpressionData(title.RoutineExpression, tmpData.DataId, userToken)
+						tmpEntityData, tmpQueryErr := rpc.QueryEntityExpressionData(title.RoutineExpression, tmpData.DataId, userToken, language)
 						if tmpQueryErr != nil {
 							err = tmpQueryErr
 							return

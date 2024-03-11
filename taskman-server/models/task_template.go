@@ -98,3 +98,20 @@ func (s TaskTemplateProgressDtoSort) Less(i, j int) bool {
 	}
 	return false
 }
+
+type TaskTemplateTableSort []*TaskTemplateTable
+
+func (s TaskTemplateTableSort) Len() int {
+	return len(s)
+}
+
+func (s TaskTemplateTableSort) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s TaskTemplateTableSort) Less(i, j int) bool {
+	if s[i].Sort < s[j].Sort {
+		return true
+	}
+	return false
+}

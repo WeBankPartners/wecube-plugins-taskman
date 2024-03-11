@@ -190,6 +190,7 @@ func calcExpireTime(reportTime string, expireDay int) (expire string) {
 func RevokeRequest(requestId, user string) (err error) {
 	var request models.RequestTable
 	var actions []*dao.ExecAction
+	var latestCheckTask *models.TaskTable
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	request, err = GetSimpleRequest(requestId)
 	if err != nil {
@@ -210,6 +211,14 @@ func RevokeRequest(requestId, user string) (err error) {
 	// 添加撤回 任务
 	newTaskId := "re_" + guid.CreateGuid()
 	now := time.Now().Format(models.DateTimeFormat)
+	// 删除最后的定版记录
+	latestCheckTask, err = GetTaskService().GetLatestCheckTask(requestId)
+	if err != nil {
+		return
+	}
+	if latestCheckTask != nil {
+		actions = append(actions, &dao.ExecAction{Sql: "update task set del_flag=1 where id=?", Param: []interface{}{latestCheckTask.Id}})
+	}
 	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,status,request,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?)",
 		Param: []interface{}{newTaskId, "revoke", models.TaskStatusDone, request.Id, models.TaskTypeRevoke, "system", now, "system", now}})
 	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",

@@ -200,8 +200,10 @@ const (
 type TaskExecStatus int
 
 const (
-	TaskExecStatusDoing     TaskExecStatus = 1
-	TaskExecStatusNotStart  TaskExecStatus = 2
-	TaskExecStatusCompleted TaskExecStatus = 3
-	TaskExecStatusFail      TaskExecStatus = 4
+	TaskExecStatusDoing                TaskExecStatus = 1 // 进行中
+	TaskExecStatusNotStart             TaskExecStatus = 2 // 未开始
+	TaskExecStatusCompleted            TaskExecStatus = 3 // 已完成
+	TaskExecStatusFail                 TaskExecStatus = 4 // 报错失败,被拒绝了
+	TaskExecStatusAutoExitStatus       TaskExecStatus = 5 // 自动退出
+	TaskExecStatusInternallyTerminated TaskExecStatus = 6 // 手动终止
 )

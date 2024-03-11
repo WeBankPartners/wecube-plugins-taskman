@@ -827,6 +827,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var handler string
 	var taskSort int
 	var request models.RequestTable
+	var approvalProgress, taskProgress []*models.ProgressObj
 	// 初始化成未开始
 	approveCompleteStatus := int(models.TaskExecStatusNotStart)
 	taskCompleteStatus := int(models.TaskExecStatusNotStart)
@@ -951,9 +952,9 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			taskHandleList = []*models.TaskHandleTable{}
 			// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
 			if v.Status == string(models.TaskStatusDone) {
-				requestProgress.Status = 3
+				requestProgress.Status = int(models.TaskExecStatusCompleted)
 			} else {
-				requestProgress.Status = 1
+				requestProgress.Status = int(models.TaskExecStatusDoing)
 			}
 			taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
 			if err != nil {
@@ -965,7 +966,101 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
 	}
 
+	// 添加审批进度
+	approvalProgress, err = getTaskProgress(taskApproveTemplateList, taskMap)
+	if err != nil {
+		return
+	}
+	if len(approvalProgress) > 0 {
+		rowData.ApprovalProgress = approvalProgress
+	}
+	// 添加任务进度
+	taskProgress, err = getTaskProgress(taskImplementTemplateList, taskMap)
+	if err != nil {
+		return
+	}
+	if len(taskProgress) > 0 {
+		if request.ProcInstanceId != "" {
+			response, err := rpc.GetProcessInstance(language, userToken, request.ProcInstanceId)
+			if err != nil {
+				log.Logger.Error("http getProcessInstances error", log.Error(err))
+			}
+			if response != nil {
+				for _, progress := range taskProgress {
+					if progress.Status == int(models.TaskExecStatusCompleted) {
+						continue
+					}
+					// 自动退出
+					if response.Status == string(models.RequestStatusFaulted) {
+						progress.Node = AutoExit
+						progress.Status = int(models.TaskExecStatusAutoExitStatus)
+					} else {
+						if response.Status == "InternallyTerminated" {
+							progress.Node = InternallyTerminated
+							progress.Status = int(models.TaskExecStatusInternallyTerminated)
+						}
+					}
+				}
+			}
+		}
+		rowData.TaskProgress = taskProgress
+	}
 	return
+}
+
+func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable) ([]*models.ProgressObj, error) {
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var taskHandleList []*models.TaskHandleTable
+	var taskProgressList []*models.ProgressObj
+	var handler string
+	var err error
+	// 任务排序
+	if len(taskTemplateList) > 0 {
+		sort.Sort(models.TaskTemplateTableSort(taskTemplateList))
+		for _, taskTemplate := range taskTemplateList {
+			handler = ""
+			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
+			requestProgress := &models.ProgressObj{}
+			requestProgress.Status = int(models.TaskExecStatusNotStart)
+			requestProgress.Node = taskTemplate.Name
+			requestProgress.ApproveType = taskTemplate.HandleMode
+			requestProgress.NodeId = taskTemplate.NodeId
+			requestProgress.NodeDefId = taskTemplate.NodeDefId
+			err = dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&taskHandleTemplateList)
+			if err != nil {
+				return nil, err
+			}
+			if len(taskHandleTemplateList) > 0 {
+				var handlerList []string
+				for _, taskHandleTemplate := range taskHandleTemplateList {
+					handlerList = []string{}
+					if taskHandleTemplate.Handler != "" {
+						handlerList = append(handlerList, taskHandleTemplate.Handler)
+					} else if taskHandleTemplate.Role != "" {
+						handlerList = append(handlerList, taskHandleTemplate.Role)
+					}
+				}
+				handler = strings.Join(handlerList, ",")
+			}
+			if v, ok := taskMap[taskTemplate.Id]; ok {
+				taskHandleList = []*models.TaskHandleTable{}
+				// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
+				if v.Status == string(models.TaskStatusDone) {
+					requestProgress.Status = int(models.TaskExecStatusCompleted)
+				} else {
+					requestProgress.Status = int(models.TaskExecStatusDoing)
+				}
+				taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
+				if err != nil {
+					return nil, err
+				}
+				handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
+				requestProgress.Handler = handler
+			}
+			taskProgressList = append(taskProgressList, requestProgress)
+		}
+	}
+	return taskProgressList, nil
 }
 
 func getTaskHandlerArr(taskHandleList []*models.TaskHandleTable) []string {

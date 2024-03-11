@@ -39,13 +39,13 @@
               >
               </LimitSelect>
               <!--自定义分析字段-->
-              <Input
+              <!-- <Input
                 v-else-if="i.elementType === 'calculate'"
                 :value="value[i.name]"
                 type="textarea"
                 :disabled="true"
                 style="width:60%;"
-              ></Input>
+              ></Input> -->
               <!--日期时间类型-->
               <DatePicker
                 v-else-if="i.elementType === 'datePicker'"

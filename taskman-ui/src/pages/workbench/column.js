@@ -80,6 +80,7 @@ export default {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
               sendRequest: this.$t('tw_commit_request'),
+              confirm: '请求确认',
               requestPending: this.$t('tw_request_pending'),
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
@@ -87,7 +88,7 @@ export default {
             if (map[params.row.curNode] || params.row.curNode) {
               return (
                 <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
-                  <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
+                  <Tag>{map[params.row.curNode] || params.row.curNode || '-'}</Tag>
                 </Tooltip>
               )
             } else {

@@ -241,6 +241,25 @@ export default {
         if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
           this.refKeys.push(t.name)
         }
+        // 自定义计算分析类型
+        if (t.elementType === 'calculate') {
+          data.value.forEach(v => {
+            if (v.entityData[t.name]) {
+              let jsonData = []
+              try {
+                jsonData = JSON.parse(v.entityData[t.name])
+              } catch (e) {
+                console.log(e)
+              }
+              if (jsonData.length > 0) {
+                const displayNameArr = jsonData.map(item => {
+                  return item.displayName || ''
+                })
+                v.entityData[t.name] = displayNameArr.join('；')
+              }
+            }
+          })
+        }
       })
       this.formOptions = data.title
       // table数据初始化

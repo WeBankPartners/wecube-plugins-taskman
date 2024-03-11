@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
@@ -523,4 +524,24 @@ func GetRequestProgress(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, rowData)
+}
+
+func GetExpressionItemData(c *gin.Context) {
+	formItemTemplateId := c.Param("formItemTemplateId")
+	rootDataId := c.Param("rootDataId")
+	formItemTemplateRow, err := service.GetFormItemTemplateService().GetFormItemTemplate(formItemTemplateId)
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	if formItemTemplateRow.RoutineExpression == "" {
+		middleware.ReturnError(c, fmt.Errorf("expression is empty"))
+		return
+	}
+	result, queryErr := rpc.QueryEntityExpressionData(formItemTemplateRow.RoutineExpression, rootDataId, c.GetHeader("Authorization"))
+	if queryErr != nil {
+		middleware.ReturnError(c, queryErr)
+	} else {
+		middleware.ReturnData(c, result)
+	}
 }

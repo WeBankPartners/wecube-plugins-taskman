@@ -19,7 +19,6 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 	var taskTemplateDtoList []*models.TaskTemplateDto
 	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
-
 	// 保存任务审批不为空,解析任务审批
 	if request.TaskApprovalCache != "" {
 		json.Unmarshal([]byte(request.TaskApprovalCache), &taskTemplateDtoList)
@@ -30,8 +29,12 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 					if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
 						result, _ := GetRoleService().GetRoleAdministrators(request.Role, userToken, language)
 						if len(result) > 0 && result[0] != "" {
-							action := &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)"}
-							action.Param = []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}
+							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
+								Param: []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}})
+						} else {
+							// 没有找到角色管理员,用本组兜底
+							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,created_time,updated_time) values(?,?,?,?,?,?)",
+								Param: []interface{}{guid.CreateGuid(), taskId, request.Role, now, now}})
 						}
 						continue
 					}
@@ -49,9 +52,8 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 								}
 							}
 						}
-						action := &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,handler_type,created_time,updated_time) values(?,?,?,?,?,?,?,?)"}
-						action.Param = []interface{}{guid.CreateGuid(), handleTemplate.Id, taskId, handleTemplate.Role, handleTemplate.Handler, handleTemplate.HandlerType, now, now}
-						actions = append(actions, action)
+						actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,handler_type,created_time,updated_time) values(?,?,?,?,?,?,?,?)",
+							Param: []interface{}{guid.CreateGuid(), handleTemplate.Id, taskId, handleTemplate.Role, handleTemplate.Handler, handleTemplate.HandlerType, now, now}})
 					}
 				}
 			}
@@ -68,6 +70,43 @@ func (s *TaskHandleService) GetRequestCheckTaskHandle(taskId string) (taskHandle
 	}
 	if len(taskHandleList) > 0 {
 		taskHandle = taskHandleList[0]
+	}
+	return
+}
+
+func (s *TaskHandleService) GetTaskHandleListByTaskId(taskId string) (taskHandleList []*models.TaskHandleTable, err error) {
+	err = dao.X.SQL("select * from task_handle where task = ?", taskId).Find(&taskHandleList)
+	return
+}
+
+func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, err error) {
+	var taskHandleList []*models.TaskHandleTable
+	err = dao.X.SQL("select * from task_handle where id = ?", id).Find(&taskHandleList)
+	if err != nil {
+		return
+	}
+	if len(taskHandleList) > 0 {
+		taskHandle = taskHandleList[0]
+	}
+	return
+}
+
+func (s *TaskHandleService) GetLatestRequestCheckTaskHandleByRequestId(requestId string) (taskHandle *models.TaskHandleTable, err error) {
+	var taskList []*models.TaskTable
+	var taskHandleList []*models.TaskHandleTable
+	if requestId == "" {
+		return
+	}
+	err = dao.X.SQL("select * from task   where request = ? and type = ?", requestId, models.TaskTypeCheck).Find(&taskList)
+	if err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		dao.X.SQL("select * from task_handle   where task = ? and latest_flag = 1", taskList[0].Id).Find(&taskHandleList)
+	}
+	if len(taskHandleList) > 0 {
+		taskHandle = taskHandleList[0]
+		return
 	}
 	return
 }

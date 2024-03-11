@@ -223,7 +223,8 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
@@ -240,7 +241,8 @@ export default {
     async handleRepub (row) {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
-        const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        const path = this.createRouteMap[this.actionName]
         const url = `/taskman/workbench/${path}`
         this.$router.push({
           path: url,
@@ -254,7 +256,8 @@ export default {
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.createRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,

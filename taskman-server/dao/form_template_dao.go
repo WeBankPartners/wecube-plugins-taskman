@@ -58,7 +58,7 @@ func (d *FormTemplateDao) Delete(session *xorm.Session, id string) (err error) {
 		session = d.DB.NewSession()
 		defer session.Close()
 	}
-	_, err = d.DB.ID(id).Delete(&models.FormTemplateTable{})
+	_, err = session.ID(id).Delete(&models.FormTemplateTable{})
 	return
 }
 

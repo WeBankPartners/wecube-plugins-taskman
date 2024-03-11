@@ -159,7 +159,7 @@
                   <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
                   <HeaderTag
                     class="custom-panel-header"
-                    :showHeader="true"
+                    :showHeader="index === 0 ? true : false"
                     :data="data"
                     :operation="$t('tw_submit_approval')"
                   ></HeaderTag>
@@ -487,7 +487,7 @@ export default {
     }
     .custom-panel {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       width: 100%;
       &-title {
         width: 100px;
@@ -564,8 +564,11 @@ export default {
   .ivu-collapse-header {
     height: auto !important;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding-left: 0px !important;
+    i {
+      margin-top: 4px;
+    }
   }
   .ivu-collapse-content-box {
     padding-bottom: 0px;

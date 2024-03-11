@@ -27,7 +27,7 @@
 
     <!-- 4.系统参数 - 描述运行本插件包需要的系统参数 -->
     <systemParameters>
-        <systemParameter name="TASKMAN_LOG_LEVEL" scopeType="plugins" defaultValue="info"/>
+        <systemParameter name="TASKMAN_LOG_LEVEL" scopeType="plugins" defaultValue="debug"/>
         <systemParameter name="TASKMAN_PROCESS_TAGS" scopeType="plugins" defaultValue="taskman"/>
         <systemParameter name="TASKMAN_MAIL_SENDER_NAME" scopeType="plugins" defaultValue="taskman"/>
         <systemParameter name="TASKMAN_MAIL_AUTH_SENDER" scopeType="plugins" defaultValue=""/>

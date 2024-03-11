@@ -71,19 +71,15 @@ type CreateRequestDto struct {
 
 // PlatformData  工作台数据
 type PlatformData struct {
-	Pending             string `json:"pending"`             // 待处理, eg:7;2 使用;分割开 7表示发布个数,2表示请求个数
-	PendingTask         string `json:"pendingTask"`         // 待处理任务
-	PendingApprove      string `json:"pendingApprove"`      // 待处理审批
-	PendingCheck        string `json:"pendingCheck"`        // 待处理定版
-	PendingConfirm      string `json:"pendingConfirm"`      // 待处理请求确认
-	HasProcessed        string `json:"hasProcessed"`        // 已处理
-	HasProcessedTask    string `json:"hasProcessedTask"`    // 已处理任务
-	HasProcessedApprove string `json:"hasProcessedApprove"` // 已处理审批
-	HasProcessedCheck   string `json:"hasProcessedCheck"`   // 已处理请求定版
-	HasProcessedConfirm string `json:"hasProcessedConfirm"` // 已处理请求确认
-	Submit              string `json:"submit"`              // 我提交的
-	Draft               string `json:"draft"`               // 我暂存的
-	Collect             string `json:"collect"`             // 收藏模板
+	Pending        int `json:"pending"`        // 待处理
+	PendingTask    int `json:"pendingTask"`    // 待处理任务
+	PendingApprove int `json:"pendingApprove"` // 待处理审批
+	PendingCheck   int `json:"pendingCheck"`   // 待处理定版
+	PendingConfirm int `json:"pendingConfirm"` // 待处理请求确认
+	HasProcessed   int `json:"hasProcessed"`   // 已处理
+	Submit         int `json:"submit"`         // 我提交的
+	Draft          int `json:"draft"`          // 我暂存的
+	Collect        int `json:"collect"`        // 收藏模板
 }
 
 // PlatformDataObj 工作台返回数据
@@ -133,6 +129,8 @@ type PlatformDataObj struct {
 	RequestStayTimeTotal int    `json:"requestStayTimeTotal" xorm:"-"`              // 请求停留时长总数
 	TaskStayTime         int    `json:"taskStayTime" xorm:"-"`                      // 任务停留时长
 	TaskStayTimeTotal    int    `json:"taskStayTimeTotal" xorm:"-"`                 // 任务停留时长总数
+	HandlerType          string `json:"handlerType" xorm:"-"`                       // 人员设置方式,template.模板指定，custom 提交人指定等
+	RoleAdministrator    string `json:"roleAdministrator" xorm:"-"`                 // 角色管理员
 }
 
 type RequestProgressObj struct {

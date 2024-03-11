@@ -85,7 +85,7 @@ export default {
   data () {
     return {
       tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
-      actionName: '1', // 1发布,2请求(3问题,4事件,5变更)
+      actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
       initAction: '',
       type: '0', // 0所有,1请求定版,2任务处理,3审批,4请求确认
@@ -422,7 +422,8 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
@@ -437,7 +438,8 @@ export default {
     },
     // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
-      const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
+      const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
@@ -462,7 +464,7 @@ export default {
           const params = {
             taskId: row.taskId,
             taskHandleId: row.taskHandleId,
-            latestUpdateTime: new Date(row.taskUpdatedTime).getTime(),
+            latestUpdateTime: (row.taskUpdatedTime && String(new Date(row.taskUpdatedTime).getTime())) || '',
             changeReason: type
           }
           const { statusCode } = await pendingHandle(params)
@@ -481,7 +483,8 @@ export default {
     async handleRepub (row) {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
-        const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+        const path = this.createRouteMap[this.actionName]
         const url = `/taskman/workbench/${path}`
         this.$router.push({
           path: url,
@@ -516,7 +519,8 @@ export default {
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
-      const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
+      const path = this.createRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,

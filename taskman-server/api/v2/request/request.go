@@ -1,6 +1,7 @@
 package request
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
@@ -10,6 +11,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"time"
 )
 
@@ -105,12 +107,16 @@ func SaveRequestCache(c *gin.Context) {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		request, err := service.GetSimpleRequest(requestId)
+		taskHandle, err := service.GetTaskHandleService().GetLatestRequestCheckTaskHandleByRequestId(requestId)
 		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
+			middleware.ReturnError(c, err)
 			return
 		}
-		if request.Handler != operator {
+		if taskHandle == nil {
+			middleware.ReturnParamValidateError(c, fmt.Errorf("requestId:%s not has check taskHandle", requestId))
+			return
+		}
+		if taskHandle.Handler != operator {
 			switch event {
 			// 暂存
 			case "save":
@@ -163,7 +169,16 @@ func CheckRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if request.Handler != operator {
+	taskHandle, err := service.GetTaskHandleService().GetLatestRequestCheckTaskHandleByRequestId(requestId)
+	if err != nil {
+		middleware.ReturnError(c, err)
+		return
+	}
+	if taskHandle == nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("requestId:%s not has check taskHandle", requestId))
+		return
+	}
+	if taskHandle.Handler != operator {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
 		return
 	}
@@ -190,4 +205,38 @@ func GetRequestHistory(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, result)
+}
+
+func PluginCreateRequest(c *gin.Context) {
+	response := models.PluginTaskCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginTaskCreateOutput{}}
+	var err error
+	defer func() {
+		if err != nil {
+			log.Logger.Error("Plugin request create handle fail", log.Error(err))
+			response.ResultCode = "1"
+			response.ResultMessage = err.Error()
+		}
+		bodyBytes, _ := json.Marshal(response)
+		c.Set("responseBody", string(bodyBytes))
+		c.JSON(http.StatusOK, response)
+	}()
+	var param models.PluginTaskCreateRequest
+	c.ShouldBindJSON(&param)
+	if len(param.Inputs) == 0 {
+		return
+	}
+	for _, input := range param.Inputs {
+		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions)
+		if tmpErr != nil {
+			output.ErrorCode = "1"
+			output.ErrorMessage = tmpErr.Error()
+			err = tmpErr
+		} else {
+			notifyErr := service.NotifyTaskMail(taskId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+			if notifyErr != nil {
+				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
+			}
+		}
+		response.Results.Outputs = append(response.Results.Outputs, output)
+	}
 }

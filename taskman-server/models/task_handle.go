@@ -8,8 +8,8 @@ type TaskHandleTable struct {
 	Role               string `json:"role" xorm:"role"`
 	Handler            string `json:"handler" xorm:"handler"`
 	HandlerType        string `json:"handlerType" xorm:"handler_type"`
-	HandleResult       string `json:"handleResult" xorm:"handler_result"` //处理结果:approve同意,deny拒绝, redraw打回,complete完成,uncomplete未完成
-	ResultDesc         string `json:"resultDesc" xorm:"result_desc"`      //处理描述
+	HandleResult       string `json:"handleResult" xorm:"handle_result"` //处理结果:approve同意,deny拒绝, redraw打回,complete完成,uncomplete未完成
+	ResultDesc         string `json:"resultDesc" xorm:"result_desc"`     //处理描述
 	ParentId           string `json:"parentId" xorm:"parent_id"`
 	ChangeReason       string `json:"changeReason" xorm:"change_reason"` //变更原因: assign 系统分配、claim 主动领取、give 转给我
 	CreatedTime        string `json:"createdTime" xorm:"created_time"`

@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -23,9 +24,19 @@ func GetRequestPreviewData(c *gin.Context) {
 	middleware.ReturnData(c, models.RequestPreDataDto{RootEntityId: entityDataId, Data: result})
 }
 
-// CountRequest 个人工作台统计
-func CountRequest(c *gin.Context) {
-	platformData, err := service.GetRequestCount(middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+// CountPlatform 个人工作台数量统计-new
+func CountPlatform(c *gin.Context) {
+	scene := c.Query("scene")
+	if scene == "" {
+		middleware.ReturnParamEmptyError(c, "scene")
+		return
+	}
+	sceneInt, err := strconv.Atoi(scene)
+	if err != nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("scene invalid"))
+		return
+	}
+	platformData, err := service.GetPlatformCount(sceneInt, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -405,7 +416,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
 		return
 	}
-	err = service.UploadAttachFile(requestId, "", file.Filename, middleware.GetRequestUser(c), b)
+	err = service.UploadAttachFile(requestId, "", "", file.Filename, middleware.GetRequestUser(c), b)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -505,14 +516,8 @@ func GetRequestParent(c *gin.Context) {
 
 // GetRequestProgress  获取请求进度
 func GetRequestProgress(c *gin.Context) {
-	var param models.RequestQueryParam
-	var rowData *models.RequestProgressObj
-	var err error
-	if err = c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	rowData, err = service.GetRequestProgress(param.RequestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	requestId := c.Query("requestId")
+	rowData, err := service.GetRequestProgress(requestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

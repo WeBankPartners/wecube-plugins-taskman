@@ -111,10 +111,10 @@ func SaveTaskForm(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
-	if operator != task.Handler {
-		middleware.ReturnTaskSaveNotPermissionError(c)
-		return
-	}
+	//if operator != task.Handler {
+	//	middleware.ReturnTaskSaveNotPermissionError(c)
+	//	return
+	//}
 	err = service.SaveTaskFormNew(&task, operator, &param)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -163,6 +163,7 @@ func ApproveTask(c *gin.Context) {
 	}
 	var err error
 	var operator = middleware.GetRequestUser(c)
+	var taskHandle *models.TaskHandleTable
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -177,6 +178,15 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	taskHandle, err = service.GetTaskHandleService().Get(param.TaskHandleId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if taskHandle == nil {
+		middleware.ReturnParamValidateError(c, fmt.Errorf("taskHandleId is invalid"))
+		return
+	}
 	if param.TaskHandleId == "" {
 		err = fmt.Errorf("param taskHandleId is empty")
 		middleware.ReturnParamValidateError(c, err)
@@ -187,7 +197,7 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if taskTable.Handler != operator {
+	if taskHandle.Handler != operator {
 		middleware.ReturnTaskApproveNotPermissionError(c)
 		return
 	}
@@ -240,6 +250,7 @@ func UpdateTaskHandle(c *gin.Context) {
 
 func UploadTaskAttachFile(c *gin.Context) {
 	taskId := c.Param("taskId")
+	taskHandleId := c.Param("taskHandleId")
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Http read upload file fail:" + err.Error(), Data: nil})
@@ -260,7 +271,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})
 		return
 	}
-	err = service.UploadAttachFile("", taskId, file.Filename, middleware.GetRequestUser(c), b)
+	err = service.UploadAttachFile("", taskId, taskHandleId, file.Filename, middleware.GetRequestUser(c), b)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {

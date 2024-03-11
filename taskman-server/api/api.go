@@ -105,7 +105,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-status/:requestId/:status", Method: "POST", HandlerFunc: request.UpdateRequestStatus},
 		&handlerFuncObj{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData},
 
-		&handlerFuncObj{Url: "/user/platform", Method: "POST", HandlerFunc: request.CountRequest},
+		&handlerFuncObj{Url: "/user/platform/count", Method: "GET", HandlerFunc: request.CountPlatform},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
 		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},
@@ -118,7 +118,7 @@ func init() {
 		&handlerFuncObj{Url: "/request/attach-file/download/:fileId", Method: "GET", HandlerFunc: request.DownloadAttachFile},
 		&handlerFuncObj{Url: "/request/attach-file/remove/:fileId", Method: "DELETE", HandlerFunc: request.RemoveAttachFile},
 		&handlerFuncObj{Url: "/request/handler/:requestId/:latestUpdateTime", Method: "POST", HandlerFunc: request.UpdateRequestHandler},
-		&handlerFuncObj{Url: "/request/progress", Method: "POST", HandlerFunc: request.GetRequestProgress},
+		&handlerFuncObj{Url: "/request/progress", Method: "GET", HandlerFunc: request.GetRequestProgress},
 		&handlerFuncObj{Url: "/request/process/definitions/:templateId", Method: "GET", HandlerFunc: workflow.GetProcessDefinitions},
 		&handlerFuncObj{Url: "/request/process/instances/:instanceId", Method: "GET", HandlerFunc: workflow.GetProcessInstance},
 		&handlerFuncObj{Url: "/request/workflow/task_node/:procInstanceId/:nodeInstanceId", Method: "POST", HandlerFunc: workflow.GetProcDefTaskNodeContext},
@@ -138,7 +138,7 @@ func init() {
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId/:latestUpdateTime", Method: "POST", HandlerFunc: task.ChangeTaskStatus},
 		&handlerFuncObj{Url: "/task-handle/update", Method: "POST", HandlerFunc: task.UpdateTaskHandle},
-		&handlerFuncObj{Url: "/task/attach-file/upload/:taskId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
+		&handlerFuncObj{Url: "/task/attach-file/:taskId/upload/:taskHandleId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
 
 		// login
 		&handlerFuncObj{Url: "/login/seed", Method: "GET", HandlerFunc: login.GetSeed},
@@ -153,6 +153,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
 		&handlerFuncObj{Url: "/request-check/confirm/:requestId", Method: "POST", HandlerFunc: requestNew.CheckRequest}, // 确认定版
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
+		&handlerFuncObj{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest},
 	)
 }
 

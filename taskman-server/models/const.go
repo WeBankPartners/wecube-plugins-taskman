@@ -77,6 +77,7 @@ const (
 type TaskType string
 
 const (
+	TaskTypeNone      TaskType = ""          // 空
 	TaskTypeSubmit    TaskType = "submit"    // 提交
 	TaskTypeCheck     TaskType = "check"     // 定版
 	TaskTypeApprove   TaskType = "approve"   // 审批
@@ -127,11 +128,11 @@ const (
 type TaskHandleResultType string
 
 const (
-	TaskHandleResultTypeApprove    TaskHandleResultType = "approve"    // 同意
-	TaskHandleResultTypeDeny       TaskHandleResultType = "deny"       // 拒绝
-	TaskHandleResultTypeRedraw     TaskHandleResultType = "redraw"     // 打回
-	TaskHandleResultTypeComplete   TaskHandleResultType = "complete"   // 完成
-	TaskHandleResultTypeUncomplete TaskHandleResultType = "uncomplete" // 未完成
+	TaskHandleResultTypeApprove     TaskHandleResultType = "approve"     // 同意
+	TaskHandleResultTypeDeny        TaskHandleResultType = "deny"        // 拒绝
+	TaskHandleResultTypeRedraw      TaskHandleResultType = "redraw"      // 打回
+	TaskHandleResultTypeComplete    TaskHandleResultType = "complete"    // 完成
+	TaskHandleResultTypeUncompleted TaskHandleResultType = "uncompleted" // 未完成
 )
 
 // TaskHandleChangeReason 任务处理 变更原因

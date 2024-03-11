@@ -43,16 +43,15 @@
     <!--审批和任务-->
     <HeaderTitle v-else-if="['InApproval', 'InProgress'].includes(detail.status)" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
-        <Tag class="tag">{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
-        <Tag class="tag" :color="handleTypeColor[handleData.type]">{{
+        <Tag>{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
+        <Tag style="margin-left:5px;" :color="handleTypeColor[handleData.type]">{{
           `${{
             approve: '审批',
             implement_custom: '自定义任务',
             implement_process: '编排任务'
-          }[handleData.type] || '-'}
-            ：
-            ${handleData.name}`
+          }[handleData.type] || '-'}：${handleData.name}`
         }}</Tag>
+        <span class="description">{{ $t('description') }}：{{ handleData.description }}</span>
       </div>
       <div class="step-item">
         <div class="step-item-left">
@@ -65,14 +64,8 @@
             <span>{{ $t('tw_approval_step1_tips') }}</span>
           </div>
           <div class="content">
-            <EntityTable
-              v-if="handleData.formData && handleData.formData.length"
-              ref="entityTable"
-              :data="handleData.formData"
-              :requestId="requestId"
-              autoAddRow
-            ></EntityTable>
-            <div v-else class="no-data">
+            <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId" autoAddRow></EntityTable>
+            <div v-if="handleData.formData && handleData.formData.length === 0" class="no-data">
               暂未配置表单
             </div>
           </div>
@@ -89,12 +82,12 @@
           </div>
           <div class="content">
             <Form :label-width="80" label-position="left">
-              <FormItem :label="$t('task') + $t('description')">
+              <!-- <FormItem :label="$t('task') + $t('description')">
                 <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
-              </FormItem>
+              </FormItem> -->
               <!--处理结果-审批类型-->
               <FormItem v-if="handleData.type === 'approve'" required label="操作">
-                <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
+                <Select v-model="taskForm.choseOption">
                   <Option v-for="(item, index) in approvalNextOptions" :value="item.value" :key="index">{{
                     item.label
                   }}</Option>
@@ -108,13 +101,13 @@
                 required
                 label="操作"
               >
-                <Select v-model="handleData.taskHandleList[handleIndex].handleResult">
+                <Select v-model="taskForm.choseOption">
                   <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
                 </Select>
               </FormItem>
               <!--完成状态(只有任务有)-->
               <FormItem v-if="['implement_custom', 'implement_process'].includes(handleData.type)" label="完成状态">
-                <Select v-model="handleData.taskHandleList[handleIndex].handleStatus">
+                <Select v-model="taskForm.handleStatus">
                   <Option v-for="(item, index) in taskStatusList" :value="item.value" :key="index">{{
                     item.label
                   }}</Option>
@@ -122,23 +115,19 @@
               </FormItem>
               <!--处理意见-->
               <FormItem :label="$t('process_comments')">
-                <Input
-                  v-model="handleData.taskHandleList[handleIndex].resultDesc"
-                  type="textarea"
-                  :maxlength="200"
-                  show-word-limit
-                />
+                <Input v-model="taskForm.comment" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
                 <UploadFile
-                  :id="handleData.taskHandleList[handleIndex].id"
-                  :files="handleData.taskHandleList[handleIndex].attachFiles"
+                  :id="handleData.id"
+                  :taskHandleId="taskHandleId"
+                  :files="taskForm.attachFiles"
                   type="task"
                 ></UploadFile>
               </FormItem>
             </Form>
             <div v-if="handleData.editable" style="text-align: center">
-              <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button>
+              <!-- <Button @click="saveTaskData" type="info">{{ $t('save') }}</Button> -->
               <Button :disabled="commitTaskDisabled" @click="commitTaskData" type="primary">{{
                 $t('tw_commit')
               }}</Button>
@@ -179,11 +168,7 @@
             <Input v-model="confirmRequestForm.notes" type="textarea" :maxlength="200" show-word-limit />
           </FormItem>
           <FormItem :label="$t('tw_attach')">
-            <UploadFile
-              :id="handleData.taskHandleList[handleIndex].id"
-              :files="handleData.taskHandleList[handleIndex].attachFiles"
-              type="task"
-            ></UploadFile>
+            <UploadFile :id="handleData.id" :taskHandleId="taskHandleId" type="task"></UploadFile>
           </FormItem>
         </Form>
         <div style="text-align:center;">
@@ -215,7 +200,7 @@ export default {
     },
     handleData: {
       type: Object,
-      default: () => {}
+      default: () => ({ taskHandleList: [] })
     },
     // 1发布,2请求(3问题,4事件,5变更)
     actionName: {
@@ -228,13 +213,22 @@ export default {
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       requestTemplate: this.$route.query.requestTemplate, // 请求模板ID
       requestId: this.$route.query.requestId, // 请求ID
-      handleId: this.$route.query.handleId,
+      taskHandleId: this.$route.query.taskHandleId,
+      // 任务和审批表单
+      taskForm: {
+        comment: '', // 处理意见
+        choseOption: '', // 处理结果
+        handleStatus: '', // 处理状态
+        attachFiles: []
+      },
+      // 请求确认表单
       confirmRequestForm: {
         markTaskId: [], // 关注任务ID
         completeStatus: 'complete', // 请求完成状态complete、uncompleted
-        notes: ''
+        notes: '',
+        attachFiles: []
       },
-      taskTagList: [],
+      taskTagList: [], // 任务节点列表
       completeStatusList: [
         {
           label: '已完成',
@@ -283,18 +277,17 @@ export default {
         implement_custom: '#b886f8',
         confirm: '#19be6b'
       },
-      handleIndex: 0 // 协同和并行审批，会有多个处理人，需要定位当前处理人的index（其余都是单人，默认为0）
+      hasRunOnce: false
     }
   },
   computed: {
     commitTaskDisabled () {
-      const approveFlag =
-        this.handleData.type === 'approve' && !this.handleData.taskHandleList[this.handleIndex].handleResult
+      const approveFlag = this.handleData.type === 'approve' && !this.taskForm.choseOption
       const processFlag =
         this.handleData.type === 'implement_process' &&
         this.handleData.nextOptions &&
         this.handleData.nextOptions.length > 0 &&
-        !this.handleData.taskHandleList[this.handleIndex].handleResult
+        !this.taskForm.choseOption
       if (approveFlag || processFlag) {
         return true
       } else {
@@ -305,17 +298,131 @@ export default {
   watch: {
     handleData: {
       handler (val) {
-        if (val && this.handleId) {
+        if (val && this.taskHandleId) {
+          if (this.hasRunOnce) return
+          this.hasRunOnce = true
           const list = val.taskHandleList || []
-          // 审批的协同和并行涉及多人，工作台点击当前处理传handleId来确认当前编辑数据
-          this.handleIndex = list.findIndex(i => i.id === this.handleId)
+          list.forEach(item => {
+            if (item.id === this.taskHandleId) {
+              if (['InApproval', 'InProgress'].includes(this.detail.status)) {
+                this.taskForm.comment = item.resultDesc
+                this.taskForm.choseOption = item.handleResult
+                this.taskForm.handleStatus = item.handleStatus
+                this.taskForm.attachFiles = item.attachFiles
+              }
+            }
+          })
         }
       },
-      immediate: true,
       deep: true
     }
   },
   methods: {
+    // 任务审批保存
+    async saveTaskData () {
+      // 提取表格勾选的数据
+      const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
+      this.handleData.formData =
+        requestData.map(item => {
+          let refKeys = []
+          item.title.forEach(t => {
+            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
+              refKeys.push(t.name)
+            }
+          })
+          if (Array.isArray(item.value)) {
+            // 删除多余的属性
+            item.value.forEach(v => {
+              refKeys.forEach(ref => {
+                delete v.entityData[ref + 'Options']
+              })
+            })
+          }
+          return item
+        }) || []
+      // 必填项校验提示
+      if (!this.requiredCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
+      // 表格至少勾选一条数据校验
+      const tabName = this.$refs.entityTable.activeTab
+      if (!this.noChooseCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
+      const params = {
+        formData: this.handleData.formData,
+        comment: this.taskForm.comment,
+        choseOption: this.taskForm.choseOption,
+        handleStatus: this.taskForm.handleStatus,
+        taskHandleId: this.taskHandleId
+      }
+      const { statusCode } = await saveTaskData(this.handleData.id, params)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+      }
+    },
+    // 任务审批提交
+    async commitTaskData () {
+      // 提取表格勾选的数据
+      const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
+      this.handleData.formData =
+        requestData.map(item => {
+          let refKeys = []
+          item.title.forEach(t => {
+            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
+              refKeys.push(t.name)
+            }
+          })
+          if (Array.isArray(item.value)) {
+            // 删除多余的属性
+            item.value.forEach(v => {
+              refKeys.forEach(ref => {
+                delete v.entityData[ref + 'Options']
+              })
+            })
+          }
+          return item
+        }) || []
+      // 必填项校验提示
+      if (!this.requiredCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: this.$t('required_tip')
+        })
+      }
+      // 表格至少勾选一条数据校验
+      const tabName = this.$refs.entityTable.activeTab
+      if (!this.noChooseCheck(this.handleData.formData)) {
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
+      const params = {
+        formData: this.handleData.formData,
+        comment: this.taskForm.comment,
+        choseOption: this.taskForm.choseOption,
+        handleStatus: this.taskForm.handleStatus,
+        taskHandleId: this.taskHandleId
+      }
+      const { statusCode } = await commitTaskData(this.handleData.id, params)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
+      }
+    },
     // 获取关注的任务列表
     async geTaskTagList () {
       const { statusCode, data } = await geTaskTagList(this.requestId)
@@ -339,97 +446,6 @@ export default {
           desc: this.$t('successful')
         })
         this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=4` })
-      }
-    },
-    // 任务审批保存
-    async saveTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            // 删除多余的属性
-            item.value.forEach(v => {
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const { statusCode } = await saveTaskData(this.handleData.id, this.handleData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-      }
-    },
-    // 任务审批提交
-    async commitTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone(this.$refs.entityTable && this.$refs.entityTable.requestData)
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            // 删除多余的属性
-            item.value.forEach(v => {
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
-      }
-      // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const { statusCode } = await commitTaskData(this.handleData.id, this.handleData)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
       }
     },
     // 校验表格数据必填项
@@ -484,6 +500,7 @@ export default {
 </script>
 <style lang="scss">
 .workbench-current-handle {
+  margin-top: 10px;
   .task-step {
     display: flex;
     div:first-child {
@@ -537,8 +554,20 @@ export default {
     }
   }
   .sub-title {
+    width: calc(100% - 150px);
     font-size: 14px;
     margin-left: 5px;
+    display: flex;
+    align-items: center;
+    .description {
+      margin-left: 10px;
+      color: #808695;
+      max-width: calc(100% - 300px);
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
   .ivu-tag {
     line-height: 24px !important;

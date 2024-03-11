@@ -770,6 +770,9 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 		err = fmt.Errorf("Try to append useless entity fail,%s ", err.Error())
 		return
 	}
+	if requestTemplate.ProcDefId != "" {
+		request.AssociationWorkflow = true
+	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
 	nowTime := time.Now().Format(models.DateTimeFormat)
@@ -786,12 +789,12 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	actions = append(actions, &dao.ExecAction{Sql: "update request set handler=?,confirm_time=?,expire_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{operator, nowTime, expireTime, string(cacheBytes), operator, nowTime, request.Id}})
 	// 更新请求处理状态为完成
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_reuslt=?,updated_by=?,updated_time=? where id=?",
-		Param: []interface{}{models.TaskHandleResultTypeApprove, operator, nowTime, checkTaskHandle.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,updated_time=? where id=?",
+		Param: []interface{}{models.TaskHandleResultTypeApprove, nowTime, checkTaskHandle.Id}})
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})
-	approvalActions, err = GetRequestService().CreateRequestApproval(request, userToken, language)
+	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language)
 	if err != nil {
 		return
 	}
@@ -833,13 +836,17 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	return
 }
 
-func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (actions []*dao.ExecAction, err error) {
+func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (err error) {
+	log.Logger.Debug("StartRequestNew", log.JsonObj("request", request))
 	var requestTemplateTable []*models.RequestTemplateTable
 	var result *models.StartInstanceResultData
-	actions = []*dao.ExecAction{}
-	dao.X.SQL("select * from request_template where  id=?)", request.RequestTemplate).Find(&requestTemplateTable)
+	err = dao.X.SQL("select * from request_template where id=?", request.RequestTemplate).Find(&requestTemplateTable)
+	if err != nil {
+		err = fmt.Errorf("query request_template with id:%s fail,%s ", request.RequestTemplate, err.Error())
+		return
+	}
 	if len(requestTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find requestTemplate with request:%s ", request.Id)
+		err = fmt.Errorf("Can not find requestTemplate with request:%s ,requestTemplateId:%s ", request.Id, request.RequestTemplate)
 		return
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
@@ -851,6 +858,7 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
 	startParam := BuildRequestProcessData(cacheData)
+	log.Logger.Debug("start proc instance", log.JsonObj("startParam", startParam))
 	result, err = GetProcDefService().StartProcDefInstances(startParam, userToken, language)
 	if err != nil {
 		return
@@ -861,8 +869,10 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	procInstId := fmt.Sprintf("%v", result.Id)
-	actions = append(actions, &dao.ExecAction{Sql: "update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? " +
-		"where id=?", Param: []interface{}{procInstId, result.ProcInstKey, result.Status, nowTime, request.Id}})
+	_, err = dao.X.Exec("update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? where id=?", procInstId, result.ProcInstKey, result.Status, nowTime, request.Id)
+	if err != nil {
+		err = fmt.Errorf("update request:%s proc instance message fail,%s ", request.Id, err.Error())
+	}
 	return
 }
 
@@ -895,10 +905,10 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		// 请求定版, 根据模板配置开启是否确认定版
 		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
-		if request.Handler != operator {
+		/*if request.Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError
 			return err
-		}
+		}*/
 		_, err = dao.X.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", status, description, operator, operator, nowTime, nowTime, requestId)
 	} else {
 		_, err = dao.X.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
@@ -1863,9 +1873,12 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	result = &models.RequestHistory{}
 	// 查询 request
 	var requests []*models.RequestTable
-	err = dao.X.Context(c).Table(models.RequestTable{}.TableName()).
-		Where("id = ?", requestId).
-		Find(&requests)
+	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
+	/*
+		err = dao.X.Context(c).Table(models.RequestTable{}.TableName()).
+			Where("id = ?", requestId).
+			Find(&requests)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -1879,14 +1892,16 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	// 查询 task
 	var tasks []*models.TaskTable
-	err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
-		Where("request = ?", requestId).
-		Asc("created_time").
-		Find(&tasks)
+	err = dao.X.SQL("select * from task where request=? order by created_time", requestId).Find(&tasks)
+	//err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
+	//	Where("request = ?", requestId).
+	//	Asc("created_time").
+	//	Find(&tasks)
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
+	log.Logger.Info("history task", log.Int("taskLen", len(tasks)))
 
 	if len(tasks) == 0 {
 		return
@@ -1906,9 +1921,13 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	// 查询 task template
 	var taskTemplates []*models.TaskTemplateTable
-	err = dao.X.Context(c).Table(models.TaskTemplateTable{}.TableName()).
-		In("id", taskTmplIds).
-		Find(&taskTemplates)
+	taskTmplIdsFilterSql, taskTmplIdsFilterParams := dao.CreateListParams(taskTmplIds, "")
+	err = dao.X.SQL("select * from task_template where id in ("+taskTmplIdsFilterSql+")", taskTmplIdsFilterParams...).Find(&taskTemplates)
+	/*
+		err = dao.X.Context(c).Table(models.TaskTemplateTable{}.TableName()).
+			In("id", taskTmplIds).
+			Find(&taskTemplates)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -1920,10 +1939,14 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	// 查询 task handle
 	var taskHandles []*models.TaskHandleTable
-	err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
-		In("task", taskIds).
-		Asc("created_time").
-		Find(&taskHandles)
+	taskIdsFilterSql, taskIdsFilterParams := dao.CreateListParams(taskIds, "")
+	err = dao.X.SQL("select * from task_handle where task in ("+taskIdsFilterSql+") order by created_time asc", taskIdsFilterParams...).Find(&taskHandles)
+	/*
+		err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
+			In("task", taskIds).
+			Asc("created_time").
+			Find(&taskHandles)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -1969,7 +1992,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
-	log.Logger.Debug(fmt.Sprintf("start handle tasks: [%s]", strings.Join(taskIds, ",")))
+	// log.Logger.Debug(fmt.Sprintf("start handle tasks: [%s]", strings.Join(taskIds, ",")))
 	for _, task := range tasks {
 		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
 			uncompletedTasks = append(uncompletedTasks, task.Name)
@@ -2011,7 +2034,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
 		}
 
-		log.Logger.Debug(fmt.Sprintf("get task: %s form data", task.Id))
+		// log.Logger.Debug(fmt.Sprintf("get task: %s form data", task.Id))
 		formData, err = getTaskFormData(c, curTaskForHistory)
 		if err != nil {
 			log.Logger.Error(fmt.Sprintf("get task form data for task: %s error", task.Id), log.Error(err))
@@ -2021,7 +2044,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
-	log.Logger.Debug(fmt.Sprintf("finish handle tasks: [%s]", strings.Join(taskIds, ",")))
+	// log.Logger.Debug(fmt.Sprintf("finish handle tasks: [%s]", strings.Join(taskIds, ",")))
 	result.Task = taskForHistoryList
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
@@ -2032,9 +2055,12 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 
 	// 查询 form template
 	var formTemplates []*models.FormTemplateTable
-	err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
-		Where("task_template = ?", taskObj.TaskTemplate).
-		Find(&formTemplates)
+	err = dao.X.SQL("select * from form_template where task_template=?", taskObj.TaskTemplate).Find(&formTemplates)
+	/*
+		err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
+			Where("task_template = ?", taskObj.TaskTemplate).
+			Find(&formTemplates)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2061,9 +2087,13 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		actualFormTemplateIds = formTemplateRefIds
 
 		// 查询 form 实际使用的 formTemplate
-		err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
-			In("id", actualFormTemplateIds).
-			Find(&actualFormTemplates)
+		actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams := dao.CreateListParams(actualFormTemplateIds, "")
+		err = dao.X.SQL("select * from form_template where id in ("+actualFormTemplateIdsFilterSql+")", actualFormTemplateIdsFilterParams...).Find(&actualFormTemplates)
+		/*
+			err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
+				In("id", actualFormTemplateIds).
+				Find(&actualFormTemplates)
+		*/
 		if err != nil {
 			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 			return
@@ -2084,10 +2114,16 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 
 	// 查询 form
 	var taskForms []*models.FormTable
-	err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
-		Where("request = ?", taskObj.Request).
-		In("form_template", actualFormTemplateIds).
-		Find(&taskForms)
+	taskFormsParamList := []interface{}{taskObj.Request}
+	actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams := dao.CreateListParams(actualFormTemplateIds, "")
+	taskFormsParamList = append(taskFormsParamList, actualFormTemplateIdsFilterParams...)
+	err = dao.X.SQL("select * from form where request=? and form_template in ("+actualFormTemplateIdsFilterSql+")", taskFormsParamList...).Find(&taskForms)
+	/*
+		err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
+			Where("request = ?", taskObj.Request).
+			In("form_template", actualFormTemplateIds).
+			Find(&taskForms)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2106,15 +2142,21 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 
 	// 查询 request 的 form item
 	taskUpdatedTime := taskObj.UpdatedTime
-	taskHandleCnt := len(taskObj.TaskHandleList)
-	if taskHandleCnt > 0 {
-		taskUpdatedTime = taskObj.TaskHandleList[taskHandleCnt-1].UpdatedTime
-	}
+	/*
+		taskHandleCnt := len(taskObj.TaskHandleList)
+		if taskHandleCnt > 0 {
+			taskUpdatedTime = taskObj.TaskHandleList[taskHandleCnt-1].UpdatedTime
+		}
+	*/
 	var requestFormItems []*models.FormItemTable
-	err = dao.X.Context(c).Table(models.FormItemTable{}.TableName()).
-		Where("request = ? AND updated_time <= ?", taskObj.Request, taskUpdatedTime).
-		Desc("updated_time").
-		Find(&requestFormItems)
+	requestFormItemsParamList := []interface{}{taskObj.Request, taskUpdatedTime}
+	err = dao.X.SQL("select * from form_item where request = ? AND updated_time <= ? order by updated_time desc", requestFormItemsParamList...).Find(&requestFormItems)
+	/*
+		err = dao.X.Context(c).Table(models.FormItemTable{}.TableName()).
+			Where("request = ? AND updated_time <= ?", taskObj.Request, taskUpdatedTime).
+			Desc("updated_time").
+			Find(&requestFormItems)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2128,10 +2170,14 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 	// 查询 form item template
 	var itemTemplates []*models.FormItemTemplateTable
 	// err = dao.X.Context(c).SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
-	err = dao.X.Context(c).Table(models.FormItemTemplateTable{}.TableName()).
-		In("form_template", actualFormTemplateIds).
-		OrderBy("item_group,sort").
-		Find(&itemTemplates)
+	actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams = dao.CreateListParams(actualFormTemplateIds, "")
+	err = dao.X.SQL("select * from form_item_template where form_template in ("+actualFormTemplateIdsFilterSql+") order by item_group,sort", actualFormTemplateIdsFilterParams...).Find(&itemTemplates)
+	/*
+		err = dao.X.Context(c).Table(models.FormItemTemplateTable{}.TableName()).
+			In("form_template", actualFormTemplateIds).
+			OrderBy("item_group,sort").
+			Find(&itemTemplates)
+	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2250,9 +2296,13 @@ func getFormAndTemplateMapInfo(c *gin.Context, taskFormItems []*models.FormItemT
 		}
 
 		var forms []*models.FormTable
-		err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
-			In("id", formIds).
-			Find(&forms)
+		formIdsFilterSql, formIdsFilterParams := dao.CreateListParams(formIds, "")
+		err = dao.X.SQL("select * from form where id in ("+formIdsFilterSql+")", formIdsFilterParams...).Find(&forms)
+		/*
+			err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
+				In("id", formIds).
+				Find(&forms)
+		*/
 		if err != nil {
 			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 			return
@@ -2274,9 +2324,13 @@ func getFormAndTemplateMapInfo(c *gin.Context, taskFormItems []*models.FormItemT
 				}
 
 				var formTemplates []*models.FormTemplateTable
-				err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
-					In("id", formTemplateIds).
-					Find(&formTemplates)
+				formTemplateIdsFilterSql, formTemplateIdsFilterParams := dao.CreateListParams(formTemplateIds, "")
+				err = dao.X.SQL("select * from form_template where id in ("+formTemplateIdsFilterSql+")", formTemplateIdsFilterParams...).Find(&formTemplates)
+				/*
+					err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
+						In("id", formTemplateIds).
+						Find(&formTemplates)
+				*/
 				if err != nil {
 					err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 					return

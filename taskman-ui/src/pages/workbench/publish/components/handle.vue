@@ -420,7 +420,11 @@ export default {
           title: this.$t('successful'),
           desc: this.$t('successful')
         })
-        this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=2` })
+        this.$router.push({
+          path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=${
+            this.detail.status === 'InProgress' ? 2 : 3
+          }`
+        })
       }
     },
     // 获取关注的任务列表

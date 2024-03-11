@@ -15,12 +15,12 @@
         <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
         <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
         <Col :span="4" class="line">{{ i.updatedTime }}</Col>
-        <Col :span="3" class="line">{{ getDiffTime(i) }}</Col>
+        <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
         <Col :span="5" class="line"
           ><div class="text-overflow">{{ i.resultDesc || '-' }}</div></Col
         >
         <Col :span="5" class="line">
-          <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
+          <div v-for="file in i.attachFiles" style="display:inline-block;" :key="file.id">
             <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
               file.name
             }}</Tag>
@@ -33,7 +33,7 @@
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
       <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
       <Col :span="4" class="line">{{ data.updatedTime }}</Col>
-      <Col :span="3" class="line">{{ getDiffTime(data) }}</Col>
+      <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
       >
@@ -102,7 +102,7 @@ export default {
           (days > 0 ? days + this.$t('tw_day') : '') +
           (hours > 0 ? hours + this.$t('tw_hour') : '') +
           (mins > 0 ? mins + this.$t('tw_minute') : '') +
-          (secs > 0 ? secs + this.$t('tw_second') : 0 + this.$t('tw_second'))
+          (secs > 0 ? secs + this.$t('tw_second') : '')
         )
       }
     }

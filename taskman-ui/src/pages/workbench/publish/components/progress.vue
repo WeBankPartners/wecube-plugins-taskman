@@ -54,6 +54,7 @@
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
           </template>
           <div class="role" slot="content">
+            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <Tooltip :content="i.name">
               <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
@@ -79,6 +80,7 @@
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
           </template>
           <div class="role" slot="content">
+            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <Tooltip :content="i.name">
               <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
@@ -120,7 +122,14 @@ export default {
       },
       approvalExpand: false,
       taskExpand: false,
-      errorNode: ''
+      errorNode: '',
+      approvalTypeName: {
+        custom: '单人',
+        any: '协同',
+        all: '并行',
+        admin: '提交人角色管理员',
+        auto: '自动通过'
+      }
     }
   },
   methods: {
@@ -228,6 +237,10 @@ export default {
       font-size: 14px;
       font-weight: 500;
       margin-right: 20px;
+    }
+    .mode {
+      font-size: 12px;
+      display: inline-block;
     }
     .role {
       display: flex;

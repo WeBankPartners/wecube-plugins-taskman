@@ -1436,7 +1436,8 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	var action *dao.ExecAction
 	var newTaskId string
 	actions = []*dao.ExecAction{}
-	now := time.Now().Format(models.DateTimeFormat)
+	// 加1s
+	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeApprove)).Find(&taskTemplateList)
 	if err != nil {
 		return
@@ -1498,7 +1499,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
-	now := time.Now().Format(models.DateTimeFormat)
+	// 加1s
+	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
 	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
 		// 关联编排,调用编排启动
@@ -1563,7 +1565,8 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 	var newTaskId string
 	var taskTemplateList []*models.TaskTemplateTable
 	actions = []*dao.ExecAction{}
-	now := time.Now().Format(models.DateTimeFormat)
+	// 加1s
+	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	// 创建请求确认任务
 	newTaskId = "co_" + guid.CreateGuid()
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, string(models.TaskTypeConfirm)).Find(&taskTemplateList)

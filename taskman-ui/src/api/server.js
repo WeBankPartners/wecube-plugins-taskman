@@ -116,7 +116,7 @@ export const uncollectTemplate = templateId => req.delete(`/taskman/api/v1/user/
 // 模板收藏列表
 export const collectTemplateList = params => req.post(`/taskman/api/v1/user/template/collect/query`, params)
 // 工作台看板数量
-export const overviewData = params => req.get(`/taskman/api/v1/user/platform/count`, params)
+export const overviewData = params => req.post(`/taskman/api/v1/user/platform/count`, params)
 // 工作台列表
 export const getPlatformList = params => req.post(`/taskman/api/v1/user/platform/list`, params)
 // 获取工作台筛选数据集合

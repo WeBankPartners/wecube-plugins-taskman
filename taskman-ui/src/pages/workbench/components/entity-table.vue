@@ -58,19 +58,22 @@
                     style="width: calc(100% - 20px)"
                   >
                   </LimitSelect>
+                  <!--自定义分析类型-->
                   <Input
                     v-else-if="i.elementType === 'calculate'"
-                    :value="i.routineExpression"
+                    :value="value[i.name]"
                     type="textarea"
                     :disabled="true"
                     style="width: calc(100% - 20px)"
                   ></Input>
+                  <!--日期时间类型-->
                   <DatePicker
                     v-else-if="i.elementType === 'datePicker'"
-                    v-model="value[i.name]"
-                    format="yyyy-MM-dd"
+                    :value="value[i.name]"
+                    @on-change="$event => handleTimeChange($event, value, i.name)"
+                    format="yyyy-MM-dd HH:mm:ss"
                     :disabled="i.isEdit === 'no' || formDisable"
-                    type="date"
+                    type="datetime"
                     style="width: calc(100% - 20px)"
                   >
                   </DatePicker>
@@ -116,6 +119,7 @@ import { getRefOptions, getWeCmdbOptions } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import EntityItem from './edit-entity-item.vue'
 import LimitSelect from '@/pages/components/limit-select.vue'
+import dayjs from 'dayjs'
 export default {
   components: {
     EntityItem,
@@ -202,6 +206,13 @@ export default {
     }
   },
   methods: {
+    handleTimeChange (e, value, name) {
+      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      } else {
+        value[name] = e
+      }
+    },
     // 提交时，定位到没有填写必填项的页签
     validTable (index) {
       if (index !== '') {
@@ -229,6 +240,25 @@ export default {
       data.title.forEach(t => {
         if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
           this.refKeys.push(t.name)
+        }
+        // 自定义计算分析类型
+        if (t.elementType === 'calculate') {
+          data.value.forEach(v => {
+            if (v.entityData[t.name]) {
+              let jsonData = []
+              try {
+                jsonData = JSON.parse(v.entityData[t.name])
+              } catch (e) {
+                console.log(e)
+              }
+              if (jsonData.length > 0) {
+                const displayNameArr = jsonData.map(item => {
+                  return item.displayName || ''
+                })
+                v.entityData[t.name] = displayNameArr.join('；')
+              }
+            }
+          })
         }
       })
       this.formOptions = data.title

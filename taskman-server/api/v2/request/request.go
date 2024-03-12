@@ -40,16 +40,26 @@ func CreateRequest(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("Param role can not empty "))
 		return
 	}
-	template, err := service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
+	param.CreatedBy = middleware.GetRequestUser(c)
+	err := handleCreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	service.GetOperationLogService().RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
+	middleware.ReturnData(c, param)
+}
+
+func handleCreateRequest(param *models.RequestTable, roles []string, userToken, language string) (err error) {
+	template, getTemplateErr := service.GetRequestTemplateService().GetRequestTemplate(param.RequestTemplate)
+	if getTemplateErr != nil {
+		err = getTemplateErr
 		return
 	}
 	// 设置请求名称
 	param.Name = fmt.Sprintf("%s-%s-%s", template.Name, template.OperatorObjType, time.Now().Format("060102150405"))
 	// 设置请求类型
 	param.Type = template.Type
-	param.CreatedBy = middleware.GetRequestUser(c)
 	param.ExpireDay = template.ExpireDay
 	param.RequestTemplateName = template.Name
 	d, _ := time.ParseDuration(fmt.Sprintf("%dh", 24*param.ExpireDay))
@@ -65,13 +75,8 @@ func CreateRequest(c *gin.Context) {
 	if template.ProcDefId != "" {
 		param.AssociationWorkflow = true
 	}
-	err = service.CreateRequest(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-		return
-	}
-	service.GetOperationLogService().RecordRequestLog(param.Id, param.Name, param.CreatedBy, "createRequest", c.Request.RequestURI, c.GetString("requestBody"))
-	middleware.ReturnData(c, param)
+	err = service.CreateRequest(param, roles, userToken, language)
+	return
 }
 
 func SaveRequestCache(c *gin.Context) {
@@ -227,8 +232,10 @@ func PluginCreateRequest(c *gin.Context) {
 	if len(param.Inputs) == 0 {
 		return
 	}
+	requestToken := c.GetHeader("Authorization")
+	requestLanguage := "en"
 	for _, input := range param.Inputs {
-		output, tmpErr := handlePluginRequestCreate(input, param.RequestId)
+		output, tmpErr := handlePluginRequestCreate(input, param.RequestId, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
@@ -238,7 +245,43 @@ func PluginCreateRequest(c *gin.Context) {
 	}
 }
 
-func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId string) (result *models.PluginRequestCreateOutputObj, err error) {
-
+func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId, token, language string) (result *models.PluginRequestCreateOutputObj, err error) {
+	result = &models.PluginRequestCreateOutputObj{CallbackParameter: input.CallbackParameter}
+	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.Role}
+	// 创建请求
+	if err = handleCreateRequest(&requestObj, []string{}, token, language); err != nil {
+		return
+	}
+	if requestObj.Id == "" {
+		err = fmt.Errorf("create request fail,requestId empty")
+		return
+	}
+	result.RequestId = requestObj.Id
+	// 预览根数据表单
+	previewData, previewErr := service.GetRequestPreData(requestObj.Id, input.RootDataId, token, language)
+	if previewErr != nil {
+		err = previewErr
+		return
+	}
+	// 保存请求表单数据
+	saveParam := models.RequestProDataV2Dto{Data: previewData, RootEntityId: input.RootDataId, Name: requestObj.Name, ExpectTime: requestObj.ExpectTime, Description: requestObj.Description, CustomForm: models.CustomForm{}, ApprovalList: []*models.TaskTemplateDto{}}
+	for _, dataRow := range previewData {
+		for _, v := range dataRow.Value {
+			if v.DataId == input.RootDataId {
+				saveParam.EntityName = v.DisplayName
+				break
+			}
+		}
+		if saveParam.EntityName != "" {
+			break
+		}
+	}
+	if err = service.SaveRequestCacheV2(requestObj.Id, "system", token, &saveParam); err != nil {
+		return
+	}
+	// 更新请求状态
+	if err = service.UpdateRequestStatus(requestObj.Id, "Pending", "system", token, language, requestObj.Description); err != nil {
+		return
+	}
 	return
 }

@@ -4,7 +4,13 @@
     <!--请求进度-->
     <div class="steps">
       <span class="title">{{ $t('tw_request_progress') }}：</span>
-      <Steps :current="0" :style="{ width: progress.requestProgress.length * 120 + 'px' }">
+      <Steps
+        :current="0"
+        :style="{
+          minWidth: progress.requestProgress.length * 120 + 'px',
+          maxWidth: progress.requestProgress.length * 160 + 'px'
+        }"
+      >
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
@@ -36,16 +42,25 @@
     <!--审批进度-->
     <div v-if="approvalExpand" class="steps" style="margin-top:5px;">
       <span class="title">审批进度：</span>
-      <Steps :current="0" :style="{ width: progress.approvalProgress.length * 120 + 'px' }">
+      <Steps
+        :current="0"
+        :style="{
+          minWidth: progress.approvalProgress.length * 120 + 'px',
+          maxWidth: progress.approvalProgress.length * 160 + 'px'
+        }"
+      >
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
           </template>
           <div class="role" slot="content">
+            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <Tooltip :content="i.name">
               <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
-            <span style="margin-top:-5px;">{{ i.handler }}</span>
+            <Tooltip :content="i.handler">
+              <div class="word-eclipse" style="margin-top:-5px;">{{ i.handler }}</div>
+            </Tooltip>
           </div>
         </Step>
       </Steps>
@@ -53,16 +68,25 @@
     <!--任务进度-->
     <div v-if="taskExpand" class="steps" style="margin-top:5px;">
       <span class="title">任务进度：</span>
-      <Steps :current="0" :style="{ width: progress.taskProgress.length * 120 + 'px' }">
+      <Steps
+        :current="0"
+        :style="{
+          minWidth: progress.taskProgress.length * 120 + 'px',
+          maxWidth: progress.taskProgress.length * 160 + 'px'
+        }"
+      >
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
           </template>
           <div class="role" slot="content">
+            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <Tooltip :content="i.name">
               <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
-            <span style="margin-top:-5px;">{{ i.handler }}</span>
+            <Tooltip :content="i.handler">
+              <div style="margin-top:-5px;">{{ i.handler }}</div>
+            </Tooltip>
           </div>
         </Step>
       </Steps>
@@ -98,7 +122,14 @@ export default {
       },
       approvalExpand: false,
       taskExpand: false,
-      errorNode: ''
+      errorNode: '',
+      approvalTypeName: {
+        custom: '单人',
+        any: '协同',
+        all: '并行',
+        admin: '提交人角色管理员',
+        auto: '自动通过'
+      }
     }
   },
   methods: {
@@ -112,17 +143,18 @@ export default {
       const { statusCode, data } = await getProgressInfo(params)
       if (statusCode === 'OK') {
         const { approvalProgress, requestProgress, taskProgress } = data
-        this.progress.approvalProgress = approvalProgress || [] // 审批进度
         this.progress.requestProgress = requestProgress || [] // 请求进度
+        this.progress.approvalProgress = approvalProgress || [] // 审批进度
         this.progress.taskProgress = taskProgress || [] // 任务进度
+        // 请求进度节点处理
         this.progress.requestProgress.forEach(item => {
           item.icon = statusIcon[item.status]
           item.color = statusColor[item.status]
           switch (item.node) {
-            case 'sendRequest':
+            case 'submit':
               item.name = this.$t('tw_commit_request') // 提交请求
               break
-            case 'requestPending':
+            case 'check':
               item.name = this.$t('tw_request_pending') // 请求定版
               break
             case 'approval':
@@ -206,12 +238,16 @@ export default {
       font-weight: 500;
       margin-right: 20px;
     }
+    .mode {
+      font-size: 12px;
+      display: inline-block;
+    }
     .role {
       display: flex;
       flex-direction: column;
     }
     .word-eclipse {
-      max-width: 180px;
+      max-width: 160px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;

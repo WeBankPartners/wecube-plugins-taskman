@@ -80,6 +80,7 @@ export default {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
               sendRequest: this.$t('tw_commit_request'),
+              confirm: '请求确认',
               requestPending: this.$t('tw_request_pending'),
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
@@ -87,7 +88,7 @@ export default {
             if (map[params.row.curNode] || params.row.curNode) {
               return (
                 <Tooltip content={map[params.row.curNode] || params.row.curNode} placement="top">
-                  <Tag>{map[params.row.curNode] || params.row.curNode}</Tag>
+                  <Tag>{map[params.row.curNode] || params.row.curNode || '-'}</Tag>
                 </Tooltip>
               )
             } else {
@@ -269,7 +270,11 @@ export default {
                 {// 认领
                   !params.row.handler &&
                   ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
-                  this.tabName === 'pending' && (
+                  this.tabName === 'pending' &&
+                  // 模板指定/提交人指定，该提交人角色的管理员可以展示认领按钮
+                  ((['template', 'custom'].includes(params.row.handlerType) &&
+                    params.row.roleAdministrator === this.username) ||
+                    !['template', 'custom'].includes(params.row.handlerType)) && (
                     <Tooltip content={this.$t('tw_action_claim')} placement="top">
                       <Button
                         type="info"
@@ -286,7 +291,11 @@ export default {
                   params.row.handler &&
                   this.username !== params.row.handler &&
                   ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
-                  this.tabName === 'pending' && (
+                  this.tabName === 'pending' &&
+                  // 模板指定/提交人指定，该提交人角色的管理员可以展示转给我按钮
+                  ((['template', 'custom'].includes(params.row.handlerType) &&
+                    params.row.roleAdministrator === this.username) ||
+                    !['template', 'custom'].includes(params.row.handlerType)) && (
                     <Tooltip content={this.$t('tw_action_give')} placement="top">
                       <Button
                         type="success"

@@ -6,6 +6,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 type ProcDefService struct {
@@ -28,12 +29,16 @@ func (s *ProcDefService) GetCoreProcessListNew(userToken, language, manageRole s
 	entityMap = models.ConvertModelsList2Map(nodesList)
 	if len(procDefDtoList) > 0 {
 		for _, dto := range procDefDtoList {
+			rootEntityValue := dto.RootEntity
+			if filterIndex := strings.Index(rootEntityValue, "{"); filterIndex > 0 {
+				rootEntityValue = rootEntityValue[:filterIndex]
+			}
 			processList = append(processList, &models.ProcDefObj{
 				ProcDefId:   dto.Id,
 				ProcDefKey:  dto.Key,
 				ProcDefName: dto.Name,
 				Status:      dto.Status,
-				RootEntity:  entityMap[dto.RootEntity],
+				RootEntity:  entityMap[rootEntityValue],
 				CreatedTime: dto.CreatedTime,
 			})
 		}

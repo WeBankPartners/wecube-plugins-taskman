@@ -38,19 +38,22 @@
                 style="width:60%;"
               >
               </LimitSelect>
-              <Input
+              <!--自定义分析字段-->
+              <!-- <Input
                 v-else-if="i.elementType === 'calculate'"
-                :value="i.routineExpression"
+                :value="value[i.name]"
                 type="textarea"
                 :disabled="true"
                 style="width:60%;"
-              ></Input>
+              ></Input> -->
+              <!--日期时间类型-->
               <DatePicker
                 v-else-if="i.elementType === 'datePicker'"
-                v-model="value[i.name]"
-                format="yyyy-MM-dd"
+                :value="value[i.name]"
+                @on-change="$event => handleTimeChange($event, value, i.name)"
+                format="yyyy-MM-dd HH:mm:ss"
                 :disabled="i.isEdit === 'no' || disabled"
-                type="date"
+                type="datetime"
                 style="width:60%;"
               >
               </DatePicker>
@@ -65,6 +68,7 @@
 <script>
 import LimitSelect from '@/pages/components/limit-select.vue'
 import { getRefOptions, getWeCmdbOptions } from '@/api/server'
+import dayjs from 'dayjs'
 export default {
   components: {
     LimitSelect
@@ -144,6 +148,13 @@ export default {
     }
   },
   methods: {
+    handleTimeChange (e, value, name) {
+      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      } else {
+        value[name] = e
+      }
+    },
     async getRefOptions (titleObj) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
       if (titleObj.elementType === 'select' && titleObj.entity === '') {

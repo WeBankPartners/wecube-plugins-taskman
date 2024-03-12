@@ -151,7 +151,7 @@
               v-for="(data, index) in historyData"
               :name="index + ''"
               :key="index"
-              :hide-arrow="index === 0 ? true : false"
+              :hide-arrow="['revoke', 'submit'].includes(data.type) ? true : false"
             >
               <!--提交请求-->
               <template v-if="data.type === 'submit'">
@@ -161,15 +161,15 @@
                     class="custom-panel-header"
                     :showHeader="index === 0 ? true : false"
                     :data="data"
-                    :operation="$t('tw_submit_approval')"
+                    :operation="$t('tw_submit_request')"
                   ></HeaderTag>
                 </div>
               </template>
               <!--请求撤回-->
               <template v-if="data.type === 'revoke'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
-                  <HeaderTag class="custom-panel-header" :data="data" operation="请求撤回"></HeaderTag>
+                  <div class="custom-panel-title" style="margin-left:30px;">撤回请求</div>
+                  <HeaderTag class="custom-panel-header" :data="data" operation="撤回请求"></HeaderTag>
                 </div>
               </template>
               <!--请求定版-->
@@ -337,7 +337,7 @@ export default {
   async created () {
     // 获取请求进度
     this.$nextTick(() => {
-      this.$refs.progress.initData(this.requestTemplate, this.requestId)
+      this.$refs.progress.initData(this.requestId)
     })
     // 获取详情信息
     this.getRequestInfoNew()
@@ -375,14 +375,8 @@ export default {
         }
         this.completeStatus = statusMap[data.request.completeStatus] || ''
         this.uncompletedTasks = data.request.uncompletedTasks || []
-        // 当前处理-请求定版
-        if (this.detail.status === 'Pending') {
-          if (this.historyData && this.historyData.length > 1) {
-            this.handleData = this.historyData[1]
-            this.historyData.splice(1, 1)
-          }
-          // 当前处理-任务、审批、请求确认
-        } else if (['InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
+        // 当前处理-任务、审批、请求确认
+        if (['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
           const index = this.historyData.findIndex(item => item.editable)
           this.handleData = this.historyData[index]
           this.historyData.splice(index, 1)

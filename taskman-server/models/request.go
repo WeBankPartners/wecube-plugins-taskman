@@ -78,6 +78,7 @@ type PlatformData struct {
 	PendingConfirm []int `json:"pendingConfirm"` // 待处理请求确认
 	HasProcessed   []int `json:"hasProcessed"`   // 已处理
 	Submit         []int `json:"submit"`         // 我提交的
+	Draft          []int `json:"draft"`          // 我暂存的
 }
 
 // PlatformDataObj 工作台返回数据

@@ -65,6 +65,7 @@ func GetPlatformCount(param models.CountPlatformParam, user string, userRoles []
 	platformData.PendingConfirm = pendingConfirm
 	platformData.HasProcessed = hasProcessed
 	platformData.Submit = GetSubmitCount(param, user)
+	platformData.Draft = GetDraftCount(param, user)
 	return
 }
 
@@ -223,9 +224,22 @@ func submitSQL(rollback, templateType int, user string) (sql string, queryParam 
 }
 
 // GetDraftCount 统计用户暂存
-func GetDraftCount(scene int, user string) int {
-	sql, queryParam := draftSQL(scene, user)
-	return dao.QueryCount(sql, queryParam...)
+func GetDraftCount(param models.CountPlatformParam, user string) (countArr []int) {
+	var sql string
+	var queryParam []interface{}
+	var tempCount int
+	if param.Scene == int(models.SceneTypeAll) {
+		for _, sceneType := range sceneTypeArr {
+			sql, queryParam = draftSQL(int(sceneType), user)
+			tempCount = dao.QueryCount(sql, queryParam...)
+			countArr = append(countArr, tempCount)
+		}
+	} else {
+		sql, queryParam = draftSQL(param.Scene, user)
+		tempCount = dao.QueryCount(sql, queryParam...)
+		countArr = append(countArr, tempCount)
+	}
+	return
 }
 
 func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {

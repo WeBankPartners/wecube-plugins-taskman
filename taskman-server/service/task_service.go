@@ -161,7 +161,7 @@ func PluginTaskCreate(input *models.PluginTaskCreateRequestObj, callRequestId, d
 	return
 }
 
-func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string) (result *models.PluginTaskCreateOutputObj, taskId string, err error) {
+func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId, dueDate string, nextOptions []string, userToken, language string) (result *models.PluginTaskCreateOutputObj, taskId string, err error) {
 	log.Logger.Debug("task create", log.JsonObj("input", input))
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
@@ -209,29 +209,31 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		err = dao.Transaction(actions)
 		return
 	}
+	if len(requestTable) == 0 {
+		err = fmt.Errorf("can not find request with proc_instance_id:%s", input.ProcInstId)
+		return
+	}
 	newTaskObj.ProcDefId = taskFormInput.ProcDefId
 	newTaskObj.ProcDefKey = taskFormInput.ProcDefKey
-	if len(requestTable) > 0 {
-		newTaskObj.Request = requestTable[0].Id
-		newTaskObj.NodeDefId = taskFormInput.TaskNodeDefId
-		newTaskObj.Emergency = requestTable[0].Emergency
-		newTaskObj.TemplateType = requestTable[0].Type
-		var taskTemplateTable []*models.TaskTemplateTable
-		dao.X.SQL("select * from task_template where request_template=? and node_def_id=?", requestTable[0].RequestTemplate, taskFormInput.TaskNodeDefId).Find(&taskTemplateTable)
-		if len(taskTemplateTable) > 0 {
-			newTaskObj.TaskTemplate = taskTemplateTable[0].Id
-			newTaskObj.NodeName = taskTemplateTable[0].NodeName
-			newTaskObj.ExpireTime = calcExpireTime(nowTime, taskTemplateTable[0].ExpireDay)
-			newTaskObj.Name = taskTemplateTable[0].Name
-			newTaskObj.Description = taskTemplateTable[0].Description
-			newTaskObj.Reporter = requestTable[0].Reporter
-			newTaskObj.ReportTime = nowTime
-			newTaskObj.Handler = taskTemplateTable[0].Handler
-		} else {
-			log.Logger.Warn("Can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
-			err = fmt.Errorf("Can not find any taskTemplate in request:%s with nodeDefId:%s ", newTaskObj.Request, taskFormInput.TaskNodeDefId)
-			return
-		}
+	newTaskObj.Request = requestTable[0].Id
+	newTaskObj.NodeDefId = taskFormInput.TaskNodeDefId
+	newTaskObj.Emergency = requestTable[0].Emergency
+	newTaskObj.TemplateType = requestTable[0].Type
+	var taskTemplateTable []*models.TaskTemplateTable
+	dao.X.SQL("select * from task_template where request_template=? and node_def_id=?", requestTable[0].RequestTemplate, taskFormInput.TaskNodeDefId).Find(&taskTemplateTable)
+	if len(taskTemplateTable) > 0 {
+		newTaskObj.TaskTemplate = taskTemplateTable[0].Id
+		newTaskObj.NodeName = taskTemplateTable[0].NodeName
+		newTaskObj.ExpireTime = calcExpireTime(nowTime, taskTemplateTable[0].ExpireDay)
+		newTaskObj.Name = taskTemplateTable[0].Name
+		newTaskObj.Description = taskTemplateTable[0].Description
+		newTaskObj.Reporter = requestTable[0].Reporter
+		newTaskObj.ReportTime = nowTime
+		newTaskObj.Handler = taskTemplateTable[0].Handler
+	} else {
+		log.Logger.Warn("Can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
+		err = fmt.Errorf("Can not find any taskTemplate in request:%s with nodeDefId:%s ", newTaskObj.Request, taskFormInput.TaskNodeDefId)
+		return
 	}
 	taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id," +
 		"node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time," +
@@ -273,13 +275,15 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		}
 	}
 	// 新增确认定版处理人
-	var taskHandleTemplateList []*models.TaskHandleTemplateTable
-	dao.X.SQL("select * from task_handle_template where task_template = ?", newTaskObj.TaskTemplate).Find(&taskHandleTemplateList)
-	if len(taskHandleTemplateList) > 0 {
-		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-			guid.CreateGuid(), taskHandleTemplateList[0].Id, newTaskObj.Id, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, nowTime, nowTime,
-		}})
-	}
+	//var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	//dao.X.SQL("select * from task_handle_template where task_template = ?", newTaskObj.TaskTemplate).Find(&taskHandleTemplateList)
+	//if len(taskHandleTemplateList) > 0 {
+	//actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
+	//	guid.CreateGuid(), taskHandleTemplateList[0].Id, newTaskObj.Id, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, nowTime, nowTime,
+	//}})
+	//}
+	createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskObj.Id, userToken, language, requestTable[0], taskTemplateTable[0])
+	actions = append(actions, createTaskHandleAction...)
 	err = dao.TransactionWithoutForeignCheck(actions)
 	return
 }

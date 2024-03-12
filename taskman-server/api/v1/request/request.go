@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -27,17 +26,13 @@ func GetRequestPreviewData(c *gin.Context) {
 
 // CountPlatform 个人工作台数量统计-new
 func CountPlatform(c *gin.Context) {
-	scene := c.Query("scene")
-	if scene == "" {
-		middleware.ReturnParamEmptyError(c, "scene")
+	var param models.CountPlatformParam
+	var err error
+	if err = c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	sceneInt, err := strconv.Atoi(scene)
-	if err != nil {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("scene invalid"))
-		return
-	}
-	platformData, err := service.GetPlatformCount(sceneInt, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
+	platformData, err := service.GetPlatformCount(param, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

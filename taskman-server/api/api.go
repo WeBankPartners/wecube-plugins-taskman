@@ -106,7 +106,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-data/reference/query/:formItemTemplateId/:requestId/:attrName", Method: "POST", HandlerFunc: request.GetReferenceData},
 		&handlerFuncObj{Url: "/request-data/entity/expression/query/:formItemTemplateId/:rootDataId", Method: "GET", HandlerFunc: request.GetExpressionItemData},
 
-		&handlerFuncObj{Url: "/user/platform/count", Method: "GET", HandlerFunc: request.CountPlatform},
+		&handlerFuncObj{Url: "/user/platform/count", Method: "POST", HandlerFunc: request.CountPlatform},
 		&handlerFuncObj{Url: "/user/platform/filter-item", Method: "POST", HandlerFunc: request.FilterItem},
 		&handlerFuncObj{Url: "/user/platform/list", Method: "POST", HandlerFunc: request.DataList},
 		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},

@@ -66,6 +66,12 @@ type QueryCollectTemplateParam struct {
 	Sorting          *QueryRequestSorting `json:"sorting"` // 排序字段
 }
 
+type CountPlatformParam struct {
+	Scene          int    `json:"scene"`           //场景,0表示所有
+	QueryTimeStart string `json:"queryTimeStart" ` // 查询时间
+	QueryTimeEnd   string `json:"queryTimeEnd" `   //
+}
+
 // AddCollectTemplateParam 添加收藏
 type AddCollectTemplateParam struct {
 	TemplateId string `json:"templateId"` //模板id

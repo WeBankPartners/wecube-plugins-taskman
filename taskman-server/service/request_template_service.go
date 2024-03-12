@@ -761,10 +761,12 @@ func (s *RequestTemplateService) getAllRequestTemplate() (templateMap map[string
 }
 
 func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, operator string) error {
-	var formTemplate *models.FormTemplateTable
 	var actions []*dao.ExecAction
 	var requestTemplateRoles []*models.RequestTemplateRoleTable
-	var taskTemplates []*models.TaskTemplateTable
+	// 查询任务模版处理列表
+	//var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var taskTemplateList []*models.TaskTemplateTable
+	var formItemTemplateList []*models.FormItemTemplateTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
 		return err
@@ -779,63 +781,58 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	version := common.BuildVersionNum(requestTemplateObj.Version)
 	newRequestTemplateId := guid.CreateGuid()
-	newRequestFormTemplateId := guid.CreateGuid()
-
 	if requestTemplateObj.ParentId == "" {
-		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,"+
+		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
-			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type) select '%s' as id,`group`,name,description,'%s' as form_template,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc) select '%s' as id,`group`,name,description,"+
 			"tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,"+
 			"'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler, "+
-			"type,operator_obj_type from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator, nowTime, operator, nowTime,
+			"type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc from request_template where id='%s'", newRequestTemplateId, operator, nowTime, operator, nowTime,
 			requestTemplateObj.Id, version, requestTemplateObj.Id)})
 	} else {
-		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,form_template,"+
+		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
-			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id) select '%s' as id,`group`,name,"+
-			"description,'%s' as form_template,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id,approve_by,check_switch,confirm_switch,back_desc) select '%s' as id,`group`,name,"+
+			"description,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,"+
 			"'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,"+
-			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id from request_template where id='%s'", newRequestTemplateId, newRequestFormTemplateId, operator,
+			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id,approve_by,check_switch,confirm_switch,back_desc from request_template where id='%s'", newRequestTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplateObj.Id, version, requestTemplateObj.Id, requestTemplateObj.ParentId)})
 	}
-	formTemplate, err = s.formTemplateDao.QueryRequestFormByRequestTemplateIdAndType(requestTemplateId, string(models.RequestFormTypeMessage))
-	if err != nil {
-		return err
-	}
-	if formTemplate != nil {
-		newRequestFormActions, tmpErr := s.getFormCopyActions(formTemplate.Id, newRequestFormTemplateId)
-		if tmpErr != nil {
-			return fmt.Errorf("Try to copy request form fail,%s ", tmpErr.Error())
-		}
-		actions = append(actions, newRequestFormActions...)
-	}
+
 	dao.X.SQL("select * from request_template_role where request_template=?", requestTemplateObj.Id).Find(&requestTemplateRoles)
 	for _, v := range requestTemplateRoles {
 		tmpId := newRequestTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
 		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_role(id,request_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newRequestTemplateId, v.Role, v.RoleType}})
 	}
 
-	dao.X.SQL("select id,form_template from task_template where request_template=?", requestTemplateObj.Id).Find(&taskTemplates)
-	newTaskGuids := guid.CreateGuidList(len(taskTemplates))
-	newTaskFormGuids := guid.CreateGuidList(len(taskTemplates))
-	for i, task := range taskTemplates {
-		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into task_template(id,name,description,form_template,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,'%s' as form_template,'%s' as request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time from task_template where id='%s'", newTaskGuids[i], newTaskFormGuids[i], newRequestTemplateId, task.Id)})
-		tmpTaskFormActions, tmpErr := s.getFormCopyActions(task.FormTemplate, newTaskFormGuids[i])
-		if tmpErr != nil {
-			err = fmt.Errorf("Try to copy task form fail,%s ", tmpErr.Error())
-			break
-		}
-		actions = append(actions, tmpTaskFormActions...)
-		tmpTaskRoleActions, tmpErr := s.getTaskTemplateRoleActions(task.Id, newTaskGuids[i])
-		if tmpErr != nil {
-			err = fmt.Errorf("Try to copy task role releation fail,%s ", tmpErr.Error())
-			break
-		}
-		actions = append(actions, tmpTaskRoleActions...)
-	}
+	// 查询 任务模板列表
+	err = dao.X.SQL("select * from task_template where request_template = ?", requestTemplateId).Find(&taskTemplateList)
 	if err != nil {
 		return err
 	}
+	// 查询表单模板列表
+	var formTemplateList []*models.FormTemplateTable
+	err = dao.X.SQL("select * from form_template where request_template = ?", requestTemplateId).Find(&formTemplateList)
+	if len(formTemplateList) > 0 {
+		var tempFormItemTemplateList []*models.FormItemTemplateTable
+		for _, formItemTemplate := range formTemplateList {
+			err = dao.X.SQL("select * from form_item_template where form_template = ?", formItemTemplate.Id).Find(&tempFormItemTemplateList)
+		}
+		if len(tempFormItemTemplateList) > 0 {
+			formItemTemplateList = append(formItemTemplateList, tempFormItemTemplateList...)
+		}
+	}
+
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			var tempTaskHandleTemplateList []*models.TaskHandleTemplateTable
+			err = dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&tempTaskHandleTemplateList)
+			if len(tempTaskHandleTemplateList) > 0 {
+				//taskHandleTemplateList = append(tempTaskHandleTemplateList, tempTaskHandleTemplateList...)
+			}
+		}
+	}
+
 	return dao.TransactionWithoutForeignCheck(actions)
 }
 

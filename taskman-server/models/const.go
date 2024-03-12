@@ -189,6 +189,7 @@ const (
 type SceneType int
 
 const (
+	SceneTypeAll     SceneType = 0 // 所有
 	SceneTypeRequest SceneType = 1 // 请求
 	SceneTypeRelease SceneType = 2 // 发布
 	SceneTypeProblem SceneType = 3 // 问题

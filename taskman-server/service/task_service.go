@@ -1767,8 +1767,10 @@ func (s *TaskService) GetTaskMapByRequestId(requestId string) (taskMap map[strin
 	}
 	if len(taskList) > 0 {
 		for _, task := range taskList {
-			if _, ok := taskMap[task.TaskTemplate]; !ok {
-				taskMap[task.TaskTemplate] = task
+			if task.TaskTemplate != "" {
+				if _, ok := taskMap[task.TaskTemplate]; !ok {
+					taskMap[task.TaskTemplate] = task
+				}
 			}
 		}
 	}

@@ -924,7 +924,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var taskApproveList, taskImplementList []*models.TaskTable
-	var handler string
+	var handler, role string
 	var taskSort int
 	var request models.RequestTable
 	var approvalProgress, taskProgress []*models.ProgressObj
@@ -997,14 +997,17 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			taskSort = 0
 			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
 			handler = ""
+			role = ""
 			switch taskTemplate.Type {
 			case string(models.TaskTypeSubmit):
 				taskSort = 1
+				role = request.Role
 				handler = request.CreatedBy
 			case string(models.TaskTypeCheck):
 				taskSort = 2
 			case string(models.TaskTypeConfirm):
 				taskSort = 5
+				role = request.Role
 				handler = request.CreatedBy
 			case string(models.TaskTypeApprove):
 				taskApproveTemplateList = append(taskApproveTemplateList, taskTemplate)
@@ -1020,21 +1023,19 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			}
 			if len(taskHandleTemplateList) > 0 {
 				handler = taskHandleTemplateList[0].Handler
-				if handler == "" {
-					handler = taskHandleTemplateList[0].Role
-				}
+				role = taskHandleTemplateList[0].Role
 				// 定版模板处理角色和处理人如果为空,则设置为属主
 				if taskTemplate.Type == string(models.TaskTypeCheck) && handler == "" {
 					requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 					if requestTemplate != nil {
 						handler = requestTemplate.Handler
 					}
-					if handler == "" {
+					if role == "" {
 						requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
 						if len(requestTemplateRoleList) > 0 {
 							for _, requestTemplateRole := range requestTemplateRoleList {
 								if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
-									handler = requestTemplateRole.Role
+									role = requestTemplateRole.Role
 									break
 								}
 							}
@@ -1047,6 +1048,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				Type:        taskTemplate.Type,
 				Node:        taskTemplate.Name,
 				Handler:     handler,
+				Role:        role,
 				Status:      int(models.TaskExecStatusNotStart), //初始化成未开始
 				ApproveType: taskTemplate.HandleMode,
 				Sort:        taskSort,
@@ -1082,6 +1084,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 
 	for _, taskTemplateProgress := range taskTemplateProgressList {
 		handler = ""
+		role = ""
 		requestProgress := &models.ProgressObj{}
 		requestProgress.Status = taskTemplateProgress.Status
 		requestProgress.Node = taskTemplateProgress.Node
@@ -1098,10 +1101,19 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			if err != nil {
 				return
 			}
-			handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
+			handlerList, roleList := getTaskHandleAndRoleArr(taskHandleList)
+			if len(handlerList) > 0 {
+				handler = strings.Join(handlerList, ",")
+			}
+			if len(roleList) > 0 {
+				role = strings.Join(roleList, ",")
+			}
 		}
 		if handler != "" {
 			requestProgress.Handler = handler
+		}
+		if role != "" {
+			requestProgress.Role = role
 		}
 		rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
 	}
@@ -1168,13 +1180,14 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var taskProgressList []*models.ProgressObj
-	var handler string
+	var handler, role string
 	var err error
 	// 任务排序
 	if len(taskTemplateList) > 0 {
 		sort.Sort(models.TaskTemplateTableSort(taskTemplateList))
 		for _, taskTemplate := range taskTemplateList {
 			handler = ""
+			role = ""
 			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
 			requestProgress := &models.ProgressObj{}
 			requestProgress.Status = int(models.TaskExecStatusNotStart)
@@ -1187,26 +1200,30 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 				return nil, err
 			}
 			if len(taskHandleTemplateList) > 0 {
-				var handlerList []string
-				var tempHandler string
+				var handlerList, roleList []string
+				var tempHandler, tempRole string
 				for _, taskHandleTemplate := range taskHandleTemplateList {
 					// 用户提交的处理人优先级最高
 					if v, ok := requestTaskHandleMap[taskHandleTemplate.Id]; ok {
 						tempHandler = v.Handler
-						if tempHandler == "" {
-							tempHandler = v.Role
-						}
+						tempRole = v.Role
 					}
 					if tempHandler == "" && taskHandleTemplate.Handler != "" {
 						tempHandler = taskHandleTemplate.Handler
-					} else if tempHandler == "" && taskHandleTemplate.Role != "" {
-						tempHandler = taskHandleTemplate.Role
+					}
+					if tempRole == "" && taskHandleTemplate.Role != "" {
+						tempRole = taskHandleTemplate.Role
 					}
 					handlerList = append(handlerList, tempHandler)
+					roleList = append(roleList, tempRole)
 				}
 				handler = strings.Join(handlerList, ",")
+				role = strings.Join(roleList, ",")
 				if handler != "" {
 					requestProgress.Handler = handler
+				}
+				if role != "" {
+					requestProgress.Role = role
 				}
 			}
 			if v, ok := taskMap[taskTemplate.Id]; ok {
@@ -1221,9 +1238,18 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 				if err != nil {
 					return nil, err
 				}
-				handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
+				handlerList, roleList := getTaskHandleAndRoleArr(taskHandleList)
+				if len(handlerList) > 0 {
+					handler = strings.Join(handlerList, ",")
+				}
+				if len(roleList) > 0 {
+					role = strings.Join(roleList, ",")
+				}
 				if handler != "" {
 					requestProgress.Handler = handler
+				}
+				if role != "" {
+					requestProgress.Role = role
 				}
 			}
 			taskProgressList = append(taskProgressList, requestProgress)
@@ -1232,19 +1258,19 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 	return taskProgressList, nil
 }
 
-func getTaskHandlerArr(taskHandleList []*models.TaskHandleTable) []string {
-	var arr []string
+func getTaskHandleAndRoleArr(taskHandleList []*models.TaskHandleTable) (handlerList, roleList []string) {
 	if len(taskHandleList) == 0 {
-		return arr
+		return
 	}
 	for _, taskHandle := range taskHandleList {
 		if taskHandle.Handler != "" {
-			arr = append(arr, taskHandle.Handler)
-		} else if taskHandle.Role != "" {
-			arr = append(arr, taskHandle.Role)
+			handlerList = append(handlerList, taskHandle.Handler)
+		}
+		if taskHandle.Role != "" {
+			roleList = append(roleList, taskHandle.Role)
 		}
 	}
-	return arr
+	return
 }
 
 func GetProcessDefinitions(templateId, userToken, language string) (rowData *models.DefinitionsData, err error) {

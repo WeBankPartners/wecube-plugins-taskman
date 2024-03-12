@@ -54,6 +54,7 @@ type TaskTemplateProgressDto struct {
 	Type        string `json:"type"`
 	Node        string `json:"node"`
 	Handler     string `json:"handler"`
+	Role        string `json:"role"`
 	Status      int    `json:"status"`      // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
 	ApproveType string `json:"approveType"` // 审批类型:custom.单人自定义 any.协同 all.并行
 	Sort        int    `json:"sort"`        // 排序

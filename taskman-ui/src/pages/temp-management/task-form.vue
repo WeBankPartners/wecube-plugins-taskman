@@ -216,7 +216,7 @@
                   </div>
                 </div>
                 <div style="margin: 12px 0 0 8px;">
-                  <Form :label-width="90">
+                  <Form :label-width="90" v-if="procDefId !== ''">
                     <FormItem :label="$t('判断分支')">
                       <Select style="width:94%">
                         <Option value="1">{{ $t('测试分支') }}</Option>

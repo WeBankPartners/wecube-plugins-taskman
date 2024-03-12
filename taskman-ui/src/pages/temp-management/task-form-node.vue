@@ -14,7 +14,7 @@
             :disabled="procDefId !== ''"
             v-model="activeApprovalNode.name"
             @on-change="paramsChanged"
-            style="width: 94%;"
+            style="width: 160px;"
           >
           </Input>
           <span style="color: red">*</span>
@@ -23,13 +23,13 @@
           </div>
         </FormItem>
         <FormItem label="时效">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 94%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 94%;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
         </FormItem>
         <FormItem :label="$t('tw_type')">
-          <Input type="text" v-model="nodeType" disabled style="width: 94%;"> </Input>
+          <Input type="text" v-model="nodeType" disabled style="width: 160px;"> </Input>
         </FormItem>
         <FormItem :label="$t('description')">
           <Input
@@ -44,7 +44,7 @@
       </Form>
       <Form ref="formInline" inline :label-width="100">
         <FormItem label="分配">
-          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" filterable style="width: 94%;">
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 160px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -65,14 +65,14 @@
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
             <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.assign" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.assign" @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
               </Select>
             </Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.handlerType" @on-change="paramsChanged">
                 <Option
                   v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
                   :value="item.value"
@@ -146,8 +146,8 @@ export default {
         handleMode: 'custom',
         handleTemplates: [
           {
-            assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
-            handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+            assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
+            handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
             handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除

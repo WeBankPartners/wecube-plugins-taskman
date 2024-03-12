@@ -304,13 +304,7 @@
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
           <FormItem :label="$t('表单模版类型')">
-            <Select
-              style="width: 80%"
-              v-model="itemGroup"
-              v-if="showSelectModel"
-              filterable
-              :size="{ height: '500px' }"
-            >
+            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
               </OptionGroup>
@@ -1009,6 +1003,9 @@ fieldset[disabled] .ivu-input {
 }
 .ivu-select-disabled .ivu-select-selection {
   color: #757575 !important;
+}
+.ivu-select-dropdown {
+  max-height: 300px !important;
 }
 </style>
 <style scoped lang="scss">

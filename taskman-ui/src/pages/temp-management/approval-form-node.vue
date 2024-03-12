@@ -9,14 +9,15 @@
     <div>
       <Form ref="formInline" inline :label-width="100">
         <FormItem :label="$t('name')">
-          <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 94%;"> </Input>
+          <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 160px;">
+          </Input>
           <span style="color: red">*</span>
           <div v-if="activeApprovalNode.name === ''" style="color: red">
             {{ $t('name') }}{{ $t('can_not_be_empty') }}
           </div>
         </FormItem>
         <FormItem label="时效">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 85%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 160px;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -34,7 +35,7 @@
       </Form>
       <Form ref="formInline" inline :label-width="100">
         <FormItem label="分配">
-          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" filterable style="width: 85%;">
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 160px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -55,14 +56,14 @@
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
             <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.assign" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.assign" @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
               </Select>
             </Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.handlerType" @on-change="paramsChanged">
                 <Option
                   v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
                   :value="item.value"
@@ -113,7 +114,7 @@
             icon="md-add"
             :disabled="isHandlerAddDisable"
           ></Button>
-          <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span>
+          <!-- <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span> -->
         </FormItem>
       </Form>
       <div style="text-align: center;">

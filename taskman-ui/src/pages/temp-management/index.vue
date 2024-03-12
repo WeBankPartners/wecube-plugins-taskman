@@ -97,7 +97,12 @@ export default {
         okText: this.$t('confirm'),
         cancelText: this.$t('cancel'),
         onOk: async () => {
-          this.$router.push({ path: '/taskman/template-mgmt' })
+          this.$router.push({
+            path: '/taskman/template-mgmt',
+            query: {
+              status: 'created'
+            }
+          })
         },
         onCancel: () => {}
       })

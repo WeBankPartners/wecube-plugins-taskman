@@ -14,7 +14,9 @@
             :disabled="procDefId !== ''"
             v-model="activeApprovalNode.name"
             @on-change="paramsChanged"
-            style="width: 94%;"
+            style="width: 160px;"
+            maxlength="30"
+            show-word-limit
           >
           </Input>
           <span style="color: red">*</span>
@@ -23,13 +25,13 @@
           </div>
         </FormItem>
         <FormItem label="时效">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 94%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 94%;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
         </FormItem>
         <FormItem :label="$t('tw_type')">
-          <Input type="text" v-model="nodeType" disabled style="width: 94%;"> </Input>
+          <Input type="text" v-model="nodeType" disabled style="width: 160px;"> </Input>
         </FormItem>
         <FormItem :label="$t('description')">
           <Input
@@ -44,7 +46,7 @@
       </Form>
       <Form ref="formInline" inline :label-width="100">
         <FormItem label="分配">
-          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" filterable style="width: 94%;">
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 160px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -55,24 +57,24 @@
           style="width:70%"
         >
           <Row>
-            <Col class="cutom-table-border" span="1">序号</Col>
+            <Col class="cutom-table-border" span="2">序号</Col>
             <Col class="cutom-table-border margin-left--1" span="5">角色设置方式</Col>
             <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
             <Col class="cutom-table-border margin-left--1" span="5">角色</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">人员</Col>
+            <Col class="cutom-table-border margin-left--1" span="4">人员</Col>
             <!-- <Col class="cutom-table-border margin-left--1" span="2">操作</Col> -->
           </Row>
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
-            <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
+            <Col class="cutom-table-border margin-top--1" span="2">{{ roleObjIndex + 1 }}</Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.assign" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.assign" @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
                   item.label
                 }}</Option>
               </Select>
             </Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select v-model="roleObj.handlerType" filterable @on-change="paramsChanged">
+              <Select v-model="roleObj.handlerType" @on-change="paramsChanged">
                 <Option
                   v-for="item in handlerTypeOptions.filter(h => h.used.includes(roleObj.assign))"
                   :value="item.value"
@@ -85,13 +87,13 @@
               <Select
                 v-model="roleObj.role"
                 filterable
-                @on-change="getUserByRole(roleObj.role, roleObjIndex)"
+                @on-change="changeUser(roleObj.role, roleObjIndex)"
                 :disabled="isRoleDisable(roleObj, roleObjIndex)"
               >
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="4">
               <Select v-model="roleObj.handler" filterable :disabled="isHandlerDisable(roleObj, roleObjIndex)">
                 <Option v-for="item in roleObj.handlerOptions" :value="item.id" :key="item.id">{{
                   item.displayName
@@ -120,7 +122,7 @@
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveBtnActive()" @click="saveNode(1)">{{ $t('save') }}</Button>
+        <Button type="primary" :disabled="isSaveNodeDisable" @click="saveNode(1)">{{ $t('save') }}</Button>
       </div>
     </div>
   </div>
@@ -146,8 +148,8 @@ export default {
         handleMode: 'custom',
         handleTemplates: [
           {
-            assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
-            handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+            assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
+            handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
             handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -161,8 +163,8 @@ export default {
         { label: '提交人角色管理员', value: 'admin' }
       ],
       approvalSingle: {
-        assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
-        handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+        assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
+        handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
         handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -179,7 +181,18 @@ export default {
         { label: '组内系统分配', value: 'system', used: ['template', 'custom'] },
         { label: '组内主动认领', value: 'claim', used: ['template', 'custom'] }
       ],
-      useRolesOptions: [] // 使用角色
+      useRolesOptions: [], // 使用角色
+      isSaveNodeDisable: true
+    }
+  },
+  watch: {
+    activeApprovalNode: {
+      handler (val) {
+        this.isSaveNodeDisable = this.isSaveBtnActive()
+        this.$emit('nodeStatus', this.isSaveNodeDisable)
+      },
+      immediate: true,
+      deep: true
     }
   },
   props: ['nodeType'],
@@ -244,7 +257,7 @@ export default {
       }
     },
     async saveNode (type, nextNodeId) {
-      // type 1自我更新 2转到目标节点
+      // type 1自我更新 2转到目标节点 3父级页面调用保存
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
       let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
       if (['admin', 'auto'].includes(tmpData.handleMode)) {
@@ -253,10 +266,12 @@ export default {
       const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        if (![2, 3].includes(type)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         if (type === 1) {
           this.$emit('reloadParentPage', this.activeApprovalNode.id)
         } else if (type === 2) {
@@ -264,29 +279,13 @@ export default {
         }
       }
     },
-    isNeedConfirm (nextNodeId) {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveNode(2, nextNodeId)
-          },
-          onCancel: () => {
-            this.$emit('jumpToNode')
-          }
-        })
-        return true
-      } else {
-        return false
-      }
-    },
     // 为父页面提供状态查询
     panalStatus () {
-      return this.isParmasChanged
+      const nodeStatus = this.isSaveNodeDisable
+      if (nodeStatus) {
+        this.$Message.warning('节点数据不完整')
+      }
+      return nodeStatus ? 'unableToSave' : 'canSave'
     },
     mgmtData () {
       this.activeApprovalNode.handleTemplates &&
@@ -313,8 +312,8 @@ export default {
     changeRoleType () {
       this.activeApprovalNode.handleTemplates = [
         {
-          assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
-          handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+          assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
+          handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除

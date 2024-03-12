@@ -14,7 +14,14 @@
               <div class="basci-info-content">
                 <Form :label-width="120">
                   <FormItem :label="$t('name')">
-                    <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input>
+                    <Input
+                      v-model="basicInfo.name"
+                      maxlength="30"
+                      show-word-limit
+                      @on-change="paramsChanged"
+                      style="width: 96%"
+                    />
+                    <!-- <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input> -->
                     <span style="color: red">*</span>
                     <div v-if="basicInfo.name.length === 0 || basicInfo.name.length > 30" style="color: red">
                       {{ $t('name') }}{{ $t('tw_limit_30') }}
@@ -110,12 +117,12 @@
                   <FormItem :label="$t('description')">
                     <Input
                       v-model="basicInfo.description"
-                      style="width: 96%;"
+                      maxlength="200"
+                      show-word-limit
                       type="textarea"
-                      :rows="2"
                       @on-change="paramsChanged"
-                    >
-                    </Input>
+                      style="width: 96%"
+                    />
                     <div v-if="basicInfo.description.length > 200" style="color: red">
                       {{ $t('description') }}{{ $t('tw_limit_200') }}
                     </div>
@@ -226,8 +233,12 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnDisable">{{ $t('save') }}</Button>
-      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable">{{ $t('next') }}</Button>
+      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
+        $t('save')
+      }}</Button>
+      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
+        $t('next')
+      }}</Button>
     </div>
     <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
@@ -366,13 +377,13 @@ export default {
       const method = this.basicInfo.id === '' ? createTemp : updateTemp
       const { statusCode, data } = await method(cacheData)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
         if (isGoToNext) {
-          this.$emit('gotoNextStep', data.id)
+          this.$emit('gotoStep', data.id, 'forward')
         } else {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
           this.loadPage(data.id)
         }
       }
@@ -406,26 +417,27 @@ export default {
       }
     },
     gotoNext () {
-      if (this.basicInfo.id === '') {
-        this.createTemp(true)
-      } else {
-        if (this.isParmasChanged) {
-          this.$refs.customConfirmModelRef.open({
-            title: `${this.$t('tw_confirm_discarding_changes')}`,
-            content: `${this.$t('tw_params_edit_confirm')}`,
-            okText: this.$t('save'),
-            cancelText: this.$t('tw_abandon'),
-            okFunc: () => {
-              this.createTemp(true)
-            },
-            cancelFunc: () => {
-              this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
-            }
-          })
-        } else {
-          this.$emit('gotoNextStep', this.requestTemplateId || this.basicInfo.id)
-        }
-      }
+      this.createTemp(true)
+      // if (this.basicInfo.id === '') {
+      //   this.createTemp(true)
+      // } else {
+      //   if (this.isParmasChanged) {
+      //     this.$refs.customConfirmModelRef.open({
+      //       title: `${this.$t('tw_confirm_discarding_changes')}`,
+      //       content: `${this.$t('tw_params_edit_confirm')}`,
+      //       okText: this.$t('save'),
+      //       cancelText: this.$t('tw_abandon'),
+      //       okFunc: () => {
+      //         this.createTemp(true)
+      //       },
+      //       cancelFunc: () => {
+      //         this.$emit('gotoStep', this.requestTemplateId || this.basicInfo.id)
+      //       }
+      //     })
+      //   } else {
+      //     this.$emit('gotoStep', this.requestTemplateId || this.basicInfo.id)
+      //   }
+      // }
     },
     // 获取模版组信息
     async getGroupOptions () {
@@ -484,7 +496,7 @@ export default {
             id: d
           }
         })
-        if (this.handlerRolesOptions.length > 0) {
+        if (this.basicInfo.id === '' && this.handlerRolesOptions.length > 0) {
           this.basicInfo.handler = this.handlerRolesOptions[0].id
         }
       }
@@ -509,7 +521,7 @@ export default {
     async pendingRoleChange () {
       this.basicInfo.pendingHandler = ''
       await this.getPendingHandlerRoles()
-      if (this.pendingHandlerOptions.length > 0) {
+      if (this.basicInfo.id === '' && this.pendingHandlerOptions.length > 0) {
         this.basicInfo.pendingHandler = this.pendingHandlerOptions[0].id
       }
     },
@@ -612,5 +624,8 @@ fieldset[disabled] .ivu-input {
 
 .basci-info-content {
   margin: 16px 64px;
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

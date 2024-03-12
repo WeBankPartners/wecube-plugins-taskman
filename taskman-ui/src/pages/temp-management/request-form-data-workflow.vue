@@ -53,7 +53,7 @@
                 @filterRuleChanged="singleFilterRuleChanged"
                 :disabled="!isCustomItemEditable"
                 :routineExpression="item.routineExpression || group.itemGroup"
-                :allEntityType="allEntityType"
+                :allEntityType="[]"
                 :currentSelectedEntity="group.itemGroup"
               >
               </ItemFilterRulesGroup>
@@ -97,7 +97,7 @@ export default {
   name: 'workflow',
   data () {
     return {
-      allEntityType: [], // 所有模型
+      allEntityType: [], // 所有模型, 此处的根依赖于外层选项，所以置空
 
       isParmasChanged: false,
       openFormConfig: false, // 配置表单控制
@@ -186,7 +186,7 @@ export default {
     },
     async loadPage (params) {
       await this.getRequestGroupForm(params)
-      this.getAllDataModels()
+      // this.getAllDataModels()
       if (params.isAdd) {
         this.group.itemGroupSort = params.itemGroupSort
         this.group.itemGroupRule = 'exist'

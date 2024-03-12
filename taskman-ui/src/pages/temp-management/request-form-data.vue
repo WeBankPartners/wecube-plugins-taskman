@@ -1,7 +1,7 @@
 <template>
   <div>
     <Row>
-      <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
+      <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Divider plain>{{ $t('custom_form') }}</Divider>
           <draggable
@@ -29,7 +29,7 @@
           </draggable>
         </div>
       </Col>
-      <Col span="12" style="border: 1px solid #dcdee2; padding: 0 16px; width: 48%; margin: 0 4px">
+      <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
           <Divider>预览</Divider>
           <div class="title">
@@ -68,7 +68,7 @@
               <span>
                 <Button
                   style="margin-top: -5px;"
-                  @click="selectItemGroup"
+                  @click="beforeSelectItemGroup"
                   type="primary"
                   shape="circle"
                   icon="md-add"
@@ -127,9 +127,11 @@
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
-                    v-model="element.defaultValue"
                     class="custom-item"
-                  ></Select>
+                    :multiple="element.multiple === 'yes'"
+                  >
+                    <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{ item }}</Option>
+                  </Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
                     :disabled="element.isEdit === 'no'"
@@ -159,7 +161,7 @@
           </template>
         </div>
       </Col>
-      <Col span="6" style="border: 1px solid #dcdee2">
+      <Col span="5" style="border: 1px solid #dcdee2">
         <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
           <Collapse v-model="openPanel">
             <Panel name="1">
@@ -253,6 +255,15 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
+                  <FormItem
+                    :label="$t('tw_multiple')"
+                    v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                  >
+                    <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
                       <Option :value="6">6</Option>
@@ -304,13 +315,7 @@
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
           <FormItem :label="$t('表单模版类型')">
-            <Select
-              style="width: 80%"
-              v-model="itemGroup"
-              v-if="showSelectModel"
-              filterable
-              :size="{ height: '500px' }"
-            >
+            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
               </OptionGroup>
@@ -340,7 +345,8 @@
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
+      <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
+      <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
     </div>
   </div>
 </template>
@@ -382,7 +388,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -412,7 +418,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -442,7 +448,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -472,7 +478,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -503,7 +509,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -555,7 +561,7 @@ export default {
         id: 0,
         inDisplayName: 'yes',
         isEdit: 'yes',
-        multiple: 'N',
+        multiple: 'no',
         selectList: [],
         isRefInside: 'no',
         required: 'no',
@@ -588,7 +594,8 @@ export default {
           'border-radius': '14px'
         }
       },
-      displayLastGroup: false // 控制group显示，在新增时显示最后一个，其余显示当前值
+      displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值\
+      nextGroupInfo: {}
     }
   },
   computed: {
@@ -626,16 +633,16 @@ export default {
         let groups = this.dataFormInfo.groups
         if (this.displayLastGroup) {
           const group = groups[groups.length - 1]
-          this.editGroupCustomItems(group)
+          this.editGroupCustomItems(group, false)
           // this.displayLastGroup = false
         } else {
           let itemGroupId = this.finalElement[0].itemGroupId
           const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
           if (findGroup) {
-            this.editGroupCustomItems(findGroup)
+            this.editGroupCustomItems(findGroup, false)
           } else {
             if (groups.length > 0) {
-              this.editGroupCustomItems(groups[0])
+              this.editGroupCustomItems(groups[0], false)
             }
           }
         }
@@ -680,6 +687,13 @@ export default {
       })
     },
     // 查询可添加的组
+    beforeSelectItemGroup () {
+      if (this.finalElement[0].itemGroupId === '') {
+        this.selectItemGroup()
+      } else {
+        this.saveGroup(7)
+      }
+    },
     async selectItemGroup () {
       this.itemGroup = ''
       this.groupOptions = []
@@ -750,26 +764,32 @@ export default {
       }
     },
     // 编辑组自定义属性
-    editGroupCustomItems (groupItem) {
+    editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
+      this.nextGroupInfo = groupItem
       this.displayLastGroup = false
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            // this.saveGroup(1)
-            this.saveGroup(4, groupItem)
-          },
-          onCancel: () => {
-            this.updateFinalElement(groupItem)
-          }
-        })
+      if (isNeedSaveFirst) {
+        this.saveGroup(4, groupItem)
       } else {
         this.updateFinalElement(groupItem)
       }
+      // if (this.isParmasChanged) {
+      //   this.$Modal.confirm({
+      //     title: `${this.$t('confirm_discarding_changes')}`,
+      //     content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
+      //     'z-index': 1000000,
+      //     okText: this.$t('save'),
+      //     cancelText: this.$t('abandon'),
+      //     onOk: async () => {
+      //       // this.saveGroup(1)
+      //       this.saveGroup(4, groupItem)
+      //     },
+      //     onCancel: () => {
+      //       this.updateFinalElement(groupItem)
+      //     }
+      //   })
+      // } else {
+      //   this.updateFinalElement(groupItem)
+      // }
     },
     updateFinalElement (groupItem) {
       this.finalElement = [
@@ -786,47 +806,41 @@ export default {
     },
     // 删除组
     async removeGroupItem (groupItem) {
-      this.$Modal.confirm({
-        title: this.$t('confirm_delete'),
-        'z-index': 1000000,
-        loading: true,
-        onOk: async () => {
-          this.$Modal.remove()
-          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.requestTemplateId)
-          if (statusCode === 'OK') {
-            this.$Notice.success({
-              title: this.$t('successful'),
-              desc: this.$t('successful')
-            })
-            this.cancelGroup()
-            this.loadPage()
-          }
-        },
-        onCancel: () => {}
-      })
+      this.nextGroupInfo = groupItem
+      this.saveGroup(6)
+      // this.$Modal.confirm({
+      //   title: this.$t('confirm_delete'),
+      //   'z-index': 1000000,
+      //   loading: true,
+      //   onOk: async () => {
+      //     this.$Modal.remove()
+      //     const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.requestTemplateId)
+      //     if (statusCode === 'OK') {
+      //       this.$Notice.success({
+      //         title: this.$t('successful'),
+      //         desc: this.$t('successful')
+      //       })
+      //       this.cancelGroup()
+      //       this.loadPage()
+      //     }
+      //   },
+      //   onCancel: () => {}
+      // })
+    },
+    async confirmRemoveGroupItem () {
+      const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
+      if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.cancelGroup()
+        this.loadPage()
+      }
     },
     // 编辑组信息
     editGroupItem (groupItem) {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveGroup(5, groupItem)
-          },
-          onCancel: () => {
-            this.isParmasChanged = false
-            // this.editGroupCustomItems(groupItem)
-            this.openDrawer(groupItem)
-          }
-        })
-      } else {
-        // this.editGroupCustomItems(groupItem)
-        this.openDrawer(groupItem)
-      }
+      this.saveGroup(5, groupItem)
     },
     openDrawer (groupItem) {
       this.editGroupCustomItems(groupItem)
@@ -897,7 +911,7 @@ export default {
     },
     // 保存自定义表单项
     async saveGroup (nextStep, elememt) {
-      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗
+      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗 6删除group 7选择组 8上一步
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       finalData.items = finalData.attrs.map(attr => {
         if (attr.id.startsWith('c_')) {
@@ -911,22 +925,30 @@ export default {
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        if (![2, 3, 4, 5, 6, 7, 8].includes(nextStep)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         this.isParmasChanged = false
         if (nextStep === 1) {
           // this.cancelGroup()
           this.loadPage()
         } else if (nextStep === 2) {
-          this.$emit('gotoNextStep', this.requestTemplateId)
+          this.$emit('gotoStep', this.requestTemplateId, 'forward')
         } else if (nextStep === 3) {
           this.$emit('changTab', 'msgForm')
         } else if (nextStep === 4) {
-          this.updateFinalElement(elememt)
+          this.updateFinalElement(this.nextGroupInfo)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)
+        } else if (nextStep === 6) {
+          this.confirmRemoveGroupItem()
+        } else if (nextStep === 7) {
+          this.selectItemGroup()
+        } else if (nextStep === 8) {
+          this.$emit('gotoStep', this.requestTemplateId, 'backward')
         }
       }
     },
@@ -965,47 +987,13 @@ export default {
       return this.isParmasChanged
     },
     tabChange () {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('tw_confirm_discarding_changes')}`,
-          content: `${this.$t('tw_params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('tw_abandon'),
-          closable: true,
-          onOk: async () => {
-            this.saveGroup(3)
-          },
-          onCancel: () => {
-            this.isParmasChanged = false
-            this.$emit('changTab', 'msgForm')
-          }
-        })
-      } else {
-        this.isParmasChanged = false
-        this.$emit('gotoNextStep', this.requestTemplateId)
-      }
+      this.saveGroup(3)
     },
     gotoNext () {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('tw_confirm_discarding_changes')}`,
-          content: `${this.$t('tw_params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('tw_abandon'),
-          onOk: async () => {
-            this.saveGroup(2)
-          },
-          onCancel: () => {
-            this.isParmasChanged = false
-            this.$emit('gotoNextStep', this.requestTemplateId)
-          }
-        })
-      } else {
-        this.isParmasChanged = false
-        this.$emit('gotoNextStep', this.requestTemplateId)
-      }
+      this.saveGroup(2)
+    },
+    gotoForward () {
+      this.saveGroup(8)
     }
   },
   components: {
@@ -1026,6 +1014,9 @@ fieldset[disabled] .ivu-input {
 }
 .ivu-select-disabled .ivu-select-selection {
   color: #757575 !important;
+}
+.ivu-select-dropdown {
+  max-height: 300px !important;
 }
 </style>
 <style scoped lang="scss">
@@ -1061,7 +1052,7 @@ fieldset[disabled] .ivu-input {
   }
 }
 .custom-title {
-  width: 90px;
+  width: 80px;
   display: inline-block;
   text-align: right;
   word-wrap: break-word;
@@ -1093,5 +1084,8 @@ fieldset[disabled] .ivu-input {
     border: 1px solid #81b337;
     color: #81b337;
   }
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

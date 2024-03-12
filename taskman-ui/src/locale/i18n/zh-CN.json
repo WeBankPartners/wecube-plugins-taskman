@@ -9,6 +9,7 @@
   "delete": "删除",
   "reset": "重置",
   "next": "下一步",
+  "forward": "前一步",
   "confirm": "确定",
   "confirm_delete": "确定删除？",
   "confirm_termination": "确定终止？",
@@ -322,5 +323,6 @@
   "tw_limit_30": "长度需在0到30之间",
   "tw_limit_200": "长度需小于200",
   "tw_code": "编码",
-  "tw_restore": "还原"
+  "tw_restore": "还原",
+  "tw_multiple": "多选"
 }

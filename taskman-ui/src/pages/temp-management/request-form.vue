@@ -12,30 +12,18 @@
       <div style="margin-top: 16px;">
         <RequestFormMsg
           v-if="activeTab === 'msgForm'"
-          @gotoNextStep="gotoNextStep"
+          @gotoStep="gotoStep"
           @changTab="changTab"
           ref="msgFormRef"
         ></RequestFormMsg>
         <RequestFormData
           v-if="activeTab === 'dataForm'"
-          @gotoNextStep="gotoNextStep"
+          @gotoStep="gotoStep"
           @changTab="changTab"
           ref="dataFormRef"
           :requestTemplateId="requestTemplateId"
         ></RequestFormData>
       </div>
-      <!-- <Tabs :value="activeTab" @on-click="changTab">
-        <TabPane label="1.信息表单" name="msgForm">
-          <RequestFormMsg @gotoNextStep="gotoNextStep" ref="msgFormRef"></RequestFormMsg>
-        </TabPane>
-        <TabPane label="2.数据表单" name="dataForm" disabled>
-          <RequestFormData
-            @gotoNextStep="gotoNextStep"
-            ref="dataFormRef"
-            :requestTemplateId="requestTemplateId"
-          ></RequestFormData>
-        </TabPane>
-      </Tabs> -->
     </Col>
   </Row>
 </template>
@@ -74,8 +62,8 @@ export default {
 
       this.$nextTick(() => {})
     },
-    gotoNextStep () {
-      this.$emit('gotoNextStep', this.requestTemplateId)
+    gotoStep (requestTemplateId, stepDirection) {
+      this.$emit('gotoStep', requestTemplateId, stepDirection)
     }
   },
   components: {

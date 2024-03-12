@@ -113,6 +113,12 @@ const statusColor = {
   6: '#ed4014'
 }
 export default {
+  props: {
+    status: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       progress: {
@@ -129,6 +135,15 @@ export default {
         all: '并行',
         admin: '提交人角色管理员',
         auto: '自动通过'
+      }
+    }
+  },
+  watch: {
+    status (val) {
+      if (val === 'InApproval') {
+        this.approvalExpand = true
+      } else if (val === 'InProgress') {
+        this.taskExpand = true
       }
     }
   },

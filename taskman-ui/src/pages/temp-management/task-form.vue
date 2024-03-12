@@ -40,6 +40,7 @@
             ref="approvalFormNodeRef"
             @jumpToNode="jumpToNode"
             @reloadParentPage="loadPage"
+            @nodeStatus="nodeStatus"
             :procDefId="procDefId"
             :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
           ></TaskFormNode>
@@ -415,8 +416,12 @@
       ></RequestFormDataWorkflow>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoForward" ghost type="primary">{{ $t('forward') }}</Button>
-      <Button @click="submitTemplate" type="primary">{{ $t('submit_for_review') }}</Button>
+      <Button :disabled="isTopButtonDisable" @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{
+        $t('forward')
+      }}</Button>
+      <Button :disabled="isTopButtonDisable" @click="submitTemplate" type="primary" class="btn-footer-margin">{{
+        $t('submit_for_review')
+      }}</Button>
     </div>
   </div>
 </template>
@@ -446,6 +451,7 @@ export default {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
       MODALHEIGHT: 200,
+      isTopButtonDisable: true, // 下一步，上一步等的控制
       procDefId: '',
       approvalNodes: [
         {
@@ -791,34 +797,6 @@ export default {
           onCancel: () => {}
         })
       }
-    },
-    preApprovalNodeChange (type) {
-      // type 1新增 2编辑 3删除
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveGroup(4, this.nextNodeInfo)
-          },
-          onCancel: () => {
-            if (type === 2) {
-              this.isParmasChanged = false
-              this.activeEditingNode = this.nextNodeInfo
-              this.editNode(this.activeEditingNode)
-            }
-          }
-        })
-        return true
-      }
-      if (this.$refs.approvalFormNodeRef.panalStatus()) {
-        this.$refs.approvalFormNodeRef.isNeedConfirm(this.nextNodeInfo.id)
-        return true
-      }
-      return false
     },
     // 在弹窗关闭、保存、还原状态下回显group内容
     reloadGroup () {
@@ -1220,6 +1198,9 @@ export default {
           onCancel: () => {}
         })
       }
+    },
+    nodeStatus (status) {
+      this.isTopButtonDisable = status
     }
   },
   components: {
@@ -1358,5 +1339,8 @@ fieldset[disabled] .ivu-input {
   color: #fff;
   padding: 0 12px;
   cursor: pointer;
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

@@ -226,8 +226,12 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnDisable">{{ $t('save') }}</Button>
-      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable">{{ $t('next') }}</Button>
+      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
+        $t('save')
+      }}</Button>
+      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
+        $t('next')
+      }}</Button>
     </div>
     <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
@@ -613,5 +617,8 @@ fieldset[disabled] .ivu-input {
 
 .basci-info-content {
   margin: 16px 64px;
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

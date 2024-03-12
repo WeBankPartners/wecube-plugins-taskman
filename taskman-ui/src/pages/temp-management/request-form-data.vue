@@ -340,8 +340,8 @@
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoForward" ghost type="primary">{{ $t('forward') }}</Button>
-      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
+      <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
+      <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
     </div>
   </div>
 </template>
@@ -1076,5 +1076,8 @@ fieldset[disabled] .ivu-input {
     border: 1px solid #81b337;
     color: #81b337;
   }
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

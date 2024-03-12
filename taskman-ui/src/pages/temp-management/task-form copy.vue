@@ -415,7 +415,9 @@
       ></RequestFormDataWorkflow>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="submitTemplate" size="small" type="primary">{{ $t('submit_for_review') }}</Button>
+      <Button @click="submitTemplate" size="small" type="primary" class="btn-footer-margin">{{
+        $t('submit_for_review')
+      }}</Button>
     </div>
   </div>
 </template>
@@ -1337,5 +1339,8 @@ fieldset[disabled] .ivu-input {
   color: #fff;
   padding: 0 12px;
   cursor: pointer;
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

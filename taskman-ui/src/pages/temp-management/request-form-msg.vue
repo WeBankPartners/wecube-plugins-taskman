@@ -251,9 +251,11 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoForward" ghost type="primary">{{ $t('forward') }}</Button>
-      <Button @click="saveMsgForm(1)" type="info" :disabled="isSaveBtnActive()">{{ $t('save') }}</Button>
-      <Button @click="gotoNext" type="primary">{{ $t('next') }}</Button>
+      <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
+      <Button @click="saveMsgForm(1)" type="info" :disabled="isSaveBtnActive()" class="btn-footer-margin">{{
+        $t('save')
+      }}</Button>
+      <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
     </div>
     <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
@@ -686,5 +688,8 @@ fieldset[disabled] .ivu-input {
 .custom-item {
   width: calc(100% - 130px);
   display: inline-block;
+}
+.btn-footer-margin {
+  margin: 0 6px;
 }
 </style>

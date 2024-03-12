@@ -187,6 +187,7 @@ export default {
     activeApprovalNode: {
       handler (val) {
         this.isSaveNodeDisable = this.isSaveBtnActive()
+        this.$emit('nodeStatus', this.isSaveNodeDisable)
       },
       immediate: true,
       deep: true
@@ -276,33 +277,13 @@ export default {
         }
       }
     },
-    isNeedConfirm (nextNodeId) {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveNode(2, nextNodeId)
-          },
-          onCancel: () => {
-            this.$emit('jumpToNode')
-          }
-        })
-        return true
-      } else {
-        return false
-      }
-    },
     // 为父页面提供状态查询
     panalStatus () {
       const nodeStatus = this.isSaveNodeDisable
       if (nodeStatus) {
         this.$Message.warning('节点数据不完整')
       }
-      return this.isSaveNodeDisable ? 'unableToSave' : 'canSave'
+      return nodeStatus ? 'unableToSave' : 'canSave'
     },
     mgmtData () {
       this.activeApprovalNode.handleTemplates &&

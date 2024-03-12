@@ -1619,7 +1619,15 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 		return entityDepMap, nil
 	}
 	// get core preview data list
-	preData, preErr := ProcessDataPreview(requestTemplateId, cacheData.RootEntityValue.EntityDataId, userToken, language)
+	rootDataId := cacheData.RootEntityValue.Oid
+	if splitIndex := strings.LastIndex(rootDataId, ":"); splitIndex > 0 {
+		rootDataId = rootDataId[splitIndex+1:]
+	}
+	if rootDataId == "" {
+		err = fmt.Errorf("preview root data id can not empty")
+		return
+	}
+	preData, preErr := ProcessDataPreview(requestTemplateId, rootDataId, userToken, language)
 	if preErr != nil {
 		return entityDepMap, fmt.Errorf("Try to get process preview data fail,%s ", preErr.Error())
 	}

@@ -419,9 +419,10 @@ func UpdateRequestFormItem(requestId, operator, now string, param *models.Reques
 	actions = append(actions, &dao.ExecAction{Sql: "delete from form where request = ?", Param: []interface{}{requestId}})
 
 	for _, v := range param.Data {
-		for _, valueObj := range v.Value {
+		tmpFormIdList := guid.CreateGuidList(len(v.Value))
+		for valueIndex, valueObj := range v.Value {
 			// 每行记录新增一个表单
-			newFormId = guid.CreateGuid()
+			newFormId = tmpFormIdList[valueIndex]
 			actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,form_template,data_id,created_by,created_time,updated_by," +
 				"updated_time) values (?,?,?,?,?,?,?,?)", Param: []interface{}{newFormId, requestId, v.FormTemplateId, valueObj.Id, operator, now, operator, now}})
 			tmpGuidList := guid.CreateGuidList(len(v.Title))
@@ -555,6 +556,9 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		return
 	}
 	for _, entity := range result {
+		if entity.ItemGroupRule == "new" {
+			continue
+		}
 		for _, tmpData := range previewData.EntityTreeNodes {
 			if tmpData.EntityName == entity.Entity {
 				tmpValueData := make(map[string]interface{})

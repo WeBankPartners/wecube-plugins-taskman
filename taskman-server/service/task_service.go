@@ -165,7 +165,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	log.Logger.Debug("task create", log.JsonObj("input", input))
 	result = &models.PluginTaskCreateOutputObj{CallbackParameter: input.CallbackParameter, ErrorCode: "0", ErrorMessage: "", Comment: ""}
 	var requestTable []*models.RequestTable
-	err = dao.X.SQL("select id,form,request_template,emergency,type from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
+	err = dao.X.SQL("select * from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
 	if err != nil {
 		return result, taskId, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
 	}

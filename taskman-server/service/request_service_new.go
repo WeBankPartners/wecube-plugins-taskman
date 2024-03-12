@@ -930,6 +930,8 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var approvalProgress, taskProgress []*models.ProgressObj
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
 	var requestTemplate *models.RequestTemplateTable
+	var requestTaskHandleMap = make(map[string]*models.TaskHandleTemplateDto)
+	var taskTemplateDtoList []*models.TaskTemplateDto
 	// 初始化成未开始
 	approveCompleteStatus := int(models.TaskExecStatusNotStart)
 	taskCompleteStatus := int(models.TaskExecStatusNotStart)
@@ -946,6 +948,19 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	taskMap, err = GetTaskService().GetTaskMapByRequestId(requestId)
 	if err != nil {
 		return
+	}
+	// 获取用户请求提交的审批配置(提交人指定)
+	if request.TaskApprovalCache != "" {
+		json.Unmarshal([]byte(request.TaskApprovalCache), &taskTemplateDtoList)
+		if len(taskTemplateDtoList) > 0 {
+			for _, dto := range taskTemplateDtoList {
+				if len(dto.HandleTemplates) > 0 {
+					for _, template := range dto.HandleTemplates {
+						requestTaskHandleMap[template.Id] = template
+					}
+				}
+			}
+		}
 	}
 	// 读取审批任务状态&任务状态
 	for _, task := range taskMap {
@@ -990,6 +1005,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				taskSort = 2
 			case string(models.TaskTypeConfirm):
 				taskSort = 5
+				handler = request.CreatedBy
 			case string(models.TaskTypeApprove):
 				taskApproveTemplateList = append(taskApproveTemplateList, taskTemplate)
 				continue
@@ -1091,7 +1107,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	}
 
 	// 添加审批进度
-	approvalProgress, err = getTaskProgress(taskApproveTemplateList, taskMap)
+	approvalProgress, err = getTaskProgress(taskApproveTemplateList, taskMap, requestTaskHandleMap)
 	if err != nil {
 		return
 	}
@@ -1099,7 +1115,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		rowData.ApprovalProgress = approvalProgress
 	}
 	// 添加任务进度
-	taskProgress, err = getTaskProgress(taskImplementTemplateList, taskMap)
+	taskProgress, err = getTaskProgress(taskImplementTemplateList, taskMap, requestTaskHandleMap)
 	if err != nil {
 		return
 	}
@@ -1148,7 +1164,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	return
 }
 
-func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable) ([]*models.ProgressObj, error) {
+func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto) ([]*models.ProgressObj, error) {
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var taskProgressList []*models.ProgressObj
@@ -1172,13 +1188,21 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 			}
 			if len(taskHandleTemplateList) > 0 {
 				var handlerList []string
+				var tempHandler string
 				for _, taskHandleTemplate := range taskHandleTemplateList {
-					handlerList = []string{}
-					if taskHandleTemplate.Handler != "" {
-						handlerList = append(handlerList, taskHandleTemplate.Handler)
-					} else if taskHandleTemplate.Role != "" {
-						handlerList = append(handlerList, taskHandleTemplate.Role)
+					// 用户提交的处理人优先级最高
+					if v, ok := requestTaskHandleMap[taskHandleTemplate.Id]; ok {
+						tempHandler = v.Handler
+						if tempHandler == "" {
+							tempHandler = v.Role
+						}
 					}
+					if tempHandler == "" && taskHandleTemplate.Handler != "" {
+						tempHandler = taskHandleTemplate.Handler
+					} else if tempHandler == "" && taskHandleTemplate.Role != "" {
+						tempHandler = taskHandleTemplate.Role
+					}
+					handlerList = append(handlerList, tempHandler)
 				}
 				handler = strings.Join(handlerList, ",")
 				if handler != "" {

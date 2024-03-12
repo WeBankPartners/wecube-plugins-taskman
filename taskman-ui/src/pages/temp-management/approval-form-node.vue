@@ -9,7 +9,14 @@
     <div>
       <Form ref="formInline" inline :label-width="100">
         <FormItem :label="$t('name')">
-          <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 160px;">
+          <Input
+            type="text"
+            maxlength="30"
+            show-word-limit
+            v-model="activeApprovalNode.name"
+            @on-change="paramsChanged"
+            style="width: 160px;"
+          >
           </Input>
           <span style="color: red">*</span>
           <div v-if="activeApprovalNode.name === ''" style="color: red">
@@ -46,15 +53,15 @@
           style="width:70%"
         >
           <Row>
-            <Col class="cutom-table-border" span="1">序号</Col>
+            <Col class="cutom-table-border" span="2">序号</Col>
             <Col class="cutom-table-border margin-left--1" span="5">角色设置方式</Col>
             <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
             <Col class="cutom-table-border margin-left--1" span="5">角色</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">人员</Col>
+            <Col class="cutom-table-border margin-left--1" span="4">人员</Col>
             <Col class="cutom-table-border margin-left--1" span="2">操作</Col>
           </Row>
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
-            <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
+            <Col class="cutom-table-border margin-top--1" span="2">{{ roleObjIndex + 1 }}</Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
               <Select v-model="roleObj.assign" @on-change="paramsChanged">
                 <Option v-for="item in approvalRoleTypeOptions" :value="item.value" :key="item.value">{{
@@ -82,7 +89,7 @@
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
+            <Col class="cutom-table-border margin-top--1 margin-left--1" span="4">
               <Select
                 v-model="roleObj.handler"
                 filterable

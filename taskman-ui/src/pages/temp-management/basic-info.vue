@@ -14,7 +14,14 @@
               <div class="basci-info-content">
                 <Form :label-width="120">
                   <FormItem :label="$t('name')">
-                    <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input>
+                    <Input
+                      v-model="basicInfo.name"
+                      maxlength="30"
+                      show-word-limit
+                      @on-change="paramsChanged"
+                      style="width: 96%"
+                    />
+                    <!-- <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input> -->
                     <span style="color: red">*</span>
                     <div v-if="basicInfo.name.length === 0 || basicInfo.name.length > 30" style="color: red">
                       {{ $t('name') }}{{ $t('tw_limit_30') }}
@@ -110,12 +117,12 @@
                   <FormItem :label="$t('description')">
                     <Input
                       v-model="basicInfo.description"
-                      style="width: 96%;"
+                      maxlength="200"
+                      show-word-limit
                       type="textarea"
-                      :rows="2"
                       @on-change="paramsChanged"
-                    >
-                    </Input>
+                      style="width: 96%"
+                    />
                     <div v-if="basicInfo.description.length > 200" style="color: red">
                       {{ $t('description') }}{{ $t('tw_limit_200') }}
                     </div>

@@ -127,9 +127,11 @@
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
-                    v-model="element.defaultValue"
                     class="custom-item"
-                  ></Select>
+                    :multiple="element.multiple === 'yes'"
+                  >
+                    <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{ item }}</Option>
+                  </Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
                     :disabled="element.isEdit === 'no'"
@@ -252,6 +254,12 @@
                       placeholder=""
                       @on-change="paramsChanged"
                     ></Input>
+                  </FormItem>
+                  <FormItem :label="$t('tw_multiple')" v-if="['select'].includes(editElement.elementType)">
+                    <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
                   </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
@@ -377,7 +385,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -407,7 +415,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -437,7 +445,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -467,7 +475,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -498,7 +506,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -550,7 +558,7 @@ export default {
         id: 0,
         inDisplayName: 'yes',
         isEdit: 'yes',
-        multiple: 'N',
+        multiple: 'no',
         selectList: [],
         isRefInside: 'no',
         required: 'no',

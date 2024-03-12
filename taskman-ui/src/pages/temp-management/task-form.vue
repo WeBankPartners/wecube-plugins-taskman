@@ -1,6 +1,9 @@
 <template>
   <div>
-    <Row type="flex">
+    <div v-if="procDefId !== '' && approvalNodes.length === 0" style="margin: 100px 0">
+      <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>该模版关联的编排没有人工节点</Alert>
+    </div>
+    <Row type="flex" v-else>
       <Col span="24" style="padding: 0 20px">
         <div style="margin-bottom: 12px">
           <span v-for="(approval, approvalIndex) in approvalNodes" :key="approval.id" style="margin-right:6px;">
@@ -178,9 +181,13 @@
                           <Select
                             v-if="element.elementType === 'select'"
                             :disabled="element.isEdit === 'no'"
-                            v-model="element.defaultValue"
                             class="custom-item"
-                          ></Select>
+                            :multiple="element.multiple === 'yes'"
+                          >
+                            <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{
+                              item
+                            }}</Option>
+                          </Select>
                           <Select
                             v-if="element.elementType === 'wecmdbEntity'"
                             :disabled="element.isEdit === 'no'"
@@ -345,6 +352,12 @@
                             @on-change="paramsChanged"
                           ></Input>
                         </FormItem>
+                        <FormItem :label="$t('tw_multiple')" v-if="['select'].includes(editElement.elementType)">
+                          <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
+                            <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                            <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                          </RadioGroup>
+                        </FormItem>
                         <FormItem :label="$t('width')">
                           <Select
                             v-model="editElement.width"
@@ -415,11 +428,12 @@
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
     </Row>
+
     <div style="text-align: center;margin-top: 16px;">
       <Button :disabled="isTopButtonDisable" @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{
         $t('forward')
       }}</Button>
-      <Button :disabled="isTopButtonDisable" @click="submitTemplate" type="primary" class="btn-footer-margin">{{
+      <Button :disabled="isTopButtonDisable" @click="beforeSubmitTemplate" type="primary" class="btn-footer-margin">{{
         $t('submit_for_review')
       }}</Button>
     </div>
@@ -458,7 +472,7 @@ export default {
           id: '',
           sort: 1,
           requestTemplate: '',
-          name: '审批1',
+          name: '任务1',
           expireDay: 1,
           description: '',
           roleType: '',
@@ -494,7 +508,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -524,7 +538,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -554,7 +568,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -584,7 +598,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -615,7 +629,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -663,7 +677,7 @@ export default {
         id: 0,
         inDisplayName: 'yes',
         isEdit: 'yes',
-        multiple: 'N',
+        multiple: 'no',
         selectList: [],
         isRefInside: 'no',
         required: 'no',
@@ -739,7 +753,6 @@ export default {
     },
     loadPage (id = '') {
       this.isParmasChanged = false
-      // this.cancelGroup()
       this.getApprovalNode(id)
       this.getAllDataModels()
     },
@@ -1150,10 +1163,15 @@ export default {
       this.openPanel = ''
     },
     gotoForward () {
-      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
-      if (nodeStatus === 'canSave') {
-        this.$refs.approvalFormNodeRef.saveNode(3)
-        this.saveGroup(8, {})
+      // 有编排无数据
+      if (this.procDefId !== '' && this.approvalNodes.length === 0) {
+        this.$emit('gotoStep', this.requestTemplateId, 'backward')
+      } else {
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        if (nodeStatus === 'canSave') {
+          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.saveGroup(8, {})
+        }
       }
     },
     nodeStyle (approval) {
@@ -1163,41 +1181,49 @@ export default {
       }
       return res
     },
-    async submitTemplate () {
-      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
-      if (nodeStatus === 'canSave') {
-        this.$refs.approvalFormNodeRef.saveNode(3)
-        await this.saveGroup(9, {})
-        this.$Modal.confirm({
-          title: `${this.$t('submit_for_review')}`,
-          content: `${this.$t('submit_for_review_tip')}`,
-          'z-index': 1000000,
-          okText: this.$t('confirm'),
-          cancelText: this.$t('cancel'),
-          onOk: async () => {
-            let data = {
-              requestTemplateId: this.requestTemplateId,
-              status: 'created',
-              targetStatus: 'pending',
-              reason: '{}'
-            }
-            const { statusCode } = await submitTemplate(data)
-            if (statusCode === 'OK') {
-              this.$Notice.success({
-                title: this.$t('successful'),
-                desc: this.$t('successful')
-              })
-              this.$router.push({
-                path: '/taskman/template-mgmt',
-                query: {
-                  status: 'pending'
-                }
-              })
-            }
-          },
-          onCancel: () => {}
-        })
+    async beforeSubmitTemplate () {
+      // 有编排无数据
+      if (this.procDefId !== '' && this.approvalNodes.length === 0) {
+        this.submitTemplate()
+      } else {
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        if (nodeStatus === 'canSave') {
+          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.submitTemplate()
+        }
       }
+    },
+    async submitTemplate () {
+      await this.saveGroup(9, {})
+      this.$Modal.confirm({
+        title: `${this.$t('submit_for_review')}`,
+        content: `${this.$t('submit_for_review_tip')}`,
+        'z-index': 1000000,
+        okText: this.$t('confirm'),
+        cancelText: this.$t('cancel'),
+        onOk: async () => {
+          let data = {
+            requestTemplateId: this.requestTemplateId,
+            status: 'created',
+            targetStatus: 'pending',
+            reason: '{}'
+          }
+          const { statusCode } = await submitTemplate(data)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.$router.push({
+              path: '/taskman/template-mgmt',
+              query: {
+                status: 'pending'
+              }
+            })
+          }
+        },
+        onCancel: () => {}
+      })
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

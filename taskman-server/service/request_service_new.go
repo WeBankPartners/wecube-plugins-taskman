@@ -985,6 +985,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			switch taskTemplate.Type {
 			case string(models.TaskTypeSubmit):
 				taskSort = 1
+				handler = request.CreatedBy
 			case string(models.TaskTypeCheck):
 				taskSort = 2
 			case string(models.TaskTypeConfirm):
@@ -1068,6 +1069,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		requestProgress := &models.ProgressObj{}
 		requestProgress.Status = taskTemplateProgress.Status
 		requestProgress.Node = taskTemplateProgress.Node
+		requestProgress.Handler = taskTemplateProgress.Handler
 		if v, ok := taskMap[taskTemplateProgress.Id]; ok {
 			taskHandleList = []*models.TaskHandleTable{}
 			// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态
@@ -1081,6 +1083,8 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				return
 			}
 			handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
+		}
+		if handler != "" {
 			requestProgress.Handler = handler
 		}
 		rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
@@ -1177,6 +1181,9 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 					}
 				}
 				handler = strings.Join(handlerList, ",")
+				if handler != "" {
+					requestProgress.Handler = handler
+				}
 			}
 			if v, ok := taskMap[taskTemplate.Id]; ok {
 				taskHandleList = []*models.TaskHandleTable{}
@@ -1191,7 +1198,9 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 					return nil, err
 				}
 				handler = strings.Join(getTaskHandlerArr(taskHandleList), ",")
-				requestProgress.Handler = handler
+				if handler != "" {
+					requestProgress.Handler = handler
+				}
 			}
 			taskProgressList = append(taskProgressList, requestProgress)
 		}
@@ -1205,7 +1214,11 @@ func getTaskHandlerArr(taskHandleList []*models.TaskHandleTable) []string {
 		return arr
 	}
 	for _, taskHandle := range taskHandleList {
-		arr = append(arr, taskHandle.Handler)
+		if taskHandle.Handler != "" {
+			arr = append(arr, taskHandle.Handler)
+		} else if taskHandle.Role != "" {
+			arr = append(arr, taskHandle.Role)
+		}
 	}
 	return arr
 }

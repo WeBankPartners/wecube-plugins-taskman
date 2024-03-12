@@ -146,7 +146,7 @@ export default {
         return {
           width: '100%',
           height: '105px',
-          marginRight: i.type === 'collect' ? '0px' : '15px',
+          marginRight: i.type === 'hasProcessed' ? '0px' : '15px',
           cursor: 'pointer',
           borderTop: i.type === this.active ? '4px solid #e59e2d' : ''
         }
@@ -215,18 +215,18 @@ export default {
         if (init) {
           data.pendingTask.forEach((_, index) => {
             this.pendingNumObj[String(index + 1)] = [
-              data.pendingTask[index],
-              data.pendingApprove[index],
-              data.pendingCheck[index],
-              data.pendingConfirm[index]
+              data.pendingTask[index] || 0,
+              data.pendingApprove[index] || 0,
+              data.pendingCheck[index] || 0,
+              data.pendingConfirm[index] || 0
             ]
           })
         } else {
           this.pendingNumObj[this.action] = [
-            data.pendingTask[0],
-            data.pendingApprove[0],
-            data.pendingCheck[0],
-            data.pendingConfirm[0]
+            data.pendingTask[0] || 0,
+            data.pendingApprove[0] || 0,
+            data.pendingCheck[0] || 0,
+            data.pendingConfirm[0] || 0
           ]
         }
       }
@@ -234,7 +234,7 @@ export default {
     handleTabChange: debounce(function (item, subType) {
       this.active = item.type
       this.action = subType || '1'
-      this.$emit('fetchData', item.type, subType)
+      this.$emit('fetchData', item.type, this.action)
     }, 300)
   }
 }

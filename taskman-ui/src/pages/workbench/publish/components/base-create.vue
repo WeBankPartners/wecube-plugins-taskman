@@ -84,7 +84,6 @@
             </Select>
           </FormItem>
           <EntityTable
-            v-if="requestData.length"
             ref="entityTable"
             :data="requestData"
             :requestId="requestId"
@@ -679,6 +678,10 @@ export default {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
+      // 请求信息自定义表单必填校验
+      if (!this.customFormValid()) {
+        return this.$Message.warning('请求信息必填项为空')
+      }
       // 请求表单必填项-校验提示
       if (!this.requiredCheck(this.form.data)) {
         const tabName = this.$refs.entityTable.activeTab
@@ -759,6 +762,28 @@ export default {
         })
       })
       this.$refs.entityTable.validTable(tabIndex)
+      return result
+    },
+    customFormValid () {
+      let result = true
+      let requiredName = []
+      this.form.customForm.title.forEach(t => {
+        if (t.required === 'yes') {
+          requiredName.push(t.name)
+        }
+      })
+      requiredName.forEach(key => {
+        let val = this.form.customForm.value[key]
+        if (Array.isArray(val)) {
+          if (val.length === 0) {
+            result = false
+          }
+        } else {
+          if (val === '' || val === undefined) {
+            result = false
+          }
+        }
+      })
       return result
     },
     approvalCheck (data) {

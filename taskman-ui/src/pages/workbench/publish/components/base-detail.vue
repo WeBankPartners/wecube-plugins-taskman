@@ -9,7 +9,7 @@
     <Row class="w-header">
       <Col span="19">
         <!--请求进度-->
-        <BaseProgress ref="progress"></BaseProgress>
+        <BaseProgress ref="progress" :status="detail.status"></BaseProgress>
       </Col>
       <Col span="5" class="btn-group">
         <!--撤回-->
@@ -26,23 +26,23 @@
             <Row :gutter="20">
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('request_id') }}：</div>
-                <div class="info-item-value">{{ detail.id || '--' }}</div>
+                <div class="info-item-value">{{ detail.id || '-' }}</div>
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
                 <div class="info-item-value">
-                  {{ { 2: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '--' }}
+                  {{ { 2: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '-' }}
                 </div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('createdTime') }}：</div>
-                <div class="info-item-value">{{ detail.createdTime || '--' }}</div>
+                <div class="info-item-value">{{ detail.createdTime || '-' }}</div>
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('expected_completion_time') }}：</div>
-                <div class="info-item-value">{{ detail.expectTime || '--' }}</div>
+                <div class="info-item-value">{{ detail.expectTime || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
@@ -54,7 +54,7 @@
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_status') }}：</div>
-                <div class="info-item-value">{{ getStatusName(detail.status) || '--' }}</div>
+                <div class="info-item-value">{{ getStatusName(detail.status) || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
@@ -70,7 +70,7 @@
                       requestComplete: $t('tw_request_complete')
                     }[detail.curNode] ||
                       detail.curNode ||
-                      '--'
+                      '-'
                   }}
                 </div>
               </Col>
@@ -78,17 +78,17 @@
                 <div class="info-item-label">
                   {{ detail.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：
                 </div>
-                <div class="info-item-value">{{ detail.handler || '--' }}</div>
+                <div class="info-item-value">{{ detail.handler || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('createdBy') }}：</div>
-                <div class="info-item-value">{{ detail.createdBy || '--' }}</div>
+                <div class="info-item-value">{{ detail.createdBy || '-' }}</div>
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_creatby_role') }}：</div>
-                <div class="info-item-value">{{ detail.role || '--' }}</div>
+                <div class="info-item-value">{{ detail.role || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
@@ -100,18 +100,19 @@
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tm_template_group') }}：</div>
-                <div class="info-item-value">{{ detail.templateGroupName || '--' }}</div>
+                <div class="info-item-value">{{ detail.templateGroupName || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_des') }}：</div>
-                <div class="info-item-value">{{ detail.description || '--' }}</div>
+                <div class="info-item-value">{{ detail.description || '-' }}</div>
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_attach') }}：</div>
                 <div class="info-item-value">
                   <UploadFile :id="requestId" :files="attachFiles" type="request" formDisable onlyShowFile />
+                  <span v-if="attachFiles.length === 0">-</span>
                 </div>
               </Col>
             </Row>

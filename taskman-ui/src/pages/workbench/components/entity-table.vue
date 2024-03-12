@@ -29,7 +29,9 @@
                   :prop="i.name"
                   :required="i.required === 'yes'"
                   :rules="
-                    i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []
+                    i.required === 'yes'
+                      ? [{ required: true, message: `${i.title}为空`, trigger: ['change', 'blur'] }]
+                      : []
                   "
                 >
                   <!--输入框-->
@@ -88,12 +90,12 @@
       </div>
     </div>
     <div class="add-row">
-      <Button v-if="isAdd && type === '2' && activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{
+      <Button v-if="isAdd && activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{
         $t('tw_add_row')
       }}</Button>
       <!--选择已有数据添加一行-->
       <Select
-        v-if="isAdd && type === '2' && activeItem.itemGroupRule === 'exist'"
+        v-if="isAdd && activeItem.itemGroupRule === 'exist'"
         v-model="addRowSource"
         filterable
         clearable
@@ -508,11 +510,19 @@ export default {
     }
   }
   .ivu-form-item {
-    margin-bottom: 10px !important;
+    margin-bottom: 15px !important;
   }
   .ivu-form-item-label {
     word-wrap: break-word;
     padding: 10px 10px 10px 0;
+  }
+  .ivu-form-item-required .ivu-form-item-label:before {
+    display: inline;
+    margin-right: 2px;
+  }
+  .ivu-form-item-error-tip {
+    padding-top: 2px;
+    font-size: 12px;
   }
 }
 </style>

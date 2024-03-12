@@ -806,7 +806,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeApprove, operator, now, task.Id}})
-		newApproveActions, err = GetRequestService().CreateRequestApproval(request, task.Id, userToken, language)
+		newApproveActions, _ = GetRequestService().CreateRequestApproval(request, task.Id, userToken, language)
 		if len(newApproveActions) > 0 {
 			actions = append(actions, newApproveActions...)
 		}
@@ -1779,6 +1779,33 @@ func (s *TaskService) GetDoingTaskByRequestIdAndType(requestId string, taskType 
 	}
 	if len(taskList) > 0 {
 		task = taskList[0]
+	}
+	return
+}
+
+func (s *TaskService) GetDoingTaskByRequestId(requestId string) (task *models.TaskTable, err error) {
+	var taskList []*models.TaskTable
+	err = dao.X.SQL("select * from task where request = ?  and status != ?", requestId, models.TaskStatusDone).Find(&taskList)
+	if err != nil {
+		return
+	}
+	if len(taskList) > 0 {
+		task = taskList[0]
+	}
+	return
+}
+
+func (s *TaskService) GetDoneTaskByRequestId(requestId string) (taskList []*models.TaskTable, err error) {
+	var latestSubmitTaskList []*models.TaskTable
+	err = dao.X.SQL("select * from task where request = ?  and type = ? order by created_time desc", requestId, models.TaskTypeSubmit).Find(&latestSubmitTaskList)
+	if err != nil {
+		return
+	}
+	if len(latestSubmitTaskList) > 0 {
+		err = dao.X.SQL("select * from task where request = ?  and status = ? and created_time > ?", requestId, models.TaskStatusDone, latestSubmitTaskList[0].CreatedTime).Find(&taskList)
+		if err != nil {
+			return
+		}
 	}
 	return
 }

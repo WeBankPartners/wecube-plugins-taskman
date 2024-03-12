@@ -648,11 +648,21 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 }
 
 func getCurNodeName(requestId, instanceId, userToken, language string) (progress int, curNode string) {
+	var taskTemplateList []*models.TaskTemplateTable
+	var doneTaskList []*models.TaskTable
 	var task *models.TaskTable
-
+	var request models.RequestTable
+	var total int
+	taskTemplateList, _ = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
+	request, _ = GetSimpleRequest(requestId)
 	if instanceId == "" {
+		doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(requestId)
+		if len(taskTemplateList) > 0 {
+			progress = len(doneTaskList)
+			total = len(taskTemplateList)
+			progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
+		}
 		// 无编排
-		request, _ := GetSimpleRequest(requestId)
 		switch request.Status {
 		case string(models.RequestStatusDraft):
 			curNode = WaitCommit
@@ -663,14 +673,27 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 		case string(models.RequestStatusInProgress):
 			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeImplement)
 		case string(models.RequestStatusConfirm):
-			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeConfirm)
+			curNode = Confirm
 		}
 		if task != nil {
 			curNode = task.Name
 		}
 		return
 	}
-	var total int
+	// instanceId不为空,表示编排已经创建,说明前面审批都已经走完
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			if taskTemplate.Type == string(models.TaskTypeImplement) {
+				continue
+			}
+			if taskTemplate.Type == string(models.TaskTypeConfirm) {
+				total++
+			} else {
+				progress++
+				total++
+			}
+		}
+	}
 	processInstance, err := GetProcDefService().GetProcessDefineInstance(instanceId, userToken, language)
 	if err != nil || processInstance == nil || len(processInstance.TaskNodeInstances) == 0 {
 		return
@@ -687,7 +710,12 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 	progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
 	switch processInstance.Status {
 	case "Completed":
-		curNode = CurNodeCompleted
+		if request.Status == string(models.RequestStatusCompleted) {
+			curNode = RequestComplete
+			progress = 100
+		} else if request.Status == string(models.RequestStatusConfirm) {
+			curNode = Confirm
+		}
 		return
 	case "InProgress":
 		for _, v := range processInstance.TaskNodeInstances {

@@ -496,7 +496,7 @@ export default {
             id: d
           }
         })
-        if (this.handlerRolesOptions.length > 0) {
+        if (this.basicInfo.id === '' && this.handlerRolesOptions.length > 0) {
           this.basicInfo.handler = this.handlerRolesOptions[0].id
         }
       }
@@ -521,7 +521,7 @@ export default {
     async pendingRoleChange () {
       this.basicInfo.pendingHandler = ''
       await this.getPendingHandlerRoles()
-      if (this.pendingHandlerOptions.length > 0) {
+      if (this.basicInfo.id === '' && this.pendingHandlerOptions.length > 0) {
         this.basicInfo.pendingHandler = this.pendingHandlerOptions[0].id
       }
     },

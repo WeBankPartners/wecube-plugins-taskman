@@ -352,7 +352,10 @@
                             @on-change="paramsChanged"
                           ></Input>
                         </FormItem>
-                        <FormItem :label="$t('tw_multiple')" v-if="['select'].includes(editElement.elementType)">
+                        <FormItem
+                          :label="$t('tw_multiple')"
+                          v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                        >
                           <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
                             <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
                             <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>

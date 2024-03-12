@@ -366,13 +366,13 @@ export default {
       const method = this.basicInfo.id === '' ? createTemp : updateTemp
       const { statusCode, data } = await method(cacheData)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
         if (isGoToNext) {
           this.$emit('gotoStep', data.id, 'forward')
         } else {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
           this.loadPage(data.id)
         }
       }

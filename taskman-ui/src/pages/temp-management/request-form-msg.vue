@@ -508,10 +508,12 @@ export default {
       }
       const { statusCode } = await saveRequsetForm(this.requestTemplateId, res)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        if (![2, 3, 4].includes(nextStep)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         this.isParmasChanged = false
         if (nextStep === 1) {
           this.loadPage(this.requestTemplateId)

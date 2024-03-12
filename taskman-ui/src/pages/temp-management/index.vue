@@ -103,7 +103,6 @@ export default {
       })
     },
     gotoStep (tmpId, stepDirection) {
-      console.log(77, stepDirection)
       this.requestTemplateId = tmpId
       if (stepDirection === 'forward') {
         this.currentStep++

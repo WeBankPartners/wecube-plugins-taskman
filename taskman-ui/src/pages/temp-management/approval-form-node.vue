@@ -258,7 +258,7 @@ export default {
       }
     },
     async saveNode (type, nextNodeId) {
-      // type 1自我更新 2转到目标节点
+      // type 1自我更新 2转到目标节点 3父级页面调用保存
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
       let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
       if (['admin', 'auto'].includes(tmpData.handleMode)) {
@@ -266,11 +266,13 @@ export default {
       }
       const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
+        if (![2, 3].includes(type)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         this.isParmasChanged = false
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
         if (type === 1) {
           this.$emit('reloadParentPage', this.activeApprovalNode.id)
         } else if (type === 2) {
@@ -313,7 +315,11 @@ export default {
     },
     // 为父页面提供状态查询
     panalStatus () {
-      return this.isParmasChanged
+      const nodeStatus = this.isSaveNodeDisable || this.isHandlerAddDisable
+      if (nodeStatus) {
+        this.$Message.warning('节点数据不完整')
+      }
+      return this.isSaveNodeDisable || this.isHandlerAddDisable ? 'unableToSave' : 'canSave'
     },
     mgmtData () {
       this.activeApprovalNode.handleTemplates &&
@@ -365,7 +371,6 @@ export default {
       }
     },
     changeRoleType () {
-      console.log(1)
       this.activeApprovalNode.handleTemplates = [
         {
           assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定

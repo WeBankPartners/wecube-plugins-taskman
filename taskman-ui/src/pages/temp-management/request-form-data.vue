@@ -628,18 +628,15 @@ export default {
         let groups = this.dataFormInfo.groups
         if (this.displayLastGroup) {
           const group = groups[groups.length - 1]
-          console.log(1.1)
           this.editGroupCustomItems(group, false)
           // this.displayLastGroup = false
         } else {
           let itemGroupId = this.finalElement[0].itemGroupId
           const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
           if (findGroup) {
-            console.log(1.2)
             this.editGroupCustomItems(findGroup, false)
           } else {
             if (groups.length > 0) {
-              console.log(1.3)
               this.editGroupCustomItems(groups[0], false)
             }
           }
@@ -686,7 +683,11 @@ export default {
     },
     // 查询可添加的组
     beforeSelectItemGroup () {
-      this.saveGroup(7)
+      if (this.finalElement[0].itemGroupId === '') {
+        this.selectItemGroup()
+      } else {
+        this.saveGroup(7)
+      }
     },
     async selectItemGroup () {
       this.itemGroup = ''
@@ -759,7 +760,6 @@ export default {
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
-      console.log(1)
       this.nextGroupInfo = groupItem
       this.displayLastGroup = false
       if (isNeedSaveFirst) {
@@ -835,7 +835,6 @@ export default {
     },
     // 编辑组信息
     editGroupItem (groupItem) {
-      console.log(2)
       this.saveGroup(5, groupItem)
     },
     openDrawer (groupItem) {
@@ -921,10 +920,12 @@ export default {
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        if (![2, 3, 4, 5, 6, 7, 8].includes(nextStep)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         this.isParmasChanged = false
         if (nextStep === 1) {
           // this.cancelGroup()
@@ -981,7 +982,6 @@ export default {
       return this.isParmasChanged
     },
     tabChange () {
-      console.log(4)
       this.saveGroup(3)
     },
     gotoNext () {

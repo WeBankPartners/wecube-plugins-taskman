@@ -286,6 +286,7 @@ export default {
     },
     // 为父页面提供状态查询
     panalStatus () {
+      this.$Message.warning('节点数据不完整')
       return this.isParmasChanged
     },
     mgmtData () {

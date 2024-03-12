@@ -1,11 +1,11 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <div class="scene-select">
+    <!-- <div class="scene-select">
       <Select v-model="actionName" @on-change="handleActionChange">
         <Option v-for="i in actionList" :key="i.value" :value="i.value">{{ i.label }}</Option>
       </Select>
-    </div>
+    </div> -->
     <DataCard
       ref="dataCard"
       :initTab="initTab"
@@ -185,9 +185,6 @@ export default {
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
-    handleActionChange () {
-      this.handleOverviewChange(this.tabName)
-    },
     // 初始化加载数据(链接携带参数，跳转到指定标签)
     initData (val, action) {
       this.tabName = val
@@ -218,7 +215,7 @@ export default {
       }
       if (val !== 'collect') {
         this.handleReset()
-        this.handleQuery()
+        this.handleQuery(true)
       } else {
         this.$nextTick(() => {
           this.$refs.collect.handleQuery()
@@ -227,8 +224,9 @@ export default {
       }
     },
     // 点击视图卡片触发查询
-    handleOverviewChange (val) {
+    handleOverviewChange (val, action) {
       this.tabName = val
+      this.actionName = action
       if (['pending', 'hasProcessed'].includes(val)) {
         this.type = '2'
         this.rollback = ''
@@ -405,10 +403,10 @@ export default {
       }
       this.loading = false
     },
-    handleQuery () {
+    handleQuery (allData = false) {
       this.pagination.currentPage = 1
       this.getList()
-      this.$refs.dataCard.getData()
+      this.$refs.dataCard.getData(allData)
     },
     changPage (val) {
       this.pagination.currentPage = val

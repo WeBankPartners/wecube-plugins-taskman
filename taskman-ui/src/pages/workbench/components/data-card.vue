@@ -1,16 +1,36 @@
 <template>
   <div class="taskman-workbench-data-card">
-    <Card v-for="(i, index) in cardList" :key="index" border :style="activeStyles(i)" class="card">
+    <Card v-for="(i, index) in cardList" :key="index" border :style="activeStyles(i)">
       <div class="content" @click="handleTabChange(i)">
-        <div class="content-left">
-          <Icon :type="i.icon" :color="i.color" size="28"></Icon>
-          <span style="margin-left:10px;">{{ `${i.label}` }}</span>
+        <div class="w-header">
+          <Icon :type="i.icon" :color="i.color" :size="i.size"></Icon>
+          <span style="margin-left:5px;">
+            {{ `${i.label}` }}
+            <!-- <span class="total">{{`(${i.total || 0})`}}</span> -->
+          </span>
         </div>
-        <div class="content-right">
-          <span class="number">{{ i[$parent.actionName] || 0 }}</span>
-          <span v-if="i.type === 'pending' && getPendingNum($parent.actionName) > 0" class="badge">{{
-            getPendingNum($parent.actionName)
-          }}</span>
+        <div class="data">
+          <!--发布-->
+          <div
+            v-for="j in actionList"
+            :key="j.type"
+            class="list"
+            :style="actionStyles(i, j.type)"
+            @click="
+              e => {
+                e.stopPropagation()
+                handleTabChange(i, j.type)
+              }
+            "
+          >
+            <span class="number">
+              {{ i[j.type] || '0' }}
+              <span v-if="i.type === 'pending' && getPendingNum(j.type) > 0" class="badge">{{
+                getPendingNum(j.type)
+              }}</span>
+            </span>
+            <span>{{ j.label }}</span>
+          </div>
         </div>
       </div>
     </Card>
@@ -40,29 +60,9 @@ export default {
           type: 'pending',
           label: this.$t('tw_pending'),
           icon: 'ios-alert',
+          size: '28',
           color: '#ed4014',
-          '1': 0,
-          '2': 0,
-          '3': 0,
-          '4': 0,
-          '5': 0
-        },
-        {
-          type: 'hasProcessed',
-          label: this.$t('tw_hasProcessed'),
-          icon: 'ios-checkmark-circle',
-          color: '#1990ff',
-          '1': 0,
-          '2': 0,
-          '3': 0,
-          '4': 0,
-          '5': 0
-        },
-        {
-          type: 'submit',
-          label: this.$t('tw_submit'),
-          icon: 'ios-send',
-          color: '#19be6b',
+          total: 0,
           '1': 0,
           '2': 0,
           '3': 0,
@@ -73,7 +73,9 @@ export default {
           type: 'draft',
           label: this.$t('tw_draft'),
           icon: 'ios-archive',
+          size: '28',
           color: '#b886f8',
+          total: 0,
           '1': 0,
           '2': 0,
           '3': 0,
@@ -81,15 +83,52 @@ export default {
           '5': 0
         },
         {
-          type: 'collect',
-          label: this.$t('tw_collect'),
-          icon: 'ios-star',
-          color: '#ff9900',
+          type: 'submit',
+          label: this.$t('tw_submit'),
+          icon: 'ios-send',
+          size: '28',
+          color: '#19be6b',
+          total: 0,
           '1': 0,
           '2': 0,
           '3': 0,
           '4': 0,
           '5': 0
+        },
+        {
+          type: 'hasProcessed',
+          label: this.$t('tw_hasProcessed'),
+          icon: 'ios-checkmark-circle',
+          size: '28',
+          color: '#1990ff',
+          total: 0,
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
+        }
+      ],
+      actionList: [
+        {
+          type: '1',
+          label: this.$t('tw_publish')
+        },
+        {
+          type: '2',
+          label: this.$t('tw_request')
+        },
+        {
+          type: '3',
+          label: '问题'
+        },
+        {
+          type: '4',
+          label: '事件'
+        },
+        {
+          type: '5',
+          label: '变更'
         }
       ],
       pendingNumObj: {
@@ -105,8 +144,18 @@ export default {
     activeStyles () {
       return function (i) {
         return {
-          marginRight: i.type === 'collect' ? '0px' : '20px',
+          width: '100%',
+          height: '105px',
+          marginRight: i.type === 'collect' ? '0px' : '15px',
+          cursor: 'pointer',
           borderTop: i.type === this.active ? '4px solid #e59e2d' : ''
+        }
+      }
+    },
+    actionStyles () {
+      return function (i, val) {
+        return {
+          color: this.action === val && i.type === this.active ? '#e59e2d' : '#17233d'
         }
       }
     },
@@ -143,95 +192,106 @@ export default {
     }
   },
   methods: {
-    async getData () {
+    async getData (init = false) {
+      // ini为true，初始化拉取所有数据，后续拉取特定场景下的数据
       const params = {
-        params: {
-          scene: Number(this.$parent.actionName)
-        }
+        scene: init ? 0 : Number(this.action)
       }
       const { statusCode, data } = await overviewData(params)
       if (statusCode === 'OK') {
         for (let key in data) {
           this.cardList.forEach(item => {
             if (item.type === key) {
-              item[this.$parent.actionName] = data[key]
+              if (init) {
+                data[key].forEach((number, index) => {
+                  item[String(index + 1)] = number || 0
+                })
+              } else {
+                item[this.action] = data[key][0]
+              }
             }
           })
         }
-        this.pendingNumObj[this.$parent.actionName] = [
-          data.pendingTask,
-          data.pendingApprove,
-          data.pendingCheck,
-          data.pendingConfirm
-        ]
+        if (init) {
+          data.pendingTask.forEach((_, index) => {
+            this.pendingNumObj[String(index + 1)] = [
+              data.pendingTask[index],
+              data.pendingApprove[index],
+              data.pendingCheck[index],
+              data.pendingConfirm[index]
+            ]
+          })
+        } else {
+          this.pendingNumObj[this.action] = [
+            data.pendingTask[0],
+            data.pendingApprove[0],
+            data.pendingCheck[0],
+            data.pendingConfirm[0]
+          ]
+        }
       }
     },
-    handleTabChange: debounce(function (item) {
+    handleTabChange: debounce(function (item, subType) {
       this.active = item.type
-      this.$emit('fetchData', item.type)
+      this.action = subType || '1'
+      this.$emit('fetchData', item.type, subType)
     }, 300)
   }
 }
 </script>
+
 <style lang="scss">
+.taskman-workbench-data-card .ivu-card-body {
+  padding: 10px;
+}
+</style>
+<style lang="scss" scoped>
 .taskman-workbench-data-card {
-  .ivu-card-body {
-    width: 100%;
-    padding: 10px;
-  }
   display: flex;
-  flex-direction: row;
-  margin-top: 20px;
-  .card {
-    width: 100%;
-    height: 80px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    .content {
-      width: 100%;
+  .content {
+    .w-header {
       display: flex;
-      justify-content: space-between;
-      &-left {
-        display: flex;
-        align-items: center;
-        width: calc(100% - 50px);
+      align-items: center;
+      span {
         color: rgba(16, 16, 16, 1);
-        font-size: 15px;
+        font-size: 14px;
         font-family: PingFangSC-regular;
         font-weight: bold;
       }
-      &-right {
+      .total {
+        margin-left: 0px;
+        font-size: 14px;
+        color: #17233d;
+      }
+    }
+    .data {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-top: 10px;
+      .list {
         position: relative;
-        width: 50px;
-        height: 60px;
-        margin-right: 30px;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
-        justify-content: space-around;
-        .name {
-          font-size: 14px;
-          color: rgba(16, 16, 16, 1);
+        align-items: center;
+        padding: 0 10px;
+        span {
+          font-size: 13px;
+          font-family: PingFangSC-regular;
         }
         .number {
-          font-size: 20px;
-          color: #e59e2d;
-        }
-        .badge {
-          position: absolute;
-          top: 10px;
-          right: -20px;
-          font-size: 10px;
-          background-color: #f56c6c;
-          border-radius: 10px;
-          color: #fff;
-          height: 18px;
-          line-height: 18px;
-          padding: 0 6px;
-          text-align: center;
-          white-space: nowrap;
+          position: relative;
+          font-weight: bold;
+          font-size: 14px;
+          .badge {
+            position: absolute;
+            top: -5px;
+            right: -25px;
+            font-size: 10px;
+            background-color: #f56c6c;
+            border-radius: 10px;
+            color: #fff;
+          }
         }
       }
     }

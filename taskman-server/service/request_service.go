@@ -1968,7 +1968,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	// 查询 task handle
 	var taskHandles []*models.TaskHandleTable
 	taskIdsFilterSql, taskIdsFilterParams := dao.CreateListParams(taskIds, "")
-	err = dao.X.SQL("select * from task_handle where task in ("+taskIdsFilterSql+") order by created_time asc", taskIdsFilterParams...).Find(&taskHandles)
+	err = dao.X.SQL("select * from task_handle where task in ("+taskIdsFilterSql+") and latest_flag=1 order by created_time asc", taskIdsFilterParams...).Find(&taskHandles)
 	/*
 		err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
 			In("task", taskIds).
@@ -2236,6 +2236,11 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		err = fmt.Errorf("get form and form template map info failed: %s", err.Error())
 		return
 	}
+
+	// sort taskFormItems by form
+	sort.Slice(taskFormItems, func(i, j int) bool {
+		return taskFormItems[i].Form < taskFormItems[j].Form
+	})
 
 	// itemGroup map data_ids
 	itemRowMap := make(map[string][]string)

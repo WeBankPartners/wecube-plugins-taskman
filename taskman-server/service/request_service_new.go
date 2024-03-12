@@ -649,6 +649,7 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 
 func getCurNodeName(requestId, instanceId, userToken, language string) (progress int, curNode string) {
 	var task *models.TaskTable
+
 	if instanceId == "" {
 		// 无编排
 		request, _ := GetSimpleRequest(requestId)
@@ -899,6 +900,8 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var taskSort int
 	var request models.RequestTable
 	var approvalProgress, taskProgress []*models.ProgressObj
+	var requestTemplateRoleList []*models.RequestTemplateRoleTable
+	var requestTemplate *models.RequestTemplateTable
 	// 初始化成未开始
 	approveCompleteStatus := int(models.TaskExecStatusNotStart)
 	taskCompleteStatus := int(models.TaskExecStatusNotStart)
@@ -974,6 +977,24 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				handler = taskHandleTemplateList[0].Handler
 				if handler == "" {
 					handler = taskHandleTemplateList[0].Role
+				}
+				// 定版模板处理角色和处理人如果为空,则设置为属主
+				if taskTemplate.Type == string(models.TaskTypeCheck) && handler == "" {
+					requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+					if requestTemplate != nil {
+						handler = requestTemplate.Handler
+					}
+					if handler == "" {
+						requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
+						if len(requestTemplateRoleList) > 0 {
+							for _, requestTemplateRole := range requestTemplateRoleList {
+								if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
+									handler = requestTemplateRole.Role
+									break
+								}
+							}
+						}
+					}
 				}
 			}
 			taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
@@ -1409,6 +1430,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	var requestTemplate *models.RequestTemplateTable
 	var submitTaskTemplateList, checkTaskTemplateList []*models.TaskTemplateTable
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var checkRole, checkHandler string
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	if err != nil {
 		return err
@@ -1465,8 +1487,19 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 		// 新增确认定版处理人
 		dao.X.SQL("select * from task_handle_template where task_template = ?", checkTaskTemplateList[0].Id).Find(&taskHandleTemplateList)
 		if len(taskHandleTemplateList) > 0 {
+			checkRole = taskHandleTemplateList[0].Role
+			checkHandler = taskHandleTemplateList[0].Handler
+			var requestTemplateRole []*models.RequestTemplateRoleTable
+			if checkRole == "" {
+				// 定版配置角色为空,取模版属主角色
+				dao.X.SQL("select * from request_template_role where request_template = ? and role_type = 'MGMT'", requestTemplate.Id).Find(&requestTemplateRole)
+				if len(requestTemplateRole) > 0 {
+					checkRole = requestTemplateRole[0].Role
+					checkHandler = requestTemplate.Handler
+				}
+			}
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, checkTime, checkTime}
+			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, checkRole, checkHandler, checkTime, checkTime}
 			actions = append(actions, action)
 		}
 		err = dao.Transaction(actions)

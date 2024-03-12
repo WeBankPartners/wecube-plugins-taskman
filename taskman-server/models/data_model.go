@@ -142,7 +142,7 @@ type ProcEntityAttributeObj struct {
 	EntityPackage     string `json:"entityPackage"`
 	Multiple          string `json:"multiple"`
 	Mandatory         string `json:"mandatory"`
-	OrderNo           string `json:"orderNo"`
+	OrderNo           int    `json:"orderNo"`
 }
 
 type ProcEntity struct {

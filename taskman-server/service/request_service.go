@@ -363,6 +363,7 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	}
 	newParam := &models.RequestPreDataDto{
 		RootEntityId: param.RootEntityId,
+		EntityName:   param.EntityName,
 		Data:         param.Data,
 	}
 	paramBytes, err := json.Marshal(newParam)

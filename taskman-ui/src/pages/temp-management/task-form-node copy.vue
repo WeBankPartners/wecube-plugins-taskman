@@ -9,17 +9,27 @@
     <div>
       <Form ref="formInline" inline :label-width="100">
         <FormItem :label="$t('name')">
-          <Input type="text" v-model="activeApprovalNode.name" @on-change="paramsChanged" style="width: 94%;"> </Input>
+          <Input
+            type="text"
+            :disabled="procDefId !== ''"
+            v-model="activeApprovalNode.name"
+            @on-change="paramsChanged"
+            style="width: 94%;"
+          >
+          </Input>
           <span style="color: red">*</span>
           <div v-if="activeApprovalNode.name === ''" style="color: red">
             {{ $t('name') }}{{ $t('can_not_be_empty') }}
           </div>
         </FormItem>
         <FormItem label="时效">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 85%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" filterable style="width: 94%;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
+        </FormItem>
+        <FormItem :label="$t('tw_type')">
+          <Input type="text" v-model="nodeType" disabled style="width: 94%;"> </Input>
         </FormItem>
         <FormItem :label="$t('description')">
           <Input
@@ -34,7 +44,7 @@
       </Form>
       <Form ref="formInline" inline :label-width="100">
         <FormItem label="分配">
-          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" filterable style="width: 85%;">
+          <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" filterable style="width: 94%;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -50,7 +60,7 @@
             <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
             <Col class="cutom-table-border margin-left--1" span="5">角色</Col>
             <Col class="cutom-table-border margin-left--1" span="5">人员</Col>
-            <Col class="cutom-table-border margin-left--1" span="2">操作</Col>
+            <!-- <Col class="cutom-table-border margin-left--1" span="2">操作</Col> -->
           </Row>
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
             <Col class="cutom-table-border margin-top--1" span="1">{{ roleObjIndex + 1 }}</Col>
@@ -75,25 +85,20 @@
               <Select
                 v-model="roleObj.role"
                 filterable
-                @on-change="changeUser(roleObj.role, roleObjIndex)"
+                @on-change="getUserByRole(roleObj.role, roleObjIndex)"
                 :disabled="isRoleDisable(roleObj, roleObjIndex)"
               >
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="5">
-              <Select
-                v-model="roleObj.handler"
-                filterable
-                @on-change="paramsChanged"
-                :disabled="isHandlerDisable(roleObj, roleObjIndex)"
-              >
+              <Select v-model="roleObj.handler" filterable :disabled="isHandlerDisable(roleObj, roleObjIndex)">
                 <Option v-for="item in roleObj.handlerOptions" :value="item.id" :key="item.id">{{
                   item.displayName
                 }}</Option>
               </Select>
             </Col>
-            <Col class="cutom-table-border margin-top--1 margin-left--1" span="2">
+            <!-- <Col class="cutom-table-border margin-top--1 margin-left--1" span="2">
               <Button
                 :disabled="activeApprovalNode.handleTemplates.length < 2"
                 @click.stop="removeRoleObjItem(roleObjIndex)"
@@ -102,32 +107,26 @@
                 ghost
                 icon="md-trash"
               ></Button>
-            </Col>
+            </Col> -->
           </Row>
-          <Button
+          <!-- <Button
             v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
             @click.stop="addRoleObjItem"
             type="primary"
             size="small"
             ghost
             icon="md-add"
-            :disabled="isHandlerAddDisable"
-          ></Button>
-          <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span>
+          ></Button> -->
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveNodeDisable || isHandlerAddDisable" @click="saveNode(1)">{{
-          $t('save')
-        }}</Button>
+        <Button type="primary" :disabled="isSaveBtnActive()" @click="saveNode(1)">{{ $t('save') }}</Button>
       </div>
     </div>
-    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
-import CustomConfirmModel from './custom-confirm-model'
 import Vue from 'vue'
 import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
 export default {
@@ -136,18 +135,19 @@ export default {
     return {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
       requestTemplateId: '',
+      procDefId: '',
       activeApprovalNode: {
         id: '',
         sort: 1,
         requestTemplate: '',
-        name: '审批1',
+        name: '任务1',
         expireDay: 1,
         description: '',
         handleMode: 'custom',
         handleTemplates: [
           {
-            assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-            handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+            assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+            handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
             handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -158,14 +158,11 @@ export default {
       roleTypeOptions: [
         // custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
         { label: '单人:自定义', value: 'custom' },
-        { label: '协同:任意审批人处理', value: 'any' },
-        { label: '并行:全部审批人处理', value: 'all' },
-        { label: '提交人角色管理员', value: 'admin' },
-        { label: '自动通过', value: 'auto' }
+        { label: '提交人角色管理员', value: 'admin' }
       ],
       approvalSingle: {
-        assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-        handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+        assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+        handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
         handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -182,34 +179,23 @@ export default {
         { label: '组内系统分配', value: 'system', used: ['template', 'custom'] },
         { label: '组内主动认领', value: 'claim', used: ['template', 'custom'] }
       ],
-      useRolesOptions: [], // 使用角色
-      isHandlerAddDisable: true,
-      isSaveNodeDisable: true
+      useRolesOptions: [] // 使用角色
     }
   },
-  watch: {
-    activeApprovalNode: {
-      handler (val) {
-        this.isSaveNodeDisable = this.isSaveBtnActive()
-        this.isHandlerAddDisable = this.isAddRoleObjDisable()
-      },
-      immediate: true,
-      deep: true
-    }
-  },
+  props: ['nodeType'],
   methods: {
     loadPage (params) {
+      this.procDefId = params.procDefId
       this.isParmasChanged = false
       this.requestTemplateId = params.requestTemplateId
       this.getNodeById(params)
       this.getUserRoles()
     },
     async getNodeById (params) {
-      const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'approve')
+      const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
       if (statusCode === 'OK') {
         this.activeApprovalNode = data
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
-        // this.activeApprovalNode.handleTemplates = data.thandleTemplates
         this.mgmtData()
       }
     },
@@ -258,7 +244,7 @@ export default {
       }
     },
     async saveNode (type, nextNodeId) {
-      // type 1自我更新 2转到目标节点 3父级页面调用保存
+      // type 1自我更新 2转到目标节点
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
       let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
       if (['admin', 'auto'].includes(tmpData.handleMode)) {
@@ -266,13 +252,11 @@ export default {
       }
       const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
-        if (![2, 3].includes(type)) {
-          this.$Notice.success({
-            title: this.$t('successful'),
-            desc: this.$t('successful')
-          })
-        }
         this.isParmasChanged = false
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
         if (type === 1) {
           this.$emit('reloadParentPage', this.activeApprovalNode.id)
         } else if (type === 2) {
@@ -282,32 +266,19 @@ export default {
     },
     isNeedConfirm (nextNodeId) {
       if (this.isParmasChanged) {
-        // this.$Modal.confirm({
-        //   title: `${this.$t('confirm_discarding_changes')}`,
-        //   content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
-        //   'z-index': 1000000,
-        //   okText: this.$t('save'),
-        //   cancelText: this.$t('abandon'),
-        //   onOk: async () => {
-        //     this.saveNode(2, nextNodeId)
-        //   },
-        //   onCancel: () => {
-        //     this.$emit('jumpToNode')
-        //   }
-        // })
-        this.$refs.customConfirmModelRef.open({
-          title: `${this.$t('tw_confirm_discarding_changes')}`,
+        this.$Modal.confirm({
+          title: `${this.$t('confirm_discarding_changes')}`,
           content: `${this.activeApprovalNode.name}:${this.$t('params_edit_confirm')}`,
+          'z-index': 1000000,
           okText: this.$t('save'),
-          cancelText: this.$t('tw_abandon'),
-          okFunc: () => {
+          cancelText: this.$t('abandon'),
+          onOk: async () => {
             this.saveNode(2, nextNodeId)
           },
-          cancelFunc: () => {
+          onCancel: () => {
             this.$emit('jumpToNode')
           }
         })
-
         return true
       } else {
         return false
@@ -315,11 +286,8 @@ export default {
     },
     // 为父页面提供状态查询
     panalStatus () {
-      const nodeStatus = this.isSaveNodeDisable || this.isHandlerAddDisable
-      if (nodeStatus) {
-        this.$Message.warning('节点数据不完整')
-      }
-      return this.isSaveNodeDisable || this.isHandlerAddDisable ? 'unableToSave' : 'canSave'
+      this.$Message.warning('节点数据不完整')
+      return this.isParmasChanged
     },
     mgmtData () {
       this.activeApprovalNode.handleTemplates &&
@@ -329,36 +297,9 @@ export default {
           }
         })
     },
-    isAddRoleObjDisable () {
-      let res = false
-      if (this.activeApprovalNode.handleTemplates.length > 1) {
-        res = this.hasDuplicateObjects()
-      }
-      return res
-    },
-    hasDuplicateObjects () {
-      const tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode.handleTemplates)).map(data => {
-        return {
-          assign: data.assign,
-          handler: data.handler,
-          handlerType: data.handlerType,
-          role: data.role
-        }
-      })
-      let objectStrings = new Set() // 使用 Set 存储对象的字符串表示
-      for (let obj of tmpData) {
-        let objString = JSON.stringify(obj) // 将对象转换为字符串
-        if (objectStrings.has(objString)) {
-          return true // 存在相同的对象
-        }
-        objectStrings.add(objString)
-      }
-      return false // 不存在相同的对象
-    },
     // 新增一组审批人
     addRoleObjItem () {
       this.activeApprovalNode.handleTemplates.push(JSON.parse(JSON.stringify(this.approvalSingle)))
-      this.getUserRoles()
     },
     removeRoleObjItem (index) {
       this.activeApprovalNode.handleTemplates.splice(index, 1)
@@ -373,18 +314,14 @@ export default {
     changeRoleType () {
       this.activeApprovalNode.handleTemplates = [
         {
-          assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-          handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+          assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+          handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
       this.paramsChanged()
-    },
-    changeUser (role, roleObjIndex) {
-      this.isParmasChanged = true
-      this.getUserByRole(role, roleObjIndex)
     },
     async getUserByRole (role, roleObjIndex) {
       // 猥琐，下方赋值会使该变量丢失
@@ -426,9 +363,6 @@ export default {
       }
       return res
     }
-  },
-  components: {
-    CustomConfirmModel
   }
 }
 </script>

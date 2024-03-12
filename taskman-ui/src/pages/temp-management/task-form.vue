@@ -7,7 +7,7 @@
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
               :style="nodeStyle(approval)"
-              @click="editNode(approval)"
+              @click="editNode(approval, true)"
             >
               <span>{{ approval.name }}</span>
               <Icon
@@ -52,7 +52,7 @@
         </div>
         <div>
           <Row>
-            <Col span="6" style="border: 1px solid #dcdee2; padding: 0 16px">
+            <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
               <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
                 <Divider plain>{{ $t('custom_form') }}</Divider>
                 <draggable
@@ -83,7 +83,7 @@
                 </draggable>
               </div>
             </Col>
-            <Col span="12" style="border: 1px solid #dcdee2; padding: 0 16px; width: 48%; margin: 0 4px">
+            <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
               <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
                 <Divider>预览</Divider>
                 <div class="title">
@@ -114,7 +114,7 @@
                     <span>
                       <Button
                         style="margin-top: -5px;"
-                        @click="selectItemGroup"
+                        @click="beforeSelectItemGroup"
                         type="primary"
                         shape="circle"
                         icon="md-add"
@@ -250,7 +250,7 @@
                 </template>
               </Modal>
             </Col>
-            <Col span="6" style="border: 1px solid #dcdee2">
+            <Col span="5" style="border: 1px solid #dcdee2">
               <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
                 <Collapse v-model="openPanel">
                   <Panel name="1">
@@ -415,7 +415,8 @@
       ></RequestFormDataWorkflow>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="submitTemplate" size="small" type="primary">{{ $t('submit_for_review') }}</Button>
+      <Button @click="gotoForward" ghost type="primary">{{ $t('forward') }}</Button>
+      <Button @click="submitTemplate" type="primary">{{ $t('submit_for_review') }}</Button>
     </div>
   </div>
 </template>
@@ -451,7 +452,7 @@ export default {
           id: '',
           sort: 1,
           requestTemplate: '',
-          name: '任务1',
+          name: '审批1',
           expireDay: 1,
           description: '',
           roleType: '',
@@ -696,7 +697,8 @@ export default {
       itemGroupType: '', // 选中的组类型
       itemGroup: '', // 选中的组信息
       nextNodeInfo: {}, // 缓存待切换节点信息
-      displayLastGroup: false // 控制group显示，在新增时显示最后一个，其余显示当前值
+      displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
+      nextGroupInfo: {}
     }
   },
   computed: {
@@ -738,32 +740,32 @@ export default {
     async getApprovalNode (id = '') {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'implement')
       if (statusCode === 'OK') {
-        this.procDefId = data.procDefId
+        this.procDefId = data.procDefId || ''
         if (this.procDefId === '' && data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
           this.approvalNodes = data.ids
           this.activeEditingNode = id === '' ? this.approvalNodes[0] : this.approvalNodes.find(node => node.id === id)
-          this.editNode(this.activeEditingNode)
+          this.editNode(this.activeEditingNode, false)
         }
       }
     },
     async addApprovalNode (sort) {
-      this.nextNodeInfo = JSON.parse(JSON.stringify(this.activeEditingNode))
-      const res = this.preApprovalNodeChange(1)
-      if (res) {
-        return
-      }
-      const params = {
-        type: 'implement',
-        requestTemplate: this.requestTemplateId,
-        name: this.$t('task') + sort,
-        expireDay: 1,
-        sort: sort
-      }
-      const { statusCode, data } = await addApprovalNode(params)
-      if (statusCode === 'OK') {
-        this.getApprovalNode(data.taskTemplate.id)
+      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+      if (nodeStatus === 'canSave') {
+        this.$refs.approvalFormNodeRef.saveNode(3)
+        this.saveGroup(3, this.activeEditingNode)
+        const params = {
+          type: 'implement',
+          requestTemplate: this.requestTemplateId,
+          name: this.$t('task') + sort,
+          expireDay: 1,
+          sort: sort
+        }
+        const { statusCode, data } = await addApprovalNode(params)
+        if (statusCode === 'OK') {
+          this.getApprovalNode(data.taskTemplate.id)
+        }
       }
     },
     isLoadLastGroup (val) {
@@ -771,9 +773,10 @@ export default {
       // this.loadPage()
     },
     async removeNode (node) {
-      this.nextNodeInfo = JSON.parse(JSON.stringify(this.activeEditingNode))
-      const res = this.preApprovalNodeChange(3)
-      if (!res) {
+      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+      if (nodeStatus === 'canSave') {
+        this.$refs.approvalFormNodeRef.saveNode(3)
+        this.saveGroup(3, node)
         this.$Modal.confirm({
           title: this.$t('confirm_delete'),
           'z-index': 1000000,
@@ -822,20 +825,26 @@ export default {
       this.isParmasChanged = false
       this.getApprovalNodeGroups(this.activeEditingNode)
     },
-    editNode (node) {
-      let params = {
-        requestTemplateId: this.requestTemplateId,
-        id: node.id,
-        procDefId: this.procDefId
-      }
-      this.nextNodeInfo = node
-      const res = this.preApprovalNodeChange(2)
-      if (!res) {
+    editNode (node, isNeedSaveFirst = true) {
+      if (isNeedSaveFirst) {
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        if (nodeStatus === 'canSave') {
+          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.beforeEditNode(node)
+        }
+      } else {
         this.activeEditingNode = node
+        let params = {
+          requestTemplateId: this.requestTemplateId,
+          id: node.id,
+          procDefId: this.procDefId
+        }
         this.$refs.approvalFormNodeRef.loadPage(params)
         this.getApprovalNodeGroups(node)
       }
-      // this.getApprovalNodeGroups(node)
+    },
+    beforeEditNode (node) {
+      this.saveGroup(3, node)
     },
     async getApprovalNodeGroups (node) {
       const { statusCode, data } = await getApprovalNodeGroups(this.requestTemplateId, node.id)
@@ -845,15 +854,15 @@ export default {
         if (groups.length !== 0) {
           if (this.displayLastGroup) {
             const group = groups[groups.length - 1]
-            this.editGroupCustomItems(group)
+            this.editGroupCustomItems(group, false)
           } else {
             let itemGroupId = this.finalElement[0].itemGroupId
             const findGroup = groups.find(form => form.itemGroupId === itemGroupId)
             if (findGroup) {
-              this.editGroupCustomItems(findGroup)
+              this.editGroupCustomItems(findGroup, false)
             } else {
               if (groups.length > 0) {
-                this.editGroupCustomItems(groups[0])
+                this.editGroupCustomItems(groups[0], false)
               }
             }
           }
@@ -871,6 +880,13 @@ export default {
       }
       this.activeEditingNode = this.nextNodeInfo
       this.$refs.approvalFormNodeRef.loadPage(params)
+    },
+    beforeSelectItemGroup () {
+      if (this.finalElement[0].itemGroupId === '') {
+        this.selectItemGroup()
+      } else {
+        this.saveGroup(7)
+      }
     },
     // 查询可添加的组
     async selectItemGroup () {
@@ -932,23 +948,11 @@ export default {
       this.isParmasChanged = true
     },
     // 编辑组自定义属性
-    editGroupCustomItems (groupItem) {
-      this.displayLastGroup = false
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveGroup(4, groupItem)
-          },
-          onCancel: () => {
-            this.getApprovalNodeGroups(this.activeEditingNode)
-            this.updateFinalElement(groupItem)
-          }
-        })
+    editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
+      this.nextGroupInfo = groupItem
+      // this.displayLastGroup = false
+      if (isNeedSaveFirst) {
+        this.saveGroup(4, groupItem)
       } else {
         this.updateFinalElement(groupItem)
       }
@@ -968,25 +972,7 @@ export default {
     },
     // 编辑组弹出信息
     editGroupItem (groupItem) {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveGroup(5, groupItem)
-          },
-          onCancel: () => {
-            this.isParmasChanged = false
-            this.openDrawer(groupItem)
-          }
-        })
-      } else {
-        this.openDrawer(groupItem)
-        // this.editGroupCustomItems(groupItem)
-      }
+      this.saveGroup(5, groupItem)
     },
     openDrawer (groupItem) {
       this.editGroupCustomItems(groupItem)
@@ -1019,35 +1005,18 @@ export default {
         this.$refs.requestFormDataWorkflowRef.loadPage(params)
       }
     },
-    // 删除组
     async removeGroupItem (groupItem) {
-      if (this.isParmasChanged) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.finalElement[0].itemGroupName}:${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.cancelGroup()
-            this.saveGroup()
-          },
-          onCancel: () => {
-            this.showDeleteTip(groupItem)
-          }
-        })
-      } else {
-        this.showDeleteTip(groupItem)
-      }
+      this.nextGroupInfo = groupItem
+      this.saveGroup(6)
     },
-    showDeleteTip (groupItem) {
+    async confirmRemoveGroupItem () {
       this.$Modal.confirm({
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.requestTemplateId)
+          const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
           if (statusCode === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),
@@ -1059,6 +1028,45 @@ export default {
         onCancel: () => {}
       })
     },
+    // // 删除组
+    // async removeGroupItem (groupItem) {
+    //   this.$Modal.confirm({
+    //     title: this.$t('confirm_delete'),
+    //     'z-index': 1000000,
+    //     loading: true,
+    //     onOk: async () => {
+    //       this.$Modal.remove()
+    //       const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.requestTemplateId)
+    //       if (statusCode === 'OK') {
+    //         this.$Notice.success({
+    //           title: this.$t('successful'),
+    //           desc: this.$t('successful')
+    //         })
+    //         this.loadPage()
+    //       }
+    //     },
+    //     onCancel: () => {}
+    //   })
+    // },
+    // showDeleteTip (groupItem) {
+    //   this.$Modal.confirm({
+    //     title: this.$t('confirm_delete'),
+    //     'z-index': 1000000,
+    //     loading: true,
+    //     onOk: async () => {
+    //       this.$Modal.remove()
+    //       const { statusCode } = await deleteRequestGroupForm(groupItem.itemGroupId, this.requestTemplateId)
+    //       if (statusCode === 'OK') {
+    //         this.$Notice.success({
+    //           title: this.$t('successful'),
+    //           desc: this.$t('successful')
+    //         })
+    //         this.loadPage()
+    //       }
+    //     },
+    //     onCancel: () => {}
+    //   })
+    // },
     // 获取wecmdb下拉类型entity值
     async getAllDataModels () {
       const { data, status } = await getAllDataModels()
@@ -1099,8 +1107,12 @@ export default {
     },
     // 保存自定义表单项
     async saveGroup (nextStep, elememt) {
-      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗
+      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗 6删除组 7选择组 8上一步 9发布时只保存不提示
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+      if (finalData.itemGroupId === '') {
+        this.loadPage(elememt.id)
+        return
+      }
       finalData.items = finalData.attrs.map(attr => {
         if (attr.id.startsWith('c_')) {
           attr.id = ''
@@ -1113,24 +1125,36 @@ export default {
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        if (![2, 3, 4, 5, 6, 7, 8].includes(nextStep)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         this.isParmasChanged = false
         if (nextStep === 1) {
-          // this.cancelGroup()
           this.loadPage()
         } else if (nextStep === 2) {
-          this.$emit('gotoStep', this.requestTemplateId)
+          this.$emit('gotoStep', this.requestTemplateId, 'forward')
+        } else if (nextStep === 3) {
+          if (elememt.id) {
+            this.loadPage(elememt.id)
+          }
         } else if (nextStep === 4) {
-          this.activeEditingNode = elememt
+          // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
-          this.getApprovalNodeGroups(elememt)
+          this.getApprovalNodeGroups(this.activeEditingNode)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)
+        } else if (nextStep === 6) {
+          this.confirmRemoveGroupItem()
+        } else if (nextStep === 7) {
+          this.selectItemGroup()
+        } else if (nextStep === 8) {
+          this.$emit('gotoStep', this.requestTemplateId, 'backward')
+        } else if (nextStep === 9) {
+          this.loadPage()
         }
-        // this.loadPage()
       }
     },
     cancelGroup () {
@@ -1147,24 +1171,11 @@ export default {
       this.isParmasChanged = false
       this.openPanel = ''
     },
-    gotoNext () {
-      if (this.isParmasChanged || this.$refs.approvalFormNodeRef.panalStatus()) {
-        this.$Modal.confirm({
-          title: `${this.$t('confirm_discarding_changes')}`,
-          content: `${this.$t('params_edit_confirm')}`,
-          'z-index': 1000000,
-          okText: this.$t('save'),
-          cancelText: this.$t('abandon'),
-          onOk: async () => {
-            this.saveGroup(2)
-            this.$refs.approvalFormNodeRef.saveNode()
-          },
-          onCancel: () => {
-            this.$emit('gotoStep', this.requestTemplateId)
-          }
-        })
-      } else {
-        this.$emit('gotoStep', this.requestTemplateId)
+    gotoForward () {
+      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+      if (nodeStatus === 'canSave') {
+        this.$refs.approvalFormNodeRef.saveNode(3)
+        this.saveGroup(8, {})
       }
     },
     nodeStyle (approval) {
@@ -1175,30 +1186,40 @@ export default {
       return res
     },
     async submitTemplate () {
-      this.$Modal.confirm({
-        title: `${this.$t('submit_for_review')}`,
-        content: `${this.$t('submit_for_review_tip')}`,
-        'z-index': 1000000,
-        okText: this.$t('confirm'),
-        cancelText: this.$t('cancel'),
-        onOk: async () => {
-          let data = {
-            requestTemplateId: this.requestTemplateId,
-            status: 'created',
-            targetStatus: 'pending',
-            reason: '{}'
-          }
-          const { statusCode } = await submitTemplate(data)
-          if (statusCode === 'OK') {
-            this.$Notice.success({
-              title: this.$t('successful'),
-              desc: this.$t('successful')
-            })
-            this.$router.push({ path: '/taskman/template-mgmt' })
-          }
-        },
-        onCancel: () => {}
-      })
+      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+      if (nodeStatus === 'canSave') {
+        this.$refs.approvalFormNodeRef.saveNode(3)
+        await this.saveGroup(9, {})
+        this.$Modal.confirm({
+          title: `${this.$t('submit_for_review')}`,
+          content: `${this.$t('submit_for_review_tip')}`,
+          'z-index': 1000000,
+          okText: this.$t('confirm'),
+          cancelText: this.$t('cancel'),
+          onOk: async () => {
+            let data = {
+              requestTemplateId: this.requestTemplateId,
+              status: 'created',
+              targetStatus: 'pending',
+              reason: '{}'
+            }
+            const { statusCode } = await submitTemplate(data)
+            if (statusCode === 'OK') {
+              this.$Notice.success({
+                title: this.$t('successful'),
+                desc: this.$t('successful')
+              })
+              this.$router.push({
+                path: '/taskman/template-mgmt',
+                query: {
+                  status: 'pending'
+                }
+              })
+            }
+          },
+          onCancel: () => {}
+        })
+      }
     }
   },
   components: {

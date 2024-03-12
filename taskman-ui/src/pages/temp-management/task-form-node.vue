@@ -85,7 +85,7 @@
               <Select
                 v-model="roleObj.role"
                 filterable
-                @on-change="getUserByRole(roleObj.role, roleObjIndex)"
+                @on-change="changeUser(roleObj.role, roleObjIndex)"
                 :disabled="isRoleDisable(roleObj, roleObjIndex)"
               >
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
@@ -120,7 +120,7 @@
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveBtnActive()" @click="saveNode(1)">{{ $t('save') }}</Button>
+        <Button type="primary" :disabled="isSaveNodeDisable" @click="saveNode(1)">{{ $t('save') }}</Button>
       </div>
     </div>
   </div>
@@ -161,8 +161,8 @@ export default {
         { label: '提交人角色管理员', value: 'admin' }
       ],
       approvalSingle: {
-        assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
-        handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+        assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
+        handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
         handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -179,7 +179,17 @@ export default {
         { label: '组内系统分配', value: 'system', used: ['template', 'custom'] },
         { label: '组内主动认领', value: 'claim', used: ['template', 'custom'] }
       ],
-      useRolesOptions: [] // 使用角色
+      useRolesOptions: [], // 使用角色
+      isSaveNodeDisable: true
+    }
+  },
+  watch: {
+    activeApprovalNode: {
+      handler (val) {
+        this.isSaveNodeDisable = this.isSaveBtnActive()
+      },
+      immediate: true,
+      deep: true
     }
   },
   props: ['nodeType'],
@@ -244,7 +254,7 @@ export default {
       }
     },
     async saveNode (type, nextNodeId) {
-      // type 1自我更新 2转到目标节点
+      // type 1自我更新 2转到目标节点 3父级页面调用保存
       this.activeApprovalNode.requestTemplate = this.requestTemplateId
       let tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode))
       if (['admin', 'auto'].includes(tmpData.handleMode)) {
@@ -253,10 +263,12 @@ export default {
       const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
+        if (![2, 3].includes(type)) {
+          this.$Notice.success({
+            title: this.$t('successful'),
+            desc: this.$t('successful')
+          })
+        }
         if (type === 1) {
           this.$emit('reloadParentPage', this.activeApprovalNode.id)
         } else if (type === 2) {
@@ -286,8 +298,11 @@ export default {
     },
     // 为父页面提供状态查询
     panalStatus () {
-      this.$Message.warning('节点数据不完整')
-      return this.isParmasChanged
+      const nodeStatus = this.isSaveNodeDisable
+      if (nodeStatus) {
+        this.$Message.warning('节点数据不完整')
+      }
+      return this.isSaveNodeDisable ? 'unableToSave' : 'canSave'
     },
     mgmtData () {
       this.activeApprovalNode.handleTemplates &&
@@ -314,8 +329,8 @@ export default {
     changeRoleType () {
       this.activeApprovalNode.handleTemplates = [
         {
-          assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
-          handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+          assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
+          handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除

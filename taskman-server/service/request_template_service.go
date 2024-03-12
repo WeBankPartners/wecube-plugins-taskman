@@ -851,28 +851,33 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 				return
 			}
 			if len(tempTaskHandleTemplateList) > 0 {
-				taskHandleTemplateList = append(tempTaskHandleTemplateList, tempTaskHandleTemplateList...)
+				taskHandleTemplateList = append(taskHandleTemplateList, tempTaskHandleTemplateList...)
 			}
-			actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(insert into task_template(id,name,description,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time,del_flag,sort,handle_mode,type) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{newTaskTemplateIdMap[taskTemplate.Id], taskTemplate.Name, taskTemplate.Description, newRequestTemplateId, taskTemplate.NodeId, taskTemplate.NodeDefId, taskTemplate.NodeName, taskTemplate.ExpireDay, taskTemplate.Handler, taskTemplate.CreatedBy, taskTemplate.CreatedTime, taskTemplate.UpdatedBy, taskTemplate.UpdatedTime, taskTemplate.DelFlag, taskTemplate.Sort, taskTemplate.HandleMode, taskTemplate.Type}})
+			actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,description,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time,del_flag,sort,handle_mode,type) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{newTaskTemplateIdMap[taskTemplate.Id], taskTemplate.Name, taskTemplate.Description, newRequestTemplateId, taskTemplate.NodeId, taskTemplate.NodeDefId, taskTemplate.NodeName, taskTemplate.ExpireDay, taskTemplate.Handler, taskTemplate.CreatedBy, taskTemplate.CreatedTime, taskTemplate.UpdatedBy, taskTemplate.UpdatedTime, taskTemplate.DelFlag, taskTemplate.Sort, taskTemplate.HandleMode, taskTemplate.Type}})
 		}
 		if len(taskHandleTemplateList) > 0 {
 			for _, taskHandleTemplate := range taskHandleTemplateList {
 				actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,assign,handler_type,handler,handle_mode,sort)values(?,?,?,?,?,?,?,?)", Param: []interface{}{
-					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort,
+					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.Handler, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort,
 				}})
 			}
 		}
 		if len(formTemplateList) > 0 {
 			for _, formTemplate := range formTemplateList {
 				if formTemplate.TaskTemplate == "" {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,created_time,ref_id,request_form_type,del_flag)vlaues(?,?,?,?,)", Param: []interface{}{
-						newFormTemplateIdMap[formTemplate.Id], newRequestTemplateId, newTaskTemplateIdMap[formTemplate.TaskTemplate], formTemplate.ItemGroup, formTemplate.ItemGroupName, formTemplate.ItemGroupType, formTemplate.ItemGroupRule, formTemplate.ItemGroupSort, nowTime, "", formTemplate.RequestFormType, formTemplate.DelFlag,
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,created_time,ref_id,request_form_type,del_flag)values(?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+						newFormTemplateIdMap[formTemplate.Id], newRequestTemplateId, formTemplate.ItemGroup, formTemplate.ItemGroupName, formTemplate.ItemGroupType, formTemplate.ItemGroupRule, formTemplate.ItemGroupSort, nowTime, newFormTemplateIdMap[formTemplate.RefId], formTemplate.RequestFormType, formTemplate.DelFlag,
 					}})
 				} else {
-					actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,task_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,created_time,ref_id,request_form_type,del_flag", Param: []interface{}{
-						newFormTemplateIdMap[formTemplate.Id], newRequestTemplateId, newTaskTemplateIdMap[formTemplate.TaskTemplate], formTemplate.ItemGroup, formTemplate.ItemGroupName, formTemplate.ItemGroupType, formTemplate.ItemGroupRule, formTemplate.ItemGroupSort, nowTime, "", formTemplate.RequestFormType, formTemplate.DelFlag,
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,task_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,created_time,ref_id,request_form_type,del_flag)values(?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+						newFormTemplateIdMap[formTemplate.Id], newRequestTemplateId, newTaskTemplateIdMap[formTemplate.TaskTemplate], formTemplate.ItemGroup, formTemplate.ItemGroupName, formTemplate.ItemGroupType, formTemplate.ItemGroupRule, formTemplate.ItemGroupSort, nowTime, newFormTemplateIdMap[formTemplate.RefId], formTemplate.RequestFormType, formTemplate.DelFlag,
 					}})
 				}
+			}
+		}
+		if len(formItemTemplateList) > 0 {
+			for _, formItemTemplate := range formItemTemplateList {
+				actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,'%s' as ref_id,routine_expression from form_item_template where id='%s'", newFormItemTemplateIdMap[formItemTemplate.Id], newFormTemplateIdMap[formItemTemplate.FormTemplate], newFormItemTemplateIdMap[formItemTemplate.RefId], formItemTemplate.Id)})
 			}
 		}
 	}

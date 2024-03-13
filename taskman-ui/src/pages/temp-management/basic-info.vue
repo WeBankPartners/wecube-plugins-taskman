@@ -23,7 +23,10 @@
                     />
                     <!-- <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input> -->
                     <span style="color: red">*</span>
-                    <div v-if="basicInfo.name.length === 0 || basicInfo.name.length > 30" style="color: red">
+                    <div
+                      v-if="isParmasChanged && (basicInfo.name.length === 0 || basicInfo.name.length > 30)"
+                      style="color: red"
+                    >
                       {{ $t('name') }}{{ $t('tw_limit_30') }}
                     </div>
                   </FormItem>
@@ -32,7 +35,7 @@
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{ item.name }}</Option>
                     </Select>
                     <span style="color: red">*</span>
-                    <div v-if="basicInfo.group === ''" style="color: red">
+                    <div v-if="isParmasChanged && basicInfo.group === ''" style="color: red">
                       {{ $t('group') }}{{ $t('can_not_be_empty') }}
                     </div>
                   </FormItem>
@@ -48,7 +51,7 @@
                   <FormItem :label="$t('mgmtRolesNew')">
                     <Select
                       v-model="basicInfo.mgmtRoles"
-                      @on-open-change="getManagementRoles"
+                      @on-open-change="getManagementRoles(false)"
                       filterable
                       style="width: 96%;"
                       @on-change="changeMgmtRole"
@@ -58,7 +61,7 @@
                       }}</Option>
                     </Select>
                     <span style="color: red">*</span>
-                    <div v-if="basicInfo.mgmtRoles === ''" style="color: red">
+                    <div v-if="isParmasChanged && basicInfo.mgmtRoles === ''" style="color: red">
                       {{ $t('mgmtRolesNew') }}{{ $t('can_not_be_empty') }}
                     </div>
                   </FormItem>
@@ -74,7 +77,7 @@
                   <FormItem :label="$t('useRoles')">
                     <Select
                       v-model="basicInfo.useRoles"
-                      @on-open-change="getUserRoles"
+                      @on-open-change="getUserRoles(false)"
                       filterable
                       multiple
                       style="width: 96%;"
@@ -84,7 +87,7 @@
                       }}</Option>
                     </Select>
                     <span style="color: red">*</span>
-                    <div v-if="basicInfo.useRoles.length === 0" style="color: red">
+                    <div v-if="isParmasChanged && basicInfo.useRoles.length === 0" style="color: red">
                       {{ $t('useRoles') }}{{ $t('can_not_be_empty') }}
                     </div>
                   </FormItem>
@@ -123,7 +126,7 @@
                       @on-change="paramsChanged"
                       style="width: 96%"
                     />
-                    <div v-if="basicInfo.description.length > 200" style="color: red">
+                    <div v-if="isParmasChanged && basicInfo.description.length > 200" style="color: red">
                       {{ $t('description') }}{{ $t('tw_limit_200') }}
                     </div>
                   </FormItem>
@@ -203,7 +206,7 @@
                           }}</Option>
                         </Select>
                         <span style="color: red">*</span>
-                        <div v-if="basicInfo.procDefId === ''" style="color: red">
+                        <div v-if="isParmasChanged && basicInfo.procDefId === ''" style="color: red">
                           {{ $t('procDefId') }}{{ $t('can_not_be_empty') }}
                         </div>
                       </FormItem>
@@ -330,14 +333,14 @@ export default {
     this.loadPage(this.requestTemplateId)
   },
   methods: {
-    loadPage (val) {
+    async loadPage (val) {
       this.requestTemplateId = val
       this.isParmasChanged = false
-      this.getGroupOptions()
-      this.getManagementRoles()
-      this.getUserRoles()
       this.getProcess()
       this.getTemplateData()
+      this.getGroupOptions()
+      await this.getManagementRoles(true)
+      this.getUserRoles(true)
     },
     // 控制保存按钮
     isSaveBtnActive () {
@@ -435,6 +438,9 @@ export default {
       const { statusCode, data } = await getTempGroupList(params)
       if (statusCode === 'OK') {
         this.groupOptions = data.contents
+        if (this.basicInfo.id === '' && this.groupOptions.length > 0) {
+          this.basicInfo.group = this.groupOptions[0].id
+        }
       }
     },
     // 获取标签数据
@@ -462,10 +468,13 @@ export default {
       this.basicInfo.tags = v
     },
     // 属主角色
-    async getManagementRoles () {
+    async getManagementRoles (type) {
       const { statusCode, data } = await getManagementRoles()
       if (statusCode === 'OK') {
         this.mgmtRolesOptions = data
+        if (type && this.basicInfo.id === '' && this.mgmtRolesOptions.length > 0) {
+          this.basicInfo.mgmtRoles = this.mgmtRolesOptions[0].id
+        }
       }
     },
     // 模版属主
@@ -513,10 +522,13 @@ export default {
       }
     },
     // 使用角色
-    async getUserRoles () {
+    async getUserRoles (type) {
       const { statusCode, data } = await getUserRoles()
       if (statusCode === 'OK') {
         this.useRolesOptions = data
+        if (type && this.basicInfo.id === '' && this.useRolesOptions.length > 0) {
+          this.basicInfo.useRoles.push(this.useRolesOptions[0].id)
+        }
       }
     },
     changeMgmtRole () {

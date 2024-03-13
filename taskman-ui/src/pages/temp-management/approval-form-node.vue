@@ -121,7 +121,7 @@
             icon="md-add"
             :disabled="isHandlerAddDisable"
           ></Button>
-          <!-- <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span> -->
+          <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span>
         </FormItem>
       </Form>
       <div style="text-align: center;">
@@ -139,7 +139,13 @@
 
 <script>
 import Vue from 'vue'
-import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
+import {
+  getUserRoles,
+  getHandlerRoles,
+  updateApprovalNode,
+  getApprovalNodeById,
+  deleteGroupsByNodeid
+} from '@/api/server'
 export default {
   name: '',
   data () {
@@ -219,6 +225,7 @@ export default {
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'approve')
       if (statusCode === 'OK') {
+        this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
         this.activeApprovalNode = data
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         // this.activeApprovalNode.handleTemplates = data.thandleTemplates
@@ -290,8 +297,16 @@ export default {
         } else if (type === 2) {
           this.$emit('reloadParentPage', nextNodeId)
         }
+        if (['admin', 'auto'].includes(this.activeApprovalNode.handleMode)) {
+          this.removeNodeGroups()
+        }
       }
     },
+    // 在无需表单配置的场景下，删除节点下的组
+    async removeNodeGroups () {
+      deleteGroupsByNodeid(this.requestTemplateId, this.activeApprovalNode.id)
+    },
+
     // 为父页面提供状态查询
     panalStatus () {
       const nodeStatus = this.isSaveNodeDisable || this.isHandlerAddDisable
@@ -316,12 +331,34 @@ export default {
       return res
     },
     hasDuplicateObjects () {
-      const tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode.handleTemplates)).map(data => {
+      let res = false
+      const tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode.handleTemplates)).map((data, dIndex) => {
         return {
           assign: data.assign,
           handler: data.handler,
           handlerType: data.handlerType,
-          role: data.role
+          role: data.role,
+          isRoleDisable: this.isRoleDisable(data, dIndex),
+          isHandlerDisable: this.isHandlerDisable(data, dIndex)
+        }
+      })
+      const roleAndHanlerCanSelect = tmpData.filter(t => !t.isRoleDisable && !t.isHandlerDisable)
+      const roleCanSelect = tmpData.filter(t => !t.isRoleDisable && t.isHandlerDisable)
+      if (roleAndHanlerCanSelect.length > 1) {
+        let hasDuplicate = this.isDataHasDuplicate(roleAndHanlerCanSelect)
+        return hasDuplicate
+      }
+      if (roleCanSelect.length > 1) {
+        let hasDuplicate = this.isDataHasDuplicate(roleCanSelect)
+        return hasDuplicate
+      }
+      return res
+    },
+    isDataHasDuplicate (arr) {
+      const tmpData = JSON.parse(JSON.stringify(arr)).map(data => {
+        return {
+          handler: data.handler === '' ? this.generateRandomString(10) : data.handler,
+          role: data.role === '' ? this.generateRandomString(10) : data.role
         }
       })
       let objectStrings = new Set() // 使用 Set 存储对象的字符串表示
@@ -333,6 +370,15 @@ export default {
         objectStrings.add(objString)
       }
       return false // 不存在相同的对象
+    },
+    generateRandomString (length) {
+      let result = ''
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      const charactersLength = characters.length
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength))
+      }
+      return result
     },
     // 新增一组审批人
     addRoleObjItem () {
@@ -359,9 +405,11 @@ export default {
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
+      this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
       this.paramsChanged()
     },
     changeUser (role, roleObjIndex) {
+      this.activeApprovalNode.handleTemplates[roleObjIndex].handler = ''
       this.isParmasChanged = true
       this.getUserByRole(role, roleObjIndex)
     },

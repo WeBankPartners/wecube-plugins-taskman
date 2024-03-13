@@ -47,376 +47,384 @@
             :isCheck="isCheck"
             :procDefId="procDefId"
             :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
+            @setFormConfigStatus="changeFormConfigStatus"
           ></TaskFormNode>
         </div>
-        <div class="title" style="font-size: 16px;">
-          <div class="title-text">
-            {{ $t('表单配置') }}
-            <span class="underline"></span>
+        <template v-if="isShowFormConfig">
+          <div class="title" style="font-size: 16px;">
+            <div class="title-text">
+              {{ $t('表单配置') }}
+              <span class="underline"></span>
+            </div>
           </div>
-        </div>
-        <div>
-          <Row>
-            <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
-              <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-                <Divider plain>{{ $t('custom_form') }}</Divider>
-                <draggable
-                  class="dragArea"
-                  :list="customElement"
-                  :group="{ name: 'people', pull: 'clone', put: false }"
-                  :sort="$parent.isCheck !== 'Y'"
-                  :clone="cloneDog"
-                >
-                  <div class="list-group-item-" style="width: 100%" v-for="element in customElement" :key="element.id">
-                    <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
-                    <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
-                    <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-                    <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
-                    <DatePicker
-                      v-if="element.elementType === 'datePicker'"
-                      :type="element.type"
-                      :placeholder="$t('tw_date_picker')"
-                      style="width:100%"
-                    ></DatePicker>
+          <div>
+            <Row>
+              <Col span="5" style="border: 1px solid #dcdee2; padding: 0 16px">
+                <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
+                  <Divider plain>{{ $t('custom_form') }}</Divider>
+                  <draggable
+                    class="dragArea"
+                    :list="customElement"
+                    :group="{ name: 'people', pull: 'clone', put: false }"
+                    :sort="$parent.isCheck !== 'Y'"
+                    :clone="cloneDog"
+                  >
                     <div
-                      v-if="element.elementType === 'group'"
-                      style="width: 100%; height: 80px; border: 1px solid #5ea7f4"
+                      class="list-group-item-"
+                      style="width: 100%"
+                      v-for="element in customElement"
+                      :key="element.id"
                     >
-                      <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
-                    </div>
-                  </div>
-                </draggable>
-              </div>
-            </Col>
-            <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
-              <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-                <Divider>预览</Divider>
-                <div class="title">
-                  <div class="title-text">
-                    {{ $t('任务内容') }}
-                    <span class="underline"></span>
-                  </div>
-                </div>
-                <div>
-                  <div class="radio-group">
-                    <div
-                      v-for="(groupItem, index) in dataFormInfo.groups"
-                      :key="index"
-                      :class="{
-                        radio: true,
-                        custom: groupItem.itemGroupType === 'custom',
-                        workflow: groupItem.itemGroupType === 'workflow',
-                        optional: groupItem.itemGroupType === 'optional'
-                      }"
-                      :style="activeStyle(groupItem)"
-                    >
-                      <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
-                      <span @click="editGroupCustomItems(groupItem)">
-                        {{ `${groupItem.itemGroupName}` }}
-                      </span>
-                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
-                    </div>
-                    <span>
-                      <Button
-                        v-if="isCheck !== 'Y'"
-                        style="margin-top: -5px;"
-                        @click="beforeSelectItemGroup"
-                        type="primary"
-                        shape="circle"
-                        icon="md-add"
-                      ></Button>
-                    </span>
-                  </div>
-                </div>
-                <div style="min-height: 200px;">
-                  <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
-                    <div
-                      v-for="(item, itemIndex) in finalElement"
-                      :key="itemIndex"
-                      style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
-                    >
-                      <div :key="itemIndex"></div>
-                      <draggable
-                        class="dragArea"
-                        :list="item.attrs"
-                        :sort="$parent.isCheck !== 'Y'"
-                        group="people"
-                        @change="log(item)"
+                      <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
+                      <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
+                      <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
+                      <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+                      <DatePicker
+                        v-if="element.elementType === 'datePicker'"
+                        :type="element.type"
+                        :placeholder="$t('tw_date_picker')"
+                        style="width:100%"
+                      ></DatePicker>
+                      <div
+                        v-if="element.elementType === 'group'"
+                        style="width: 100%; height: 80px; border: 1px solid #5ea7f4"
                       >
-                        <div
-                          @click="selectElement(itemIndex, eleIndex)"
-                          :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
-                          :style="{ width: (element.width / 24) * 100 + '%' }"
-                          v-for="(element, eleIndex) in item.attrs"
-                          :key="element.id"
+                        <span style="margin: 8px; color: #bbbbbb"> Item Group </span>
+                      </div>
+                    </div>
+                  </draggable>
+                </div>
+              </Col>
+              <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
+                <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
+                  <Divider>预览</Divider>
+                  <div class="title">
+                    <div class="title-text">
+                      {{ $t('任务内容') }}
+                      <span class="underline"></span>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="radio-group">
+                      <div
+                        v-for="(groupItem, index) in dataFormInfo.groups"
+                        :key="index"
+                        :class="{
+                          radio: true,
+                          custom: groupItem.itemGroupType === 'custom',
+                          workflow: groupItem.itemGroupType === 'workflow',
+                          optional: groupItem.itemGroupType === 'optional'
+                        }"
+                        :style="activeStyle(groupItem)"
+                      >
+                        <Icon @click="editGroupItem(groupItem)" type="md-create" color="#2d8cf0" :size="20" />
+                        <span @click="editGroupCustomItems(groupItem)">
+                          {{ `${groupItem.itemGroupName}` }}
+                        </span>
+                        <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
+                      </div>
+                      <span>
+                        <Button
+                          v-if="isCheck !== 'Y'"
+                          style="margin-top: -5px;"
+                          @click="beforeSelectItemGroup"
+                          type="primary"
+                          shape="circle"
+                          icon="md-add"
+                        ></Button>
+                      </span>
+                    </div>
+                  </div>
+                  <div style="min-height: 200px;">
+                    <template v-if="finalElement.length === 1 && finalElement[0].itemGroup !== ''">
+                      <div
+                        v-for="(item, itemIndex) in finalElement"
+                        :key="itemIndex"
+                        style="border: 2px dotted #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;"
+                      >
+                        <div :key="itemIndex"></div>
+                        <draggable
+                          class="dragArea"
+                          :list="item.attrs"
+                          :sort="$parent.isCheck !== 'Y'"
+                          group="people"
+                          @change="log(item)"
                         >
                           <div
-                            class="custom-title"
-                            :style="
-                              ['calculate', 'textarea'].includes(element.elementType)
-                                ? 'vertical-align: top;word-break: break-all;'
-                                : ''
-                            "
+                            @click="selectElement(itemIndex, eleIndex)"
+                            :class="['list-group-item-', element.isActive ? 'active-zone' : '']"
+                            :style="{ width: (element.width / 24) * 100 + '%' }"
+                            v-for="(element, eleIndex) in item.attrs"
+                            :key="element.id"
                           >
-                            <Icon
-                              v-if="element.required === 'yes'"
-                              size="8"
-                              style="color: #ed4014"
-                              type="ios-medical"
+                            <div
+                              class="custom-title"
+                              :style="
+                                ['calculate', 'textarea'].includes(element.elementType)
+                                  ? 'vertical-align: top;word-break: break-all;'
+                                  : ''
+                              "
+                            >
+                              <Icon
+                                v-if="element.required === 'yes'"
+                                size="8"
+                                style="color: #ed4014"
+                                type="ios-medical"
+                              />
+                              {{ element.title }}
+                            </div>
+                            <Input
+                              v-if="element.elementType === 'input'"
+                              :disabled="element.isEdit === 'no'"
+                              v-model="element.defaultValue"
+                              placeholder=""
+                              class="custom-item"
                             />
-                            {{ element.title }}
+                            <Input
+                              v-if="['calculate', 'textarea'].includes(element.elementType)"
+                              :disabled="element.isEdit === 'no'"
+                              v-model="element.defaultValue"
+                              type="textarea"
+                              class="custom-item"
+                            />
+                            <Select
+                              v-if="element.elementType === 'select'"
+                              :disabled="element.isEdit === 'no'"
+                              class="custom-item"
+                              :multiple="element.multiple === 'yes'"
+                            >
+                              <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{
+                                item
+                              }}</Option>
+                            </Select>
+                            <Select
+                              v-if="element.elementType === 'wecmdbEntity'"
+                              :disabled="element.isEdit === 'no'"
+                              v-model="element.defaultValue"
+                              class="custom-item"
+                            ></Select>
+                            <DatePicker
+                              v-if="element.elementType === 'datePicker'"
+                              class="custom-item"
+                              :type="element.type"
+                            ></DatePicker>
+                            <Button
+                              @click.stop="removeForm(itemIndex, eleIndex, element)"
+                              type="error"
+                              size="small"
+                              :disabled="$parent.isCheck === 'Y'"
+                              icon="ios-close"
+                              ghost
+                            ></Button>
                           </div>
-                          <Input
-                            v-if="element.elementType === 'input'"
-                            :disabled="element.isEdit === 'no'"
-                            v-model="element.defaultValue"
-                            placeholder=""
-                            class="custom-item"
-                          />
-                          <Input
-                            v-if="['calculate', 'textarea'].includes(element.elementType)"
-                            :disabled="element.isEdit === 'no'"
-                            v-model="element.defaultValue"
-                            type="textarea"
-                            class="custom-item"
-                          />
-                          <Select
-                            v-if="element.elementType === 'select'"
-                            :disabled="element.isEdit === 'no'"
-                            class="custom-item"
-                            :multiple="element.multiple === 'yes'"
-                          >
-                            <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{
-                              item
-                            }}</Option>
-                          </Select>
-                          <Select
-                            v-if="element.elementType === 'wecmdbEntity'"
-                            :disabled="element.isEdit === 'no'"
-                            v-model="element.defaultValue"
-                            class="custom-item"
-                          ></Select>
-                          <DatePicker
-                            v-if="element.elementType === 'datePicker'"
-                            class="custom-item"
-                            :type="element.type"
-                          ></DatePicker>
-                          <Button
-                            @click.stop="removeForm(itemIndex, eleIndex, element)"
-                            type="error"
-                            size="small"
-                            :disabled="$parent.isCheck === 'Y'"
-                            icon="ios-close"
-                            ghost
-                          ></Button>
-                        </div>
-                      </draggable>
+                        </draggable>
+                      </div>
+                      <div style="text-align: right;">
+                        <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
+                          $t('save')
+                        }}</Button>
+                        <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
+                      </div>
+                    </template>
+                  </div>
+                  <div class="title">
+                    <div class="title-text">
+                      {{ $t('任务结果') }}
+                      <span class="underline"></span>
                     </div>
-                    <div style="text-align: right;">
-                      <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
-                        $t('save')
-                      }}</Button>
-                      <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
-                    </div>
-                  </template>
-                </div>
-                <div class="title">
-                  <div class="title-text">
-                    {{ $t('任务结果') }}
-                    <span class="underline"></span>
+                  </div>
+                  <div style="margin: 12px 0 0 8px;">
+                    <Form :label-width="90" v-if="procDefId !== ''">
+                      <FormItem :label="$t('判断分支')">
+                        <Select style="width:94%">
+                          <Option value="1">{{ $t('测试分支') }}</Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem :label="$t('t_action')">
+                        <Select style="width:94%">
+                          <Option value="1">{{ $t('tw_approve') }}</Option>
+                          <Option value="2">{{ $t('tw_reject') }}</Option>
+                          <Option value="3">{{ $t('tw_send_back') }}</Option>
+                        </Select>
+                      </FormItem>
+                      <FormItem :label="$t('tw_comments')">
+                        <Input type="textarea" :rows="2" style="width:94%"></Input>
+                      </FormItem>
+                    </Form>
                   </div>
                 </div>
-                <div style="margin: 12px 0 0 8px;">
-                  <Form :label-width="90" v-if="procDefId !== ''">
-                    <FormItem :label="$t('判断分支')">
-                      <Select style="width:94%">
-                        <Option value="1">{{ $t('测试分支') }}</Option>
+                <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
+                  <Form :label-width="120">
+                    <FormItem :label="$t('全局请求表单')">
+                      <Select style="width: 80%" v-model="itemGroup" filterable>
+                        <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
+                          item.itemGroupName
+                        }}</Option>
                       </Select>
-                    </FormItem>
-                    <FormItem :label="$t('t_action')">
-                      <Select style="width:94%">
-                        <Option value="1">{{ $t('tw_approve') }}</Option>
-                        <Option value="2">{{ $t('tw_reject') }}</Option>
-                        <Option value="3">{{ $t('tw_send_back') }}</Option>
-                      </Select>
-                    </FormItem>
-                    <FormItem :label="$t('tw_comments')">
-                      <Input type="textarea" :rows="2" style="width:94%"></Input>
                     </FormItem>
                   </Form>
+                  <template #footer>
+                    <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
+                    <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
+                  </template>
+                </Modal>
+              </Col>
+              <Col span="5" style="border: 1px solid #dcdee2">
+                <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
+                  <Collapse v-model="openPanel">
+                    <Panel name="1">
+                      {{ $t('general_attributes') }}
+                      <div slot="content">
+                        <Form :label-width="80">
+                          <FormItem :label="$t('display_name')">
+                            <Input
+                              v-model="editElement.title"
+                              @on-change="paramsChanged"
+                              :disabled="$parent.isCheck === 'Y'"
+                              placeholder=""
+                            ></Input>
+                          </FormItem>
+                          <FormItem :label="$t('tw_code')">
+                            <Input
+                              v-model="editElement.name"
+                              @on-change="paramsChanged"
+                              :disabled="$parent.isCheck === 'Y' || editElement.entity !== ''"
+                              placeholder=""
+                            ></Input>
+                          </FormItem>
+                          <FormItem :label="$t('data_type')">
+                            <Select
+                              v-model="editElement.elementType"
+                              :disabled="true"
+                              @on-change="editElement.defaultValue = ''"
+                            >
+                              <Option value="input">Input</Option>
+                              <Option value="select">Select</Option>
+                              <Option value="textarea">Textarea</Option>
+                              <Option value="wecmdbEntity">模型数据项</Option>
+                              <Option value="datePicker">DatePicker</Option>
+                              <Option value="calculate">Calculate</Option>
+                            </Select>
+                          </FormItem>
+                          <FormItem
+                            v-if="editElement.elementType === 'select'"
+                            :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
+                          >
+                            <Input
+                              v-model="editElement.dataOptions"
+                              :disabled="$parent.isCheck === 'Y'"
+                              placeholder="eg:a,b"
+                              @on-change="paramsChanged"
+                            ></Input>
+                          </FormItem>
+                          <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
+                          <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
+                            <Select
+                              v-model="editElement.dataOptions"
+                              filterable
+                              @on-change="paramsChanged"
+                              :disabled="$parent.isCheck === 'Y'"
+                            >
+                              <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
+                            </Select>
+                          </FormItem>
+                          <!-- <FormItem :label="$t('tags')">
+                            <Input v-model="editElement.tag" placeholder=""></Input>
+                          </FormItem> -->
+                          <FormItem :label="$t('display')">
+                            <RadioGroup v-model="editElement.inDisplayName" @on-change="paramsChanged">
+                              <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                              <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                            </RadioGroup>
+                          </FormItem>
+                          <FormItem :label="$t('editable')">
+                            <RadioGroup v-model="editElement.isEdit" @on-change="paramsChanged">
+                              <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                              <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                            </RadioGroup>
+                          </FormItem>
+                          <FormItem :label="$t('required')">
+                            <RadioGroup v-model="editElement.required" @on-change="paramsChanged">
+                              <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                              <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                            </RadioGroup>
+                          </FormItem>
+                          <FormItem :label="$t('tw_default_empty')">
+                            <RadioGroup v-model="editElement.defaultClear" @on-change="paramsChanged">
+                              <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                              <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                            </RadioGroup>
+                          </FormItem>
+                          <FormItem :label="$t('defaults')">
+                            <Input
+                              v-model="editElement.defaultValue"
+                              :disabled="$parent.isCheck === 'Y' || editElement.defaultClear === 'yes'"
+                              placeholder=""
+                              @on-change="paramsChanged"
+                            ></Input>
+                          </FormItem>
+                          <FormItem
+                            :label="$t('tw_multiple')"
+                            v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                          >
+                            <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
+                              <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                              <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                            </RadioGroup>
+                          </FormItem>
+                          <FormItem :label="$t('width')">
+                            <Select
+                              v-model="editElement.width"
+                              @on-change="paramsChanged"
+                              :disabled="$parent.isCheck === 'Y'"
+                            >
+                              <Option :value="6">6</Option>
+                              <Option :value="12">12</Option>
+                              <Option :value="18">18</Option>
+                              <Option :value="24">24</Option>
+                            </Select>
+                          </FormItem>
+                        </Form>
+                      </div>
+                    </Panel>
+                    <Panel name="2">
+                      {{ $t('extended_attributes') }}
+                      <div slot="content">
+                        <Form :label-width="80">
+                          <FormItem :label="$t('validation_rules')">
+                            <Input
+                              v-model="editElement.regular"
+                              :disabled="$parent.isCheck === 'Y'"
+                              :placeholder="$t('only_supports_regular')"
+                              @on-change="paramsChanged"
+                            ></Input>
+                          </FormItem>
+                        </Form>
+                      </div>
+                    </Panel>
+                    <Panel name="3">
+                      {{ $t('data_item') }}
+                      <div slot="content">
+                        <Form :label-width="80">
+                          <FormItem :label="$t('constraints')">
+                            <Select
+                              v-model="editElement.isRefInside"
+                              @on-change="paramsChanged"
+                              :disabled="$parent.isCheck === 'Y'"
+                            >
+                              <Option value="yes">yes</Option>
+                              <Option value="no">no</Option>
+                            </Select>
+                          </FormItem>
+                        </Form>
+                      </div>
+                    </Panel>
+                  </Collapse>
                 </div>
-              </div>
-              <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
-                <Form :label-width="120">
-                  <FormItem :label="$t('全局请求表单')">
-                    <Select style="width: 80%" v-model="itemGroup" filterable>
-                      <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
-                        item.itemGroupName
-                      }}</Option>
-                    </Select>
-                  </FormItem>
-                </Form>
-                <template #footer>
-                  <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
-                  <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
-                </template>
-              </Modal>
-            </Col>
-            <Col span="5" style="border: 1px solid #dcdee2">
-              <div :style="{ height: MODALHEIGHT + 32 + 'px', overflow: 'auto' }">
-                <Collapse v-model="openPanel">
-                  <Panel name="1">
-                    {{ $t('general_attributes') }}
-                    <div slot="content">
-                      <Form :label-width="80">
-                        <FormItem :label="$t('display_name')">
-                          <Input
-                            v-model="editElement.title"
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
-                            placeholder=""
-                          ></Input>
-                        </FormItem>
-                        <FormItem :label="$t('tw_code')">
-                          <Input
-                            v-model="editElement.name"
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y' || editElement.entity !== ''"
-                            placeholder=""
-                          ></Input>
-                        </FormItem>
-                        <FormItem :label="$t('data_type')">
-                          <Select
-                            v-model="editElement.elementType"
-                            :disabled="true"
-                            @on-change="editElement.defaultValue = ''"
-                          >
-                            <Option value="input">Input</Option>
-                            <Option value="select">Select</Option>
-                            <Option value="textarea">Textarea</Option>
-                            <Option value="wecmdbEntity">模型数据项</Option>
-                            <Option value="datePicker">DatePicker</Option>
-                            <Option value="calculate">Calculate</Option>
-                          </Select>
-                        </FormItem>
-                        <FormItem
-                          v-if="editElement.elementType === 'select'"
-                          :label="editElement.entity === '' ? $t('data_set') : $t('data_source')"
-                        >
-                          <Input
-                            v-model="editElement.dataOptions"
-                            :disabled="$parent.isCheck === 'Y'"
-                            placeholder="eg:a,b"
-                            @on-change="paramsChanged"
-                          ></Input>
-                        </FormItem>
-                        <!--添加wecmdbEntity类型，根据选择配置生成url(用于获取下拉配置)-->
-                        <FormItem v-if="editElement.elementType === 'wecmdbEntity'" :label="$t('data_source')">
-                          <Select
-                            v-model="editElement.dataOptions"
-                            filterable
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
-                          >
-                            <Option v-for="i in allEntityList" :value="i" :key="i">{{ i }}</Option>
-                          </Select>
-                        </FormItem>
-                        <!-- <FormItem :label="$t('tags')">
-                          <Input v-model="editElement.tag" placeholder=""></Input>
-                        </FormItem> -->
-                        <FormItem :label="$t('display')">
-                          <RadioGroup v-model="editElement.inDisplayName" @on-change="paramsChanged">
-                            <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                            <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                          </RadioGroup>
-                        </FormItem>
-                        <FormItem :label="$t('editable')">
-                          <RadioGroup v-model="editElement.isEdit" @on-change="paramsChanged">
-                            <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                            <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                          </RadioGroup>
-                        </FormItem>
-                        <FormItem :label="$t('required')">
-                          <RadioGroup v-model="editElement.required" @on-change="paramsChanged">
-                            <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                            <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                          </RadioGroup>
-                        </FormItem>
-                        <FormItem :label="$t('tw_default_empty')">
-                          <RadioGroup v-model="editElement.defaultClear" @on-change="paramsChanged">
-                            <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                            <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                          </RadioGroup>
-                        </FormItem>
-                        <FormItem :label="$t('defaults')">
-                          <Input
-                            v-model="editElement.defaultValue"
-                            :disabled="$parent.isCheck === 'Y' || editElement.defaultClear === 'yes'"
-                            placeholder=""
-                            @on-change="paramsChanged"
-                          ></Input>
-                        </FormItem>
-                        <FormItem
-                          :label="$t('tw_multiple')"
-                          v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
-                        >
-                          <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
-                            <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
-                            <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
-                          </RadioGroup>
-                        </FormItem>
-                        <FormItem :label="$t('width')">
-                          <Select
-                            v-model="editElement.width"
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
-                          >
-                            <Option :value="6">6</Option>
-                            <Option :value="12">12</Option>
-                            <Option :value="18">18</Option>
-                            <Option :value="24">24</Option>
-                          </Select>
-                        </FormItem>
-                      </Form>
-                    </div>
-                  </Panel>
-                  <Panel name="2">
-                    {{ $t('extended_attributes') }}
-                    <div slot="content">
-                      <Form :label-width="80">
-                        <FormItem :label="$t('validation_rules')">
-                          <Input
-                            v-model="editElement.regular"
-                            :disabled="$parent.isCheck === 'Y'"
-                            :placeholder="$t('only_supports_regular')"
-                            @on-change="paramsChanged"
-                          ></Input>
-                        </FormItem>
-                      </Form>
-                    </div>
-                  </Panel>
-                  <Panel name="3">
-                    {{ $t('data_item') }}
-                    <div slot="content">
-                      <Form :label-width="80">
-                        <FormItem :label="$t('constraints')">
-                          <Select
-                            v-model="editElement.isRefInside"
-                            @on-change="paramsChanged"
-                            :disabled="$parent.isCheck === 'Y'"
-                          >
-                            <Option value="yes">yes</Option>
-                            <Option value="no">no</Option>
-                          </Select>
-                        </FormItem>
-                      </Form>
-                    </div>
-                  </Panel>
-                </Collapse>
-              </div>
-            </Col>
-          </Row>
-        </div>
+              </Col>
+            </Row>
+          </div>
+        </template>
       </Col>
       <!-- 自定义表单配置 -->
       <RequestFormDataCustom
@@ -438,7 +446,7 @@
       ></RequestFormDataWorkflow>
     </Row>
 
-    <div style="text-align: center;margin-top: 16px;">
+    <div style="text-align: center;margin-top: 16px;" :style="isShowFormConfig ? '' : 'margin-top:48px'">
       <Button :disabled="isTopButtonDisable" @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{
         $t('forward')
       }}</Button>
@@ -480,6 +488,7 @@ export default {
       isParmasChanged: false, // 参数变化标志位，控制右侧panel显示逻辑
       MODALHEIGHT: 200,
       isTopButtonDisable: true, // 下一步，上一步等的控制
+      isShowFormConfig: false,
       procDefId: '',
       approvalNodes: [
         {
@@ -494,15 +503,6 @@ export default {
         }
       ],
       activeEditingNode: {}, // 标记整在编辑的节点
-      expireDayOptions: [1, 2, 3, 4, 5, 6, 7], // 时效
-      roleTypeOptions: [
-        // custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
-        { label: '单人:自定义', value: 'custom' },
-        { label: '协同:任意审批人处理', value: 'any' },
-        { label: '并行:全部审批人处理', value: 'all' },
-        { label: '提交人角色管理员', value: 'admin' },
-        { label: '自动通过', value: 'auto' }
-      ],
       customElement: [
         // 预制自定义表单项目
         {
@@ -1257,6 +1257,10 @@ export default {
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status
+    },
+    // 控制配置显示状态
+    changeFormConfigStatus (status) {
+      this.isShowFormConfig = status
     }
   },
   components: {

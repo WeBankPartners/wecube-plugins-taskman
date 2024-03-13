@@ -4,13 +4,27 @@
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
           <Icon :type="i.icon" :color="i.color" :size="i.size"></Icon>
-          <span style="margin-left:5px;">
+          <div v-if="i.type === 'pending'" class="group-btn">
+            <span
+              @click="handlePendGroupChange('my')"
+              :style="{ color: pendingType === 'my' && active === 'pending' ? 'rgb(229, 158, 45)' : '#17233d' }"
+            >
+              本人处理
+            </span>
+            <span> / </span>
+            <span
+              @click="handlePendGroupChange('group')"
+              :style="{ color: pendingType === 'group' && active === 'pending' ? 'rgb(229, 158, 45)' : '#17233d' }"
+            >
+              本组处理
+            </span>
+          </div>
+          <span v-else style="margin-left:5px;">
             {{ `${i.label}` }}
             <!-- <span class="total">{{`(${i.total || 0})`}}</span> -->
           </span>
         </div>
         <div class="data">
-          <!--发布-->
           <div
             v-for="j in actionList"
             :key="j.type"
@@ -25,9 +39,9 @@
           >
             <span class="number">
               {{ i[j.type] || '0' }}
-              <span v-if="i.type === 'pending' && getPendingNum(j.type) > 0" class="badge">{{
+              <!-- <span v-if="i.type === 'pending' && getPendingNum(j.type) > 0" class="badge">{{
                 getPendingNum(j.type)
-              }}</span>
+              }}</span> -->
             </span>
             <span>{{ j.label }}</span>
           </div>
@@ -54,7 +68,8 @@ export default {
   data () {
     return {
       active: '',
-      action: '',
+      action: '', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存
+      pendingType: 'my',
       cardList: [
         {
           type: 'pending',
@@ -132,12 +147,13 @@ export default {
         }
       ],
       pendingNumObj: {
-        '1': [], // 发布
-        '2': [], // 请求
-        '3': [], // 问题
-        '4': [], // 事件
-        '5': [] // 变更
-      }
+        '1': { Approve: 0, Task: 0, Check: 0, Confirm: 0 }, // 发布
+        '2': { Approve: 0, Task: 0, Check: 0, Confirm: 0 }, // 请求
+        '3': { Approve: 0, Task: 0, Check: 0, Confirm: 0 }, // 问题
+        '4': { Approve: 0, Task: 0, Check: 0, Confirm: 0 }, // 事件
+        '5': { Approve: 0, Task: 0, Check: 0, Confirm: 0 } // 变更
+      },
+      interval: null // 工作台每秒轮询一次
     }
   },
   computed: {
@@ -158,14 +174,14 @@ export default {
           color: this.action === val && i.type === this.active ? '#e59e2d' : '#17233d'
         }
       }
-    },
-    getPendingNum () {
-      return function (type) {
-        return this.pendingNumObj[type].reduce((sum, cur) => {
-          return Number(sum) + Number(cur || 0)
-        }, 0)
-      }
     }
+    // getPendingNum () {
+    //   return function (type) {
+    //     return this.pendingNumObj[type].reduce((sum, cur) => {
+    //       return Number(sum) + Number(cur || 0)
+    //     }, 0)
+    //   }
+    // }
   },
   watch: {
     initAction: {
@@ -182,7 +198,11 @@ export default {
     initTab: {
       handler (val) {
         if (val) {
-          this.active = val
+          if (val === 'pending' && this.pendingType === 'my') {
+            this.active = 'myPending'
+          } else {
+            this.active = val
+          }
           if (this.action && this.active) {
             this.$emit('initFetch', this.active, this.action)
           }
@@ -191,50 +211,107 @@ export default {
       immediate: true
     }
   },
+  mounted () {
+    this.interval = setInterval(() => {
+      this.getData(false, true)
+    }, 60 * 1000)
+  },
+  destroyed () {
+    if (this.interval) {
+      clearInterval(this.interval)
+    }
+  },
   methods: {
-    async getData (init = false) {
+    handlePendGroupChange (val) {
+      this.pendingType = val
+    },
+    async getData (init = false, interval = false) {
       // ini为true，初始化拉取所有数据，后续拉取特定场景下的数据
       const params = {
-        scene: init ? 0 : Number(this.action)
+        tab: init ? 'all' : this.active === 'pending' && this.pendingType === 'my' ? 'myPending' : this.active
+      }
+      // 设置每分钟轮询查询本人处理数据
+      if (interval) {
+        params.tab = 'myPending'
+      }
+      const sceneMapValue = {
+        Release: '1',
+        Request: '2',
+        Problem: '3',
+        Event: '4',
+        Change: '5'
+      }
+      const sceneMapWord = {
+        '1': 'Release',
+        '2': 'Request',
+        '3': 'Problem',
+        '4': 'Event',
+        '5': 'Change'
       }
       const { statusCode, data } = await overviewData(params)
       if (statusCode === 'OK') {
-        for (let key in data) {
+        if (init) {
+          // 初始化所有数据
+          for (let tabName in data) {
+            this.cardList.forEach(item => {
+              if (item.type === tabName) {
+                // 面板数据
+                if (item.type === 'pending' && this.pendingType === 'my') {
+                  for (let key in data['myPending']) {
+                    item[sceneMapValue[key]] = data['myPending'][key]
+                  }
+                } else {
+                  for (let key in data[tabName]) {
+                    item[sceneMapValue[key]] = data[tabName][key]
+                  }
+                }
+                // tab页签数据
+                if (item.type === 'pending') {
+                  for (let key in this.pendingNumObj) {
+                    for (let type in this.pendingNumObj[key]) {
+                      this.pendingNumObj[key][type] =
+                        data[`${this.pendingType === 'my' ? 'myPending' : 'pending'}`][`${sceneMapWord[key]}${type}`]
+                    }
+                  }
+                }
+              }
+            })
+          }
+        } else {
+          // 面板数据
           this.cardList.forEach(item => {
-            if (item.type === key) {
-              if (init) {
-                data[key].forEach((number, index) => {
-                  item[String(index + 1)] = number || 0
-                })
+            if (item.type === this.active) {
+              if (item.type === 'pending' && this.pendingType === 'my') {
+                for (let key in data['myPending']) {
+                  item[sceneMapValue[key]] = data['myPending'][key]
+                }
               } else {
-                item[this.action] = data[key][0]
+                for (let key in data[this.active]) {
+                  item[sceneMapValue[key]] = data[this.active][key]
+                }
               }
             }
           })
-        }
-        if (init) {
-          data.pendingTask.forEach((_, index) => {
-            this.pendingNumObj[String(index + 1)] = [
-              data.pendingTask[index] || 0,
-              data.pendingApprove[index] || 0,
-              data.pendingCheck[index] || 0,
-              data.pendingConfirm[index] || 0
-            ]
-          })
-        } else {
-          this.pendingNumObj[this.action] = [
-            data.pendingTask[0] || 0,
-            data.pendingApprove[0] || 0,
-            data.pendingCheck[0] || 0,
-            data.pendingConfirm[0] || 0
-          ]
+          // tab页签数据
+          if (this.active === 'pending') {
+            for (let key in this.pendingNumObj) {
+              for (let type in this.pendingNumObj[key]) {
+                this.pendingNumObj[key][type] =
+                  data[`${this.pendingType === 'my' ? 'myPending' : 'pending'}`][`${sceneMapWord[key]}${type}`]
+              }
+            }
+          }
         }
       }
     },
     handleTabChange: debounce(function (item, subType) {
-      this.active = item.type
+      if (item.type === 'pending' && this.pendingType === 'my') {
+        this.active = 'myPending'
+      } else {
+        this.active = item.type
+      }
       this.action = subType || '1'
-      this.$emit('fetchData', item.type, this.action)
+      this.$emit('fetchData', this.active, this.action)
     }, 300)
   }
 }
@@ -252,8 +329,11 @@ export default {
     .w-header {
       display: flex;
       align-items: center;
+      .group-btn {
+        margin-left: 5px;
+      }
       span {
-        color: rgba(16, 16, 16, 1);
+        color: #17233d;
         font-size: 14px;
         font-family: PingFangSC-regular;
         font-weight: bold;

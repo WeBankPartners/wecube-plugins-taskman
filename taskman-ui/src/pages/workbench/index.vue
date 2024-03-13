@@ -84,7 +84,7 @@ export default {
   mixins: [column, search],
   data () {
     return {
-      tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
+      tabName: 'pending', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
       initAction: '',
@@ -129,8 +129,8 @@ export default {
         return (
           <div>
             <span>{this.$t('tw_task_tab')}</span>
-            {this.tabName === 'pending' && this.getPendingNumber(0) > 0 && (
-              <span class="badge">{this.getPendingNumber(0)}</span>
+            {this.tabName === 'pending' && this.getPendingNumber('Task') > 0 && (
+              <span class="badge">{this.getPendingNumber('Task')}</span>
             )}
           </div>
         )
@@ -139,8 +139,8 @@ export default {
         return (
           <div>
             <span>审批</span>
-            {this.tabName === 'pending' && this.getPendingNumber(1) > 0 && (
-              <span class="badge">{this.getPendingNumber(1)}</span>
+            {this.tabName === 'pending' && this.getPendingNumber('Approve') > 0 && (
+              <span class="badge">{this.getPendingNumber('Approve')}</span>
             )}
           </div>
         )
@@ -149,8 +149,8 @@ export default {
         return (
           <div>
             <span>{this.$t('tw_pending_tab')}</span>
-            {this.tabName === 'pending' && this.getPendingNumber(2) > 0 && (
-              <span class="badge">{this.getPendingNumber(2)}</span>
+            {this.tabName === 'pending' && this.getPendingNumber('Check') > 0 && (
+              <span class="badge">{this.getPendingNumber('Check')}</span>
             )}
           </div>
         )
@@ -159,8 +159,8 @@ export default {
         return (
           <div>
             <span>请求确认</span>
-            {this.tabName === 'pending' && this.getPendingNumber(3) > 0 && (
-              <span class="badge">{this.getPendingNumber(3)}</span>
+            {this.tabName === 'pending' && this.getPendingNumber('Confirm') > 0 && (
+              <span class="badge">{this.getPendingNumber('Confirm')}</span>
             )}
           </div>
         )
@@ -169,8 +169,8 @@ export default {
   },
   computed: {
     getPendingNumber () {
-      return function (index) {
-        return Number(this.$refs.dataCard.pendingNumObj[this.actionName][index]) || 0
+      return function (type) {
+        return Number(this.$refs.dataCard.pendingNumObj[this.actionName][type]) || 0
       }
     }
   },

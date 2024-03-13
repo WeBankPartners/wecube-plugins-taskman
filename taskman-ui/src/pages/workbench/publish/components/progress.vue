@@ -62,7 +62,7 @@
             </Tooltip>
             <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
               <span>{{ j.role || '-' }} /</span>
-              <span>{{ handlerType[j.handlerType] || j.handler || '-' }}</span>
+              <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
             </div>
           </div>
         </Step>
@@ -91,7 +91,7 @@
             </Tooltip>
             <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
               <span>{{ j.role || '-' }} /</span>
-              <span>{{ handlerType[j.handlerType] || j.handler || '-' }}</span>
+              <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
             </div>
           </div>
         </Step>
@@ -143,8 +143,12 @@ export default {
         auto: '自动通过'
       },
       handlerType: {
-        system: '系统分配',
-        claim: '主动认领'
+        template: '模板指定',
+        template_suggest: '模板建议',
+        custom: '提交人指定',
+        custom_suggest: '提交人建议',
+        system: '组内系统分配',
+        claim: '组内主动认领'
       }
     }
   },

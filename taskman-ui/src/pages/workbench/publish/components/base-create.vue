@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-publish-create">
     <Row class="back-header">
-      <Icon size="22" type="md-arrow-back" class="icon" @click="$router.back()" />
+      <Icon size="22" type="md-arrow-back" class="icon" @click="handleToHome" />
       <span class="name">
         {{ `${detail.templateName || detail.requestTemplateName || ''}` }}
         <Tag size="medium">{{ detail.version || detail.templateVersion || '' }}</Tag>
@@ -335,7 +335,8 @@ export default {
   data () {
     return {
       formDisable: this.$route.query.isCheck === 'Y', // 查看标志
-      jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
+      jumpFrom: this.$route.query.jumpFrom, // 首页tabName
+      type: this.$route.query.type, // 首页类型type
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
       role: this.$route.query.role,
@@ -400,6 +401,13 @@ export default {
     })
   },
   methods: {
+    handleToHome () {
+      this.$router.push({
+        path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+          this.jumpFrom === 'submit' ? 'rollback' : 'type'
+        }=${this.type}`
+      })
+    },
     async getCreateInfo () {
       const params = {
         requestTemplate: this.requestTemplate,
@@ -520,7 +528,7 @@ export default {
       if (statusCode === 'OK') {
         this.requestData = data.data || []
         // 新建操作，默认值赋值逻辑
-        if (this.jumpFrom !== 'my_drafts') {
+        if (this.jumpFrom !== 'draft') {
           this.requestData.forEach(i => {
             i.value.forEach(v => {
               i.title.forEach(t => {

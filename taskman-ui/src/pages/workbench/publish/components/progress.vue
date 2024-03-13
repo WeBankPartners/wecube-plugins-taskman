@@ -54,9 +54,11 @@
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
           </template>
           <div class="role" slot="content">
-            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <Tooltip :content="i.name">
-              <div class="word-eclipse">{{ i.name }}</div>
+              <div class="word-eclipse">
+                {{ i.name }}
+                <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
+              </div>
             </Tooltip>
             <Tooltip :content="i.handler">
               <div class="word-eclipse" style="margin-top:-5px;">{{ i.handler }}</div>
@@ -80,9 +82,11 @@
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
           </template>
           <div class="role" slot="content">
-            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <Tooltip :content="i.name">
-              <div class="word-eclipse">{{ i.name }}</div>
+              <div class="word-eclipse">
+                {{ i.name }}
+                <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
+              </div>
             </Tooltip>
             <Tooltip :content="i.handler">
               <div style="margin-top:-5px;">{{ i.handler }}</div>
@@ -254,8 +258,12 @@ export default {
       margin-right: 20px;
     }
     .mode {
-      font-size: 12px;
+      font-size: 11px;
+      background: #2d8cf0;
+      color: #fff;
+      padding: 1px 5px;
       display: inline-block;
+      border-radius: 2px;
     }
     .role {
       display: flex;
@@ -268,8 +276,8 @@ export default {
       white-space: nowrap;
     }
     .expand-btn {
-      font-size: 12px;
-      color: #2b85e4 !important;
+      font-size: 14px;
+      color: #2d8cf0 !important;
       cursor: pointer;
     }
   }

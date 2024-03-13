@@ -178,6 +178,10 @@ export const getRequestGroupForm = params =>
   )
 // 获取审批节点
 export const getApprovalNode = (tmpId, type) => req.get(`/taskman/api/v1/task-template/${tmpId}/ids?type=${type}`)
+
+// 清空节点下的组
+export const deleteGroupsByNodeid = (tmpId, nodeId) =>
+  req.delete(`/taskman/api/v1/task-template/form-template/${tmpId}/${nodeId}`)
 // 保存审批节点
 export const addApprovalNode = data => req.post(`/taskman/api/v1/task-template/${data.requestTemplate}`, data)
 // 保存审批节点

@@ -132,7 +132,13 @@
 
 <script>
 import Vue from 'vue'
-import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
+import {
+  getUserRoles,
+  getHandlerRoles,
+  updateApprovalNode,
+  getApprovalNodeById,
+  deleteGroupsByNodeid
+} from '@/api/server'
 export default {
   name: '',
   data () {
@@ -209,6 +215,7 @@ export default {
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
       if (statusCode === 'OK') {
+        this.$emit('setFormConfigStatus', !['admin'].includes(this.activeApprovalNode.handleMode))
         this.activeApprovalNode = data
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         this.mgmtData()
@@ -279,7 +286,14 @@ export default {
         } else if (type === 2) {
           this.$emit('reloadParentPage', nextNodeId)
         }
+        if (['admin'].includes(this.activeApprovalNode.handleMode)) {
+          this.removeNodeGroups()
+        }
       }
+    },
+    // 在无需表单配置的场景下，删除节点下的组
+    async removeNodeGroups () {
+      deleteGroupsByNodeid(this.requestTemplateId, this.activeApprovalNode.id)
     },
     // 为父页面提供状态查询
     panalStatus () {
@@ -304,6 +318,11 @@ export default {
     removeRoleObjItem (index) {
       this.activeApprovalNode.handleTemplates.splice(index, 1)
     },
+    changeUser (role, roleObjIndex) {
+      this.activeApprovalNode.handleTemplates[roleObjIndex].handler = ''
+      this.isParmasChanged = true
+      this.getUserByRole(role, roleObjIndex)
+    },
     // 使用角色
     async getUserRoles () {
       const { statusCode, data } = await getUserRoles()
@@ -321,6 +340,7 @@ export default {
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
+      this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
       this.paramsChanged()
     },
     async getUserByRole (role, roleObjIndex) {

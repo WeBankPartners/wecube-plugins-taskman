@@ -738,14 +738,13 @@ export default {
     },
     loadPage (id = '') {
       this.isParmasChanged = false
-      // this.cancelGroup()
       this.getApprovalNode(id)
       this.getAllDataModels()
     },
     async getApprovalNode (id = '') {
       const { statusCode, data } = await getApprovalNode(this.requestTemplateId, 'approve')
       if (statusCode === 'OK') {
-        if (data.ids.length === 0) {
+        if (!id && data.ids.length === 0) {
           this.addApprovalNode(1)
         } else {
           this.approvalNodes = data.ids
@@ -755,20 +754,28 @@ export default {
       }
     },
     async addApprovalNode (sort) {
-      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
-      if (nodeStatus === 'canSave') {
-        this.$refs.approvalFormNodeRef.saveNode(3)
-        this.saveGroup(3, this.activeEditingNode)
-        const params = {
-          type: 'approve',
-          requestTemplate: this.requestTemplateId,
-          name: this.$t('tw_approval') + sort,
-          expireDay: 1,
-          sort: sort
-        }
+      const params = {
+        type: 'approve',
+        requestTemplate: this.requestTemplateId,
+        name: this.$t('tw_approval') + sort,
+        expireDay: 1,
+        sort: sort
+      }
+      if (sort === 1) {
+        // 新增第一个节点
         const { statusCode, data } = await addApprovalNode(params)
         if (statusCode === 'OK') {
           this.getApprovalNode(data.taskTemplate.id)
+        }
+      } else {
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        if (nodeStatus === 'canSave') {
+          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.saveGroup(3, this.activeEditingNode)
+          const { statusCode, data } = await addApprovalNode(params)
+          if (statusCode === 'OK') {
+            this.getApprovalNode(data.taskTemplate.id)
+          }
         }
       }
     },
@@ -1143,18 +1150,28 @@ export default {
       this.isParmasChanged = false
       this.openPanel = ''
     },
-    gotoNext () {
+    async gotoNext () {
       const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
       if (nodeStatus === 'canSave') {
-        this.$refs.approvalFormNodeRef.saveNode(3)
-        this.saveGroup(2, {})
+        await this.$refs.approvalFormNodeRef.saveNode(3)
+        let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+        if (finalData.itemGroupId === '') {
+          this.$emit('gotoStep', this.requestTemplateId, 'forward')
+        } else {
+          this.saveGroup(2, {})
+        }
       }
     },
     gotoForward () {
       const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
       if (nodeStatus === 'canSave') {
         this.$refs.approvalFormNodeRef.saveNode(3)
-        this.saveGroup(8, {})
+        let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+        if (finalData.itemGroupId === '') {
+          this.$emit('gotoStep', this.requestTemplateId, 'backward')
+        } else {
+          this.saveGroup(8, {})
+        }
       }
     },
     nodeStatus (status) {

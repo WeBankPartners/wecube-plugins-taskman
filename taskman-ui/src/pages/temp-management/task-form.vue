@@ -773,20 +773,27 @@ export default {
       }
     },
     async addApprovalNode (sort) {
-      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
-      if (nodeStatus === 'canSave') {
-        this.$refs.approvalFormNodeRef.saveNode(3)
-        this.saveGroup(3, this.activeEditingNode)
-        const params = {
-          type: 'implement',
-          requestTemplate: this.requestTemplateId,
-          name: this.$t('task') + sort,
-          expireDay: 1,
-          sort: sort
-        }
+      const params = {
+        type: 'implement',
+        requestTemplate: this.requestTemplateId,
+        name: this.$t('task') + sort,
+        expireDay: 1,
+        sort: sort
+      }
+      if (sort === 1) {
         const { statusCode, data } = await addApprovalNode(params)
         if (statusCode === 'OK') {
           this.getApprovalNode(data.taskTemplate.id)
+        }
+      } else {
+        const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
+        if (nodeStatus === 'canSave') {
+          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.saveGroup(3, this.activeEditingNode)
+          const { statusCode, data } = await addApprovalNode(params)
+          if (statusCode === 'OK') {
+            this.getApprovalNode(data.taskTemplate.id)
+          }
         }
       }
     },
@@ -1119,7 +1126,7 @@ export default {
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
-        if (![2, 3, 4, 5, 6, 7, 8].includes(nextStep)) {
+        if (![2, 3, 4, 5, 6, 7, 8, 9].includes(nextStep)) {
           this.$Notice.success({
             title: this.$t('successful'),
             desc: this.$t('successful')
@@ -1173,7 +1180,12 @@ export default {
         const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
           this.$refs.approvalFormNodeRef.saveNode(3)
-          this.saveGroup(8, {})
+          let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+          if (finalData.itemGroupId === '') {
+            this.$emit('gotoStep', this.requestTemplateId, 'backward')
+          } else {
+            this.saveGroup(8, {})
+          }
         }
       }
     },

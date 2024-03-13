@@ -990,10 +990,20 @@ export default {
       this.saveGroup(3)
     },
     gotoNext () {
-      this.saveGroup(2)
+      let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+      if (finalData.itemGroupId === '') {
+        this.$emit('gotoStep', this.requestTemplateId, 'forward')
+      } else {
+        this.saveGroup(2)
+      }
     },
     gotoForward () {
-      this.saveGroup(8)
+      let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
+      if (finalData.itemGroupId === '') {
+        this.$emit('gotoStep', this.requestTemplateId, 'backward')
+      } else {
+        this.saveGroup(8)
+      }
     }
   },
   components: {

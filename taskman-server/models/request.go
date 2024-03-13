@@ -71,14 +71,11 @@ type CreateRequestDto struct {
 
 // PlatformData  工作台数据
 type PlatformData struct {
-	Pending        []int `json:"pending"`        // 待处理
-	PendingTask    []int `json:"pendingTask"`    // 待处理任务
-	PendingApprove []int `json:"pendingApprove"` // 待处理审批
-	PendingCheck   []int `json:"pendingCheck"`   // 待处理定版
-	PendingConfirm []int `json:"pendingConfirm"` // 待处理请求确认
-	HasProcessed   []int `json:"hasProcessed"`   // 已处理
-	Submit         []int `json:"submit"`         // 我提交的
-	Draft          []int `json:"draft"`          // 我暂存的
+	MyPending    map[string]int `json:"myPending"`    // 本人待处理
+	Pending      map[string]int `json:"pending"`      // 本组待处理
+	HasProcessed map[string]int `json:"hasProcessed"` // 已处理
+	Submit       map[string]int `json:"submit"`       // 我提交的
+	Draft        map[string]int `json:"draft"`        // 我暂存的
 }
 
 // PlatformDataObj 工作台返回数据

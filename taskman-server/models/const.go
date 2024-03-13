@@ -197,6 +197,20 @@ const (
 	SceneTypeChange  SceneType = 5 // 变更
 )
 
+type PlatTab string
+
+const (
+	PlatTabRequest        PlatTab = "Request" // 请求
+	PlatTabRelease        PlatTab = "Release" // 发布
+	PlatTabProblem        PlatTab = "Problem" // 问题
+	PlatTabProblemEvent   PlatTab = "Event"   // 事件
+	PlatTabProblemChange  PlatTab = "Change"  // 变更
+	PlatTabProblemApprove PlatTab = "Approve" // 审批
+	PlatTabProblemTask    PlatTab = "Task"    // 任务处理
+	PlatTabProblemCheck   PlatTab = "Check"   // 请求定版
+	PlatTabProblemConfirm PlatTab = "Confirm" // 请求确认
+)
+
 // TaskExecStatus 任务执行状态       // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
 type TaskExecStatus int
 

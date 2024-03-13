@@ -31,8 +31,14 @@ const (
 	AutoNode             = "autoNode"             //自动节点
 )
 
-// sceneTypeArr 场景数组
-var sceneTypeArr = []models.SceneType{models.SceneTypeRequest, models.SceneTypeRelease, models.SceneTypeProblem, models.SceneTypeEvent, models.SceneTypeChange}
+// sceneTypeMap 场景数组
+var sceneTypeMap = map[models.PlatTab]models.SceneType{
+	models.PlatTabRequest:       models.SceneTypeRequest,
+	models.PlatTabRelease:       models.SceneTypeRelease,
+	models.PlatTabProblem:       models.SceneTypeProblem,
+	models.PlatTabProblemEvent:  models.SceneTypeEvent,
+	models.PlatTabProblemChange: models.SceneTypeChange,
+}
 
 func getTaskTypeByType(uiType int) models.TaskType {
 	// 0 所有,1表示请求定版,2 任务处理,3 审批 4确认请求
@@ -51,21 +57,26 @@ func getTaskTypeByType(uiType int) models.TaskType {
 
 // GetPlatformCount 工作台数量统计
 func GetPlatformCount(param models.CountPlatformParam, user string, userRoles []string) (platformData models.PlatformData, err error) {
-	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending, hasProcessed []int
-	if param.Scene == int(models.SceneTypeAll) {
-		pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCountAll(param, user, userRoles)
-	} else {
-		pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCountSingle(param, user, userRoles)
+	switch param.Tab {
+	case "all":
+		platformData.Pending = GetPendingCount(param, userRoles)
+		platformData.MyPending = GetMyPendingCount(param, user, userRoles)
+		platformData.HasProcessed = GetHasProcessedCount(param, user)
+		platformData.Submit = GetSubmitCount(param, user)
+		platformData.Draft = GetDraftCount(param, user)
+	case "pending":
+		platformData.Pending = GetPendingCount(param, userRoles)
+		platformData.MyPending = GetMyPendingCount(param, user, userRoles)
+	case "myPending":
+		platformData.Pending = GetPendingCount(param, userRoles)
+		platformData.MyPending = GetMyPendingCount(param, user, userRoles)
+	case "hasProcessed":
+		platformData.HasProcessed = GetHasProcessedCount(param, user)
+	case "submit":
+		platformData.Submit = GetSubmitCount(param, user)
+	case "draft":
+		platformData.Draft = GetDraftCount(param, user)
 	}
-	hasProcessed = GetHasProcessedCount(param, user)
-	platformData.Pending = pending
-	platformData.PendingTask = pendingTask
-	platformData.PendingApprove = pendingApprove
-	platformData.PendingCheck = pendingCheck
-	platformData.PendingConfirm = pendingConfirm
-	platformData.HasProcessed = hasProcessed
-	platformData.Submit = GetSubmitCount(param, user)
-	platformData.Draft = GetDraftCount(param, user)
 	return
 }
 
@@ -92,39 +103,75 @@ func UpdateRequestHandler(requestId, user string) (err error) {
 	return
 }
 
-// GetPendingCountAll 统计待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
-func GetPendingCountAll(param models.CountPlatformParam, user string, userRoles []string) (pendingTaskArr, pendingApproveArr, pendingCheckArr, pendingConfirmArr, pendingArr []int) {
-	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending []int
-	for _, scene := range sceneTypeArr {
-		param.Scene = int(scene)
-		pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCountSingle(param, user, userRoles)
-		pendingTaskArr = append(pendingTaskArr, pendingTask...)
-		pendingApproveArr = append(pendingApproveArr, pendingApprove...)
-		pendingCheckArr = append(pendingCheckArr, pendingCheck...)
-		pendingConfirmArr = append(pendingConfirmArr, pendingConfirm...)
-		pendingArr = append(pendingArr, pending...)
+// GetPendingCount 统计待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
+func GetPendingCount(param models.CountPlatformParam, userRoles []string) (resultMap map[string]int) {
+	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int
+	resultMap = make(map[string]int)
+	for sceneName, sceneType := range sceneTypeMap {
+		pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetPendingCountByScene(param, int(sceneType), userRoles)
+		resultMap[string(sceneName)] = pending
+		resultMap[string(sceneName)+string(models.PlatTabProblemApprove)] = pendingApprove
+		resultMap[string(sceneName)+string(models.PlatTabProblemTask)] = pendingTask
+		resultMap[string(sceneName)+string(models.PlatTabProblemCheck)] = pendingCheck
+		resultMap[string(sceneName)+string(models.PlatTabProblemConfirm)] = pendingConfirm
 	}
 	return
 }
 
-func GetPendingCountSingle(param models.CountPlatformParam, user string, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending []int) {
+// GetMyPendingCount 统计本人待处理
+func GetMyPendingCount(param models.CountPlatformParam, user string, userRoles []string) (resultMap map[string]int) {
+	var pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int
+	resultMap = make(map[string]int)
+	for sceneName, sceneType := range sceneTypeMap {
+		pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending = GetMyPendingCountByScene(param, int(sceneType), user, userRoles)
+		resultMap[string(sceneName)] = pending
+		resultMap[string(sceneName)+string(models.PlatTabProblemApprove)] = pendingApprove
+		resultMap[string(sceneName)+string(models.PlatTabProblemTask)] = pendingTask
+		resultMap[string(sceneName)+string(models.PlatTabProblemCheck)] = pendingCheck
+		resultMap[string(sceneName)+string(models.PlatTabProblemConfirm)] = pendingConfirm
+	}
+	return
+}
+
+// GetPendingCountByScene 统计本组待处理,包括:请求、发布,以及下面的请求提交、任务、审批、请求定版、请求确认
+func GetPendingCountByScene(param models.CountPlatformParam, scene int, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int) {
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
-	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam, pendingParam []interface{}
-	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL, pendingSQL string
-	pTaskSQL, pendingTaskParam = pendingMyTaskSQL(param.Scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
-	pendingTask = append(pendingTask, dao.QueryCount(pTaskSQL, pendingTaskParam...))
+	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
+	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
+	pTaskSQL, pendingTaskParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+	pendingTask = dao.QueryCount(pTaskSQL, pendingTaskParam...)
 
-	pendingApproveSQL, pendingApproveParam = pendingMyTaskSQL(param.Scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
-	pendingApprove = append(pendingApprove, dao.QueryCount(pendingApproveSQL, pendingApproveParam...))
+	pendingApproveSQL, pendingApproveParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+	pendingApprove = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
 
-	pendingCheckSQL, pendingCheckParam = pendingMyTaskSQL(param.Scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
-	pendingCheck = append(pendingCheck, dao.QueryCount(pendingCheckSQL, pendingCheckParam...))
+	pendingCheckSQL, pendingCheckParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+	pendingCheck = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
 
-	pendingConfirmSQL, pendingConfirmParam = pendingMyTaskSQL(param.Scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
-	pendingConfirm = append(pendingConfirm, dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...))
+	pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+	pendingConfirm = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
 
-	pendingSQL, pendingParam = pendingTaskSQL(param.Scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeNone)
-	pending = append(pending, dao.QueryCount(pendingSQL, pendingParam...))
+	pending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
+	return
+}
+
+// GetMyPendingCountByScene 根据场景查询我的待处理
+func GetMyPendingCountByScene(param models.CountPlatformParam, scene int, user string, userRoles []string) (pendingTask, pendingApprove, pendingCheck, pendingConfirm, pending int) {
+	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
+	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
+	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
+	pTaskSQL, pendingTaskParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+	pendingTask = dao.QueryCount(pTaskSQL, pendingTaskParam...)
+
+	pendingApproveSQL, pendingApproveParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+	pendingApprove = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
+
+	pendingCheckSQL, pendingCheckParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+	pendingCheck = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
+
+	pendingConfirmSQL, pendingConfirmParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+	pendingConfirm = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
+
+	pending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
 	return
 }
 
@@ -170,41 +217,27 @@ func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType
 }
 
 // GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
-func GetHasProcessedCount(param models.CountPlatformParam, user string) (hasProcessed []int) {
-	var hasProcessedParam []interface{}
-	var hasProcessedSQL string
-	var tempHasProcessed int
-	if param.Scene == int(models.SceneTypeAll) {
-		for _, sceneType := range sceneTypeArr {
-			hasProcessedSQL, hasProcessedParam = hasProcessedTaskSQL(int(sceneType), user, models.TaskTypeNone)
-			tempHasProcessed = dao.QueryCount(hasProcessedSQL, hasProcessedParam...)
-			hasProcessed = append(hasProcessed, tempHasProcessed)
-		}
-	} else {
-		hasProcessedSQL, hasProcessedParam = hasProcessedTaskSQL(param.Scene, user, models.TaskTypeNone)
-		tempHasProcessed = dao.QueryCount(hasProcessedSQL, hasProcessedParam...)
-		hasProcessed = append(hasProcessed, tempHasProcessed)
+func GetHasProcessedCount(param models.CountPlatformParam, user string) map[string]int {
+	var resultMap = make(map[string]int)
+	for sceneName, sceneType := range sceneTypeMap {
+		hasProcessedSQL, hasProcessedParam := hasProcessedTaskSQL(int(sceneType), user, models.TaskTypeNone)
+		resultMap[string(sceneName)] = dao.QueryCount(hasProcessedSQL, hasProcessedParam...)
 	}
-	return
+	return resultMap
 }
 
 // GetSubmitCount  统计用户提交
-func GetSubmitCount(param models.CountPlatformParam, user string) (countArr []int) {
-	var tempCount int
+func GetSubmitCount(param models.CountPlatformParam, user string) map[string]int {
+	var resultMap = make(map[string]int)
 	var sql string
 	var queryParam []interface{}
-	if param.Scene == int(models.SceneTypeAll) {
-		for _, sceneType := range sceneTypeArr {
-			sql, queryParam = submitSQL(0, int(sceneType), user)
-			tempCount = dao.QueryCount(sql, queryParam...)
-			countArr = append(countArr, tempCount)
-		}
-	} else {
-		sql, queryParam = submitSQL(0, param.Scene, user)
-		tempCount = dao.QueryCount(sql, queryParam...)
-		countArr = append(countArr, tempCount)
+	var count int
+	for sceneName, sceneType := range sceneTypeMap {
+		sql, queryParam = submitSQL(0, int(sceneType), user)
+		count = dao.QueryCount(sql, queryParam...)
+		resultMap[string(sceneName)] = count
 	}
-	return
+	return resultMap
 }
 
 func submitSQL(rollback, templateType int, user string) (sql string, queryParam []interface{}) {
@@ -224,22 +257,17 @@ func submitSQL(rollback, templateType int, user string) (sql string, queryParam 
 }
 
 // GetDraftCount 统计用户暂存
-func GetDraftCount(param models.CountPlatformParam, user string) (countArr []int) {
+func GetDraftCount(param models.CountPlatformParam, user string) map[string]int {
+	var resultMap = make(map[string]int)
 	var sql string
 	var queryParam []interface{}
-	var tempCount int
-	if param.Scene == int(models.SceneTypeAll) {
-		for _, sceneType := range sceneTypeArr {
-			sql, queryParam = draftSQL(int(sceneType), user)
-			tempCount = dao.QueryCount(sql, queryParam...)
-			countArr = append(countArr, tempCount)
-		}
-	} else {
-		sql, queryParam = draftSQL(param.Scene, user)
-		tempCount = dao.QueryCount(sql, queryParam...)
-		countArr = append(countArr, tempCount)
+	var count int
+	for sceneName, sceneType := range sceneTypeMap {
+		sql, queryParam = draftSQL(int(sceneType), user)
+		count = dao.QueryCount(sql, queryParam...)
+		resultMap[string(sceneName)] = count
 	}
-	return
+	return resultMap
 }
 
 func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {

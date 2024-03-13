@@ -80,7 +80,7 @@ func (s *TaskHandleService) GetRequestCheckTaskHandle(taskId string) (taskHandle
 }
 
 func (s *TaskHandleService) GetTaskHandleListByTaskId(taskId string) (taskHandleList []*models.TaskHandleTable, err error) {
-	err = dao.X.SQL("select * from task_handle where task = ?", taskId).Find(&taskHandleList)
+	err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", taskId).Find(&taskHandleList)
 	return
 }
 

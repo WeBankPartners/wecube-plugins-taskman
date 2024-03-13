@@ -122,7 +122,9 @@
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveNodeDisable" @click="saveNode(1)">{{ $t('save') }}</Button>
+        <Button v-if="isCheck !== 'Y'" type="primary" :disabled="isSaveNodeDisable" @click="saveNode(1)">{{
+          $t('save')
+        }}</Button>
       </div>
     </div>
   </div>
@@ -195,7 +197,7 @@ export default {
       deep: true
     }
   },
-  props: ['nodeType'],
+  props: ['isCheck', 'nodeType'],
   methods: {
     loadPage (params) {
       this.procDefId = params.procDefId

@@ -21,9 +21,14 @@
       </Form>
     </div>
     <div class="demo-drawer-footer">
-      <Button type="primary" style="margin-right: 8px" :disabled="isSaveBtnActive()" @click="saveGroupDrawer">{{
-        $t('save')
-      }}</Button>
+      <Button
+        v-if="isCheck !== 'Y'"
+        type="primary"
+        style="margin-right: 8px"
+        :disabled="isSaveBtnActive()"
+        @click="saveGroupDrawer"
+        >{{ $t('save') }}</Button
+      >
       <Button @click="cancelGroupDrawer">{{ $t('cancel') }}</Button>
     </div>
   </Drawer>
@@ -55,7 +60,7 @@ export default {
       }
     }
   },
-  props: ['requestTemplateId', 'module'],
+  props: ['isCheck', 'requestTemplateId', 'module'],
   methods: {
     async loadPage (params) {
       if (params.isAdd) {
@@ -109,6 +114,10 @@ export default {
       }
     },
     cancelGroupDrawer () {
+      if (this.isCheck === 'Y') {
+        this.openFormConfig = false
+        return
+      }
       if (this.isParmasChanged) {
         this.$Modal.confirm({
           title: `${this.$t('confirm_discarding_changes')}`,

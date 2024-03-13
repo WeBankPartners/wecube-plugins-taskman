@@ -63,10 +63,17 @@
                 <span @click="editGroupCustomItems(groupItem)">
                   {{ `${groupItem.itemGroupName}` }}
                 </span>
-                <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
+                <Icon
+                  v-if="isCheck !== 'Y'"
+                  @click="removeGroupItem(groupItem)"
+                  type="md-close"
+                  color="#ed4014"
+                  :size="20"
+                />
               </div>
               <span>
                 <Button
+                  v-if="isCheck !== 'Y'"
                   style="margin-top: -5px;"
                   @click="beforeSelectItemGroup"
                   type="primary"
@@ -155,7 +162,9 @@
               </draggable>
             </div>
             <div style="text-align: right;">
-              <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
+              <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
+                $t('save')
+              }}</Button>
               <Button size="small" @click="restoreGroup">{{ $t('tw_restore') }}</Button>
             </div>
           </template>
@@ -332,6 +341,7 @@
     <RequestFormDataCustom
       ref="requestFormDataCustomRef"
       @reloadParentPage="isLoadLastGroup"
+      :isCheck="isCheck"
       module="data-form"
       v-show="['custom'].includes(itemGroupType)"
     ></RequestFormDataCustom>
@@ -341,6 +351,7 @@
       ref="requestFormDataWorkflowRef"
       :isCustomItemEditable="true"
       @reloadParentPage="isLoadLastGroup"
+      :isCheck="isCheck"
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
@@ -598,6 +609,7 @@ export default {
       nextGroupInfo: {}
     }
   },
+  props: ['isCheck'],
   computed: {
     activeStyle () {
       return function (item) {
@@ -987,9 +999,15 @@ export default {
       return this.isParmasChanged
     },
     tabChange () {
-      this.saveGroup(3)
+      if (this.isCheck !== 'Y') {
+        this.saveGroup(3)
+      }
     },
     gotoNext () {
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'forward')
+        return
+      }
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       if (finalData.itemGroupId === '') {
         this.$emit('gotoStep', this.requestTemplateId, 'forward')
@@ -998,6 +1016,10 @@ export default {
       }
     },
     gotoForward () {
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'backward')
+        return
+      }
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       if (finalData.itemGroupId === '') {
         this.$emit('gotoStep', this.requestTemplateId, 'backward')

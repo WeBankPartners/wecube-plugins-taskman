@@ -82,9 +82,14 @@
       </Form>
     </div>
     <div class="demo-drawer-footer">
-      <Button type="primary" style="margin-right: 16px" :disabled="isSaveBtnActive()" @click="saveGroupDrawer">{{
-        $t('save')
-      }}</Button>
+      <Button
+        v-if="isCheck !== 'Y'"
+        type="primary"
+        style="margin-right: 16px"
+        :disabled="isSaveBtnActive()"
+        @click="saveGroupDrawer"
+        >{{ $t('save') }}</Button
+      >
       <Button @click="cancelGroupDrawer">{{ $t('cancel') }}</Button>
     </div>
   </Drawer>
@@ -171,7 +176,7 @@ export default {
       }
     }
   },
-  props: ['module', 'isCustomItemEditable'],
+  props: ['isCheck', 'module', 'isCustomItemEditable'],
   methods: {
     // 自定义字段获取所有类型
     async getAllDataModels () {
@@ -232,6 +237,10 @@ export default {
       }
     },
     cancelGroupDrawer () {
+      if (this.isCheck === 'Y') {
+        this.openFormConfig = false
+        return
+      }
       if (this.isParmasChanged) {
         this.$Modal.confirm({
           title: `${this.$t('confirm_discarding_changes')}`,

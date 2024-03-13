@@ -10,7 +10,7 @@
             >
               <span>{{ approval.name }}</span>
               <Icon
-                v-if="approvalNodes.length > 1"
+                v-if="isCheck !== 'Y' && approvalNodes.length > 1"
                 @click.stop="removeNode(approval)"
                 type="md-close"
                 color="#ed4014"
@@ -18,8 +18,9 @@
                 :size="18"
               />
             </div>
-            <div class="ivu-divider-dashed dash-line"></div>
+            <div v-if="isCheck !== 'Y'" class="ivu-divider-dashed dash-line"></div>
             <Button
+              v-if="isCheck !== 'Y'"
               class="custom-add-btn"
               @click.stop="addApprovalNode(approval.sort + 1)"
               type="success"
@@ -33,6 +34,7 @@
         <div>
           <ApprovalFormNode
             ref="approvalFormNodeRef"
+            :isCheck="isCheck"
             @jumpToNode="jumpToNode"
             @reloadParentPage="loadPage"
             @nodeStatus="nodeStatus"
@@ -103,10 +105,17 @@
                       <span @click="editGroupCustomItems(groupItem)">
                         {{ `${groupItem.itemGroupName}` }}
                       </span>
-                      <Icon @click="removeGroupItem(groupItem)" type="md-close" color="#ed4014" :size="20" />
+                      <Icon
+                        v-if="isCheck !== 'Y'"
+                        @click="removeGroupItem(groupItem)"
+                        type="md-close"
+                        color="#ed4014"
+                        :size="20"
+                      />
                     </div>
                     <span>
                       <Button
+                        v-if="isCheck !== 'Y'"
                         style="margin-top: -5px;"
                         @click="beforeSelectItemGroup"
                         type="primary"
@@ -201,7 +210,9 @@
                       </draggable>
                     </div>
                     <div style="text-align: right;">
-                      <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
+                      <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
+                        $t('save')
+                      }}</Button>
                       <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
                     </div>
                   </template>
@@ -403,6 +414,7 @@
       <RequestFormDataCustom
         ref="requestFormDataCustomRef"
         @reloadParentPage="reloadGroup"
+        :isCheck="isCheck"
         module="other"
         v-show="['custom'].includes(itemGroupType)"
       ></RequestFormDataCustom>
@@ -412,6 +424,7 @@
         ref="requestFormDataWorkflowRef"
         :isCustomItemEditable="false"
         @reloadParentPage="reloadGroup"
+        :isCheck="isCheck"
         module="other"
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
@@ -726,7 +739,7 @@ export default {
       }
     }
   },
-  props: ['requestTemplateId'],
+  props: ['isCheck', 'requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 500
     this.removeEmptyDataForm()
@@ -1151,6 +1164,10 @@ export default {
       this.openPanel = ''
     },
     async gotoNext () {
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'forward')
+        return
+      }
       const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
       if (nodeStatus === 'canSave') {
         await this.$refs.approvalFormNodeRef.saveNode(3)
@@ -1163,6 +1180,10 @@ export default {
       }
     },
     gotoForward () {
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'backward')
+        return
+      }
       const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
       if (nodeStatus === 'canSave') {
         this.$refs.approvalFormNodeRef.saveNode(3)

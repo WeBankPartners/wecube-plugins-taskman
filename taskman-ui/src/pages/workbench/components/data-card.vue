@@ -4,22 +4,22 @@
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
           <Icon :type="i.icon" :color="i.color" :size="i.size"></Icon>
-          <div v-if="i.type === 'pending'" class="group-btn">
+          <!-- <div v-if="i.type === 'pending'" class="group-btn">
             <span
               @click="handlePendGroupChange('my')"
-              :style="{ color: pendingType === 'my' && active === 'pending' ? 'rgb(229, 158, 45)' : '#17233d' }"
+              :style="{ color: pendingType === 'my' ? 'rgb(229, 158, 45)' : '#17233d' }"
             >
               本人处理
             </span>
             <span> / </span>
             <span
               @click="handlePendGroupChange('group')"
-              :style="{ color: pendingType === 'group' && active === 'pending' ? 'rgb(229, 158, 45)' : '#17233d' }"
+              :style="{ color: pendingType === 'group' ? 'rgb(229, 158, 45)' : '#17233d' }"
             >
               本组处理
             </span>
-          </div>
-          <span v-else style="margin-left:5px;">
+          </div> -->
+          <span style="margin-left:5px;">
             {{ `${i.label}` }}
             <!-- <span class="total">{{`(${i.total || 0})`}}</span> -->
           </span>
@@ -67,14 +67,27 @@ export default {
   },
   data () {
     return {
-      active: '',
-      action: '', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存
-      pendingType: 'my',
+      active: '', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存
+      action: '',
+      // pendingType: 'my',
       cardList: [
         {
+          type: 'myPending',
+          label: '本人处理',
+          icon: 'md-person',
+          size: '28',
+          color: '#ed4014',
+          total: 0,
+          '1': 0,
+          '2': 0,
+          '3': 0,
+          '4': 0,
+          '5': 0
+        },
+        {
           type: 'pending',
-          label: this.$t('tw_pending'),
-          icon: 'ios-alert',
+          label: '本组处理',
+          icon: 'md-people',
           size: '28',
           color: '#ed4014',
           total: 0,
@@ -198,11 +211,7 @@ export default {
     initTab: {
       handler (val) {
         if (val) {
-          if (val === 'pending' && this.pendingType === 'my') {
-            this.active = 'myPending'
-          } else {
-            this.active = val
-          }
+          this.active = val
           if (this.action && this.active) {
             this.$emit('initFetch', this.active, this.action)
           }
@@ -222,13 +231,13 @@ export default {
     }
   },
   methods: {
-    handlePendGroupChange (val) {
-      this.pendingType = val
-    },
+    // handlePendGroupChange (val) {
+    //   this.pendingType = val
+    // },
     async getData (init = false, interval = false) {
       // ini为true，初始化拉取所有数据，后续拉取特定场景下的数据
       const params = {
-        tab: init ? 'all' : this.active === 'pending' && this.pendingType === 'my' ? 'myPending' : this.active
+        tab: init ? 'all' : this.active
       }
       // 设置每分钟轮询查询本人处理数据
       if (interval) {
@@ -256,7 +265,7 @@ export default {
             this.cardList.forEach(item => {
               if (item.type === tabName) {
                 // 面板数据
-                if (item.type === 'pending' && this.pendingType === 'my') {
+                if (item.type === 'myPending') {
                   for (let key in data['myPending']) {
                     item[sceneMapValue[key]] = data['myPending'][key]
                   }
@@ -265,12 +274,11 @@ export default {
                     item[sceneMapValue[key]] = data[tabName][key]
                   }
                 }
-                // tab页签数据
-                if (item.type === 'pending') {
+                // tab页签数据(本人处理/本组处理)
+                if (['myPending', 'pending'].includes(item.type)) {
                   for (let key in this.pendingNumObj) {
                     for (let type in this.pendingNumObj[key]) {
-                      this.pendingNumObj[key][type] =
-                        data[`${this.pendingType === 'my' ? 'myPending' : 'pending'}`][`${sceneMapWord[key]}${type}`]
+                      this.pendingNumObj[key][type] = data[item.type][`${sceneMapWord[key]}${type}`]
                     }
                   }
                 }
@@ -281,7 +289,7 @@ export default {
           // 面板数据
           this.cardList.forEach(item => {
             if (item.type === this.active) {
-              if (item.type === 'pending' && this.pendingType === 'my') {
+              if (item.type === 'myPending') {
                 for (let key in data['myPending']) {
                   item[sceneMapValue[key]] = data['myPending'][key]
                 }
@@ -293,11 +301,10 @@ export default {
             }
           })
           // tab页签数据
-          if (this.active === 'pending') {
+          if (['myPending', 'pending'].includes(this.active)) {
             for (let key in this.pendingNumObj) {
               for (let type in this.pendingNumObj[key]) {
-                this.pendingNumObj[key][type] =
-                  data[`${this.pendingType === 'my' ? 'myPending' : 'pending'}`][`${sceneMapWord[key]}${type}`]
+                this.pendingNumObj[key][type] = data[this.active][`${sceneMapWord[key]}${type}`]
               }
             }
           }
@@ -305,11 +312,7 @@ export default {
       }
     },
     handleTabChange: debounce(function (item, subType) {
-      if (item.type === 'pending' && this.pendingType === 'my') {
-        this.active = 'myPending'
-      } else {
-        this.active = item.type
-      }
+      this.active = item.type
       this.action = subType || '1'
       this.$emit('fetchData', this.active, this.action)
     }, 300)

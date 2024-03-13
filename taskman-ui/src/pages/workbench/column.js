@@ -135,7 +135,7 @@ export default {
           renderHeader: () => {
             return (
               <span>
-                {['pending', 'hasProcessed'].includes(this.tabName)
+                {['myPending', 'pending', 'hasProcessed'].includes(this.tabName)
                   ? '任务停留/有效期'
                   : this.$t('tw_request_stay_time')}
               </span>
@@ -237,7 +237,8 @@ export default {
             return (
               <div style="display:flex;align-items:center;justify-content:center;">
                 {// 查看
-                  ['pending', 'hasProcessed', 'submit'].includes(this.tabName) && params.row.status !== 'Draft' && (
+                  ['myPending', 'pending', 'hasProcessed', 'submit'].includes(this.tabName) &&
+                  params.row.status !== 'Draft' && (
                     <Tooltip content={this.$t('tw_action_view')} placement="top">
                       <Button
                         size="small"
@@ -254,7 +255,7 @@ export default {
                 {// 处理
                   this.username === params.row.handler &&
                   ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
-                  this.tabName === 'pending' && (
+                  ['myPending', 'pending'].includes(this.tabName) && (
                     <Tooltip content={this.$t('tw_action_handle')} placement="top">
                       <Button
                         type="warning"
@@ -270,7 +271,7 @@ export default {
                 {// 认领
                   !params.row.handler &&
                   ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
-                  this.tabName === 'pending' &&
+                  ['myPending', 'pending'].includes(this.tabName) &&
                   // 模板指定/提交人指定，该提交人角色的管理员可以展示认领按钮
                   ((['template', 'custom'].includes(params.row.handlerType) &&
                     params.row.roleAdministrator === this.username) ||
@@ -291,7 +292,7 @@ export default {
                   params.row.handler &&
                   this.username !== params.row.handler &&
                   ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
-                  this.tabName === 'pending' &&
+                  ['myPending', 'pending'].includes(this.tabName) &&
                   // 模板指定/提交人指定，该提交人角色的管理员可以展示转给我按钮
                   ((['template', 'custom'].includes(params.row.handlerType) &&
                     params.row.roleAdministrator === this.username) ||

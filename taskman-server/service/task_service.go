@@ -201,11 +201,6 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			nowTime, operator, nowTime, models.TaskTypeImplement}
 		actions = append(actions, &taskInsertAction)
 
-		// 根据任务审批模版表&请求人指定,设置审批处理
-		/*createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskObj.Id, userToken, language, &request, taskTemplate)
-		if len(createTaskHandleAction) > 0 {
-			actions = append(actions, createTaskHandleAction...)
-		}*/
 		err = dao.Transaction(actions)
 		return
 	}
@@ -274,14 +269,6 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 			}})
 		}
 	}
-	// 新增确认定版处理人
-	//var taskHandleTemplateList []*models.TaskHandleTemplateTable
-	//dao.X.SQL("select * from task_handle_template where task_template = ?", newTaskObj.TaskTemplate).Find(&taskHandleTemplateList)
-	//if len(taskHandleTemplateList) > 0 {
-	//actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-	//	guid.CreateGuid(), taskHandleTemplateList[0].Id, newTaskObj.Id, taskHandleTemplateList[0].Role, taskHandleTemplateList[0].Handler, nowTime, nowTime,
-	//}})
-	//}
 	createTaskHandleAction := GetTaskHandleService().CreateTaskHandleByTemplate(newTaskObj.Id, userToken, language, requestTable[0], taskTemplateTable[0])
 	actions = append(actions, createTaskHandleAction...)
 	err = dao.TransactionWithoutForeignCheck(actions)
@@ -876,9 +863,9 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
-		if strings.Contains(respResult.Message, "None process instance found") {
-			dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
-		}
+		//if strings.Contains(respResult.Message, "None process instance found") {
+		//	dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
+		//}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	request, getRequestErr := GetSimpleRequest(task.Request)
@@ -886,10 +873,10 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		return getRequestErr
 	}
 	var actions, newApproveActions []*dao.ExecAction
-	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
-		string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id,
+	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
+		string(requestBytes), param.Comment, models.TaskResultTypeComplete, param.ChoseOption, "done", operator, nowTime, task.Id,
 	}})
-	//_, err = dao.X.Exec("update task set callback_data=?,result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", string(requestBytes), param.Comment, param.ChoseOption, "done", operator, nowTime, task.Id)
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.TaskHandleId}})
 	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)

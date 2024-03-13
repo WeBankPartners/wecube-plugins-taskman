@@ -132,20 +132,32 @@ type PlatformDataObj struct {
 	RoleAdministrator    string `json:"roleAdministrator" xorm:"-"`                 // 角色管理员
 }
 
-type RequestProgressObj struct {
-	RequestProgress  []*ProgressObj `json:"requestProgress" xorm:"request_progress"`
-	ApprovalProgress []*ProgressObj `json:"approvalProgress" xorm:"approval_progress"`
-	TaskProgress     []*ProgressObj `json:"taskProgress" xorm:"task_progress"`
+// RequestProgress 请求进度
+type RequestProgress struct {
+	RequestProgress  []*RequestProgressNode `json:"requestProgress" xorm:"request_progress"`   // 请求进度
+	ApprovalProgress []*TaskProgressNode    `json:"approvalProgress" xorm:"approval_progress"` // 审批进度
+	TaskProgress     []*TaskProgressNode    `json:"taskProgress" xorm:"task_progress"`         // 任务进度
+}
+type RequestProgressNode struct {
+	Node    string `json:"node"`
+	Handler string `json:"handler"` // 处理人
+	Role    string `json:"role"`    // 处理角色
+	Status  int    `json:"status"`  // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
 }
 
-type ProgressObj struct {
-	NodeId      string `json:"nodeId" `
-	NodeDefId   string `json:"nodeDefId" `
-	Node        string `json:"node"`
-	Role        string `json:"role"`
-	Handler     string `json:"handler"`
-	Status      int    `json:"status"`      // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
-	ApproveType string `json:"approveType"` // 审批类型:custom.单人自定义 any.协同 all.并行
+type TaskProgressNode struct {
+	NodeId         string            `json:"nodeId" `
+	Node           string            `json:"node"`
+	NodeDefId      string            `json:"nodeDefId"`
+	ApproveType    string            `json:"approveType"`    // 审批类型:custom.单人自定义 any.协同 all.并行
+	Status         int               `json:"status"`         // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
+	TaskHandleList []*TaskHandleNode `json:"taskHandleList"` // 任务处理节点
+}
+
+type TaskHandleNode struct {
+	Handler     string `json:"handler"`     // 处理人
+	Role        string `json:"role"`        // 处理角色
+	HandlerType string `json:"handlerType"` // 人员设置方式:system.组内系统分配 claim.组内主动认领
 }
 
 type ExpireObj struct {

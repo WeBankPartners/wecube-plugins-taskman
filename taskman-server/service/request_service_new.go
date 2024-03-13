@@ -915,7 +915,7 @@ func getSQL(status []string) string {
 }
 
 // GetRequestProgress  请求已创建时,获取请求进度
-func GetRequestProgress(requestId, userToken, language string) (rowData *models.RequestProgressObj, err error) {
+func GetRequestProgress(requestId, userToken, language string) (rowData *models.RequestProgress, err error) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskTemplateProgressList []*models.TaskTemplateProgressDto
 	var taskApproveTemplateList []*models.TaskTemplateTable
@@ -924,10 +924,11 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var taskApproveList, taskImplementList []*models.TaskTable
+	// 处理人和角色
 	var handler, role string
 	var taskSort int
 	var request models.RequestTable
-	var approvalProgress, taskProgress []*models.ProgressObj
+	var approvalProgress, taskProgress []*models.TaskProgressNode
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
 	var requestTemplate *models.RequestTemplateTable
 	var requestTaskHandleMap = make(map[string]*models.TaskHandleTemplateDto)
@@ -936,7 +937,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	approveCompleteStatus := int(models.TaskExecStatusNotStart)
 	taskCompleteStatus := int(models.TaskExecStatusNotStart)
 	completeStatus := int(models.TaskExecStatusNotStart)
-	rowData = &models.RequestProgressObj{RequestProgress: []*models.ProgressObj{}, ApprovalProgress: []*models.ProgressObj{}, TaskProgress: []*models.ProgressObj{}}
+	rowData = &models.RequestProgress{RequestProgress: []*models.RequestProgressNode{}, ApprovalProgress: []*models.TaskProgressNode{}, TaskProgress: []*models.TaskProgressNode{}}
 	taskTemplateList, err = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
 	if err != nil {
 		return
@@ -1083,11 +1084,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	sort.Sort(models.TaskTemplateProgressDtoSort(taskTemplateProgressList))
 
 	for _, taskTemplateProgress := range taskTemplateProgressList {
-		handler = ""
-		role = ""
-		requestProgress := &models.ProgressObj{}
+		requestProgress := &models.RequestProgressNode{}
 		requestProgress.Status = taskTemplateProgress.Status
 		requestProgress.Node = taskTemplateProgress.Node
+		requestProgress.Role = taskTemplateProgress.Role
 		requestProgress.Handler = taskTemplateProgress.Handler
 		if v, ok := taskMap[taskTemplateProgress.Id]; ok {
 			taskHandleList = []*models.TaskHandleTable{}
@@ -1097,23 +1097,19 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			} else {
 				requestProgress.Status = int(models.TaskExecStatusDoing)
 			}
+			// 请求进度里面包含: 提交、定版、确认节点,这些都只会有一个处理节点
 			taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
 			if err != nil {
 				return
 			}
-			handlerList, roleList := getTaskHandleAndRoleArr(taskHandleList)
-			if len(handlerList) > 0 {
-				handler = strings.Join(handlerList, ",")
+			if len(taskHandleList) > 0 {
+				if taskHandleList[0].Handler != "" {
+					requestProgress.Handler = taskHandleList[0].Handler
+				}
+				if taskHandleList[0].Role != "" {
+					requestProgress.Role = taskHandleList[0].Role
+				}
 			}
-			if len(roleList) > 0 {
-				role = strings.Join(roleList, ",")
-			}
-		}
-		if handler != "" {
-			requestProgress.Handler = handler
-		}
-		if role != "" {
-			requestProgress.Role = role
 		}
 		rowData.RequestProgress = append(rowData.RequestProgress, requestProgress)
 	}
@@ -1140,10 +1136,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			if response != nil {
 				// 自动退出
 				if response.Status == string(models.RequestStatusFaulted) {
-					taskProgress = append(taskProgress, &models.ProgressObj{Node: AutoExit, Status: int(models.TaskExecStatusAutoExitStatus)})
+					taskProgress = append(taskProgress, &models.TaskProgressNode{Node: AutoExit, Status: int(models.TaskExecStatusAutoExitStatus)})
 				} else {
 					if response.Status == InternallyTerminated {
-						taskProgress = append(taskProgress, &models.ProgressObj{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
+						taskProgress = append(taskProgress, &models.TaskProgressNode{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
 					}
 					// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
 					var exist bool
@@ -1158,12 +1154,12 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 								}
 							}
 							if !exist {
-								taskProgress = append(taskProgress, &models.ProgressObj{
-									NodeId:    v.NodeId,
-									NodeDefId: v.NodeDefId,
-									Node:      v.NodeName,
-									Handler:   AutoNode,
-									Status:    int(models.TaskExecStatusFail),
+								taskProgress = append(taskProgress, &models.TaskProgressNode{
+									NodeId:         v.NodeId,
+									Node:           v.NodeName,
+									NodeDefId:      v.NodeDefId,
+									Status:         int(models.TaskExecStatusFail),
+									TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
 								})
 							}
 						}
@@ -1176,20 +1172,17 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	return
 }
 
-func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto) ([]*models.ProgressObj, error) {
+func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto) ([]*models.TaskProgressNode, error) {
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
-	var taskProgressList []*models.ProgressObj
-	var handler, role string
+	var taskProgressList []*models.TaskProgressNode
 	var err error
 	// 任务排序
 	if len(taskTemplateList) > 0 {
 		sort.Sort(models.TaskTemplateTableSort(taskTemplateList))
 		for _, taskTemplate := range taskTemplateList {
-			handler = ""
-			role = ""
 			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
-			requestProgress := &models.ProgressObj{}
+			requestProgress := &models.TaskProgressNode{TaskHandleList: []*models.TaskHandleNode{}}
 			requestProgress.Status = int(models.TaskExecStatusNotStart)
 			requestProgress.Node = taskTemplate.Name
 			requestProgress.ApproveType = taskTemplate.HandleMode
@@ -1200,7 +1193,6 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 				return nil, err
 			}
 			if len(taskHandleTemplateList) > 0 {
-				var handlerList, roleList []string
 				var tempHandler, tempRole string
 				for _, taskHandleTemplate := range taskHandleTemplateList {
 					// 用户提交的处理人优先级最高
@@ -1214,16 +1206,11 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 					if tempRole == "" && taskHandleTemplate.Role != "" {
 						tempRole = taskHandleTemplate.Role
 					}
-					handlerList = append(handlerList, tempHandler)
-					roleList = append(roleList, tempRole)
-				}
-				handler = strings.Join(handlerList, ",")
-				role = strings.Join(roleList, ",")
-				if handler != "" {
-					requestProgress.Handler = handler
-				}
-				if role != "" {
-					requestProgress.Role = role
+					requestProgress.TaskHandleList = append(requestProgress.TaskHandleList, &models.TaskHandleNode{
+						Handler:     tempHandler,
+						Role:        tempRole,
+						HandlerType: taskHandleTemplate.HandlerType,
+					})
 				}
 			}
 			if v, ok := taskMap[taskTemplate.Id]; ok {
@@ -1238,39 +1225,22 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 				if err != nil {
 					return nil, err
 				}
-				handlerList, roleList := getTaskHandleAndRoleArr(taskHandleList)
-				if len(handlerList) > 0 {
-					handler = strings.Join(handlerList, ",")
-				}
-				if len(roleList) > 0 {
-					role = strings.Join(roleList, ",")
-				}
-				if handler != "" {
-					requestProgress.Handler = handler
-				}
-				if role != "" {
-					requestProgress.Role = role
+				if len(taskHandleList) > 0 {
+					var tempTaskHandleNodeList []*models.TaskHandleNode
+					for _, taskHandle := range taskHandleList {
+						tempTaskHandleNodeList = append(tempTaskHandleNodeList, &models.TaskHandleNode{
+							Handler:     taskHandle.Handler,
+							Role:        taskHandle.Role,
+							HandlerType: taskHandle.HandlerType,
+						})
+					}
+					requestProgress.TaskHandleList = tempTaskHandleNodeList
 				}
 			}
 			taskProgressList = append(taskProgressList, requestProgress)
 		}
 	}
 	return taskProgressList, nil
-}
-
-func getTaskHandleAndRoleArr(taskHandleList []*models.TaskHandleTable) (handlerList, roleList []string) {
-	if len(taskHandleList) == 0 {
-		return
-	}
-	for _, taskHandle := range taskHandleList {
-		if taskHandle.Handler != "" {
-			handlerList = append(handlerList, taskHandle.Handler)
-		}
-		if taskHandle.Role != "" {
-			roleList = append(roleList, taskHandle.Role)
-		}
-	}
-	return
 }
 
 func GetProcessDefinitions(templateId, userToken, language string) (rowData *models.DefinitionsData, err error) {
@@ -1611,6 +1581,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 
 // CreateRequestApproval 创建请求审批
 func (s *RequestService) CreateRequestApproval(request models.RequestTable, curTaskId, userToken, language string) (actions []*dao.ExecAction, err error) {
+	var requestTaskActions []*dao.ExecAction
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
@@ -1668,7 +1639,14 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.CreateRequestTask(request, "", userToken, language)
+	requestTaskActions, err = s.CreateRequestTask(request, "", userToken, language)
+	if err != nil {
+		return
+	}
+	if len(requestTaskActions) > 0 {
+		actions = append(actions, requestTaskActions...)
+	}
+	return
 }
 
 // CreateRequestTask 创建任务
@@ -1679,6 +1657,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
+	var requestConfirmActions, workflowActions []*dao.ExecAction
 	// 加1s
 	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
@@ -1686,7 +1665,13 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		// 关联编排,调用编排启动
 		var bindCache models.RequestCacheData
 		json.Unmarshal([]byte(request.BindCache), &bindCache)
-		err = StartRequestNew(request, userToken, language, bindCache)
+		workflowActions, err = StartRequestNew(request, userToken, language, bindCache)
+		if err != nil {
+			return
+		}
+		if len(workflowActions) > 0 {
+			actions = append(actions, workflowActions...)
+		}
 		return
 	}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
@@ -1737,7 +1722,14 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.CreateRequestConfirm(request)
+	requestConfirmActions, err = s.CreateRequestConfirm(request)
+	if err != nil {
+		return
+	}
+	if len(requestConfirmActions) > 0 {
+		actions = append(actions, requestConfirmActions...)
+	}
+	return
 }
 
 // CreateRequestConfirm 创建请求确认

@@ -14,7 +14,7 @@
             >
               <span>{{ approval.name }}</span>
               <Icon
-                v-if="approvalNodes.length > 1 && procDefId === ''"
+                v-if="approvalNodes.length > 1 && procDefId === '' && isCheck !== 'Y'"
                 @click.stop="removeNode(approval)"
                 type="md-close"
                 color="#ed4014"
@@ -23,12 +23,12 @@
               />
             </div>
             <div
-              v-if="procDefId === '' && approvalIndex !== approvalNodes.length"
+              v-if="procDefId === '' && approvalIndex !== approvalNodes.length && isCheck !== 'Y'"
               class="ivu-divider-dashed dash-line"
             ></div>
             <Button
               class="custom-add-btn"
-              v-if="procDefId === ''"
+              v-if="procDefId === '' && isCheck !== 'Y'"
               @click.stop="addApprovalNode(approval.sort + 1)"
               type="success"
               size="small"
@@ -44,6 +44,7 @@
             @jumpToNode="jumpToNode"
             @reloadParentPage="loadPage"
             @nodeStatus="nodeStatus"
+            :isCheck="isCheck"
             :procDefId="procDefId"
             :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
           ></TaskFormNode>
@@ -117,6 +118,7 @@
                     </div>
                     <span>
                       <Button
+                        v-if="isCheck !== 'Y'"
                         style="margin-top: -5px;"
                         @click="beforeSelectItemGroup"
                         type="primary"
@@ -211,7 +213,9 @@
                       </draggable>
                     </div>
                     <div style="text-align: right;">
-                      <Button type="primary" size="small" ghost @click="saveGroup(1)">{{ $t('save') }}</Button>
+                      <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
+                        $t('save')
+                      }}</Button>
                       <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
                     </div>
                   </template>
@@ -418,6 +422,7 @@
       <RequestFormDataCustom
         ref="requestFormDataCustomRef"
         @reloadParentPage="reloadGroup"
+        :isCheck="isCheck"
         module="other"
         v-show="['custom'].includes(itemGroupType)"
       ></RequestFormDataCustom>
@@ -427,6 +432,7 @@
         ref="requestFormDataWorkflowRef"
         :isCustomItemEditable="false"
         @reloadParentPage="reloadGroup"
+        :isCheck="isCheck"
         module="other"
         v-show="['workflow', 'optional'].includes(itemGroupType)"
       ></RequestFormDataWorkflow>
@@ -436,9 +442,14 @@
       <Button :disabled="isTopButtonDisable" @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{
         $t('forward')
       }}</Button>
-      <Button :disabled="isTopButtonDisable" @click="beforeSubmitTemplate" type="primary" class="btn-footer-margin">{{
-        $t('submit_for_review')
-      }}</Button>
+      <Button
+        v-if="isCheck !== 'Y'"
+        :disabled="isTopButtonDisable"
+        @click="beforeSubmitTemplate"
+        type="primary"
+        class="btn-footer-margin"
+        >{{ $t('submit_for_review') }}</Button
+      >
     </div>
   </div>
 </template>
@@ -744,7 +755,7 @@ export default {
       }
     }
   },
-  props: ['requestTemplateId'],
+  props: ['isCheck', 'requestTemplateId'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 500
     this.removeEmptyDataForm()
@@ -1173,6 +1184,10 @@ export default {
       this.openPanel = ''
     },
     gotoForward () {
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'backward')
+        return
+      }
       // 有编排无数据
       if (this.procDefId !== '' && this.approvalNodes.length === 0) {
         this.$emit('gotoStep', this.requestTemplateId, 'backward')

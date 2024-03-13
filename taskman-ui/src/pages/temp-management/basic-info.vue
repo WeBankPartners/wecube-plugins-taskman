@@ -233,20 +233,23 @@
       </Col>
     </Row>
     <div style="text-align: center;margin-top: 16px;">
-      <Button @click="createTemp(false)" type="info" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
-        $t('save')
-      }}</Button>
+      <Button
+        v-if="isCheck !== 'Y'"
+        @click="createTemp(false)"
+        type="info"
+        :disabled="isSaveBtnDisable"
+        class="btn-footer-margin"
+        >{{ $t('save') }}</Button
+      >
       <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
         $t('next')
       }}</Button>
     </div>
-    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
 import dayjs from 'dayjs'
-import CustomConfirmModel from './custom-confirm-model'
 import {
   getTempGroupList,
   getManagementRoles,
@@ -321,7 +324,7 @@ export default {
       deep: true
     }
   },
-  props: ['requestTemplateId'],
+  props: ['isCheck', 'requestTemplateId'],
   mounted () {
     this.basicInfo.name = `${this.$t('tw_template')}_${dayjs().format('YYMMDDHHmmss')}`
     this.loadPage(this.requestTemplateId)
@@ -360,6 +363,10 @@ export default {
       return res
     },
     async createTemp (isGoToNext) {
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'forward')
+        return
+      }
       const cacheData = JSON.parse(JSON.stringify(this.basicInfo))
       cacheData.mgmtRoles = [cacheData.mgmtRoles]
       const process = this.procOptions.find(item => item.procDefId === cacheData.procDefId)
@@ -418,26 +425,6 @@ export default {
     },
     gotoNext () {
       this.createTemp(true)
-      // if (this.basicInfo.id === '') {
-      //   this.createTemp(true)
-      // } else {
-      //   if (this.isParmasChanged) {
-      //     this.$refs.customConfirmModelRef.open({
-      //       title: `${this.$t('tw_confirm_discarding_changes')}`,
-      //       content: `${this.$t('tw_params_edit_confirm')}`,
-      //       okText: this.$t('save'),
-      //       cancelText: this.$t('tw_abandon'),
-      //       okFunc: () => {
-      //         this.createTemp(true)
-      //       },
-      //       cancelFunc: () => {
-      //         this.$emit('gotoStep', this.requestTemplateId || this.basicInfo.id)
-      //       }
-      //     })
-      //   } else {
-      //     this.$emit('gotoStep', this.requestTemplateId || this.basicInfo.id)
-      //   }
-      // }
     },
     // 获取模版组信息
     async getGroupOptions () {
@@ -570,9 +557,6 @@ export default {
     paramsChanged () {
       this.isParmasChanged = true
     }
-  },
-  components: {
-    CustomConfirmModel
   }
 }
 </script>

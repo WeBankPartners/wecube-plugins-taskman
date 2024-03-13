@@ -125,17 +125,19 @@
         </FormItem>
       </Form>
       <div style="text-align: center;">
-        <Button type="primary" :disabled="isSaveNodeDisable || isHandlerAddDisable" @click="saveNode(1)">{{
-          $t('save')
-        }}</Button>
+        <Button
+          v-if="isCheck !== 'Y'"
+          type="primary"
+          :disabled="isSaveNodeDisable || isHandlerAddDisable"
+          @click="saveNode(1)"
+          >{{ $t('save') }}</Button
+        >
       </div>
     </div>
-    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
-import CustomConfirmModel from './custom-confirm-model'
 import Vue from 'vue'
 import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
 export default {
@@ -195,6 +197,7 @@ export default {
       isSaveNodeDisable: true
     }
   },
+  props: ['isCheck'],
   watch: {
     activeApprovalNode: {
       handler (val) {
@@ -402,9 +405,6 @@ export default {
       }
       return res
     }
-  },
-  components: {
-    CustomConfirmModel
   }
 }
 </script>

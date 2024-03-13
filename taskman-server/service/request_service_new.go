@@ -1352,6 +1352,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		}
 		form.FormData = cacheObj.Data
 		form.RootEntityId = cacheObj.RootEntityId
+		form.OperatorObj = cacheObj.EntityName
 	}
 	return
 }

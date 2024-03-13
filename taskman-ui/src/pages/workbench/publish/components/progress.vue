@@ -40,7 +40,7 @@
       </div>
     </div>
     <!--审批进度-->
-    <div v-if="approvalExpand" class="steps" style="margin-top:5px;">
+    <div v-if="approvalExpand" class="steps" style="margin-top:15px;">
       <span class="title">审批进度：</span>
       <Steps
         :current="0"
@@ -60,15 +60,16 @@
                 <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
               </div>
             </Tooltip>
-            <Tooltip :content="i.handler">
-              <div class="word-eclipse" style="margin-top:-5px;">{{ i.handler }}</div>
-            </Tooltip>
+            <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
+              <span>{{ j.role || '-' }} /</span>
+              <span>{{ handlerType[j.handlerType] || j.handler || '-' }}</span>
+            </div>
           </div>
         </Step>
       </Steps>
     </div>
     <!--任务进度-->
-    <div v-if="taskExpand" class="steps" style="margin-top:5px;">
+    <div v-if="taskExpand" class="steps" style="margin-top:15px;">
       <span class="title">任务进度：</span>
       <Steps
         :current="0"
@@ -88,9 +89,10 @@
                 <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
               </div>
             </Tooltip>
-            <Tooltip :content="i.handler">
-              <div style="margin-top:-5px;">{{ i.handler }}</div>
-            </Tooltip>
+            <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
+              <span>{{ j.role || '-' }} /</span>
+              <span>{{ handlerType[j.handlerType] || j.handler || '-' }}</span>
+            </div>
           </div>
         </Step>
       </Steps>
@@ -139,6 +141,10 @@ export default {
         all: '并行',
         admin: '提交人角色管理员',
         auto: '自动通过'
+      },
+      handlerType: {
+        system: '系统分配',
+        claim: '主动认领'
       }
     }
   },
@@ -258,12 +264,12 @@ export default {
       margin-right: 20px;
     }
     .mode {
-      font-size: 11px;
-      background: #2d8cf0;
-      color: #fff;
-      padding: 1px 5px;
+      font-size: 12px;
+      // background: #2d8cf0;
+      color: #2d8cf0;
+      // padding: 1px 5px;
       display: inline-block;
-      border-radius: 2px;
+      // border-radius: 2px;
     }
     .role {
       display: flex;

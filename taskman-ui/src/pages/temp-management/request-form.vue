@@ -14,12 +14,14 @@
           v-if="activeTab === 'msgForm'"
           @gotoStep="gotoStep"
           @changTab="changTab"
+          :isCheck="isCheck"
           ref="msgFormRef"
         ></RequestFormMsg>
         <RequestFormData
           v-if="activeTab === 'dataForm'"
           @gotoStep="gotoStep"
           @changTab="changTab"
+          :isCheck="isCheck"
           ref="dataFormRef"
           :requestTemplateId="requestTemplateId"
         ></RequestFormData>
@@ -38,7 +40,7 @@ export default {
       activeTab: 'msgForm'
     }
   },
-  props: ['requestTemplateId'],
+  props: ['isCheck', 'requestTemplateId'],
   mounted () {
     this.changTab(this.activeTab, true)
   },
@@ -48,19 +50,24 @@ export default {
         return
       }
 
-      const tabStatus = this.$refs[`${this.activeTab}Ref`].panalStatus()
-      if (tabStatus) {
-        this.$nextTick(() => {
-          this.$refs[`${this.activeTab}Ref`].tabChange()
-        })
-      } else {
+      if (this.isCheck === 'Y') {
         this.activeTab = tabName
         this.$nextTick(() => {
           this.$refs[`${this.activeTab}Ref`].loadPage(this.requestTemplateId)
         })
+      } else {
+        const tabStatus = this.$refs[`${this.activeTab}Ref`].panalStatus()
+        if (tabStatus) {
+          this.$nextTick(() => {
+            this.$refs[`${this.activeTab}Ref`].tabChange()
+          })
+        } else {
+          this.activeTab = tabName
+          this.$nextTick(() => {
+            this.$refs[`${this.activeTab}Ref`].loadPage(this.requestTemplateId)
+          })
+        }
       }
-
-      this.$nextTick(() => {})
     },
     gotoStep (requestTemplateId, stepDirection) {
       this.$emit('gotoStep', requestTemplateId, stepDirection)

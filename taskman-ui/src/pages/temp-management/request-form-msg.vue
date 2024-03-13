@@ -252,17 +252,20 @@
     </Row>
     <div style="text-align: center;margin-top: 16px;">
       <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
-      <Button @click="saveMsgForm(1)" type="info" :disabled="isSaveBtnActive()" class="btn-footer-margin">{{
-        $t('save')
-      }}</Button>
+      <Button
+        v-if="isCheck !== 'Y'"
+        @click="saveMsgForm(1)"
+        type="info"
+        :disabled="isSaveBtnActive()"
+        class="btn-footer-margin"
+        >{{ $t('save') }}</Button
+      >
       <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
     </div>
-    <CustomConfirmModel ref="customConfirmModelRef"></CustomConfirmModel>
   </div>
 </template>
 
 <script>
-import CustomConfirmModel from './custom-confirm-model'
 import { saveRequsetForm, getRequestFormTemplateData, getAllDataModels } from '@/api/server.js'
 import draggable from 'vuedraggable'
 let idGlobal = 8
@@ -470,6 +473,7 @@ export default {
       formId: '' // 缓存表单id，供编辑使用
     }
   },
+  props: ['isCheck'],
   mounted () {
     this.MODALHEIGHT = document.body.scrollHeight - 400
   },
@@ -570,13 +574,23 @@ export default {
       return this.isParmasChanged
     },
     tabChange () {
-      this.saveMsgForm(3)
+      if (this.isCheck !== 'Y') {
+        this.saveMsgForm(3)
+      }
     },
     gotoNext () {
-      this.saveMsgForm(2)
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'forward')
+      } else {
+        this.saveMsgForm(2)
+      }
     },
     gotoForward () {
-      this.saveMsgForm(4)
+      if (this.isCheck === 'Y') {
+        this.$emit('gotoStep', this.requestTemplateId, 'backward')
+      } else {
+        this.saveMsgForm(4)
+      }
     },
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
@@ -629,8 +643,7 @@ export default {
     }
   },
   components: {
-    draggable,
-    CustomConfirmModel
+    draggable
   }
 }
 </script>

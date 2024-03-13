@@ -863,9 +863,9 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
-		if strings.Contains(respResult.Message, "None process instance found") {
-			dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
-		}
+		//if strings.Contains(respResult.Message, "None process instance found") {
+		//	dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
+		//}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	request, getRequestErr := GetSimpleRequest(task.Request)

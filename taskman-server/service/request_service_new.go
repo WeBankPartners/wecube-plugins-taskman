@@ -297,6 +297,9 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	where := transPlatConditionToSQL(param)
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	switch param.Tab {
+	case "myPending":
+		sql, queryParam = pendingMyTaskSQL(param.Action, user, userRolesFilterSql, userRolesFilterParam, taskType)
+		execSql = getPlatTaskSQL(where, sql)
 	case "pending":
 		sql, queryParam = pendingTaskSQL(param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
 		execSql = getPlatTaskSQL(where, sql)
@@ -1374,7 +1377,7 @@ func getRequestHandler(requestId string) (role, handler string) {
 		if len(taskHandleList) > 0 {
 			for _, taskHandle := range taskHandleList {
 				// 待处理 任务节点和角色都要统计
-				if taskHandle.HandleResult == "" {
+				if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
 					roleArr = append(roleArr, taskHandle.Role)
 					handlerArr = append(handlerArr, taskHandle.Handler)
 				}

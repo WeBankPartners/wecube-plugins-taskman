@@ -1723,6 +1723,10 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		return s.CreateRequestConfirm(request)
 	}
 	for _, taskTemplate := range taskTemplateList {
+		if taskTemplate.NodeDefId != "" {
+			// 编排关联的任务,不会在这里触发
+			continue
+		}
 		taskList = []*models.TaskTable{}
 		taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)

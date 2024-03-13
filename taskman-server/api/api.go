@@ -78,6 +78,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "POST", HandlerFunc: task.CreateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "PUT", HandlerFunc: task.UpdateTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "DELETE", HandlerFunc: task.DeleteTaskTemplate},
+		&handlerFuncObj{Url: "/task-template/form-template/:requestTemplate/:id", Method: "DELETE", HandlerFunc: task.DeleteTaskTemplateFormTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/ids", Method: "GET", HandlerFunc: task.ListTaskTemplateIds},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "GET", HandlerFunc: task.ListTaskTemplates},
@@ -155,6 +156,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-check/confirm/:requestId", Method: "POST", HandlerFunc: requestNew.CheckRequest}, // 确认定版
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
 		&handlerFuncObj{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest},
+		&handlerFuncObj{Url: "/request-data/form/save/:requestId", Method: "POST", HandlerFunc: requestNew.SaveRequestFormData},
 	)
 }
 

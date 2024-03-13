@@ -111,6 +111,28 @@ func DeleteTaskTemplate(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
+func DeleteTaskTemplateFormTemplate(c *gin.Context) {
+	var result *models.SimpleFormTemplateDto
+	var err error
+	requestTemplateId := c.Param("requestTemplate")
+	id := c.Param("id")
+	result, err = service.GetFormTemplateService().GetFormTemplate(requestTemplateId, id)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if result != nil && len(result.Groups) > 0 {
+		for _, group := range result.Groups {
+			err = service.GetFormTemplateService().DeleteFormTemplateItemGroup(group.ItemGroupId)
+			if err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+		}
+	}
+	middleware.ReturnSuccess(c)
+}
+
 // 读取任务模板
 func GetTaskTemplate(c *gin.Context) {
 	requestTemplateId := c.Param("requestTemplate")

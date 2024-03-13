@@ -67,9 +67,9 @@ type QueryCollectTemplateParam struct {
 }
 
 type CountPlatformParam struct {
-	Scene          int    `json:"scene"`           //场景,0表示所有
-	QueryTimeStart string `json:"queryTimeStart" ` // 查询时间
-	QueryTimeEnd   string `json:"queryTimeEnd" `   //
+	Tab            string `json:"tab"`             // 标签,取值有:pending 待处理,myPending 本人待处理,hasProcessed 已处理  submit 我提交的 draft 我的暂存, all表示查询所有
+	QueryTimeStart string `json:"queryTimeStart" ` // 查询时间-开始
+	QueryTimeEnd   string `json:"queryTimeEnd" `   // 查询时间结束
 }
 
 // AddCollectTemplateParam 添加收藏

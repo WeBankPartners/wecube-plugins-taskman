@@ -938,11 +938,39 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		// 请求定版, 根据模板配置开启是否确认定版
 		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {
-		/*if request.Handler != operator {
+		// 只有定版人才能处理
+		var checkTask *models.TaskTable
+		var taskHandleList []*models.TaskHandleTable
+		var actions []*dao.ExecAction
+		checkTask, err = GetTaskService().GetLatestCheckTask(requestId)
+		if err != nil {
+			return err
+		}
+		if checkTask == nil {
+			err = fmt.Errorf("requestId:%s check task not exist", requestId)
+			return err
+		}
+
+		taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(checkTask.Id)
+		if err != nil {
+			return err
+		}
+
+		if len(taskHandleList) == 0 {
+			err = fmt.Errorf("requestId:%s check task handler is empty", requestId)
+			return err
+		}
+		if taskHandleList[0].Handler != operator {
 			err = exterror.New().UpdateRequestHandlerStatusError
 			return err
-		}*/
-		_, err = dao.X.Exec("update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", status, description, operator, operator, nowTime, nowTime, requestId)
+		}
+		// 更新处理人,拒绝
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, nowTime, taskHandleList[0].Id}})
+		// 更新任务到完成
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, operator, nowTime, checkTask.Id}})
+		// 更新请求
+		actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", Param: []interface{}{status, description, operator, operator, nowTime, nowTime, requestId}})
+		err = dao.Transaction(actions)
 	} else {
 		_, err = dao.X.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
 	}
@@ -2420,5 +2448,12 @@ func getTaskFormItems(requestFormItems []*models.FormItemTable, taskForms []*mod
 			taskFormItems = append(taskFormItems, item)
 		}
 	}
+	return
+}
+
+func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTableObj) (err error) {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions := UpdateRequestFormItem(requestId, operator, nowTime, &models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{param}})
+	err = dao.Transaction(actions)
 	return
 }

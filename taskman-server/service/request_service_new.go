@@ -1611,6 +1611,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 
 // CreateRequestApproval 创建请求审批
 func (s *RequestService) CreateRequestApproval(request models.RequestTable, curTaskId, userToken, language string) (actions []*dao.ExecAction, err error) {
+	var requestTaskActions []*dao.ExecAction
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskList []*models.TaskTable
 	var action *dao.ExecAction
@@ -1668,7 +1669,14 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.CreateRequestTask(request, "", userToken, language)
+	requestTaskActions, err = s.CreateRequestTask(request, "", userToken, language)
+	if err != nil {
+		return
+	}
+	if len(requestTaskActions) > 0 {
+		actions = append(actions, requestTaskActions...)
+	}
+	return
 }
 
 // CreateRequestTask 创建任务
@@ -1679,6 +1687,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	var taskList []*models.TaskTable
 	var newTaskId string
 	var action *dao.ExecAction
+	var requestConfirmActions, workflowActions []*dao.ExecAction
 	// 加1s
 	now := time.Now().Add(time.Second * 1).Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
@@ -1686,7 +1695,13 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		// 关联编排,调用编排启动
 		var bindCache models.RequestCacheData
 		json.Unmarshal([]byte(request.BindCache), &bindCache)
-		err = StartRequestNew(request, userToken, language, bindCache)
+		workflowActions, err = StartRequestNew(request, userToken, language, bindCache)
+		if err != nil {
+			return
+		}
+		if len(workflowActions) > 0 {
+			actions = append(actions, workflowActions...)
+		}
 		return
 	}
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
@@ -1737,7 +1752,14 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	return s.CreateRequestConfirm(request)
+	requestConfirmActions, err = s.CreateRequestConfirm(request)
+	if err != nil {
+		return
+	}
+	if len(requestConfirmActions) > 0 {
+		actions = append(actions, requestConfirmActions...)
+	}
+	return
 }
 
 // CreateRequestConfirm 创建请求确认

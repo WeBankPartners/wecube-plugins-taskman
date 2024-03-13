@@ -825,8 +825,8 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskHandleResultTypeApprove, nowTime, checkTaskHandle.Id}})
 	// 更新任务为完成
-	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?",
-		Param: []interface{}{models.TaskStatusDone, operator, nowTime, task.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,task_result=?,updated_by=?,updated_time=? where id=?",
+		Param: []interface{}{models.TaskStatusDone, models.TaskResultTypeComplete, operator, nowTime, task.Id}})
 	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language)
 	if err != nil {
 		return
@@ -869,10 +869,11 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	return
 }
 
-func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (err error) {
+func StartRequestNew(request models.RequestTable, userToken, language string, cacheData models.RequestCacheData) (actions []*dao.ExecAction, err error) {
 	log.Logger.Debug("StartRequestNew", log.JsonObj("request", request))
 	var requestTemplateTable []*models.RequestTemplateTable
 	var result *models.StartInstanceResultData
+	actions = []*dao.ExecAction{}
 	err = dao.X.SQL("select * from request_template where id=?", request.RequestTemplate).Find(&requestTemplateTable)
 	if err != nil {
 		err = fmt.Errorf("query request_template with id:%s fail,%s ", request.RequestTemplate, err.Error())
@@ -902,10 +903,9 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	procInstId := fmt.Sprintf("%v", result.Id)
-	_, err = dao.X.Exec("update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? where id=?", procInstId, result.ProcInstKey, result.Status, nowTime, request.Id)
-	if err != nil {
-		err = fmt.Errorf("update request:%s proc instance message fail,%s ", request.Id, err.Error())
-	}
+	actions = append(actions, &dao.ExecAction{Sql: "update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? where id=?", Param: []interface{}{
+		procInstId, result.ProcInstKey, result.Status, nowTime, request.Id,
+	}})
 	return
 }
 

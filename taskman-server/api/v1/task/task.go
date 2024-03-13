@@ -42,14 +42,19 @@ func CreateTask(c *gin.Context) {
 	if len(param.Inputs) == 0 {
 		return
 	}
+	requestToken := c.GetHeader("Authorization")
+	requestLanguage := c.GetHeader(middleware.AcceptLanguageHeader)
+	if requestLanguage == "" {
+		requestLanguage = "en"
+	}
 	for _, input := range param.Inputs {
-		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions)
+		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
 		} else {
-			notifyErr := service.NotifyTaskMail(taskId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", "")
+			notifyErr := service.NotifyTaskMail(taskId, requestToken, requestLanguage, "", "")
 			if notifyErr != nil {
 				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
 			}

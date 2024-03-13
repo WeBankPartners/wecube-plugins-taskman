@@ -15,10 +15,10 @@
     ></DataCard>
     <div class="data-tabs">
       <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
-        <!--任务处理-->
-        <TabPane :label="taskLabel" name="2"></TabPane>
         <!--审批-->
         <TabPane :label="approveLabel" name="3"></TabPane>
+        <!--任务处理-->
+        <TabPane :label="taskLabel" name="2"></TabPane>
         <!--请求定版-->
         <TabPane :label="pendingLabel" name="1"></TabPane>
         <!--请求确认-->
@@ -195,7 +195,7 @@ export default {
         if (['1', '2', '3', '4'].includes(type)) {
           this.type = type
         } else {
-          this.type = '2'
+          this.type = '3'
         }
         this.rollback = ''
         this.getTypeConfig()
@@ -228,7 +228,7 @@ export default {
       this.tabName = val
       this.actionName = action
       if (['pending', 'hasProcessed'].includes(val)) {
-        this.type = '2'
+        this.type = '3'
         this.rollback = ''
         this.getTypeConfig()
       } else if (val === 'submit') {

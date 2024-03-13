@@ -9,7 +9,9 @@
               :prop="i.name"
               :key="index"
               :required="i.required === 'yes'"
-              :rules="i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: 'change' }] : []"
+              :rules="
+                i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: ['change', 'blur'] }] : []
+              "
               style="margin-bottom:20px;"
             >
               <!--输入框-->
@@ -38,14 +40,6 @@
                 style="width:60%;"
               >
               </LimitSelect>
-              <!--自定义分析字段-->
-              <!-- <Input
-                v-else-if="i.elementType === 'calculate'"
-                :value="value[i.name]"
-                type="textarea"
-                :disabled="true"
-                style="width:60%;"
-              ></Input> -->
               <!--日期时间类型-->
               <DatePicker
                 v-else-if="i.elementType === 'datePicker'"

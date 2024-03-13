@@ -39,7 +39,7 @@ func HttpPost(url, userToken, language string, postBytes []byte) (byteArr []byte
 	req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("do http reqeust fail,%s ", reqErr.Error())
+		err = fmt.Errorf("do http reqeust fail,%s ", respErr.Error())
 		return
 	}
 	byteArr, _ = ioutil.ReadAll(resp.Body)

@@ -331,12 +331,34 @@ export default {
       return res
     },
     hasDuplicateObjects () {
-      const tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode.handleTemplates)).map(data => {
+      let res = false
+      const tmpData = JSON.parse(JSON.stringify(this.activeApprovalNode.handleTemplates)).map((data, dIndex) => {
         return {
           assign: data.assign,
           handler: data.handler,
           handlerType: data.handlerType,
-          role: data.role
+          role: data.role,
+          isRoleDisable: this.isRoleDisable(data, dIndex),
+          isHandlerDisable: this.isHandlerDisable(data, dIndex)
+        }
+      })
+      const roleAndHanlerCanSelect = tmpData.filter(t => !t.isRoleDisable && !t.isHandlerDisable)
+      const roleCanSelect = tmpData.filter(t => !t.isRoleDisable && t.isHandlerDisable)
+      if (roleAndHanlerCanSelect.length > 1) {
+        let hasDuplicate = this.isDataHasDuplicate(roleAndHanlerCanSelect)
+        return hasDuplicate
+      }
+      if (roleCanSelect.length > 1) {
+        let hasDuplicate = this.isDataHasDuplicate(roleCanSelect)
+        return hasDuplicate
+      }
+      return res
+    },
+    isDataHasDuplicate (arr) {
+      const tmpData = JSON.parse(JSON.stringify(arr)).map(data => {
+        return {
+          handler: data.handler === '' ? this.generateRandomString(10) : data.handler,
+          role: data.role === '' ? this.generateRandomString(10) : data.role
         }
       })
       let objectStrings = new Set() // 使用 Set 存储对象的字符串表示
@@ -348,6 +370,15 @@ export default {
         objectStrings.add(objString)
       }
       return false // 不存在相同的对象
+    },
+    generateRandomString (length) {
+      let result = ''
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+      const charactersLength = characters.length
+      for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength))
+      }
+      return result
     },
     // 新增一组审批人
     addRoleObjItem () {

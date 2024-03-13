@@ -1003,10 +1003,6 @@ export default {
       this.nextGroupInfo = groupItem
       this.saveGroup(6)
     },
-    // 切换节点中的分配方式触发删除group
-    deleteGroupFromNode () {
-      console.log(this.dataFormInfo.groups)
-    },
     async confirmRemoveGroupItem () {
       this.$Modal.confirm({
         title: this.$t('confirm_delete'),

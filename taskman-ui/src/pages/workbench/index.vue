@@ -429,7 +429,8 @@ export default {
           requestTemplate: row.templateId,
           isCheck: 'Y',
           isHandle: 'N',
-          jumpFrom: this.tabName
+          jumpFrom: this.tabName,
+          type: this.tabName === 'submit' ? this.rollback : this.type
         }
       })
     },
@@ -446,7 +447,8 @@ export default {
           taskHandleId: row.taskHandleId, // 任务处理ID
           isCheck: 'N',
           isHandle: 'Y',
-          jumpFrom: 'group_handle'
+          jumpFrom: this.tabName,
+          type: this.tabName === 'submit' ? this.rollback : this.type
         }
       })
     },
@@ -488,7 +490,8 @@ export default {
           query: {
             requestId: data.id,
             requestTemplate: data.requestTemplate,
-            jumpFrom: ''
+            jumpFrom: this.tabName,
+            type: this.tabName === 'submit' ? this.rollback : this.type
           }
         })
       }
@@ -524,8 +527,8 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          jumpFrom: this.tabName === 'draft' ? 'my_drafts' : 'my_submit',
-          rollback: this.rollback
+          jumpFrom: this.tabName,
+          type: this.tabName === 'submit' ? this.rollback : this.type
         }
       })
     },
@@ -553,7 +556,7 @@ export default {
     handleDbClick (row) {
       if (
         this.username === row.handler &&
-        ['Pending', 'InProgress'].includes(row.status) &&
+        ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(row.status) &&
         this.tabName === 'pending'
       ) {
         this.handleEdit(row)

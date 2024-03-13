@@ -264,7 +264,7 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          jumpFrom: 'my_drafts'
+          jumpFrom: 'draft'
         }
       })
     },

@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-publish-detail">
     <Row class="back-header">
-      <Icon size="22" type="md-arrow-back" class="icon" @click="$router.back()" />
+      <Icon size="22" type="md-arrow-back" class="icon" @click="handleToHome" />
       <span class="name">
         {{ `${detail.name || ''}` }}
       </span>
@@ -286,6 +286,7 @@ export default {
     return {
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
       jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
+      type: this.$route.query.type, // 首页类型type
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
       // procDefId: '',
@@ -344,6 +345,13 @@ export default {
     this.getRequestInfoNew()
   },
   methods: {
+    handleToHome () {
+      this.$router.push({
+        path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+          this.jumpFrom === 'submit' ? 'rollback' : 'type'
+        }=${this.type}`
+      })
+    },
     // 获取详情数据
     async getRequestInfoNew () {
       const { statusCode, data } = await getPublishInfo(this.requestId)

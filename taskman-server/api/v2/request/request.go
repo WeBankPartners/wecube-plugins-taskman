@@ -285,3 +285,28 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 	}
 	return
 }
+
+func SaveRequestFormData(c *gin.Context) {
+	requestId := c.Param("requestId")
+	user := middleware.GetRequestUser(c)
+	var param models.RequestPreDataTableObj
+	if err := c.ShouldBindJSON(&param); err != nil {
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	request, err := service.GetSimpleRequest(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if request.CreatedBy != user {
+		middleware.ReturnReportRequestNotPermissionError(c)
+		return
+	}
+	err = service.SaveRequestForm(requestId, user, &param)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		middleware.ReturnData(c, param)
+	}
+}

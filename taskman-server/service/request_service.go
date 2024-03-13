@@ -2422,3 +2422,10 @@ func getTaskFormItems(requestFormItems []*models.FormItemTable, taskForms []*mod
 	}
 	return
 }
+
+func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTableObj) (err error) {
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions := UpdateRequestFormItem(requestId, operator, nowTime, &models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{param}})
+	err = dao.Transaction(actions)
+	return
+}

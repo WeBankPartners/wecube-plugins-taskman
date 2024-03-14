@@ -504,12 +504,16 @@ func (s *FormTemplateService) buildFormTemplateGroupSortMap(itemGroupIdSort []st
 func (s *FormTemplateService) DeleteWorkflowFormTemplateGroupSql(requestTemplateId string) (actions []*dao.ExecAction, err error) {
 	var formTemplateList []*models.FormTemplateTable
 	actions = []*dao.ExecAction{}
-	err = dao.X.SQL("select * from form_template where request_template=? and task_template is null and item_group_type='workflow'", requestTemplateId).Find(&formTemplateList)
+	err = dao.X.SQL("select * from form_template where request_template=?  and item_group_type='workflow'", requestTemplateId).Find(&formTemplateList)
 	if err != nil {
 		return
 	}
 	if len(formTemplateList) > 0 {
 		for _, formTemplate := range formTemplateList {
+			// 过滤掉 任务类型
+			if strings.HasPrefix(formTemplate.TaskTemplate, "im_") {
+				continue
+			}
 			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template=?", Param: []interface{}{formTemplate.Id}})
 			actions = append(actions, &dao.ExecAction{Sql: "delete from form_template where id=?", Param: []interface{}{formTemplate.Id}})
 		}

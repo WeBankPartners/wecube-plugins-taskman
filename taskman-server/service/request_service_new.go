@@ -1644,7 +1644,6 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	if len(taskTemplateList) == 0 {
 		return s.CreateRequestTask(request, "", userToken, language, taskSort)
 	}
-	taskSort = GetTaskService().GenerateTaskOrderByRequestId(request.Id)
 	for _, taskTemplate := range taskTemplateList {
 		taskList = []*models.TaskTable{}
 		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)

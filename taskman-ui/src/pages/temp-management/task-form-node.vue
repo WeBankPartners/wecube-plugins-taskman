@@ -215,8 +215,8 @@ export default {
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
       if (statusCode === 'OK') {
-        this.$emit('setFormConfigStatus', !['admin'].includes(this.activeApprovalNode.handleMode))
         this.activeApprovalNode = data
+        this.$emit('setFormConfigStatus', !['admin'].includes(this.activeApprovalNode.handleMode))
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         this.mgmtData()
       }

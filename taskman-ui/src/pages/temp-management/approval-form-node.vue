@@ -113,7 +113,7 @@
             </Col>
           </Row>
           <Button
-            v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
+            v-if="isCheck !== 'Y' && ['any', 'all'].includes(activeApprovalNode.handleMode)"
             @click.stop="addRoleObjItem"
             type="primary"
             size="small"
@@ -225,8 +225,8 @@ export default {
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'approve')
       if (statusCode === 'OK') {
-        this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
         this.activeApprovalNode = data
+        this.$emit('setFormConfigStatus', !['auto'].includes(this.activeApprovalNode.handleMode))
         Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         // this.activeApprovalNode.handleTemplates = data.thandleTemplates
         this.mgmtData()
@@ -405,7 +405,7 @@ export default {
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
-      this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
+      this.$emit('setFormConfigStatus', !['auto'].includes(this.activeApprovalNode.handleMode))
       this.paramsChanged()
     },
     changeUser (role, roleObjIndex) {

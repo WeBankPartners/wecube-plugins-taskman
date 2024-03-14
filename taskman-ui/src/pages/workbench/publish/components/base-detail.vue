@@ -215,7 +215,7 @@
               <template v-else-if="data.type === 'confirm'">
                 <div class="custom-panel">
                   <div class="custom-panel-title">请求确认</div>
-                  <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
+                  <HeaderTag class="custom-panel-header" :data="data" operation="请求确认"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
                   <Form :label-width="80" label-position="left">

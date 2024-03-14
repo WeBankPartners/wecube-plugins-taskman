@@ -1795,3 +1795,53 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable) (acti
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})
 	return
 }
+
+func (s *RequestService) CreateProcessTask(request models.RequestTable, task *models.TaskTable, userToken, language string) (actions []*dao.ExecAction, err error) {
+	log.Logger.Debug("CreateProcessTask", log.String("taskId", task.Id))
+	var taskTemplateList []*models.TaskTemplateTable
+	var requestTemplate *models.RequestTemplateTable
+	var requestConfirmActions, workflowActions []*dao.ExecAction
+	actions = []*dao.ExecAction{}
+	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
+		// 关联编排,调用编排启动
+		var bindCache models.RequestCacheData
+		json.Unmarshal([]byte(request.BindCache), &bindCache)
+		workflowActions, err = StartRequestNew(request, userToken, language, bindCache)
+		if err != nil {
+			return
+		}
+		if len(workflowActions) > 0 {
+			actions = append(actions, workflowActions...)
+		}
+		return
+	}
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate is empty")
+		return
+	}
+	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeImplement).Find(&taskTemplateList)
+	if err != nil {
+		return
+	}
+	// 没有任务,直接跳过到下一步,到请求确认
+	if len(taskTemplateList) == 0 {
+		return s.CreateRequestConfirm(request)
+	}
+	// 如果不是最后一个任务模版, 不处理
+	if task.TaskTemplate != taskTemplateList[len(taskTemplateList)-1].Id {
+		return
+	}
+	// 所有审批都处理完成,走请求任务处理
+	requestConfirmActions, err = s.CreateRequestConfirm(request)
+	if err != nil {
+		return
+	}
+	if len(requestConfirmActions) > 0 {
+		actions = append(actions, requestConfirmActions...)
+	}
+	return
+}

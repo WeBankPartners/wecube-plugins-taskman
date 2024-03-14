@@ -511,7 +511,7 @@ func (s *FormTemplateService) DeleteWorkflowFormTemplateGroupSql(requestTemplate
 	if len(formTemplateList) > 0 {
 		for _, formTemplate := range formTemplateList {
 			actions = append(actions, &dao.ExecAction{Sql: "delete from form_item_template where form_template=?", Param: []interface{}{formTemplate.Id}})
-			actions = append(actions, &dao.ExecAction{Sql: "delete from form_template id=?", Param: []interface{}{formTemplate.Id}})
+			actions = append(actions, &dao.ExecAction{Sql: "delete from form_template where id=?", Param: []interface{}{formTemplate.Id}})
 		}
 	}
 	return

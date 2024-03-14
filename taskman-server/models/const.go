@@ -117,14 +117,6 @@ const (
 	TaskHandleTemplateHandlerTypeClaim           TaskHandleTemplateHandlerType = "claim"            // 组内主动认领
 )
 
-// TaskResultType 任务 处理结果
-type TaskResultType string
-
-const (
-	TaskResultTypeComplete    TaskResultType = "complete"    // 完成
-	TaskResultTypeUncompleted TaskResultType = "uncompleted" // 未完成
-)
-
 // TaskHandleResultType 任务处理 处理结果
 type TaskHandleResultType string
 

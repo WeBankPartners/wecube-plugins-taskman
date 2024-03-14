@@ -684,7 +684,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 			}
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
-		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeApprove, operator, now, task.Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), operator, now, task.Id}})
 		newApproveActions, _ = GetRequestService().CreateRequestApproval(request, task.Id, userToken, language, taskSort)
 		if len(newApproveActions) > 0 {
 			actions = append(actions, newApproveActions...)
@@ -718,8 +718,13 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	if err != nil {
 		return
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.HandleResult, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
-	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, param.HandleResult, operator, now, task.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, now, param.TaskHandleId}})
+	if param.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+		// 任务处理未完成,直接更新任务为未完成
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, string(models.TaskHandleResultTypeUncompleted), operator, now, task.Id}})
+	} else {
+		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), operator, now, task.Id}})
+	}
 	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language, taskSort)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
@@ -761,55 +766,22 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		return getRequestErr
 	}
 	var actions, newApproveActions []*dao.ExecAction
-	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
-		string(requestBytes), param.Comment, param.HandleResult, param.ChoseOption, "done", operator, nowTime, task.Id,
-	}})
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, nowTime, param.TaskHandleId}})
+	if param.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+		actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
+			string(requestBytes), param.Comment, models.TaskHandleResultTypeUncompleted, param.ChoseOption, "done", operator, nowTime, task.Id,
+		}})
+	} else {
+		actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
+			string(requestBytes), param.Comment, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), param.ChoseOption, "done", operator, nowTime, task.Id,
+		}})
+	}
 	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language, taskSort)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
 	err = dao.Transaction(actions)
 	return err
-}
-
-func getApproveCallbackParam(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {
-	result = models.PluginTaskCreateResp{ResultCode: "0"}
-	taskObj, tmpErr := getSimpleTask(taskId)
-	if tmpErr != nil {
-		return result, callbackUrl, tmpErr
-	}
-	callbackUrl = taskObj.CallbackUrl
-	resultObj := models.PluginTaskCreateOutput{RequestId: taskObj.CallbackRequestId}
-	if taskObj.Cache == "" {
-		resultObj.Outputs = []*models.PluginTaskCreateOutputObj{{CallbackParameter: taskObj.CallbackParameter, Comment: taskObj.Result, ErrorCode: "0"}}
-		result.Results = resultObj
-		return
-	}
-	var taskFormOutput models.PluginTaskFormDto
-	err = json.Unmarshal([]byte(taskObj.Cache), &taskFormOutput)
-	if err != nil {
-		return result, callbackUrl, fmt.Errorf("Try to json unmarshal cache data fail:%s ", err.Error())
-	}
-	var items []*models.TaskFormItemQueryObj
-	err = dao.X.SQL("select t1.*,t2.attr_def_data_type,t2.element_type from form_item t1 left join form_item_template t2 on t1.form_item_template=t2.id where form=?", taskObj.Form).Find(&items)
-	if err != nil {
-		return result, callbackUrl, fmt.Errorf("Try to query form item fail:%s ", err.Error())
-	}
-	itemValueMap := make(map[string]interface{})
-	for _, v := range items {
-		itemValueMap[fmt.Sprintf("%s_%s", v.FormItemTemplate, v.RowDataId)] = v.Value
-	}
-	for _, formEntity := range taskFormOutput.FormDataEntities {
-		for _, itemValueObj := range formEntity.FormItemValues {
-			tmpKey := fmt.Sprintf("%s_%s", itemValueObj.FormItemMetaId, itemValueObj.Oid)
-			itemValueObj.AttrValue = itemValueMap[tmpKey]
-		}
-	}
-	formBytes, _ := json.Marshal(taskFormOutput)
-	resultObj.Outputs = []*models.PluginTaskCreateOutputObj{{CallbackParameter: taskObj.CallbackParameter, Comment: taskObj.Result, ErrorCode: "0", TaskFormOutput: string(formBytes)}}
-	result.Results = resultObj
-	return
 }
 
 func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {
@@ -1621,9 +1593,9 @@ func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTab
 	return
 }
 
-func (s *TaskService) GetLatestTask(requestId string) (task *models.TaskTable, err error) {
+func (s *TaskService) GetDoingTask(requestId string) (task *models.TaskTable, err error) {
 	var taskList []*models.TaskTable
-	err = dao.X.SQL("select * from task where request = ? order by sort desc limit 0,1", requestId).Find(&taskList)
+	err = dao.X.SQL("select * from task where request = ? and status <> 'done' order by sort desc limit 0,1", requestId).Find(&taskList)
 	if err != nil {
 		return
 	}

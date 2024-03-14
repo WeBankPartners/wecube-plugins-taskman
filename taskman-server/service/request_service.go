@@ -860,7 +860,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 		Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, nowTime, checkTaskHandle.Id}})
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,task_result=?,updated_by=?,updated_time=? where id=?",
-		Param: []interface{}{models.TaskStatusDone, models.TaskResultTypeComplete, operator, nowTime, task.Id}})
+		Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeComplete, operator, nowTime, task.Id}})
 	taskSort = GetTaskService().GenerateTaskOrderByRequestId(request.Id)
 	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language, taskSort)
 	if err != nil {

@@ -456,12 +456,13 @@ func (s *RequestTemplateService) getRequestTemplateIdsBySql(sql string, param []
 }
 
 func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemplateUpdateParam, userToken, language string) (result models.RequestTemplateQueryObj, err error) {
-	var actions, insertTaskTemplateActions, deleteTaskTemplateActions []*dao.ExecAction
+	var actions, insertTaskTemplateActions, deleteTaskTemplateActions, deleteFormActions []*dao.ExecAction
 	var taskTemplateList, implementTaskTemplateList []*models.TaskTemplateTable
 	var workflowTaskNodeMap = make(map[string]*models.TaskTemplateTable)
 	var requestTemplate *models.RequestTemplateTable
 	var workflowTaskNodeList []*models.ProcNodeObj
 	var updateActions []*dao.ExecAction
+	var delWorkFlowFormFlag bool
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
 	if err != nil {
@@ -541,6 +542,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		if len(insertTaskTemplateActions) > 0 {
 			actions = append(actions, insertTaskTemplateActions...)
 		}
+		delWorkFlowFormFlag = true
 	} else if requestTemplate.ProcDefId != "" {
 		// 删除编排
 		if param.ProcDefId == "" {
@@ -554,6 +556,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					actions = append(actions, deleteTaskTemplateActions...)
 				}
 			}
+			delWorkFlowFormFlag = true
 		} else if param.ProcDefId != "" {
 			// 换了编排,先删除,再新增
 			if requestTemplate.ProcDefId != param.ProcDefId {
@@ -574,6 +577,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 				if len(insertTaskTemplateActions) > 0 {
 					actions = append(actions, insertTaskTemplateActions...)
 				}
+				delWorkFlowFormFlag = true
 			} else {
 				// 关联编排无改动,需要查找编排,看编排节点名称是否变更,有变更需要替换
 				// 查询编排任务节点
@@ -594,6 +598,16 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					}
 				}
 			}
+		}
+	}
+	// 删除配置的编排 fromTemplateGroup,主要是删除数据表单和审批的,任务表单在删除任务逻辑会删除
+	if delWorkFlowFormFlag {
+		deleteFormActions, err = GetFormTemplateService().DeleteWorkflowFormTemplateGroupSql(requestTemplate.Id)
+		if err != nil {
+			return
+		}
+		if len(deleteFormActions) > 0 {
+			actions = append(actions, deleteFormActions...)
 		}
 	}
 	err = dao.Transaction(actions)

@@ -957,7 +957,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	var taskApproveList, taskImplementList []*models.TaskTable
 	// 处理人和角色
 	var handler, role string
-	var taskSort int
+	var taskSort, status int
 	var request models.RequestTable
 	var approvalProgress, taskProgress []*models.TaskProgressNode
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
@@ -1032,11 +1032,13 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			taskHandleTemplateList = []*models.TaskHandleTemplateTable{}
 			handler = ""
 			role = ""
+			status = int(models.TaskExecStatusNotStart)
 			switch taskTemplate.Type {
 			case string(models.TaskTypeSubmit):
 				taskSort = 1
 				role = request.Role
 				handler = request.CreatedBy
+				status = int(models.TaskExecStatusDoing)
 			case string(models.TaskTypeCheck):
 				taskSort = 2
 			case string(models.TaskTypeConfirm):
@@ -1083,7 +1085,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				Node:        taskTemplate.Name,
 				Handler:     handler,
 				Role:        role,
-				Status:      int(models.TaskExecStatusNotStart), //初始化成未开始
+				Status:      status, //初始化状态
 				ApproveType: taskTemplate.HandleMode,
 				Sort:        taskSort,
 			})
@@ -1228,6 +1230,8 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 			if len(taskHandleTemplateList) > 0 {
 				var tempHandler, tempRole string
 				for _, taskHandleTemplate := range taskHandleTemplateList {
+					tempHandler = ""
+					tempRole = ""
 					// 用户提交的处理人优先级最高
 					if v, ok := requestTaskHandleMap[taskHandleTemplate.Id]; ok {
 						tempHandler = v.Handler

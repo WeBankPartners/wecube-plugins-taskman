@@ -70,7 +70,7 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 			if v.Name == "id" {
 				isQueryMessage = true
 			}
-			if v.Name == "mgmtRoles" || v.Name == "useRoles" {
+			if v.Name == "mgmtRoles" || v.Name == "useRoles" || v.Name == "type" {
 				inValueList := v.Value.([]interface{})
 				var inValueStringList []string
 				for _, inValueInterfaceObj := range inValueList {
@@ -88,8 +88,10 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 				roleFilterSql, roleFilterParam := dao.CreateListParams(inValueStringList, "")
 				if v.Name == "mgmtRoles" {
 					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='MGMT' and t2.role in ("+roleFilterSql+")", roleFilterParam)
-				} else {
+				} else if v.Name == "useRoles" {
 					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='USE' and t2.role in ("+roleFilterSql+")", roleFilterParam)
+				} else if v.Name == "type" {
+					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select id from request_template where type in ("+roleFilterSql+")", roleFilterParam)
 				}
 				if tmpErr != nil {
 					err = fmt.Errorf("Try to query filter role id fail,%s ", tmpErr.Error())
@@ -198,11 +200,16 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 }
 
 func (s *RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, user, status, reason string) (err error) {
+	var rt *models.RequestTemplateTable
 	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)}
 	// 状态更新到草稿,需要退回
 	if status == string(models.RequestTemplateStatusCreated) {
-		requestTemplate.BackDesc = reason
+		rt, err = s.GetRequestTemplate(requestTemplateId)
+		if err != nil {
+			return
+		}
+		requestTemplate.BackDesc = reason + "\n" + rt.BackDesc
 	}
 	return s.requestTemplateDao.Update(nil, requestTemplate)
 }
@@ -1437,7 +1444,7 @@ func (s *RequestTemplateService) DisableRequestTemplate(requestTemplateId, opera
 		err = fmt.Errorf("only confirm status template can disable")
 		return
 	}
-	_, err = dao.X.Exec("update request_template set status='disable',updated_by = ?,updated_time =? where id=?", requestTemplateId, operator, time.Now().Format(models.DateTimeFormat))
+	_, err = dao.X.Exec("update request_template set status='disable',updated_by = ?,updated_time =? where id=?", operator, time.Now().Format(models.DateTimeFormat), requestTemplateId)
 	return
 }
 
@@ -1455,7 +1462,7 @@ func (s *RequestTemplateService) EnableRequestTemplate(requestTemplateId, operat
 		err = fmt.Errorf("only disable status template can enable")
 		return
 	}
-	_, err = dao.X.Exec("update request_template set status='confirm' where id=?", requestTemplateId)
+	_, err = dao.X.Exec("update request_template set status='confirm',updated_by=?,updated_time=? where id=?", operator, time.Now().Format(models.DateTimeFormat), requestTemplateId)
 	return
 }
 

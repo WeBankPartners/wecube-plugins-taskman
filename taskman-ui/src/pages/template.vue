@@ -48,6 +48,19 @@
           </Select>
         </Col>
         <Col span="4">
+          <Select
+            v-model="type"
+            clearable
+            filterable
+            multiple
+            placeholder="使用场景"
+            style="width: 90%"
+            @on-change="onSearch"
+          >
+            <Option v-for="item in typeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+          </Select>
+        </Col>
+        <Col span="4">
           <Button @click="onSearch" type="primary">{{ $t('search') }}</Button>
           <Button @click="handleReset" type="default">{{ $t('reset') }}</Button>
         </Col>
@@ -119,6 +132,7 @@ export default {
       name: '',
       status: 'confirm',
       mgmtRoles: [],
+      type: [],
       tags: '',
       modalShow: false,
       pagination: {
@@ -213,6 +227,15 @@ export default {
             return params.row.useRoles.map(item => {
               return <Tag>{item.displayName}</Tag>
             })
+          }
+        },
+        {
+          title: '使用场景',
+          minWidth: 80,
+          key: 'type',
+          render: (h, params) => {
+            const find = this.typeList.find(i => i.value === params.row.type) || {}
+            return (find.label && <Tag>{find.label}</Tag>) || <span>-</span>
           }
         },
         {
@@ -366,7 +389,14 @@ export default {
       uploadUrl: '/taskman/api/v1/request-template/import',
       headers: {},
       backReason: '',
-      loading: false
+      loading: false,
+      typeList: [
+        { label: '发布', value: 1 },
+        { label: '请求', value: 2 },
+        { label: '问题', value: 3 },
+        { label: '事件', value: 4 },
+        { label: '变更', value: 5 }
+      ]
     }
   },
   mounted () {
@@ -388,6 +418,7 @@ export default {
     handleReset () {
       this.name = ''
       this.mgmtRoles = []
+      this.type = []
       this.tags = ''
       this.onSearch()
     },
@@ -668,6 +699,13 @@ export default {
           name: 'mgmtRoles',
           operator: 'eq',
           value: this.mgmtRoles
+        })
+      }
+      if (this.type.length > 0) {
+        this.payload.filters.push({
+          name: 'type',
+          operator: 'eq',
+          value: this.type
         })
       }
       if (sorting) {

@@ -270,7 +270,7 @@ export default {
                   )}
                 {// 认领
                   !params.row.handler &&
-                  ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
+                  ['Pending', 'InProgress', 'InApproval'].includes(params.row.status) &&
                   ['myPending', 'pending'].includes(this.tabName) &&
                   // 模板指定/提交人指定，该提交人角色的管理员可以展示认领按钮
                   ((['template', 'custom'].includes(params.row.handlerType) &&
@@ -291,7 +291,7 @@ export default {
                 {// 转给我
                   params.row.handler &&
                   this.username !== params.row.handler &&
-                  ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(params.row.status) &&
+                  ['Pending', 'InProgress', 'InApproval'].includes(params.row.status) &&
                   ['myPending', 'pending'].includes(this.tabName) &&
                   // 模板指定/提交人指定，该提交人角色的管理员可以展示转给我按钮
                   ((['template', 'custom'].includes(params.row.handlerType) &&

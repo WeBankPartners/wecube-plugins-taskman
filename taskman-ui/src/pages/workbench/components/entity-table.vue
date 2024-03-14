@@ -23,7 +23,7 @@
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
             <Row :key="index">
-              <Col v-for="(i, index) in formOptions" :key="index" :span="i.width || 24">
+              <Col v-for="i in formOptions" :key="i.id" :span="i.width || 24">
                 <FormItem
                   :label="i.title"
                   :prop="i.name"
@@ -85,7 +85,7 @@
           </Form>
         </div>
         <div v-if="!formDisable && tableData.length > 1" class="button">
-          <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow" />
+          <Icon type="md-trash" color="#ed4014" size="24" @click="handleDeleteRow(index)" />
         </div>
       </div>
     </div>
@@ -117,7 +117,7 @@
 </template>
 
 <script>
-import { getRefOptions, getWeCmdbOptions } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions, saveFormData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import EntityItem from './edit-entity-item.vue'
 import LimitSelect from '@/pages/components/limit-select.vue'
@@ -160,7 +160,7 @@ export default {
     return {
       requestData: [],
       activeTab: '',
-      activeItem: '',
+      activeItem: {},
       refKeys: [], // 引用类型字段集合select类型
       formOptions: [],
       tableData: [],
@@ -193,8 +193,8 @@ export default {
         if (val && val.length) {
           this.requestData = deepClone(val)
           this.requestData.forEach(item => {
-            // 新增时，没有配置数据，默认添加一行
-            if (item.value.length === 0 && this.autoAddRow) {
+            // 无表单数据，不是选择已有数据添加一行，默认添加一行
+            if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
               this.handleAddRow(item)
             }
           })
@@ -208,6 +208,34 @@ export default {
     }
   },
   methods: {
+    async saveCurrentTabData (item) {
+      await saveFormData(this.requestId, item)
+    },
+    // 请求表单数据必填项校验
+    requiredCheck (data) {
+      let result = true
+      let requiredName = []
+      data.title.forEach(t => {
+        if (t.required === 'yes') {
+          requiredName.push(t.name)
+        }
+      })
+      data.value.forEach(v => {
+        requiredName.forEach(key => {
+          let val = v.entityData[key]
+          if (Array.isArray(val)) {
+            if (val.length === 0) {
+              result = false
+            }
+          } else {
+            if (val === '' || val === undefined) {
+              result = false
+            }
+          }
+        })
+      })
+      return result
+    },
     handleTimeChange (e, value, name) {
       if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
         value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
@@ -227,6 +255,14 @@ export default {
     },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function (item) {
+      // 每次切换保存之前的tab表单
+      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+      if (!this.requiredCheck(data)) {
+        return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)
+      } else {
+        this.saveCurrentTabData(data)
+      }
+
       this.activeTab = item.entity || item.itemGroup
       this.activeItem = item
       this.initTableData()
@@ -236,7 +272,6 @@ export default {
     async initTableData () {
       // 当前选择tab数据
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      this.oriData = data
       // select类型集合
       this.refKeys = []
       data.title.forEach(t => {
@@ -356,17 +391,17 @@ export default {
       }
     },
     // 删除行数据
-    handleDeleteRow (row) {
+    handleDeleteRow (index) {
       this.$Modal.confirm({
         title: this.$t('confirm') + this.$t('delete'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
           this.$Modal.remove()
-          this.tableData.splice(row._index, 1)
+          this.tableData.splice(index, 1)
           this.requestData.forEach(item => {
             if (item.entity === this.activeTab || item.itemGroup === this.activeTab) {
-              item.value.splice(row._index, 1)
+              item.value.splice(index, 1)
             }
           })
         },
@@ -382,13 +417,14 @@ export default {
       } else if (this.activeItem.itemGroupRule === 'exist') {
         if (this.addRowSource) {
           const source = this.addRowSourceOptions.find(i => i.id === this.addRowSource)
-          this.handleAddRow(this.activeItem, source)
+          const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+          this.handleAddRow(data, source)
           this.initTableData()
         }
       }
     },
     // 添加一条行数据
-    handleAddRow (data, source) {
+    handleAddRow (data, source = null) {
       let entityData = {}
       data.title.forEach(item => {
         // 选择已有数据添加一行，填充默认值
@@ -427,10 +463,14 @@ export default {
       const { status, data } = await getWeCmdbOptions(packageName, entity, {})
       if (status === 'OK') {
         this.addRowSourceOptions = data || []
-        // 过滤下拉框数据(表单dataId和下拉框数据id相同)
+        // 过滤下拉框数据(便利所有表单组，每个组下的dataId都要过滤掉)
         if (this.activeItem.value) {
           let dataIds = []
-          this.activeItem.value.forEach(i => i.dataId && dataIds.push(i.dataId))
+          this.requestData.forEach(item => {
+            if (item.itemGroupRule === 'exist') {
+              item.value.forEach(_ => _.dataId && dataIds.push(_.dataId))
+            }
+          })
           this.addRowSourceOptions = this.addRowSourceOptions.filter(i => !dataIds.includes(i.id))
         }
       }

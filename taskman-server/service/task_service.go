@@ -172,7 +172,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	input.RoleName = remakeTaskReportRole(input.RoleName)
-	newTaskObj := models.TaskTable{Id: "task_" + guid.CreateGuid(), Name: input.TaskName, Status: "created", Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ","), Handler: input.Handler}
+	newTaskObj := models.TaskTable{Id: "tk_" + guid.CreateGuid(), Name: input.TaskName, Status: "created", Reporter: input.Reporter, ReportRole: input.RoleName, Description: input.TaskDescription, CallbackUrl: input.CallbackUrl, CallbackParameter: input.CallbackParameter, NextOption: strings.Join(nextOptions, ","), Handler: input.Handler}
 	taskId = newTaskObj.Id
 	operator := "system"
 	var taskFormInput models.PluginTaskFormDto
@@ -877,7 +877,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		string(requestBytes), param.Comment, models.TaskResultTypeComplete, param.ChoseOption, "done", operator, nowTime, task.Id,
 	}})
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.TaskHandleId}})
-	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language)
+	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}

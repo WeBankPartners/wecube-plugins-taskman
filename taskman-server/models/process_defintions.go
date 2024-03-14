@@ -237,6 +237,7 @@ type DefinitionsData struct {
 	FlowNodes      []*FlowNodes `json:"flowNodes"`
 }
 type TaskNodeInstances struct {
+	Id                string        `json:"id"`
 	NodeId            string        `json:"nodeId"`
 	NodeName          string        `json:"nodeName"`
 	NodeType          string        `json:"nodeType"`

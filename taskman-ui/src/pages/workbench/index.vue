@@ -14,7 +14,11 @@
       @fetchData="handleOverviewChange"
     ></DataCard>
     <div class="data-tabs">
-      <Tabs v-if="['pending', 'hasProcessed'].includes(tabName)" v-model="type" @on-click="handleTypeChange">
+      <Tabs
+        v-if="['myPending', 'pending', 'hasProcessed'].includes(tabName)"
+        v-model="type"
+        @on-click="handleTypeChange"
+      >
         <!--审批-->
         <TabPane :label="approveLabel" name="3"></TabPane>
         <!--任务处理-->
@@ -84,7 +88,7 @@ export default {
   mixins: [column, search],
   data () {
     return {
-      tabName: 'pending', // pending待处理,hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
+      tabName: 'myPending', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
       initAction: '',
@@ -129,8 +133,8 @@ export default {
         return (
           <div>
             <span>{this.$t('tw_task_tab')}</span>
-            {this.tabName === 'pending' && this.getPendingNumber(0) > 0 && (
-              <span class="badge">{this.getPendingNumber(0)}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Task') > 0 && (
+              <span class="badge">{this.getPendingNumber('Task')}</span>
             )}
           </div>
         )
@@ -139,8 +143,8 @@ export default {
         return (
           <div>
             <span>审批</span>
-            {this.tabName === 'pending' && this.getPendingNumber(1) > 0 && (
-              <span class="badge">{this.getPendingNumber(1)}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Approve') > 0 && (
+              <span class="badge">{this.getPendingNumber('Approve')}</span>
             )}
           </div>
         )
@@ -149,8 +153,8 @@ export default {
         return (
           <div>
             <span>{this.$t('tw_pending_tab')}</span>
-            {this.tabName === 'pending' && this.getPendingNumber(2) > 0 && (
-              <span class="badge">{this.getPendingNumber(2)}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Check') > 0 && (
+              <span class="badge">{this.getPendingNumber('Check')}</span>
             )}
           </div>
         )
@@ -159,8 +163,8 @@ export default {
         return (
           <div>
             <span>请求确认</span>
-            {this.tabName === 'pending' && this.getPendingNumber(3) > 0 && (
-              <span class="badge">{this.getPendingNumber(3)}</span>
+            {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Confirm') > 0 && (
+              <span class="badge">{this.getPendingNumber('Confirm')}</span>
             )}
           </div>
         )
@@ -169,8 +173,8 @@ export default {
   },
   computed: {
     getPendingNumber () {
-      return function (index) {
-        return Number(this.$refs.dataCard.pendingNumObj[this.actionName][index]) || 0
+      return function (type) {
+        return Number(this.$refs.dataCard.pendingNumObj[this.actionName][type]) || 0
       }
     }
   },
@@ -181,7 +185,7 @@ export default {
     }
   },
   mounted () {
-    this.initTab = this.$route.query.tabName || 'pending'
+    this.initTab = this.$route.query.tabName || 'myPending'
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
@@ -191,7 +195,7 @@ export default {
       this.actionName = action
       const type = this.$route.query.type
       const rollback = this.$route.query.rollback
-      if (['pending', 'hasProcessed'].includes(val)) {
+      if (['myPending', 'pending', 'hasProcessed'].includes(val)) {
         if (['1', '2', '3', '4'].includes(type)) {
           this.type = type
         } else {
@@ -227,7 +231,7 @@ export default {
     handleOverviewChange (val, action) {
       this.tabName = val
       this.actionName = action
-      if (['pending', 'hasProcessed'].includes(val)) {
+      if (['myPending', 'pending', 'hasProcessed'].includes(val)) {
         this.type = '3'
         this.rollback = ''
         this.getTypeConfig()
@@ -257,7 +261,7 @@ export default {
     },
     // 待处理、已处理表格差异化配置
     getTypeConfig () {
-      if (this.tabName === 'pending') {
+      if (this.tabName === 'pending' || this.tabName === 'myPending') {
         this.tableColumn = this.pendingTaskColumn
         if (['1', '4'].includes(this.type)) {
           this.searchOptions = this.pendingSearch
@@ -326,7 +330,7 @@ export default {
     },
     // 表格默认排序
     initSortTable () {
-      if (this.tabName === 'pending') {
+      if (this.tabName === 'pending' || this.tabName === 'myPending') {
         this.sorting = {
           asc: false,
           field: 'taskCreatedTime'
@@ -353,7 +357,7 @@ export default {
       const form = deepClone(this.form)
       // 过滤掉多余时间
       var dateTransferArr = []
-      if (this.tabName === 'pending') {
+      if (this.tabName === 'pending' || this.tabName === 'myPending') {
         dateTransferArr = ['taskExpectTime', 'taskCreatedTime']
       } else if (this.tabName === 'hasProcessed') {
         dateTransferArr = ['taskExpectTime', 'taskCreatedTime', 'taskApprovalTime']
@@ -390,7 +394,7 @@ export default {
         params.sorting = this.sorting
       }
       // 过滤掉多余属性
-      if (!['pending', 'hasProcessed'].includes(this.tabName)) {
+      if (!['myPending', 'pending', 'hasProcessed'].includes(this.tabName)) {
         delete params.type
       }
       if (!['submit'].includes(this.tabName)) {
@@ -557,7 +561,7 @@ export default {
       if (
         this.username === row.handler &&
         ['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(row.status) &&
-        this.tabName === 'pending'
+        ['myPending', 'pending'].includes(this.tabName)
       ) {
         this.handleEdit(row)
       } else if (row.status === 'Draft' && this.tabName !== 'hasProcessed') {

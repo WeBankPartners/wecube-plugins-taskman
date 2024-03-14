@@ -101,5 +101,21 @@
                 </outputParameters>
             </interface>
         </plugin>
+        <plugin name="request">
+            <interface action="create" path="/taskman/api/v2/plugin/request/create" httpMethod="POST">
+                <inputParameters>
+                    <parameter datatype="string" mappingType="constant" required="Y">requestTemplate</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">rootDataId</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reportRole</parameter>
+                    <parameter datatype="string" mappingType="context" required="N">procInstId</parameter>
+                </inputParameters>
+                <outputParameters>
+                    <parameter datatype="string" mappingType="context">errorCode</parameter>
+                    <parameter datatype="string" mappingType="context">errorMessage</parameter>
+                    <parameter datatype="string" mappingType="context">comment</parameter>
+                    <parameter datatype="string" mappingType="context">requestId</parameter>
+                </outputParameters>
+            </interface>
+        </plugin>
     </plugins>
 </package>

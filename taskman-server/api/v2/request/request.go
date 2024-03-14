@@ -247,7 +247,7 @@ func PluginCreateRequest(c *gin.Context) {
 
 func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId, token, language string) (result *models.PluginRequestCreateOutputObj, err error) {
 	result = &models.PluginRequestCreateOutputObj{CallbackParameter: input.CallbackParameter}
-	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.Role}
+	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.ReportRole}
 	// 创建请求
 	if err = handleCreateRequest(&requestObj, []string{}, token, language); err != nil {
 		return
@@ -276,6 +276,19 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 			break
 		}
 	}
+	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, "approve", token, language); getApproveErr != nil {
+		err = getApproveErr
+		return
+	} else {
+		saveParam.ApprovalList = append(saveParam.ApprovalList, approveList...)
+	}
+	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, "implement", token, language); getApproveErr != nil {
+		err = getApproveErr
+		return
+	} else {
+		saveParam.ApprovalList = append(saveParam.ApprovalList, approveList...)
+	}
+
 	if err = service.SaveRequestCacheV2(requestObj.Id, "system", token, &saveParam); err != nil {
 		return
 	}

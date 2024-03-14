@@ -64,7 +64,7 @@
             <span>{{ $t('tw_approval_step1_tips') }}</span>
           </div>
           <div class="content">
-            <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId" autoAddRow></EntityTable>
+            <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId"></EntityTable>
             <div v-if="handleData.formData && handleData.formData.length === 0" class="no-data">
               暂未配置表单
             </div>

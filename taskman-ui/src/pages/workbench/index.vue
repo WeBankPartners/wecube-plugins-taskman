@@ -14,29 +14,31 @@
       @fetchData="handleOverviewChange"
     ></DataCard>
     <div class="data-tabs">
+      <!--tab标签添加name=workbench属性，解决自定义home页面bug-->
       <Tabs
+        name="workbench"
         v-if="['myPending', 'pending', 'hasProcessed'].includes(tabName)"
         v-model="type"
         @on-click="handleTypeChange"
       >
         <!--审批-->
-        <TabPane :label="approveLabel" name="3"></TabPane>
+        <TabPane :label="approveLabel" name="3" tab="workbench"></TabPane>
         <!--任务处理-->
-        <TabPane :label="taskLabel" name="2"></TabPane>
+        <TabPane :label="taskLabel" name="2" tab="workbench"></TabPane>
         <!--请求定版-->
-        <TabPane :label="pendingLabel" name="1"></TabPane>
+        <TabPane :label="pendingLabel" name="1" tab="workbench"></TabPane>
         <!--请求确认-->
-        <TabPane :label="confirmLabel" name="4"></TabPane>
+        <TabPane :label="confirmLabel" name="4" tab="workbench"></TabPane>
       </Tabs>
-      <Tabs v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
+      <Tabs name="workbench" v-if="['submit'].includes(tabName)" v-model="rollback" @on-click="handleRollbackChange">
         <!--所有-->
-        <TabPane :label="$t('tw_all_tab')" name="0"></TabPane>
+        <TabPane :label="$t('tw_all_tab')" name="0" tab="workbench"></TabPane>
         <!--被退回-->
-        <TabPane :label="$t('tw_return_tab')" name="1"></TabPane>
+        <TabPane :label="$t('tw_return_tab')" name="1" tab="workbench"></TabPane>
         <!--本人撤回-->
-        <TabPane :label="$t('tw_recall_tab')" name="3"></TabPane>
+        <TabPane :label="$t('tw_recall_tab')" name="3" tab="workbench"></TabPane>
         <!--其他-->
-        <TabPane :label="$t('tw_other_tab')" name="2"></TabPane>
+        <TabPane :label="$t('tw_other_tab')" name="2" tab="workbench"></TabPane>
       </Tabs>
       <CollectTable v-if="tabName === 'collect'" ref="collect" :actionName="actionName"></CollectTable>
       <template v-else>

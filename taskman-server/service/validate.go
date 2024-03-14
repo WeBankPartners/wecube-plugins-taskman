@@ -33,9 +33,13 @@ func validateFormDataRegular(input *models.RequestPreDataTableObj, userToken str
 		return
 	}
 	attrRegularMap := make(map[string]string)
+	nullableMap := make(map[string]int)
 	for _, v := range attrList {
 		if v.RegularExpressionRule != "" {
 			attrRegularMap[v.PropertyName] = v.RegularExpressionRule
+		}
+		if v.Nullable == "yes" {
+			nullableMap[v.PropertyName] = 1
 		}
 	}
 	var titleIdList []string
@@ -57,6 +61,11 @@ func validateFormDataRegular(input *models.RequestPreDataTableObj, userToken str
 					break
 				}
 				if attrRegular, bb := attrRegularMap[k]; bb {
+					if vString == "" {
+						if _, nullFlag := nullableMap[k]; nullFlag {
+							continue
+						}
+					}
 					if !validateRegular(vString, attrRegular) {
 						err = fmt.Errorf("key:%s value:%s cmdb attribute regular validate fail regular:%s", k, vString, attrRegular)
 					}

@@ -1760,8 +1760,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 			// 模版没有对应的的任务,需要创建当前任务
 			newTaskId = "im_" + guid.CreateGuid()
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now, "system", now, taskSort}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, "system", now, "system", now, taskSort}
 			actions = append(actions, action)
 			taskSort++
 

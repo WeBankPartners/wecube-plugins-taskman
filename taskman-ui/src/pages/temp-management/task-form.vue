@@ -848,7 +848,7 @@ export default {
       this.getApprovalNodeGroups(this.activeEditingNode)
     },
     editNode (node, isNeedSaveFirst = true) {
-      if (isNeedSaveFirst) {
+      if (isNeedSaveFirst && this.isCheck !== 'Y') {
         const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
           this.$refs.approvalFormNodeRef.saveNode(3)

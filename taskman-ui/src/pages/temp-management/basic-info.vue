@@ -244,9 +244,13 @@
         class="btn-footer-margin"
         >{{ $t('save') }}</Button
       >
-      <Button @click="gotoNext" type="primary" :disabled="isSaveBtnDisable" class="btn-footer-margin">{{
-        $t('next')
-      }}</Button>
+      <Button
+        @click="gotoNext"
+        type="primary"
+        :disabled="isCheck !== 'Y' && isSaveBtnDisable"
+        class="btn-footer-margin"
+        >{{ $t('next') }}</Button
+      >
     </div>
   </div>
 </template>

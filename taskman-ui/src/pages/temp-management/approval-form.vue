@@ -217,9 +217,14 @@
                         </draggable>
                       </div>
                       <div style="text-align: right;">
-                        <Button v-if="isCheck !== 'Y'" type="primary" size="small" ghost @click="saveGroup(1)">{{
-                          $t('save')
-                        }}</Button>
+                        <Button
+                          v-if="isCheck !== 'Y'"
+                          type="primary"
+                          size="small"
+                          ghost
+                          @click="saveGroup(3, activeEditingNode)"
+                          >{{ $t('save') }}</Button
+                        >
                         <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
                       </div>
                     </template>
@@ -438,12 +443,21 @@
       ></RequestFormDataWorkflow>
     </Row>
     <div style="text-align: center;margin-top: 16px;" :style="isShowFormConfig ? '' : 'margin-top:48px'">
-      <Button :disabled="isTopButtonDisable" @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{
-        $t('forward')
-      }}</Button>
-      <Button :disabled="isTopButtonDisable" @click="gotoNext" type="primary" class="btn-footer-margin">{{
-        $t('next')
-      }}</Button>
+      <Button
+        :disabled="isCheck !== 'Y' && isTopButtonDisable"
+        @click="gotoForward"
+        ghost
+        type="primary"
+        class="btn-footer-margin"
+        >{{ $t('forward') }}</Button
+      >
+      <Button
+        :disabled="isCheck !== 'Y' && isTopButtonDisable"
+        @click="gotoNext"
+        type="primary"
+        class="btn-footer-margin"
+        >{{ $t('next') }}</Button
+      >
     </div>
   </div>
 </template>

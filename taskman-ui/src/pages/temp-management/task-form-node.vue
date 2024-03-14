@@ -131,7 +131,7 @@
 </template>
 
 <script>
-import Vue from 'vue'
+// import Vue from 'vue'
 import {
   getUserRoles,
   getHandlerRoles,
@@ -215,9 +215,9 @@ export default {
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
       if (statusCode === 'OK') {
-        this.$emit('setFormConfigStatus', !['admin'].includes(this.activeApprovalNode.handleMode))
         this.activeApprovalNode = data
-        Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
+        this.$emit('setFormConfigStatus', !['admin'].includes(this.activeApprovalNode.handleMode))
+        this.$set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         this.mgmtData()
       }
     },
@@ -353,7 +353,7 @@ export default {
       }
       const { statusCode, data } = await getHandlerRoles(params)
       if (statusCode === 'OK') {
-        Vue.set(
+        this.$set(
           this.activeApprovalNode.handleTemplates[roleObjIndex],
           'handlerOptions',
           data.map(d => {

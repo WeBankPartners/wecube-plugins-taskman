@@ -113,7 +113,7 @@
             </Col>
           </Row>
           <Button
-            v-if="['any', 'all'].includes(activeApprovalNode.handleMode)"
+            v-if="isCheck !== 'Y' && ['any', 'all'].includes(activeApprovalNode.handleMode)"
             @click.stop="addRoleObjItem"
             type="primary"
             size="small"
@@ -138,7 +138,7 @@
 </template>
 
 <script>
-import Vue from 'vue'
+// import Vue from 'vue'
 import {
   getUserRoles,
   getHandlerRoles,
@@ -225,9 +225,9 @@ export default {
     async getNodeById (params) {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'approve')
       if (statusCode === 'OK') {
-        this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
         this.activeApprovalNode = data
-        Vue.set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
+        this.$emit('setFormConfigStatus', !['auto'].includes(this.activeApprovalNode.handleMode))
+        this.$set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         // this.activeApprovalNode.handleTemplates = data.thandleTemplates
         this.mgmtData()
       }
@@ -405,7 +405,7 @@ export default {
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
-      this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
+      this.$emit('setFormConfigStatus', !['auto'].includes(this.activeApprovalNode.handleMode))
       this.paramsChanged()
     },
     changeUser (role, roleObjIndex) {
@@ -423,7 +423,7 @@ export default {
       }
       const { statusCode, data } = await getHandlerRoles(params)
       if (statusCode === 'OK') {
-        Vue.set(
+        this.$set(
           this.activeApprovalNode.handleTemplates[roleObjIndex],
           'handlerOptions',
           data.map(d => {

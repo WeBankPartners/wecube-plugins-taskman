@@ -191,6 +191,7 @@ func RevokeRequest(requestId, user string) (err error) {
 	var request models.RequestTable
 	var actions []*dao.ExecAction
 	var latestCheckTask *models.TaskTable
+	var taskSort int
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	request, err = GetSimpleRequest(requestId)
 	if err != nil {
@@ -219,8 +220,9 @@ func RevokeRequest(requestId, user string) (err error) {
 	if latestCheckTask != nil {
 		actions = append(actions, &dao.ExecAction{Sql: "update task set del_flag=1 where id=?", Param: []interface{}{latestCheckTask.Id}})
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,status,request,type,created_by,created_time,updated_by,updated_time) values(?,?,?,?,?,?,?,?,?)",
-		Param: []interface{}{newTaskId, "revoke", models.TaskStatusDone, request.Id, models.TaskTypeRevoke, "system", now, "system", now}})
+	taskSort = GetTaskService().GenerateTaskOrderByRequestId(requestId)
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,status,request,type,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?)",
+		Param: []interface{}{newTaskId, "revoke", models.TaskStatusDone, request.Id, models.TaskTypeRevoke, "system", now, "system", now, taskSort}})
 	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
 		Param: []interface{}{guid.CreateGuid(), newTaskId, request.Role, request.CreatedBy, now, now}})
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status ='Draft',revoke_flag=1,updated_time=? where id=?", Param: []interface{}{nowTime, request.Id}})
@@ -822,6 +824,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	var requestTemplate *models.RequestTemplateTable
 	var actions, approvalActions []*dao.ExecAction
 	var checkTaskHandle *models.TaskHandleTable
+	var taskSort int
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	if err != nil {
 		return
@@ -853,12 +856,13 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	actions = append(actions, &dao.ExecAction{Sql: "update request set handler=?,confirm_time=?,expire_time=?,bind_cache=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{operator, nowTime, expireTime, string(cacheBytes), operator, nowTime, request.Id}})
 	// 更新请求处理状态为完成
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,updated_time=? where id=?",
-		Param: []interface{}{models.TaskHandleResultTypeApprove, nowTime, checkTaskHandle.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,updated_time=? where id=?",
+		Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, nowTime, checkTaskHandle.Id}})
 	// 更新任务为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,task_result=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, models.TaskResultTypeComplete, operator, nowTime, task.Id}})
-	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language)
+	taskSort = GetTaskService().GenerateTaskOrderByRequestId(request.Id)
+	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language, taskSort)
 	if err != nil {
 		return
 	}

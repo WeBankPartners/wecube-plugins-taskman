@@ -1649,16 +1649,16 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 			taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
-				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,task_result,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, models.TaskHandleResultTypeApprove, "system", now, "system", now, taskSort}
+				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,task_result,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, models.TaskHandleResultTypeApprove, "system", now, "system", now, taskSort}
 				actions = append(actions, action)
 				taskSort++
 				continue
 			}
 
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,sort,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, taskTemplate.Sort, "system", now, "system", now, taskSort}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, "system", now, "system", now, taskSort}
 			actions = append(actions, action)
 			taskSort++
 

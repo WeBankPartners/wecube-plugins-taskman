@@ -46,7 +46,7 @@
         :current="0"
         :style="{
           minWidth: progress.approvalProgress.length * 120 + 'px',
-          maxWidth: progress.approvalProgress.length * 200 + 'px'
+          maxWidth: progress.approvalProgress.length * 180 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
@@ -55,11 +55,9 @@
           </template>
           <div class="role" slot="content">
             <Tooltip :content="i.name">
-              <div class="word-eclipse">
-                {{ i.name }}
-                <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
-              </div>
+              <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
+            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
               <span>{{ j.role || '-' }} /</span>
               <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
@@ -75,7 +73,7 @@
         :current="0"
         :style="{
           minWidth: progress.taskProgress.length * 120 + 'px',
-          maxWidth: progress.taskProgress.length * 200 + 'px'
+          maxWidth: progress.taskProgress.length * 180 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
@@ -84,11 +82,9 @@
           </template>
           <div class="role" slot="content">
             <Tooltip :content="i.name">
-              <div class="word-eclipse">
-                {{ i.name }}
-                <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
-              </div>
+              <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
+            <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
               <span>{{ j.role || '-' }} /</span>
               <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
@@ -252,7 +248,6 @@ export default {
     vertical-align: top;
     flex: 1;
     overflow: hidden;
-    width: 120px !important;
   }
   .steps .ivu-steps .ivu-steps-tail > i {
     height: 3px;
@@ -262,10 +257,11 @@ export default {
     display: flex;
     align-items: flex-start;
     .title {
+      display: inline-block;
+      width: 80px;
       font-size: 14px;
       font-weight: 500;
-      margin-right: 15px;
-      margin-top: 2px;
+      margin-top: 3px;
     }
     .mode {
       font-size: 12px;

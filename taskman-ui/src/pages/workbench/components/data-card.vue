@@ -4,21 +4,6 @@
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">
           <Icon :type="i.icon" :color="i.color" :size="i.size"></Icon>
-          <!-- <div v-if="i.type === 'pending'" class="group-btn">
-            <span
-              @click="handlePendGroupChange('my')"
-              :style="{ color: pendingType === 'my' ? 'rgb(229, 158, 45)' : '#17233d' }"
-            >
-              本人处理
-            </span>
-            <span> / </span>
-            <span
-              @click="handlePendGroupChange('group')"
-              :style="{ color: pendingType === 'group' ? 'rgb(229, 158, 45)' : '#17233d' }"
-            >
-              本组处理
-            </span>
-          </div> -->
           <span style="margin-left:5px;">
             {{ `${i.label}` }}
             <!-- <span class="total">{{`(${i.total || 0})`}}</span> -->
@@ -37,12 +22,7 @@
               }
             "
           >
-            <span class="number">
-              {{ i[j.type] || '0' }}
-              <!-- <span v-if="i.type === 'pending' && getPendingNum(j.type) > 0" class="badge">{{
-                getPendingNum(j.type)
-              }}</span> -->
-            </span>
+            <span class="number">{{ i[j.type] || '0' }}</span>
             <span>{{ j.label }}</span>
           </div>
         </div>
@@ -74,7 +54,7 @@ export default {
         {
           type: 'myPending',
           label: '本人处理',
-          icon: 'md-person',
+          icon: 'ios-person',
           size: '28',
           color: '#ed4014',
           total: 0,
@@ -87,9 +67,9 @@ export default {
         {
           type: 'pending',
           label: '本组处理',
-          icon: 'md-people',
+          icon: 'ios-people',
           size: '28',
-          color: '#ed4014',
+          color: '#ff9900',
           total: 0,
           '1': 0,
           '2': 0,
@@ -175,7 +155,7 @@ export default {
         return {
           width: '100%',
           height: '105px',
-          marginRight: i.type === 'hasProcessed' ? '0px' : '15px',
+          marginRight: i.type === 'hasProcessed' ? '0px' : '10px',
           cursor: 'pointer',
           borderTop: i.type === this.active ? '4px solid #e59e2d' : ''
         }
@@ -349,9 +329,9 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0 10px;
+        padding: 0 8px;
         span {
-          font-size: 13px;
+          font-size: 12px;
           font-family: PingFangSC-regular;
         }
         .number {

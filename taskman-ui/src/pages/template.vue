@@ -234,7 +234,7 @@ export default {
           minWidth: 80,
           key: 'type',
           render: (h, params) => {
-            const find = this.typeList.find(i => i.value === params.row.type) || {}
+            const find = this.typeList.find(i => i.value === String(params.row.type)) || {}
             return (find.label && <Tag>{find.label}</Tag>) || <span>-</span>
           }
         },
@@ -391,11 +391,11 @@ export default {
       backReason: '',
       loading: false,
       typeList: [
-        { label: '发布', value: 1 },
-        { label: '请求', value: 2 },
-        { label: '问题', value: 3 },
-        { label: '事件', value: 4 },
-        { label: '变更', value: 5 }
+        { label: '发布', value: '1' },
+        { label: '请求', value: '2' },
+        { label: '问题', value: '3' },
+        { label: '事件', value: '4' },
+        { label: '变更', value: '5' }
       ]
     }
   },

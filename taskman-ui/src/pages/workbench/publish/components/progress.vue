@@ -14,10 +14,10 @@
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
-            <span v-if="['task'].includes(i.node)" @click="handleExpand(i.node)" class="expand-btn">
+            <span v-if="i.node === 'task' && status" @click="handleExpand(i.node)" class="expand-btn">
               {{ taskExpand ? '收起' : '展开' }}
             </span>
-            <span v-if="['approval'].includes(i.node)" @click="handleExpand(i.node)" class="expand-btn">
+            <span v-if="i.node === 'approval' && status" @click="handleExpand(i.node)" class="expand-btn">
               {{ approvalExpand ? '收起' : '展开' }}
             </span>
           </template>

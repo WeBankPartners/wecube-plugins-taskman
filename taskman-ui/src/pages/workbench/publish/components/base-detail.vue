@@ -422,7 +422,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}` })
+            this.$router.push({ path: `/taskman/workbench?tabName=submit&actionName=${this.actionName}&rollback=3` })
           }
         },
         onCancel: () => {}

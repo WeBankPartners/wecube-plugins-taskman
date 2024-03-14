@@ -634,7 +634,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			}
 			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
 			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
-			if req.Tab == "pending" {
+			if req.Tab == "pending" || req.Tab == "myPending" {
 				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
 				platformDataObj.Handler = platformDataObj.TaskHandler
 			}
@@ -988,7 +988,9 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			for _, dto := range taskTemplateDtoList {
 				if len(dto.HandleTemplates) > 0 {
 					for _, template := range dto.HandleTemplates {
-						requestTaskHandleMap[template.Id] = template
+						if template.Id != "" {
+							requestTaskHandleMap[template.Id] = template
+						}
 					}
 				}
 			}
@@ -1146,7 +1148,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	}
 
 	// 添加审批进度
-	approvalProgress, err = getTaskProgress(taskApproveTemplateList, taskMap, requestTaskHandleMap)
+	approvalProgress, err = getTaskProgress(request.Role, userToken, language, taskApproveTemplateList, taskMap, requestTaskHandleMap)
 	if err != nil {
 		return
 	}
@@ -1154,7 +1156,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		rowData.ApprovalProgress = approvalProgress
 	}
 	// 添加任务进度
-	taskProgress, err = getTaskProgress(taskImplementTemplateList, taskMap, requestTaskHandleMap)
+	taskProgress, err = getTaskProgress(request.Role, userToken, language, taskImplementTemplateList, taskMap, requestTaskHandleMap)
 	if err != nil {
 		return
 	}
@@ -1203,7 +1205,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	return
 }
 
-func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto) ([]*models.TaskProgressNode, error) {
+func getTaskProgress(role, userToken, language string, taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto) ([]*models.TaskProgressNode, error) {
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var taskProgressList []*models.TaskProgressNode
@@ -1244,6 +1246,17 @@ func getTaskProgress(taskTemplateList []*models.TaskTemplateTable, taskMap map[s
 					})
 				}
 			}
+			// 如果是角色管理员审批,用户提交匹配不上,需要查询接口拿到
+			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
+				result, _ := GetRoleService().GetRoleAdministrators(role, userToken, language)
+				if len(result) > 0 && result[0] != "" {
+					requestProgress.TaskHandleList = append(requestProgress.TaskHandleList, &models.TaskHandleNode{
+						Handler: result[0],
+						Role:    role,
+					})
+				}
+			}
+
 			if v, ok := taskMap[taskTemplate.Id]; ok {
 				taskHandleList = []*models.TaskHandleTable{}
 				// 查询到对应任务,表示任务已经创建,拿取最新的处理人,并且更新任务状态

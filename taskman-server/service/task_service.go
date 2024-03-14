@@ -772,7 +772,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
 		string(requestBytes), param.Comment, models.TaskResultTypeComplete, param.ChoseOption, "done", operator, nowTime, task.Id,
 	}})
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.TaskHandleId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, param.HandleStatus, param.Comment, nowTime, param.TaskHandleId}})
 	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language, taskSort)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)

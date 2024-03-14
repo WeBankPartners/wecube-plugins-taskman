@@ -610,14 +610,6 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 	return
 }
 
-func GetTaskListByRequestId(requestId string) (taskList []*models.TaskTable, err error) {
-	err = dao.X.SQL("select * from task where request = ? order by created_time desc ", requestId).Find(&taskList)
-	if err != nil {
-		return
-	}
-	return
-}
-
 func ApproveTask(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam) error {
 	var err error
 	var taskSort int
@@ -726,8 +718,8 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	if err != nil {
 		return
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.HandleStatus, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
-	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, param.HandleStatus, operator, now, task.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.HandleResult, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, param.HandleResult, operator, now, task.Id}})
 	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language, taskSort)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
@@ -770,7 +762,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	}
 	var actions, newApproveActions []*dao.ExecAction
 	actions = append(actions, &dao.ExecAction{Sql: "update task set callback_data=?,result=?,task_result=?,chose_option=?,status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{
-		string(requestBytes), param.Comment, models.TaskResultTypeComplete, param.ChoseOption, "done", operator, nowTime, task.Id,
+		string(requestBytes), param.Comment, param.HandleResult, param.ChoseOption, "done", operator, nowTime, task.Id,
 	}})
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status=?,result_desc = ?,updated_time =? where id= ?", Param: []interface{}{param.ChoseOption, models.TaskHandleResultTypeComplete, param.Comment, nowTime, param.TaskHandleId}})
 	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language, taskSort)

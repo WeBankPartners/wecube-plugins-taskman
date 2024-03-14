@@ -88,7 +88,7 @@ func ConfirmRequestFormTemplate(c *gin.Context) {
 		middleware.ReturnError(c, fmt.Errorf("illegal operation"))
 		return
 	}
-	err = service.GetRequestTemplateService().ConfirmRequestTemplate(requestTemplateId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	err = service.GetRequestTemplateService().ConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

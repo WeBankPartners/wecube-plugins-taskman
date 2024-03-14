@@ -123,7 +123,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 	}
 	// 模板发布
 	if param.TargetStatus == string(models.RequestTemplateStatusConfirm) {
-		err = service.GetRequestTemplateService().ConfirmRequestTemplate(param.RequestTemplateId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+		err = service.GetRequestTemplateService().ConfirmRequestTemplate(param.RequestTemplateId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
@@ -278,6 +278,16 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 	}
 	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "forkRequestTemplate", c.Request.RequestURI, "")
 	middleware.ReturnSuccess(c)
+}
+
+func GetConfirmCount(c *gin.Context) {
+	var count int
+	count, err := service.GetRequestTemplateService().GetConfirmCount(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, count)
 }
 
 func GetRequestTemplateTags(c *gin.Context) {

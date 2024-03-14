@@ -875,7 +875,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	return dao.TransactionWithoutForeignCheck(actions)
 }
 
-func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userToken, language string) error {
+func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, operator, userToken, language string) error {
 	var parentId string
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
@@ -916,7 +916,7 @@ func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userT
 		}
 	}
 	var actions []*dao.ExecAction
-	actions = append(actions, &dao.ExecAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=? where id=?", Param: []interface{}{version, nowTime, parentId, requestTemplateObj.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{version, nowTime, parentId, operator, nowTime, requestTemplateObj.Id}})
 	return dao.Transaction(actions)
 }
 
@@ -1557,5 +1557,37 @@ func (s *RequestTemplateService) GetRequestPendingRoleAndHandler(requestTemplate
 	// 没有配置定版角色和定版人则读取模板属主角色和属主处理人
 	role = s.GetRequestTemplateManageRole(requestTemplate.Id)
 	handler = requestTemplate.Handler
+	return
+}
+
+func (s *RequestTemplateService) GetConfirmCount(user, userToken, language string) (count int, err error) {
+	var requestTemplateList []*models.RequestTemplateTable
+	var roleMap map[string]*models.SimpleLocalRoleDto
+	roleMap, err = rpc.QueryAllRoles("Y", userToken, language)
+	if err != nil {
+		return
+	}
+
+	err = dao.X.SQL("select * from request_template where status = ? and del_flag=0 ", models.RequestTemplateStatusPending).Find(&requestTemplateList)
+	if err != nil {
+		return
+	}
+
+	if len(requestTemplateList) > 0 {
+		for _, requestTemplate := range requestTemplateList {
+			var requestTemplateRoleList []*models.RequestTemplateRoleTable
+			err = dao.X.SQL("select * from request_template_role where request_template=? and role_type=?", requestTemplate.Id, models.RolePermissionMGMT).Find(&requestTemplateRoleList)
+			if err != nil {
+				return
+			}
+			if len(requestTemplateRoleList) > 0 {
+				if v, ok := roleMap[requestTemplateRoleList[0].Role]; ok {
+					if v.Administrator == user {
+						count++
+					}
+				}
+			}
+		}
+	}
 	return
 }

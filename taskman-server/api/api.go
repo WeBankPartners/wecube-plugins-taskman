@@ -55,6 +55,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/:id/attrs/list", Method: "GET", HandlerFunc: template.ListRequestTemplateEntityAttrs},
 		&handlerFuncObj{Url: "/request-template/:id/entity", Method: "GET", HandlerFunc: template.QueryRequestTemplateEntity},
 		&handlerFuncObj{Url: "/request-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
+		&handlerFuncObj{Url: "/request-template/confirm_count", Method: "GET", HandlerFunc: template.GetConfirmCount},
 		&handlerFuncObj{Url: "/request-template/fork/:id", Method: "POST", HandlerFunc: template.ForkConfirmRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/tags/:requestTemplateGroup", Method: "GET", HandlerFunc: template.GetRequestTemplateTags},
 		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: template.ExportRequestTemplate},

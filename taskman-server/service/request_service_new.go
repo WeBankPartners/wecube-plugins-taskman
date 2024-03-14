@@ -188,10 +188,10 @@ func getPlatTaskSQL(where, sql string) string {
 func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
 	if taskType == models.TaskTypeNone {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
 		queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
 	} else {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
 		queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
 	}
 	return
@@ -199,7 +199,7 @@ func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilter
 
 func pendingMyTaskSQL(templateType int, user, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and (task_handler =? or task_handler is null) and task_handle_role in (" + userRolesFilterSql + ")"
+	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and (task_handler =? or task_handler is null) and task_handle_role in (" + userRolesFilterSql + ")"
 	queryParam = append([]interface{}{templateType, taskType, user}, userRolesFilterParam...)
 	return
 }
@@ -207,10 +207,10 @@ func pendingMyTaskSQL(templateType int, user, userRolesFilterSql string, userRol
 func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
 	if taskType == models.TaskTypeNone {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type != ? and task_handler =? and latest_flag = 1 "
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type != ? and task_handler =? and latest_flag = 1 "
 		queryParam = append([]interface{}{templateType, models.TaskTypeSubmit, user})
 	} else {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
 		queryParam = append([]interface{}{templateType, taskType, user})
 	}
 	return

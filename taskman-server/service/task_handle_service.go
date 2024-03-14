@@ -115,3 +115,36 @@ func (s *TaskHandleService) GetLatestRequestCheckTaskHandleByRequestId(requestId
 	}
 	return
 }
+
+// CalcTaskResult 计算任务处理结果,当前处理节点选择 完成才调用 CalcTaskResult
+func (s *TaskHandleService) CalcTaskResult(taskId, curTaskHandleId string) string {
+	var result = string(models.TaskHandleResultTypeComplete)
+	var taskHandleList []*models.TaskHandleTable
+	var taskTemplateList []*models.TaskTemplateTable
+	var handleMode string
+	if taskId == "" || curTaskHandleId == "" {
+		return ""
+	}
+	// 协同情况特殊处理
+	dao.X.SQL("select * from task_template where id in (select task_template from task where id = ?)", taskId).Find(&taskTemplateList)
+	if len(taskTemplateList) > 0 {
+		handleMode = taskTemplateList[0].HandleMode
+	}
+	if handleMode == string(models.TaskTemplateHandleModeAny) {
+		return result
+	}
+
+	dao.X.SQL("select * from task_handle  where task = ? and latest_flag = 1", taskId).Find(&taskHandleList)
+	if len(taskHandleList) > 0 {
+		for _, taskHandle := range taskHandleList {
+			if taskHandle.Id == curTaskHandleId {
+				continue
+			}
+			if taskHandle.HandleStatus != string(models.TaskHandleResultTypeComplete) {
+				result = string(models.TaskHandleResultTypeUncompleted)
+				return result
+			}
+		}
+	}
+	return result
+}

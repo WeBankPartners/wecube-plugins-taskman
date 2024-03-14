@@ -46,7 +46,7 @@
         :current="0"
         :style="{
           minWidth: progress.approvalProgress.length * 120 + 'px',
-          maxWidth: progress.approvalProgress.length * 160 + 'px'
+          maxWidth: progress.approvalProgress.length * 200 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
@@ -75,7 +75,7 @@
         :current="0"
         :style="{
           minWidth: progress.taskProgress.length * 120 + 'px',
-          maxWidth: progress.taskProgress.length * 160 + 'px'
+          maxWidth: progress.taskProgress.length * 200 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
@@ -242,8 +242,7 @@ export default {
 <style lang="scss">
 .workbench-base-progress {
   .ivu-steps-content {
-    padding-left: 0px !important;
-    padding-top: 5px;
+    padding: 5px !important;
     font-size: 12px;
     color: #3d3c38 !important;
   }
@@ -261,11 +260,12 @@ export default {
   }
   .steps {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     .title {
       font-size: 14px;
       font-weight: 500;
-      margin-right: 20px;
+      margin-right: 15px;
+      margin-top: 2px;
     }
     .mode {
       font-size: 12px;
@@ -280,10 +280,10 @@ export default {
       flex-direction: column;
     }
     .word-eclipse {
-      max-width: 160px;
+      max-width: 200px;
       text-overflow: ellipsis;
       overflow: hidden;
-      white-space: nowrap;
+      white-space: normal;
     }
     .expand-btn {
       font-size: 14px;

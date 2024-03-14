@@ -55,7 +55,9 @@ import dayjs from 'dayjs'
 const approvalOperation = {
   deny: '拒绝',
   approve: '同意',
-  redraw: '退回'
+  redraw: '退回',
+  complete: '完成',
+  uncompleted: '未完成'
 }
 export default {
   props: {
@@ -81,7 +83,7 @@ export default {
     getOperationName () {
       return function (i) {
         let name = ''
-        if (this.data.type === 'approve' || this.data.type === 'check') {
+        if (['approve', 'check', 'implement_custom'].includes(this.data.type)) {
           name = approvalOperation[i.handleResult]
         } else if (this.data.type === 'implement_process') {
           name = i.handleResult

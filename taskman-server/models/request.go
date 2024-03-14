@@ -389,11 +389,10 @@ type PluginRequestCreateParam struct {
 
 type PluginRequestCreateParamObj struct {
 	CallbackParameter string `json:"callbackParameter"`
-	CallbackUrl       string `json:"callbackUrl"`
 	ProcInstId        string `json:"procInstId"`
 	RequestTemplate   string `json:"requestTemplate"`
 	RootDataId        string `json:"rootDataId"`
-	Role              string `json:"role"`
+	ReportRole        string `json:"reportRole"`
 }
 
 type PluginRequestCreateResp struct {

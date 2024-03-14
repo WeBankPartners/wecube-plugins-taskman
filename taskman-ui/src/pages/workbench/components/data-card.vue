@@ -274,14 +274,6 @@ export default {
                     item[sceneMapValue[key]] = data[tabName][key]
                   }
                 }
-                // tab页签数据(本人处理/本组处理)
-                if (['myPending', 'pending'].includes(item.type)) {
-                  for (let key in this.pendingNumObj) {
-                    for (let type in this.pendingNumObj[key]) {
-                      this.pendingNumObj[key][type] = data[item.type][`${sceneMapWord[key]}${type}`]
-                    }
-                  }
-                }
               }
             })
           }
@@ -300,12 +292,12 @@ export default {
               }
             }
           })
-          // tab页签数据
-          if (['myPending', 'pending'].includes(this.active)) {
-            for (let key in this.pendingNumObj) {
-              for (let type in this.pendingNumObj[key]) {
-                this.pendingNumObj[key][type] = data[this.active][`${sceneMapWord[key]}${type}`]
-              }
+        }
+        // tab页签数据
+        if (['myPending', 'pending'].includes(this.active)) {
+          for (let key in this.pendingNumObj) {
+            for (let type in this.pendingNumObj[key]) {
+              this.pendingNumObj[key][type] = data[this.active][`${sceneMapWord[key]}${type}`]
             }
           }
         }

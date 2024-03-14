@@ -156,6 +156,8 @@ export const geTaskTagList = requestId => req.get(`/taskman/api/v1/request/${req
 export const confirmRequest = params => req.post(`/taskman/api/v1/request/confirm`, params)
 // 获取请求历史
 export const getRequestHistory = requestId => req.get(`/taskman/api/v2/request/history/${requestId}`)
+// 请求表单单独提交
+export const saveFormData = (requestId, data) => req.post(`/taskman/api/v2/request-data/form/save/${requestId}`, data)
 
 // 查询流程图
 export const getFlowByTemplateId = templateId => req.get(`/taskman/api/v1/request/process/definitions/${templateId}`)

@@ -348,13 +348,13 @@ export default {
         })
       }
       // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
+      // const tabName = this.$refs.entityTable.activeTab
+      // if (!this.noChooseCheck(this.handleData.formData)) {
+      //   return this.$Notice.warning({
+      //     title: this.$t('warning'),
+      //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+      //   })
+      // }
       const params = {
         formData: this.handleData.formData,
         comment: this.taskForm.comment,
@@ -400,13 +400,13 @@ export default {
         })
       }
       // 表格至少勾选一条数据校验
-      const tabName = this.$refs.entityTable.activeTab
-      if (!this.noChooseCheck(this.handleData.formData)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
+      // const tabName = this.$refs.entityTable.activeTab
+      // if (!this.noChooseCheck(this.handleData.formData)) {
+      //   return this.$Notice.warning({
+      //     title: this.$t('warning'),
+      //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+      //   })
+      // }
       const params = {
         formData: this.handleData.formData,
         comment: this.taskForm.comment,

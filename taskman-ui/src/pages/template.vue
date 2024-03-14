@@ -5,7 +5,7 @@
         <Tabs v-model="status" @on-click="getTemplateList()">
           <TabPane label="已发布" name="confirm"></TabPane>
           <TabPane label="草稿" name="created"></TabPane>
-          <TabPane label="待管理员确认" name="pending"></TabPane>
+          <TabPane :label="pendingLabel" name="pending"></TabPane>
           <TabPane label="已禁用" name="disable"></TabPane>
         </Tabs>
       </Row>
@@ -121,7 +121,8 @@ import {
   enableTemplate,
   disableTemplate,
   templateGiveMe,
-  updateTemplateStatus
+  updateTemplateStatus,
+  templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
 export default {
@@ -243,6 +244,21 @@ export default {
           sortable: 'updatedBy',
           minWidth: 100,
           key: 'updatedBy'
+        },
+        {
+          title: this.$t('tw_rollback_reason'),
+          sortable: 'updatedBy',
+          minWidth: 150,
+          key: 'rollbackDesc',
+          render: (h, params) => {
+            return (
+              <Tooltip max-width="300" content={params.row.rollbackDesc}>
+                <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                  {params.row.rollbackDesc}
+                </span>
+              </Tooltip>
+            )
+          }
         },
         {
           title: this.$t('tm_updated_time'),
@@ -389,6 +405,15 @@ export default {
       uploadUrl: '/taskman/api/v1/request-template/import',
       headers: {},
       backReason: '',
+      confirmCount: null, // 管理员待发布模板数量
+      pendingLabel: () => {
+        return (
+          <div>
+            <span>待管理员确认</span>
+            {this.confirmCount && <span class="badge">{this.confirmCount}</span>}
+          </div>
+        )
+      },
       loading: false,
       typeList: [
         { label: '发布', value: '1' },
@@ -720,6 +745,7 @@ export default {
         this.tableData = data.contents
         this.pagination.total = data.pageInfo.totalRows
       }
+      this.getConfirmCount()
     },
     disableTemplate (row) {
       this.modalShow = row.id
@@ -732,6 +758,12 @@ export default {
     async enableTemplate (row) {
       await enableTemplate(row.id)
       this.getTemplateList()
+    },
+    async getConfirmCount () {
+      const { statusCode, data } = await templateConfirmCount()
+      if (statusCode === 'OK') {
+        this.confirmCount = data
+      }
     }
   },
   components: {}
@@ -747,5 +779,19 @@ export default {
 .header-icon {
   float: right;
   margin: 3px 40px 0 0 !important;
+}
+.badge {
+  position: absolute;
+  display: inline-block;
+  font-size: 11px;
+  background-color: #f56c6c;
+  border-radius: 10px;
+  color: #fff;
+  height: 18px;
+  line-height: 18px;
+  padding: 0 6px;
+  text-align: center;
+  white-space: nowrap;
+  margin-left: 5px;
 }
 </style>

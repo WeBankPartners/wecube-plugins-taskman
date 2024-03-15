@@ -242,8 +242,8 @@
                     </div>
                   </div>
                   <div style="margin: 12px 0 0 8px;">
-                    <Form :label-width="90" v-if="procDefId !== ''">
-                      <FormItem :label="$t('判断分支')">
+                    <Form :label-width="90">
+                      <FormItem :label="$t('判断分支')" v-if="procDefId !== ''">
                         <Select style="width:94%"> </Select>
                       </FormItem>
                       <FormItem :label="$t('t_action')">

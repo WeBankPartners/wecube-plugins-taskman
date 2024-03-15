@@ -379,8 +379,8 @@ export default {
       if (statusCode === 'OK') {
         this.historyData = data.task || []
         const statusMap = {
-          complete: '已完成',
-          uncompleted: '未完成'
+          complete: this.$t('tw_completed'),
+          uncompleted: this.$t('tw_incomplete')
         }
         this.completeStatus = statusMap[data.request.completeStatus] || ''
         this.uncompletedTasks = data.request.uncompletedTasks || []

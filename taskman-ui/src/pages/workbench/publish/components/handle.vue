@@ -232,7 +232,7 @@ export default {
       taskTagList: [], // 任务节点列表
       completeStatusList: [
         {
-          label: '已完成',
+          label: this.$t('tw_completed'),
           value: 'complete'
         },
         {
@@ -256,11 +256,11 @@ export default {
       ],
       taskStatusList: [
         {
-          label: '已完成',
+          label: this.$t('tw_completed'),
           value: 'complete'
         },
         {
-          label: '未完成',
+          label: this.$t('tw_incomplete'),
           value: 'uncompleted'
         }
       ],

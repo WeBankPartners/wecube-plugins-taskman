@@ -248,9 +248,8 @@
                       </FormItem>
                       <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
-                          <Option value="1">{{ $t('tw_approve') }}</Option>
-                          <Option value="2">{{ $t('tw_reject') }}</Option>
-                          <Option value="3">{{ $t('tw_send_back') }}</Option>
+                          <Option value="1">{{ $t('tw_completed') }}</Option>
+                          <Option value="2">{{ $t('tw_incomplete') }}</Option>
                         </Select>
                       </FormItem>
                       <FormItem :label="$t('tw_comments')">

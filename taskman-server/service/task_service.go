@@ -667,7 +667,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		}
 		if taskTemplateList[0].HandleMode == string(models.TaskTemplateHandleModeAll) {
 			// 并行模式,都要审批完成才能到下一步
-			err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList)
+			err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
 			if err != nil {
 				return
 			}

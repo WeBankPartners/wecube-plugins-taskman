@@ -340,5 +340,7 @@
   "tw_enter_new_data": "输入新数据",
   "tw_select_data": "选择已有数据",
   "tw_entity_data_items": "模型数据项",
-  "tw_configuration_form": "配置表单"
+  "tw_configuration_form": "配置表单",
+  "tw_completed": "已完成",
+  "tw_incomplete": "未完成"
 }

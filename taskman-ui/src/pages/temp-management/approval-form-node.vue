@@ -124,7 +124,7 @@
           <span style="color: red" v-if="isHandlerAddDisable">处理人设置存在重复数据，请修改</span>
         </FormItem>
       </Form>
-      <div style="text-align: center;">
+      <!-- <div style="text-align: center;">
         <Button
           v-if="isCheck !== 'Y'"
           type="primary"
@@ -132,7 +132,7 @@
           @click="saveNode(1)"
           >{{ $t('save') }}</Button
         >
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

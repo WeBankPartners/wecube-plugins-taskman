@@ -1038,7 +1038,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 
 func fillBindingWithRequestData(requestId, userToken, language string, cacheData *models.RequestCacheData, existDepMap map[string][]string) {
 	var items []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
+	//dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
+	dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
 	for _, item := range items {
 		if item.RefEntity == "" {

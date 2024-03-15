@@ -242,15 +242,14 @@
                     </div>
                   </div>
                   <div style="margin: 12px 0 0 8px;">
-                    <Form :label-width="90" v-if="procDefId !== ''">
-                      <FormItem :label="$t('判断分支')">
+                    <Form :label-width="90">
+                      <FormItem :label="$t('判断分支')" v-if="procDefId !== ''">
                         <Select style="width:94%"> </Select>
                       </FormItem>
                       <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
-                          <Option value="1">{{ $t('tw_approve') }}</Option>
-                          <Option value="2">{{ $t('tw_reject') }}</Option>
-                          <Option value="3">{{ $t('tw_send_back') }}</Option>
+                          <Option value="1">{{ $t('tw_completed') }}</Option>
+                          <Option value="2">{{ $t('tw_incomplete') }}</Option>
                         </Select>
                       </FormItem>
                       <FormItem :label="$t('tw_comments')">
@@ -460,6 +459,13 @@
         type="primary"
         class="btn-footer-margin"
         >{{ $t('forward') }}</Button
+      >
+      <Button
+        :disabled="isCheck !== 'Y' && isTopButtonDisable"
+        @click="saveApprovalFromNode"
+        type="info"
+        class="btn-footer-margin"
+        >{{ $t('save') }}</Button
       >
       <Button
         v-if="isCheck !== 'Y'"
@@ -1272,6 +1278,9 @@ export default {
         },
         onCancel: () => {}
       })
+    },
+    saveApprovalFromNode () {
+      this.$refs.approvalFormNodeRef.saveNode(1)
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

@@ -1820,6 +1820,7 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 		}
 		return
 	}
+	return
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 	if err != nil {
 		return

@@ -57,7 +57,7 @@ const approvalOperation = {
   approve: '同意',
   redraw: '退回',
   complete: '完成',
-  uncompleted: '未完成'
+  uncompleted: this.$t('tw_incomplete')
 }
 export default {
   props: {

@@ -958,7 +958,7 @@ export default {
     // 编辑组自定义属性
     editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
       this.nextGroupInfo = groupItem
-      // this.displayLastGroup = false
+      this.displayLastGroup = false
       if (isNeedSaveFirst && this.isCheck !== 'Y') {
         this.saveGroup(4, groupItem)
       } else {

@@ -7,6 +7,7 @@
           :value="value"
           @on-change="handleSelect"
           @on-query-change="handleQuery"
+          @on-open-change="handleOpenChange"
           clearable
           filterable
           :disabled="disabled"
@@ -185,6 +186,11 @@ export default {
       this.query = val
       this.currentPage = 1
       this.getList()
+    },
+    handleOpenChange (flag) {
+      if (flag) {
+        this.$emit('open-change')
+      }
     }
   }
 }

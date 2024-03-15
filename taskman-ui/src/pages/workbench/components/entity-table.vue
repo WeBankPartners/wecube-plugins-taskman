@@ -58,6 +58,7 @@
                     :disabled="i.isEdit === 'no' || formDisable"
                     :multiple="i.multiple === 'Y'"
                     style="width: calc(100% - 20px)"
+                    @open-change="handleSelectOpenChange(i, value, index)"
                   >
                   </LimitSelect>
                   <!--自定义分析类型-->
@@ -208,49 +209,17 @@ export default {
     }
   },
   methods: {
+    handleSelectOpenChange (titleObj, row, index) {
+      this.getRefOptions(titleObj, row, index, false)
+    },
     async saveCurrentTabData (item) {
       await saveFormData(this.requestId, item)
-    },
-    // 请求表单数据必填项校验
-    requiredCheck (data) {
-      let result = true
-      let requiredName = []
-      data.title.forEach(t => {
-        if (t.required === 'yes') {
-          requiredName.push(t.name)
-        }
-      })
-      data.value.forEach(v => {
-        requiredName.forEach(key => {
-          let val = v.entityData[key]
-          if (Array.isArray(val)) {
-            if (val.length === 0) {
-              result = false
-            }
-          } else {
-            if (val === '' || val === undefined) {
-              result = false
-            }
-          }
-        })
-      })
-      return result
     },
     handleTimeChange (e, value, name) {
       if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
         value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
       } else {
         value[name] = e
-      }
-    },
-    // 提交时，定位到没有填写必填项的页签
-    validTable (index) {
-      if (index !== '') {
-        if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
-          return
-        }
-        this.activeTab = this.requestData[index].entity || this.requestData[index].itemGroup
-        this.initTableData()
       }
     },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
@@ -319,20 +288,20 @@ export default {
         this.refKeys.forEach(rfk => {
           if (!(row[rfk + 'Options'] && row[rfk + 'Options'].length > 0)) {
             const titleObj = data.title.find(f => f.name === rfk)
-            this.getRefOptions(titleObj, row, index)
+            this.getRefOptions(titleObj, row, index, true)
           }
         })
       })
     },
-    async getRefOptions (titleObj, row, index) {
+    async getRefOptions (titleObj, row, index, first) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
-      if (titleObj.elementType === 'select' && titleObj.entity === '') {
+      if (titleObj.elementType === 'select' && titleObj.entity === '' && first) {
         row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
         this.$set(this.tableData, index, row)
         return
       }
       // taskman模板管理配置的引用下拉类型
-      if (titleObj.elementType === 'wecmdbEntity') {
+      if (titleObj.elementType === 'wecmdbEntity' && first) {
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
         const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
         if (status === 'OK') {
@@ -368,16 +337,16 @@ export default {
       })
       delete cache._checked
       delete cache._disabled
-      const filterValue = row[titleObj.name]
+      // const filterValue = row[titleObj.name]
       const attrName = titleObj.entity + '__' + titleObj.name
       const attr = titleObj.id
       const params = {
         filters: [
-          {
-            name: 'guid',
-            operator: 'in',
-            value: Array.isArray(filterValue) ? filterValue : [filterValue]
-          }
+          // {
+          //   name: 'guid',
+          //   operator: 'in',
+          //   value: Array.isArray(filterValue) ? filterValue : [filterValue]
+          // }
         ],
         paging: false,
         dialect: {
@@ -460,6 +429,7 @@ export default {
       }
       data.value.push(obj)
     },
+    // 获取【选择已有数据添加一行】下拉列表
     async getCmdbEntityList () {
       const { packageName, entity } = this.activeItem
       const { status, data } = await getWeCmdbOptions(packageName, entity, {})
@@ -475,6 +445,44 @@ export default {
           })
           this.addRowSourceOptions = this.addRowSourceOptions.filter(i => !dataIds.includes(i.id))
         }
+      }
+    },
+    // 请求表单数据必填项校验
+    requiredCheck (data) {
+      let result = true
+      let requiredName = []
+      data.title.forEach(t => {
+        if (t.required === 'yes') {
+          requiredName.push(t.name)
+        }
+      })
+      data.value.forEach(v => {
+        requiredName.forEach(key => {
+          let val = v.entityData[key]
+          if (Array.isArray(val)) {
+            if (val.length === 0) {
+              result = false
+            }
+          } else {
+            if (val === '' || val === undefined) {
+              result = false
+            }
+          }
+        })
+      })
+      return result
+    },
+    // 提交时，定位到没有填写必填项的页签
+    validTable (index) {
+      if (index !== '') {
+        if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
+          return
+        }
+        this.activeTab = this.requestData[index].entity || this.requestData[index].itemGroup
+        this.activeItem = this.requestData[index]
+        this.initTableData()
+        this.addRowSource = ''
+        this.addRowSourceOptions = []
       }
     }
   }

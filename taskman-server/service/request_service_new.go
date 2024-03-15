@@ -1383,6 +1383,8 @@ func getRequestHandler(requestId, templateId string) (role, handler string) {
 	var task *models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
 	var roleArr, handlerArr []string
+	var roleDisplayNameMap = make(map[string]string)
+	roleDisplayNameMap, _ = GetRoleService().GetRoleDisplayName()
 	request, _ = GetSimpleRequest(requestId)
 	if request.Status == string(models.RequestStatusDraft) {
 		return request.Role, request.CreatedBy
@@ -1393,9 +1395,15 @@ func getRequestHandler(requestId, templateId string) (role, handler string) {
 		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
 		if len(taskHandleList) > 0 {
 			for _, taskHandle := range taskHandleList {
+				var displayRole string
 				// 待处理 任务节点和角色都要统计
 				if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
-					roleArr = append(roleArr, taskHandle.Role)
+					if v, ok := roleDisplayNameMap[taskHandle.Role]; ok {
+						displayRole = v
+					} else {
+						displayRole = taskHandle.Role
+					}
+					roleArr = append(roleArr, displayRole)
 					handlerArr = append(handlerArr, taskHandle.Handler)
 				}
 			}
@@ -1711,7 +1719,6 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	var newTaskId string
 	var action *dao.ExecAction
 	var requestConfirmActions, workflowActions []*dao.ExecAction
-	// 加1s
 	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
 	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {

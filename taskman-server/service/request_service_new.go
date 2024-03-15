@@ -632,7 +632,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id)
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id, platformDataObj.TemplateId)
 			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
 			if req.Tab == "pending" || req.Tab == "myPending" {
 				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
@@ -687,7 +687,7 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 	taskTemplateList, _ = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
 	request, _ = GetSimpleRequest(requestId)
 	if instanceId == "" {
-		doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(requestId)
+		doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(request)
 		if len(taskTemplateList) > 0 {
 			progress = len(doneTaskList)
 			total = len(taskTemplateList)
@@ -697,17 +697,17 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 		switch request.Status {
 		case string(models.RequestStatusDraft):
 			curNode = WaitCommit
+			progress = 0
 		case string(models.RequestStatusPending):
 			curNode = RequestPending
-		case string(models.RequestStatusInApproval):
-			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeApprove)
-		case string(models.RequestStatusInProgress):
-			task, _ = GetTaskService().GetDoingTaskByRequestIdAndType(requestId, models.TaskTypeImplement)
 		case string(models.RequestStatusConfirm):
 			curNode = Confirm
 		}
-		if task != nil {
-			curNode = task.Name
+		if curNode == "" {
+			task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate)
+			if task != nil {
+				curNode = task.Name
+			}
 		}
 		return
 	}
@@ -1348,7 +1348,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}
-	_, form.Handler = getRequestHandler(request.Id)
+	_, form.Handler = getRequestHandler(request.Id, request.RequestTemplate)
 	if request.CustomFormCache != "" {
 		err = json.Unmarshal([]byte(request.CustomFormCache), &customForm)
 		if err != nil {
@@ -1378,7 +1378,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态
-func getRequestHandler(requestId string) (role, handler string) {
+func getRequestHandler(requestId, templateId string) (role, handler string) {
 	var request models.RequestTable
 	var task *models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
@@ -1387,7 +1387,7 @@ func getRequestHandler(requestId string) (role, handler string) {
 	if request.Status == string(models.RequestStatusDraft) {
 		return request.Role, request.CreatedBy
 	}
-	task, _ = GetTaskService().GetDoingTask(requestId)
+	task, _ = GetTaskService().GetDoingTask(requestId, templateId)
 	if task != nil {
 		// 根据任务查询 任务处理人
 		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)

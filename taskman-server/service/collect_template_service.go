@@ -43,6 +43,8 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	var userRoleMap = convertArray2Map(userRoles)
 	var resultList, approves, tasks []string
 	var taskTemplateList []*models.TaskTemplateTable
+	var roleDisplayName string
+	var roleDisplayNameMap = make(map[string]string)
 	// 查询该用户收藏的所有模板id
 	err = dao.X.SQL("select * from collect_template where user = ? and type = ?", user, param.Action).Find(&collectTemplateList)
 	if err != nil {
@@ -56,6 +58,10 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		roleTemplateMap[collectTemplate.RequestTemplate] = collectTemplate.Role
 	}
 	if len(resultList) == 0 {
+		return
+	}
+	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName()
+	if err != nil {
 		return
 	}
 	sql := fmt.Sprintf("select * from (select rt.id,rt.parent_id,rt.name,rtg.id as template_group_id,rtg.name as template_group,rtg.manage_role as template_group_role,rt.operator_obj_type,"+
@@ -84,7 +90,8 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 		for _, collectObj := range rowData {
 			approves = []string{}
 			tasks = []string{}
-			templateUserRoleMap = make(map[string]bool, 0)
+			roleDisplayName = ""
+			templateUserRoleMap = make(map[string]bool)
 			template, err := GetRequestTemplateService().GetRequestTemplate(collectObj.Id)
 			if err != nil {
 				continue
@@ -122,7 +129,12 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 					}
 				}
 			}
-			collectObj.UseRole = roleTemplateMap[collectObj.ParentId]
+			if v, ok := roleDisplayNameMap[roleTemplateMap[collectObj.ParentId]]; ok {
+				roleDisplayName = v
+			} else {
+				roleDisplayName = roleTemplateMap[collectObj.ParentId]
+			}
+			collectObj.UseRole = roleDisplayName
 			collectObj.Status = 1
 			// 判断 收藏模板是否被禁用. 禁用版本 大于等于当前模板版本表示禁用
 			if disableTemplateVersionMap[template.ParentId] != "" && compare(disableTemplateVersionMap[template.ParentId], template.Version) >= 0 {

@@ -981,6 +981,11 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 	var ownerRoleMap = make(map[string]string)
 	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
 	var userRoleMap = convertArray2Map(userRoles)
+	var roleDisplayNameMap map[string]string
+	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName()
+	if err != nil {
+		return
+	}
 	result = []*models.UserRequestTemplateQueryObjNew{}
 	useGroupMap, _ := s.getAllRequestTemplateGroup()
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
@@ -1086,6 +1091,7 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 				collectFlag = 1
 			}
 			for _, role := range roleArr {
+				var roleDisplayName string
 				if _, ok := roleTemplateGroupMap[role]; !ok {
 					roleTemplateGroupMap[role] = make(map[string][]*models.RequestTemplateTableObj)
 				}
@@ -1095,6 +1101,12 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 				if template.OperatorObjType == "" {
 					template.OperatorObjType = operatorObjTypeMap[template.ProcDefKey]
 				}
+				// 采用显示名展示
+				if v, ok := roleDisplayNameMap[ownerRoleMap[template.Id]]; ok {
+					roleDisplayName = v
+				} else {
+					roleDisplayName = ownerRoleMap[template.Id]
+				}
 				roleTemplateGroupMap[role][template.Group] = append(roleTemplateGroupMap[role][template.Group], &models.RequestTemplateTableObj{
 					Id:              template.Id,
 					Name:            template.Name,
@@ -1103,7 +1115,7 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 					Status:          template.Status,
 					UpdatedBy:       template.UpdatedBy,
 					Handler:         template.Handler,
-					Role:            ownerRoleMap[template.Id],
+					Role:            roleDisplayName,
 					UpdatedTime:     template.UpdatedTime,
 					CollectFlag:     collectFlag,
 					Type:            template.Type,
@@ -1123,6 +1135,10 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 				UpdatedTime: useGroup.UpdatedTime,
 				Templates:   templateArr,
 			})
+		}
+		// 角色使用显示名
+		if v, ok := roleDisplayNameMap[role]; ok {
+			role = v
 		}
 		resultMap[role] = &models.UserRequestTemplateQueryObjNew{
 			ManageRole: role,

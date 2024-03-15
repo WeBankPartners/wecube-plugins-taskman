@@ -32,7 +32,8 @@ func GetTaskFormStruct(procInstId, nodeDefId string) (result models.TaskMetaResu
 		return
 	}
 	if len(items) == 0 {
-		err = fmt.Errorf("Can not find task item template with procInstId:%s nodeDefId:%s ", procInstId, nodeDefId)
+		result.Data = models.TaskMetaResultData{}
+		//err = fmt.Errorf("Can not find task item template with procInstId:%s nodeDefId:%s ", procInstId, nodeDefId)
 		return
 	}
 	queryRows, queryErr := dao.X.QueryString("select id,task_template from form_template where id=?", items[0].FormTemplate)
@@ -518,7 +519,9 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 		return
 	}
 	if len(itemTemplates) == 0 {
-		return taskForm, fmt.Errorf("Can not find any form item template with task:%s ", taskObj.Id)
+		taskForm.FormData = []*models.RequestPreDataTableObj{}
+		//return taskForm, fmt.Errorf("Can not find any form item template with task:%s ", taskObj.Id)
+		return
 	}
 	formResult := getItemTemplateTitle(itemTemplates)
 	taskForm.FormData = formResult

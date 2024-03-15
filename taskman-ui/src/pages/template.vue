@@ -160,7 +160,19 @@ export default {
           resizable: true,
           width: 200,
           sortable: 'custom',
-          key: 'name'
+          key: 'name',
+          render: (h, params) => {
+            return (
+              <span
+                style="cursor:pointer;"
+                onClick={() => {
+                  this.handleDbClick(params.row)
+                }}
+              >
+                {params.row.name}
+              </span>
+            )
+          }
         },
         {
           title: this.$t('version'),
@@ -176,10 +188,22 @@ export default {
           }
         },
         {
+          title: '使用场景',
+          minWidth: 80,
+          key: 'type',
+          render: (h, params) => {
+            const find = this.typeList.find(i => i.value === String(params.row.type)) || {}
+            return (find.label && <Tag>{find.label}</Tag>) || <span>-</span>
+          }
+        },
+        {
           title: this.$t('procDefId'),
           minWidth: 80,
           sortable: 'custom',
-          key: 'procDefName'
+          key: 'procDefName',
+          render: (h, params) => {
+            return <span>{params.row.procDefName || '-'}</span>
+          }
         },
         {
           title: this.$t('tags'),
@@ -231,34 +255,10 @@ export default {
           }
         },
         {
-          title: '使用场景',
-          minWidth: 80,
-          key: 'type',
-          render: (h, params) => {
-            const find = this.typeList.find(i => i.value === String(params.row.type)) || {}
-            return (find.label && <Tag>{find.label}</Tag>) || <span>-</span>
-          }
-        },
-        {
           title: this.$t('updatedBy'),
           sortable: 'updatedBy',
           minWidth: 100,
           key: 'updatedBy'
-        },
-        {
-          title: this.$t('tw_rollback_reason'),
-          sortable: 'updatedBy',
-          minWidth: 150,
-          key: 'rollbackDesc',
-          render: (h, params) => {
-            return (
-              <Tooltip max-width="300" content={params.row.rollbackDesc}>
-                <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                  {params.row.rollbackDesc}
-                </span>
-              </Tooltip>
-            )
-          }
         },
         {
           title: this.$t('tm_updated_time'),
@@ -422,6 +422,35 @@ export default {
         { label: '事件', value: '4' },
         { label: '变更', value: '5' }
       ]
+    }
+  },
+  watch: {
+    // 给草稿页签动态插入退回原因
+    status: {
+      handler (val) {
+        if (val === 'created') {
+          const index = this.tableColumns.findIndex(i => i.key === 'mgmtRoles')
+          this.tableColumns.splice(index, 0, {
+            title: this.$t('tw_rollback_reason'),
+            sortable: 'updatedBy',
+            minWidth: 150,
+            key: 'rollbackDesc',
+            render: (h, params) => {
+              return (
+                <Tooltip max-width="300" content={params.row.rollbackDesc}>
+                  <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
+                    {params.row.rollbackDesc}
+                  </span>
+                </Tooltip>
+              )
+            }
+          })
+        } else {
+          const index = this.tableColumns.findIndex(i => i.key === 'rollbackDesc')
+          index > 0 && this.tableColumns.splice(index, 1)
+        }
+      },
+      immediate: true
     }
   },
   mounted () {
@@ -764,9 +793,16 @@ export default {
       if (statusCode === 'OK') {
         this.confirmCount = data
       }
+    },
+    // 点击名称快捷跳转
+    handleDbClick (row) {
+      if (this.status === 'created') {
+        this.editTemplate(row)
+      } else {
+        this.checkTemplate(row)
+      }
     }
-  },
-  components: {}
+  }
 }
 </script>
 <style>

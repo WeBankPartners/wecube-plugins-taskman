@@ -288,6 +288,7 @@ export default {
       type: this.$route.query.type, // 首页类型type
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
+      taskId: this.$route.query.taskId,
       // procDefId: '',
       // procDefKey: '',
       detail: {}, // 详情信息
@@ -385,9 +386,12 @@ export default {
         this.uncompletedTasks = data.request.uncompletedTasks || []
         // 当前处理-任务、审批、请求确认
         if (['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
-          const index = this.historyData.findIndex(item => item.editable)
-          this.handleData = this.historyData[index]
-          this.historyData.splice(index, 1)
+          // 当前处理数据
+          this.handleData = this.historyData.find(item => item.id === this.taskId) || {}
+          // const index = this.historyData.findIndex(item => item.editable === true)
+          // this.handleData = this.historyData[index]
+          // 处理历史列表
+          this.historyData = this.historyData.filter(item => item.editable === false)
         }
         if (this.isHandle === false) {
           this.activeStep = this.historyData.length - 1 + ''

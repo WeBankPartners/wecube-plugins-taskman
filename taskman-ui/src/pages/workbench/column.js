@@ -137,7 +137,7 @@ export default {
               <span>
                 {['myPending', 'pending', 'hasProcessed'].includes(this.tabName)
                   ? '任务停留/有效期'
-                  : this.$t('tw_request_stay_time')}
+                  : '请求停留/有效期'}
               </span>
             )
           },

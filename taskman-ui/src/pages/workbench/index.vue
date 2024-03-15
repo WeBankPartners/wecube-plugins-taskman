@@ -451,6 +451,7 @@ export default {
           requestId: row.id,
           requestTemplate: row.templateId,
           taskHandleId: row.taskHandleId, // 任务处理ID
+          taskId: row.taskId,
           isCheck: 'N',
           isHandle: 'Y',
           jumpFrom: this.tabName,

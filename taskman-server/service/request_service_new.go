@@ -503,6 +503,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	loc, _ := time.LoadLocation("Local")
 	if dataObject.Status == string(models.RequestStatusDraft) {
 		if dataObject.ExpireDay != 0 {
+			dataObject.RequestStayTime = "0"
 			dataObject.RequestStayTimeTotal = dataObject.ExpireDay
 		}
 		return

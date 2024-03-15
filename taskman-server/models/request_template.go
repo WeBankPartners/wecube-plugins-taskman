@@ -92,6 +92,7 @@ type CollectDataObj struct {
 	ManageRole        string   `json:"manageRole" xorm:"manage_role"`                // 属主角色
 	Owner             string   `json:"owner" xorm:"owner"`                           // 属主
 	UseRole           string   `json:"useRole" xorm:"use_role"`                      // 使用角色
+	UseRoleDisplay    string   `json:"useRoleDisplay" xorm:"-"`                      // 使用角色
 	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
 	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
 	Approves          []string `json:"approves" xorm:"-"`                            // 审批列表

@@ -134,7 +134,8 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 			} else {
 				roleDisplayName = roleTemplateMap[collectObj.ParentId]
 			}
-			collectObj.UseRole = roleDisplayName
+			collectObj.UseRole = roleTemplateMap[collectObj.ParentId]
+			collectObj.UseRoleDisplay = roleDisplayName
 			collectObj.Status = 1
 			// 判断 收藏模板是否被禁用. 禁用版本 大于等于当前模板版本表示禁用
 			if disableTemplateVersionMap[template.ParentId] != "" && compare(disableTemplateVersionMap[template.ParentId], template.Version) >= 0 {

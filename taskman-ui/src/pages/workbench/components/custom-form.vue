@@ -196,17 +196,17 @@ export default {
       })
       delete cache._checked
       delete cache._disabled
-      const filterValue = this.entityData[titleObj.name]
+      // const filterValue = this.entityData[titleObj.name]
       const attrName = titleObj.entity + '__' + titleObj.name
       const attr = titleObj.id
       const params = {
-        filters: [
-          {
-            name: 'guid',
-            operator: 'in',
-            value: Array.isArray(filterValue) ? filterValue : [filterValue]
-          }
-        ],
+        // filters: [
+        //   {
+        //     name: 'guid',
+        //     operator: 'in',
+        //     value: Array.isArray(filterValue) ? filterValue : [filterValue]
+        //   }
+        // ],
         paging: false,
         dialect: {
           associatedData: {

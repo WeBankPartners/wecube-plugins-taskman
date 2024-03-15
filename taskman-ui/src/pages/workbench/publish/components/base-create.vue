@@ -300,6 +300,7 @@ import UploadFile from '../../components/upload.vue'
 import CustomForm from '../../components/custom-form.vue'
 import BaseProgress from './progress.vue'
 import { deepClone } from '@/pages/util/index'
+import { requiredCheck, noChooseCheck, approvalCheck } from '../../util'
 import {
   getCreateInfo,
   getPublishInfo,
@@ -691,15 +692,20 @@ export default {
         return this.$Message.warning('请求信息必填项为空')
       }
       // 请求表单必填项-校验提示
-      if (!this.requiredCheck(this.form.data)) {
+      if (!requiredCheck(this.form.data, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
+      // 表格至少勾选一条数据校验
+      if (!noChooseCheck(this.form.data, this.$refs.entityTable)) {
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Message.warning(`【${tabName}】${this.$t('tw_table_noChoose_tips')}`)
+      }
       // 审批任务流程角色和用户必填校验
-      if (!this.approvalCheck(this.approvalList)) {
+      if (!approvalCheck(this.approvalList)) {
         return this.$Message.warning('审批流程处理角色和处理人必填')
       }
-      if (!this.approvalCheck(this.taskList)) {
+      if (!approvalCheck(this.taskList)) {
         return this.$Message.warning('任务流程处理角色和处理人必填')
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
@@ -737,41 +743,6 @@ export default {
         onCancel: () => {}
       })
     },
-    // 请求表单数据必填项校验
-    requiredCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        let requiredName = []
-        requestData.title.forEach(t => {
-          if (t.required === 'yes') {
-            requiredName.push(t.name)
-          }
-        })
-        requestData.value.forEach(v => {
-          requiredName.forEach(key => {
-            let val = v.entityData[key]
-            if (Array.isArray(val)) {
-              if (val.length === 0) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            } else {
-              if (val === '' || val === undefined) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            }
-          })
-        })
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
     customFormValid () {
       let result = true
       let requiredName = []
@@ -790,19 +761,6 @@ export default {
           if (val === '' || val === undefined) {
             result = false
           }
-        }
-      })
-      return result
-    },
-    approvalCheck (data) {
-      let result = true
-      data.forEach(i => {
-        if (i.handleTemplates && i.handleTemplates.length > 0) {
-          i.handleTemplates.forEach(j => {
-            if (!j.role || (!j.handler && !['system', 'claim'].includes(j.handlerType))) {
-              result = false
-            }
-          })
         }
       })
       return result

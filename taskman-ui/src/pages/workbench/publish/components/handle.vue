@@ -186,6 +186,7 @@ import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
 import { deepClone } from '@/pages/util/index'
 import { commitTaskData, saveTaskData, geTaskTagList, confirmRequest } from '@/api/server'
+import { requiredCheck, noChooseCheck } from '../../util'
 export default {
   components: {
     HeaderTitle,
@@ -341,20 +342,20 @@ export default {
           return item
         }) || []
       // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
+      if (!requiredCheck(this.handleData.formData, this.$refs.entityTable)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
           desc: this.$t('required_tip')
         })
       }
       // 表格至少勾选一条数据校验
-      // const tabName = this.$refs.entityTable.activeTab
-      // if (!this.noChooseCheck(this.handleData.formData)) {
-      //   return this.$Notice.warning({
-      //     title: this.$t('warning'),
-      //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-      //   })
-      // }
+      if (!noChooseCheck(this.handleData.formData, this.$refs.entityTable)) {
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
       const params = {
         formData: this.handleData.formData,
         comment: this.taskForm.comment,
@@ -393,20 +394,20 @@ export default {
           return item
         }) || []
       // 必填项校验提示
-      if (!this.requiredCheck(this.handleData.formData)) {
+      if (!requiredCheck(this.handleData.formData, this.$refs.entityTable)) {
         return this.$Notice.warning({
           title: this.$t('warning'),
           desc: this.$t('required_tip')
         })
       }
       // 表格至少勾选一条数据校验
-      // const tabName = this.$refs.entityTable.activeTab
-      // if (!this.noChooseCheck(this.handleData.formData)) {
-      //   return this.$Notice.warning({
-      //     title: this.$t('warning'),
-      //     desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-      //   })
-      // }
+      if (!noChooseCheck(this.handleData.formData, this.$refs.entityTable)) {
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Notice.warning({
+          title: this.$t('warning'),
+          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
+        })
+      }
       const params = {
         formData: this.handleData.formData,
         comment: this.taskForm.comment,
@@ -451,53 +452,6 @@ export default {
         })
         this.$router.push({ path: `/taskman/workbench?tabName=hasProcessed&actionName=${this.actionName}&type=4` })
       }
-    },
-    // 校验表格数据必填项
-    requiredCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        let requiredName = []
-        requestData.title.forEach(t => {
-          if (t.required === 'yes') {
-            requiredName.push(t.name)
-          }
-        })
-        requestData.value.forEach(v => {
-          requiredName.forEach(key => {
-            let val = v.entityData[key]
-            if (Array.isArray(val)) {
-              if (val.length === 0) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            } else {
-              if (val === '' || val === undefined) {
-                result = false
-                if (tabIndex === '') {
-                  tabIndex = index
-                }
-              }
-            }
-          })
-        })
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
-    },
-    noChooseCheck (data) {
-      let tabIndex = ''
-      let result = true
-      data.forEach((requestData, index) => {
-        if (requestData.value && requestData.value.length === 0) {
-          tabIndex = index
-          result = false
-        }
-      })
-      this.$refs.entityTable.validTable(tabIndex)
-      return result
     }
   }
 }

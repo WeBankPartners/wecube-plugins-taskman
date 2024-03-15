@@ -373,7 +373,6 @@ import {
 import draggable from 'vuedraggable'
 import RequestFormDataCustom from './request-form-data-custom.vue'
 import RequestFormDataWorkflow from './request-form-data-workflow.vue'
-let idGlobal = 18
 export default {
   name: 'form-select',
   data () {
@@ -672,9 +671,10 @@ export default {
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = 'c_' + idGlobal++
-      newItem.title = newItem.title + idGlobal
-      newItem.name = newItem.name + idGlobal
+      const itemNo = this.generateRandomString()
+      newItem.id = 'c_' + itemNo
+      newItem.title = newItem.title + itemNo
+      newItem.name = newItem.name + itemNo
       newItem.isActive = true
       this.specialId = newItem.id
       this.paramsChanged()
@@ -682,6 +682,13 @@ export default {
         item.isActive = false
       })
       return newItem
+    },
+    generateRandomString () {
+      let result = ''
+      for (let i = 0; i < 4; i++) {
+        result += Math.floor(Math.random() * 10)
+      }
+      return result
     },
     paramsChanged () {
       this.isParmasChanged = true

@@ -97,7 +97,7 @@
               </Col>
               <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
                 <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-                  <Divider>预览</Divider>
+                  <Divider>{{ $t('tw_preview') }}</Divider>
                   <div class="title">
                     <div class="title-text">
                       {{ $t('任务内容') }}
@@ -110,10 +110,10 @@
                         v-for="(groupItem, index) in dataFormInfo.groups"
                         :key="index"
                         :class="{
-                          radio: true,
-                          custom: groupItem.itemGroupType === 'custom',
-                          workflow: groupItem.itemGroupType === 'workflow',
-                          optional: groupItem.itemGroupType === 'optional'
+                          'radio-group-radio': true,
+                          'radio-group-custom': groupItem.itemGroupType === 'custom',
+                          'radio-group-workflow': groupItem.itemGroupType === 'workflow',
+                          'radio-group-optional': groupItem.itemGroupType === 'optional'
                         }"
                         :style="activeStyle(groupItem)"
                       >
@@ -241,9 +241,7 @@
                   <div style="margin: 12px 0 0 8px;">
                     <Form :label-width="90" v-if="procDefId !== ''">
                       <FormItem :label="$t('判断分支')">
-                        <Select style="width:94%">
-                          <Option value="1">{{ $t('测试分支') }}</Option>
-                        </Select>
+                        <Select style="width:94%"> </Select>
                       </FormItem>
                       <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
@@ -1366,29 +1364,31 @@ fieldset[disabled] .ivu-input {
   width: calc(100% - 130px);
   display: inline-block;
 }
+
 .radio-group {
   margin-bottom: 15px;
-  .radio {
-    padding: 5px 15px;
-    border-radius: 32px;
-    font-size: 12px;
-    cursor: pointer;
-    margin: 4px;
-    display: inline-block;
-  }
-  .custom {
-    border: 1px solid #b886f8;
-    color: #b886f8;
-  }
-  .workflow {
-    border: 1px solid #cba43f;
-    color: #cba43f;
-  }
-  .optional {
-    border: 1px solid #81b337;
-    color: #81b337;
-  }
 }
+.radio-group-radio {
+  padding: 5px 15px;
+  border-radius: 32px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 4px;
+  display: inline-block;
+}
+.radio-group-custom {
+  border: 1px solid #b886f8;
+  color: #b886f8;
+}
+.radio-group-workflow {
+  border: 1px solid #cba43f;
+  color: #cba43f;
+}
+.radio-group-optional {
+  border: 1px solid #81b337;
+  color: #81b337;
+}
+
 .node-normal {
   height: 32px;
   line-height: 32px;

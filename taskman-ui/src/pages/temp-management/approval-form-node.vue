@@ -2,7 +2,7 @@
   <div>
     <div class="title">
       <div class="title-text">
-        节点配置
+        {{ $t('tw_node_configuration') }}
         <span class="underline"></span>
       </div>
     </div>
@@ -49,16 +49,16 @@
         </FormItem>
         <FormItem
           v-if="['custom', 'any', 'all'].includes(activeApprovalNode.handleMode)"
-          label="处理人"
+          :label="$t('handler')"
           style="width:70%"
         >
           <Row>
-            <Col class="cutom-table-border" span="2">序号</Col>
+            <Col class="cutom-table-border" span="2">{{ $t('index') }}</Col>
             <Col class="cutom-table-border margin-left--1" span="5">角色设置方式</Col>
             <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">角色</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">{{ $t('manageRole') }}</Col>
             <Col class="cutom-table-border margin-left--1" span="4">人员</Col>
-            <Col class="cutom-table-border margin-left--1" span="2">操作</Col>
+            <Col class="cutom-table-border margin-left--1" span="2">{{ $t('t_action') }}</Col>
           </Row>
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
             <Col class="cutom-table-border margin-top--1" span="2">{{ roleObjIndex + 1 }}</Col>
@@ -156,7 +156,7 @@ export default {
         id: '',
         sort: 1,
         requestTemplate: '',
-        name: '审批1',
+        name: `${this.$t('tw_approval')}1`,
         expireDay: 1,
         description: '',
         handleMode: 'custom',
@@ -297,7 +297,7 @@ export default {
         } else if (type === 2) {
           this.$emit('reloadParentPage', nextNodeId)
         }
-        if (['admin', 'auto'].includes(this.activeApprovalNode.handleMode)) {
+        if (['auto'].includes(this.activeApprovalNode.handleMode)) {
           this.removeNodeGroups()
         }
       }

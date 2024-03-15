@@ -561,11 +561,16 @@ func FilterInSideData(input []*models.EntityDataObj, formItemTemplate *models.Fo
 	if formItemTemplate.IsRefInside == "no" {
 		return output
 	}
-	var formItems []*models.FormItemTable
-	dao.X.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
+	var formRows []*models.FormTable
+	//dao.X.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
+	err := dao.X.SQL("select distinct data_id from form where request=?", requestId).Find(&formRows)
+	if err != nil {
+		log.Logger.Error("FilterInSideData query form data fail", log.Error(err))
+		return
+	}
 	rowDataMap := make(map[string]int)
-	for _, v := range formItems {
-		tmpV := v.RowDataId
+	for _, v := range formRows {
+		tmpV := v.DataId
 		if strings.Contains(tmpV, ":") {
 			tmpV = tmpV[strings.LastIndex(tmpV, ":")+1:]
 		}

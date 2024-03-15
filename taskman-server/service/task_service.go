@@ -635,6 +635,39 @@ func ApproveTask(task models.TaskTable, operator, userToken, language string, pa
 	return nil
 }
 
+func ApproveCustomTask(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam) (err error) {
+	requestParam, callbackUrl, getDataErr := getApproveCallbackParamNew(task.Id)
+	if getDataErr != nil {
+		return getDataErr
+	}
+	if param.ChoseOption != "" {
+		requestParam.ResultCode = param.ChoseOption
+	}
+	for _, v := range requestParam.Results.Outputs {
+		v.Comment = param.Comment
+	}
+	var respResult models.CallbackResult
+	requestBytes, _ := json.Marshal(requestParam)
+	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, language, requestBytes)
+	log.Logger.Info("Custom Callback response", log.String("body", string(b)))
+	err = json.Unmarshal(b, &respResult)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if respResult.Status != "OK" {
+		err = fmt.Errorf("Callback fail,%s ", respResult.Message)
+		return
+	}
+	var actions []*dao.ExecAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &dao.ExecAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, task.Id}})
+	if err = dao.Transaction(actions); err != nil {
+		err = fmt.Errorf("update task message fail,%s ", err.Error())
+	}
+	return
+}
+
 // handleApprove 处理审批
 func handleApprove(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam, taskSort int) (err error) {
 	var actions, newApproveActions []*dao.ExecAction
@@ -667,7 +700,7 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		}
 		if taskTemplateList[0].HandleMode == string(models.TaskTemplateHandleModeAll) {
 			// 并行模式,都要审批完成才能到下一步
-			err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList)
+			err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
 			if err != nil {
 				return
 			}
@@ -1051,9 +1084,15 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator string) (err 
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked",
 		operator, operator, nowTime, param.TaskId}})
 	//添加认领记录
-	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,handler_type,parent_id,created_time," +
-		"updated_time,change_reason) values(?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskHandleList[0].TaskHandleTemplate, taskHandleList[0].Task,
-		taskHandleList[0].Role, operator, taskHandleList[0].HandlerType, param.TaskHandleId, nowTime, nowTime, param.ChangeReason}})
+	if taskHandleList[0].TaskHandleTemplate != "" {
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,handler_type,parent_id,created_time," +
+			"updated_time,change_reason) values(?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskHandleList[0].TaskHandleTemplate, taskHandleList[0].Task,
+			taskHandleList[0].Role, operator, taskHandleList[0].HandlerType, param.TaskHandleId, nowTime, nowTime, param.ChangeReason}})
+	} else {
+		actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle(id,task,role,handler,handler_type,parent_id,created_time," +
+			"updated_time,change_reason) values(?,?,?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskHandleList[0].Task,
+			taskHandleList[0].Role, operator, taskHandleList[0].HandlerType, param.TaskHandleId, nowTime, nowTime, param.ChangeReason}})
+	}
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set latest_flag = 0 where id = ?", Param: []interface{}{param.TaskHandleId}})
 	return dao.Transaction(actions)
 }
@@ -1596,14 +1635,37 @@ func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTab
 	return
 }
 
-func (s *TaskService) GetDoingTask(requestId string) (task *models.TaskTable, err error) {
+// GetDoingTask 任务存在并行情况,按照任务模版排序
+func (s *TaskService) GetDoingTask(requestId, templateId string) (task *models.TaskTable, err error) {
 	var taskList []*models.TaskTable
-	err = dao.X.SQL("select * from task where request = ? and status <> 'done' order by sort desc limit 0,1", requestId).Find(&taskList)
+	var taskTemplateList []*models.TaskTemplateTable
+	var doingTaskMap = make(map[string]*models.TaskTable)
+	err = dao.X.SQL("select * from task where request = ? and status <> 'done' order by sort asc", requestId).Find(&taskList)
 	if err != nil {
 		return
 	}
 	if len(taskList) > 0 {
-		task = taskList[0]
+		if len(taskList) == 1 {
+			task = taskList[0]
+			return
+		}
+		for _, taskTable := range taskList {
+			if taskTable.TaskTemplate != "" {
+				doingTaskMap[taskTable.TaskTemplate] = taskTable
+			}
+		}
+		err = dao.X.SQL("select * from task_template where request_template = ? order by sort asc", templateId).Find(&taskTemplateList)
+		if err != nil {
+			return
+		}
+		if len(taskTemplateList) > 0 {
+			for _, taskTemplate := range taskTemplateList {
+				if v, ok := doingTaskMap[taskTemplate.Id]; ok {
+					task = v
+					return
+				}
+			}
+		}
 	}
 	return
 }
@@ -1627,18 +1689,6 @@ func (s *TaskService) GetTaskMapByRequestId(requestId string) (taskMap map[strin
 	return
 }
 
-func (s *TaskService) GetDoingTaskByRequestIdAndType(requestId string, taskType models.TaskType) (task *models.TaskTable, err error) {
-	var taskList []*models.TaskTable
-	err = dao.X.SQL("select * from task where request = ? and type = ? and status != ?", requestId, taskType, models.TaskStatusDone).Find(&taskList)
-	if err != nil {
-		return
-	}
-	if len(taskList) > 0 {
-		task = taskList[0]
-	}
-	return
-}
-
 func (s *TaskService) GetDoingTaskByRequestId(requestId string) (task *models.TaskTable, err error) {
 	var taskList []*models.TaskTable
 	err = dao.X.SQL("select * from task where request = ?  and status != ?", requestId, models.TaskStatusDone).Find(&taskList)
@@ -1652,10 +1702,13 @@ func (s *TaskService) GetDoingTaskByRequestId(requestId string) (task *models.Ta
 }
 
 // GetDoneTaskByRequestId 已完成对任务,取最后一次提交请求后的完成任务
-func (s *TaskService) GetDoneTaskByRequestId(requestId string) (taskList []*models.TaskTable, err error) {
+func (s *TaskService) GetDoneTaskByRequestId(request models.RequestTable) (taskList []*models.TaskTable, err error) {
+	if request.Status == string(models.RequestStatusDraft) {
+		return
+	}
 	var allTaskList []*models.TaskTable
 	taskList = []*models.TaskTable{}
-	err = dao.X.SQL("select * from task where request = ? order by sort desc", requestId).Find(&allTaskList)
+	err = dao.X.SQL("select * from task where request = ? order by sort desc", request.Id).Find(&allTaskList)
 	if err != nil {
 		return
 	}

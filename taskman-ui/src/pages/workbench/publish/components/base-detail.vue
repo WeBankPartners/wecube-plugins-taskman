@@ -260,8 +260,7 @@ import UploadFile from '../../components/upload.vue'
 import BaseProgress from './progress.vue'
 import CustomForm from '../../components/custom-form.vue'
 import CurrentHandle from './handle.vue'
-import { getRootEntity, getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
-// import historyMockData from './mock.js'
+import { getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
 export default {
   components: {
     HeaderTitle,
@@ -357,7 +356,7 @@ export default {
       const { statusCode, data } = await getPublishInfo(this.requestId)
       if (statusCode === 'OK') {
         this.detail = data.request || {}
-        const { name, rootEntityId, description, expectTime, formData, attachFiles } = this.detail
+        const { name, rootEntityId, operatorObj, description, expectTime, formData, attachFiles } = this.detail
         this.attachFiles = attachFiles
         this.form = Object.assign({}, this.form, {
           name,
@@ -366,10 +365,10 @@ export default {
           expectTime,
           data: formData
         })
-        // 模板关联编排
-        if (this.detail.associationWorkflow) {
-          this.getEntity()
-        }
+        this.rootEntityOptions.push({
+          guid: rootEntityId,
+          key_name: operatorObj
+        })
         this.getRequestHistory()
       }
     },
@@ -393,18 +392,6 @@ export default {
         if (this.isHandle === false) {
           this.activeStep = this.historyData.length - 1 + ''
         }
-      }
-    },
-    // 操作目标对象
-    async getEntity () {
-      let params = {
-        params: {
-          requestId: this.requestId
-        }
-      }
-      const { statusCode, data } = await getRootEntity(params)
-      if (statusCode === 'OK') {
-        this.rootEntityOptions = data.data || []
       }
     },
     // 撤回

@@ -148,3 +148,18 @@ func (s *RoleService) GetRoleAdministrators(role string, userToken, language str
 	}
 	return
 }
+
+func (s *RoleService) GetRoleDisplayName() (displayNameMap map[string]string, err error) {
+	var roleList []*models.RoleTable
+	displayNameMap = make(map[string]string)
+	err = dao.X.SQL("select * from role").Find(&roleList)
+	if err != nil {
+		return
+	}
+	if len(roleList) > 0 {
+		for _, role := range roleList {
+			displayNameMap[role.Id] = role.DisplayName
+		}
+	}
+	return
+}

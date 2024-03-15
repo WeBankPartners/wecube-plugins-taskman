@@ -295,13 +295,15 @@ export default {
     },
     async getRefOptions (titleObj, row, index, first) {
       // taskman模板管理配置的普通下拉类型(值用逗号拼接)
-      if (titleObj.elementType === 'select' && titleObj.entity === '' && first) {
+      if (titleObj.elementType === 'select' && titleObj.entity === '') {
+        if (!first) return
         row[titleObj.name + 'Options'] = (titleObj.dataOptions && titleObj.dataOptions.split(',')) || []
         this.$set(this.tableData, index, row)
         return
       }
       // taskman模板管理配置的引用下拉类型
-      if (titleObj.elementType === 'wecmdbEntity' && first) {
+      if (titleObj.elementType === 'wecmdbEntity') {
+        if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
         const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
         if (status === 'OK') {
@@ -406,7 +408,12 @@ export default {
             }
           }
         } else {
-          entityData[item.name] = ''
+          // 默认清空标志为false,赋值默认值
+          if (item.defaultClear === 'no') {
+            entityData[item.name] = item.defaultValue || ''
+          } else {
+            entityData[item.name] = ''
+          }
         }
 
         if (item.elementType === 'select' || item.elementType === 'wecmdbEntity') {

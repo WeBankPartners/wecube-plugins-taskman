@@ -425,7 +425,12 @@ export default {
           value: data.customForm.value || {}
         }
         this.form.customForm.title.forEach(item => {
-          this.form.customForm.value[item.name] = ''
+          // 默认清空标志为false,赋值默认值
+          if (item.defaultClear === 'no') {
+            this.form.customForm.value[item.name] = item.defaultValue || ''
+          } else {
+            this.form.customForm.value[item.name] = ''
+          }
         })
         this.expireDay = data.expireDay
         this.initExpectTime = this.form.expectTime
@@ -456,7 +461,12 @@ export default {
         }
         this.form.customForm.title.forEach(item => {
           if (!this.form.customForm.value.hasOwnProperty(item.name)) {
-            this.form.customForm.value[item.name] = ''
+            // 默认清空标志为false,赋值默认值
+            if (item.defaultClear === 'no') {
+              this.form.customForm.value[item.name] = item.defaultValue || ''
+            } else {
+              this.form.customForm.value[item.name] = ''
+            }
           }
         })
         // 初始化审批和任务流程

@@ -204,7 +204,7 @@ func UpdateFormTemplateItemGroupConfig(c *gin.Context) {
 	if taskTemplate == nil {
 		param.TaskTemplateId = ""
 	}
-	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroupConfig(param)
+	err = service.GetFormItemTemplateService().UpdateFormTemplateItemGroupConfig(param, c.GetHeader("Authorization"))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

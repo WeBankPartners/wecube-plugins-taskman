@@ -256,11 +256,13 @@ export default {
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function (item) {
       // 每次切换保存之前的tab表单
-      const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      if (!this.requiredCheck(data)) {
-        return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)
-      } else {
-        this.saveCurrentTabData(data)
+      if (this.isAdd) {
+        const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
+        if (!this.requiredCheck(data)) {
+          return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)
+        } else {
+          this.saveCurrentTabData(data)
+        }
       }
 
       this.activeTab = item.entity || item.itemGroup

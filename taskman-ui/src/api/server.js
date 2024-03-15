@@ -58,6 +58,8 @@ export const getRequestTemplateAttrs = requestTemplateId =>
 export const templateGiveMe = data => req.post(`/taskman/api/v1/request-template/handler/update`, data)
 // 模板确认发版or退回草稿
 export const updateTemplateStatus = data => req.post(`/taskman/api/v1/request-template/status/update`, data)
+// 获取模板待发布数量
+export const templateConfirmCount = () => req.get(`/taskman/api/v1/request-template/confirm_count`)
 
 export const getRequestFormTemplateData = requestTemplateId =>
   req.get(`/taskman/api/v1/request-form-template/${requestTemplateId}`)

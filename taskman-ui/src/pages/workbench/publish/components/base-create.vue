@@ -33,17 +33,6 @@
               style="width:60%;"
             />
           </FormItem>
-          <!--请求描述-->
-          <FormItem :label="$t('tw_publish_des')">
-            <Input
-              v-model="form.description"
-              type="textarea"
-              :maxlength="200"
-              show-word-limit
-              :placeholder="$t('tw_publish_des')"
-              style="width:60%;"
-            />
-          </FormItem>
           <!--期望完成时间-->
           <FormItem :label="$t('expected_completion_time')" required>
             <DatePicker
@@ -63,6 +52,17 @@
               style="width:400px;"
               :clearable="false"
             ></DatePicker>
+          </FormItem>
+          <!--请求描述-->
+          <FormItem :label="$t('tw_publish_des')">
+            <Input
+              v-model="form.description"
+              type="textarea"
+              :maxlength="200"
+              show-word-limit
+              :placeholder="$t('tw_publish_des')"
+              style="width:60%;"
+            />
           </FormItem>
           <!--附件-->
           <FormItem :label="$t('tw_attach')">

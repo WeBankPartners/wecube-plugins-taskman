@@ -70,7 +70,7 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 			if v.Name == "id" {
 				isQueryMessage = true
 			}
-			if v.Name == "mgmtRoles" || v.Name == "useRoles" {
+			if v.Name == "mgmtRoles" || v.Name == "useRoles" || v.Name == "type" {
 				inValueList := v.Value.([]interface{})
 				var inValueStringList []string
 				for _, inValueInterfaceObj := range inValueList {
@@ -88,8 +88,10 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 				roleFilterSql, roleFilterParam := dao.CreateListParams(inValueStringList, "")
 				if v.Name == "mgmtRoles" {
 					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='MGMT' and t2.role in ("+roleFilterSql+")", roleFilterParam)
-				} else {
+				} else if v.Name == "useRoles" {
 					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select t1.id from request_template t1 left join request_template_role t2 on t1.id=t2.request_template where t2.role_type='USE' and t2.role in ("+roleFilterSql+")", roleFilterParam)
+				} else if v.Name == "type" {
+					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select id from request_template where type in ("+roleFilterSql+")", roleFilterParam)
 				}
 				if tmpErr != nil {
 					err = fmt.Errorf("Try to query filter role id fail,%s ", tmpErr.Error())
@@ -198,11 +200,16 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 }
 
 func (s *RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, user, status, reason string) (err error) {
+	var rt *models.RequestTemplateTable
 	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)}
 	// 状态更新到草稿,需要退回
 	if status == string(models.RequestTemplateStatusCreated) {
-		requestTemplate.BackDesc = reason
+		rt, err = s.GetRequestTemplate(requestTemplateId)
+		if err != nil {
+			return
+		}
+		requestTemplate.BackDesc = reason + "\n" + rt.BackDesc
 	}
 	return s.requestTemplateDao.Update(nil, requestTemplate)
 }
@@ -449,12 +456,13 @@ func (s *RequestTemplateService) getRequestTemplateIdsBySql(sql string, param []
 }
 
 func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemplateUpdateParam, userToken, language string) (result models.RequestTemplateQueryObj, err error) {
-	var actions, insertTaskTemplateActions, deleteTaskTemplateActions []*dao.ExecAction
+	var actions, insertTaskTemplateActions, deleteTaskTemplateActions, deleteFormActions []*dao.ExecAction
 	var taskTemplateList, implementTaskTemplateList []*models.TaskTemplateTable
 	var workflowTaskNodeMap = make(map[string]*models.TaskTemplateTable)
 	var requestTemplate *models.RequestTemplateTable
 	var workflowTaskNodeList []*models.ProcNodeObj
 	var updateActions []*dao.ExecAction
+	var delWorkFlowFormFlag bool
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
 	if err != nil {
@@ -534,6 +542,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		if len(insertTaskTemplateActions) > 0 {
 			actions = append(actions, insertTaskTemplateActions...)
 		}
+		delWorkFlowFormFlag = true
 	} else if requestTemplate.ProcDefId != "" {
 		// 删除编排
 		if param.ProcDefId == "" {
@@ -547,6 +556,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					actions = append(actions, deleteTaskTemplateActions...)
 				}
 			}
+			delWorkFlowFormFlag = true
 		} else if param.ProcDefId != "" {
 			// 换了编排,先删除,再新增
 			if requestTemplate.ProcDefId != param.ProcDefId {
@@ -567,6 +577,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 				if len(insertTaskTemplateActions) > 0 {
 					actions = append(actions, insertTaskTemplateActions...)
 				}
+				delWorkFlowFormFlag = true
 			} else {
 				// 关联编排无改动,需要查找编排,看编排节点名称是否变更,有变更需要替换
 				// 查询编排任务节点
@@ -587,6 +598,16 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					}
 				}
 			}
+		}
+	}
+	// 删除配置的编排 fromTemplateGroup,主要是删除数据表单和审批的,任务表单在删除任务逻辑会删除
+	if delWorkFlowFormFlag {
+		deleteFormActions, err = GetFormTemplateService().DeleteWorkflowFormTemplateGroupSql(requestTemplate.Id)
+		if err != nil {
+			return
+		}
+		if len(deleteFormActions) > 0 {
+			actions = append(actions, deleteFormActions...)
 		}
 	}
 	err = dao.Transaction(actions)
@@ -868,7 +889,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	return dao.TransactionWithoutForeignCheck(actions)
 }
 
-func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userToken, language string) error {
+func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, operator, userToken, language string) error {
 	var parentId string
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
 	requestTemplateObj, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
@@ -909,7 +930,7 @@ func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, userT
 		}
 	}
 	var actions []*dao.ExecAction
-	actions = append(actions, &dao.ExecAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=? where id=?", Param: []interface{}{version, nowTime, parentId, requestTemplateObj.Id}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request_template set status='confirm',`version`=?,confirm_time=?,del_flag=2,parent_id=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{version, nowTime, parentId, operator, nowTime, requestTemplateObj.Id}})
 	return dao.Transaction(actions)
 }
 
@@ -1437,7 +1458,7 @@ func (s *RequestTemplateService) DisableRequestTemplate(requestTemplateId, opera
 		err = fmt.Errorf("only confirm status template can disable")
 		return
 	}
-	_, err = dao.X.Exec("update request_template set status='disable',updated_by = ?,updated_time =? where id=?", requestTemplateId, operator, time.Now().Format(models.DateTimeFormat))
+	_, err = dao.X.Exec("update request_template set status='disable',updated_by = ?,updated_time =? where id=?", operator, time.Now().Format(models.DateTimeFormat), requestTemplateId)
 	return
 }
 
@@ -1455,7 +1476,7 @@ func (s *RequestTemplateService) EnableRequestTemplate(requestTemplateId, operat
 		err = fmt.Errorf("only disable status template can enable")
 		return
 	}
-	_, err = dao.X.Exec("update request_template set status='confirm' where id=?", requestTemplateId)
+	_, err = dao.X.Exec("update request_template set status='confirm',updated_by=?,updated_time=? where id=?", operator, time.Now().Format(models.DateTimeFormat), requestTemplateId)
 	return
 }
 
@@ -1550,5 +1571,37 @@ func (s *RequestTemplateService) GetRequestPendingRoleAndHandler(requestTemplate
 	// 没有配置定版角色和定版人则读取模板属主角色和属主处理人
 	role = s.GetRequestTemplateManageRole(requestTemplate.Id)
 	handler = requestTemplate.Handler
+	return
+}
+
+func (s *RequestTemplateService) GetConfirmCount(user, userToken, language string) (count int, err error) {
+	var requestTemplateList []*models.RequestTemplateTable
+	var roleMap map[string]*models.SimpleLocalRoleDto
+	roleMap, err = rpc.QueryAllRoles("Y", userToken, language)
+	if err != nil {
+		return
+	}
+
+	err = dao.X.SQL("select * from request_template where status = ? and del_flag=0 ", models.RequestTemplateStatusPending).Find(&requestTemplateList)
+	if err != nil {
+		return
+	}
+
+	if len(requestTemplateList) > 0 {
+		for _, requestTemplate := range requestTemplateList {
+			var requestTemplateRoleList []*models.RequestTemplateRoleTable
+			err = dao.X.SQL("select * from request_template_role where request_template=? and role_type=?", requestTemplate.Id, models.RolePermissionMGMT).Find(&requestTemplateRoleList)
+			if err != nil {
+				return
+			}
+			if len(requestTemplateRoleList) > 0 {
+				if v, ok := roleMap[requestTemplateRoleList[0].Role]; ok {
+					if v.Administrator == user {
+						count++
+					}
+				}
+			}
+		}
+	}
 	return
 }

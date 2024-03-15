@@ -615,6 +615,7 @@ export default {
 <style lang="scss">
 .workbench {
   .badge {
+    position: absolute;
     display: inline-block;
     font-size: 11px;
     background-color: #f56c6c;
@@ -643,7 +644,6 @@ export default {
   }
   .ivu-progress {
     display: flex;
-    // flex-direction: column;
   }
   .ivu-btn-small {
     font-size: 12px;
@@ -654,6 +654,9 @@ export default {
   .ivu-badge-count {
     padding: 0 4px;
     font-size: 10px;
+  }
+  .ivu-tabs-tab {
+    padding: 6px 20px !important;
   }
 }
 </style>

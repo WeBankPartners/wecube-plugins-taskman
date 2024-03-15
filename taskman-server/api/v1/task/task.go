@@ -197,6 +197,10 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	if taskHandle.LatestFlag == 0 {
+		middleware.ReturnUpdateRequestHandlerStatusError(c)
+		return
+	}
 	taskTable, err := service.GetSimpleTask(taskId)
 	if err != nil {
 		middleware.ReturnParamValidateError(c, err)

@@ -462,6 +462,13 @@
         >{{ $t('forward') }}</Button
       >
       <Button
+        :disabled="isCheck !== 'Y' && isTopButtonDisable"
+        @click="saveApprovalFromNode"
+        type="info"
+        class="btn-footer-margin"
+        >{{ $t('save') }}</Button
+      >
+      <Button
         v-if="isCheck !== 'Y'"
         :disabled="isTopButtonDisable"
         @click="beforeSubmitTemplate"
@@ -1272,6 +1279,9 @@ export default {
         },
         onCancel: () => {}
       })
+    },
+    saveApprovalFromNode () {
+      this.$refs.approvalFormNodeRef.saveNode(1)
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

@@ -456,6 +456,13 @@
       >
       <Button
         :disabled="isCheck !== 'Y' && isTopButtonDisable"
+        @click="saveApprovalFromNode"
+        type="info"
+        class="btn-footer-margin"
+        >{{ $t('save') }}</Button
+      >
+      <Button
+        :disabled="isCheck !== 'Y' && isTopButtonDisable"
         @click="gotoNext"
         type="primary"
         class="btn-footer-margin"
@@ -1218,6 +1225,9 @@ export default {
           this.saveGroup(8, {})
         }
       }
+    },
+    saveApprovalFromNode () {
+      this.$refs.approvalFormNodeRef.saveNode(1)
     },
     nodeStatus (status) {
       this.isTopButtonDisable = status

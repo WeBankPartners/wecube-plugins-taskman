@@ -25,7 +25,7 @@
           </div>
         </FormItem>
         <FormItem label="时效">
-          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 94%;">
+          <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 160px;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
           <span style="color: red">*</span>
@@ -121,11 +121,11 @@
           ></Button> -->
         </FormItem>
       </Form>
-      <div style="text-align: center;">
+      <!-- <div style="text-align: center;">
         <Button v-if="isCheck !== 'Y'" type="primary" :disabled="isSaveNodeDisable" @click="saveNode(1)">{{
           $t('save')
         }}</Button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

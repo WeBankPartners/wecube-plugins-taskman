@@ -355,9 +355,11 @@
       module="data-form"
       v-show="['workflow', 'optional'].includes(itemGroupType)"
     ></RequestFormDataWorkflow>
-    <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
-      <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
+    <div class="footer">
+      <div class="content">
+        <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
+        <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
+      </div>
     </div>
   </div>
 </template>
@@ -1127,5 +1129,19 @@ fieldset[disabled] .ivu-input {
 
 .btn-footer-margin {
   margin: 0 6px;
+}
+
+.footer {
+  position: fixed; /* 使用 fixed 定位，使其固定在页面底部 */
+  left: 0;
+  bottom: 0;
+  width: 100%; /* 撑满整个页面宽度 */
+  background-color: white; /* 设置背景色，可根据需求修改 */
+  z-index: 10;
+}
+
+.content {
+  text-align: center; /* 居中内容 */
+  padding: 10px; /* 可根据需求调整内容与边框的间距 */
 }
 </style>

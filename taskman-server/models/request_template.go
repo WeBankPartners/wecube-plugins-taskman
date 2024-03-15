@@ -136,6 +136,7 @@ type RequestTemplateTableObj struct {
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
 	Handler         string `json:"handler" xorm:"handler"`
 	Role            string `json:"role" xorm:"role"`
+	RoleDisplay     string `json:"roleDisplay" xorm:"-"`
 	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 是否收藏 1表示已收藏
 	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
@@ -143,8 +144,9 @@ type RequestTemplateTableObj struct {
 }
 
 type UserRequestTemplateQueryObjNew struct {
-	ManageRole string              `json:"manageRole"` //管理角色
-	Groups     []*TemplateGroupObj `json:"groups"`
+	ManageRole        string              `json:"manageRole"`        //管理角色
+	ManageRoleDisplay string              `json:"manageRoleDisplay"` //管理角色
+	Groups            []*TemplateGroupObj `json:"groups"`
 }
 
 type RequestTemplateFormStruct struct {

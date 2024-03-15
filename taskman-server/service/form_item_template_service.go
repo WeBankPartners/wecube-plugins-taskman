@@ -15,7 +15,7 @@ type FormItemTemplateService struct {
 	formTemplateDao     *dao.FormTemplateDao
 }
 
-func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto) (err error) {
+func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models.FormTemplateGroupConfigureDto, userToken string) (err error) {
 	var formTemplate *models.FormTemplateTable
 	var insertItems, updateItems, deleteItems []*models.FormItemTemplateTable
 	var formItemTemplateList, refFormItemTemplateList []*models.FormItemTemplateTable
@@ -38,7 +38,12 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		newItemGroupId = guid.CreateGuid()
 		if len(param.SystemItems) > 0 {
 			for _, systemItem := range param.SystemItems {
-				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, newItemGroupId))
+				refAttributes, tmpErr := getCMDBCiAttrDefs(systemItem.EntityName, userToken)
+				if tmpErr != nil {
+					err = fmt.Errorf("query remote entity:%s attr fail:%s ", systemItem.EntityName, tmpErr.Error())
+					return
+				}
+				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, newItemGroupId, refAttributes))
 			}
 		}
 		if len(param.CustomItems) > 0 {
@@ -74,7 +79,12 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				}
 			}
 			if !systemItemExist {
-				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, param.FormTemplateId))
+				refAttributes, tmpErr := getCMDBCiAttrDefs(systemItem.EntityName, userToken)
+				if tmpErr != nil {
+					err = fmt.Errorf("query remote entity:%s attr fail:%s ", systemItem.EntityName, tmpErr.Error())
+					return
+				}
+				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, param.FormTemplateId, refAttributes))
 			}
 		}
 		// 如果有 taskTemplateId, customItems展示的都是数据表单的 customItems数据,需要做一层转换

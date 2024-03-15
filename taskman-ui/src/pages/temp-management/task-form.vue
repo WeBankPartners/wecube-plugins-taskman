@@ -225,7 +225,7 @@
                           type="primary"
                           size="small"
                           ghost
-                          @click="saveGroup(3, activeEditingNode)"
+                          @click="saveGroup(9, activeEditingNode)"
                           >{{ $t('save') }}</Button
                         >
                         <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
@@ -1129,7 +1129,7 @@ export default {
     },
     // 保存自定义表单项
     async saveGroup (nextStep, elememt) {
-      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗 6删除组 7选择组 8上一步 9发布时只保存不提示
+      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗 6删除组 7选择组 8上一步 10发布时只保存不提示
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       if (finalData.itemGroupId === '') {
         this.loadPage(elememt.id)
@@ -1147,7 +1147,7 @@ export default {
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
-        if (![2, 3, 4, 5, 6, 7, 8, 9].includes(nextStep)) {
+        if (![2, 3, 4, 5, 6, 7, 8, 10].includes(nextStep)) {
           this.$Notice.success({
             title: this.$t('successful'),
             desc: this.$t('successful')
@@ -1158,7 +1158,7 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if (nextStep === 3) {
+        } else if ([3, 9].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
@@ -1174,7 +1174,7 @@ export default {
           this.selectItemGroup()
         } else if (nextStep === 8) {
           this.$emit('gotoStep', this.requestTemplateId, 'backward')
-        } else if (nextStep === 9) {
+        } else if (nextStep === 10) {
           this.loadPage()
         }
       }
@@ -1234,7 +1234,7 @@ export default {
       }
     },
     async submitTemplate () {
-      await this.saveGroup(9, {})
+      await this.saveGroup(10, {})
       this.$Modal.confirm({
         title: `${this.$t('submit_for_review')}`,
         content: `${this.$t('submit_for_review_tip')}`,

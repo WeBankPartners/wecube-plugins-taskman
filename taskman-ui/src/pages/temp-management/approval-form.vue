@@ -222,7 +222,7 @@
                           type="primary"
                           size="small"
                           ghost
-                          @click="saveGroup(3, activeEditingNode)"
+                          @click="saveGroup(9, activeEditingNode)"
                           >{{ $t('save') }}</Button
                         >
                         <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
@@ -1144,7 +1144,7 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if (nextStep === 3) {
+        } else if ([3, 9].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }

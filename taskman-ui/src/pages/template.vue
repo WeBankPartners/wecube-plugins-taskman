@@ -704,13 +704,22 @@ export default {
       })
     },
     editTemplate (row) {
-      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id, isCheck: 'N' } })
+      this.$router.push({
+        path: '/templateManagementIndex',
+        query: { requestTemplateId: row.id, isCheck: 'N', parentStatus: this.status }
+      })
     },
     checkTemplate (row) {
-      this.$router.push({ path: '/templateManagementIndex', query: { requestTemplateId: row.id, isCheck: 'Y' } })
+      this.$router.push({
+        path: '/templateManagementIndex',
+        query: { requestTemplateId: row.id, isCheck: 'Y', parentStatus: this.status }
+      })
     },
     addTemplate () {
-      this.$router.push({ path: '/templateManagementIndex', params: { requestTemplateId: '', isCheck: 'N' } })
+      this.$router.push({
+        path: '/templateManagementIndex',
+        params: { requestTemplateId: '', isCheck: 'N', parentStatus: 'created' }
+      })
     },
     onSearch () {
       this.pagination.currentPage = 1

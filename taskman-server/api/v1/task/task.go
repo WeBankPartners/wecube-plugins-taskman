@@ -183,6 +183,20 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
+	taskTable, getTaskErr := service.GetSimpleTask(taskId)
+	if getTaskErr != nil {
+		middleware.ReturnParamValidateError(c, getTaskErr)
+		return
+	}
+	if taskTable.Request == "" {
+		err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
+		if err != nil {
+			middleware.ReturnServerHandleError(c, err)
+		} else {
+			middleware.ReturnSuccess(c)
+		}
+		return
+	}
 	taskHandle, err = service.GetTaskHandleService().Get(param.TaskHandleId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -199,11 +213,6 @@ func ApproveTask(c *gin.Context) {
 	}
 	if taskHandle.LatestFlag == 0 {
 		middleware.ReturnUpdateRequestHandlerStatusError(c)
-		return
-	}
-	taskTable, err := service.GetSimpleTask(taskId)
-	if err != nil {
-		middleware.ReturnParamValidateError(c, err)
 		return
 	}
 	if taskHandle.Handler != operator {

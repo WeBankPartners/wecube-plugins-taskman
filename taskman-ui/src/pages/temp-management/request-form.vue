@@ -3,10 +3,10 @@
     <Col span="24" style="padding: 0 20px">
       <div style="border-bottom: 1px solid #dcdee2">
         <div @click="changTab('msgForm')" :class="activeTab === 'msgForm' ? 'tab-active' : 'tab'">
-          {{ this.$t('1.信息表单') }}
+          1.{{ this.$t('tw_information_form') }}
         </div>
         <div @click="changTab('dataForm')" :class="activeTab === 'dataForm' ? 'tab-active' : 'tab'">
-          {{ this.$t('2.数据表单') }}
+          2.{{ this.$t('tw_data_form') }}
         </div>
       </div>
       <div style="margin-top: 16px;">

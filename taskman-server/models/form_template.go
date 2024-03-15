@@ -1,6 +1,9 @@
 package models
 
-import "github.com/WeBankPartners/go-common-lib/guid"
+import (
+	"github.com/WeBankPartners/go-common-lib/guid"
+	"strings"
+)
 
 type FormTemplateTable struct {
 	Id              string `json:"id" xorm:"'id' pk" primary-key:"id"`
@@ -114,10 +117,21 @@ type TaskFormItemQueryObj struct {
 	ElementType      string `json:"elementType" xorm:"element_type"`
 }
 
-func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string) *FormItemTemplateTable {
+func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfigureDto, workflowEntityAttribute *ProcEntityAttributeObj, newItemGroupId string, remoteAttributes []*EntityAttributeObj) *FormItemTemplateTable {
 	var elementType = string(FormItemElementTypeInput)
+	var refPackage, refEntity string
 	if workflowEntityAttribute.DataType == "ref" {
 		elementType = string(FormItemElementTypeSelect)
+		refPackage = workflowEntityAttribute.EntityPackage
+		refEntity = workflowEntityAttribute.Name
+	}
+	for _, remoteAttr := range remoteAttributes {
+		if remoteAttr.PropertyName == workflowEntityAttribute.Name {
+			if strings.Contains(remoteAttr.InputType, "select") {
+				elementType = string(FormItemElementTypeSelect)
+			}
+			break
+		}
 	}
 	return &FormItemTemplateTable{
 		Id:              guid.CreateGuid(),
@@ -135,8 +149,8 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		ElementType:     elementType,
 		Title:           workflowEntityAttribute.Description,
 		Width:           24,
-		RefPackageName:  workflowEntityAttribute.EntityPackage,
-		RefEntity:       workflowEntityAttribute.Name,
+		RefPackageName:  refPackage,
+		RefEntity:       refEntity,
 		DataOptions:     "",
 		Required:        "no",
 		Regular:         "",

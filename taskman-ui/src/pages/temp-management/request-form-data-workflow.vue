@@ -1,16 +1,22 @@
 <template>
-  <Drawer title="配置表单" :closable="false" :mask-closable="false" :width="550" v-model="openFormConfig">
+  <Drawer
+    :title="$t('tw_configuration_form')"
+    :closable="false"
+    :mask-closable="false"
+    :width="550"
+    v-model="openFormConfig"
+  >
     <div class="wf-entity-config">
       <Form :label-width="120">
-        <FormItem :label="$t('表单类型')">
+        <FormItem :label="$t('tw_form_type')">
           <Button shape="circle" :style="groupStyle[group.itemGroupType]">{{
             group.itemGroupType === 'workflow' ? '编排entity' : '自选entity'
           }}</Button>
         </FormItem>
-        <FormItem :label="$t('表单名')">
+        <FormItem :label="$t('tw_form_name')">
           <Input v-model="group.itemGroupName" style="width: 96%;" disabled></Input>
         </FormItem>
-        <FormItem :label="$t('数据类型')">
+        <FormItem :label="$t('data_type')">
           <Input v-model="group.itemGroupName" style="width: 96%;" disabled></Input>
         </FormItem>
         <FormItem :label="$t('新增一行')">
@@ -109,8 +115,8 @@ export default {
       formTemplateId: '', // 数据表单id
       groupRules: [
         // 新增一行选项
-        { label: '输入新数据', value: 'new' },
-        { label: '选择已有数据', value: 'exist' }
+        { label: this.$t('tw_enter_new_data'), value: 'new' },
+        { label: this.$t('tw_select_data'), value: 'exist' }
       ],
       groupStyle: {
         custom: {

@@ -178,7 +178,7 @@ func GetMyPendingCountByScene(param models.CountPlatformParam, scene int, user s
 func getPlatRequestSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
-		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
+		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time,rt.expire_day from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 }
 
 func getPlatTaskSQL(where, sql string) string {
@@ -502,6 +502,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	var reportTime, requestExpectTime, taskCreateTime, taskExpectTime, taskApprovalTime time.Time
 	loc, _ := time.LoadLocation("Local")
 	if dataObject.Status == string(models.RequestStatusDraft) {
+		if dataObject.ExpireDay != 0 {
+			dataObject.RequestStayTimeTotal = dataObject.ExpireDay
+		}
 		return
 	}
 	// 计算任务停留时长
@@ -510,9 +513,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
 		if dataObject.TaskApprovalTime != "" && dataObject.TaskStatus == "done" {
 			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
-			dataObject.TaskStayTime = int(math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+			dataObject.TaskStayTime = fmt.Sprintf("%.1f", math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours()*1.00/24.00))
 		} else {
-			dataObject.TaskStayTime = int(math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+			dataObject.TaskStayTime = fmt.Sprintf("%.1f", math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours()*1.00/24.00))
 		}
 		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
 	}
@@ -534,9 +537,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 			return
 		}
 		// 向上取整
-		dataObject.RequestStayTime = int(math.Ceil(updateTime.Sub(reportTime).Hours() * 1.00 / 24.00))
+		dataObject.RequestStayTime = fmt.Sprintf("%.1f", math.Ceil(updateTime.Sub(reportTime).Hours()*1.00/24.00))
 	} else {
-		dataObject.RequestStayTime = int(math.Ceil(time.Now().Local().Sub(reportTime).Hours() * 1.00 / 24.00))
+		dataObject.RequestStayTime = fmt.Sprintf("%.1f", math.Ceil(time.Now().Local().Sub(reportTime).Hours()*1.00/24.00))
 	}
 	dataObject.RequestStayTimeTotal = int(math.Ceil(requestExpectTime.Sub(reportTime).Hours() * 1.00 / 24.00))
 }
@@ -683,16 +686,13 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 	var doneTaskList []*models.TaskTable
 	var task *models.TaskTable
 	var request models.RequestTable
-	var total int
 	taskTemplateList, _ = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
 	request, _ = GetSimpleRequest(requestId)
+	doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(request)
+	if len(taskTemplateList) > 0 {
+		progress = int(math.Floor(float64(len(doneTaskList))/float64(len(taskTemplateList))*100 + 0.5))
+	}
 	if instanceId == "" {
-		doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(request)
-		if len(taskTemplateList) > 0 {
-			progress = len(doneTaskList)
-			total = len(taskTemplateList)
-			progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
-		}
 		// 无编排
 		switch request.Status {
 		case string(models.RequestStatusDraft):
@@ -711,34 +711,10 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 		}
 		return
 	}
-	// instanceId不为空,表示编排已经创建,说明前面审批都已经走完
-	if len(taskTemplateList) > 0 {
-		for _, taskTemplate := range taskTemplateList {
-			if taskTemplate.Type == string(models.TaskTypeImplement) {
-				continue
-			}
-			if taskTemplate.Type == string(models.TaskTypeConfirm) {
-				total++
-			} else {
-				progress++
-				total++
-			}
-		}
-	}
 	processInstance, err := GetProcDefService().GetProcessDefineInstance(instanceId, userToken, language)
 	if err != nil || processInstance == nil || len(processInstance.TaskNodeInstances) == 0 {
 		return
 	}
-	// 统计完成进度 ,已完成/总数, 编号不为空
-	for _, v := range processInstance.TaskNodeInstances {
-		if v.OrderedNo != "" {
-			if v.Status == string(models.RequestStatusCompleted) {
-				progress++
-			}
-			total++
-		}
-	}
-	progress = int(math.Floor(float64(progress)/float64(total)*100 + 0.5))
 	switch processInstance.Status {
 	case "Completed":
 		if request.Status == string(models.RequestStatusCompleted) {

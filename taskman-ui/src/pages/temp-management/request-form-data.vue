@@ -15,7 +15,7 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <Select v-if="element.elementType === 'wecmdbEntity'" :placeholder="$t('tw_entity_data_items')"></Select>
               <DatePicker
                 v-if="element.elementType === 'datePicker'"
                 :type="element.type"
@@ -202,7 +202,7 @@
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
-                      <Option value="wecmdbEntity">模型数据项</Option>
+                      <Option value="wecmdbEntity">{{ $t('tw_entity_data_items') }}</Option>
                       <Option value="datePicker">DatePicker</Option>
                       <Option value="calculate">Calculate</Option>
                     </Select>
@@ -727,7 +727,7 @@ export default {
             })
           this.groupOptions = data.map(d => {
             if (d.formType === 'custom') {
-              d.formTypeName = this.$t('自定义表单')
+              d.formTypeName = this.$t('tw_custom_form')
               d.entities = ['custom']
             } else if (d.formType === 'workflow') {
               d.formTypeName = this.$t('编排entity表单')

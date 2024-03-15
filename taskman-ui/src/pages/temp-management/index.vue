@@ -54,7 +54,8 @@ export default {
     return {
       currentStep: -1,
       requestTemplateId: '',
-      isCheck: 'N'
+      isCheck: 'N',
+      parentStatus: ''
     }
   },
   mounted () {
@@ -62,6 +63,7 @@ export default {
       this.requestTemplateId = this.$route.query.requestTemplateId
     }
     this.isCheck = this.$route.query.isCheck
+    this.parentStatus = this.$route.query.parentStatus
     this.currentStep = 0
   },
   methods: {
@@ -73,7 +75,7 @@ export default {
         this.$router.push({
           path: '/taskman/template-mgmt',
           query: {
-            status: 'pending'
+            status: this.parentStatus
           }
         })
       } else {

@@ -121,12 +121,13 @@ type PlatformDataObj struct {
 	TaskHandleId         string `json:"taskHandleId" xorm:"task_handle_id"`         // 任务处理ID
 	TaskUpdatedTime      string `json:"taskUpdatedTime" xorm:"task_updated_time"`   // 任务更新时间
 	TaskStatus           string `json:"taskStatus" xorm:"task_status"`              // 当前任务状态
-	RequestStayTime      int    `json:"requestStayTime" xorm:"-"`                   // 请求停留时长
+	RequestStayTime      string `json:"requestStayTime" xorm:"-"`                   // 请求停留时长
 	RequestStayTimeTotal int    `json:"requestStayTimeTotal" xorm:"-"`              // 请求停留时长总数
-	TaskStayTime         int    `json:"taskStayTime" xorm:"-"`                      // 任务停留时长
+	TaskStayTime         string `json:"taskStayTime" xorm:"-"`                      // 任务停留时长
 	TaskStayTimeTotal    int    `json:"taskStayTimeTotal" xorm:"-"`                 // 任务停留时长总数
 	HandlerType          string `json:"handlerType" xorm:"-"`                       // 人员设置方式,template.模板指定，custom 提交人指定等
 	RoleAdministrator    string `json:"roleAdministrator" xorm:"-"`                 // 角色管理员
+	ExpireDay            int    `json:"expireDay" xorm:"expire_day"`                // 过期时间
 }
 
 // RequestProgress 请求进度

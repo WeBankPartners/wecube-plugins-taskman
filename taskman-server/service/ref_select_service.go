@@ -561,11 +561,16 @@ func FilterInSideData(input []*models.EntityDataObj, formItemTemplate *models.Fo
 	if formItemTemplate.IsRefInside == "no" {
 		return output
 	}
-	var formItems []*models.FormItemTable
-	dao.X.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
+	var formRows []*models.FormTable
+	//dao.X.SQL("select distinct row_data_id from form_item where form in (select form from request where id=?)", requestId).Find(&formItems)
+	err := dao.X.SQL("select distinct data_id from form where request=?", requestId).Find(&formRows)
+	if err != nil {
+		log.Logger.Error("FilterInSideData query form data fail", log.Error(err))
+		return
+	}
 	rowDataMap := make(map[string]int)
-	for _, v := range formItems {
-		tmpV := v.RowDataId
+	for _, v := range formRows {
+		tmpV := v.DataId
 		if strings.Contains(tmpV, ":") {
 			tmpV = tmpV[strings.LastIndex(tmpV, ":")+1:]
 		}
@@ -668,5 +673,34 @@ func getSimpleFormItemTemplate(formItemTemplateId string) (formItemTemplateObj *
 		return
 	}
 	formItemTemplateObj = itemTemplateRows[0]
+	return
+}
+
+func getCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.EntityAttributeObj, err error) {
+	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, ciTypeEntity), nil)
+	if newReqErr != nil {
+		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	//req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		return
+	}
+	responseBytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("Request cmdb attribute fail,%s ", string(responseBytes))
+		return
+	}
+	var attrQueryResp models.EntityAttributeQueryResponse
+	err = json.Unmarshal(responseBytes, &attrQueryResp)
+	if err != nil {
+		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
+		return
+	}
+	attributes = attrQueryResp.Data
 	return
 }

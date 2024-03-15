@@ -88,7 +88,7 @@
               </Col>
               <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
                 <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-                  <Divider>预览</Divider>
+                  <Divider>{{ $t('tw_preview') }}</Divider>
                   <div class="title">
                     <div class="title-text">
                       {{ $t('审批内容') }}
@@ -101,10 +101,10 @@
                         v-for="(groupItem, index) in dataFormInfo.groups"
                         :key="index"
                         :class="{
-                          radio: true,
-                          custom: groupItem.itemGroupType === 'custom',
-                          workflow: groupItem.itemGroupType === 'workflow',
-                          optional: groupItem.itemGroupType === 'optional'
+                          'radio-group-radio': true,
+                          'radio-group-custom': groupItem.itemGroupType === 'custom',
+                          'radio-group-workflow': groupItem.itemGroupType === 'workflow',
+                          'radio-group-optional': groupItem.itemGroupType === 'optional'
                         }"
                         :style="activeStyle(groupItem)"
                       >
@@ -222,7 +222,7 @@
                           type="primary"
                           size="small"
                           ghost
-                          @click="saveGroup(3, activeEditingNode)"
+                          @click="saveGroup(9, activeEditingNode)"
                           >{{ $t('save') }}</Button
                         >
                         <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
@@ -479,7 +479,6 @@ import {
   getAllDataModels,
   saveRequestGroupCustomForm
 } from '@/api/server.js'
-let idGlobal = 118
 export default {
   name: 'BasicInfo',
   data () {
@@ -492,7 +491,7 @@ export default {
           id: '',
           sort: 1,
           requestTemplate: '',
-          name: '审批1',
+          name: `${this.$t('tw_approval')}1`,
           expireDay: 1,
           description: '',
           roleType: '',
@@ -929,9 +928,10 @@ export default {
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = 'c_' + idGlobal++
-      newItem.title = newItem.title + idGlobal
-      newItem.name = newItem.name + idGlobal
+      const itemNo = this.generateRandomString()
+      newItem.id = 'c_' + itemNo
+      newItem.title = newItem.title + itemNo
+      newItem.name = newItem.name + itemNo
       newItem.isActive = true
       this.specialId = newItem.id
       this.paramsChanged()
@@ -939,6 +939,13 @@ export default {
         item.isActive = false
       })
       return newItem
+    },
+    generateRandomString () {
+      let result = ''
+      for (let i = 0; i < 4; i++) {
+        result += Math.floor(Math.random() * 10)
+      }
+      return result
     },
     log (item) {
       this.finalElement.forEach(l => {
@@ -958,8 +965,8 @@ export default {
     // 编辑组自定义属性
     editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
       this.nextGroupInfo = groupItem
-      // this.displayLastGroup = false
-      if (isNeedSaveFirst) {
+      this.displayLastGroup = false
+      if (isNeedSaveFirst && this.isCheck !== 'Y') {
         this.saveGroup(4, groupItem)
       } else {
         this.updateFinalElement(groupItem)
@@ -1144,7 +1151,7 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if (nextStep === 3) {
+        } else if ([3, 9].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
@@ -1303,29 +1310,31 @@ fieldset[disabled] .ivu-input {
   width: calc(100% - 130px);
   display: inline-block;
 }
+
 .radio-group {
   margin-bottom: 15px;
-  .radio {
-    padding: 5px 15px;
-    border-radius: 32px;
-    font-size: 12px;
-    cursor: pointer;
-    margin: 4px;
-    display: inline-block;
-  }
-  .custom {
-    border: 1px solid #b886f8;
-    color: #b886f8;
-  }
-  .workflow {
-    border: 1px solid #cba43f;
-    color: #cba43f;
-  }
-  .optional {
-    border: 1px solid #81b337;
-    color: #81b337;
-  }
 }
+.radio-group-radio {
+  padding: 5px 15px;
+  border-radius: 32px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 4px;
+  display: inline-block;
+}
+.radio-group-custom {
+  border: 1px solid #b886f8;
+  color: #b886f8;
+}
+.radio-group-workflow {
+  border: 1px solid #cba43f;
+  color: #cba43f;
+}
+.radio-group-optional {
+  border: 1px solid #81b337;
+  color: #81b337;
+}
+
 .node-normal {
   height: 32px;
   line-height: 32px;

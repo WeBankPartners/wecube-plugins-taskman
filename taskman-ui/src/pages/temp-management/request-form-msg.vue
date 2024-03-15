@@ -31,7 +31,7 @@
       </Col>
       <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
         <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-          <Divider>预览</Divider>
+          <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
               {{ $t('请求信息') }}
@@ -268,7 +268,6 @@
 <script>
 import { saveRequsetForm, getRequestFormTemplateData, getAllDataModels } from '@/api/server.js'
 import draggable from 'vuedraggable'
-let idGlobal = 8
 export default {
   name: 'form-select',
   data () {
@@ -595,9 +594,10 @@ export default {
     cloneDog (val) {
       if (this.$parent.isCheck === 'Y') return
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = 'c_' + idGlobal++
-      newItem.title = newItem.title + idGlobal
-      newItem.name = newItem.name + idGlobal
+      const itemNo = this.generateRandomString()
+      newItem.id = 'c_' + itemNo
+      newItem.title = newItem.title + itemNo
+      newItem.name = newItem.name + itemNo
       newItem.isActive = true
       this.specialId = newItem.id
       this.paramsChanged()
@@ -605,6 +605,13 @@ export default {
         item.isActive = false
       })
       return newItem
+    },
+    generateRandomString () {
+      let result = ''
+      for (let i = 0; i < 4; i++) {
+        result += Math.floor(Math.random() * 10)
+      }
+      return result
     },
     log (item) {
       this.finalElement.forEach(l => {
@@ -647,19 +654,6 @@ export default {
   }
 }
 </script>
-<style>
-.ivu-input[disabled],
-fieldset[disabled] .ivu-input {
-  color: #757575 !important;
-}
-.ivu-select-input[disabled] {
-  color: #757575 !important;
-  -webkit-text-fill-color: #757575 !important;
-}
-.ivu-select-disabled .ivu-select-selection {
-  color: #757575 !important;
-}
-</style>
 <style scoped lang="scss">
 .active-zone {
   color: #338cf0;

@@ -324,5 +324,7 @@
   "tw_limit_200": " must be less than 200",
   "tw_code": "Code",
   "tw_restore": "Restore",
-  "tw_multiple": "Multiple"
+  "tw_multiple": "Multiple",
+  "tw_node_configuration": "Node Configuration",
+  "tw_preview": "Preview"
 }

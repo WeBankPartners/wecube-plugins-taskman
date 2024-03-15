@@ -97,7 +97,7 @@
               </Col>
               <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
                 <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
-                  <Divider>预览</Divider>
+                  <Divider>{{ $t('tw_preview') }}</Divider>
                   <div class="title">
                     <div class="title-text">
                       {{ $t('任务内容') }}
@@ -110,10 +110,10 @@
                         v-for="(groupItem, index) in dataFormInfo.groups"
                         :key="index"
                         :class="{
-                          radio: true,
-                          custom: groupItem.itemGroupType === 'custom',
-                          workflow: groupItem.itemGroupType === 'workflow',
-                          optional: groupItem.itemGroupType === 'optional'
+                          'radio-group-radio': true,
+                          'radio-group-custom': groupItem.itemGroupType === 'custom',
+                          'radio-group-workflow': groupItem.itemGroupType === 'workflow',
+                          'radio-group-optional': groupItem.itemGroupType === 'optional'
                         }"
                         :style="activeStyle(groupItem)"
                       >
@@ -225,7 +225,7 @@
                           type="primary"
                           size="small"
                           ghost
-                          @click="saveGroup(3, activeEditingNode)"
+                          @click="saveGroup(9, activeEditingNode)"
                           >{{ $t('save') }}</Button
                         >
                         <Button size="small" @click="reloadGroup">{{ $t('tw_restore') }}</Button>
@@ -241,9 +241,7 @@
                   <div style="margin: 12px 0 0 8px;">
                     <Form :label-width="90" v-if="procDefId !== ''">
                       <FormItem :label="$t('判断分支')">
-                        <Select style="width:94%">
-                          <Option value="1">{{ $t('测试分支') }}</Option>
-                        </Select>
+                        <Select style="width:94%"> </Select>
                       </FormItem>
                       <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
@@ -490,7 +488,6 @@ import {
   saveRequestGroupCustomForm,
   submitTemplate
 } from '@/api/server.js'
-let idGlobal = 118
 export default {
   name: 'BasicInfo',
   data () {
@@ -941,11 +938,12 @@ export default {
       }
     },
     cloneDog (val) {
+      const itemNo = this.generateRandomString()
       if (this.$parent.isCheck === 'Y') return
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = 'c_' + idGlobal++
-      newItem.title = newItem.title + idGlobal
-      newItem.name = newItem.name + idGlobal
+      newItem.id = 'c_' + itemNo
+      newItem.title = newItem.title + itemNo
+      newItem.name = newItem.name + itemNo
       newItem.isActive = true
       this.specialId = newItem.id
       this.paramsChanged()
@@ -953,6 +951,13 @@ export default {
         item.isActive = false
       })
       return newItem
+    },
+    generateRandomString () {
+      let result = ''
+      for (let i = 0; i < 4; i++) {
+        result += Math.floor(Math.random() * 10)
+      }
+      return result
     },
     log (item) {
       this.finalElement.forEach(l => {
@@ -971,9 +976,9 @@ export default {
     },
     // 编辑组自定义属性
     editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
+      this.displayLastGroup = false
       this.nextGroupInfo = groupItem
-      // this.displayLastGroup = false
-      if (isNeedSaveFirst) {
+      if (isNeedSaveFirst && this.isCheck !== 'Y') {
         this.saveGroup(4, groupItem)
       } else {
         this.updateFinalElement(groupItem)
@@ -1129,7 +1134,7 @@ export default {
     },
     // 保存自定义表单项
     async saveGroup (nextStep, elememt) {
-      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗 6删除组 7选择组 8上一步 9发布时只保存不提示
+      // nextStep 1新增 2下一步 3切换tab 4 切换到目标group 5切换到目标group打开弹窗 6删除组 7选择组 8上一步 10发布时只保存不提示
       let finalData = JSON.parse(JSON.stringify(this.finalElement[0]))
       if (finalData.itemGroupId === '') {
         this.loadPage(elememt.id)
@@ -1147,7 +1152,7 @@ export default {
       })
       const { statusCode } = await saveRequestGroupCustomForm(finalData)
       if (statusCode === 'OK') {
-        if (![2, 3, 4, 5, 6, 7, 8, 9].includes(nextStep)) {
+        if (![2, 3, 4, 5, 6, 7, 8, 10].includes(nextStep)) {
           this.$Notice.success({
             title: this.$t('successful'),
             desc: this.$t('successful')
@@ -1158,7 +1163,7 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if (nextStep === 3) {
+        } else if ([3, 9].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
@@ -1174,7 +1179,7 @@ export default {
           this.selectItemGroup()
         } else if (nextStep === 8) {
           this.$emit('gotoStep', this.requestTemplateId, 'backward')
-        } else if (nextStep === 9) {
+        } else if (nextStep === 10) {
           this.loadPage()
         }
       }
@@ -1234,7 +1239,7 @@ export default {
       }
     },
     async submitTemplate () {
-      await this.saveGroup(9, {})
+      await this.saveGroup(10, {})
       this.$Modal.confirm({
         title: `${this.$t('submit_for_review')}`,
         content: `${this.$t('submit_for_review_tip')}`,
@@ -1359,29 +1364,31 @@ fieldset[disabled] .ivu-input {
   width: calc(100% - 130px);
   display: inline-block;
 }
+
 .radio-group {
   margin-bottom: 15px;
-  .radio {
-    padding: 5px 15px;
-    border-radius: 32px;
-    font-size: 12px;
-    cursor: pointer;
-    margin: 4px;
-    display: inline-block;
-  }
-  .custom {
-    border: 1px solid #b886f8;
-    color: #b886f8;
-  }
-  .workflow {
-    border: 1px solid #cba43f;
-    color: #cba43f;
-  }
-  .optional {
-    border: 1px solid #81b337;
-    color: #81b337;
-  }
 }
+.radio-group-radio {
+  padding: 5px 15px;
+  border-radius: 32px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 4px;
+  display: inline-block;
+}
+.radio-group-custom {
+  border: 1px solid #b886f8;
+  color: #b886f8;
+}
+.radio-group-workflow {
+  border: 1px solid #cba43f;
+  color: #cba43f;
+}
+.radio-group-optional {
+  border: 1px solid #81b337;
+  color: #81b337;
+}
+
 .node-normal {
   height: 32px;
   line-height: 32px;

@@ -80,17 +80,6 @@ export default {
 }
 </script>
 <style scoped lang="scss">
-.active-zone {
-  color: #338cf0;
-}
-.ivu-form-item {
-  margin-bottom: 8px;
-}
-.list-group-item- {
-  display: inline-block;
-  margin: 2px 0;
-}
-
 .tab {
   display: inline-block;
   height: 100%;

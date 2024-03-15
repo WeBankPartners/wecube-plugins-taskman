@@ -324,5 +324,7 @@
   "tw_limit_200": "长度需小于200",
   "tw_code": "编码",
   "tw_restore": "还原",
-  "tw_multiple": "多选"
+  "tw_multiple": "多选",
+  "tw_node_configuration": "节点配置",
+  "tw_preview": "预览"
 }

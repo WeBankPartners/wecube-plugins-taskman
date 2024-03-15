@@ -342,7 +342,6 @@ import {
   getAllDataModels
 } from '@/api/server.js'
 import draggable from 'vuedraggable'
-let idGlobal = 80
 export default {
   name: '',
   data () {
@@ -914,21 +913,29 @@ export default {
       })
     },
     cloneDog (val) {
+      const itemNo = this.generateRandomString()
       if (this.isCheck === 'Y') return
       if (val.elementType === 'group') {
         this.finalElement.push({
-          itemGroup: 'itemGroup' + idGlobal++,
-          itemGroupName: 'itemGroup' + idGlobal++,
+          itemGroup: 'itemGroup' + itemNo,
+          itemGroupName: 'itemGroup' + itemNo,
           attrs: []
         })
         return
       }
       let newItem = JSON.parse(JSON.stringify(val))
-      newItem.id = 'c_' + idGlobal++
-      newItem.title = newItem.title + idGlobal
-      newItem.name = newItem.name + idGlobal
+      newItem.id = 'c_' + itemNo
+      newItem.title = newItem.title + itemNo
+      newItem.name = newItem.name + itemNo
       this.specialId = newItem.id
       return newItem
+    },
+    generateRandomString () {
+      let result = ''
+      for (let i = 0; i < 4; i++) {
+        result += Math.floor(Math.random() * 10)
+      }
+      return result
     },
     selectElement (itemIndex, eleIndex) {
       if (this.activeTag.itemGroupIndex !== -1 && this.activeTag.attrIndex !== -1) {

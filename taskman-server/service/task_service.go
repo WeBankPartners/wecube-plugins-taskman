@@ -635,6 +635,39 @@ func ApproveTask(task models.TaskTable, operator, userToken, language string, pa
 	return nil
 }
 
+func ApproveCustomTask(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam) (err error) {
+	requestParam, callbackUrl, getDataErr := getApproveCallbackParamNew(task.Id)
+	if getDataErr != nil {
+		return getDataErr
+	}
+	if param.ChoseOption != "" {
+		requestParam.ResultCode = param.ChoseOption
+	}
+	for _, v := range requestParam.Results.Outputs {
+		v.Comment = param.Comment
+	}
+	var respResult models.CallbackResult
+	requestBytes, _ := json.Marshal(requestParam)
+	b, _ := rpc.HttpPost(models.Config.Wecube.BaseUrl+callbackUrl, userToken, language, requestBytes)
+	log.Logger.Info("Custom Callback response", log.String("body", string(b)))
+	err = json.Unmarshal(b, &respResult)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if respResult.Status != "OK" {
+		err = fmt.Errorf("Callback fail,%s ", respResult.Message)
+		return
+	}
+	var actions []*dao.ExecAction
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	actions = append(actions, &dao.ExecAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, task.Id}})
+	if err = dao.Transaction(actions); err != nil {
+		err = fmt.Errorf("update task message fail,%s ", err.Error())
+	}
+	return
+}
+
 // handleApprove 处理审批
 func handleApprove(task models.TaskTable, operator, userToken, language string, param models.TaskApproveParam, taskSort int) (err error) {
 	var actions, newApproveActions []*dao.ExecAction

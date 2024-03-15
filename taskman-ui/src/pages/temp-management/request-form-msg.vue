@@ -700,16 +700,3 @@ export default {
   margin: 0 6px;
 }
 </style>
-<style>
-.ivu-input[disabled],
-fieldset[disabled] .ivu-input {
-  color: #757575 !important;
-}
-.ivu-select-input[disabled] {
-  color: #757575 !important;
-  -webkit-text-fill-color: #757575 !important;
-}
-.ivu-select-disabled .ivu-select-selection {
-  color: #757575 !important;
-}
-</style>

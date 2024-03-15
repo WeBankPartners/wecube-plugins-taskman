@@ -655,24 +655,26 @@ func getRequestPreDataByTemplateId(requestTemplateId string) []*models.RequestPr
 
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
 	var result []*models.RequestPreDataTableObj
-	var itemGroupType, itemGroupRule string
-	var formTemplateId string
+	//var itemGroupType, itemGroupRule string
+	//var formTemplateId string
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
 	tmpItemGroupName := items[0].ItemGroupName
+	tmpFormTemplateId := items[0].FormTemplate
+	formTemplateIdList := []string{items[0].FormTemplate}
 	var tmpRefEntity []string
 	var tmpItems []*models.FormItemTemplateDto
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
-		itemGroup := models.FormTemplateTable{}
-		if v.FormTemplate != "" {
-			dao.X.SQL("select * from form_template where id=?", v.FormTemplate).Get(&itemGroup)
-			itemGroupType = itemGroup.ItemGroupType
-			itemGroupRule = itemGroup.ItemGroupRule
-			formTemplateId = itemGroup.Id
-		}
+		//itemGroup := models.FormTemplateTable{}
+		//if v.FormTemplate != "" {
+		//	dao.X.SQL("select * from form_template where id=?", v.FormTemplate).Get(&itemGroup)
+		//	itemGroupType = itemGroup.ItemGroupType
+		//	itemGroupRule = itemGroup.ItemGroupRule
+		//	formTemplateId = itemGroup.Id
+		//}
 		if _, b := existItemMap[tmpKey]; b {
 			continue
 		} else {
@@ -683,11 +685,9 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 				result = append(result, &models.RequestPreDataTableObj{
 					PackageName:    tmpPackageName,
 					Entity:         tmpEntity,
-					FormTemplateId: formTemplateId,
+					FormTemplateId: tmpFormTemplateId,
 					ItemGroup:      tmpItemGroup,
 					ItemGroupName:  tmpItemGroupName,
-					ItemGroupType:  itemGroupType,
-					ItemGroupRule:  itemGroupRule,
 					RefEntity:      tmpRefEntity,
 					SortLevel:      0,
 					Title:          tmpItems,
@@ -699,6 +699,8 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 			tmpPackageName = v.PackageName
 			tmpItemGroup = v.ItemGroup
 			tmpItemGroupName = v.ItemGroupName
+			tmpFormTemplateId = v.FormTemplate
+			formTemplateIdList = append(formTemplateIdList, v.FormTemplate)
 			tmpRefEntity = []string{}
 		} else {
 			if tmpEntity == "" && v.Entity != "" {
@@ -706,7 +708,7 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 				tmpPackageName = v.PackageName
 			}
 		}
-		tmpItems = append(tmpItems, models.ConvertFormItemTemplateModel2Dto(v, itemGroup))
+		tmpItems = append(tmpItems, models.ConvertFormItemTemplateModel2Dto(v, models.FormTemplateTable{}))
 		if v.RefEntity != "" {
 			existFlag := false
 			for _, vv := range tmpRefEntity {
@@ -732,16 +734,38 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 		result = append(result, &models.RequestPreDataTableObj{
 			PackageName:    tmpPackageName,
 			Entity:         tmpEntity,
-			FormTemplateId: formTemplateId,
+			FormTemplateId: tmpFormTemplateId,
 			ItemGroup:      tmpItemGroup,
 			ItemGroupName:  tmpItemGroupName,
-			ItemGroupType:  itemGroupType,
-			ItemGroupRule:  itemGroupRule,
 			RefEntity:      tmpRefEntity,
 			SortLevel:      0,
 			Title:          tmpItems,
 			Value:          []*models.EntityTreeObj{},
 		})
+	}
+	if len(formTemplateIdList) > 0 {
+		var formTemplateRows []*models.FormTemplateTable
+		filterSql, filterParam := dao.CreateListParams(formTemplateIdList, "")
+		err := dao.X.SQL("select id,item_group_type,item_group_rule,item_group_sort from form_template where id in ("+filterSql+")", filterParam...).Find(&formTemplateRows)
+		if err != nil {
+			log.Logger.Error("query for template table fail", log.Error(err))
+		} else {
+			formTemplateMap := make(map[string]*models.FormTemplateTable)
+			for _, row := range formTemplateRows {
+				formTemplateMap[row.Id] = row
+			}
+			for _, v := range result {
+				if formTemplateRow, ok := formTemplateMap[v.FormTemplateId]; ok {
+					v.ItemGroupType = formTemplateRow.ItemGroupType
+					v.ItemGroupRule = formTemplateRow.ItemGroupRule
+					for _, item := range v.Title {
+						item.ItemGroupType = formTemplateRow.ItemGroupType
+						item.ItemGroupRule = formTemplateRow.ItemGroupRule
+						item.ItemGroupSort = formTemplateRow.ItemGroupSort
+					}
+				}
+			}
+		}
 	}
 	result = sortRequestEntity(result)
 	for _, v := range result {

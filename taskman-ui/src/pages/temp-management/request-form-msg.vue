@@ -15,7 +15,7 @@
               <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
               <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
               <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-              <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+              <Select v-if="element.elementType === 'wecmdbEntity'" :placeholder="$t('tw_entity_data_items')"></Select>
               <DatePicker
                 v-if="element.elementType === 'datePicker'"
                 :type="element.type"
@@ -34,7 +34,7 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('请求信息') }}
+              {{ $t('tw_request_title') }}
               <span class="underline"></span>
             </div>
           </div>
@@ -102,7 +102,8 @@
                     type="error"
                     size="small"
                     :disabled="$parent.isCheck === 'Y'"
-                    icon="ios-trash"
+                    icon="ios-close"
+                    ghost
                   ></Button>
                 </div>
               </draggable>
@@ -142,7 +143,7 @@
                       <Option value="input">Input</Option>
                       <Option value="select">Select</Option>
                       <Option value="textarea">Textarea</Option>
-                      <Option value="wecmdbEntity">模型数据项</Option>
+                      <Option value="wecmdbEntity">{{ $t('tw_entity_data_items') }}</Option>
                       <Option value="datePicker">DatePicker</Option>
                     </Select>
                   </FormItem>

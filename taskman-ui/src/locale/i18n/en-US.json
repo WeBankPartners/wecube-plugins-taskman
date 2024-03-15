@@ -326,5 +326,19 @@
   "tw_restore": "Restore",
   "tw_multiple": "Multiple",
   "tw_node_configuration": "Node Configuration",
-  "tw_preview": "Preview"
+  "tw_form_configuration": "Form Configuration",
+  "tw_preview": "Preview",
+  "tw_approval_content": "Approval Content",
+  "tw_approval_result": "Approval Result",
+  "tw_task_content": "Task Content",
+  "tw_task_result": "Task Result",
+  "tw_form_type": "Form Type",
+  "tw_form_name": "Form Name",
+  "tw_information_form": "Information Form",
+  "tw_data_form": "Data Form",
+  "tw_custom_form": "Custom From",
+  "tw_enter_new_data": "Enter new data",
+  "tw_select_data": "Select existing data",
+  "tw_entity_data_items": "Entity data items",
+  "tw_configuration_form": "Configuration Form"
 }

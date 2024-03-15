@@ -1,15 +1,21 @@
 <template>
-  <Drawer title="配置表单" :closable="false" :mask-closable="false" :width="550" v-model="openFormConfig">
+  <Drawer
+    :title="$t('tw_configuration_form')"
+    :closable="false"
+    :mask-closable="false"
+    :width="550"
+    v-model="openFormConfig"
+  >
     <div>
       <Form :label-width="120">
-        <FormItem :label="$t('表单类型')">
-          <Button shape="circle" style="border:1px solid #dd6da6; color: #dd6da6;">自定义表单</Button>
+        <FormItem :label="$t('tw_form_type')">
+          <Button shape="circle" style="border:1px solid #dd6da6; color: #dd6da6;">{{ $t('tw_custom_form') }}</Button>
         </FormItem>
-        <FormItem :label="$t('表单名')">
+        <FormItem :label="$t('tw_form_name')">
           <Input v-model="group.itemGroupName" style="width: 96%;" @on-change="paramsChanged"></Input>
           <span style="color: red">*</span>
           <span v-if="group.itemGroupName === ''" style="color: red"
-            >{{ $t('表单名') }}{{ $t('can_not_be_empty') }}</span
+            >{{ $t('tw_form_name') }}{{ $t('can_not_be_empty') }}</span
           >
         </FormItem>
         <FormItem :label="$t('新增一行')">
@@ -44,8 +50,8 @@ export default {
       openFormConfig: false, // 配置表单控制
       groupRules: [
         // 新增一行选项
-        { label: '输入新数据', value: 'new' },
-        { label: '选择已有数据', value: 'exist' }
+        { label: this.$t('tw_enter_new_data'), value: 'new' },
+        { label: this.$t('tw_select_data'), value: 'exist' }
       ],
       group: {
         requestTemplateId: '',

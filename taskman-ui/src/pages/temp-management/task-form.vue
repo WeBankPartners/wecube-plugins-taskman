@@ -46,14 +46,14 @@
             @nodeStatus="nodeStatus"
             :isCheck="isCheck"
             :procDefId="procDefId"
-            :nodeType="procDefId === '' ? '自定义' : '编排人工任务'"
+            :nodeType="procDefId === '' ? $t('tw_auto') : '编排人工任务'"
             @setFormConfigStatus="changeFormConfigStatus"
           ></TaskFormNode>
         </div>
         <template v-if="isShowFormConfig">
           <div class="title" style="font-size: 16px;">
             <div class="title-text">
-              {{ $t('表单配置') }}
+              {{ $t('tw_form_configuration') }}
               <span class="underline"></span>
             </div>
           </div>
@@ -78,7 +78,10 @@
                       <Input v-if="element.elementType === 'input'" :placeholder="$t('t_input')" />
                       <Input v-if="element.elementType === 'textarea'" type="textarea" :placeholder="$t('textare')" />
                       <Select v-if="element.elementType === 'select'" :placeholder="$t('select')"></Select>
-                      <Select v-if="element.elementType === 'wecmdbEntity'" placeholder="模型数据项"></Select>
+                      <Select
+                        v-if="element.elementType === 'wecmdbEntity'"
+                        :placeholder="$t('tw_entity_data_items')"
+                      ></Select>
                       <DatePicker
                         v-if="element.elementType === 'datePicker'"
                         :type="element.type"
@@ -100,7 +103,7 @@
                   <Divider>{{ $t('tw_preview') }}</Divider>
                   <div class="title">
                     <div class="title-text">
-                      {{ $t('任务内容') }}
+                      {{ $t('tw_task_content') }}
                       <span class="underline"></span>
                     </div>
                   </div>
@@ -234,7 +237,7 @@
                   </div>
                   <div class="title">
                     <div class="title-text">
-                      {{ $t('任务结果') }}
+                      {{ $t('tw_task_result') }}
                       <span class="underline"></span>
                     </div>
                   </div>
@@ -304,7 +307,7 @@
                               <Option value="input">Input</Option>
                               <Option value="select">Select</Option>
                               <Option value="textarea">Textarea</Option>
-                              <Option value="wecmdbEntity">模型数据项</Option>
+                              <Option value="wecmdbEntity">{{ $t('tw_entity_data_items') }}</Option>
                               <Option value="datePicker">DatePicker</Option>
                               <Option value="calculate">Calculate</Option>
                             </Select>

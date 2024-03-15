@@ -216,7 +216,7 @@ export default {
       const { statusCode, data } = await getApprovalNodeById(this.requestTemplateId, params.id, 'implement')
       if (statusCode === 'OK') {
         this.activeApprovalNode = data
-        this.$emit('setFormConfigStatus', !['admin'].includes(this.activeApprovalNode.handleMode))
+        this.$emit('setFormConfigStatus', true)
         this.$set(this.activeApprovalNode, 'handleTemplates', data.handleTemplates)
         this.mgmtData()
       }
@@ -340,7 +340,7 @@ export default {
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
         }
       ]
-      this.$emit('setFormConfigStatus', !['admin', 'auto'].includes(this.activeApprovalNode.handleMode))
+      this.$emit('setFormConfigStatus', true)
       this.paramsChanged()
     },
     async getUserByRole (role, roleObjIndex) {

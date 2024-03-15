@@ -779,7 +779,7 @@ export default {
     editGroupCustomItems (groupItem, isNeedSaveFirst = true) {
       this.nextGroupInfo = groupItem
       this.displayLastGroup = false
-      if (isNeedSaveFirst) {
+      if (isNeedSaveFirst && this.isCheck !== 'Y') {
         this.saveGroup(4, groupItem)
       } else {
         this.updateFinalElement(groupItem)

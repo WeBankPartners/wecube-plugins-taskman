@@ -405,12 +405,12 @@ export default {
       uploadUrl: '/taskman/api/v1/request-template/import',
       headers: {},
       backReason: '',
-      confirmCount: null, // 管理员待发布模板数量
+      confirmCount: 0, // 管理员待发布模板数量
       pendingLabel: () => {
         return (
           <div>
             <span>待管理员确认</span>
-            {this.confirmCount && <span class="badge">{this.confirmCount}</span>}
+            {(this.confirmCount && <span class="badge">{this.confirmCount}</span>) || ''}
           </div>
         )
       },

@@ -1024,7 +1024,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 			return err
 		}
 		// 更新处理人,拒绝
-		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, nowTime, taskHandleList[0].Id}})
+		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,handle_status = ?,result_desc=?,updated_time =? where id= ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, description, nowTime, taskHandleList[0].Id}})
 		// 更新任务到完成
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,description = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, description, operator, nowTime, checkTask.Id}})
 		// 更新请求

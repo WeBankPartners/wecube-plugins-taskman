@@ -154,6 +154,7 @@ type TaskProgressNode struct {
 	Status         int               `json:"status"`         // 状态值：1 进行中 2.未开始  3.已完成  4.报错被拒绝了
 	Sort           int               `json:"-"`              // 排序,后端用
 	TaskHandleList []*TaskHandleNode `json:"taskHandleList"` // 任务处理节点
+	NodeType       string            `json:"nodeType"`       // auto
 }
 
 type TaskHandleNode struct {

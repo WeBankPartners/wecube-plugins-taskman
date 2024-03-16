@@ -1241,8 +1241,9 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 								Node:           v.NodeName,
 								NodeDefId:      v.NodeDefId,
 								Status:         int(models.TaskExecStatusFail),
-								TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
 								Sort:           sort,
+								TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
+								NodeType:       "auto",
 							})
 						}
 					}

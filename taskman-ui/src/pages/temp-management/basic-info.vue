@@ -220,9 +220,14 @@
                           :disabled="basicInfo.mgmtRoles === ''"
                           @on-open-change="getProcess"
                         >
-                          <Option v-for="item in procOptions" :value="item.procDefId" :key="item.procDefId">{{
-                            item.procDefName
-                          }}</Option>
+                          <Option
+                            v-for="item in procOptions"
+                            :value="item.procDefId"
+                            :key="item.procDefId"
+                            :label="item.procDefName + '[' + item.version + ']'"
+                          >
+                            <span>{{ item.procDefName }}[{{ item.version }}]</span>
+                          </Option>
                         </Select>
                         <span style="color: red">*</span>
                         <div v-if="isParmasChanged && basicInfo.procDefId === ''" style="color: red">

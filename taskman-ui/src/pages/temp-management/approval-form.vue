@@ -999,7 +999,11 @@ export default {
     },
     // 编辑组弹出信息
     editGroupItem (groupItem) {
-      this.saveGroup(5, groupItem)
+      if (this.isCheck === 'Y') {
+        this.openDrawer(groupItem)
+      } else {
+        this.saveGroup(5, groupItem)
+      }
     },
     openDrawer (groupItem) {
       this.editGroupCustomItems(groupItem)

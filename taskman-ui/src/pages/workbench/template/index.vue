@@ -339,7 +339,7 @@ export default {
         path: url,
         query: {
           requestTemplate: row.id,
-          role: role,
+          role: role, // 模板创建人角色
           jumpFrom: ''
         }
       })

@@ -110,10 +110,13 @@ export default {
           minWidth: 140,
           key: 'handler',
           render: (h, params) => {
+            const handlerArr = params.row.handler.split(',') || []
+            const roleArr = params.row.handleRole.split(',') || []
             return (
-              <div style="display:flex;flex-direction:column">
-                <span>{params.row.handler}</span>
-                <span>{params.row.handleRole || '-'}</span>
+              <div>
+                {handlerArr.map((item, index) => {
+                  return <span>{`${roleArr[index] || '-'} / ${item || '-'}`}</span>
+                })}
               </div>
             )
           }
@@ -406,7 +409,7 @@ export default {
     }
   },
   mounted () {
-    // 待处理
+    // 本人/本组处理
     this.pendingTaskColumn = [
       this.baseColumn.id,
       this.baseColumn.name,
@@ -419,7 +422,7 @@ export default {
         render: (h, params) => {
           const taskNameMap = {
             check: this.$t('tw_pending_tab'),
-            confirm: this.$t('tw_approve_tab')
+            confirm: '请求确认'
           }
           return (
             <span
@@ -471,7 +474,7 @@ export default {
         render: (h, params) => {
           const taskNameMap = {
             check: this.$t('tw_pending_tab'),
-            confirm: this.$t('tw_approve_tab')
+            confirm: '请求确认'
           }
           return (
             <span

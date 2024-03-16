@@ -164,7 +164,7 @@ export default {
       confirmLabel: () => {
         return (
           <div>
-            <span>请求确认</span>
+            <span>{this.$t('tw_confirm_tab')}</span>
             {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Confirm') > 0 && (
               <span class="badge">{this.getPendingNumber('Confirm')}</span>
             )}

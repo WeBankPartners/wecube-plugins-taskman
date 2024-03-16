@@ -1505,7 +1505,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	// get request
 	var requests []*models.RequestTable
 	var taskQueryList []*models.TaskQueryObj
-	var actions []*dao.ExecAction
+	var actions, confirmActions []*dao.ExecAction
 	var approvalList []*models.TaskTemplateDto
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
@@ -1517,9 +1517,18 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 			newStatus = "Termination"
 		}
 		if newStatus != "" && newStatus != requests[0].Status {
-			actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
-				Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), requests[0].Id}})
-			requests[0].Status = newStatus
+			if newStatus == string(models.RequestStatusCompleted) {
+				// 编排的完成,并不表示 请求完成
+				taskSort := GetTaskService().GenerateTaskOrderByRequestId(requestId)
+				confirmActions, _ = GetRequestService().CreateRequestConfirm(*requests[0], taskSort)
+				if len(confirmActions) > 0 {
+					actions = append(actions, confirmActions...)
+				}
+			} else {
+				actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
+					Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), requestId}})
+				requests[0].Status = newStatus
+			}
 		}
 		if len(actions) > 0 {
 			updateRequestErr := dao.Transaction(actions)

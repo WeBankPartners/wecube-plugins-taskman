@@ -1715,6 +1715,7 @@ func (s *TaskService) GetDoneTaskByRequestId(request models.RequestTable) (taskL
 	if len(allTaskList) > 0 {
 		for _, task := range allTaskList {
 			if task.Type == string(models.TaskTypeSubmit) {
+				taskList = append(taskList, task)
 				break
 			}
 			if task.Status == string(models.TaskStatusDone) {

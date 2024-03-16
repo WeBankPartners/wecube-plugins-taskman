@@ -28,7 +28,7 @@ const (
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出
 	InternallyTerminated = "internallyTerminated" // 手动终止
-	AutoNode             = "autoNode"             //自动节点
+	AutoNode             = "autoNode"             // 自动节点
 )
 
 // sceneTypeMap 场景数组
@@ -514,9 +514,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
 		if dataObject.TaskApprovalTime != "" && dataObject.TaskStatus == "done" {
 			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
-			dataObject.TaskStayTime = fmt.Sprintf("%.1f", math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours()*1.00/24.00))
+			dataObject.TaskStayTime = fmt.Sprintf("%.1f", taskApprovalTime.Sub(taskCreateTime).Hours()*1.00/24.00)
 		} else {
-			dataObject.TaskStayTime = fmt.Sprintf("%.1f", math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours()*1.00/24.00))
+			dataObject.TaskStayTime = fmt.Sprintf("%.1f", time.Now().Local().Sub(taskCreateTime).Hours()*1.00/24.00)
 		}
 		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
 	}
@@ -537,17 +537,19 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 			log.Logger.Error("getRequestRemainDays UpdatedTime err", log.Error(err))
 			return
 		}
-		// 向上取整
-		dataObject.RequestStayTime = fmt.Sprintf("%.1f", math.Ceil(updateTime.Sub(reportTime).Hours()*1.00/24.00))
+
+		dataObject.RequestStayTime = fmt.Sprintf("%.1f", updateTime.Sub(reportTime).Hours()*1.00/24.00)
 	} else {
-		dataObject.RequestStayTime = fmt.Sprintf("%.1f", math.Ceil(time.Now().Local().Sub(reportTime).Hours()*1.00/24.00))
+		dataObject.RequestStayTime = fmt.Sprintf("%.1f", time.Now().Local().Sub(reportTime).Hours()*1.00/24.00)
 	}
+	// 向上取整
 	dataObject.RequestStayTimeTotal = int(math.Ceil(requestExpectTime.Sub(reportTime).Hours() * 1.00 / 24.00))
 }
 
 func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (pageInfo models.PageInfo, rowsData []*models.PlatformDataObj, err error) {
 	var operatorObjTypeMap = make(map[string]string)
 	var roleDtoMap map[string]*models.SimpleLocalRoleDto
+	var roleDisplayMap = make(map[string]string)
 	// 排序处理
 	if req.Param.Sorting != nil {
 		hashMap, _ := dao.GetJsonToXormMap(models.PlatformDataObj{})
@@ -559,6 +561,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			}
 		}
 	}
+	roleDisplayMap, _ = GetRoleService().GetRoleDisplayName()
 	// 分页处理
 	if page {
 		pageInfo.StartIndex = req.Param.StartIndex
@@ -580,7 +583,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 		if roleDtoMap, _ = rpc.QueryAllRoles("Y", req.UserToken, language); len(roleDtoMap) == 0 {
 			roleDtoMap = make(map[string]*models.SimpleLocalRoleDto)
 		}
-		var actions []*dao.ExecAction
+		var actions, confirmActions []*dao.ExecAction
 		for _, platformDataObj := range rowsData {
 			// 获取 使用编排
 			if len(templateMap) > 0 && templateMap[platformDataObj.TemplateId] != nil {
@@ -600,9 +603,19 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					newStatus = "Termination"
 				}
 				if newStatus != "" && newStatus != platformDataObj.Status {
-					actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
-						Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
-					platformDataObj.Status = newStatus
+					if newStatus == string(models.RequestStatusCompleted) {
+						// 编排的完成,并不表示 请求完成
+						taskSort := GetTaskService().GenerateTaskOrderByRequestId(platformDataObj.Id)
+						confirmActions, _ = GetRequestService().CreateRequestConfirm(models.RequestTable{Id: platformDataObj.Id,
+							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy}, taskSort)
+						if len(confirmActions) > 0 {
+							actions = append(actions, confirmActions...)
+						}
+					} else {
+						actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
+							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
+						platformDataObj.Status = newStatus
+					}
 				}
 			}
 			if collectMap[platformDataObj.ParentId] {
@@ -644,6 +657,13 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			}
 			// 计算请求/任务停留时长
 			calcRequestStayTime(platformDataObj)
+			// 设置角色显示名
+			if v, ok := roleDisplayMap[platformDataObj.Role]; ok {
+				platformDataObj.RoleDisplay = v
+			}
+			if v, ok := roleDisplayMap[platformDataObj.HandleRole]; ok {
+				platformDataObj.HandleRoleDisplay = v
+			}
 		}
 		if len(actions) > 0 {
 			updateRequestErr := dao.Transaction(actions)
@@ -703,6 +723,9 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 			curNode = RequestPending
 		case string(models.RequestStatusConfirm):
 			curNode = Confirm
+		case string(models.RequestStatusCompleted):
+			curNode = RequestComplete
+			progress = 100
 		}
 		if curNode == "" {
 			task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate)
@@ -1084,15 +1107,26 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			Sort:   4,
 		})
 	}
-	// 添加请求完成
-	if request.Status == string(models.RequestStatusCompleted) {
-		completeStatus = int(models.TaskExecStatusCompleted)
+
+	if request.Status == string(models.RequestStatusFaulted) {
+		// 自动退出
+		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+			Node:   AutoExit,
+			Status: int(models.TaskExecStatusAutoExitStatus),
+			Sort:   6,
+		})
+	} else {
+		// 添加请求完成
+		if request.Status == string(models.RequestStatusCompleted) {
+			completeStatus = int(models.TaskExecStatusCompleted)
+		}
+		// 非自动退出,都会有请求完成状态
+		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+			Node:   RequestComplete,
+			Status: completeStatus,
+			Sort:   6,
+		})
 	}
-	taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
-		Node:   RequestComplete,
-		Status: completeStatus,
-		Sort:   6,
-	})
 	sort.Sort(models.TaskTemplateProgressDtoSort(taskTemplateProgressList))
 
 	for _, taskTemplateProgress := range taskTemplateProgressList {
@@ -1140,40 +1174,35 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		return
 	}
 	if len(taskProgress) > 0 {
-		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) {
+		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) && request.Status != string(models.RequestStatusFaulted) {
 			response, err := rpc.GetProcessInstance(language, userToken, request.ProcInstanceId)
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
 			if response != nil {
-				// 自动退出
-				if response.Status == string(models.RequestStatusFaulted) {
-					taskProgress = append(taskProgress, &models.TaskProgressNode{Node: AutoExit, Status: int(models.TaskExecStatusAutoExitStatus)})
-				} else {
-					if response.Status == InternallyTerminated {
-						taskProgress = append(taskProgress, &models.TaskProgressNode{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
-					}
-					// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
-					var exist bool
-					for _, v := range response.TaskNodeInstances {
-						exist = false
-						if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
-							for _, rowData := range taskProgress {
-								if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
-									exist = true
-									rowData.Status = int(models.TaskExecStatusFail)
-									break
-								}
+				if response.Status == InternallyTerminated {
+					taskProgress = append(taskProgress, &models.TaskProgressNode{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
+				}
+				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
+				var exist bool
+				for _, v := range response.TaskNodeInstances {
+					exist = false
+					if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
+						for _, rowData := range taskProgress {
+							if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
+								exist = true
+								rowData.Status = int(models.TaskExecStatusFail)
+								break
 							}
-							if !exist {
-								taskProgress = append(taskProgress, &models.TaskProgressNode{
-									NodeId:         v.NodeId,
-									Node:           v.NodeName,
-									NodeDefId:      v.NodeDefId,
-									Status:         int(models.TaskExecStatusFail),
-									TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
-								})
-							}
+						}
+						if !exist {
+							taskProgress = append(taskProgress, &models.TaskProgressNode{
+								NodeId:         v.NodeId,
+								Node:           v.NodeName,
+								NodeDefId:      v.NodeDefId,
+								Status:         int(models.TaskExecStatusFail),
+								TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
+							})
 						}
 					}
 				}

@@ -335,7 +335,7 @@ export default {
       if (this.tabName === 'pending' || this.tabName === 'myPending') {
         this.sorting = {
           asc: false,
-          field: 'taskCreatedTime'
+          field: 'taskHandleUpdatedTime'
         }
       } else if (this.tabName === 'hasProcessed') {
         this.sorting = {

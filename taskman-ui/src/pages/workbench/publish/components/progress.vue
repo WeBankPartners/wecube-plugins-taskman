@@ -8,7 +8,7 @@
         :current="0"
         :style="{
           minWidth: progress.requestProgress.length * 120 + 'px',
-          maxWidth: progress.requestProgress.length * 160 + 'px'
+          maxWidth: progress.requestProgress.length * 170 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
@@ -25,11 +25,14 @@
             <Tooltip :content="i.name">
               <div class="word-eclipse">{{ i.name }}</div>
             </Tooltip>
-            <span style="margin-top:-5px;">{{ i.handler }}</span>
+            <div class="word-eclipse" style="margin-top:-5px;">
+              <span v-if="i.role">{{ i.role }} /</span>
+              <span>{{ i.handler }}</span>
+            </div>
           </div>
         </Step>
       </Steps>
-      <div v-if="errorNode" style="margin:0 0 10px 20px;max-width:400px;">
+      <div v-if="errorNode" style="margin:0 0 10px -80px;max-width:400px;">
         <Alert v-if="errorNode === 'autoExit'" show-icon type="error">
           {{ $t('tw_auto_exit_tips') }}
         </Alert>
@@ -86,8 +89,13 @@
             </Tooltip>
             <span class="mode">{{ approvalTypeName[i.approveType] || '' }}</span>
             <div v-for="(j, index) in i.taskHandleList" :key="index" class="word-eclipse">
-              <span>{{ j.role || '-' }} /</span>
-              <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
+              <template v-if="j.handler === 'autoNode'">
+                <span>{{ $t('tw_auto_tag') }}</span>
+              </template>
+              <template v-else>
+                <span>{{ j.role || '-' }} /</span>
+                <span>{{ j.handler || handlerType[j.handlerType] || '-' }}</span>
+              </template>
             </div>
           </div>
         </Step>
@@ -188,7 +196,9 @@ export default {
               break
             case 'task':
               item.name = '任务' // 任务
-              item.handler = `${this.progress.taskProgress.length}个节点`
+              // 过滤掉自动节点
+              const noAutoTagList = this.progress.taskProgress.filter(i => i.nodeType !== 'auto') || []
+              item.handler = `${noAutoTagList.length}个节点`
               break
             case 'confirm':
               item.name = '请求确认' // 请求确认
@@ -196,6 +206,32 @@ export default {
             case 'requestComplete':
               item.name = this.$t('tw_request_complete') // 请求完成
               break
+            // case 'autoExit':
+            //   item.name = this.$t('status_faulted') // 自动退出
+            //   this.errorNode = item.node
+            //   break
+            // case 'internallyTerminated':
+            //   item.name = this.$t('status_termination') // 手动终止
+            //   this.errorNode = item.node
+            //   break
+            default:
+              item.name = item.node
+              break
+          }
+          // if (item.handler === 'autoNode') {
+          //   item.handler = this.$t('tw_auto_tag') // 自动节点
+          //   this.errorNode = item.name
+          // }
+        })
+        this.progress.approvalProgress.forEach(item => {
+          item.icon = statusIcon[item.status]
+          item.color = statusColor[item.status]
+          item.name = item.node
+        })
+        this.progress.taskProgress.forEach(item => {
+          item.icon = statusIcon[item.status]
+          item.color = statusColor[item.status]
+          switch (item.node) {
             case 'autoExit':
               item.name = this.$t('status_faulted') // 自动退出
               this.errorNode = item.node
@@ -208,20 +244,9 @@ export default {
               item.name = item.node
               break
           }
-          if (item.handler === 'autoNode') {
-            item.handler = this.$t('tw_auto_tag') // 自动节点
+          if (item.nodeType === 'auto') {
             this.errorNode = item.name
           }
-        })
-        this.progress.approvalProgress.forEach(item => {
-          item.icon = statusIcon[item.status]
-          item.color = statusColor[item.status]
-          item.name = item.node
-        })
-        this.progress.taskProgress.forEach(item => {
-          item.icon = statusIcon[item.status]
-          item.color = statusColor[item.status]
-          item.name = item.node
         })
       }
     },

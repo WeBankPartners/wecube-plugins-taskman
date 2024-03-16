@@ -104,7 +104,9 @@ type PlatformDataObj struct {
 	ApprovalTime         string `json:"approvalTime" xorm:"approval_time"`          // 请求处理时间
 	CollectFlag          int    `json:"collectFlag" xorm:"collect_flag"`            // 收藏标记,1表示已收藏
 	Role                 string `json:"role" xorm:"role"`                           // 创建请求Role
+	RoleDisplay          string `json:"roleDisplay" xorm:"-"`                       // 创建请求Role
 	HandleRole           string `json:"handleRole" xorm:"handle_role"`              // 处理role
+	HandleRoleDisplay    string `json:"handleRoleDisplay" xorm:"-"`                 // 处理role
 	RollbackDesc         string `json:"rollbackDesc" xorm:"rollback_desc"`          // 回退原因
 	RevokeFlag           int    `json:"revokeFlag" xorm:"revoke_flag"`              // 是否撤回,0表示否,1表示撤回
 	StartTime            string `json:"startTime" xorm:"-"`                         // 开始时间

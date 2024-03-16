@@ -46,7 +46,7 @@ const (
 // QueryProcessDefinitionList 查询当前角色编排列表,并且根据属主角色进行过滤
 func QueryProcessDefinitionList(userToken, language, manageRole string, param models.QueryProcessDefinitionParam) (processList []*models.ProcDefDto, err error) {
 	var response models.QueryProcessDefinitionResponse
-	var procDefMap = make(map[string]*models.ProcDefDto)
+	procDefDistinctMap := make(map[string]int)
 	processList = make([]*models.ProcDefDto, 0)
 	postBytes, _ := json.Marshal(param)
 	byteArr, err := HttpPost(models.Config.Wecube.BaseUrl+pathQueryProcessDefinitions, userToken, language, postBytes)
@@ -69,17 +69,12 @@ func QueryProcessDefinitionList(userToken, language, manageRole string, param mo
 			}
 			if len(queryDto.ProcDefList) > 0 {
 				for _, dto := range queryDto.ProcDefList {
-					procDefMap[dto.Id] = dto
+					if _, existFlag := procDefDistinctMap[dto.Id]; !existFlag {
+						processList = append(processList, dto)
+						procDefDistinctMap[dto.Id] = 1
+					}
 				}
 			}
-		}
-	}
-	if len(procDefMap) > 0 {
-		if err != nil {
-			return
-		}
-		for _, dto := range procDefMap {
-			processList = append(processList, dto)
 		}
 	}
 	return

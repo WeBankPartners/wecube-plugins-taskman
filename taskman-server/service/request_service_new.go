@@ -514,9 +514,9 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		taskCreateTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskCreatedTime, loc)
 		if dataObject.TaskApprovalTime != "" && dataObject.TaskStatus == "done" {
 			taskApprovalTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskApprovalTime, loc)
-			dataObject.TaskStayTime = fmt.Sprintf("%.1f", math.Ceil(taskApprovalTime.Sub(taskCreateTime).Hours()*1.00/24.00))
+			dataObject.TaskStayTime = fmt.Sprintf("%.1f", taskApprovalTime.Sub(taskCreateTime).Hours()*1.00/24.00)
 		} else {
-			dataObject.TaskStayTime = fmt.Sprintf("%.1f", math.Ceil(time.Now().Local().Sub(taskCreateTime).Hours()*1.00/24.00))
+			dataObject.TaskStayTime = fmt.Sprintf("%.1f", time.Now().Local().Sub(taskCreateTime).Hours()*1.00/24.00)
 		}
 		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
 	}
@@ -537,11 +537,12 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 			log.Logger.Error("getRequestRemainDays UpdatedTime err", log.Error(err))
 			return
 		}
-		// 向上取整
-		dataObject.RequestStayTime = fmt.Sprintf("%.1f", math.Ceil(updateTime.Sub(reportTime).Hours()*1.00/24.00))
+
+		dataObject.RequestStayTime = fmt.Sprintf("%.1f", updateTime.Sub(reportTime).Hours()*1.00/24.00)
 	} else {
-		dataObject.RequestStayTime = fmt.Sprintf("%.1f", math.Ceil(time.Now().Local().Sub(reportTime).Hours()*1.00/24.00))
+		dataObject.RequestStayTime = fmt.Sprintf("%.1f", time.Now().Local().Sub(reportTime).Hours()*1.00/24.00)
 	}
+	// 向上取整
 	dataObject.RequestStayTimeTotal = int(math.Ceil(requestExpectTime.Sub(reportTime).Hours() * 1.00 / 24.00))
 }
 
@@ -722,6 +723,9 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 			curNode = RequestPending
 		case string(models.RequestStatusConfirm):
 			curNode = Confirm
+		case string(models.RequestStatusCompleted):
+			curNode = RequestComplete
+			progress = 100
 		}
 		if curNode == "" {
 			task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate)

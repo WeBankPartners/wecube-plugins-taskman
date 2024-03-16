@@ -52,13 +52,6 @@
 import axios from 'axios'
 import { getCookie } from '@/pages/util/cookie'
 import dayjs from 'dayjs'
-const approvalOperation = {
-  deny: '拒绝',
-  approve: '同意',
-  redraw: '退回',
-  complete: '完成',
-  uncompleted: this.$t('tw_incomplete')
-}
 export default {
   props: {
     data: {
@@ -76,7 +69,14 @@ export default {
   },
   data () {
     return {
-      headers: {}
+      headers: {},
+      approvalOperation: {
+        deny: '拒绝',
+        approve: '同意',
+        redraw: '退回',
+        complete: '完成',
+        uncompleted: this.$t('tw_incomplete')
+      }
     }
   },
   computed: {
@@ -84,7 +84,7 @@ export default {
       return function (i) {
         let name = ''
         if (['approve', 'check', 'implement_custom'].includes(this.data.type)) {
-          name = approvalOperation[i.handleResult]
+          name = this.approvalOperation[i.handleResult]
         } else if (this.data.type === 'implement_process') {
           name = i.handleResult
         }

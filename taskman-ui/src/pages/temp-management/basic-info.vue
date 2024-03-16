@@ -31,7 +31,13 @@
                     </div>
                   </FormItem>
                   <FormItem :label="$t('group')">
-                    <Select v-model="basicInfo.group" style="width: 96%;" filterable @on-change="paramsChanged">
+                    <Select
+                      v-model="basicInfo.group"
+                      style="width: 96%;"
+                      filterable
+                      @on-change="paramsChanged"
+                      @on-open-change="getGroupOptions"
+                    >
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{ item.name }}</Option>
                     </Select>
                     <span style="color: red">*</span>
@@ -67,7 +73,13 @@
                   </FormItem>
                   <!-- 模版属主 -->
                   <FormItem :label="$t('handlerNew')">
-                    <Select v-model="basicInfo.handler" filterable style="width: 96%;" @on-change="paramsChanged">
+                    <Select
+                      v-model="basicInfo.handler"
+                      filterable
+                      style="width: 96%;"
+                      @on-change="paramsChanged"
+                      @on-open-change="getHandlerRoles(false)"
+                    >
                       <Option v-for="item in handlerRolesOptions" :value="item.id" :key="item.id">{{
                         item.displayName
                       }}</Option>
@@ -162,6 +174,7 @@
                           filterable
                           style="width: 96%;"
                           @on-change="pendingRoleChange"
+                          @on-open-change="getUserRoles(false)"
                         >
                           <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{
                             item.displayName
@@ -170,7 +183,12 @@
                       </FormItem>
                       <!-- 处理人 -->
                       <FormItem :label="$t('handler')">
-                        <Select v-model="basicInfo.pendingHandler" filterable style="width: 96%;">
+                        <Select
+                          v-model="basicInfo.pendingHandler"
+                          filterable
+                          style="width: 96%;"
+                          @on-open-change="getPendingHandlerRoles(false)"
+                        >
                           <Option v-for="item in pendingHandlerOptions" :value="item.id" :key="item.id">{{
                             item.displayName
                           }}</Option>
@@ -200,6 +218,7 @@
                           filterable
                           style="width: 96%;"
                           :disabled="basicInfo.mgmtRoles === ''"
+                          @on-open-change="getProcess"
                         >
                           <Option v-for="item in procOptions" :value="item.procDefId" :key="item.procDefId">{{
                             item.procDefName
@@ -343,9 +362,9 @@ export default {
       this.requestTemplateId = val
       this.isParmasChanged = false
       this.getProcess()
+      await this.getManagementRoles(true)
       this.getTemplateData()
       this.getGroupOptions()
-      await this.getManagementRoles(true)
       this.getUserRoles(true)
     },
     // 控制保存按钮
@@ -406,6 +425,8 @@ export default {
     },
     async getTemplateData () {
       if (!!this.requestTemplateId === false) {
+        this.getHandlerRoles()
+        this.getPendingHandlerRoles()
         return
       }
       const params = {
@@ -484,7 +505,7 @@ export default {
       }
     },
     // 模版属主
-    async getHandlerRoles () {
+    async getHandlerRoles (type = true) {
       const params = {
         params: {
           roles: this.basicInfo.mgmtRoles
@@ -498,13 +519,14 @@ export default {
             id: d
           }
         })
-        if (this.basicInfo.id === '' && this.handlerRolesOptions.length > 0) {
+        if (type && this.basicInfo.id === '' && this.handlerRolesOptions.length > 0) {
           this.basicInfo.handler = this.handlerRolesOptions[0].id
+          this.getPendingHandlerRoles(false)
         }
       }
     },
     // 处理人
-    async getPendingHandlerRoles () {
+    async getPendingHandlerRoles (type = true) {
       const params = {
         params: {
           roles: this.basicInfo.pendingRole
@@ -518,6 +540,9 @@ export default {
             id: d
           }
         })
+        if (type && this.basicInfo.id === '' && this.pendingHandlerOptions.length > 0) {
+          this.basicInfo.pendingHandler = this.pendingHandlerOptions[0].id
+        }
       }
     },
     async pendingRoleChange () {
@@ -534,6 +559,8 @@ export default {
         this.useRolesOptions = data
         if (type && this.basicInfo.id === '' && this.useRolesOptions.length > 0) {
           this.basicInfo.useRoles.push(this.useRolesOptions[0].id)
+          this.basicInfo.pendingRole = this.useRolesOptions[0].id
+          this.getPendingHandlerRoles()
         }
       }
     },
@@ -546,7 +573,7 @@ export default {
     },
     // 编排列表
     async getProcess () {
-      this.procOptions = []
+      // this.procOptions = []
       const { statusCode, data } = await getProcess(this.basicInfo.mgmtRoles)
       if (statusCode === 'OK') {
         this.procOptions = data

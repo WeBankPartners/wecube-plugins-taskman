@@ -87,14 +87,20 @@
               <Select
                 v-model="roleObj.role"
                 filterable
-                @on-change="changeUser(roleObj.role, roleObjIndex)"
+                @on-change="changeUser(roleObj.role, roleObjIndex, true)"
+                @on-open-change="getUserRoles"
                 :disabled="isRoleDisable(roleObj, roleObjIndex)"
               >
                 <Option v-for="item in useRolesOptions" :value="item.id" :key="item.id">{{ item.displayName }}</Option>
               </Select>
             </Col>
             <Col class="cutom-table-border margin-top--1 margin-left--1" span="4">
-              <Select v-model="roleObj.handler" filterable :disabled="isHandlerDisable(roleObj, roleObjIndex)">
+              <Select
+                v-model="roleObj.handler"
+                filterable
+                :disabled="isHandlerDisable(roleObj, roleObjIndex)"
+                @on-open-change="changeUser(roleObj.role, roleObjIndex, false)"
+              >
                 <Option v-for="item in roleObj.handlerOptions" :value="item.id" :key="item.id">{{
                   item.displayName
                 }}</Option>
@@ -318,8 +324,10 @@ export default {
     removeRoleObjItem (index) {
       this.activeApprovalNode.handleTemplates.splice(index, 1)
     },
-    changeUser (role, roleObjIndex) {
-      this.activeApprovalNode.handleTemplates[roleObjIndex].handler = ''
+    changeUser (role, roleObjIndex, isClearHandler) {
+      if (isClearHandler) {
+        this.activeApprovalNode.handleTemplates[roleObjIndex].handler = ''
+      }
       this.isParmasChanged = true
       this.getUserByRole(role, roleObjIndex)
     },

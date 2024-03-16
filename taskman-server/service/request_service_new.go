@@ -182,16 +182,16 @@ func getPlatRequestSQL(where, sql string) string {
 }
 
 func getPlatTaskSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id,t.task_handle_created_time,t.task_handle_updated_time from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
 }
 
 func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
 	if taskType == models.TaskTypeNone {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
 		queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
 	} else {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
 		queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
 	}
 	return
@@ -199,7 +199,7 @@ func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilter
 
 func pendingMyTaskSQL(templateType int, user, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and (task_handler =? or task_handler is null) and task_handle_role in (" + userRolesFilterSql + ")"
+	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and (task_handler =? or task_handler is null) and task_handle_role in (" + userRolesFilterSql + ")"
 	queryParam = append([]interface{}{templateType, taskType, user}, userRolesFilterParam...)
 	return
 }
@@ -207,10 +207,10 @@ func pendingMyTaskSQL(templateType int, user, userRolesFilterSql string, userRol
 func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
 	if taskType == models.TaskTypeNone {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type != ? and task_handler =? and latest_flag = 1 "
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type != ? and task_handler =? and latest_flag = 1 "
 		queryParam = append([]interface{}{templateType, models.TaskTypeSubmit, user})
 	} else {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
 		queryParam = append([]interface{}{templateType, taskType, user})
 	}
 	return
@@ -501,11 +501,10 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	var err error
 	var reportTime, requestExpectTime, taskCreateTime, taskExpectTime, taskApprovalTime time.Time
 	loc, _ := time.LoadLocation("Local")
+	// 设置个默认值
+	dataObject.RequestStayTime = "0"
 	if dataObject.Status == string(models.RequestStatusDraft) {
-		if dataObject.ExpireDay != 0 {
-			dataObject.RequestStayTime = "0"
-			dataObject.RequestStayTimeTotal = dataObject.ExpireDay
-		}
+		dataObject.RequestStayTimeTotal = dataObject.ExpireDay
 		return
 	}
 	// 计算任务停留时长
@@ -653,6 +652,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
 			if req.Tab == "pending" || req.Tab == "myPending" {
 				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
+				platformDataObj.HandleRoleDisplay = roleDisplayMap[platformDataObj.HandleRole]
 				platformDataObj.Handler = platformDataObj.TaskHandler
 			}
 			// 计算请求/任务停留时长
@@ -661,8 +661,25 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			if v, ok := roleDisplayMap[platformDataObj.Role]; ok {
 				platformDataObj.RoleDisplay = v
 			}
-			if v, ok := roleDisplayMap[platformDataObj.HandleRole]; ok {
-				platformDataObj.HandleRoleDisplay = v
+			if strings.Contains(platformDataObj.HandleRole, ",") {
+				var newRoleDisplayArr []string
+				roleArr := strings.Split(platformDataObj.HandleRole, ",")
+				for _, role := range roleArr {
+					if v, ok := roleDisplayMap[role]; ok {
+						newRoleDisplayArr = append(newRoleDisplayArr, v)
+					}
+				}
+				platformDataObj.HandleRoleDisplay = strings.Join(newRoleDisplayArr, ",")
+			}
+			if strings.Contains(platformDataObj.TaskHandleRole, ",") {
+				var newRoleDisplayArr []string
+				roleArr := strings.Split(platformDataObj.TaskHandleRole, ",")
+				for _, role := range roleArr {
+					if v, ok := roleDisplayMap[role]; ok {
+						newRoleDisplayArr = append(newRoleDisplayArr, v)
+					}
+				}
+				platformDataObj.TaskHandleRoleDisplay = strings.Join(newRoleDisplayArr, ",")
 			}
 		}
 		if len(actions) > 0 {
@@ -958,6 +975,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	// 处理人和角色
 	var handler, role string
 	var taskSort, status int
+	var roleDisplayMap = make(map[string]string)
 	var request models.RequestTable
 	var approvalProgress, taskProgress []*models.TaskProgressNode
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable
@@ -978,6 +996,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		return
 	}
 	taskMap, err = GetTaskService().GetTaskMapByRequestId(requestId)
+	if err != nil {
+		return
+	}
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
 	if err != nil {
 		return
 	}
@@ -1024,6 +1046,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				taskCompleteStatus = int(models.TaskExecStatusDoing)
 				break
 			}
+		}
+		// 根据请求状态重新设置
+		if request.Status == string(models.RequestStatusInProgressFaulted) {
+			taskCompleteStatus = int(models.TaskExecStatusFail)
 		}
 	}
 	if len(taskTemplateList) > 0 {
@@ -1078,6 +1104,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 						}
 					}
 				}
+			}
+			// 设置为显示名
+			if v, ok := roleDisplayMap[role]; ok {
+				role = v
 			}
 			taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
 				Id:          taskTemplate.Id,
@@ -1153,7 +1183,10 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 					requestProgress.Handler = taskHandleList[0].Handler
 				}
 				if taskHandleList[0].Role != "" {
-					requestProgress.Role = taskHandleList[0].Role
+					// 设置为显示名
+					if v, ok := roleDisplayMap[taskHandleList[0].Role]; ok {
+						requestProgress.Role = v
+					}
 				}
 			}
 		}
@@ -1161,7 +1194,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	}
 
 	// 添加审批进度
-	approvalProgress, err = getTaskProgress(request.Role, userToken, language, taskApproveTemplateList, taskMap, requestTaskHandleMap)
+	approvalProgress, err = getTaskProgress(request.Role, userToken, language, taskApproveTemplateList, taskMap, requestTaskHandleMap, roleDisplayMap)
 	if err != nil {
 		return
 	}
@@ -1169,13 +1202,13 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		rowData.ApprovalProgress = approvalProgress
 	}
 	// 添加任务进度
-	taskProgress, err = getTaskProgress(request.Role, userToken, language, taskImplementTemplateList, taskMap, requestTaskHandleMap)
+	taskProgress, err = getTaskProgress(request.Role, userToken, language, taskImplementTemplateList, taskMap, requestTaskHandleMap, roleDisplayMap)
 	if err != nil {
 		return
 	}
 	if len(taskProgress) > 0 {
 		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) && request.Status != string(models.RequestStatusFaulted) {
-			response, err := rpc.GetProcessInstance(language, userToken, request.ProcInstanceId)
+			response, err := rpc.GetProcessInstance(userToken, language, request.ProcInstanceId)
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
@@ -1185,8 +1218,17 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				}
 				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
 				var exist bool
+				var sort int
 				for _, v := range response.TaskNodeInstances {
 					exist = false
+					// 任务节点根据 编排任务orderNo排序
+					for _, rowData := range taskProgress {
+						if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
+							s, _ := strconv.Atoi(v.OrderedNo)
+							rowData.Sort = s
+							break
+						}
+					}
 					if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
 						for _, rowData := range taskProgress {
 							if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
@@ -1196,24 +1238,28 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 							}
 						}
 						if !exist {
+							sort, _ = strconv.Atoi(v.OrderedNo)
 							taskProgress = append(taskProgress, &models.TaskProgressNode{
 								NodeId:         v.NodeId,
 								Node:           v.NodeName,
 								NodeDefId:      v.NodeDefId,
 								Status:         int(models.TaskExecStatusFail),
+								Sort:           sort,
 								TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
+								NodeType:       "auto",
 							})
 						}
 					}
 				}
 			}
+			sort.Sort(models.TaskProgressNodeSort(taskProgress))
 		}
 		rowData.TaskProgress = taskProgress
 	}
 	return
 }
 
-func getTaskProgress(role, userToken, language string, taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto) ([]*models.TaskProgressNode, error) {
+func getTaskProgress(role, userToken, language string, taskTemplateList []*models.TaskTemplateTable, taskMap map[string]*models.TaskTable, requestTaskHandleMap map[string]*models.TaskHandleTemplateDto, roleDisplayMap map[string]string) ([]*models.TaskProgressNode, error) {
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable
 	var taskHandleList []*models.TaskHandleTable
 	var taskProgressList []*models.TaskProgressNode
@@ -1249,6 +1295,10 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 					if tempRole == "" && taskHandleTemplate.Role != "" {
 						tempRole = taskHandleTemplate.Role
 					}
+					// 设置显示名
+					if v, ok := roleDisplayMap[tempRole]; ok {
+						tempRole = v
+					}
 					requestProgress.TaskHandleList = append(requestProgress.TaskHandleList, &models.TaskHandleNode{
 						Handler:     tempHandler,
 						Role:        tempRole,
@@ -1260,6 +1310,10 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAdmin) {
 				result, _ := GetRoleService().GetRoleAdministrators(role, userToken, language)
 				if len(result) > 0 && result[0] != "" {
+					// 设置显示名
+					if v, ok := roleDisplayMap[role]; ok {
+						role = v
+					}
 					requestProgress.TaskHandleList = append(requestProgress.TaskHandleList, &models.TaskHandleNode{
 						Handler: result[0],
 						Role:    role,
@@ -1282,6 +1336,10 @@ func getTaskProgress(role, userToken, language string, taskTemplateList []*model
 				if len(taskHandleList) > 0 {
 					var tempTaskHandleNodeList []*models.TaskHandleNode
 					for _, taskHandle := range taskHandleList {
+						// 设置显示名
+						if v, ok := roleDisplayMap[taskHandle.Role]; ok {
+							taskHandle.Role = v
+						}
 						tempTaskHandleNodeList = append(tempTaskHandleNodeList, &models.TaskHandleNode{
 							Handler:     taskHandle.Handler,
 							Role:        taskHandle.Role,
@@ -1318,6 +1376,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	var tmpTemplate []*models.RequestTemplateTmp
 	var version string
 	var customForm models.CustomForm
+	var roleDisplayMap = make(map[string]string)
 	err := dao.X.SQL("select rt.name as  template_name,rt.status,rtg.name as template_group_name,rt.version,rt.proc_def_id,rt.expire_day from request_template rt join "+
 		"request_template_group rtg on rt.group = rtg.id where rt.id= ?", request.RequestTemplate).Find(&tmpTemplate)
 	if err != nil {
@@ -1327,6 +1386,10 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		err = fmt.Errorf("can not find request_template with id:%s ", request.Id)
 		return
 	}
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
+	if err != nil {
+		return
+	}
 	template := tmpTemplate[0]
 	form.Id = request.Id
 	form.Name = request.Name
@@ -1334,7 +1397,12 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	form.CreatedTime = request.CreatedTime
 	form.ExpectTime = request.ExpectTime
 	form.CreatedBy = request.CreatedBy
-	form.Role = request.Role
+	if v, ok := roleDisplayMap[request.Role]; ok {
+		form.Role = v
+	} else {
+		form.Role = request.Role
+	}
+
 	form.Description = request.Description
 	form.Status = request.Status
 	form.ProcInstanceId = request.ProcInstanceId
@@ -1389,8 +1457,6 @@ func getRequestHandler(requestId, templateId string) (role, handler string) {
 	var task *models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
 	var roleArr, handlerArr []string
-	var roleDisplayNameMap = make(map[string]string)
-	roleDisplayNameMap, _ = GetRoleService().GetRoleDisplayName()
 	request, _ = GetSimpleRequest(requestId)
 	if request.Status == string(models.RequestStatusDraft) {
 		return request.Role, request.CreatedBy
@@ -1401,15 +1467,9 @@ func getRequestHandler(requestId, templateId string) (role, handler string) {
 		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
 		if len(taskHandleList) > 0 {
 			for _, taskHandle := range taskHandleList {
-				var displayRole string
 				// 待处理 任务节点和角色都要统计
 				if taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
-					if v, ok := roleDisplayNameMap[taskHandle.Role]; ok {
-						displayRole = v
-					} else {
-						displayRole = taskHandle.Role
-					}
-					roleArr = append(roleArr, displayRole)
+					roleArr = append(roleArr, taskHandle.Role)
 					handlerArr = append(handlerArr, taskHandle.Handler)
 				}
 			}

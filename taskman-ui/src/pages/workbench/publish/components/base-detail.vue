@@ -116,21 +116,24 @@
                 </div>
               </Col>
             </Row>
-            <!--自定义信息表单-->
-            <CustomForm
-              v-if="detail.customForm && detail.customForm.value"
-              v-model="detail.customForm.value"
-              :options="detail.customForm.title"
-              :requestId="requestId"
-              disabled
-              :label-width="130"
-              labelPosition="left"
-              style="margin-top: 10px;"
-            ></CustomForm>
           </div>
         </HeaderTitle>
         <!--请求表单-->
         <HeaderTitle title="请求表单">
+          <Divider style="margin: 0px 0 30px 0" dashed orientation="left">
+            <span class="sub-header">信息表单</span>
+          </Divider>
+          <CustomForm
+            v-if="detail.customForm && detail.customForm.value"
+            v-model="detail.customForm.value"
+            :options="detail.customForm.title"
+            :requestId="requestId"
+            disabled
+            style="margin-top: 10px;"
+          ></CustomForm>
+          <Divider style="margin: 20px 0 30px 0" dashed orientation="left">
+            <span class="sub-header">数据表单</span>
+          </Divider>
           <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
             <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
               <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
@@ -456,6 +459,11 @@ export default {
   .content {
     min-height: 500px;
     display: flex;
+    .sub-header {
+      font-size: 14px;
+      color: #515a6e;
+      font-weight: bold;
+    }
     .no-data {
       padding-left: 20px;
       height: 60px;

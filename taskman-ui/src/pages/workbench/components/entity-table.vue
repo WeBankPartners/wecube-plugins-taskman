@@ -118,7 +118,7 @@
 </template>
 
 <script>
-import { getRefOptions, getWeCmdbOptions, saveFormData } from '@/api/server'
+import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
 import EntityItem from './edit-entity-item.vue'
 import LimitSelect from '@/pages/components/limit-select.vue'
@@ -163,10 +163,12 @@ export default {
       activeTab: '',
       activeItem: {},
       refKeys: [], // 引用类型字段集合select类型
+      calculateKeys: [], // 自定义计算分析类型集合
       formOptions: [],
       tableData: [],
       addRowSource: '',
-      addRowSourceOptions: []
+      addRowSourceOptions: [],
+      worklfowData: [] // 编排类表单默认下发value
     }
   },
   computed: {
@@ -197,6 +199,10 @@ export default {
             // 无表单数据，不是选择已有数据添加一行，默认添加一行
             if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
               this.handleAddRow(item)
+            }
+            // 备份编排类表单初始下发value
+            if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
+              this.worklfowData = item.value || []
             }
           })
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
@@ -243,46 +249,54 @@ export default {
     async initTableData () {
       // 当前选择tab数据
       const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
-      // select类型集合
       this.refKeys = []
+      this.calculateKeys = []
       data.title.forEach(t => {
         if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
           this.refKeys.push(t.name)
         }
-        // 自定义计算分析类型
         if (t.elementType === 'calculate') {
-          data.value.forEach(v => {
-            if (v.entityData[t.name]) {
-              let jsonData = []
-              try {
-                jsonData = JSON.parse(v.entityData[t.name])
-              } catch (e) {
-                console.log(e)
-              }
-              if (jsonData.length > 0) {
-                const displayNameArr = jsonData.map(item => {
-                  return item.displayName || ''
-                })
-                v.entityData[t.name] = displayNameArr.join('；')
-              }
-            }
-          })
+          this.calculateKeys.push(t.name)
         }
       })
       this.formOptions = data.title
+
       // table数据初始化
       this.tableData = data.value.map(v => {
+        // 缓存RefOptions数据，不需要每次调用
         this.refKeys.forEach(rfk => {
-          // 缓存RefOptions数据，不需要每次调用
           if (!(v.entityData[rfk + 'Options'] && v.entityData[rfk + 'Options'].length > 0)) {
             v.entityData[rfk + 'Options'] = []
           }
         })
+
+        // 自定义计算分析类型取值
+        this.calculateKeys.forEach(key => {
+          // 后台有返回值
+          if (v.entityData[key] && v.entityData[key].indexOf('[') > -1) {
+            let jsonData = JSON.parse(v.entityData[key]) || []
+            if (jsonData.length > 0) {
+              const displayNameArr = jsonData.map(item => {
+                return item.displayName || ''
+              })
+              v.entityData[key] = displayNameArr.join('；')
+            } else {
+              v.entityData[key] = '' // 后端可能返回'[]'这种数据
+            }
+          }
+          if (!v.entityData[key]) {
+            const titleObj = data.title.find(t => t.name === key)
+            this.getExpressionData(titleObj, v)
+          }
+        })
+
         if (!v.entityData._id) {
           v.entityData._id = v.id
         }
+
         return v.entityData
       })
+
       // 下拉类型数据初始化(待优化，调用接口太多)
       this.tableData.forEach((row, index) => {
         this.refKeys.forEach(rfk => {
@@ -363,6 +377,16 @@ export default {
         this.$set(this.tableData, index, row)
       }
     },
+    // 获取自定义计算分析类型的值
+    async getExpressionData (titleObj, value, index) {
+      const { statusCode, data } = await getExpressionData(titleObj.id, value.dataId)
+      if (statusCode === 'OK') {
+        const displayNameArr = data.map(item => {
+          return item.displayName || ''
+        })
+        value.entityData[titleObj.name] = displayNameArr.join('；')
+      }
+    },
     // 删除行数据
     handleDeleteRow (index) {
       this.$Modal.confirm({
@@ -402,11 +426,7 @@ export default {
       data.title.forEach(item => {
         // 选择已有数据添加一行，填充默认值
         if (source) {
-          for (let key of Object.keys(source)) {
-            if (key === item.name) {
-              entityData[item.name] = source[key]
-            }
-          }
+          entityData[item.name] = source[item.name] || ''
         } else {
           // 默认清空标志为false,赋值默认值
           if (item.defaultClear === 'no') {
@@ -415,14 +435,13 @@ export default {
             entityData[item.name] = ''
           }
         }
-
         if (item.elementType === 'select' || item.elementType === 'wecmdbEntity') {
           entityData[item.name + 'Options'] = []
         }
       })
       const idStr = new Date().getTime().toString()
       let obj = {
-        dataId: '',
+        dataId: source ? source.id || '' : '',
         displayName: '',
         entityData: { ...entityData, _id: '' },
         entityName: data.entity,
@@ -442,16 +461,19 @@ export default {
       const { status, data } = await getWeCmdbOptions(packageName, entity, {})
       if (status === 'OK') {
         this.addRowSourceOptions = data || []
-        // 过滤下拉框数据(便利所有表单组，每个组下的dataId都要过滤掉)
-        if (this.activeItem.value) {
-          let dataIds = []
-          this.requestData.forEach(item => {
-            if (item.itemGroupRule === 'exist') {
-              item.value.forEach(_ => _.dataId && dataIds.push(_.dataId))
-            }
+        // 过滤下拉框数据(1.编排类表单，下拉框只能选择系统下发的数据2.自选类表单，下拉框可以选全量数据
+        // 3.下拉框数据和表单已存在的数据做ID去重)
+        let ids = []
+        if (this.activeItem.value && this.activeItem.value.length > 0) {
+          ids = this.activeItem.value.map(item => {
+            return item.dataId
           })
-          this.addRowSourceOptions = this.addRowSourceOptions.filter(i => !dataIds.includes(i.id))
         }
+        if (this.activeItem.itemGroupType === 'workflow') {
+          const workflowDataIds = this.worklfowData.map(i => i.dataId)
+          this.addRowSourceOptions = this.addRowSourceOptions.filter(item => workflowDataIds.includes(item.id))
+        }
+        this.addRowSourceOptions = this.addRowSourceOptions.filter(item => !ids.includes(item.id))
       }
     },
     // 请求表单数据必填项校验

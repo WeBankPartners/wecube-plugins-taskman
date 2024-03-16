@@ -270,6 +270,7 @@ export default {
       // padding: 1px 5px;
       display: inline-block;
       // border-radius: 2px;
+      margin-top: -5px;
     }
     .role {
       display: flex;

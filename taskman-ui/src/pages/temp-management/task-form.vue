@@ -99,7 +99,7 @@
                 </div>
               </Col>
               <Col span="14" style="border: 1px solid #dcdee2; padding: 0 16px; width: 57%; margin: 0 4px">
-                <div :style="{ height: MODALHEIGHT + 30 + 'px', overflow: 'auto' }">
+                <div :style="{ height: MODALHEIGHT + 'px', overflow: 'auto' }">
                   <Divider>{{ $t('tw_preview') }}</Divider>
                   <div class="title">
                     <div class="title-text">

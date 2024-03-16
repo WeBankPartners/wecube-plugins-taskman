@@ -3,7 +3,7 @@
     <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
       <Row :gutter="20">
         <template v-for="(i, index) in options">
-          <Col :span="24" :key="index">
+          <Col :span="i.width || 24" :key="index">
             <FormItem
               :label="i.title"
               :prop="i.name"
@@ -19,14 +19,14 @@
                 v-if="i.elementType === 'input'"
                 v-model="value[i.name]"
                 :disabled="i.isEdit === 'no' || disabled"
-                style="width:60%;"
+                style="width:100%;"
               ></Input>
               <Input
                 v-else-if="i.elementType === 'textarea'"
                 v-model="value[i.name]"
                 type="textarea"
                 :disabled="i.isEdit === 'no' || disabled"
-                style="width:60%;"
+                style="width:100%;"
               ></Input>
               <LimitSelect
                 v-else-if="i.elementType === 'select' || i.elementType === 'wecmdbEntity'"
@@ -37,7 +37,7 @@
                 :options="entityData[i.name + 'Options']"
                 :disabled="i.isEdit === 'no' || disabled"
                 :multiple="i.multiple === 'Y'"
-                style="width:60%;"
+                style="width:100%;"
               >
               </LimitSelect>
               <!--日期时间类型-->
@@ -48,7 +48,7 @@
                 format="yyyy-MM-dd HH:mm:ss"
                 :disabled="i.isEdit === 'no' || disabled"
                 type="datetime"
-                style="width:60%;"
+                style="width:100%;"
               >
               </DatePicker>
             </FormItem>
@@ -222,3 +222,15 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+.workbench-custom-form {
+  .ivu-form-item-required .ivu-form-item-label:before {
+    display: inline;
+    margin-right: 2px;
+  }
+  .ivu-form-item-error-tip {
+    padding-top: 2px;
+    font-size: 12px;
+  }
+}
+</style>

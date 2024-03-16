@@ -76,6 +76,7 @@ type ProcDefObj struct {
 	Status      string     `json:"status"`
 	RootEntity  ProcEntity `json:"rootEntity"`
 	CreatedTime string     `json:"createdTime"`
+	Version     string     `json:"version"`
 }
 
 type ProcAllDefObj struct {

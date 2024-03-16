@@ -40,6 +40,7 @@ func (s *ProcDefService) GetCoreProcessListNew(userToken, language, manageRole s
 				Status:      dto.Status,
 				RootEntity:  entityMap[rootEntityValue],
 				CreatedTime: dto.CreatedTime,
+				Version:     dto.Version,
 			})
 		}
 	}

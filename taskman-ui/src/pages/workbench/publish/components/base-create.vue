@@ -68,15 +68,20 @@
           <FormItem :label="$t('tw_attach')">
             <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
           </FormItem>
-          <!--自定义信息表单-->
+        </HeaderTitle>
+        <!--请求表单-->
+        <HeaderTitle title="请求表单">
+          <Divider style="margin: 0px 0 30px 0" orientation="left">
+            <span class="sub-header">信息表单</span>
+          </Divider>
           <CustomForm
             v-model="form.customForm.value"
             :options="form.customForm.title"
             :requestId="requestId"
           ></CustomForm>
-        </HeaderTitle>
-        <!--请求表单-->
-        <HeaderTitle title="请求表单">
+          <Divider style="margin: 20px 0 30px 0" orientation="left">
+            <span class="sub-header">数据表单</span>
+          </Divider>
           <!--选择目标对象-->
           <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
             <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
@@ -813,6 +818,11 @@ export default {
   .content {
     display: flex;
     min-height: 500px;
+    .sub-header {
+      font-size: 14px;
+      color: #515a6e;
+      font-weight: bold;
+    }
     .no-data {
       padding-left: 20px;
       height: 60px;

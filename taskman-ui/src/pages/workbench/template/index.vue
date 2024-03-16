@@ -45,7 +45,7 @@
               <div class="w-header" slot="title">
                 <Icon size="28" type="ios-people" />
                 <div class="title">
-                  {{ i.manageRole }}
+                  {{ i.manageRoleDisplay }}
                   <span class="underline"></span>
                 </div>
                 <Icon
@@ -185,7 +185,7 @@ export default {
           render: (h, params) => {
             return (
               <div style="display:flex;flex-direction:column">
-                <span>{params.row.role}</span>
+                <span>{params.row.roleDisplay}</span>
                 <span>{params.row.handler}</span>
               </div>
             )
@@ -236,7 +236,7 @@ export default {
         },
         {
           title: this.$t('useRoles'),
-          key: 'useRole'
+          key: 'useRoleDisplay'
         }
       ],
       lang: window.localStorage.getItem('lang'),
@@ -281,6 +281,7 @@ export default {
           i.groups.forEach(j => {
             j.templates.forEach(template => {
               template.manageRole = i.manageRole
+              template.manageRoleDisplay = i.manageRoleDisplay
               if (template.operatorObjType && template.type === Number(this.type)) {
                 this.operateOptions.push(template.operatorObjType)
               }

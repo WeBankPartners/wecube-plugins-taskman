@@ -28,7 +28,7 @@ const (
 	RequestComplete      = "requestComplete"      // 请求完成
 	AutoExit             = "autoExit"             // 自动退出
 	InternallyTerminated = "internallyTerminated" // 手动终止
-	AutoNode             = "autoNode"             //自动节点
+	AutoNode             = "autoNode"             // 自动节点
 )
 
 // sceneTypeMap 场景数组
@@ -1107,15 +1107,26 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 			Sort:   4,
 		})
 	}
-	// 添加请求完成
-	if request.Status == string(models.RequestStatusCompleted) {
-		completeStatus = int(models.TaskExecStatusCompleted)
+
+	if request.Status == string(models.RequestStatusFaulted) {
+		// 自动退出
+		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+			Node:   AutoExit,
+			Status: int(models.TaskExecStatusAutoExitStatus),
+			Sort:   6,
+		})
+	} else {
+		// 添加请求完成
+		if request.Status == string(models.RequestStatusCompleted) {
+			completeStatus = int(models.TaskExecStatusCompleted)
+		}
+		// 非自动退出,都会有请求完成状态
+		taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
+			Node:   RequestComplete,
+			Status: completeStatus,
+			Sort:   6,
+		})
 	}
-	taskTemplateProgressList = append(taskTemplateProgressList, &models.TaskTemplateProgressDto{
-		Node:   RequestComplete,
-		Status: completeStatus,
-		Sort:   6,
-	})
 	sort.Sort(models.TaskTemplateProgressDtoSort(taskTemplateProgressList))
 
 	for _, taskTemplateProgress := range taskTemplateProgressList {
@@ -1163,40 +1174,35 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		return
 	}
 	if len(taskProgress) > 0 {
-		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) {
+		if request.ProcInstanceId != "" && request.Status != string(models.RequestStatusCompleted) && request.Status != string(models.RequestStatusFaulted) {
 			response, err := rpc.GetProcessInstance(language, userToken, request.ProcInstanceId)
 			if err != nil {
 				log.Logger.Error("http getProcessInstances error", log.Error(err))
 			}
 			if response != nil {
-				// 自动退出
-				if response.Status == string(models.RequestStatusFaulted) {
-					taskProgress = append(taskProgress, &models.TaskProgressNode{Node: AutoExit, Status: int(models.TaskExecStatusAutoExitStatus)})
-				} else {
-					if response.Status == InternallyTerminated {
-						taskProgress = append(taskProgress, &models.TaskProgressNode{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
-					}
-					// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
-					var exist bool
-					for _, v := range response.TaskNodeInstances {
-						exist = false
-						if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
-							for _, rowData := range taskProgress {
-								if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
-									exist = true
-									rowData.Status = int(models.TaskExecStatusFail)
-									break
-								}
+				if response.Status == InternallyTerminated {
+					taskProgress = append(taskProgress, &models.TaskProgressNode{Node: InternallyTerminated, Status: int(models.TaskExecStatusInternallyTerminated)})
+				}
+				// 记录错误节点,如果实例运行中有错误节点,则需要把运行节点展示在列表中并展示对应位置
+				var exist bool
+				for _, v := range response.TaskNodeInstances {
+					exist = false
+					if v.Status == string(models.RequestStatusFaulted) || v.Status == "Timeouted" {
+						for _, rowData := range taskProgress {
+							if rowData.NodeDefId == v.NodeDefId || rowData.NodeId == v.NodeId {
+								exist = true
+								rowData.Status = int(models.TaskExecStatusFail)
+								break
 							}
-							if !exist {
-								taskProgress = append(taskProgress, &models.TaskProgressNode{
-									NodeId:         v.NodeId,
-									Node:           v.NodeName,
-									NodeDefId:      v.NodeDefId,
-									Status:         int(models.TaskExecStatusFail),
-									TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
-								})
-							}
+						}
+						if !exist {
+							taskProgress = append(taskProgress, &models.TaskProgressNode{
+								NodeId:         v.NodeId,
+								Node:           v.NodeName,
+								NodeDefId:      v.NodeDefId,
+								Status:         int(models.TaskExecStatusFail),
+								TaskHandleList: []*models.TaskHandleNode{{Handler: AutoNode}},
+							})
 						}
 					}
 				}

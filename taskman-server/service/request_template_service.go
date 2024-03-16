@@ -54,6 +54,13 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 				// 读取请求确认配置
 				requestTemplateDto.ConfirmExpireDay = taskTemplate.ExpireDay
 			}
+			// 前端展示
+			if requestTemplateDto.ConfirmExpireDay == 0 {
+				requestTemplateDto.ConfirmExpireDay = 1
+			}
+			if requestTemplateDto.CheckExpireDay == 0 {
+				requestTemplateDto.CheckExpireDay = 1
+			}
 		}
 	}
 	return

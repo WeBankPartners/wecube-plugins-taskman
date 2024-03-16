@@ -83,9 +83,11 @@
                   <Select
                     v-if="element.elementType === 'select'"
                     :disabled="element.isEdit === 'no'"
-                    v-model="element.defaultValue"
+                    :multiple="element.multiple === 'yes'"
                     class="custom-item"
-                  ></Select>
+                  >
+                    <Option v-for="item in element.dataOptions.split(',')" :value="item" :key="item">{{ item }}</Option>
+                  </Select>
                   <Select
                     v-if="element.elementType === 'wecmdbEntity'"
                     :disabled="element.isEdit === 'no'"
@@ -204,6 +206,15 @@
                       @on-change="paramsChanged"
                     ></Input>
                   </FormItem>
+                  <FormItem
+                    :label="$t('tw_multiple')"
+                    v-if="['select', 'wecmdbEntity'].includes(editElement.elementType)"
+                  >
+                    <RadioGroup v-model="editElement.multiple" @on-change="paramsChanged">
+                      <Radio label="yes" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_yes') }}</Radio>
+                      <Radio label="no" :disabled="$parent.isCheck === 'Y'">{{ $t('tw_no') }}</Radio>
+                    </RadioGroup>
+                  </FormItem>
                   <FormItem :label="$t('width')">
                     <Select v-model="editElement.width" @on-change="paramsChanged" :disabled="$parent.isCheck === 'Y'">
                       <Option :value="6">6</Option>
@@ -251,17 +262,19 @@
         </div>
       </Col>
     </Row>
-    <div style="text-align: center;margin-top: 16px;">
-      <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
-      <Button
-        v-if="isCheck !== 'Y'"
-        @click="saveMsgForm(1)"
-        type="info"
-        :disabled="isSaveBtnActive()"
-        class="btn-footer-margin"
-        >{{ $t('save') }}</Button
-      >
-      <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
+    <div class="footer">
+      <div class="content">
+        <Button @click="gotoForward" ghost type="primary" class="btn-footer-margin">{{ $t('forward') }}</Button>
+        <Button
+          v-if="isCheck !== 'Y'"
+          @click="saveMsgForm(1)"
+          type="info"
+          :disabled="isSaveBtnActive()"
+          class="btn-footer-margin"
+          >{{ $t('save') }}</Button
+        >
+        <Button @click="gotoNext" type="primary" class="btn-footer-margin">{{ $t('next') }}</Button>
+      </div>
     </div>
   </div>
 </template>
@@ -295,7 +308,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -325,7 +338,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -355,7 +368,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -385,7 +398,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -416,7 +429,7 @@ export default {
           regular: '',
           inDisplayName: 'yes',
           isEdit: 'yes',
-          multiple: 'N',
+          multiple: 'no',
           selectList: [],
           isRefInside: 'no',
           required: 'no',
@@ -454,7 +467,7 @@ export default {
         id: 0,
         inDisplayName: 'yes',
         isEdit: 'yes',
-        multiple: 'N',
+        multiple: 'no',
         selectList: [],
         isRefInside: 'no',
         required: 'no',
@@ -699,5 +712,19 @@ export default {
 }
 .btn-footer-margin {
   margin: 0 6px;
+}
+
+.footer {
+  position: fixed; /* 使用 fixed 定位，使其固定在页面底部 */
+  left: 0;
+  bottom: 0;
+  width: 100%; /* 撑满整个页面宽度 */
+  background-color: white; /* 设置背景色，可根据需求修改 */
+  z-index: 10;
+}
+
+.content {
+  text-align: center; /* 居中内容 */
+  padding: 10px; /* 可根据需求调整内容与边框的间距 */
 }
 </style>

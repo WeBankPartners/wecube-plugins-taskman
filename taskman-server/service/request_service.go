@@ -1038,7 +1038,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 
 func fillBindingWithRequestData(requestId, userToken, language string, cacheData *models.RequestCacheData, existDepMap map[string][]string) {
 	var items []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
+	//dao.X.SQL("select * from form_item_template where form_template in (select form_template from request_template where id in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
+	dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where request_template in (select request_template from request where id=?)) order by entity,sort", requestId).Find(&items)
 	itemMap := make(map[string][]string)
 	for _, item := range items {
 		if item.RefEntity == "" {
@@ -1504,7 +1505,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	// get request
 	var requests []*models.RequestTable
 	var taskQueryList []*models.TaskQueryObj
-	var actions []*dao.ExecAction
+	var actions, confirmActions []*dao.ExecAction
 	var approvalList []*models.TaskTemplateDto
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
@@ -1516,9 +1517,18 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 			newStatus = "Termination"
 		}
 		if newStatus != "" && newStatus != requests[0].Status {
-			actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
-				Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), requests[0].Id}})
-			requests[0].Status = newStatus
+			if newStatus == string(models.RequestStatusCompleted) {
+				// 编排的完成,并不表示 请求完成
+				taskSort := GetTaskService().GenerateTaskOrderByRequestId(requestId)
+				confirmActions, _ = GetRequestService().CreateRequestConfirm(*requests[0], taskSort)
+				if len(confirmActions) > 0 {
+					actions = append(actions, confirmActions...)
+				}
+			} else {
+				actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
+					Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), requestId}})
+				requests[0].Status = newStatus
+			}
 		}
 		if len(actions) > 0 {
 			updateRequestErr := dao.Transaction(actions)

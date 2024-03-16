@@ -340,5 +340,7 @@
   "tw_enter_new_data": "Enter new data",
   "tw_select_data": "Select existing data",
   "tw_entity_data_items": "Entity data items",
-  "tw_configuration_form": "Configuration Form"
+  "tw_configuration_form": "Configuration Form",
+  "tw_completed": "Completed",
+  "tw_incomplete": "Incomplete"
 }

@@ -92,6 +92,7 @@ type CollectDataObj struct {
 	ManageRole        string   `json:"manageRole" xorm:"manage_role"`                // 属主角色
 	Owner             string   `json:"owner" xorm:"owner"`                           // 属主
 	UseRole           string   `json:"useRole" xorm:"use_role"`                      // 使用角色
+	UseRoleDisplay    string   `json:"useRoleDisplay" xorm:"-"`                      // 使用角色
 	Tags              string   `json:"tags" xorm:"tags"`                             // 标签
 	WorkNode          []string `json:"workNode" xorm:"work_node"`                    // 人工任务
 	Approves          []string `json:"approves" xorm:"-"`                            // 审批列表
@@ -136,6 +137,7 @@ type RequestTemplateTableObj struct {
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
 	Handler         string `json:"handler" xorm:"handler"`
 	Role            string `json:"role" xorm:"role"`
+	RoleDisplay     string `json:"roleDisplay" xorm:"-"`
 	UpdatedTime     string `json:"updatedTime" xorm:"updated_time"`
 	CollectFlag     int    `json:"collectFlag" xorm:"collect_flag"`          // 是否收藏 1表示已收藏
 	Type            int    `json:"type" xorm:"type"`                         // 请求类型, 0表示请求,1表示发布
@@ -143,8 +145,9 @@ type RequestTemplateTableObj struct {
 }
 
 type UserRequestTemplateQueryObjNew struct {
-	ManageRole string              `json:"manageRole"` //管理角色
-	Groups     []*TemplateGroupObj `json:"groups"`
+	ManageRole        string              `json:"manageRole"`        //管理角色
+	ManageRoleDisplay string              `json:"manageRoleDisplay"` //管理角色
+	Groups            []*TemplateGroupObj `json:"groups"`
 }
 
 type RequestTemplateFormStruct struct {

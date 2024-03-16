@@ -1115,7 +1115,8 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 					Status:          template.Status,
 					UpdatedBy:       template.UpdatedBy,
 					Handler:         template.Handler,
-					Role:            roleDisplayName,
+					Role:            ownerRoleMap[template.Id],
+					RoleDisplay:     roleDisplayName,
 					UpdatedTime:     template.UpdatedTime,
 					CollectFlag:     collectFlag,
 					Type:            template.Type,
@@ -1136,13 +1137,10 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 				Templates:   templateArr,
 			})
 		}
-		// 角色使用显示名
-		if v, ok := roleDisplayNameMap[role]; ok {
-			role = v
-		}
 		resultMap[role] = &models.UserRequestTemplateQueryObjNew{
-			ManageRole: role,
-			Groups:     groups,
+			ManageRole:        role,
+			ManageRoleDisplay: roleDisplayNameMap[role],
+			Groups:            groups,
 		}
 		roleList = append(roleList, role)
 	}

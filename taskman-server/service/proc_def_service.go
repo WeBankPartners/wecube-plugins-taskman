@@ -18,7 +18,7 @@ func (s *ProcDefService) GetCoreProcessListNew(userToken, language, manageRole s
 	var nodesList []*models.DataModel
 	var entityMap = make(map[string]models.ProcEntity)
 	processList = make([]*models.ProcDefObj, 0)
-	procDefDtoList, err = rpc.QueryProcessDefinitionList(userToken, language, manageRole, models.QueryProcessDefinitionParam{Plugins: []string{"taskman"}, Status: "deployed", LastVersion: true})
+	procDefDtoList, err = rpc.QueryProcessDefinitionList(userToken, language, manageRole, models.QueryProcessDefinitionParam{Plugins: []string{"taskman"}, Status: "deployed", LastVersion: false})
 	if err != nil {
 		return
 	}

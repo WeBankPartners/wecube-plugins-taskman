@@ -87,7 +87,7 @@
               </FormItem> -->
               <!--处理结果-审批类型-->
               <FormItem v-if="handleData.type === 'approve'" required label="操作">
-                <Select v-model="taskForm.choseOption">
+                <Select v-model="taskForm.choseOption" @on-change="handleChoseOptionChange">
                   <Option v-for="(item, index) in approvalNextOptions" :value="item.value" :key="index">{{
                     item.label
                   }}</Option>
@@ -114,7 +114,10 @@
                 </Select>
               </FormItem>
               <!--处理意见-->
-              <FormItem :label="$t('process_comments')">
+              <FormItem
+                :label="$t('process_comments')"
+                :required="handleData.type === 'approve' && taskForm.choseOption === 'redraw'"
+              >
                 <Input v-model="taskForm.comment" type="textarea" :maxlength="200" show-word-limit />
               </FormItem>
               <FormItem :label="$t('tw_attach')">
@@ -289,7 +292,9 @@ export default {
         this.handleData.nextOptions &&
         this.handleData.nextOptions.length > 0 &&
         !this.taskForm.choseOption
-      if (approveFlag || processFlag) {
+      const commentFlag =
+        this.handleData.type === 'approve' && this.taskForm.choseOption === 'redraw' && !this.taskForm.comment
+      if (approveFlag || processFlag || commentFlag) {
         return true
       } else {
         return false
@@ -319,6 +324,13 @@ export default {
     }
   },
   methods: {
+    handleChoseOptionChange (val) {
+      // 给退回操作默认处理意见
+      this.taskForm.comment = ''
+      if (val === 'redraw') {
+        this.taskForm.comment = '退回'
+      }
+    },
     // 任务审批保存
     async saveTaskData () {
       // 提取表格勾选的数据

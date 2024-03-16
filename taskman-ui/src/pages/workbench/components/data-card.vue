@@ -285,7 +285,7 @@ export default {
     },
     handleTabChange: debounce(function (item, subType) {
       this.active = item.type
-      this.action = subType || '1'
+      this.action = subType || this.action
       this.$emit('fetchData', this.active, this.action)
     }, 300)
   }

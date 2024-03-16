@@ -7,15 +7,9 @@
       </span>
     </Row>
     <Row class="w-header">
-      <Col span="19">
+      <Col span="24">
         <!--请求进度-->
         <BaseProgress ref="progress" :status="detail.status"></BaseProgress>
-      </Col>
-      <Col span="5" class="btn-group">
-        <!--撤回-->
-        <Button v-if="jumpFrom === 'submit' && detail.status === 'Pending'" type="error" @click="handleRecall">{{
-          $t('tw_recall')
-        }}</Button>
       </Col>
     </Row>
     <div class="content">
@@ -238,6 +232,12 @@
         <CurrentHandle v-if="isHandle" :detail="detail" :handleData="handleData" :actionName="actionName" />
       </Form>
     </div>
+    <div class="footer-btn">
+      <!--撤回-->
+      <Button v-if="jumpFrom === 'submit' && detail.status === 'Pending'" type="error" @click="handleRecall">{{
+        $t('tw_recall')
+      }}</Button>
+    </div>
     <!--编排流程图-->
     <template v-if="detail.associationWorkflow">
       <div class="expand-btn" :style="{ right: flowVisible ? '440px' : '0px' }" @click="flowVisible = !flowVisible">
@@ -451,10 +451,6 @@ export default {
     padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
-    .btn-group {
-      display: flex;
-      justify-content: flex-end;
-    }
   }
   .content {
     min-height: 500px;
@@ -520,6 +516,12 @@ export default {
         color: #515a6e;
       }
     }
+  }
+  .footer-btn {
+    padding: 20px 0 30px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .expand-btn {
     position: fixed;

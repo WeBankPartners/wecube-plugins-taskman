@@ -240,8 +240,7 @@ export default {
             return (
               <div style="display:flex;align-items:center;justify-content:center;">
                 {// 查看
-                  ['myPending', 'pending', 'hasProcessed', 'submit'].includes(this.tabName) &&
-                  params.row.status !== 'Draft' && (
+                  ['myPending', 'pending', 'hasProcessed', 'submit'].includes(this.tabName) && (
                     <Tooltip content={this.$t('tw_action_view')} placement="top">
                       <Button
                         size="small"

@@ -284,7 +284,7 @@ export default {
               v.entityData[key] = '' // 后端可能返回'[]'这种数据
             }
           }
-          if (!v.entityData[key]) {
+          if (!v.entityData[key] && v.addFlag) {
             const titleObj = data.title.find(t => t.name === key)
             this.getExpressionData(titleObj, v)
           }

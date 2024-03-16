@@ -8,15 +8,9 @@
       </span>
     </Row>
     <Row class="w-header">
-      <Col span="19">
+      <Col span="24">
         <!--请求进度-->
         <BaseProgress ref="progress"></BaseProgress>
-      </Col>
-      <Col span="5" class="btn-group">
-        <!--保存草稿-->
-        <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
-        <!--提交-->
-        <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
       </Col>
     </Row>
     <div class="content">
@@ -279,6 +273,12 @@
           </div>
         </HeaderTitle>
       </Form>
+    </div>
+    <div class="footer-btn">
+      <!--保存草稿-->
+      <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
+      <!--提交-->
+      <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
     </div>
     <!--编排流程图-->
     <template v-if="detail.associationWorkflow">
@@ -810,10 +810,6 @@ export default {
     padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
-    .btn-group {
-      display: flex;
-      justify-content: flex-end;
-    }
   }
   .content {
     display: flex;
@@ -829,6 +825,12 @@ export default {
       line-height: 60px;
       color: #515a6e;
     }
+  }
+  .footer-btn {
+    padding: 10px 0 30px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   .step-wrap {
     .step-item {

@@ -149,7 +149,7 @@ export default {
           render: (h, params) => {
             let stayTime = '' // 停留时长
             let totalTime = '' // 预期停留时长
-            if (['2', '3'].includes(this.type)) {
+            if (['myPending', 'pending', 'hasProcessed'].includes(this.tabName)) {
               stayTime = params.row.taskStayTime
               totalTime = params.row.taskStayTimeTotal
             } else {
@@ -166,7 +166,7 @@ export default {
                 {percent > 100 && (
                   <span style="color:#ed4014;display:flex;align-items:center;">
                     <Icon type="md-warning" color="#ed4014" />
-                    {`${this.$t('tw_exceed')}${stayTime - totalTime}${this.$t('tw_days')}`}
+                    {`${this.$t('tw_exceed')}${(stayTime - totalTime).toFixed(1)}${this.$t('tw_days')}`}
                   </span>
                 )}
               </div>

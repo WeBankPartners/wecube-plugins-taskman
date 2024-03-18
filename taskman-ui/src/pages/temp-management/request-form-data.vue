@@ -34,10 +34,11 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('tw_data_form') }}
+              {{ $t('tw_request_title') }}
               <span class="underline"></span>
             </div>
           </div>
+          <Divider orientation="left" size="small">{{ $t('tw_data_form') }}</Divider>
           <Form :label-width="100" v-if="dataFormInfo.associationWorkflow">
             <FormItem>
               <span slot="label" style="font-size: 12px;">{{ $t('tw_choose_object') }}</span>

@@ -2242,7 +2242,35 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 			return
 		}
 	} else {
-		actualFormTemplates = formTemplates
+		// 编排任务
+		/*
+			if itemGroupType != 'workflow' {
+				用ref_id
+			} else {
+				用id
+			}
+		*/
+		actualFormTemplateIds = make([]string, 0, len(formTemplates))
+		for _, formTmpl := range formTemplates {
+			if formTmpl.ItemGroupType == string(models.FormItemGroupTypeWorkflow) {
+				actualFormTemplateIds = append(actualFormTemplateIds, formTmpl.Id)
+			} else {
+				actualFormTemplateIds = append(actualFormTemplateIds, formTmpl.RefId)
+			}
+		}
+
+		// actualFormTemplates = formTemplates
+		// 查询 form 实际使用的 formTemplate
+		actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams := dao.CreateListParams(actualFormTemplateIds, "")
+		err = dao.X.SQL("select * from form_template where id in ("+actualFormTemplateIdsFilterSql+")", actualFormTemplateIdsFilterParams...).Find(&actualFormTemplates)
+		if err != nil {
+			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+			return
+		}
+		if len(actualFormTemplates) == 0 {
+			log.Logger.Error(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			return
+		}
 	}
 	/*
 		actualFormTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)

@@ -38,6 +38,7 @@
               <span class="underline"></span>
             </div>
           </div>
+          <Divider orientation="left" size="small">{{ $t('tw_information_form') }}</Divider>
           <template v-for="(item, itemIndex) in finalElement">
             <div :key="itemIndex" style="border: 2px dashed #A2EF4D; margin: 8px 0; padding: 8px;min-height: 48px;">
               <draggable

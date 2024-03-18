@@ -177,6 +177,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 			newGuidList := guid.CreateGuidList(len(insertItems))
 			for i, item := range insertItems {
 				item.Id = "item_tpl_" + newGuidList[i]
+				item.Sort = 0
 				_, err = s.formItemTemplateDao.Add(session, item)
 				if err != nil {
 					return err

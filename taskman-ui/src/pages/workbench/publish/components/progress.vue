@@ -255,6 +255,7 @@ export default {
     vertical-align: top;
     flex: 1;
     overflow: hidden;
+    width: 170px;
   }
   .ivu-alert.ivu-alert-with-icon {
     padding: 8px 5px 8px 38px;

@@ -22,7 +22,7 @@ export default {
         name: {
           title: this.$t('request_name'),
           sortable: 'custom',
-          minWidth: 220,
+          minWidth: 200,
           key: 'name',
           render: (h, params) => {
             return (
@@ -107,13 +107,13 @@ export default {
               </span>
             )
           },
-          minWidth: 140,
+          minWidth: 170,
           key: 'handler',
           render: (h, params) => {
             const handlerArr = params.row.handler.split(',') || []
-            const roleArr = params.row.handleRole.split(',') || []
+            const roleArr = params.row.handleRoleDisplay.split(',') || []
             return (
-              <div>
+              <div style="display:flex;flex-direction:column;">
                 {handlerArr.map((item, index) => {
                   return <span>{`${roleArr[index] || '-'} / ${item || '-'}`}</span>
                 })}
@@ -219,15 +219,10 @@ export default {
         createdBy: {
           title: '请求提交人',
           sortable: 'custom',
-          minWidth: 140,
+          minWidth: 170,
           key: 'createdBy',
           render: (h, params) => {
-            return (
-              <div style="display:flex;flex-direction:column">
-                <span>{params.row.createdBy}</span>
-                <span>{params.row.role}</span>
-              </div>
-            )
+            return <span>{`${params.row.roleDisplay} / ${params.row.createdBy}`}</span>
           }
         },
         action: {

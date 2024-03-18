@@ -670,6 +670,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 				platformDataObj.HandleRoleDisplay = strings.Join(newRoleDisplayArr, ",")
+			} else {
+				platformDataObj.HandleRoleDisplay = roleDisplayMap[platformDataObj.HandleRole]
 			}
 			if strings.Contains(platformDataObj.TaskHandleRole, ",") {
 				var newRoleDisplayArr []string
@@ -680,6 +682,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 				platformDataObj.TaskHandleRoleDisplay = strings.Join(newRoleDisplayArr, ",")
+			} else {
+				platformDataObj.TaskHandleRoleDisplay = roleDisplayMap[platformDataObj.TaskHandleRole]
 			}
 		}
 		if len(actions) > 0 {

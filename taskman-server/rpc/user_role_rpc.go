@@ -13,6 +13,8 @@ const (
 	pathRetrieveAllUser = "/platform/v1/users/retrieve"
 	// pathRetrieveRoleUsers 查询角色用户列表
 	pathRetrieveRoleUsers = "/platform/v1/roles/%s/users"
+	// pathUserRoles 查询用户角色列表
+	pathUserRoles = "/platform/v1/users/%s/roles"
 )
 
 // QueryAllRoles 查询所有角色
@@ -71,10 +73,29 @@ func QueryAllUser(userToken, language string) (userMap map[string]*models.UserDt
 	return
 }
 
-// QueryRolesUsers 查询角色用户列表
+// QueryRolesUsers 查询用户角色列表
 func QueryRolesUsers(roleId, userToken, language string) (list []*models.UserDto, err error) {
 	var response models.QueryUserResponse
 	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathRetrieveRoleUsers, roleId), userToken, language)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if response.Status != "OK" {
+		err = fmt.Errorf(response.Message)
+	}
+	list = response.Data
+	return
+}
+
+// QueryUserRoles 查询用户角色列表
+func QueryUserRoles(user, userToken, language string) (list []*models.SimpleLocalRoleDto, err error) {
+	var response models.QueryRolesResponse
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathUserRoles, user), userToken, language)
 	if err != nil {
 		return
 	}

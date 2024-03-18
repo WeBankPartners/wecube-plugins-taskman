@@ -1,0 +1,227 @@
+<template>
+  <div>
+    <Header>
+      <div class="menus">
+        <Menu mode="horizontal" theme="dark" :active-name="activeName" @on-select="changeMenu">
+          <div>
+            <img src="../../images/taskman.png" alt="LOGO" class="img-logo" />
+          </div>
+          <div>
+            <MenuItem v-for="menu in menus" :name="menu.path" :key="menu.path">
+              {{ menu.name }}
+            </MenuItem>
+          </div>
+        </Menu>
+      </div>
+      <div class="header-right_container">
+        <div class="profile">
+          <Dropdown style="cursor: pointer">
+            <img class="p-icon" src="../../images/icon/icon_usr.png" width="12" height="12" />{{ username }}
+            <Icon type="ios-arrow-down"></Icon>
+            <DropdownMenu slot="list">
+              <!-- <DropdownItem name="logout" to="/login">
+                <a @click="showChangePassword" style="width: 100%; display: block">
+                  {{ $t('change_password') }}
+                </a>
+              </DropdownItem> -->
+              <DropdownItem name="logout" to="/login">
+                <a @click="logout" style="width: 100%; display: block">
+                  {{ $t('logout') }}
+                </a>
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+        <div class="language">
+          <Dropdown>
+            <a href="javascript:void(0)">
+              <img
+                class="p-icon"
+                v-if="currentLanguage === 'English'"
+                src="../../images/icon/icon_lan_EN.png"
+                width="12"
+                height="12"
+              />
+              <img class="p-icon" v-else src="../../images/icon/icon_lan_CN.png" width="12" height="12" />
+              {{ currentLanguage }}
+              <Icon type="ios-arrow-down"></Icon>
+            </a>
+            <DropdownMenu slot="list">
+              <DropdownItem v-for="(item, key) in language" :key="item.id" @click.native="changeLanguage(key)">
+                {{ item }}
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
+        <div class="language" @click="changeDocs">
+          <img class="p-icon" src="../../images/icon/icon_help.png" width="12" height="12" />
+          {{ $t('help_docs') }}
+        </div>
+        <!-- <div class="version">{{ version }}</div> -->
+      </div>
+    </Header>
+  </div>
+</template>
+<script>
+import Vue from 'vue'
+export default {
+  data () {
+    return {
+      activeName: '/taskman/workbench',
+      username: '',
+      currentLanguage: '',
+      language: {
+        'zh-CN': '简体中文',
+        'en-US': 'English'
+      },
+      menus: [
+        {
+          name: this.$t('tw_workbench'),
+          path: '/taskman/workbench'
+        },
+        {
+          name: this.$t('tw_template_group_mgmt'),
+          path: '/taskman/template-group'
+        },
+        {
+          name: this.$t('tw_template_mgmt'),
+          path: '/taskman/template-mgmt'
+        },
+        {
+          name: this.$t('tw_request_mgmt'),
+          path: '/taskman/request-mgmt'
+        },
+        {
+          name: this.$t('tw_task_mgmt'),
+          path: '/taskman/task-mgmt'
+        }
+      ],
+      needLoad: true,
+      version: '',
+      changePassword: false
+    }
+  },
+  async created () {
+    this.getLocalLang()
+    this.username = window.localStorage.getItem('username')
+  },
+  watch: {
+    $lang: async function (lang) {
+      window.location.reload()
+    }
+  },
+  methods: {
+    changeMenu (path) {
+      console.log(path)
+      this.$router.push({ path: path })
+    },
+    logout () {
+      window.location.href = window.location.origin + window.location.pathname + '#/login'
+    },
+    changeLanguage (lan) {
+      Vue.config.lang = lan
+      this.currentLanguage = this.language[lan]
+      localStorage.setItem('lang', lan)
+    },
+    getLocalLang () {
+      let currentLangKey = localStorage.getItem('lang') || navigator.language
+      const lang = this.language[currentLangKey] || 'English'
+      this.currentLanguage = lang
+    },
+    changeDocs () {
+      window.open('http://webankpartners.gitee.io/wecube-docs')
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.img-logo {
+  height: 20px;
+  margin: 0 4px 6px 0;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.ivu-layout-header {
+  padding: 0 20px;
+}
+.header {
+  display: flex;
+  .ivu-layout-header {
+    height: 50px;
+    line-height: 50px;
+    background: linear-gradient(90deg, #8bb8fa 0%, #e1ecfb 100%);
+  }
+  a {
+    color: #404144;
+  }
+  .menus {
+    display: inline-block;
+    .ivu-menu-horizontal {
+      height: 50px;
+      line-height: 50px;
+      display: flex;
+      .ivu-menu-submenu {
+        padding: 0 8px;
+        font-size: 15px;
+        color: #404144;
+      }
+      .ivu-menu-item {
+        font-size: 15px;
+        color: #404144;
+      }
+    }
+    .ivu-menu-dark {
+      background: transparent;
+    }
+    .ivu-menu-dark.ivu-menu-horizontal .ivu-menu-submenu {
+      color: #404144;
+    }
+    .ivu-menu-item-active,
+    .ivu-menu-item:hover {
+      color: #116ef9;
+    }
+    .ivu-menu-dark.ivu-menu-horizontal .ivu-menu-submenu-active,
+    .ivu-menu-dark.ivu-menu-horizontal .ivu-menu-submenu:hover {
+      color: #116ef9;
+    }
+    .ivu-menu-drop-list {
+      .ivu-menu-item-active,
+      .ivu-menu-item:hover {
+        color: black;
+      }
+    }
+  }
+  .header-right_container {
+    position: absolute;
+    right: 20px;
+    top: 0;
+    .language,
+    .help,
+    .version,
+    .profile {
+      float: right;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 20px;
+      cursor: pointer;
+    }
+    .version {
+      color: #404144;
+    }
+
+    .p-icon {
+      margin-right: 6px;
+    }
+
+    .ivu-dropdown-rel {
+      display: flex;
+      align-items: center;
+      a {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+}
+</style>

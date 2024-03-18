@@ -1,6 +1,15 @@
 <template>
   <div id="taskman">
+    <div class="header">
+      <Header></Header>
+    </div>
     <div class="taskman-content-container" :style="workbenchStyle">
+      <Breadcrumb :style="setBreadcrumbStyle" v-if="isShowBreadcrum">
+        <BreadcrumbItem
+          ><a @click="homePageClickHandler">{{ $t('home') }}</a></BreadcrumbItem
+        >
+        <BreadcrumbItem>{{ childBreadcrumb }}</BreadcrumbItem>
+      </Breadcrumb>
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
@@ -10,21 +19,30 @@
 </template>
 
 <script>
+import Header from '@/pages/components/header'
 import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
 import Vue from 'vue'
 Vue.prototype.$bus = new Vue()
 export default {
   components: {
-    WorkbenchMenu
+    WorkbenchMenu,
+    Header
   },
   data () {
     return {
       isShowBreadcrum: true,
       allMenusAry: [],
-      parentBreadcrumb: '',
       childBreadcrumb: '',
       isSetting: this.$route.path.startsWith('/setting'),
       expand: true
+    }
+  },
+  watch: {
+    $route: {
+      handler (val) {
+        this.setBreadcrumb()
+      },
+      immediate: true
     }
   },
   computed: {
@@ -43,6 +61,15 @@ export default {
       this.$bus.$on('expand-menu', val => {
         this.expand = val
       })
+    }
+  },
+  methods: {
+    setBreadcrumb () {
+      this.childBreadcrumb = '453264'
+    },
+    homePageClickHandler () {
+      window.needReLoad = false
+      this.$router.push('/taskman/workbench')
     }
   }
 }

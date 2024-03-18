@@ -1071,7 +1071,7 @@ fieldset[disabled] .ivu-input {
   color: #338cf0;
 }
 .ivu-form-item {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 .list-group-item- {
   display: inline-block;

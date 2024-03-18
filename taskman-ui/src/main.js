@@ -20,6 +20,21 @@ Vue.use(ViewUI, {
   locale
 })
 
+// router.beforeEach((to, from, next) => {
+//   if (window.myMenus) {
+//     let hasPermission = [].concat(...window.myMenus.map(_ => _.submenus)).find(_ => _.link === to.path)
+//     if (hasPermission || to.path === '/wecmdb/home' || to.path.startsWith('/setting') || to.path === '/login') {
+//       /* has permission */
+//       next()
+//     } else {
+//       /* has no permission */
+//       next('/wecmdb/home')
+//     }
+//   } else {
+//     next()
+//   }
+// })
+
 new Vue({
   router,
   render: h => h(App)

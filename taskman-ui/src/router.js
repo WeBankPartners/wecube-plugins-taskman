@@ -5,6 +5,11 @@ Vue.use(Router)
 export default new Router({
   routes: [
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/login')
+    },
+    {
       path: '/taskman/template-mgmt',
       name: '/taskman/template-mgmt',
       component: () => import('@/pages/template')

@@ -1,4 +1,9 @@
 {
+  "help_docs": "帮助文档",
+  "tw_template_group_mgmt": "模版组管理",
+  "tw_template_mgmt": "模版管理",
+  "tw_request_mgmt": "请求管理",
+  "tw_task_mgmt": "任务管理",
   "add": "新增",
   "search": "搜索",
   "edit": "编辑",

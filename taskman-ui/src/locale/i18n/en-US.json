@@ -1,4 +1,9 @@
 {
+  "help_docs": "Help",
+  "tw_template_group_mgmt": "Template Group",
+  "tw_template_mgmt": "Template Management",
+  "tw_request_mgmt": "Request Management",
+  "tw_task_mgmt": "Task Management",
   "add": "Add",
   "search": "Search",
   "edit": "Edit",

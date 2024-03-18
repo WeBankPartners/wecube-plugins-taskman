@@ -224,9 +224,9 @@
                             v-for="item in procOptions"
                             :value="item.procDefId"
                             :key="item.procDefId"
-                            :label="item.procDefName + '[' + item.version + ']'"
+                            :label="item.procDefName + ' [' + item.version + ']'"
                           >
-                            <span>{{ item.procDefName }}[{{ item.version }}]</span>
+                            <span>{{ item.procDefName }} [{{ item.version }}]</span>
                           </Option>
                         </Select>
                         <span style="color: red">*</span>

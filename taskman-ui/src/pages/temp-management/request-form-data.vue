@@ -966,6 +966,7 @@ export default {
           this.$emit('changTab', 'msgForm')
         } else if (nextStep === 4) {
           this.updateFinalElement(this.nextGroupInfo)
+          this.loadPage()
         } else if (nextStep === 5) {
           this.openDrawer(elememt)
         } else if (nextStep === 6) {

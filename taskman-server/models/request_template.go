@@ -176,7 +176,7 @@ type RequestTemplateExport struct {
 	FormItemTemplate     []*FormItemTemplateTable    `json:"formItemTemplate"`
 	RequestTemplateRole  []*RequestTemplateRoleTable `json:"requestTemplateRole"`
 	TaskTemplate         []*TaskTemplateTable        `json:"taskTemplate"`
-	TaskTemplateRole     []*TaskHandleTemplateTable  `json:"taskTemplateRole"`
+	TaskHandleTemplate   []*TaskHandleTemplateTable  `json:"taskHandleTemplate"`
 	RequestTemplateGroup RequestTemplateGroupTable   `json:"requestTemplateGroup"`
 }
 

@@ -175,7 +175,6 @@ func calcExpireObj(param *models.ExpireObj) {
 	param.TotalDay, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", param.TotalDay), 64)
 	param.LeftDay, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", param.LeftDay), 64)
 	param.UseDay, _ = strconv.ParseFloat(fmt.Sprintf("%.3f", param.UseDay), 64)
-	return
 }
 
 func calcExpireTime(reportTime string, expireDay int) (expire string) {
@@ -239,7 +238,7 @@ func GetRequestWithRoot(requestId string) (result models.RequestTable, err error
 		return
 	}
 	if len(requestTable) == 0 {
-		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		err = fmt.Errorf("can not find any request with id:%s ", requestId)
 		return
 	}
 	result = *requestTable[0]
@@ -247,7 +246,7 @@ func GetRequestWithRoot(requestId string) (result models.RequestTable, err error
 		var cacheObj models.RequestPreDataDto
 		err = json.Unmarshal([]byte(result.Cache), &cacheObj)
 		if err != nil {
-			err = fmt.Errorf("Try to json unmarshal cache data fail,%s ", err.Error())
+			err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
 			return
 		}
 		result.Cache = cacheObj.RootEntityId
@@ -264,7 +263,7 @@ func GetRequest(requestId string) (result models.RequestTable, err error) {
 		return
 	}
 	if len(requestTable) == 0 {
-		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		err = fmt.Errorf("can not find any request with id:%s ", requestId)
 		return
 	}
 	result = *requestTable[0]
@@ -280,7 +279,7 @@ func CreateRequest(param *models.RequestTable, operatorRoles []string, userToken
 	if requestTemplateObj.ProcDefId != "" {
 		err = GetRequestTemplateService().SyncProcDefId(requestTemplateObj.Id, requestTemplateObj.ProcDefId, requestTemplateObj.ProcDefName, "", userToken, language)
 		if err != nil {
-			return fmt.Errorf("Try to sync proDefId fail,%s ", err.Error())
+			return fmt.Errorf("try to sync proDefId fail,%s ", err.Error())
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
@@ -313,6 +312,9 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 	}
 	var formItemNameQuery []*models.FormItemTemplateTable
 	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select form_template from request_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	if err != nil {
+		return err
+	}
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -331,7 +333,7 @@ func SaveRequestCacheNew(requestId, operator, userToken string, param *models.Re
 	}
 	paramBytes, err := json.Marshal(param)
 	if err != nil {
-		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
+		return fmt.Errorf("try to json marshal param fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	actions := UpdateRequestFormItem(requestId, operator, nowTime, param)
@@ -348,6 +350,9 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	}
 	var formItemNameQuery []*models.FormItemTemplateTable
 	err = dao.X.SQL("select item_group,group_concat(name,',') as name from form_item_template where in_display_name='yes' and form_template in (select request_template from form_template where id in (select request_template from request where id=?)) group by item_group", requestId).Find(&formItemNameQuery)
+	if err != nil {
+		return err
+	}
 	itemGroupNameMap := make(map[string][]string)
 	for _, v := range formItemNameQuery {
 		itemGroupNameMap[v.ItemGroup] = strings.Split(v.Name, ",")
@@ -371,12 +376,12 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	}
 	paramBytes, err := json.Marshal(newParam)
 	if err != nil {
-		return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
+		return fmt.Errorf("try to json marshal param fail,%s ", err.Error())
 	}
 	if len(param.CustomForm.Value) > 0 {
 		customFormCache, err = json.Marshal(param.CustomForm)
 		if err != nil {
-			return fmt.Errorf("Try to json marshal param fail,%s ", err.Error())
+			return fmt.Errorf("try to json marshal param fail,%s ", err.Error())
 		}
 	}
 	if len(param.ApprovalList) > 0 {
@@ -489,7 +494,7 @@ func GetRequestCache(requestId, cacheType string) (result interface{}, err error
 			return
 		}
 		if len(requestTable) == 0 {
-			err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+			err = fmt.Errorf("can not find any request with id:%s ", requestId)
 			return
 		}
 		if requestTable[0].Cache == "" {
@@ -504,7 +509,7 @@ func GetRequestCache(requestId, cacheType string) (result interface{}, err error
 			return
 		}
 		if len(requestTable) == 0 {
-			err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+			err = fmt.Errorf("can not find any request with id:%s ", requestId)
 			return
 		}
 		if requestTable[0].BindCache == "" {
@@ -523,7 +528,7 @@ func getRequestTemplateByRequest(requestId string) (templateId string, err error
 		return
 	}
 	if len(requestTable) == 0 {
-		err = fmt.Errorf("Can not find request with id:%s ", requestId)
+		err = fmt.Errorf("can not find request with id:%s ", requestId)
 		return
 	}
 	templateId = requestTable[0].RequestTemplate
@@ -561,13 +566,13 @@ func GetRequestPreData(requestId, entityDataId, userToken, language string) (res
 		return
 	}
 	if len(requestTables) == 0 {
-		return result, fmt.Errorf("Can not find requestId:%s ", requestId)
+		return result, fmt.Errorf("can not find requestId:%s ", requestId)
 	}
 	if requestTables[0].Cache != "" {
 		var cacheObj models.RequestPreDataDto
 		err = json.Unmarshal([]byte(requestTables[0].Cache), &cacheObj)
 		if err != nil {
-			return result, fmt.Errorf("Try to json unmarshal cache data fail,%s ", err.Error())
+			return result, fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
 		}
 		if cacheObj.RootEntityId == entityDataId {
 			result = cacheObj.Data
@@ -788,11 +793,7 @@ func sortRequestEntity(param []*models.RequestPreDataTableObj) models.RequestPre
 			if vv == v.Entity {
 				continue
 			}
-			if _, b := entityMap[vv]; b {
-				entityMap[vv] = append(entityMap[vv], v.Entity)
-			} else {
-				entityMap[vv] = []string{v.Entity}
-			}
+			entityMap[vv] = append(entityMap[vv], v.Entity)
 		}
 	}
 	countNum := 0
@@ -859,7 +860,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	}
 	entityDepMap, err = AppendUselessEntity(requestTemplate.Id, userToken, language, &cacheData)
 	if err != nil {
-		err = fmt.Errorf("Try to append useless entity fail,%s ", err.Error())
+		err = fmt.Errorf("try to append useless entity fail,%s ", err.Error())
 		return
 	}
 	if requestTemplate.ProcDefId != "" {
@@ -902,13 +903,13 @@ func StartRequest(requestId, operator, userToken, language string, cacheData mod
 	var requestTemplateTable []*models.RequestTemplateTable
 	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", requestId).Find(&requestTemplateTable)
 	if len(requestTemplateTable) == 0 {
-		return result, fmt.Errorf("Can not find requestTemplate with request:%s ", requestId)
+		return result, fmt.Errorf("can not find requestTemplate with request:%s ", requestId)
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
 	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
 	if tmpErr != nil {
-		return result, fmt.Errorf("Try to append useless entity fail,%s ", tmpErr.Error())
+		return result, fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 	}
 	fillBindingWithRequestData(requestId, userToken, language, &cacheData, entityDepMap)
 	cacheBytes, _ := json.Marshal(cacheData)
@@ -940,14 +941,14 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 		return
 	}
 	if len(requestTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find requestTemplate with request:%s ,requestTemplateId:%s ", request.Id, request.RequestTemplate)
+		err = fmt.Errorf("can not find requestTemplate with request:%s ,requestTemplateId:%s ", request.Id, request.RequestTemplate)
 		return
 	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
 	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
 	if tmpErr != nil {
-		err = fmt.Errorf("Try to append useless entity fail,%s ", tmpErr.Error())
+		err = fmt.Errorf("try to append useless entity fail,%s ", tmpErr.Error())
 		return
 	}
 	fillBindingWithRequestData(request.Id, userToken, language, &cacheData, entityDepMap)
@@ -990,7 +991,7 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		if requestTemplate.ProcDefId != "" {
 			bindData, bindErr := GetRequestPreBindData(request, requestTemplate, userToken, language)
 			if bindErr != nil {
-				return fmt.Errorf("Try to build bind data fail,%s ", bindErr.Error())
+				return fmt.Errorf("try to build bind data fail,%s ", bindErr.Error())
 			}
 			bindCacheBytes, _ := json.Marshal(bindData)
 			bindCache = string(bindCacheBytes)
@@ -1273,19 +1274,19 @@ func RequestTermination(requestId, operator, userToken, language string) error {
 func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestParam) (result []byte, statusCode int, err error) {
 	paramBytes, tmpErr := json.Marshal(param)
 	if tmpErr != nil {
-		err = fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
+		err = fmt.Errorf("json marshal param data fail,%s ", tmpErr.Error())
 		return
 	}
 	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/wecmdb/api/v1/ci-data/reference-data/query/%s", models.Config.Wecube.BaseUrl, attrId), bytes.NewReader(paramBytes))
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	statusCode = resp.StatusCode
@@ -1296,7 +1297,7 @@ func GetCmdbReferenceData(attrId, userToken string, param models.QueryRequestPar
 
 func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.RequestTemplateTable, userToken, language string) (result models.RequestCacheData, err error) {
 	if request.Cache == "" {
-		return result, fmt.Errorf("Can not find request cache data with id:%s ", request.Id)
+		return result, fmt.Errorf("can not find request cache data with id:%s ", request.Id)
 	}
 	processNodes, processErr := GetProcDefService().GetProcessDefineTaskNodes(requestTemplate, userToken, language, "bind")
 	if processErr != nil {
@@ -1336,21 +1337,13 @@ func GetRequestPreBindData(request models.RequestTable, requestTemplate *models.
 				result.RootEntityValue = tmpValueObj
 			}
 			entityValueMap[vv.Id] = &tmpValueObj
-			if _, b := entityOidMap[v.ItemGroup]; b {
-				entityOidMap[v.ItemGroup] = append(entityOidMap[v.ItemGroup], vv.Id)
-			} else {
-				entityOidMap[v.ItemGroup] = []string{vv.Id}
-			}
+			entityOidMap[v.ItemGroup] = append(entityOidMap[v.ItemGroup], vv.Id)
 		}
 	}
 	var entityNodeBind []*models.EntityNodeBindQueryObj
 	dao.X.SQL("select distinct t1.node_def_id,t2.item_group from task_template t1 left join form_template t2 on t2.task_template=t1.id where t1.request_template=? and t1.node_def_id<>''", requestTemplate.Id).Find(&entityNodeBind)
 	for _, v := range entityNodeBind {
-		if _, b := entityBindMap[v.NodeDefId]; b {
-			entityBindMap[v.NodeDefId] = append(entityBindMap[v.NodeDefId], v.ItemGroup)
-		} else {
-			entityBindMap[v.NodeDefId] = []string{v.ItemGroup}
-		}
+		entityBindMap[v.NodeDefId] = append(entityBindMap[v.NodeDefId], v.ItemGroup)
 	}
 	for _, v := range processNodes {
 		if v.TaskCategory == "" {
@@ -1409,12 +1402,12 @@ func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err er
 	var requests []*models.RequestTable
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
-		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
+		return result, fmt.Errorf("can not find request with id:%s ", requestId)
 	}
 	var requestCache models.RequestPreDataDto
 	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
 	if err != nil {
-		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
+		return result, fmt.Errorf("try to json unmarshal request cache fail,%s ", err.Error())
 	}
 	var requestTemplateTable []*models.RequestTemplateTable
 	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", requestId).Find(&requestTemplateTable)
@@ -1449,7 +1442,7 @@ func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryOb
 	var requests []*models.RequestTable
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
-		err = fmt.Errorf("Can not find request with id:%s ", requestId)
+		err = fmt.Errorf("can not find request with id:%s ", requestId)
 		return
 	}
 	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false, RollbackDesc: requests[0].RollbackDesc}
@@ -1510,7 +1503,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	var approvalList []*models.TaskTemplateDto
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
 	if len(requests) == 0 {
-		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
+		return result, fmt.Errorf("can not find request with id:%s ", requestId)
 	}
 	if strings.Contains(requests[0].Status, "InProgress") && requests[0].ProcInstanceId != "" {
 		newStatus := getInstanceStatus(requests[0].ProcInstanceId, userToken, language)
@@ -1534,11 +1527,14 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 		if len(actions) > 0 {
 			updateRequestErr := dao.Transaction(actions)
 			if updateRequestErr != nil {
-				log.Logger.Error("Try to update request status fail", log.Error(updateRequestErr))
+				log.Logger.Error("try to update request status fail", log.Error(updateRequestErr))
 			}
 		}
 	}
-	result.Request = getRequestForm(requests[0], userToken, language)
+	result.Request, err = getRequestForm(requests[0], userToken, language)
+	if err != nil {
+		return
+	}
 	taskQueryList, err = GetRequestTaskListV2(requestId)
 	if err != nil {
 		return
@@ -1551,135 +1547,135 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 	return
 }
 
-func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string) (output []*models.RequestPreDataTableObj, err error) {
-	ciAttrMap := make(map[string][]string)
-	ciAttrSelectMap := make(map[string][]*models.EntityDataObj)
-	for _, v := range input {
-		if v.Entity == "" {
-			continue
-		}
-		for _, vv := range v.Title {
-			if vv.ElementType == "select" && vv.RefEntity == "" {
-				if _, b := ciAttrMap[v.Entity]; b {
-					ciAttrMap[v.Entity] = append(ciAttrMap[v.Entity], vv.Name)
-				} else {
-					ciAttrMap[v.Entity] = []string{vv.Name}
-				}
-			}
-			vv.SelectList = []*models.EntityDataObj{}
-		}
-	}
-	output = input
-	if len(ciAttrMap) <= 0 {
-		return
-	}
-	for k, v := range ciAttrMap {
-		tmpV, tmpErr := getCMDBAttributeSelectList(k, userToken, v)
-		if tmpErr != nil {
-			err = tmpErr
-			break
-		}
-		for kk, vv := range tmpV {
-			ciAttrSelectMap[kk] = vv
-		}
-	}
-	if err != nil {
-		return
-	}
-	for _, v := range output {
-		if v.Entity == "" {
-			continue
-		}
-		for _, vv := range v.Title {
-			tmpKey := v.Entity + "_" + vv.Name
-			if tmpSelectList, b := ciAttrSelectMap[tmpKey]; b {
-				vv.SelectList = tmpSelectList
-			}
-		}
-	}
-	return
-}
+// func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string) (output []*models.RequestPreDataTableObj, err error) {
+// 	ciAttrMap := make(map[string][]string)
+// 	ciAttrSelectMap := make(map[string][]*models.EntityDataObj)
+// 	for _, v := range input {
+// 		if v.Entity == "" {
+// 			continue
+// 		}
+// 		for _, vv := range v.Title {
+// 			if vv.ElementType == "select" && vv.RefEntity == "" {
+// 				if _, b := ciAttrMap[v.Entity]; b {
+// 					ciAttrMap[v.Entity] = append(ciAttrMap[v.Entity], vv.Name)
+// 				} else {
+// 					ciAttrMap[v.Entity] = []string{vv.Name}
+// 				}
+// 			}
+// 			vv.SelectList = []*models.EntityDataObj{}
+// 		}
+// 	}
+// 	output = input
+// 	if len(ciAttrMap) <= 0 {
+// 		return
+// 	}
+// 	for k, v := range ciAttrMap {
+// 		tmpV, tmpErr := getCMDBAttributeSelectList(k, userToken, v)
+// 		if tmpErr != nil {
+// 			err = tmpErr
+// 			break
+// 		}
+// 		for kk, vv := range tmpV {
+// 			ciAttrSelectMap[kk] = vv
+// 		}
+// 	}
+// 	if err != nil {
+// 		return
+// 	}
+// 	for _, v := range output {
+// 		if v.Entity == "" {
+// 			continue
+// 		}
+// 		for _, vv := range v.Title {
+// 			tmpKey := v.Entity + "_" + vv.Name
+// 			if tmpSelectList, b := ciAttrSelectMap[tmpKey]; b {
+// 				vv.SelectList = tmpSelectList
+// 			}
+// 		}
+// 	}
+// 	return
+// }
 
 func getCMDBAttributes(entity, userToken string) (result []*models.EntityAttributeObj, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, entity), nil)
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	//req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	responseBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Request cmdb attribute fail,%s ", string(responseBytes))
+		err = fmt.Errorf("request cmdb attribute fail,%s ", string(responseBytes))
 		return
 	}
 	var attrQueryResp models.EntityAttributeQueryResponse
 	err = json.Unmarshal(responseBytes, &attrQueryResp)
 	if err != nil {
-		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
+		err = fmt.Errorf("json unmarshal attr response fail,%s ", err.Error())
 		return
 	}
 	result = attrQueryResp.Data
 	return
 }
 
-func getCMDBAttributeSelectList(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
-	result = make(map[string][]*models.EntityDataObj)
-	attrList, queryErr := getCMDBAttributes(entity, userToken)
-	if queryErr != nil {
-		err = queryErr
-		return
-	}
-	for _, v := range attrList {
-		existFlag := false
-		for _, vv := range attributes {
-			if v.PropertyName == vv {
-				existFlag = true
-				break
-			}
-		}
-		if existFlag && v.SelectList != "" {
-			tmpSelectList, tmpErr := getAttrCat(v.SelectList, userToken)
-			if tmpErr != nil {
-				err = tmpErr
-				break
-			}
-			result[entity+"_"+v.PropertyName] = tmpSelectList
-		}
-	}
-	return
-}
+// func getCMDBAttributeSelectList(entity, userToken string, attributes []string) (result map[string][]*models.EntityDataObj, err error) {
+// 	result = make(map[string][]*models.EntityDataObj)
+// 	attrList, queryErr := getCMDBAttributes(entity, userToken)
+// 	if queryErr != nil {
+// 		err = queryErr
+// 		return
+// 	}
+// 	for _, v := range attrList {
+// 		existFlag := false
+// 		for _, vv := range attributes {
+// 			if v.PropertyName == vv {
+// 				existFlag = true
+// 				break
+// 			}
+// 		}
+// 		if existFlag && v.SelectList != "" {
+// 			tmpSelectList, tmpErr := getAttrCat(v.SelectList, userToken)
+// 			if tmpErr != nil {
+// 				err = tmpErr
+// 				break
+// 			}
+// 			result[entity+"_"+v.PropertyName] = tmpSelectList
+// 		}
+// 	}
+// 	return
+// }
 
 func getAttrCat(catId, userToken string) (result []*models.EntityDataObj, err error) {
 	result = []*models.EntityDataObj{}
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/base-key/categories/%s", models.Config.Wecube.BaseUrl, catId), nil)
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	//req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	responseBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Request cmdb categories fail,%s ", string(responseBytes))
+		err = fmt.Errorf("request cmdb categories fail,%s ", string(responseBytes))
 		return
 	}
 	var response models.CMDBCategoriesResponse
 	err = json.Unmarshal(responseBytes, &response)
 	if err != nil {
-		err = fmt.Errorf("Json unmarshal categories response fail,%s ", err.Error())
+		err = fmt.Errorf("json unmarshal categories response fail,%s ", err.Error())
 		return
 	}
 	for _, v := range response.Data {
@@ -1732,7 +1728,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 	}
 	preData, preErr := ProcessDataPreview(requestTemplateId, rootDataId, userToken, language)
 	if preErr != nil {
-		return entityDepMap, fmt.Errorf("Try to get process preview data fail,%s ", preErr.Error())
+		return entityDepMap, fmt.Errorf("try to get process preview data fail,%s ", preErr.Error())
 	}
 	// get binding entity data
 	var entityList []*models.RequestCacheEntityValue
@@ -1773,11 +1769,7 @@ func AppendUselessEntity(requestTemplateId, userToken, language string, cacheDat
 	getDependEntity(rootSucceeding, rootParent, preEntityList, entityList, dependEntityMap)
 	for k, refAttr := range dependEntityMap {
 		refDataValue := fmt.Sprintf("%s", refAttr.DataValue)
-		if _, b := entityDepMap[k]; b {
-			entityDepMap[k] = append(entityDepMap[k], refDataValue)
-		} else {
-			entityDepMap[k] = []string{refDataValue}
-		}
+		entityDepMap[k] = append(entityDepMap[k], refDataValue)
 		log.Logger.Info("dependEntityMap", log.String("id", k), log.String("refValue", refDataValue))
 	}
 	if len(dependEntityMap) > 0 {
@@ -1864,39 +1856,39 @@ func listContains(inputList []string, element string) bool {
 	return result
 }
 
-func notifyRoleMail(requestId, userToken, language string) error {
-	if !models.MailEnable {
-		return nil
-	}
-	log.Logger.Info("Start notify request mail", log.String("requestId", requestId))
-	var roleTable []*models.RoleTable
-	err := dao.X.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
-	if err != nil {
-		return fmt.Errorf("Notify role mail query roles fail,%s ", err.Error())
-	}
-	if len(roleTable) == 0 {
-		return nil
-	}
-	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
-	if len(mailList) == 0 {
-		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
-		return nil
-	}
-	var requestTable []*models.RequestTable
-	dao.X.SQL("select t1.id,t1.name,t2.name as request_template,t1.reporter,t1.report_time,t1.emergency from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id=?", requestId).Find(&requestTable)
-	if len(requestTable) == 0 {
-		return nil
-	}
-	var subject, content string
-	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
-	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
-	err = models.MailSender.Send(subject, content, mailList)
-	if err != nil {
-		log.Logger.Error("Notify role mail fail", log.Error(err))
-		return fmt.Errorf("Notify role mail fail,%s ", err.Error())
-	}
-	return nil
-}
+// func notifyRoleMail(requestId, userToken, language string) error {
+// 	if !models.MailEnable {
+// 		return nil
+// 	}
+// 	log.Logger.Info("Start notify request mail", log.String("requestId", requestId))
+// 	var roleTable []*models.RoleTable
+// 	err := dao.X.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
+// 	if err != nil {
+// 		return fmt.Errorf("notify role mail query roles fail,%s ", err.Error())
+// 	}
+// 	if len(roleTable) == 0 {
+// 		return nil
+// 	}
+// 	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
+// 	if len(mailList) == 0 {
+// 		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
+// 		return nil
+// 	}
+// 	var requestTable []*models.RequestTable
+// 	dao.X.SQL("select t1.id,t1.name,t2.name as request_template,t1.reporter,t1.report_time,t1.emergency from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id=?", requestId).Find(&requestTable)
+// 	if len(requestTable) == 0 {
+// 		return nil
+// 	}
+// 	var subject, content string
+// 	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
+// 	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
+// 	err = models.MailSender.Send(subject, content, mailList)
+// 	if err != nil {
+// 		log.Logger.Error("Notify role mail fail", log.Error(err))
+// 		return fmt.Errorf("notify role mail fail,%s ", err.Error())
+// 	}
+// 	return nil
+// }
 
 func CopyRequest(requestId, createdBy string) (result models.RequestTable, err error) {
 	parentRequest := &models.RequestTable{}
@@ -1907,7 +1899,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	if len(requestTable) == 0 {
-		err = fmt.Errorf("Can not find any request with id:%s ", requestId)
+		err = fmt.Errorf("can not find any request with id:%s ", requestId)
 		return
 	}
 	parentRequest = requestTable[0]
@@ -1931,7 +1923,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	if len(formTable) == 0 {
-		err = fmt.Errorf("Can not find form %s from parent request:%s ", parentRequest.Form, parentRequest.Id)
+		err = fmt.Errorf("can not find form %s from parent request:%s ", parentRequest.Form, parentRequest.Id)
 		return
 	}
 	parentForm := formTable[0]
@@ -1989,7 +1981,7 @@ func GetRequestParent(requestId string) (parentRequestId string, err error) {
 
 func newRequestId() (requestId string) {
 	dateString := time.Now().Format("2006-01-02")
-	requestId = fmt.Sprintf("%s", time.Now().Format("20060102"))
+	requestId = time.Now().Format("20060102")
 	requestIdLock.Lock()
 	defer requestIdLock.Unlock()
 	result, err := dao.X.QueryString(fmt.Sprintf("select count(1) as num from request where created_time>='%s 00:00:00'", dateString))
@@ -2340,9 +2332,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		return
 	}
 
-	formIdMapInfo := make(map[string]*models.FormTable)
-	formTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)
-	formIdMapInfo, formTemplateIdMapInfo, err = getFormAndTemplateMapInfo(c, taskFormItems)
+	formIdMapInfo, formTemplateIdMapInfo, err := getFormAndTemplateMapInfo(c, taskFormItems)
 	if err != nil {
 		err = fmt.Errorf("get form and form template map info failed: %s", err.Error())
 		return
@@ -2387,11 +2377,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		} else {
 			itemRowMap[itemGroup] = []string{itemDataId}
 		}
-		if _, b := rowItemMap[itemDataId]; b {
-			rowItemMap[itemDataId] = append(rowItemMap[itemDataId], item)
-		} else {
-			rowItemMap[itemDataId] = []*models.FormItemTable{item}
-		}
+		rowItemMap[itemDataId] = append(rowItemMap[itemDataId], item)
 	}
 
 	for _, formTable := range formResult {

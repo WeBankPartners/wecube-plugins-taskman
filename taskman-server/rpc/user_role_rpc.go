@@ -31,6 +31,7 @@ func QueryAllRoles(requiredAll, userToken, language string) (roleMap map[string]
 	}
 	if response.Status != "OK" {
 		err = fmt.Errorf(response.Message)
+		return
 	}
 	if len(response.Data) > 0 {
 		userMap, err = QueryAllUser(userToken, language)

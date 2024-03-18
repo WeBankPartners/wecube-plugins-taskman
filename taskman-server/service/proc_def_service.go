@@ -101,7 +101,7 @@ func (s *ProcDefService) GetProcessDefineTaskNodes(requestTemplate *models.Reque
 		}
 	}
 	if requestTemplate.ProcDefId == "" {
-		err = fmt.Errorf("Request template proDefId illegal ")
+		err = fmt.Errorf("request template proDefId illegal ")
 		return
 	}
 	allTaskNodeList, err = rpc.GetProcessDefineTaskNodes(requestTemplate.ProcDefId, userToken, language)
@@ -214,9 +214,9 @@ func (s *ProcDefService) CheckProDefId(proDefId, proDefName, proDefKey, userToke
 	}
 	if count != 1 {
 		if proDefKey != "" {
-			err = fmt.Errorf("Find %d record from process list by query proDefKey:%s ", count, proDefKey)
+			err = fmt.Errorf("find %d record from process list by query proDefKey:%s ", count, proDefKey)
 		} else {
-			err = fmt.Errorf("Find %d record from process list by query proDefName:%s ", count, proDefName)
+			err = fmt.Errorf("find %d record from process list by query proDefName:%s ", count, proDefName)
 		}
 	}
 	return

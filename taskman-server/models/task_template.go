@@ -94,10 +94,7 @@ func (s TaskTemplateProgressDtoSort) Swap(i, j int) {
 }
 
 func (s TaskTemplateProgressDtoSort) Less(i, j int) bool {
-	if s[i].Sort < s[j].Sort {
-		return true
-	}
-	return false
+	return s[i].Sort < s[j].Sort
 }
 
 type TaskTemplateTableSort []*TaskTemplateTable
@@ -111,8 +108,5 @@ func (s TaskTemplateTableSort) Swap(i, j int) {
 }
 
 func (s TaskTemplateTableSort) Less(i, j int) bool {
-	if s[i].Sort < s[j].Sort {
-		return true
-	}
-	return false
+	return s[i].Sort < s[j].Sort
 }

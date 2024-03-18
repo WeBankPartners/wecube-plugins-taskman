@@ -45,6 +45,10 @@ func (s *RoleService) SyncCoreRole(userToken, language string) {
 		return
 	}
 	roleMap, err = rpc.QueryAllRoles("N", userToken, language)
+	if err != nil {
+		log.Logger.Error("sync core role fail", log.Error(err))
+		return
+	}
 	var roleTable, addRoleList, delRoleList []*models.RoleTable
 	err = dao.X.SQL("select * from role").Find(&roleTable)
 	if err != nil {

@@ -61,7 +61,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	var requestTable []*models.RequestTable
 	err = dao.X.SQL("select * from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
 	if err != nil {
-		return result, taskId, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
+		return result, taskId, fmt.Errorf("try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
 	}
 	var actions []*dao.ExecAction
 	var taskSort int
@@ -74,7 +74,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	if input.TaskFormInput != "" {
 		err = json.Unmarshal([]byte(input.TaskFormInput), &taskFormInput)
 		if err != nil {
-			return result, taskId, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
+			return result, taskId, fmt.Errorf("try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
 		}
 		if newTaskObj.Reporter == "" {
 			newTaskObj.Reporter = "taskman"
@@ -123,7 +123,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		newTaskObj.Handler = taskTemplateTable[0].Handler
 	} else {
 		log.Logger.Warn("Can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
-		err = fmt.Errorf("Can not find any taskTemplate in request:%s with nodeDefId:%s ", newTaskObj.Request, taskFormInput.TaskNodeDefId)
+		err = fmt.Errorf("can not find any taskTemplate in request:%s with nodeDefId:%s ", newTaskObj.Request, taskFormInput.TaskNodeDefId)
 		return
 	}
 	taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id," +
@@ -171,52 +171,52 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	return
 }
 
-func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) (result []*models.FormItemTable, err error) {
-	result = []*models.FormItemTable{}
-	if requestId == "" || taskFormTemplateId == "" {
-		return
-	}
-	var formItemTemplates []*models.FormItemTemplateTable
-	err = dao.X.SQL("select * from form_item_template where entity='' and form_template=?", taskFormTemplateId).Find(&formItemTemplates)
-	if len(formItemTemplates) == 0 || err != nil {
-		return
-	}
-	groupNameTemplateIdMap := make(map[string]string)
-	filterList := []string{}
-	for _, v := range formItemTemplates {
-		groupNameTemplateIdMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)] = v.Id
-		filterList = append(filterList, fmt.Sprintf("(item_group='%s' and name='%s')", v.ItemGroup, v.Name))
-	}
-	var formItems []*models.FormItemTable
-	err = dao.X.SQL("select * from form_item where ("+strings.Join(filterList, " or ")+") and form in (select form from request where id=? union select form from task where request=?) order by item_group,name,id desc", requestId, requestId).Find(&formItems)
-	//if len(formItems) == 0 {
-	//	for _, v := range formItemTemplates {
-	//		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
-	//		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: "", RowDataId: ""})
-	//	}
-	//	return
-	//}
-	groupNameExistMap := make(map[string]int)
-	for _, v := range formItems {
-		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
-		if _, b := groupNameExistMap[tmpKey]; b {
-			continue
-		}
-		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: v.Value, RowDataId: v.RowDataId})
-		groupNameExistMap[tmpKey] = 1
-	}
-	return
-}
+// func getLastCustomFormItem(requestId, taskFormTemplateId, newTaskFormId string) (result []*models.FormItemTable, err error) {
+// 	result = []*models.FormItemTable{}
+// 	if requestId == "" || taskFormTemplateId == "" {
+// 		return
+// 	}
+// 	var formItemTemplates []*models.FormItemTemplateTable
+// 	err = dao.X.SQL("select * from form_item_template where entity='' and form_template=?", taskFormTemplateId).Find(&formItemTemplates)
+// 	if len(formItemTemplates) == 0 || err != nil {
+// 		return
+// 	}
+// 	groupNameTemplateIdMap := make(map[string]string)
+// 	filterList := []string{}
+// 	for _, v := range formItemTemplates {
+// 		groupNameTemplateIdMap[fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)] = v.Id
+// 		filterList = append(filterList, fmt.Sprintf("(item_group='%s' and name='%s')", v.ItemGroup, v.Name))
+// 	}
+// 	var formItems []*models.FormItemTable
+// 	err = dao.X.SQL("select * from form_item where ("+strings.Join(filterList, " or ")+") and form in (select form from request where id=? union select form from task where request=?) order by item_group,name,id desc", requestId, requestId).Find(&formItems)
+// 	//if len(formItems) == 0 {
+// 	//	for _, v := range formItemTemplates {
+// 	//		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
+// 	//		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: "", RowDataId: ""})
+// 	//	}
+// 	//	return
+// 	//}
+// 	groupNameExistMap := make(map[string]int)
+// 	for _, v := range formItems {
+// 		tmpKey := fmt.Sprintf("%s_%s", v.ItemGroup, v.Name)
+// 		if _, b := groupNameExistMap[tmpKey]; b {
+// 			continue
+// 		}
+// 		result = append(result, &models.FormItemTable{Form: newTaskFormId, FormItemTemplate: groupNameTemplateIdMap[tmpKey], Name: v.Name, ItemGroup: v.ItemGroup, Value: v.Value, RowDataId: v.RowDataId})
+// 		groupNameExistMap[tmpKey] = 1
+// 	}
+// 	return
+// }
 
-func getFormItemTemplateMap(formTemplateId string) map[string]*models.FormItemTemplateTable {
-	resultMap := make(map[string]*models.FormItemTemplateTable)
-	var itemTemplateTable []*models.FormItemTemplateTable
-	dao.X.SQL("select * from form_item_template where form_template=?", formTemplateId).Find(&itemTemplateTable)
-	for _, v := range itemTemplateTable {
-		resultMap[v.Id] = v
-	}
-	return resultMap
-}
+// func getFormItemTemplateMap(formTemplateId string) map[string]*models.FormItemTemplateTable {
+// 	resultMap := make(map[string]*models.FormItemTemplateTable)
+// 	var itemTemplateTable []*models.FormItemTemplateTable
+// 	dao.X.SQL("select * from form_item_template where form_template=?", formTemplateId).Find(&itemTemplateTable)
+// 	for _, v := range itemTemplateTable {
+// 		resultMap[v.Id] = v
+// 	}
+// 	return resultMap
+// }
 
 func remakeTaskReportRole(reportRoles string) string {
 	resultList := []string{}
@@ -337,7 +337,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	var requests []*models.RequestTable
 	dao.X.SQL("select * from request where id=?", taskObj.Request).Find(&requests)
 	if len(requests) == 0 {
-		return result, fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
+		return result, fmt.Errorf("can not find request with id:%s ", taskObj.Request)
 	}
 	if requests[0].Parent != "" {
 		if parentRequest, getParentErr := GetRequestTaskList(requests[0].Parent); getParentErr != nil {
@@ -353,7 +353,7 @@ func GetTask(taskId string) (result models.TaskQueryResult, err error) {
 	var requestCache models.RequestPreDataDto
 	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
 	if err != nil {
-		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
+		return result, fmt.Errorf("try to json unmarshal request cache fail,%s ", err.Error())
 	}
 	var requestTemplateTable []*models.RequestTemplateTable
 	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", taskObj.Request).Find(&requestTemplateTable)
@@ -426,7 +426,7 @@ func GetTaskV2(taskId string) (taskQueryList []*models.TaskQueryObj, err error) 
 	var requests []*models.RequestTable
 	dao.X.SQL("select * from request where id=?", taskObj.Request).Find(&requests)
 	if len(requests) == 0 {
-		err = fmt.Errorf("Can not find request with id:%s ", taskObj.Request)
+		err = fmt.Errorf("can not find request with id:%s ", taskObj.Request)
 		return
 	}
 	/*// 当前请求可能是历史请求重新发起生成,则需要展示历史请求ID的请求和任务数据
@@ -547,11 +547,7 @@ func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err
 		} else {
 			itemRowMap[item.ItemGroup] = []string{item.RowDataId}
 		}
-		if _, b := rowItemMap[item.RowDataId]; b {
-			rowItemMap[item.RowDataId] = append(rowItemMap[item.RowDataId], item)
-		} else {
-			rowItemMap[item.RowDataId] = []*models.FormItemTable{item}
-		}
+		rowItemMap[item.RowDataId] = append(rowItemMap[item.RowDataId], item)
 	}
 	for _, formTable := range formResult {
 		if rows, b := itemRowMap[formTable.ItemGroup]; b {
@@ -589,7 +585,7 @@ func getRequestTimeStep(requestTemplateId string) (result []*models.TaskQueryTim
 		return
 	}
 	if len(requestTemplateTable) == 0 {
-		return result, fmt.Errorf("Can not find requestTemplate with id:%s ", requestTemplateId)
+		return result, fmt.Errorf("can not find requestTemplate with id:%s ", requestTemplateId)
 	}
 	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: "Start", Active: false})
 	var taskTemplateTable []*models.TaskTemplateTable
@@ -607,7 +603,7 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 		return
 	}
 	if len(taskTable) == 0 {
-		return result, fmt.Errorf("Can not find any task with id:%s ", taskId)
+		return result, fmt.Errorf("can not find any task with id:%s ", taskId)
 	}
 	result = *taskTable[0]
 	return
@@ -652,11 +648,11 @@ func ApproveCustomTask(task models.TaskTable, operator, userToken, language stri
 	log.Logger.Info("Custom Callback response", log.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if respResult.Status != "OK" {
-		err = fmt.Errorf("Callback fail,%s ", respResult.Message)
+		err = fmt.Errorf("callback fail,%s ", respResult.Message)
 		return
 	}
 	var actions []*dao.ExecAction
@@ -762,6 +758,9 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), operator, now, task.Id}})
 	}
 	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language, taskSort)
+	if err != nil {
+		return
+	}
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
@@ -788,14 +787,14 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	log.Logger.Info("Callback response", log.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
-		return fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
 		//if strings.Contains(respResult.Message, "None process instance found") {
 		//	dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
 		//}
-		return fmt.Errorf("Callback fail,%s ", respResult.Message)
+		return fmt.Errorf("callback fail,%s ", respResult.Message)
 	}
 	request, getRequestErr := GetSimpleRequest(task.Request)
 	if getRequestErr != nil {
@@ -813,6 +812,9 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 		}})
 	}
 	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language, taskSort)
+	if err != nil {
+		return err
+	}
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
@@ -836,12 +838,12 @@ func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateRe
 	var taskFormOutput models.PluginTaskFormDto
 	err = json.Unmarshal([]byte(taskObj.Cache), &taskFormOutput)
 	if err != nil {
-		return result, callbackUrl, fmt.Errorf("Try to json unmarshal cache data fail:%s ", err.Error())
+		return result, callbackUrl, fmt.Errorf("try to json unmarshal cache data fail:%s ", err.Error())
 	}
 	taskDataRows := models.RequestPoolDataQueryRows{}
 	err = dao.X.SQL("select t1.id as form_id,t1.form_template,t3.item_group,t3.item_group_type ,t1.data_id,t2.id as form_item_id,t2.form_item_template,t2.name,t2.value,t2.updated_time from form t1 left join form_item t2 on t1.id=t2.form left join form_template t3 on t1.form_template=t3.id where t1.task=?", taskId).Find(&taskDataRows)
 	if err != nil {
-		return result, callbackUrl, fmt.Errorf("Try to query form item fail:%s ", err.Error())
+		return result, callbackUrl, fmt.Errorf("try to query form item fail:%s ", err.Error())
 	}
 	poolForms := taskDataRows.DataParse()
 	for _, formEntity := range taskFormOutput.FormDataEntities {
@@ -1066,12 +1068,15 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator string) (err 
 	var task models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
 	task, err = getSimpleTask(param.TaskId)
+	if err != nil {
+		return
+	}
 	if common.GetLowVersionUnixMillis(task.UpdatedTime) != param.LatestUpdateTime {
 		err = exterror.New().DealWithAtTheSameTimeError
 		return
 	}
 	if task.Status == string(models.TaskStatusDone) {
-		err = fmt.Errorf("Task already done with %s %s ", task.UpdatedBy, task.UpdatedTime)
+		err = fmt.Errorf("task already done with %s %s ", task.UpdatedBy, task.UpdatedTime)
 		return
 	}
 	dao.X.SQL("select * from task_handle where id = ?", param.TaskHandleId).Find(&taskHandleList)
@@ -1107,7 +1112,7 @@ func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (tas
 		return
 	}
 	if taskObj.Status == "done" {
-		return taskObj, fmt.Errorf("Task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+		return taskObj, fmt.Errorf("task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
 	}
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
@@ -1115,18 +1120,18 @@ func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (tas
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
 		if operator != taskObj.Handler {
-			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
+			return taskObj, fmt.Errorf("task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"doing", operator, nowTime, taskId}})
 	} else if operation == "quit" {
 		if operator != taskObj.Handler {
-			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
+			return taskObj, fmt.Errorf("task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
 	} else if operation == "give" {
 		// 转给我
 		if taskObj.Status == "done" {
-			return taskObj, fmt.Errorf("Task status:%s is not marked ", taskObj.Status)
+			return taskObj, fmt.Errorf("task status:%s is not marked ", taskObj.Status)
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	}
@@ -1215,7 +1220,7 @@ func GetSimpleTask(taskId string) (task models.TaskTable, err error) {
 		return
 	}
 	if len(taskTable) == 0 {
-		return task, fmt.Errorf("Can not find any task with id:%s ", taskId)
+		return task, fmt.Errorf("can not find any task with id:%s ", taskId)
 	}
 	task = *taskTable[0]
 	return

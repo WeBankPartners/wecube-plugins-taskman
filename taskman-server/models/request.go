@@ -331,11 +331,7 @@ func (q KeyValueSort) Len() int {
 }
 
 func (q KeyValueSort) Less(i, j int) bool {
-	t := strings.Compare(q[i].TemplateName, q[j].TemplateName)
-	if t < 0 {
-		return true
-	}
-	return false
+	return strings.Compare(q[i].TemplateName, q[j].TemplateName) < 0
 }
 
 func (q KeyValueSort) Swap(i, j int) {

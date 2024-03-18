@@ -101,7 +101,7 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 					tmpIds, tmpErr = s.getRequestTemplateIdsBySql("select id from request_template where type in ("+roleFilterSql+")", roleFilterParam)
 				}
 				if tmpErr != nil {
-					err = fmt.Errorf("Try to query filter role id fail,%s ", tmpErr.Error())
+					err = fmt.Errorf("try to query filter role id fail,%s ", tmpErr.Error())
 					break
 				}
 				extFilterSql += " and id in ('" + strings.Join(tmpIds, "','") + "') "
@@ -168,7 +168,7 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 			if v.ProcDefId != "" {
 				tmpErr := s.SyncProcDefId(v.Id, v.ProcDefId, v.ProcDefName, v.ProcDefKey, commonParam.Token, commonParam.Language)
 				if tmpErr != nil {
-					err = fmt.Errorf("Try to sync proDefId fail,%s ", tmpErr.Error())
+					err = fmt.Errorf("try to sync proDefId fail,%s ", tmpErr.Error())
 					break
 				}
 			}
@@ -389,10 +389,7 @@ func (s *RequestTemplateService) GetAllCoreProcess(userToken, language string) m
 
 // getRequestTemplateModifyType 模板版本 > v1表示 模板有多个版本,不允许多个版本都去修改模板类型,要求保持一致
 func (s *RequestTemplateService) getRequestTemplateModifyType(requestTemplate *models.RequestTemplateTable) bool {
-	if strings.Compare(requestTemplate.Version, "v1") > 0 {
-		return false
-	}
-	return true
+	return strings.Compare(requestTemplate.Version, "v1") <= 0
 }
 
 func (s *RequestTemplateService) getUpdateNodeDefIdActions(requestTemplateId, userToken, language string) (actions []*dao.ExecAction) {
@@ -436,16 +433,15 @@ func (s *RequestTemplateService) SyncProcDefId(requestTemplateId, proDefId, proD
 		}
 		err = dao.Transaction(actions)
 		if err != nil {
-			return fmt.Errorf("Update requestTemplate procDefId fail,%s ", err.Error())
+			return fmt.Errorf("update requestTemplate procDefId fail,%s ", err.Error())
 		}
 		log.Logger.Info("Update requestTemplate proDefId done")
-		actions = []*dao.ExecAction{}
 	}
 	tmpActions := s.getUpdateNodeDefIdActions(requestTemplateId, userToken, language)
 	if len(tmpActions) > 0 {
 		err = dao.Transaction(tmpActions)
 		if err != nil {
-			return fmt.Errorf("Update template node def id fail,%s ", err.Error())
+			return fmt.Errorf("update template node def id fail,%s ", err.Error())
 		}
 		log.Logger.Info("Update taskTemplate nodeDefId done")
 	}
@@ -532,7 +528,6 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	if requestTemplate.ProcDefId == "" && param.ProcDefId != "" {
 		// 先删除已有任务
 		for _, taskTemplate := range implementTaskTemplateList {
-			deleteTaskTemplateActions = []*dao.ExecAction{}
 			deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 			if err != nil {
 				return
@@ -554,7 +549,6 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		// 删除编排
 		if param.ProcDefId == "" {
 			for _, taskTemplate := range implementTaskTemplateList {
-				deleteTaskTemplateActions = []*dao.ExecAction{}
 				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 				if err != nil {
 					return
@@ -568,7 +562,6 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 			// 换了编排,先删除,再新增
 			if requestTemplate.ProcDefId != param.ProcDefId {
 				for _, taskTemplate := range implementTaskTemplateList {
-					deleteTaskTemplateActions = []*dao.ExecAction{}
 					deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
 					if err != nil {
 						return
@@ -716,7 +709,7 @@ func (s *RequestTemplateService) GetRequestTemplateEntityAttrs(id string) (resul
 		return
 	}
 	if len(requestTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find request template wit id:%s ", id)
+		err = fmt.Errorf("can not find request template wit id:%s ", id)
 		return
 	}
 	if requestTemplateTable[0].EntityAttrs == "" {
@@ -736,23 +729,23 @@ func (s *RequestTemplateService) UpdateRequestTemplateEntityAttrs(id string, att
 	return err
 }
 
-func (s *RequestTemplateService) GetRequestTemplateManageRole(id string) (role string) {
-	var roleList []string
-	err := dao.X.SQL("select role from request_template_role where request_template=? and role_type='MGMT'", id).Find(&roleList)
-	if err != nil {
-		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
-		return
-	}
-	if len(roleList) > 0 {
-		role = roleList[0]
-	}
-	return
-}
+// func (s *RequestTemplateService) GetRequestTemplateManageRole(id string) (role string) {
+// 	var roleList []string
+// 	err := dao.X.SQL("select role from request_template_role where request_template=? and role_type='MGMT'", id).Find(&roleList)
+// 	if err != nil {
+// 		err = fmt.Errorf("try to query database fail,%s ", err.Error())
+// 		return
+// 	}
+// 	if len(roleList) > 0 {
+// 		role = roleList[0]
+// 	}
+// 	return
+// }
 
 func (s *RequestTemplateService) getRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
 	err = dao.X.SQL("select * from request_template_role where request_template=?", templateId).Find(&requestTemplateRoleList)
 	if err != nil {
-		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		err = fmt.Errorf("try to query database fail,%s ", err.Error())
 		return
 	}
 	return
@@ -763,7 +756,7 @@ func (s *RequestTemplateService) getAllRequestTemplate() (templateMap map[string
 	var requestTemplateTable []*models.RequestTemplateTable
 	err = dao.X.SQL("select * from request_template").Find(&requestTemplateTable)
 	if err != nil {
-		err = fmt.Errorf("Try to query database fail,%s ", err.Error())
+		err = fmt.Errorf("try to query database fail,%s ", err.Error())
 		return
 	}
 	for _, template := range requestTemplateTable {
@@ -797,7 +790,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	}
 	existQuery, tmpErr := dao.X.QueryString("select id,name,version from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
 	if tmpErr != nil {
-		return fmt.Errorf("Query database fail,%s ", tmpErr.Error())
+		return fmt.Errorf("query database fail,%s ", tmpErr.Error())
 	}
 	if len(existQuery) > 0 {
 		return fmt.Errorf("RequestTemplate already have a branch %s:%s", existQuery[0]["name"], existQuery[0]["version"])
@@ -837,11 +830,17 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	// 查询表单模板列表
 	var formTemplateList []*models.FormTemplateTable
 	err = dao.X.SQL("select * from form_template where request_template = ?", requestTemplateId).Find(&formTemplateList)
+	if err != nil {
+		return
+	}
 	if len(formTemplateList) > 0 {
 		var tempFormItemTemplateList []*models.FormItemTemplateTable
 		for _, formTemplate := range formTemplateList {
 			newFormTemplateIdMap[formTemplate.Id] = guid.CreateGuid()
 			err = dao.X.SQL("select * from form_item_template where form_template = ?", formTemplate.Id).Find(&tempFormItemTemplateList)
+			if err != nil {
+				return
+			}
 		}
 		if len(tempFormItemTemplateList) > 0 {
 			formItemTemplateList = append(formItemTemplateList, tempFormItemTemplateList...)
@@ -904,7 +903,7 @@ func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, opera
 		return err
 	}
 	if requestTemplateObj.Status == "confirm" {
-		return fmt.Errorf("Request template already confirm ")
+		return fmt.Errorf("request template already confirm ")
 	}
 	err = s.validateConfirm(requestTemplateId)
 	if err != nil {
@@ -941,38 +940,38 @@ func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, opera
 	return dao.Transaction(actions)
 }
 
-func (s *RequestTemplateService) getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []*dao.ExecAction, err error) {
-	var itemRows []*models.FormItemTemplateTable
-	err = dao.X.SQL("select id from form_item_template where form_template=?", oldFormTemplateId).Find(&itemRows)
-	if err != nil {
-		return
-	}
-	actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,created_by,created_time,updated_by,updated_time from form_template where id='%s'", newFormTemplateId, oldFormTemplateId)})
-	newGuidList := guid.CreateGuidList(len(itemRows))
-	for i, item := range itemRows {
-		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear from form_item_template where id='%s'", newGuidList[i], newFormTemplateId, item.Id)})
-	}
-	return
-}
+// func (s *RequestTemplateService) getFormCopyActions(oldFormTemplateId, newFormTemplateId string) (actions []*dao.ExecAction, err error) {
+// 	var itemRows []*models.FormItemTemplateTable
+// 	err = dao.X.SQL("select id from form_item_template where form_template=?", oldFormTemplateId).Find(&itemRows)
+// 	if err != nil {
+// 		return
+// 	}
+// 	actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_template(id,name,description,created_by,created_time,updated_by,updated_time) select '%s' as id,name,description,created_by,created_time,updated_by,updated_time from form_template where id='%s'", newFormTemplateId, oldFormTemplateId)})
+// 	newGuidList := guid.CreateGuidList(len(itemRows))
+// 	for i, item := range itemRows {
+// 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear from form_item_template where id='%s'", newGuidList[i], newFormTemplateId, item.Id)})
+// 	}
+// 	return
+// }
 
-func (s *RequestTemplateService) getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (actions []*dao.ExecAction, err error) {
-	var taskTemplateRoles []*models.TaskTemplateRoleTable
-	err = dao.X.SQL("select * from task_template_role where task_template=?", oldTaskTemplateId).Find(&taskTemplateRoles)
-	if err != nil {
-		return
-	}
-	for _, v := range taskTemplateRoles {
-		tmpId := newTaskTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
-		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newTaskTemplateId, v.Role, v.RoleType}})
-	}
-	return
-}
+// func (s *RequestTemplateService) getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (actions []*dao.ExecAction, err error) {
+// 	var taskTemplateRoles []*models.TaskTemplateRoleTable
+// 	err = dao.X.SQL("select * from task_template_role where task_template=?", oldTaskTemplateId).Find(&taskTemplateRoles)
+// 	if err != nil {
+// 		return
+// 	}
+// 	for _, v := range taskTemplateRoles {
+// 		tmpId := newTaskTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
+// 		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newTaskTemplateId, v.Role, v.RoleType}})
+// 	}
+// 	return
+// }
 
 func (s *RequestTemplateService) validateConfirm(requestTemplateId string) error {
 	var taskTemplateTable []*models.TaskTemplateTable
 	dao.X.SQL("select id from task_template where request_template=? and form_template IS NOT NULL", requestTemplateId).Find(&taskTemplateTable)
 	if len(requestTemplateId) == 0 {
-		return fmt.Errorf("Please config task template ")
+		return fmt.Errorf("please config task template ")
 	}
 	return nil
 }
@@ -1237,7 +1236,7 @@ func (s *RequestTemplateService) RequestTemplateExport(requestTemplateId string)
 		return
 	}
 	if len(requestTemplateTable) == 0 {
-		err = fmt.Errorf("Can not find requestTemplate with id:%s ", requestTemplateId)
+		err = fmt.Errorf("can not find requestTemplate with id:%s ", requestTemplateId)
 		return
 	}
 	result.RequestTemplate = *s.GetDtoByRequestTemplate(requestTemplateTable[0])
@@ -1298,7 +1297,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
 				input = inputCache
 			} else {
-				err = fmt.Errorf("Fetch input cache fail,please refersh and try again ")
+				err = fmt.Errorf("fetch input cache fail,please refersh and try again ")
 				return
 			}
 			delete(models.RequestTemplateImportMap, ct)
@@ -1331,7 +1330,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			}
 		}
 		if !processExistFlag {
-			err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+			err = fmt.Errorf("reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
 			return
 		}
 		nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.ConvertRequestTemplateDto2Model(input.RequestTemplate), userToken, language, "template")
@@ -1348,7 +1347,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				}
 			}
 			if !existFlag {
-				err = fmt.Errorf("Node:%s can not find in exist process:%s ", v.NodeName, input.RequestTemplate.ProcDefName)
+				err = fmt.Errorf("node:%s can not find in exist process:%s ", v.NodeName, input.RequestTemplate.ProcDefName)
 				break
 			}
 		}
@@ -1598,24 +1597,24 @@ func (s *RequestTemplateService) CheckPermission(requestTemplateId, user string)
 	return
 }
 
-func (s *RequestTemplateService) GetRequestPendingRoleAndHandler(requestTemplate *models.RequestTemplateDto) (role, handler string) {
-	if requestTemplate == nil {
-		return
-	}
-	if !requestTemplate.CheckSwitch {
-		return
-	}
+// func (s *RequestTemplateService) GetRequestPendingRoleAndHandler(requestTemplate *models.RequestTemplateDto) (role, handler string) {
+// 	if requestTemplate == nil {
+// 		return
+// 	}
+// 	if !requestTemplate.CheckSwitch {
+// 		return
+// 	}
 
-	// 配置了定版角色
-	if requestTemplate.CheckRole != "" {
-		role = requestTemplate.CheckRole
-		handler = requestTemplate.CheckHandler
-	}
-	// 没有配置定版角色和定版人则读取模板属主角色和属主处理人
-	role = s.GetRequestTemplateManageRole(requestTemplate.Id)
-	handler = requestTemplate.Handler
-	return
-}
+// 	// 配置了定版角色
+// 	if requestTemplate.CheckRole != "" {
+// 		role = requestTemplate.CheckRole
+// 		handler = requestTemplate.CheckHandler
+// 	}
+// 	// 没有配置定版角色和定版人则读取模板属主角色和属主处理人
+// 	role = s.GetRequestTemplateManageRole(requestTemplate.Id)
+// 	handler = requestTemplate.Handler
+// 	return
+// }
 
 func (s *RequestTemplateService) GetConfirmCount(user, userToken, language string) (count int, err error) {
 	var requestTemplateList []*models.RequestTemplateTable

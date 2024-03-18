@@ -19,7 +19,7 @@ func ValidateRequestForm(param []*models.RequestPreDataTableObj, userToken strin
 		}
 		err = validateFormDataRegular(entityData, userToken)
 		if err != nil {
-			err = fmt.Errorf("Entity:%s %s ", entityData.Entity, err.Error())
+			err = fmt.Errorf("entity:%s %s ", entityData.Entity, err.Error())
 			break
 		}
 	}
@@ -29,7 +29,7 @@ func ValidateRequestForm(param []*models.RequestPreDataTableObj, userToken strin
 func validateFormDataRegular(input *models.RequestPreDataTableObj, userToken string) (err error) {
 	attrList, tmpErr := getCMDBAttributes(input.Entity, userToken)
 	if tmpErr != nil {
-		err = fmt.Errorf("Try to get CMDB attributes fail,%s ", tmpErr.Error())
+		err = fmt.Errorf("try to get CMDB attributes fail,%s ", tmpErr.Error())
 		return
 	}
 	attrRegularMap := make(map[string]string)

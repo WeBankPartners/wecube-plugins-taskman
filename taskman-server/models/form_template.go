@@ -35,10 +35,7 @@ func (s FormTemplateTableSort) Swap(i, j int) {
 }
 
 func (s FormTemplateTableSort) Less(i, j int) bool {
-	if s[i].ItemGroupSort < s[j].ItemGroupSort {
-		return true
-	}
-	return false
+	return s[i].ItemGroupSort < s[j].ItemGroupSort
 }
 
 type FormTemplateDto struct {
@@ -178,8 +175,5 @@ func (s FormTemplateGroupDtoSort) Swap(i, j int) {
 }
 
 func (s FormTemplateGroupDtoSort) Less(i, j int) bool {
-	if s[i].ItemGroupSort < s[j].ItemGroupSort {
-		return true
-	}
-	return false
+	return s[i].ItemGroupSort < s[j].ItemGroupSort
 }

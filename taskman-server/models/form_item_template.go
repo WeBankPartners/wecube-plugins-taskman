@@ -88,10 +88,7 @@ func (s FormItemTemplateDtoSort) Swap(i, j int) {
 }
 
 func (s FormItemTemplateDtoSort) Less(i, j int) bool {
-	if s[i].Sort < s[j].Sort {
-		return true
-	}
-	return false
+	return s[i].Sort < s[j].Sort
 }
 
 func ConvertFormItemTemplateDto2Model(dto *FormItemTemplateDto) *FormItemTemplateTable {

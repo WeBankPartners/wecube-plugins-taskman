@@ -3,12 +3,12 @@
   <div class="workbench-base-progress">
     <!--请求进度-->
     <div class="steps">
-      <span class="title">{{ $t('tw_request_progress') }}：</span>
+      <div class="title">{{ $t('tw_request_progress') }}：</div>
       <Steps
         :current="0"
         :style="{
           minWidth: progress.requestProgress.length * 120 + 'px',
-          maxWidth: progress.requestProgress.length * 170 + 'px'
+          maxWidth: progress.requestProgress.length * 160 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
@@ -32,7 +32,7 @@
           </div>
         </Step>
       </Steps>
-      <div v-if="errorNode" style="margin:0 0 10px -80px;max-width:400px;">
+      <div v-if="errorNode" class="error-node">
         <Alert v-if="errorNode === 'autoExit'" show-icon type="error">
           {{ $t('tw_auto_exit_tips') }}
         </Alert>
@@ -49,7 +49,7 @@
         :current="0"
         :style="{
           minWidth: progress.approvalProgress.length * 120 + 'px',
-          maxWidth: progress.approvalProgress.length * 180 + 'px'
+          maxWidth: progress.approvalProgress.length * 160 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
@@ -76,7 +76,7 @@
         :current="0"
         :style="{
           minWidth: progress.taskProgress.length * 120 + 'px',
-          maxWidth: progress.taskProgress.length * 180 + 'px'
+          maxWidth: progress.taskProgress.length * 160 + 'px'
         }"
       >
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
@@ -274,6 +274,9 @@ export default {
     flex: 1;
     overflow: hidden;
   }
+  .ivu-alert.ivu-alert-with-icon {
+    padding: 8px 5px 8px 38px;
+  }
   .steps .ivu-steps .ivu-steps-tail > i {
     height: 3px;
     background: #8189a5;
@@ -288,13 +291,15 @@ export default {
       font-weight: 500;
       margin-top: 3px;
     }
+    .error-node {
+      flex: 1;
+      margin: 5px 0 0 -60px;
+      max-width: 600px;
+    }
     .mode {
       font-size: 12px;
-      // background: #2d8cf0;
       color: #2d8cf0;
-      // padding: 1px 5px;
       display: inline-block;
-      // border-radius: 2px;
       margin-top: -5px;
     }
     .role {

@@ -210,20 +210,20 @@ export default {
     },
     // 点击名称，id快捷跳转
     handleDbClick (row) {
-      if (row.status === 'Draft') {
-        if (row.createdBy !== this.username) {
-          return
-        }
-        this.hanldeLaunch(row)
-      } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
-        this.handleRepub(row)
-      } else {
-        this.hanldeView(row)
-      }
+      this.hanldeView(row)
+      // if (row.status === 'Draft') {
+      //   if (row.createdBy !== this.username) {
+      //     return
+      //   }
+      //   this.hanldeLaunch(row)
+      // } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
+      //   this.handleRepub(row)
+      // } else {
+      //   this.hanldeView(row)
+      // }
     },
     // 表格操作-查看
     hanldeView (row) {
-      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -241,7 +241,6 @@ export default {
     async handleRepub (row) {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
-        // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
         const path = this.createRouteMap[this.actionName]
         const url = `/taskman/workbench/${path}`
         this.$router.push({
@@ -256,7 +255,6 @@ export default {
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
-      // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const path = this.createRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({

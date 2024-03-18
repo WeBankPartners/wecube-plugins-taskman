@@ -1429,6 +1429,7 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 	input.RequestTemplate.CreatedTime = now
 	input.RequestTemplate.UpdatedBy = operator
 	input.RequestTemplate.UpdatedTime = now
+	input.RequestTemplate.Handler = operator
 	// 模版导入,模版使用角色和属主角色取当前操作人角色
 	roleList, _ = rpc.QueryUserRoles(operator, userToken, language)
 	if len(roleList) > 0 {
@@ -1459,11 +1460,15 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 		taskTemplate.UpdatedBy = operator
 		taskTemplate.CreatedTime = now
 		taskTemplate.UpdatedTime = now
+		taskTemplate.Handler = ""
 		newTaskTemplateIdMap[historyTaskTemplateId] = taskTemplate.Id
 	}
 	for _, taskHandleTemplate := range input.TaskHandleTemplate {
 		taskHandleTemplate.Id = guid.CreateGuid()
 		taskHandleTemplate.TaskTemplate = newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate]
+		// 清空角色和处理人
+		taskHandleTemplate.Handler = ""
+		taskHandleTemplate.Role = ""
 	}
 	// 修改 formTemplate
 	for _, formTemplate := range input.FormTemplate {

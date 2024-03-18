@@ -1,7 +1,7 @@
 <template>
   <div class="workbench-custom-form">
     <Form :model="value" ref="form" :label-position="labelPosition" :label-width="labelWidth">
-      <Row :gutter="20">
+      <Row type="flex" justify="start" :gutter="20">
         <template v-for="(i, index) in options">
           <Col :span="i.width || 24" :key="index">
             <FormItem
@@ -224,6 +224,13 @@ export default {
 </script>
 <style lang="scss">
 .workbench-custom-form {
+  .ivu-form-item {
+    margin-bottom: 15px !important;
+  }
+  .ivu-form-item-label {
+    word-wrap: break-word;
+    padding: 10px 10px 10px 0;
+  }
   .ivu-form-item-required .ivu-form-item-label:before {
     display: inline;
     margin-right: 2px;

@@ -114,33 +114,37 @@
         </HeaderTitle>
         <!--请求表单-->
         <HeaderTitle title="请求表单">
-          <Divider style="margin: 0px 0 30px 0" dashed orientation="left">
-            <span class="sub-header">信息表单</span>
-          </Divider>
-          <CustomForm
-            v-if="detail.customForm && detail.customForm.value"
-            v-model="detail.customForm.value"
-            :options="detail.customForm.title"
-            :requestId="requestId"
-            disabled
-            style="margin-top: 10px;"
-          ></CustomForm>
-          <Divider style="margin: 20px 0 30px 0" dashed orientation="left">
-            <span class="sub-header">数据表单</span>
-          </Divider>
-          <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
-            <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
-              <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
-            </Select>
-          </FormItem>
-          <EntityTable
-            v-if="form.data.length"
-            :data="form.data"
-            :requestId="requestId"
-            formDisable
-            style="width:calc(100% - 20px);margin-left:16px;"
-          ></EntityTable>
-          <div v-else class="no-data">暂未配置表单</div>
+          <div class="request-form">
+            <Divider style="margin: 0 0 30px 0" orientation="left">
+              <span class="sub-header">信息表单</span>
+            </Divider>
+            <CustomForm
+              v-if="detail.customForm && detail.customForm.value"
+              v-model="detail.customForm.value"
+              :options="detail.customForm.title"
+              :requestId="requestId"
+              disabled
+            ></CustomForm>
+            <div v-else class="no-data">暂未配置表单</div>
+            <Divider style="margin: 20px 0 30px 0" orientation="left">
+              <span class="sub-header">数据表单</span>
+            </Divider>
+            <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+              <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
+                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                  item.key_name
+                }}</Option>
+              </Select>
+            </FormItem>
+            <EntityTable
+              v-if="form.data.length"
+              :data="form.data"
+              :requestId="requestId"
+              formDisable
+              style="width:calc(100% - 20px);margin-left:16px;"
+            ></EntityTable>
+            <div v-else class="no-data">暂未配置表单</div>
+          </div>
         </HeaderTitle>
         <!--处理历史-->
         <HeaderTitle :title="$t('tw_handle_history')">
@@ -459,6 +463,10 @@ export default {
       font-size: 14px;
       color: #515a6e;
       font-weight: bold;
+    }
+    .request-form {
+      width: calc(100% - 20px);
+      margin: 0 0 12px 16px;
     }
     .no-data {
       padding-left: 20px;

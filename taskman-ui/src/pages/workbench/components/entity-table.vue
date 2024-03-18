@@ -22,7 +22,7 @@
         <div class="number">{{ index + 1 }}</div>
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
-            <Row :key="index">
+            <Row type="flex" justify="start" :key="index">
               <Col v-for="i in formOptions" :key="i.id" :span="i.width || 24">
                 <FormItem
                   :label="i.title"

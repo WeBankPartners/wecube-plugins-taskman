@@ -140,7 +140,7 @@ func ConvertProcEntityAttributeObj2FormItemTemplate(param FormTemplateGroupConfi
 		FormTemplate:    newItemGroupId,
 		ItemGroup:       param.ItemGroup,
 		ItemGroupName:   param.ItemGroupName,
-		Sort:            0,
+		Sort:            workflowEntityAttribute.OrderNo + 1,
 		PackageName:     workflowEntityAttribute.EntityPackage,
 		Entity:          workflowEntityAttribute.EntityName,
 		AttrDefId:       workflowEntityAttribute.Id,

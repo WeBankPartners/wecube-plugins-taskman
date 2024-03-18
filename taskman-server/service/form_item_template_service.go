@@ -22,6 +22,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 	var newItemGroupId string
 	var systemItemExist, customItemExist bool
 	var existMap = make(map[string]bool)
+	var sort int
 	if len(param.SystemItems) == 0 {
 		param.SystemItems = []*models.ProcEntityAttributeObj{}
 	}
@@ -44,6 +45,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 					return
 				}
 				insertItems = append(insertItems, models.ConvertProcEntityAttributeObj2FormItemTemplate(param, systemItem, newItemGroupId, refAttributes))
+				sort = systemItem.OrderNo + 2
 			}
 		}
 		if len(param.CustomItems) > 0 {
@@ -54,7 +56,9 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				customItem.ItemGroup = param.ItemGroup
 				customItem.ItemGroupName = param.ItemGroupName
 				customItem.ElementType = string(models.FormItemElementTypeCalculate)
+				customItem.Sort = sort
 				insertItems = append(insertItems, models.ConvertFormItemTemplateDto2Model(customItem))
+				sort++
 			}
 		}
 	} else {

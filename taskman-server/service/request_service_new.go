@@ -504,10 +504,6 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 	// 设置个默认值
 	dataObject.RequestStayTime = "0.0"
 	dataObject.TaskStayTime = "0.0"
-	if dataObject.Status == string(models.RequestStatusDraft) {
-		dataObject.RequestStayTimeTotal = dataObject.ExpireDay
-		return
-	}
 	// 计算任务停留时长
 	if dataObject.TaskId != "" && dataObject.TaskExpectTime != "" && dataObject.TaskCreatedTime != "" {
 		taskExpectTime, _ = time.ParseInLocation(models.DateTimeFormat, dataObject.TaskExpectTime, loc)
@@ -519,6 +515,11 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 			dataObject.TaskStayTime = fmt.Sprintf("%.1f", time.Now().Local().Sub(taskCreateTime).Hours()*1.00/24.00)
 		}
 		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
+	}
+	if dataObject.Status == string(models.RequestStatusDraft) {
+		dataObject.TaskStayTime = "0.0"
+		dataObject.RequestStayTimeTotal = dataObject.ExpireDay
+		return
 	}
 	reportTime, err = time.ParseInLocation(models.DateTimeFormat, dataObject.ReportTime, loc)
 	if err != nil {

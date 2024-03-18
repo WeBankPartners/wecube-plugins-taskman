@@ -34,7 +34,7 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('tw_request_title') }}
+              {{ $t('tw_information_form') }}
               <span class="underline"></span>
             </div>
           </div>
@@ -447,7 +447,7 @@ export default {
       finalElement: [
         {
           itemGroup: 'requestInfo',
-          itemGroupName: this.$t('tw_request_title'),
+          itemGroupName: this.$t('tw_information_form'),
           attrs: []
         }
       ],

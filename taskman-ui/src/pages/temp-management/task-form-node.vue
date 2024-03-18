@@ -281,13 +281,13 @@ export default {
       const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
-        if (![2, 3].includes(type)) {
+        if (![2, 3, 4].includes(type)) {
           this.$Notice.success({
             title: this.$t('successful'),
             desc: this.$t('successful')
           })
         }
-        if (type === 1) {
+        if ([1, 4].includes(type)) {
           this.$emit('reloadParentPage', this.activeApprovalNode.id)
         } else if (type === 2) {
           this.$emit('reloadParentPage', nextNodeId)

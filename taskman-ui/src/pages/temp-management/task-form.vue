@@ -1247,13 +1247,13 @@ export default {
       } else {
         const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.$refs.approvalFormNodeRef.saveNode(4)
           this.submitTemplate()
         }
       }
     },
     async submitTemplate () {
-      await this.saveGroup(10, {})
+      // await this.saveGroup(10, {})
       this.$Modal.confirm({
         title: `${this.$t('submit_for_review')}`,
         content: `${this.$t('submit_for_review_tip')}`,

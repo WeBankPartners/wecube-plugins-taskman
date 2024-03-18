@@ -201,7 +201,6 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({

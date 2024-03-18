@@ -7,12 +7,18 @@
         <Tag size="medium">{{ detail.version || detail.templateVersion || '' }}</Tag>
       </span>
     </Row>
-    <Row class="w-header">
-      <Col span="24">
+    <div class="w-header">
+      <div class="progress">
         <!--请求进度-->
         <BaseProgress ref="progress"></BaseProgress>
-      </Col>
-    </Row>
+      </div>
+      <div class="btn">
+        <!--保存草稿-->
+        <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
+        <!--提交-->
+        <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
+      </div>
+    </div>
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
         <!--请求信息-->
@@ -278,12 +284,10 @@
         </HeaderTitle>
       </Form>
     </div>
-    <div class="footer-btn">
-      <!--保存草稿-->
+    <!-- <div class="footer-btn">
       <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
-      <!--提交-->
       <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
-    </div>
+    </div> -->
     <!--编排流程图-->
     <template v-if="detail.associationWorkflow">
       <div class="expand-btn" :style="{ right: flowVisible ? '445px' : '0px' }" @click="flowVisible = !flowVisible">
@@ -811,9 +815,17 @@ export default {
     }
   }
   .w-header {
-    padding-bottom: 15px;
+    padding-bottom: 10px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
+    display: flex;
+    .progress {
+      flex: 1;
+    }
+    .btn {
+      width: 200px;
+      text-align: right;
+    }
   }
   .content {
     display: flex;

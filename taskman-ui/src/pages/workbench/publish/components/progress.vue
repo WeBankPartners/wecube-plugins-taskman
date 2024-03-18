@@ -4,13 +4,7 @@
     <!--请求进度-->
     <div class="steps">
       <div class="title">{{ $t('tw_request_progress') }}：</div>
-      <Steps
-        :current="0"
-        :style="{
-          minWidth: progress.requestProgress.length * 120 + 'px',
-          maxWidth: progress.requestProgress.length * 160 + 'px'
-        }"
-      >
+      <Steps :current="0" :style="{ width: progress.requestProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
@@ -45,13 +39,7 @@
     <!--审批进度-->
     <div v-if="approvalExpand" class="steps" style="margin-top:15px;">
       <span class="title">审批进度：</span>
-      <Steps
-        :current="0"
-        :style="{
-          minWidth: progress.approvalProgress.length * 120 + 'px',
-          maxWidth: progress.approvalProgress.length * 160 + 'px'
-        }"
-      >
+      <Steps :current="0" :style="{ width: progress.approvalProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
@@ -72,13 +60,7 @@
     <!--任务进度-->
     <div v-if="taskExpand" class="steps" style="margin-top:15px;">
       <span class="title">任务进度：</span>
-      <Steps
-        :current="0"
-        :style="{
-          minWidth: progress.taskProgress.length * 120 + 'px',
-          maxWidth: progress.taskProgress.length * 160 + 'px'
-        }"
-      >
+      <Steps :current="0" :style="{ width: progress.taskProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
@@ -273,6 +255,7 @@ export default {
     vertical-align: top;
     flex: 1;
     overflow: hidden;
+    width: 170px;
   }
   .ivu-alert.ivu-alert-with-icon {
     padding: 8px 5px 8px 38px;

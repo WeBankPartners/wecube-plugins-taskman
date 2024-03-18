@@ -517,6 +517,7 @@ func calcRequestStayTime(dataObject *models.PlatformDataObj) {
 		dataObject.TaskStayTimeTotal = int(math.Ceil(taskExpectTime.Sub(taskCreateTime).Hours() * 1.00 / 24.00))
 	}
 	if dataObject.Status == string(models.RequestStatusDraft) {
+		dataObject.TaskStayTime = "0.0"
 		dataObject.RequestStayTimeTotal = dataObject.ExpireDay
 		return
 	}

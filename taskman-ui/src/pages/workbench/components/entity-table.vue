@@ -22,7 +22,7 @@
         <div class="number">{{ index + 1 }}</div>
         <div class="form">
           <Form :model="value" ref="form" label-position="left" :label-width="100">
-            <Row :key="index">
+            <Row type="flex" justify="start" :key="index">
               <Col v-for="i in formOptions" :key="i.id" :span="i.width || 24">
                 <FormItem
                   :label="i.title"
@@ -284,7 +284,8 @@ export default {
               v.entityData[key] = '' // 后端可能返回'[]'这种数据
             }
           }
-          if (!v.entityData[key] && v.addFlag) {
+          // 添加一行的数据，并且有cmdb数据id，调用接口获取
+          if (!v.entityData[key] && v.addFlag && v.dataId) {
             const titleObj = data.title.find(t => t.name === key)
             this.getExpressionData(titleObj, v)
           }

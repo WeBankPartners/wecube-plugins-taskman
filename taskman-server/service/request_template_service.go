@@ -1285,11 +1285,11 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				return
 			} else {
 				// 有重复数据,但是新导入模板版本最高,直接当成新建处理
-				input = s.createNewImportTemplate(input, input.RequestTemplate.RecordId)
+				input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
 			}
 		} else {
 			// 无名称重复数据，新建模板id以及模板关联表id都新建
-			input = s.createNewImportTemplate(input, "")
+			input = s.createNewImportTemplate(input, operator, "", userToken, language)
 		}
 	} else {
 		// 删除冲突模板数据
@@ -1310,7 +1310,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			actions = append(actions, delActions...)
 		}
 		// 新建模板&模板相关表属性
-		input = s.createNewImportTemplate(input, input.RequestTemplate.RecordId)
+		input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
 	}
 	if input.RequestTemplate.Id == "" {
 		err = fmt.Errorf("RequestTemplate id illegal ")
@@ -1416,17 +1416,36 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	return
 }
 
-func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTemplateExport, recordId string) models.RequestTemplateExport {
+func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTemplateExport, operator, recordId, userToken, language string) models.RequestTemplateExport {
 	var newTaskTemplateIdMap = make(map[string]string)
 	var newFormTemplateIdMap = make(map[string]string)
 	var newFormItemTemplateIdMap = make(map[string]string)
 	var historyTemplateId = input.RequestTemplate.Id
+	var roleList []*models.SimpleLocalRoleDto
+	now := time.Now().Format(models.DateTimeFormat)
 	input.RequestTemplate.Id = guid.CreateGuid()
 	input.RequestTemplate.RecordId = recordId
-	// 修改模板角色中模板id,新建角色id
-	for _, requestTemplateRole := range input.RequestTemplateRole {
-		requestTemplateRole.Id = guid.CreateGuid()
-		requestTemplateRole.RequestTemplate = input.RequestTemplate.Id
+	input.RequestTemplate.CreatedBy = operator
+	input.RequestTemplate.CreatedTime = now
+	input.RequestTemplate.UpdatedBy = operator
+	input.RequestTemplate.UpdatedTime = now
+	// 模版导入,模版使用角色和属主角色取当前操作人角色
+	roleList, _ = rpc.QueryUserRoles(operator, userToken, language)
+	if len(roleList) > 0 {
+		role := roleList[0].Name
+		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
+		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+			Id:              guid.CreateGuid(),
+			RequestTemplate: input.RequestTemplate.Id,
+			Role:            role,
+			RoleType:        string(models.RolePermissionMGMT),
+		})
+		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+			Id:              guid.CreateGuid(),
+			RequestTemplate: input.RequestTemplate.Id,
+			Role:            role,
+			RoleType:        string(models.RolePermissionUse),
+		})
 	}
 	// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
 	for _, taskTemplate := range input.TaskTemplate {
@@ -1436,6 +1455,10 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 		if taskTemplate.RequestTemplate == historyTemplateId {
 			taskTemplate.RequestTemplate = input.RequestTemplate.Id
 		}
+		taskTemplate.CreatedBy = operator
+		taskTemplate.UpdatedBy = operator
+		taskTemplate.CreatedTime = now
+		taskTemplate.UpdatedTime = now
 		newTaskTemplateIdMap[historyTaskTemplateId] = taskTemplate.Id
 	}
 	for _, taskHandleTemplate := range input.TaskHandleTemplate {
@@ -1449,6 +1472,7 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 		newFormTemplateIdMap[historyFormTemplateId] = formTemplate.Id
 		formTemplate.RequestTemplate = input.RequestTemplate.Id
 		formTemplate.TaskTemplate = newTaskTemplateIdMap[formTemplate.TaskTemplate]
+		formTemplate.CreatedTime = now
 	}
 	for _, formItemTemplate := range input.FormItemTemplate {
 		historyFormItemTemplateId := formItemTemplate.Id

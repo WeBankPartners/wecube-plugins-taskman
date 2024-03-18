@@ -65,7 +65,7 @@
         </HeaderTitle>
         <!--请求表单-->
         <HeaderTitle title="请求表单">
-          <div style="width:calc(100% - 20px);margin:0 0 12px 16px;">
+          <div class="request-form">
             <Divider style="margin: 0 0 30px 0" orientation="left">
               <span class="sub-header">信息表单</span>
             </Divider>
@@ -822,6 +822,10 @@ export default {
       font-size: 14px;
       color: #515a6e;
       font-weight: bold;
+    }
+    .request-form {
+      width: calc(100% - 20px);
+      margin: 0 0 12px 16px;
     }
     .no-data {
       padding-left: 20px;

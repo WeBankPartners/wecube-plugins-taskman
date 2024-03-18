@@ -82,11 +82,11 @@ export default {
     },
     labelWidth: {
       type: Number,
-      default: 120
+      default: 100
     },
     labelPosition: {
       type: String,
-      default: 'right'
+      default: 'left'
     },
     disabled: {
       type: Boolean,

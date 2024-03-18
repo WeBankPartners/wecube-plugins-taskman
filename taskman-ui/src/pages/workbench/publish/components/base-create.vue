@@ -65,33 +65,37 @@
         </HeaderTitle>
         <!--请求表单-->
         <HeaderTitle title="请求表单">
-          <Divider style="margin: 0px 0 30px 0" orientation="left">
-            <span class="sub-header">信息表单</span>
-          </Divider>
-          <CustomForm
-            v-model="form.customForm.value"
-            :options="form.customForm.title"
-            :requestId="requestId"
-          ></CustomForm>
-          <Divider style="margin: 20px 0 30px 0" orientation="left">
-            <span class="sub-header">数据表单</span>
-          </Divider>
-          <!--选择目标对象-->
-          <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
-            <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
-              <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{ item.key_name }}</Option>
-            </Select>
-          </FormItem>
-          <EntityTable
-            ref="entityTable"
-            :data="requestData"
-            :requestId="requestId"
-            :type="actionName"
-            isAdd
-            autoAddRow
-            style="width:calc(100% - 20px);margin-left:16px;"
-          ></EntityTable>
-          <div v-if="noRequestForm" class="no-data">暂未配置表单</div>
+          <div style="width:calc(100% - 20px);margin:0 0 12px 16px;">
+            <Divider style="margin: 0 0 30px 0" orientation="left">
+              <span class="sub-header">信息表单</span>
+            </Divider>
+            <CustomForm
+              v-model="form.customForm.value"
+              :options="form.customForm.title"
+              :requestId="requestId"
+            ></CustomForm>
+            <div v-if="Object.keys(form.customForm.value).length === 0" class="no-data">暂未配置表单</div>
+            <Divider style="margin: 20px 0 30px 0" orientation="left">
+              <span class="sub-header">数据表单</span>
+            </Divider>
+            <!--选择目标对象-->
+            <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+              <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
+                <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
+                  item.key_name
+                }}</Option>
+              </Select>
+            </FormItem>
+            <EntityTable
+              ref="entityTable"
+              :data="requestData"
+              :requestId="requestId"
+              :type="actionName"
+              isAdd
+              autoAddRow
+            ></EntityTable>
+            <div v-if="noRequestForm" class="no-data">暂未配置表单</div>
+          </div>
         </HeaderTitle>
         <!--审批流程-->
         <HeaderTitle v-if="approvalList.length > 0" title="审批流程">

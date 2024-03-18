@@ -34,7 +34,7 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('root_entity') }}
+              {{ $t('tw_data_form') }}
               <span class="underline"></span>
             </div>
           </div>
@@ -324,7 +324,7 @@
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
           <FormItem :label="$t('表单模版类型')">
-            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable>
+            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable clearable>
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
               </OptionGroup>
@@ -334,7 +334,7 @@
       </div>
       <template #footer>
         <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
-        <Button @click="okSelect" :disabled="itemGroup === ''" type="primary">{{ $t('confirm') }}</Button>
+        <Button @click="okSelect" :disabled="!itemGroup" type="primary">{{ $t('confirm') }}</Button>
       </template>
     </Modal>
     <!-- 自定义表单配置 -->

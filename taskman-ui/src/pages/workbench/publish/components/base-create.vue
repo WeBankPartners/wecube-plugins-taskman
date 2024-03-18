@@ -8,11 +8,11 @@
       </span>
     </Row>
     <div class="w-header">
-      <div class="progress">
+      <div class="w-header-progress">
         <!--请求进度-->
         <BaseProgress ref="progress"></BaseProgress>
       </div>
-      <div class="btn">
+      <div class="w-header-btn">
         <!--保存草稿-->
         <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
         <!--提交-->
@@ -819,11 +819,11 @@ export default {
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
     display: flex;
-    .progress {
+    &-progress {
       flex: 1;
     }
-    .btn {
-      width: 200px;
+    &-btn {
+      width: 220px;
       text-align: right;
     }
   }

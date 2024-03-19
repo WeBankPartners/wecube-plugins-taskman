@@ -487,8 +487,12 @@ export default {
       }
       const { statusCode } = await templateGiveMe(params)
       if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: 'Successful',
+          desc: 'Successful'
+        })
         this.getTemplateList()
-        // this.editTemplate(row)
+        this.editTemplate(row)
       }
     },
     // 确认发布

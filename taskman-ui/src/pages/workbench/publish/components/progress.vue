@@ -159,10 +159,6 @@ export default {
       if (statusCode === 'OK') {
         const { approvalProgress, requestProgress, taskProgress } = data
         this.progress.requestProgress = requestProgress || [] // 请求进度
-        this.progress.requestProgress.push({
-          node: 'confirm',
-          status: 1
-        })
         this.progress.approvalProgress = approvalProgress || [] // 审批进度
         this.progress.taskProgress = taskProgress || [] // 任务进度
         // 请求进度节点处理

@@ -83,6 +83,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/ids", Method: "GET", HandlerFunc: task.ListTaskTemplateIds},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "GET", HandlerFunc: task.ListTaskTemplates},
+		&handlerFuncObj{Url: "/task-template/workflow/options", Method: "GET", HandlerFunc: task.GetTaskTemplateWorkFlowOptions},
 
 		&handlerFuncObj{Url: "/user/template/collect", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},

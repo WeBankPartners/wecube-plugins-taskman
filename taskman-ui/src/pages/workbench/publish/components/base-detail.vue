@@ -129,20 +129,19 @@
             <Divider style="margin: 20px 0 30px 0" orientation="left">
               <span class="sub-header">数据表单</span>
             </Divider>
-            <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+            <FormItem
+              v-if="detail.associationWorkflow"
+              :label="$t('tw_choose_object')"
+              :label-width="lang === 'zh-CN' ? 110 : 150"
+              required
+            >
               <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
               </Select>
             </FormItem>
-            <EntityTable
-              v-if="form.data.length"
-              :data="form.data"
-              :requestId="requestId"
-              formDisable
-              style="width:calc(100% - 20px);margin-left:16px;"
-            ></EntityTable>
+            <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
             <div v-else class="no-data">暂未配置表单</div>
           </div>
         </HeaderTitle>
@@ -320,7 +319,8 @@ export default {
         all: '并行',
         admin: '提交人角色管理员',
         auto: '自动通过'
-      }
+      },
+      lang: window.localStorage.getItem('lang')
     }
   },
   computed: {

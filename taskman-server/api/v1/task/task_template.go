@@ -2,6 +2,8 @@ package task
 
 import (
 	"errors"
+	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
@@ -183,4 +185,45 @@ func ListTaskTemplates(c *gin.Context) {
 		return
 	}
 	middleware.ReturnData(c, result)
+}
+
+// GetTaskTemplateWorkFlowOptions 获取任务模版的编排节点选项配置
+func GetTaskTemplateWorkFlowOptions(c *gin.Context) {
+	var taskTemplate *models.TaskTemplateTable
+	var requestTemplate *models.RequestTemplateTable
+	var options []string
+	var err error
+	taskTemplateId := c.Query("taskTemplateId")
+	// 校验参数
+	if taskTemplateId == "" {
+		middleware.ReturnParamValidateError(c, errors.New("taskTemplateId param empty"))
+		return
+	}
+	taskTemplate, err = service.GetTaskTemplateService().Get(taskTemplateId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if taskTemplate == nil {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("taskTemplateId invalid"))
+		return
+	}
+	if taskTemplate.NodeId == "" {
+		middleware.ReturnSuccess(c)
+	}
+	requestTemplate, err = service.GetRequestTemplateService().GetRequestTemplate(taskTemplate.RequestTemplate)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if requestTemplate == nil {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("taskTemplateId invalid"))
+		return
+	}
+	options, err = rpc.GetProcessNodeAllowOptions(requestTemplate.ProcDefId, taskTemplate.NodeId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	middleware.ReturnData(c, options)
 }

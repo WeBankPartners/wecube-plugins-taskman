@@ -85,7 +85,12 @@
               <span class="sub-header">数据表单</span>
             </Divider>
             <!--选择目标对象-->
-            <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+            <FormItem
+              v-if="detail.associationWorkflow"
+              :label="$t('tw_choose_object')"
+              :label-width="lang === 'zh-CN' ? 110 : 150"
+              required
+            >
               <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
@@ -385,7 +390,8 @@ export default {
         auto: '自动通过'
       },
       userRoleList: [], // 用户角色列表
-      noRequestForm: false // 请求表单为空标识
+      noRequestForm: false, // 请求表单为空标识
+      lang: window.localStorage.getItem('lang')
     }
   },
   watch: {

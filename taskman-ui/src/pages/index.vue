@@ -3,23 +3,18 @@
     <div class="header">
       <Header></Header>
     </div>
-    <div class="taskman-content-container" :style="workbenchStyle">
+    <div class="taskman-content-container">
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
-      <WorkbenchMenu></WorkbenchMenu>
     </div>
   </div>
 </template>
 
 <script>
 import Header from '@/pages/components/header'
-import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
-import Vue from 'vue'
-Vue.prototype.$bus = new Vue()
 export default {
   components: {
-    WorkbenchMenu,
     Header
   },
   data () {
@@ -27,8 +22,7 @@ export default {
       isShowBreadcrum: true,
       allMenusAry: [],
       childBreadcrumb: '',
-      isSetting: this.$route.path.startsWith('/setting'),
-      expand: true
+      isSetting: this.$route.path.startsWith('/setting')
     }
   },
   watch: {
@@ -37,30 +31,6 @@ export default {
         this.setBreadcrumb()
       },
       immediate: true
-    }
-  },
-  computed: {
-    setBreadcrumbStyle () {
-      // 给侧边菜单栏适配样式
-      return {
-        margin: this.expandSideMenu ? '10px 0 10px 140px' : '10px 0'
-      }
-    },
-    workbenchStyle () {
-      return {
-        paddingLeft: this.expand ? '140px' : '0px'
-      }
-    }
-  },
-  mounted () {
-    if (this.$eventBusP) {
-      this.$eventBusP.$on('expand-menu', val => {
-        this.expand = val
-      })
-    } else {
-      this.$bus.$on('expand-menu', val => {
-        this.expand = val
-      })
     }
   },
   methods: {

@@ -54,7 +54,7 @@ const implicitRoute = {
     childBreadcrumb: { 'zh-CN': '请求管理', 'en-US': 'Request Management' }
   },
   // 个人工作台
-  'taskman/workbench': {
+  'taskman/workbench/dashboard': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
     childBreadcrumb: { 'zh-CN': '工作台', 'en-US': 'Dashboard' }
   },

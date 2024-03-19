@@ -109,8 +109,8 @@
         <template #prefix>
           <Icon type="md-add-circle" color="#2d8cf0" :size="24"></Icon>
         </template>
-        <template v-for="(i, index) in addRowSourceOptions">
-          <Option :key="index" :value="i.id">{{ i.displayName }}</Option>
+        <template v-for="i in addRowSourceOptions">
+          <Option :key="i.id" :value="i.id">{{ i.displayName }}</Option>
         </template>
       </Select>
     </div>
@@ -202,7 +202,7 @@ export default {
             }
             // 备份编排类表单初始下发value
             if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
-              this.worklfowData = item.value || []
+              this.worklfowData = deepClone(item.value || [])
             }
           })
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
@@ -242,9 +242,9 @@ export default {
 
       this.activeTab = item.entity || item.itemGroup
       this.activeItem = item
-      this.initTableData()
       this.addRowSource = ''
       this.addRowSourceOptions = []
+      this.initTableData()
     }, 100),
     async initTableData () {
       // 当前选择tab数据
@@ -379,7 +379,7 @@ export default {
       }
     },
     // 获取自定义计算分析类型的值
-    async getExpressionData (titleObj, value, index) {
+    async getExpressionData (titleObj, value) {
       const { statusCode, data } = await getExpressionData(titleObj.id, value.dataId)
       if (statusCode === 'OK') {
         const displayNameArr = data.map(item => {

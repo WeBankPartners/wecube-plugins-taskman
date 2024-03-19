@@ -138,13 +138,7 @@
 
 <script>
 // import Vue from 'vue'
-import {
-  getUserRoles,
-  getHandlerRoles,
-  updateApprovalNode,
-  getApprovalNodeById,
-  deleteGroupsByNodeid
-} from '@/api/server'
+import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -292,14 +286,7 @@ export default {
         } else if (type === 2) {
           this.$emit('reloadParentPage', nextNodeId)
         }
-        if (['admin'].includes(this.activeApprovalNode.handleMode)) {
-          this.removeNodeGroups()
-        }
       }
-    },
-    // 在无需表单配置的场景下，删除节点下的组
-    async removeNodeGroups () {
-      deleteGroupsByNodeid(this.requestTemplateId, this.activeApprovalNode.id)
     },
     // 为父页面提供状态查询
     panalStatus () {

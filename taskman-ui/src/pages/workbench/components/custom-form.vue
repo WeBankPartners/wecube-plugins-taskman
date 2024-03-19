@@ -36,7 +36,7 @@
                 :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
                 :options="entityData[i.name + 'Options']"
                 :disabled="i.isEdit === 'no' || disabled"
-                :multiple="i.multiple === 'Y'"
+                :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
                 style="width:100%;"
               >
               </LimitSelect>

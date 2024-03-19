@@ -87,8 +87,8 @@ export default {
         component: 'input'
       },
       {
-        key: 'taskCreatedTime',
-        label: '任务创建',
+        key: 'taskHandleUpdatedTime',
+        label: '任务更新',
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
@@ -114,8 +114,8 @@ export default {
       this.baseSearch.name,
       this.baseSearch.status,
       {
-        key: 'taskCreatedTime',
-        label: '任务创建',
+        key: 'taskHandleUpdatedTime',
+        label: '任务更新',
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,

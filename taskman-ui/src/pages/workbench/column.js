@@ -431,10 +431,10 @@ export default {
         }
       },
       {
-        title: '任务创建',
+        title: '任务更新',
         sortable: 'custom',
         minWidth: 150,
-        key: 'taskCreatedTime'
+        key: 'taskHandleUpdatedTime'
       },
       {
         title: '任务截止',

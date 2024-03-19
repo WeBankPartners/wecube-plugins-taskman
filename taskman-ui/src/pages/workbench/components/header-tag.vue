@@ -4,22 +4,24 @@
       <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
       <Col :span="2" class="line">{{ $t('handler') }}</Col>
       <Col :span="2" class="line">{{ $t('t_action') }}</Col>
-      <Col :span="4" class="line">{{ $t('handle_time') }}</Col>
+      <Col :span="2" class="line">{{ '处理状态' }}</Col>
+      <Col :span="3" class="line">{{ $t('handle_time') }}</Col>
       <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
-      <Col :span="5" class="line">{{ $t('tw_attach') }}</Col>
+      <Col :span="4" class="line">{{ $t('tw_attach') }}</Col>
     </Row>
     <template v-if="data.taskHandleList && data.taskHandleList.length > 0">
       <Row v-for="i in data.taskHandleList" :key="i.id" class="content" :gutter="10">
         <Col :span="3" class="line">{{ i.role || '-' }}</Col>
         <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
         <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
-        <Col :span="4" class="line">{{ i.updatedTime }}</Col>
+        <Col :span="2" class="line">{{ getHandleStatus(i) }}</Col>
+        <Col :span="3" class="line">{{ i.updatedTime }}</Col>
         <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
         <Col :span="5" class="line"
           ><div class="text-overflow">{{ i.resultDesc || '-' }}</div></Col
         >
-        <Col :span="5" class="line">
+        <Col :span="4" class="line">
           <div v-for="file in i.attachFiles" style="display:inline-block;" :key="file.id">
             <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
               file.name
@@ -98,6 +100,20 @@ export default {
           statusName = statusMap[i.handleStatus]
         }
         return resultName || statusName || this.operation || '-'
+      }
+    },
+    getHandleStatus () {
+      return function (i) {
+        // handleStatus 自定义任务前端枚举
+        const statusMap = {
+          complete: '完成',
+          uncompleted: this.$t('tw_incomplete')
+        }
+        let statusName = ''
+        if (this.data.type === 'implement_custom') {
+          statusName = statusMap[i.handleStatus]
+        }
+        return statusName || '-'
       }
     },
     getDiffTime () {

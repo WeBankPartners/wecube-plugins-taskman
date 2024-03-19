@@ -14,7 +14,7 @@
         }"
         :style="activeStyle(item)"
       >
-        {{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span>
+        {{ `${item.itemGroupName}` }}<span class="count">{{ item.value.length }}</span>
       </div>
     </div>
     <div class="form-table">
@@ -56,7 +56,7 @@
                     :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
                     :options="value[i.name + 'Options']"
                     :disabled="i.isEdit === 'no' || formDisable"
-                    :multiple="i.multiple === 'Y'"
+                    :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
                     style="width: calc(100% - 20px)"
                     @open-change="handleSelectOpenChange(i, value, index)"
                   >

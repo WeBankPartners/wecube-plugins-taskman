@@ -1,4 +1,5 @@
 {
+  "logout": "注销",
   "help_docs": "帮助文档",
   "tw_template_group_mgmt": "模版组管理",
   "tw_template_mgmt": "模版管理",
@@ -347,5 +348,6 @@
   "tw_entity_data_items": "模型数据项",
   "tw_configuration_form": "配置表单",
   "tw_completed": "已完成",
-  "tw_incomplete": "未完成"
+  "tw_incomplete": "未完成",
+  "tw_user_mgmt": "用户管理"
 }

@@ -10,6 +10,7 @@ if (window.request) {
     patch: (url, ...params) => pluginErrorMessage(window.request.patch(baseURL + url, ...params))
   }
 }
+export const login = data => req.post('/auth/v1/api/login', data)
 
 export const getTempGroupList = data => req.post('/taskman/api/v1/request-template-group/query', data)
 export const createTempGroup = data => req.post('/taskman/api/v1/request-template-group', data)

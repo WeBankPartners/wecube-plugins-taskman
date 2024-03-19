@@ -25,7 +25,7 @@
   </div>
 </template>
 <script>
-// import { login } from '@/api/server'
+import { login } from '@/api/server'
 export default {
   data () {
     return {
@@ -36,20 +36,25 @@ export default {
   },
   methods: {
     async login () {
-      this.$router.push('/taskman/workbench')
-      // if (!this.username || !this.password) return
-      // this.loading = true
-      // const payload = {
-      //   username: this.username,
-      //   password: this.password
-      // }
-      // const { status, data } = await login(payload)
-      // if (status === 'OK') {
-      //   let localStorage = window.localStorage
-      //   localStorage.setItem('username', this.username)
-      //   this.$router.push('/homepage')
-      // }
-      // this.loading = false
+      if (!this.username || !this.password) return
+      this.loading = true
+      const payload = {
+        username: this.username,
+        password: this.password
+      }
+      console.log(33, payload)
+      const { status, data } = await login(payload)
+      if (status === 'OK') {
+        console.log(data)
+        localStorage.setItem('username', this.username)
+        const accessTokenObj = data.find(d => d.tokenType === 'accessToken')
+        const refreshTokenObj = data.find(d => d.tokenType === 'refreshToken')
+        localStorage.setItem('taskman-accessToken', accessTokenObj.token)
+        localStorage.setItem('taskman-refreshToken', refreshTokenObj.token)
+        localStorage.setItem('taskman-expiration', refreshTokenObj.expiration)
+        this.$router.push('/taskman/workbench')
+      }
+      this.loading = false
     },
     clearSession () {
       let localStorage = window.localStorage

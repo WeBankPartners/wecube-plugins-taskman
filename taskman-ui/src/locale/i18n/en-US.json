@@ -1,4 +1,5 @@
 {
+  "logout": "Logout",
   "help_docs": "Help",
   "tw_template_group_mgmt": "Template Group",
   "tw_template_mgmt": "Template Management",
@@ -347,5 +348,6 @@
   "tw_entity_data_items": "Entity data items",
   "tw_configuration_form": "Configuration Form",
   "tw_completed": "Completed",
-  "tw_incomplete": "Incomplete"
+  "tw_incomplete": "Incomplete",
+  "tw_user_mgmt": "User Management"
 }

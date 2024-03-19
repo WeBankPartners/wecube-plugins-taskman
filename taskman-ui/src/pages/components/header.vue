@@ -7,8 +7,8 @@
             <img src="../../images/taskman.png" alt="LOGO" class="img-logo" />
           </div>
           <div>
-            <MenuItem v-for="menu in menus" :name="menu.path" :key="menu.path">
-              {{ menu.name }}
+            <MenuItem v-for="menu in menus" :name="menu.name" :key="menu.path">
+              {{ menu.display }}
             </MenuItem>
           </div>
         </Menu>
@@ -24,6 +24,11 @@
                   {{ $t('change_password') }}
                 </a>
               </DropdownItem> -->
+              <DropdownItem name="userMgmt">
+                <a @click="userMgmt" style="width: 100%; display: block">
+                  {{ $t('tw_user_mgmt') }}
+                </a>
+              </DropdownItem>
               <DropdownItem name="logout" to="/login">
                 <a @click="logout" style="width: 100%; display: block">
                   {{ $t('logout') }}
@@ -76,23 +81,28 @@ export default {
       },
       menus: [
         {
-          name: this.$t('tw_workbench'),
+          display: this.$t('tw_workbench'),
+          name: '/taskman/workbench',
           path: '/taskman/workbench'
         },
         {
-          name: this.$t('tw_template_group_mgmt'),
+          display: this.$t('tw_template_group_mgmt'),
+          name: '/taskman/template-group',
           path: '/taskman/template-group'
         },
         {
-          name: this.$t('tw_template_mgmt'),
+          display: this.$t('tw_template_mgmt'),
+          name: '/taskman/template-mgmt',
           path: '/taskman/template-mgmt'
         },
         {
-          name: this.$t('tw_request_mgmt'),
+          display: this.$t('tw_request_mgmt'),
+          name: '/taskman/request-mgmt',
           path: '/taskman/request-mgmt'
         },
         {
-          name: this.$t('tw_task_mgmt'),
+          display: this.$t('tw_task_mgmt'),
+          name: '/taskman/task-mgmt',
           path: '/taskman/task-mgmt'
         }
       ],
@@ -108,6 +118,13 @@ export default {
   watch: {
     $lang: async function (lang) {
       window.location.reload()
+    },
+    $route: {
+      handler (val) {
+        console.log(77, val)
+        this.activeName = val.name
+      },
+      immediate: true
     }
   },
   methods: {
@@ -115,7 +132,14 @@ export default {
       console.log(path)
       this.$router.push({ path: path })
     },
+    userMgmt () {
+      console.log(123)
+    },
     logout () {
+      localStorage.removeItem('username')
+      localStorage.removeItem('taskman-accessToken')
+      localStorage.removeItem('taskman-refreshToken')
+      localStorage.removeItem('taskman-expiration')
       window.location.href = window.location.origin + window.location.pathname + '#/login'
     },
     changeLanguage (lan) {
@@ -179,18 +203,18 @@ export default {
     }
     .ivu-menu-item-active,
     .ivu-menu-item:hover {
-      color: #116ef9;
+      color: #116ef9 !important;
     }
     .ivu-menu-dark.ivu-menu-horizontal .ivu-menu-submenu-active,
     .ivu-menu-dark.ivu-menu-horizontal .ivu-menu-submenu:hover {
       color: #116ef9;
     }
-    .ivu-menu-drop-list {
-      .ivu-menu-item-active,
-      .ivu-menu-item:hover {
-        color: black;
-      }
-    }
+    // .ivu-menu-drop-list {
+    //   .ivu-menu-item-active,
+    //   .ivu-menu-item:hover {
+    //     color: black;
+    //   }
+    // }
   }
   .header-right_container {
     position: absolute;

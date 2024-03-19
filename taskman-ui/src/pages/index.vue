@@ -1,5 +1,8 @@
 <template>
   <div id="taskman">
+    <div class="header">
+      <Header></Header>
+    </div>
     <div class="taskman-content-container" :style="workbenchStyle">
       <transition name="fade" mode="out-in">
         <router-view></router-view>
@@ -10,12 +13,14 @@
 </template>
 
 <script>
+import Header from '@/pages/components/header'
 import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
 import Vue from 'vue'
 Vue.prototype.$bus = new Vue()
 export default {
   components: {
-    WorkbenchMenu
+    WorkbenchMenu,
+    Header
   },
   data () {
     return {

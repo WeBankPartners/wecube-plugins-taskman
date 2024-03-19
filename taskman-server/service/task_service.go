@@ -1670,15 +1670,23 @@ func (s *TaskService) GetDoingTask(requestId, templateId string) (task *models.T
 	return
 }
 
-func (s *TaskService) GetTaskMapByRequestId(requestId string) (taskMap map[string]*models.TaskTable, err error) {
+// GetTaskMapByRequestId 取最后一次任务提交之前的数据
+func (s *TaskService) GetTaskMapByRequestId(request models.RequestTable) (taskMap map[string]*models.TaskTable, err error) {
 	var taskList []*models.TaskTable
 	taskMap = make(map[string]*models.TaskTable)
-	err = dao.X.SQL("select * from task where request = ? and del_flag = 0 order by sort desc", requestId).Find(&taskList)
+	if request.Status == string(models.RequestStatusDraft) {
+		return
+	}
+	err = dao.X.SQL("select * from task where request = ? and del_flag = 0 order by sort desc", request.Id).Find(&taskList)
 	if err != nil {
 		return
 	}
 	if len(taskList) > 0 {
 		for _, task := range taskList {
+			if task.Type == string(models.TaskTypeSubmit) {
+				taskList = append(taskList, task)
+				break
+			}
 			if task.TaskTemplate != "" {
 				if _, ok := taskMap[task.TaskTemplate]; !ok {
 					taskMap[task.TaskTemplate] = task

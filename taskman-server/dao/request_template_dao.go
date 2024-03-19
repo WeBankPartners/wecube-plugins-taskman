@@ -78,3 +78,8 @@ func (d *RequestTemplateDao) Get(requestTemplateId string) (*models.RequestTempl
 	}
 	return nil, nil
 }
+
+func (d *RequestTemplateDao) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
+	err = d.DB.Where("name = ?", name).Find(&list)
+	return
+}

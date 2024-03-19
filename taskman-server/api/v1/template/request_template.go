@@ -32,12 +32,24 @@ func QueryRequestTemplate(c *gin.Context) {
 
 func CreateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var err error
+	var list []*models.RequestTemplateTable
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if err := validateRequestTemplateParam(&param); err != nil {
+	if err = validateRequestTemplateParam(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	// 校验名称是否重复
+	list, err = service.GetRequestTemplateService().QueryListByName(param.Name)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if len(list) > 0 {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("name repeat"))
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
@@ -150,7 +162,9 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 func UpdateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
 	var result models.RequestTemplateQueryObj
+	var list []*models.RequestTemplateTable
 	var err error
+	var repeatFlag = true
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -167,6 +181,24 @@ func UpdateRequestTemplate(c *gin.Context) {
 	err = service.GetRequestTemplateService().CheckPermission(param.Id, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	// 校验名称重复
+	list, err = service.GetRequestTemplateService().QueryListByName(param.Name)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if len(list) > 0 {
+		for _, template := range list {
+			// 说明是 相同模版的不同版本
+			if template.Id == param.RecordId {
+				repeatFlag = false
+			}
+		}
+	}
+	if repeatFlag {
+		middleware.ReturnServerHandleError(c, fmt.Errorf("name repeat"))
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)

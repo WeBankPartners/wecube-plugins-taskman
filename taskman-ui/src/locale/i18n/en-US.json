@@ -349,5 +349,10 @@
   "tw_configuration_form": "Configuration Form",
   "tw_completed": "Completed",
   "tw_incomplete": "Incomplete",
-  "tw_user_mgmt": "User Management"
+  "tw_user_mgmt": "User Management",
+  "tw_apply": "Apply",
+  "tw_apply_success": "Application successful.",
+  "tw_apply_roles": "Apply Roles",
+  "tw_email": "Email",
+  "tw_email_incorrect_format": "Incorrect email format"
 }

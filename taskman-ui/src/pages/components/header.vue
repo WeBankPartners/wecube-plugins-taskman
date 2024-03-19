@@ -4,7 +4,7 @@
       <div class="menus">
         <Menu mode="horizontal" theme="dark" :active-name="activeName" @on-select="changeMenu">
           <div>
-            <img src="../../images/taskman.png" alt="LOGO" class="img-logo" />
+            <img @click="goHome" src="../../images/taskman.png" alt="LOGO" class="img-logo" />
           </div>
           <div>
             <MenuItem v-for="menu in menus" :name="menu.name" :key="menu.path">
@@ -65,9 +65,11 @@
         <!-- <div class="version">{{ version }}</div> -->
       </div>
     </Header>
+    <UserMgmt ref="userMgmtRef"></UserMgmt>
   </div>
 </template>
 <script>
+import UserMgmt from './user-mgmt.vue'
 import Vue from 'vue'
 export default {
   data () {
@@ -94,16 +96,6 @@ export default {
           display: this.$t('tw_template_mgmt'),
           name: '/taskman/template-mgmt',
           path: '/taskman/template-mgmt'
-        },
-        {
-          display: this.$t('tw_request_mgmt'),
-          name: '/taskman/request-mgmt',
-          path: '/taskman/request-mgmt'
-        },
-        {
-          display: this.$t('tw_task_mgmt'),
-          name: '/taskman/task-mgmt',
-          path: '/taskman/task-mgmt'
         }
       ],
       needLoad: true,
@@ -121,7 +113,6 @@ export default {
     },
     $route: {
       handler (val) {
-        console.log(77, val)
         this.activeName = val.name
       },
       immediate: true
@@ -129,10 +120,13 @@ export default {
   },
   methods: {
     changeMenu (path) {
-      console.log(path)
       this.$router.push({ path: path })
     },
+    goHome () {
+      this.$router.push({ path: '/taskman/workbench' })
+    },
     userMgmt () {
+      this.$refs.userMgmtRef.openModal()
       console.log(123)
     },
     logout () {
@@ -155,6 +149,9 @@ export default {
     changeDocs () {
       window.open('http://webankpartners.gitee.io/wecube-docs')
     }
+  },
+  components: {
+    UserMgmt
   }
 }
 </script>

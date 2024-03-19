@@ -56,6 +56,7 @@ export default {
 }
 .taskman-content-container {
   height: calc(100% - 50px);
+  padding: 10px 20px;
 }
 </style>
 <style lang="scss">

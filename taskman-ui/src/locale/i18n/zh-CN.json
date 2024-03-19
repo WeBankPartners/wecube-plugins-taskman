@@ -349,5 +349,10 @@
   "tw_configuration_form": "配置表单",
   "tw_completed": "已完成",
   "tw_incomplete": "未完成",
-  "tw_user_mgmt": "用户管理"
+  "tw_user_mgmt": "用户管理",
+  "tw_apply": "申请",
+  "tw_apply_success": "申请成功",
+  "tw_apply_roles": "申请角色",
+  "tw_email": "邮箱",
+  "tw_email_incorrect_format": "邮箱格式错误"
 }

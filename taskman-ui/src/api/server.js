@@ -11,6 +11,9 @@ if (window.request) {
   }
 }
 export const login = data => req.post('/auth/v1/api/login', data)
+// 获取可申请角色列表
+export const getApplyRoles = data => req.get(`/auth/v1/roles?all=${data.all}&roleAdmin=${data.roleAdmin}`)
+export const startApply = data => req.post('/auth/v1/roles/apply', data)
 
 export const getTempGroupList = data => req.post('/taskman/api/v1/request-template-group/query', data)
 export const createTempGroup = data => req.post('/taskman/api/v1/request-template-group', data)

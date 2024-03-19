@@ -221,3 +221,7 @@ export const getTargetOptions = (pkgName, entityName) =>
   })
 export const getEntityRefsByPkgNameAndEntityName = (pkgName, entityName) =>
   req.get(`/taskman/api/v1/models/package/${pkgName}/entity/${entityName}`)
+
+// 获取编排下的判断分支
+export const getWorkflowForkNode = taskTemplateId =>
+  req.get(`/taskman/api/v1/task-template/workflow/options?taskTemplateId=${taskTemplateId}`)

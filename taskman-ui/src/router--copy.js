@@ -10,52 +10,44 @@ export default new Router({
       component: () => import('@/login')
     },
     {
-      path: '/',
-      name: 'home',
-      redirect: '/homepage',
-      component: () => import('@/pages/index'),
-      children: [
-        {
-          path: '/taskman/template-mgmt',
-          name: '/taskman/template-mgmt',
-          component: () => import('@/pages/template')
-        },
-        {
-          path: '/taskman/template-group',
-          name: '/taskman/template-group',
-          component: () => import('@/pages/template-group')
-        },
-        {
-          path: '/templateManagementIndex',
-          name: 'templateManagementIndex',
-          component: () => import('@/pages/temp-management/index')
-        },
-        {
-          path: '/taskman/request-mgmt',
-          name: '/taskman/request-mgmt',
-          component: () => import('@/pages/request')
-        },
-        {
-          path: '/taskman/task-mgmt',
-          name: '/taskman/task-mgmt',
-          component: () => import('@/pages/task')
-        },
-        {
-          path: '/taskMgmtIndex',
-          name: 'taskMgmtIndex',
-          component: () => import('@/pages/task-mgmt/index')
-        },
-        {
-          path: '/requestCheck',
-          name: 'requestCheck',
-          component: () => import('@/pages/request-management/request-check')
-        },
-        {
-          path: '/requestManagementIndex',
-          name: 'requestManagementIndex',
-          component: () => import('@/pages/request-management/index')
-        }
-      ]
+      path: '/taskman/template-mgmt',
+      name: '/taskman/template-mgmt',
+      component: () => import('@/pages/template')
+    },
+    {
+      path: '/taskman/template-group',
+      name: '/taskman/template-group',
+      component: () => import('@/pages/template-group')
+    },
+    {
+      path: '/templateManagementIndex',
+      name: 'templateManagementIndex',
+      component: () => import('@/pages/temp-management/index')
+    },
+    {
+      path: '/taskman/request-mgmt',
+      name: '/taskman/request-mgmt',
+      component: () => import('@/pages/request')
+    },
+    {
+      path: '/taskman/task-mgmt',
+      name: '/taskman/task-mgmt',
+      component: () => import('@/pages/task')
+    },
+    {
+      path: '/taskMgmtIndex',
+      name: 'taskMgmtIndex',
+      component: () => import('@/pages/task-mgmt/index')
+    },
+    {
+      path: '/requestCheck',
+      name: 'requestCheck',
+      component: () => import('@/pages/request-management/request-check')
+    },
+    {
+      path: '/requestManagementIndex',
+      name: 'requestManagementIndex',
+      component: () => import('@/pages/request-management/index')
     },
     // 工作台子页面路由需要以/taskman/workbench为前缀，有些判断条件是以/taskman/workbench写死判断的
     {

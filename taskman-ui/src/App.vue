@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <!-- <div class="header">
+    <div class="header">
       <Header></Header>
-    </div> -->
+    </div>
     <div class="app-content-container">
       <BackTop :height="100" :bottom="100" />
       <router-view :key="$route.path" />
@@ -10,11 +10,11 @@
   </div>
 </template>
 <script>
-// import Header from './pages/components/header'
+import Header from './pages/components/header'
 export default {
-  // components: {
-  //   Header
-  // },
+  components: {
+    Header
+  },
   methods: {
     jump (path) {
       this.$router.push({ path: path })

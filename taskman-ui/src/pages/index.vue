@@ -1,15 +1,6 @@
 <template>
   <div id="taskman">
-    <div class="header">
-      <Header></Header>
-    </div>
     <div class="taskman-content-container" :style="workbenchStyle">
-      <Breadcrumb :style="setBreadcrumbStyle" v-if="isShowBreadcrum">
-        <BreadcrumbItem
-          ><a @click="homePageClickHandler">{{ $t('home') }}</a></BreadcrumbItem
-        >
-        <BreadcrumbItem>{{ childBreadcrumb }}</BreadcrumbItem>
-      </Breadcrumb>
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
@@ -19,14 +10,12 @@
 </template>
 
 <script>
-import Header from '@/pages/components/header'
 import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
 import Vue from 'vue'
 Vue.prototype.$bus = new Vue()
 export default {
   components: {
-    WorkbenchMenu,
-    Header
+    WorkbenchMenu
   },
   data () {
     return {
@@ -46,6 +35,12 @@ export default {
     }
   },
   computed: {
+    setBreadcrumbStyle () {
+      // 给侧边菜单栏适配样式
+      return {
+        margin: this.expandSideMenu ? '10px 0 10px 140px' : '10px 0'
+      }
+    },
     workbenchStyle () {
       return {
         paddingLeft: this.expand ? '140px' : '0px'

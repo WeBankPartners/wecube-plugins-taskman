@@ -597,6 +597,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					platformDataObj.Version = template.Version
 				}
 			}
+			// 获取当前节点和计算请求进度
 			platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.Id, platformDataObj.ProcInstanceId, req.UserToken, language)
 			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken, language)
@@ -725,6 +726,7 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 	return status
 }
 
+// getCurNodeName 获取当前节点和计算请求进度
 func getCurNodeName(requestId, instanceId, userToken, language string) (progress int, curNode string) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var doneTaskList []*models.TaskTable
@@ -734,10 +736,11 @@ func getCurNodeName(requestId, instanceId, userToken, language string) (progress
 	request, _ = GetSimpleRequest(requestId)
 	doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(request)
 	if len(taskTemplateList) > 0 {
-		progress = int(math.Floor(float64(len(doneTaskList))/float64(len(taskTemplateList))*100 + 0.5))
+		// 分母+1,统计已完成节点
+		progress = int(math.Floor(float64(len(doneTaskList))/float64(len(taskTemplateList)+1)*100 + 0.5))
 	}
 	if instanceId == "" {
-		// 无编排
+		// 无编排实例
 		switch request.Status {
 		case string(models.RequestStatusDraft):
 			curNode = WaitCommit
@@ -1001,7 +1004,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	if err != nil {
 		return
 	}
-	taskMap, err = GetTaskService().GetTaskMapByRequestId(requestId)
+	taskMap, err = GetTaskService().GetTaskMapByRequestId(request)
 	if err != nil {
 		return
 	}

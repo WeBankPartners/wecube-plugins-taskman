@@ -1205,7 +1205,7 @@ func (s *RequestTemplateService) getLatestVersionTemplate(requestTemplateList, a
 		}
 		resultMap[requestTemplate.Id] = latestTemplate
 		// 如果最新版本是创建状态,需要记录上一个版本模板
-		if latestTemplate.Status == "created" && latestTemplate.RecordId != "" {
+		if (latestTemplate.Status == string(models.RequestTemplateStatusCreated) || latestTemplate.Status == string(models.RequestTemplateStatusPending)) && latestTemplate.RecordId != "" {
 			resultMap[latestTemplate.RecordId] = allTemplateMap[latestTemplate.RecordId]
 		}
 	}
@@ -1676,4 +1676,8 @@ func (s *RequestTemplateService) GetConfirmCount(user, userToken, language strin
 		}
 	}
 	return
+}
+
+func (s *RequestTemplateService) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
+	return s.requestTemplateDao.QueryListByName(name)
 }

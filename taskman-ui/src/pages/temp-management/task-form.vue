@@ -1183,11 +1183,11 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if ([3, 9].includes(nextStep)) {
+        } else if ([3].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
-        } else if (nextStep === 4) {
+        } else if ([4, 9].includes(nextStep)) {
           // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
           this.getApprovalNodeGroups(this.activeEditingNode)

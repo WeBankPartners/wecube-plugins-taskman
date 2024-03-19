@@ -244,7 +244,11 @@
                   <div style="margin: 12px 0 0 8px;">
                     <Form :label-width="90">
                       <FormItem :label="$t('判断分支')" v-if="procDefId !== ''">
-                        <Select style="width:94%"> </Select>
+                        <Select style="width:94%" @on-open-change="getWorkflowForkNode">
+                          <Option v-for="(fork, forkIndex) in forkOptions" :value="fork" :key="forkIndex">{{
+                            fork
+                          }}</Option>
+                        </Select>
                       </FormItem>
                       <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
@@ -496,7 +500,8 @@ import {
   deleteRequestGroupForm,
   getAllDataModels,
   saveRequestGroupCustomForm,
-  submitTemplate
+  submitTemplate,
+  getWorkflowForkNode
 } from '@/api/server.js'
 export default {
   name: 'BasicInfo',
@@ -749,7 +754,8 @@ export default {
       itemGroup: '', // 选中的组信息
       nextNodeInfo: {}, // 缓存待切换节点信息
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
-      nextGroupInfo: {}
+      nextGroupInfo: {},
+      forkOptions: [] // 判断分支列表
     }
   },
   computed: {
@@ -1177,11 +1183,11 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if ([3, 9].includes(nextStep)) {
+        } else if ([3].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
-        } else if (nextStep === 4) {
+        } else if ([4, 9].includes(nextStep)) {
           // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
           this.getApprovalNodeGroups(this.activeEditingNode)
@@ -1293,6 +1299,12 @@ export default {
     // 控制配置显示状态
     changeFormConfigStatus (status) {
       this.isShowFormConfig = status
+    },
+    async getWorkflowForkNode () {
+      const { data, statusCode } = await getWorkflowForkNode(this.activeEditingNode.id)
+      if (statusCode === 'OK') {
+        this.forkOptions = data || []
+      }
     }
   },
   components: {

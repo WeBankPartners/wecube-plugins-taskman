@@ -678,6 +678,7 @@ export default {
           let res = await forkTemplate(row.id)
           if (res.statusCode === 'OK') {
             this.success()
+            this.status = 'created'
             this.getTemplateList()
           }
         },
@@ -789,13 +790,21 @@ export default {
       this.modalShow = row.id
     },
     async disableInit () {
-      await disableTemplate(this.modalShow)
+      const res = await disableTemplate(this.modalShow)
       this.modalShow = false
-      this.getTemplateList()
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.status = 'disable'
+        this.getTemplateList()
+      }
     },
     async enableTemplate (row) {
-      await enableTemplate(row.id)
-      this.getTemplateList()
+      const res = await enableTemplate(row.id)
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.status = 'confirm'
+        this.getTemplateList()
+      }
     },
     async getConfirmCount () {
       const { statusCode, data } = await templateConfirmCount()

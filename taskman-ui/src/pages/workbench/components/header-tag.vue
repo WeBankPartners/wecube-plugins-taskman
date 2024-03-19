@@ -69,26 +69,35 @@ export default {
   },
   data () {
     return {
-      headers: {},
-      approvalOperation: {
-        deny: '拒绝',
-        approve: '同意',
-        redraw: '退回',
-        complete: '完成',
-        uncompleted: this.$t('tw_incomplete')
-      }
+      headers: {}
     }
   },
   computed: {
     getOperationName () {
       return function (i) {
-        let name = ''
-        if (['approve', 'check', 'implement_custom'].includes(this.data.type)) {
-          name = this.approvalOperation[i.handleResult]
-        } else if (this.data.type === 'implement_process') {
-          name = i.handleResult
+        // handleResult 1.编排任务系统下操作显示，2审批和定版退回，前端枚举
+        const resultMap = {
+          deny: '拒绝',
+          approve: '同意',
+          redraw: '退回'
         }
-        return name || this.operation || '-'
+        let resultName = ''
+        if (['approve', 'check'].includes(this.data.type)) {
+          resultName = resultMap[i.handleResult]
+        }
+        if (this.data.type === 'implement_process') {
+          resultName = i.handleResult
+        }
+        // handleStatus 自定义任务前端枚举
+        const statusMap = {
+          complete: '完成',
+          uncompleted: this.$t('tw_incomplete')
+        }
+        let statusName = ''
+        if (this.data.type === 'implement_custom') {
+          statusName = statusMap[i.handleStatus]
+        }
+        return resultName || statusName || this.operation || '-'
       }
     },
     getDiffTime () {

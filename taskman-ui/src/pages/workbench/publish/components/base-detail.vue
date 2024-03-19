@@ -25,7 +25,7 @@
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
                 <div class="info-item-value">
-                  {{ { 2: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '-' }}
+                  {{ typeMap[detail.requestType] || '-' }}
                 </div>
               </Col>
             </Row>
@@ -319,6 +319,13 @@ export default {
         all: '并行',
         admin: '提交人角色管理员',
         auto: '自动通过'
+      },
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: '问题',
+        4: '事件',
+        5: '变更'
       },
       lang: window.localStorage.getItem('lang')
     }

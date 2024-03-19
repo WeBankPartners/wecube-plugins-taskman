@@ -86,13 +86,10 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 		for i := param.Sort; i < len(taskTemplates)+1; i++ {
 			t := taskTemplates[i-1]
 			t.Sort += 1
+			t.UpdatedBy = operator
+			t.UpdatedTime = nowTime
 
-			updateTaskTemplate := &models.TaskTemplateTable{
-				Id:          t.Id,
-				Sort:        t.Sort,
-				UpdatedBy:   operator,
-				UpdatedTime: nowTime,
-			}
+			updateTaskTemplate := t
 			updateTaskTemplates = append(updateTaskTemplates, updateTaskTemplate)
 		}
 	}
@@ -304,15 +301,13 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 	}
 	// 更新任务模板
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	updateTaskTemplate := &models.TaskTemplateTable{
-		Id:          param.Id,
-		Name:        param.Name,
-		Description: param.Description,
-		ExpireDay:   param.ExpireDay,
-		UpdatedBy:   operator,
-		UpdatedTime: nowTime,
-		HandleMode:  param.HandleMode,
-	}
+	taskTemplate.Name = param.Name
+	taskTemplate.Description = param.Description
+	taskTemplate.ExpireDay = param.ExpireDay
+	taskTemplate.UpdatedBy = operator
+	taskTemplate.UpdatedTime = nowTime
+	taskTemplate.HandleMode = param.HandleMode
+	updateTaskTemplate := taskTemplate
 	// 更新任务处理模板
 	deleteTaskHandleTemplateAll := false
 	var deleteTaskHandleTemplateIds []string
@@ -330,14 +325,12 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 		for i, taskHandleTemplate := range taskHandleTemplates {
 			if i < len(param.HandleTemplates) {
 				newHandleTemplate := param.HandleTemplates[i]
-				updateTaskTemplate := &models.TaskHandleTemplateTable{
-					Id:          taskHandleTemplate.Id,
-					Assign:      newHandleTemplate.Assign,
-					HandlerType: newHandleTemplate.HandlerType,
-					Role:        newHandleTemplate.Role,
-					Handler:     newHandleTemplate.Handler,
-					HandleMode:  param.HandleMode,
-				}
+				taskHandleTemplate.Assign = newHandleTemplate.Assign
+				taskHandleTemplate.HandlerType = newHandleTemplate.HandlerType
+				taskHandleTemplate.Role = newHandleTemplate.Role
+				taskHandleTemplate.Handler = newHandleTemplate.Handler
+				taskHandleTemplate.HandleMode = param.HandleMode
+				updateTaskTemplate := taskHandleTemplate
 				updateTaskHandleTemplates = append(updateTaskHandleTemplates, updateTaskTemplate)
 			} else {
 				deleteTaskHandleTemplateIds = append(deleteTaskHandleTemplateIds, taskHandleTemplate.Id)
@@ -433,10 +426,9 @@ func (s *TaskTemplateService) DeleteTaskTemplate(requestTemplateId, id string) (
 	var updateTaskTemplates []*models.TaskTemplateTable
 	if taskTemplate.Sort != len(taskTemplates) {
 		for i := taskTemplate.Sort; i < len(taskTemplates); i++ {
-			updateTaskTemplate := &models.TaskTemplateTable{
-				Id:   taskTemplates[i].Id,
-				Sort: i,
-			}
+			t := taskTemplates[i-1]
+			t.Sort = i
+			updateTaskTemplate := t
 			updateTaskTemplates = append(updateTaskTemplates, updateTaskTemplate)
 		}
 	}

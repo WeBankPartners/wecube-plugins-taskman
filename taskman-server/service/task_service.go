@@ -1684,7 +1684,9 @@ func (s *TaskService) GetTaskMapByRequestId(request models.RequestTable) (taskMa
 	if len(taskList) > 0 {
 		for _, task := range taskList {
 			if task.Type == string(models.TaskTypeSubmit) {
-				taskList = append(taskList, task)
+				if _, ok := taskMap[task.TaskTemplate]; !ok {
+					taskMap[task.TaskTemplate] = task
+				}
 				break
 			}
 			if task.TaskTemplate != "" {

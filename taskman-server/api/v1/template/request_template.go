@@ -190,10 +190,15 @@ func UpdateRequestTemplate(c *gin.Context) {
 		return
 	}
 	if len(list) > 0 {
-		for _, template := range list {
-			// 说明是 相同模版的不同版本
-			if template.Id == param.RecordId {
-				repeatFlag = false
+		// 只有一条数据,判断是否为当前数据
+		if len(list) == 1 && param.Id == list[0].Id {
+			repeatFlag = false
+		} else {
+			for _, template := range list {
+				// 说明是 相同模版的不同版本
+				if template.Id == param.RecordId {
+					repeatFlag = false
+				}
 			}
 		}
 	}

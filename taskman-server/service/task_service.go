@@ -1734,3 +1734,24 @@ func (s *TaskService) GenerateTaskOrderByRequestId(requestId string) (order int)
 	}
 	return
 }
+
+// GetLatestTaskListByRequestIdAndTaskTemplateId 获取任务模版最新的执行任务,取最后一次提交请求后
+func (s *TaskService) GetLatestTaskListByRequestIdAndTaskTemplateId(requestId, taskTemplateId string) (taskList []*models.TaskTable, err error) {
+	var allTaskList []*models.TaskTable
+	taskList = []*models.TaskTable{}
+	err = dao.X.SQL("select * from task where request = ? and del_flag = 0 order by sort desc", requestId).Find(&allTaskList)
+	if err != nil {
+		return
+	}
+	if len(allTaskList) > 0 {
+		for _, task := range allTaskList {
+			if task.Type == string(models.TaskTypeSubmit) {
+				break
+			}
+			if task.TaskTemplate == taskTemplateId {
+				taskList = append(taskList, task)
+			}
+		}
+	}
+	return
+}

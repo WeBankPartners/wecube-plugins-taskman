@@ -1733,7 +1733,8 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	}
 	for _, taskTemplate := range taskTemplateList {
 		taskList = []*models.TaskTable{}
-		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		// 查询
+		taskList, _ = GetTaskService().GetLatestTaskListByRequestIdAndTaskTemplateId(request.Id, taskTemplate.Id)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {
@@ -1830,9 +1831,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 			// 编排关联的任务,不会在这里触发
 			continue
 		}
-		taskList = []*models.TaskTable{}
 		taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
-		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		taskList, _ = GetTaskService().GetLatestTaskListByRequestIdAndTaskTemplateId(request.Id, taskTemplate.Id)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {

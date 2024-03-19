@@ -23,7 +23,10 @@ export default {
   methods: {
     openModal () {
       this.showModal = true
-    }
+      this.getPendingList()
+    },
+    getPendingList () {},
+    getProcessedList () {}
   }
 }
 </script>

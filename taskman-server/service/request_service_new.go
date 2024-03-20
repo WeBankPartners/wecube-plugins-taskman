@@ -1096,19 +1096,17 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				handler = taskHandleTemplateList[0].Handler
 				role = taskHandleTemplateList[0].Role
 				// 定版模板处理角色和处理人如果为空,则设置为属主
-				if taskTemplate.Type == string(models.TaskTypeCheck) && handler == "" {
+				if taskTemplate.Type == string(models.TaskTypeCheck) && role == "" {
 					requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 					if requestTemplate != nil {
 						handler = requestTemplate.Handler
 					}
-					if role == "" {
-						requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
-						if len(requestTemplateRoleList) > 0 {
-							for _, requestTemplateRole := range requestTemplateRoleList {
-								if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
-									role = requestTemplateRole.Role
-									break
-								}
+					requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
+					if len(requestTemplateRoleList) > 0 {
+						for _, requestTemplateRole := range requestTemplateRoleList {
+							if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
+								role = requestTemplateRole.Role
+								break
 							}
 						}
 					}
@@ -1733,7 +1731,8 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	}
 	for _, taskTemplate := range taskTemplateList {
 		taskList = []*models.TaskTable{}
-		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		// 查询
+		taskList, _ = GetTaskService().GetLatestTaskListByRequestIdAndTaskTemplateId(request.Id, taskTemplate.Id)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {
@@ -1830,9 +1829,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 			// 编排关联的任务,不会在这里触发
 			continue
 		}
-		taskList = []*models.TaskTable{}
 		taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
-		dao.X.SQL("select * from task where request = ? and task_template = ? order by created_time desc", request.Id, taskTemplate.Id).Find(&taskList)
+		taskList, _ = GetTaskService().GetLatestTaskListByRequestIdAndTaskTemplateId(request.Id, taskTemplate.Id)
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {

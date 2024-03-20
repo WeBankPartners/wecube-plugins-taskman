@@ -2079,7 +2079,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	// 查询 task handle
 	var taskHandles []*models.TaskHandleTable
 	taskIdsFilterSql, taskIdsFilterParams := dao.CreateListParams(taskIds, "")
-	err = dao.X.SQL("select * from task_handle where task in ("+taskIdsFilterSql+") and latest_flag=1 order by created_time asc", taskIdsFilterParams...).Find(&taskHandles)
+	err = dao.X.SQL("select * from task_handle where task in ("+taskIdsFilterSql+") and latest_flag=1 order by updated_time asc", taskIdsFilterParams...).Find(&taskHandles)
 	/*
 		err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
 			In("task", taskIds).

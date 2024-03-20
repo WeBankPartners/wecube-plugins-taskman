@@ -69,7 +69,7 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 
 func (s *TaskHandleService) GetRequestCheckTaskHandle(taskId string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskHandleList []*models.TaskHandleTable
-	err = dao.X.SQL("select * from task_handle where task = ?", taskId).Find(&taskHandleList)
+	err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", taskId).Find(&taskHandleList)
 	if err != nil {
 		return
 	}
@@ -86,7 +86,7 @@ func (s *TaskHandleService) GetTaskHandleListByTaskId(taskId string) (taskHandle
 
 func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskHandleList []*models.TaskHandleTable
-	err = dao.X.SQL("select * from task_handle where id = ?", id).Find(&taskHandleList)
+	err = dao.X.SQL("select * from task_handle where id = ? and latest_flag = 1", id).Find(&taskHandleList)
 	if err != nil {
 		return
 	}
@@ -102,7 +102,8 @@ func (s *TaskHandleService) GetLatestRequestCheckTaskHandleByRequestId(requestId
 	if requestId == "" {
 		return
 	}
-	err = dao.X.SQL("select * from task   where request = ? and type = ?", requestId, models.TaskTypeCheck).Find(&taskList)
+	// 可能会有多次定版,取最新一次
+	err = dao.X.SQL("select * from task   where request = ? and type = ? order by sort desc", requestId, models.TaskTypeCheck).Find(&taskList)
 	if err != nil {
 		return
 	}

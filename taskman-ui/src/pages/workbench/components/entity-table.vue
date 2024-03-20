@@ -58,7 +58,7 @@
                     :disabled="i.isEdit === 'no' || formDisable"
                     :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
                     style="width: calc(100% - 20px)"
-                    @open-change="handleSelectOpenChange(i, value, index)"
+                    @open-change="handleRefOpenChange(i, value, index)"
                   >
                   </LimitSelect>
                   <!--自定义分析类型-->
@@ -200,7 +200,7 @@ export default {
             if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
               this.handleAddRow(item)
             }
-            // 备份编排类表单初始下发value
+            // 备份编排类表单初始value
             if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
               this.worklfowData = deepClone(item.value || [])
             }
@@ -215,7 +215,7 @@ export default {
     }
   },
   methods: {
-    handleSelectOpenChange (titleObj, row, index) {
+    handleRefOpenChange (titleObj, row, index) {
       this.getRefOptions(titleObj, row, index, false)
     },
     async saveCurrentTabData (item) {
@@ -320,6 +320,7 @@ export default {
       if (titleObj.elementType === 'wecmdbEntity') {
         if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
+        if (!packageName || !ciType) return
         const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
         if (status === 'OK') {
           row[titleObj.name + 'Options'] = data

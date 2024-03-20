@@ -211,16 +211,6 @@ export default {
     // 点击名称，id快捷跳转
     handleDbClick (row) {
       this.hanldeView(row)
-      // if (row.status === 'Draft') {
-      //   if (row.createdBy !== this.username) {
-      //     return
-      //   }
-      //   this.hanldeLaunch(row)
-      // } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
-      //   this.handleRepub(row)
-      // } else {
-      //   this.hanldeView(row)
-      // }
     },
     // 表格操作-查看
     hanldeView (row) {

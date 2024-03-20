@@ -26,20 +26,12 @@
               {{ i.title }}
             </div>
           </template>
-          <MenuItem v-for="(j, idx) in i.children" :key="idx" :name="j.name" :to="j.path">{{ j.title }}</MenuItem>
+          <MenuItem v-for="(j, idx) in i.children" :key="idx" :name="j.name" :to="j.path" :replace="false">{{
+            j.title
+          }}</MenuItem>
         </Submenu>
       </Menu>
     </div>
-    <!-- <div v-else class="small-menu">
-      <div class="small-menu-item">
-        <img style="width:23px;height:23px;" src="@/images/menu_desk.png" />
-        <span>工作台</span>
-      </div>
-      <div v-for="(i, index) in menuList" :key="index" class="small-menu-item">
-        <img :src="i.icon" />
-        <span>{{ i.title }}</span>
-      </div>
-    </div> -->
     <div class="expand" :style="{ left: expand ? '140px' : '0px' }">
       <Icon v-if="expand" @click="handleExpand" type="ios-arrow-dropleft" size="28" />
       <Icon v-else @click="handleExpand" type="ios-arrow-dropright" size="28" />

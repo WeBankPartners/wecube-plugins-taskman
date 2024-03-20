@@ -423,11 +423,15 @@ export default {
   },
   methods: {
     handleToHome () {
-      this.$router.push({
-        path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
-          this.jumpFrom === 'submit' ? 'rollback' : 'type'
-        }=${this.type}`
-      })
+      if (this.$route.query.requestId) {
+        this.$router.push({
+          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+            this.jumpFrom === 'submit' ? 'rollback' : 'type'
+          }=${this.type}`
+        })
+      } else {
+        this.$router.back()
+      }
     },
     async getCreateInfo () {
       const params = {

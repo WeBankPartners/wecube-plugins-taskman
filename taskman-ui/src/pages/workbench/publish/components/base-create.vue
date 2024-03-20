@@ -72,15 +72,16 @@
         <!--请求表单-->
         <HeaderTitle title="请求表单">
           <div class="request-form">
-            <Divider style="margin: 0 0 30px 0" orientation="left">
-              <span class="sub-header">信息表单</span>
-            </Divider>
-            <CustomForm
-              v-model="form.customForm.value"
-              :options="form.customForm.title"
-              :requestId="requestId"
-            ></CustomForm>
-            <div v-if="Object.keys(form.customForm.value).length === 0" class="no-data">暂未配置表单</div>
+            <template v-if="Object.keys(form.customForm.value).length > 0">
+              <Divider style="margin: 0 0 30px 0" orientation="left">
+                <span class="sub-header">信息表单</span>
+              </Divider>
+              <CustomForm
+                v-model="form.customForm.value"
+                :options="form.customForm.title"
+                :requestId="requestId"
+              ></CustomForm>
+            </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
               <span class="sub-header">数据表单</span>
             </Divider>
@@ -482,9 +483,9 @@ export default {
           if (!this.form.customForm.value.hasOwnProperty(item.name)) {
             // 默认清空标志为false,赋值默认值
             if (item.defaultClear === 'no') {
-              this.form.customForm.value[item.name] = item.defaultValue || ''
+              this.$set(this.form.customForm.value, item.name, item.defaultValue)
             } else {
-              this.form.customForm.value[item.name] = ''
+              this.$set(this.form.customForm.value, item.name, '')
             }
           }
         })

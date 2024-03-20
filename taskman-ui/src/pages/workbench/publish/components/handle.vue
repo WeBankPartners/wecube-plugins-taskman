@@ -51,7 +51,7 @@
             implement_process: '编排任务'
           }[handleData.type] || '-'}：${handleData.name}`
         }}</Tag>
-        <span class="description">{{ $t('description') }}：{{ handleData.description }}</span>
+        <span class="description">{{ $t('description') }}：{{ handleData.description || '-' }}</span>
       </div>
       <div class="step-item">
         <div class="step-item-left">
@@ -313,7 +313,12 @@ export default {
               if (['InApproval', 'InProgress'].includes(this.detail.status)) {
                 this.taskForm.comment = item.resultDesc
                 this.taskForm.choseOption = item.handleResult
-                this.taskForm.handleStatus = item.handleStatus
+                // 后台默认下发'未完成'，第一次编辑前端写死'完成'
+                if (item.createdTime === item.updatedTime) {
+                  this.taskForm.handleStatus = 'complete'
+                } else {
+                  this.taskForm.handleStatus = item.handleStatus
+                }
                 this.taskForm.attachFiles = item.attachFiles
               }
             }

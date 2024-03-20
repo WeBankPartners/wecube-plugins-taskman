@@ -102,58 +102,50 @@ export default {
       sourceData: [], // 备份原始下拉数据
       sourceDataFilter: [], // 模糊搜索过滤数据
       currentPage: 1,
-      pageSize: 20,
-      query: '' // 模糊搜索条件
+      pageSize: 1000,
+      query: '', // 模糊搜索条件
+      limitQueryFlag: true
     }
   },
   watch: {
-    // value: {
-    //   handler (val) {
-    //     if (val) {
-    //       this.data = val
-    //     }
-    //   },
-    //   immediate: true,
-    //   deep: true
-    // },
     options: {
       handler (val) {
         if (val) {
           // 下拉默认选项值置顶
           this.sourceData = deepClone(val)
-          if (Array.isArray(this.value)) {
-            if (this.objectOption) {
-              this.value.forEach(i => {
-                const index = this.sourceData.findIndex(j => j[this.displayValue] === i)
-                if (index > 0) {
-                  const item = this.sourceData.splice(index, 1)
-                  this.sourceData.unshift(...item)
-                }
-              })
-            } else {
-              this.value.forEach(i => {
-                const index = this.sourceData.findIndex(j => j === i)
-                if (index > 0) {
-                  const item = this.sourceData.splice(index, 1)
-                  this.sourceData.unshift(...item)
-                }
-              })
-            }
-          } else {
-            if (this.objectOption) {
-              const index = this.sourceData.findIndex(j => j[this.displayValue] === this.value)
-              if (index > 0) {
-                const item = this.sourceData.splice(index, 1)
-                this.sourceData.unshift(...item)
-              }
-            } else {
-              const index = this.sourceData.findIndex(j => j === this.value)
-              if (index > 0) {
-                const item = this.sourceData.splice(index, 1)
-                this.sourceData.unshift(...item)
-              }
-            }
-          }
+          // if (Array.isArray(this.value)) {
+          //   if (this.objectOption) {
+          //     this.value.forEach(i => {
+          //       const index = this.sourceData.findIndex(j => j[this.displayValue] === i)
+          //       if (index > 0) {
+          //         const item = this.sourceData.splice(index, 1)
+          //         this.sourceData.unshift(...item)
+          //       }
+          //     })
+          //   } else {
+          //     this.value.forEach(i => {
+          //       const index = this.sourceData.findIndex(j => j === i)
+          //       if (index > 0) {
+          //         const item = this.sourceData.splice(index, 1)
+          //         this.sourceData.unshift(...item)
+          //       }
+          //     })
+          //   }
+          // } else {
+          //   if (this.objectOption) {
+          //     const index = this.sourceData.findIndex(j => j[this.displayValue] === this.value)
+          //     if (index > 0) {
+          //       const item = this.sourceData.splice(index, 1)
+          //       this.sourceData.unshift(...item)
+          //     }
+          //   } else {
+          //     const index = this.sourceData.findIndex(j => j === this.value)
+          //     if (index > 0) {
+          //       const item = this.sourceData.splice(index, 1)
+          //       this.sourceData.unshift(...item)
+          //     }
+          //   }
+          // }
           this.optionsData = this.sourceData.slice(0, 1 * this.pageSize)
         }
       },
@@ -163,18 +155,20 @@ export default {
   },
   methods: {
     handleSelect (val) {
+      // this.limitQueryFlag = true
       this.$emit('input', val)
     },
     getList () {
-      if (this.query) {
-        if (this.objectOption) {
-          this.sourceDataFilter = this.sourceData.filter(item => item[this.displayName].includes(this.query))
-        } else {
-          this.sourceDataFilter = this.sourceData.filter(item => item.includes(this.query))
-        }
-      } else {
-        this.sourceDataFilter = this.sourceData
-      }
+      // if (this.query) {
+      //   if (this.objectOption) {
+      //     this.sourceDataFilter = this.sourceData.filter(item => item[this.displayName].includes(this.query))
+      //   } else {
+      //     this.sourceDataFilter = this.sourceData.filter(item => item.includes(this.query))
+      //   }
+      // } else {
+      //   this.sourceDataFilter = this.sourceData
+      // }
+      this.sourceDataFilter = this.sourceData
       this.optionsData = this.sourceDataFilter.slice(0, this.currentPage * this.pageSize)
     },
     handleLoadMore () {
@@ -183,12 +177,17 @@ export default {
       this.getList()
     },
     handleQuery (val) {
-      this.query = val
-      this.currentPage = 1
-      this.getList()
+      // if (this.limitQueryFlag) {
+      //   this.limitQueryFlag = false
+      // } else {
+      //   this.query = val
+      //   this.currentPage = 1
+      //   this.getList()
+      // }
     },
     handleOpenChange (flag) {
       if (flag) {
+        // this.limitQueryFlag = true
         this.$emit('open-change')
       }
     }

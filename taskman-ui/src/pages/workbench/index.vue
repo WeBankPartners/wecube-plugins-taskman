@@ -111,6 +111,7 @@ export default {
         reportTime: [], // 请求提交时间
         approvalTime: [], // 请求处理时间
         taskCreatedTime: [], // 任务提交时间
+        taskHandleUpdatedTime: [], // 任务更新时间
         taskApprovalTime: [], // 任务审批时间
         taskExpectTime: [] // 任务期望时间
       },
@@ -360,7 +361,7 @@ export default {
       // 过滤掉多余时间
       var dateTransferArr = []
       if (this.tabName === 'pending' || this.tabName === 'myPending') {
-        dateTransferArr = ['taskExpectTime', 'taskCreatedTime']
+        dateTransferArr = ['taskExpectTime', 'taskHandleUpdatedTime']
       } else if (this.tabName === 'hasProcessed') {
         dateTransferArr = ['taskExpectTime', 'taskCreatedTime', 'taskApprovalTime']
       } else if (this.tabName === 'submit') {

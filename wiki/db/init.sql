@@ -493,7 +493,7 @@ CREATE TABLE IF NOT EXISTS `task_handle` (
     `role` varchar(64)  DEFAULT NULL,
     `handler` varchar(64)  DEFAULT NULL,
     `handler_type` varchar(255)  DEFAULT NULL,
-    `handler_result` varchar(64)  DEFAULT NULL,
+    `handle_result` varchar(64)  DEFAULT NULL,
     `handle_status` varchar(64)  DEFAULT 'uncompleted',
     `parent_id` varchar(64)  DEFAULT NULL,
     `created_time` datetime  NULL,

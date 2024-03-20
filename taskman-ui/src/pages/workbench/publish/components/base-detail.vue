@@ -25,7 +25,7 @@
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
                 <div class="info-item-value">
-                  {{ { 2: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '-' }}
+                  {{ typeMap[detail.requestType] || '-' }}
                 </div>
               </Col>
             </Row>
@@ -72,7 +72,7 @@
                 <div class="info-item-label">
                   {{ detail.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：
                 </div>
-                <div class="info-item-value">{{ detail.handler || '-' }}</div>
+                <div class="info-item-value">{{ formatHandler || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
@@ -115,17 +115,18 @@
         <!--请求表单-->
         <HeaderTitle title="请求表单">
           <div class="request-form">
-            <Divider style="margin: 0 0 30px 0" orientation="left">
-              <span class="sub-header">信息表单</span>
-            </Divider>
-            <CustomForm
-              v-if="detail.customForm && detail.customForm.value"
-              v-model="detail.customForm.value"
-              :options="detail.customForm.title"
-              :requestId="requestId"
-              disabled
-            ></CustomForm>
-            <div v-else class="no-data">暂未配置表单</div>
+            <template v-if="detail.customForm && detail.customForm.value">
+              <Divider style="margin: 0 0 30px 0" orientation="left">
+                <span class="sub-header">信息表单</span>
+              </Divider>
+              <CustomForm
+                v-if="detail.customForm && detail.customForm.value"
+                v-model="detail.customForm.value"
+                :options="detail.customForm.title"
+                :requestId="requestId"
+                disabled
+              ></CustomForm>
+            </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
               <span class="sub-header">数据表单</span>
             </Divider>
@@ -220,7 +221,7 @@
                 <div slot="content" class="history">
                   <Form :label-width="80" label-position="left">
                     <FormItem label="请求状态">
-                      <Input disabled value="未完成" />
+                      <Input disabled :value="completeStatus" />
                     </FormItem>
                     <FormItem label="未完成任务节点">
                       <Input disabled :value="uncompletedTasks.join(', ')" />
@@ -320,6 +321,13 @@ export default {
         admin: '提交人角色管理员',
         auto: '自动通过'
       },
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: '问题',
+        4: '事件',
+        5: '变更'
+      },
       lang: window.localStorage.getItem('lang')
     }
   },
@@ -341,6 +349,11 @@ export default {
         const item = list.find(i => i.value === val) || {}
         return item.label
       }
+    },
+    formatHandler () {
+      let list = (this.detail.handler && this.detail.handler.split(',')) || []
+      list = list.filter(i => i)
+      return Array.from(new Set(list)).join(', ')
     }
   },
   async created () {

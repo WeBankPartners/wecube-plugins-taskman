@@ -34,7 +34,7 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('tw_request_title') }}
+              {{ $t('request_form_settings') }}
               <span class="underline"></span>
             </div>
           </div>

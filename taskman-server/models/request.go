@@ -109,6 +109,7 @@ type PlatformDataObj struct {
 	HandleRoleDisplay     string `json:"handleRoleDisplay" xorm:"-"`                            // 处理role
 	RollbackDesc          string `json:"rollbackDesc" xorm:"rollback_desc"`                     // 回退原因
 	RevokeFlag            int    `json:"revokeFlag" xorm:"revoke_flag"`                         // 是否撤回,0表示否,1表示撤回
+	RevokeBtn             bool   `json:"revokeBtn" xorm:"-"`                                    // 是否出撤回按钮
 	StartTime             string `json:"startTime" xorm:"-"`                                    // 开始时间
 	EffectiveDays         int    `json:"effectiveDays" xorm:"-"`                                // 有效天数
 	ParentId              string `json:"parentId" xorm:"parent_id"`                             // 模板父类id

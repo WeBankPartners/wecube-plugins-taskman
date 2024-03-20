@@ -598,7 +598,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				}
 			}
 			// 获取当前节点和计算请求进度
-			platformDataObj.Progress, platformDataObj.CurNode = getCurNodeName(platformDataObj.Id, platformDataObj.ProcInstanceId, req.UserToken, language)
+			platformDataObj.Progress, platformDataObj.CurNode = CalcRequestProgressAndCurNode(platformDataObj.Id, platformDataObj.ProcInstanceId, req.UserToken, language)
 			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken, language)
 				if newStatus == "InternallyTerminated" {
@@ -660,6 +660,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			}
 			// 计算请求/任务停留时长
 			calcRequestStayTime(platformDataObj)
+			// 计算是否出撤回按钮
+			calcShowRequestRevokeButton(platformDataObj)
 			// 设置角色显示名
 			if v, ok := roleDisplayMap[platformDataObj.Role]; ok {
 				platformDataObj.RoleDisplay = v
@@ -726,8 +728,8 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 	return status
 }
 
-// getCurNodeName 获取当前节点和计算请求进度
-func getCurNodeName(requestId, instanceId, userToken, language string) (progress int, curNode string) {
+// CalcRequestProgressAndCurNode 获取当前节点和计算请求进度
+func CalcRequestProgressAndCurNode(requestId, instanceId, userToken, language string) (progress int, curNode string) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var doneTaskList []*models.TaskTable
 	var task *models.TaskTable
@@ -914,6 +916,9 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.TaskExpectStartTime != "" && param.TaskExpectEndTime != "" {
 		where = where + " and task_expect_time >= '" + param.TaskExpectStartTime + "' and task_expect_time <= '" + param.TaskExpectEndTime + "'"
 	}
+	if param.TaskHandleUpdatedStartTime != "" && param.TaskHandleUpdatedEndTime != "" {
+		where = where + " and task_handle_updated_time >= '" + param.TaskHandleUpdatedStartTime + "' and task_handle_updated_time <= '" + param.TaskHandleUpdatedEndTime + "'"
+	}
 	return
 }
 
@@ -1036,11 +1041,11 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 		}
 	}
 	if len(taskApproveList) > 0 {
-		// 有创建任务,则状态设置为完成
+		// 有创建审批,则状态设置为完成
 		approveCompleteStatus = int(models.TaskExecStatusCompleted)
 		for _, taskApprove := range taskApproveList {
 			// 有任务未完成,则设置成 进行中
-			if taskApprove.Status != string(models.TaskStatusDone) {
+			if taskApprove.Status != string(models.TaskStatusDone) || taskApprove.TaskResult == string(models.TaskHandleResultTypeDeny) {
 				approveCompleteStatus = int(models.TaskExecStatusDoing)
 				break
 			}
@@ -1425,7 +1430,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if request.Status == "Pending" {
 		form.CurNode = RequestPending
 	}
-	form.Progress, form.CurNode = getCurNodeName(request.Id, request.ProcInstanceId, userToken, language)
+	form.Progress, form.CurNode = CalcRequestProgressAndCurNode(request.Id, request.ProcInstanceId, userToken, language)
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}
@@ -1946,4 +1951,22 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 		actions = append(actions, requestConfirmActions...)
 	}
 	return
+}
+
+func calcShowRequestRevokeButton(dataObject *models.PlatformDataObj) {
+	var taskList []*models.TaskTable
+	if dataObject.Status == string(models.RequestStatusDraft) || dataObject.Status == string(models.RequestStatusConfirm) || dataObject.Status == string(models.RequestStatusCompleted) {
+		return
+	}
+	// 当前正在请求定版
+	if dataObject.Status == string(models.RequestStatusPending) {
+		dataObject.RevokeBtn = true
+		return
+	}
+	taskList, _ = GetTaskService().GetDoneTaskByRequestId(models.RequestTable{Id: dataObject.Id, Status: dataObject.Status})
+	if len(taskList) == 1 {
+		// 只有一个任务完成,这个任务只能是任务提交,可以展示撤回按钮
+		dataObject.RevokeBtn = true
+		return
+	}
 }

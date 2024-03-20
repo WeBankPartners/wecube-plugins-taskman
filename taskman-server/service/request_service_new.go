@@ -1096,19 +1096,17 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 				handler = taskHandleTemplateList[0].Handler
 				role = taskHandleTemplateList[0].Role
 				// 定版模板处理角色和处理人如果为空,则设置为属主
-				if taskTemplate.Type == string(models.TaskTypeCheck) && handler == "" {
+				if taskTemplate.Type == string(models.TaskTypeCheck) && role == "" {
 					requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
 					if requestTemplate != nil {
 						handler = requestTemplate.Handler
 					}
-					if role == "" {
-						requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
-						if len(requestTemplateRoleList) > 0 {
-							for _, requestTemplateRole := range requestTemplateRoleList {
-								if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
-									role = requestTemplateRole.Role
-									break
-								}
+					requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
+					if len(requestTemplateRoleList) > 0 {
+						for _, requestTemplateRole := range requestTemplateRoleList {
+							if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
+								role = requestTemplateRole.Role
+								break
 							}
 						}
 					}

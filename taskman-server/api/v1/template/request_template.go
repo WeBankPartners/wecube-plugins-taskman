@@ -194,17 +194,16 @@ func UpdateRequestTemplate(c *gin.Context) {
 		if len(list) == 1 && param.Id == list[0].Id {
 			repeatFlag = false
 		} else {
-			if param.RecordId == "" {
-				repeatFlag = false
-			} else {
-				for _, template := range list {
-					// 说明是 相同模版的不同版本
-					if template.Id == param.RecordId {
-						repeatFlag = false
-					}
+			for _, template := range list {
+				// 说明是 相同模版的不同版本
+				if template.Id == param.RecordId {
+					repeatFlag = false
 				}
 			}
 		}
+	} else {
+		// 没有查询到数据repeat为false
+		repeatFlag = false
 	}
 	if repeatFlag {
 		middleware.ReturnServerHandleError(c, fmt.Errorf("name repeat"))

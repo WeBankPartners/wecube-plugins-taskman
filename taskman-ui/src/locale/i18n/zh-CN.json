@@ -354,5 +354,8 @@
   "tw_apply_success": "申请成功",
   "tw_apply_roles": "申请角色",
   "tw_email": "邮箱",
-  "tw_email_incorrect_format": "邮箱格式错误"
+  "tw_email_incorrect_format": "邮箱格式错误",
+  "tw_account": "账号",
+  "tw_user": "用户",
+  "tw_add_user": "添加用户"
 }

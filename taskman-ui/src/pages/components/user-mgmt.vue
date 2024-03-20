@@ -2,31 +2,267 @@
   <div>
     <Modal v-model="showModal" :mask-closable="false" :closable="false" :width="800" :title="$t('tw_user_mgmt')">
       <div>
-        <Tabs type="card">
-          <TabPane :label="$t('tw_pending')">标签一的内容</TabPane>
-          <TabPane :label="$t('tw_hasProcessed')">标签二的内容</TabPane>
+        <Tabs type="card" :value="activeTab" @on-click="tabChange">
+          <TabPane :label="$t('tw_pending')" name="pending"></TabPane>
+          <TabPane :label="$t('tw_hasProcessed')" name="processed"></TabPane>
         </Tabs>
+        <div>
+          <Table height="200" :columns="columns" :tableData="tableData"></Table>
+        </div>
       </div>
+
+      <Row>
+        <Col span="12">
+          <Card>
+            <p slot="title" style="height:24px">{{ $t('manageRole') }}</p>
+            <div class="tagContainers">
+              <div class="role-item" v-for="item in roleList" :key="item.id">
+                <div
+                  class="item-style"
+                  @click="handleRoleClick(item)"
+                  :class="activeRole === item.id ? 'active-item' : ''"
+                >
+                  {{ item.displayName }}
+                </div>
+              </div>
+            </div>
+          </Card>
+        </Col>
+        <Col span="12">
+          <Card>
+            <p slot="title" style="height:24px">
+              {{ $t('tw_user') }}
+              <Button type="success" @click="startAddUser" size="small" ghost style="margin-left: 20px;">{{
+                $t('tw_add_user')
+              }}</Button>
+            </p>
+            <div class="tagContainers">
+              <div class="role-item" v-for="item in userList" :key="item.id">
+                <div class="item-style" style="width:80%;display: inline-block;">
+                  {{ item.username }}
+                </div>
+                <Button @click="removeUser(item)" size="small" icon="md-trash" ghost type="error"></Button>
+              </div>
+            </div>
+          </Card>
+        </Col>
+      </Row>
       <div slot="footer">
-        <Button @click="showModal = fasle">{{ $t('cancel') }}</Button>
+        <Button @click="showModal = false">{{ $t('cancel') }}</Button>
       </div>
+    </Modal>
+    <Modal v-model="showSelectModel" :title="$t('tw_add_user')" :mask-closable="false">
+      <Form :label-width="120">
+        <FormItem :label="$t('tw_user')">
+          <Select style="width: 80%" v-model="pendingUser" multiple filterable @on-open-change="getPendingUserOptions">
+            <Option v-for="item in pendingUserOptions" :value="item.id" :key="item.id">{{ item.username }}</Option>
+          </Select>
+        </FormItem>
+      </Form>
+      <template #footer>
+        <Button @click="showSelectModel = false">{{ $t('cancel') }}</Button>
+        <Button @click="okSelect" :disabled="pendingUser.length === 0" type="primary">{{ $t('confirm') }}</Button>
+      </template>
     </Modal>
   </div>
 </template>
 <script>
+import {
+  getApplyList,
+  getApplyRoles,
+  getUserByRole,
+  removeUserFromRole,
+  addUserForRole,
+  getAllUser
+} from '@/api/server.js'
+
 export default {
   data () {
     return {
-      showModal: false
+      showModal: false,
+      activeTab: 'pending',
+      columns: [
+        {
+          title: this.$t('tw_account'),
+          key: 'createdBy'
+        },
+        {
+          title: this.$t('tw_apply_roles'),
+          key: 'roleId'
+        },
+        {
+          title: this.$t('t_action'),
+          key: 'address',
+          render: (h, params) => {
+            return (
+              <div style="text-align: left; cursor: pointer;display: inline-flex;">
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() => this.viewAction(params.row)}
+                  style="margin-right:5px;"
+                >
+                  同意
+                </Button>
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() => this.viewAction(params.row)}
+                  style="margin-right:5px;"
+                >
+                  拒绝
+                </Button>
+              </div>
+            )
+          }
+        }
+      ],
+      tableData: [],
+      roleList: [],
+      activeRole: '',
+      userList: [],
+      showSelectModel: false,
+      pendingUser: [], // 待添加用户
+      pendingUserOptions: [] // 待添加用户列表
     }
   },
   methods: {
     openModal () {
       this.showModal = true
-      this.getPendingList()
+      this.getTableData()
+      this.getRoles()
     },
-    getPendingList () {},
-    getProcessedList () {}
+    async getTableData () {
+      let statusArr = this.activeTab === 'pending' ? ['init'] : ['approve', 'deny']
+      const params = {
+        filters: [
+          {
+            name: 'status',
+            operator: 'in',
+            value: statusArr
+          }
+        ],
+        paging: true,
+        pageable: {
+          startIndex: 0,
+          pageSize: 10000
+        },
+        sorting: [
+          {
+            asc: false,
+            field: 'createdTime'
+          }
+        ]
+      }
+      const { status, data } = await getApplyList(params)
+      if (status === 'OK') {
+        this.tableData = data || []
+      }
+    },
+    async getRoles () {
+      const params = {
+        all: 'N', // Y:所有(包括未激活和已删除的) N:激活的
+        roleAdmin: true
+      }
+      const { status, data } = await getApplyRoles(params)
+      if (status === 'OK') {
+        this.roleList = data || []
+        if (this.roleList.length > 0) {
+          this.activeRole = this.roleList[0].id
+          this.getUserByRole(this.roleList[0].id)
+        }
+      }
+    },
+    async getUserByRole (roleId) {
+      const { status, data } = await getUserByRole(roleId)
+      if (status === 'OK') {
+        this.userList = data || []
+      }
+    },
+    async handleRoleClick (item) {
+      this.activeRole = item.id
+      this.getUserByRole(this.activeRole)
+    },
+    async removeUser (item) {
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        content: '确认删除用户',
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          let data = [
+            {
+              id: item.id
+            }
+          ]
+          let res = await removeUserFromRole(this.activeRole, data)
+          if (res.status === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.getUserByRole(this.activeRole)
+          }
+        },
+        onCancel: () => {}
+      })
+    },
+    startAddUser () {
+      this.showSelectModel = true
+      this.pendingUser = []
+    },
+    // 获取待添加用户列表
+    async getPendingUserOptions () {
+      const { status, data } = await getAllUser()
+      if (status === 'OK') {
+        this.pendingUserOptions = (data || []).filter(user => {
+          const findIndex = this.userList.findIndex(u => u.id === user.id)
+          if (findIndex === -1) {
+            return user
+          }
+        })
+      }
+    },
+    async okSelect () {
+      let data = this.pendingUser.map(userId => {
+        return {
+          id: userId
+        }
+      })
+      const { status } = await addUserForRole(this.activeRole, data)
+      if (status === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.showSelectModel = false
+        this.getUserByRole(this.activeRole)
+      }
+    },
+    tabChange (val) {
+      this.activeTab = val
+      this.getTableData()
+    }
   }
 }
 </script>
+<style lang="scss" scoped>
+.tagContainers {
+  overflow: auto;
+  height: calc(100vh - 700px);
+}
+.item-style {
+  padding: 2px 4px;
+  border: 1px dashed #e8eaec;
+  margin: 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 80%;
+  display: inline-block;
+}
+.active-item {
+  background-color: #2db7f5;
+}
+</style>

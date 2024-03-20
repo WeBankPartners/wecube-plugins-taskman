@@ -225,3 +225,14 @@ export const getTargetOptions = (pkgName, entityName) =>
   })
 export const getEntityRefsByPkgNameAndEntityName = (pkgName, entityName) =>
   req.get(`/taskman/api/v1/models/package/${pkgName}/entity/${entityName}`)
+
+// 申请列表
+export const getApplyList = data => req.post(`/auth/v1/roles/apply/byhandler`, data)
+// 获取所有用户
+export const getAllUser = roleId => req.get(`/auth/v1/users`)
+// 获取角色下用户
+export const getUserByRole = roleId => req.get(`/auth/v1/roles/${roleId}/users`)
+// 从角色中删除用户
+export const removeUserFromRole = (roleId, data) => req.post(`/auth/v1/roles/${roleId}/users/revoke`, data)
+// 为角色添加用户
+export const addUserForRole = (roleId, data) => req.post(`/auth/v1/roles/${roleId}/users`, data)

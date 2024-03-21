@@ -188,22 +188,22 @@ export default {
             case 'requestComplete':
               item.name = this.$t('tw_request_complete') // 请求完成
               break
-            // case 'autoExit':
-            //   item.name = this.$t('status_faulted') // 自动退出
-            //   this.errorNode = item.node
-            //   break
-            // case 'internallyTerminated':
-            //   item.name = this.$t('status_termination') // 手动终止
-            //   this.errorNode = item.node
-            //   break
+            case 'autoExit':
+              item.name = this.$t('status_faulted') // 自动退出
+              this.errorNode = item.node
+              break
+            case 'internallyTerminated':
+              item.name = this.$t('status_termination') // 手动终止
+              this.errorNode = item.node
+              break
             default:
               item.name = item.node
               break
           }
-          // if (item.handler === 'autoNode') {
-          //   item.handler = this.$t('tw_auto_tag') // 自动节点
-          //   this.errorNode = item.name
-          // }
+          if (item.handler === 'autoNode') {
+            item.handler = this.$t('tw_auto_tag') // 自动节点
+            this.errorNode = item.name
+          }
         })
         this.progress.approvalProgress.forEach(item => {
           item.icon = statusIcon[item.status]

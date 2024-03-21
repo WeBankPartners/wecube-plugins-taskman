@@ -46,3 +46,23 @@ func HttpPost(url, userToken, language string, postBytes []byte) (byteArr []byte
 	defer resp.Body.Close()
 	return
 }
+
+// HttpPut Put请求
+func HttpPut(url, userToken, language string, postBytes []byte) (byteArr []byte, err error) {
+	req, reqErr := http.NewRequest(http.MethodPut, url, bytes.NewReader(postBytes))
+	if reqErr != nil {
+		err = fmt.Errorf("new http reqeust fail,%s ", reqErr.Error())
+		return
+	}
+	req.Header.Set("Authorization", userToken)
+	req.Header.Set("Accept-Language", language)
+	req.Header.Set("Content-Type", "application/json")
+	resp, respErr := http.DefaultClient.Do(req)
+	if respErr != nil {
+		err = fmt.Errorf("do http reqeust fail,%s ", respErr.Error())
+		return
+	}
+	byteArr, _ = ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	return
+}

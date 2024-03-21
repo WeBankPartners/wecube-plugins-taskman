@@ -249,7 +249,10 @@
         <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
       </div>
       <div v-if="flowVisible" class="flow-expand">
-        <StaticFlow v-if="['Draft', 'Pending'].includes(detail.status)" :requestTemplate="requestTemplate"></StaticFlow>
+        <StaticFlow
+          v-if="['Draft', 'Pending', 'InApproval'].includes(detail.status)"
+          :requestTemplate="requestTemplate"
+        ></StaticFlow>
         <DynamicFlow v-else :flowId="detail.procInstanceId"></DynamicFlow>
       </div>
     </template>
@@ -366,11 +369,15 @@ export default {
   },
   methods: {
     handleToHome () {
-      this.$router.push({
-        path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
-          this.jumpFrom === 'submit' ? 'rollback' : 'type'
-        }=${this.type}`
-      })
+      if (this.$route.query.type) {
+        this.$router.push({
+          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+            this.jumpFrom === 'submit' ? 'rollback' : 'type'
+          }=${this.type}`
+        })
+      } else {
+        this.$router.back()
+      }
     },
     // 获取详情数据
     async getRequestInfoNew () {

@@ -275,13 +275,13 @@ export default {
                     !['template', 'custom'].includes(params.row.handlerType)) && (
                     <Tooltip content={this.$t('tw_action_claim')} placement="top">
                       <Button
-                        type="info"
+                        type="primary"
                         size="small"
                         onClick={() => {
                           this.handleTransfer(params.row, 'claim')
                         }}
                       >
-                        <Icon type="ios-hand" size="16"></Icon>
+                        <Icon type="md-person" size="16"></Icon>
                       </Button>
                     </Tooltip>
                   )}

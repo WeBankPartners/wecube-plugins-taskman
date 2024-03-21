@@ -449,7 +449,7 @@ export default {
   border: 1px solid #d3cece;
   border-radius: 3px;
   padding: 5px;
-  height: calc(100vh - 220px);
+  height: calc(100vh - 150px);
 }
 .model_target .ivu-modal-content-drag {
   right: 40px;

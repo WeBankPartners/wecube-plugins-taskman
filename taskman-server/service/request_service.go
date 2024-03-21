@@ -2017,9 +2017,19 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		return
 	}
 
+	roleDisplayMap := make(map[string]string)
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
+	if err != nil {
+		err = fmt.Errorf("get role display name failed: %s", err.Error())
+		return
+	}
+
 	taskHandleIds := make([]string, 0, len(taskHandles))
 	for _, taskHandle := range taskHandles {
 		taskHandleIds = append(taskHandleIds, taskHandle.Id)
+		if displayName, isExisted := roleDisplayMap[taskHandle.Role]; isExisted {
+			taskHandle.Role = displayName
+		}
 	}
 
 	// 查询 attach file

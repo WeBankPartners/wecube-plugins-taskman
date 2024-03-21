@@ -18,6 +18,7 @@
   "forward": "Forword",
   "confirm": "Confirm ",
   "confirm_delete": "Delete Confirm？",
+  "confirm_delete_content": "Confirm deletion of the following data:",
   "confirm_termination": "Terminate Confirm?",
   "successful": "Succeed",
   "t_action": "Action",
@@ -357,5 +358,13 @@
   "tw_email_incorrect_format": "Incorrect email format",
   "tw_account": "Account",
   "tw_user": "User",
-  "tw_add_user": "Add user"
+  "tw_add_user": "Add user",
+  "tw_processing_time": "Processing Time",
+  "tw_role_list": "Role List",
+  "tw_handle_application": "Handle Application",
+  "tw_application_record": "Application Record",
+  "tw_application_time": "Application Time",
+  "tw_approver": "Approver",
+  "tw_role_administrator": "Role Administrator",
+  "tw_processing_status": "Processing Status"
 }

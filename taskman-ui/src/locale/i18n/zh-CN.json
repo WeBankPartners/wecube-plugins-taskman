@@ -18,6 +18,7 @@
   "forward": "前一步",
   "confirm": "确定",
   "confirm_delete": "确定删除？",
+  "confirm_delete_content": "确定删除以下数据：",
   "confirm_termination": "确定终止？",
   "successful": "成功",
   "t_action": "操作",
@@ -357,5 +358,13 @@
   "tw_email_incorrect_format": "邮箱格式错误",
   "tw_account": "账号",
   "tw_user": "用户",
-  "tw_add_user": "添加用户"
+  "tw_add_user": "添加用户",
+  "tw_processing_time": "处理时间",
+  "tw_role_list": "角色列表",
+  "tw_handle_application": "处理申请",
+  "tw_application_record": "申请记录",
+  "tw_application_time": "申请时间",
+  "tw_approver": "审批人",
+  "tw_role_administrator": "角色管理员",
+  "tw_processing_status": "处理状态"
 }

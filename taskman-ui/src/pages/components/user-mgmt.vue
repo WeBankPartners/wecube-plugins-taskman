@@ -2,15 +2,31 @@
   <div>
     <Modal v-model="showModal" :mask-closable="false" :closable="false" :width="800" :title="$t('tw_user_mgmt')">
       <div>
+        <div class="title" style="margin-top:0px">
+          <div class="title-text">
+            {{ $t('tw_handle_application') }}
+            <span class="underline"></span>
+          </div>
+        </div>
         <Tabs type="card" :value="activeTab" @on-click="tabChange">
           <TabPane :label="$t('tw_pending')" name="pending"></TabPane>
           <TabPane :label="$t('tw_hasProcessed')" name="processed"></TabPane>
         </Tabs>
         <div>
-          <Table height="200" :columns="columns" :tableData="tableData"></Table>
+          <Table
+            height="150"
+            size="small"
+            :columns="this.activeTab === 'pending' ? pendingColumns : processedColumns"
+            :data="tableData"
+          ></Table>
         </div>
       </div>
-
+      <div class="title" style="margin-top:20px">
+        <div class="title-text">
+          {{ $t('tw_role_list') }}
+          <span class="underline"></span>
+        </div>
+      </div>
       <Row>
         <Col span="12">
           <Card>
@@ -68,12 +84,13 @@
 </template>
 <script>
 import {
-  getApplyList,
+  getProcessableList,
   getApplyRoles,
   getUserByRole,
   removeUserFromRole,
   addUserForRole,
-  getAllUser
+  getAllUser,
+  handleApplication
 } from '@/api/server.js'
 
 export default {
@@ -81,14 +98,17 @@ export default {
     return {
       showModal: false,
       activeTab: 'pending',
-      columns: [
+      pendingColumns: [
         {
           title: this.$t('tw_account'),
           key: 'createdBy'
         },
         {
           title: this.$t('tw_apply_roles'),
-          key: 'roleId'
+          key: 'roleId',
+          render: (h, params) => {
+            return <div>{params.row.role.displayName}</div>
+          }
         },
         {
           title: this.$t('t_action'),
@@ -99,21 +119,47 @@ export default {
                 <Button
                   size="small"
                   type="primary"
-                  onClick={() => this.viewAction(params.row)}
+                  onClick={() => this.handle(params.row, 'approve')}
                   style="margin-right:5px;"
                 >
-                  同意
+                  {this.$t('tw_approve')}
                 </Button>
                 <Button
                   size="small"
-                  type="primary"
-                  onClick={() => this.viewAction(params.row)}
+                  type="error"
+                  onClick={() => this.handle(params.row, 'deny')}
                   style="margin-right:5px;"
                 >
-                  拒绝
+                  {this.$t('tw_reject')}
                 </Button>
               </div>
             )
+          }
+        }
+      ],
+      processedColumns: [
+        {
+          title: this.$t('tw_account'),
+          key: 'createdBy'
+        },
+        {
+          title: this.$t('tw_apply_roles'),
+          key: 'roleId',
+          render: (h, params) => {
+            return <div>{params.row.role.displayName}</div>
+          }
+        },
+        {
+          title: this.$t('tw_processing_time'),
+          key: 'updatedTime'
+        },
+        {
+          title: this.$t('tw_processing_status'),
+          key: 'status',
+          render: (h, params) => {
+            const status = params.row.status
+            const statusTitle = status === 'approve' ? this.$t('tw_approve') : this.$t('tw_reject')
+            return <div style={status === 'approve' ? 'color:#b8f27c' : 'color:red'}>{statusTitle}</div>
           }
         }
       ],
@@ -134,6 +180,7 @@ export default {
     },
     async getTableData () {
       let statusArr = this.activeTab === 'pending' ? ['init'] : ['approve', 'deny']
+
       const params = {
         filters: [
           {
@@ -154,9 +201,9 @@ export default {
           }
         ]
       }
-      const { status, data } = await getApplyList(params)
+      const { status, data } = await getProcessableList(params)
       if (status === 'OK') {
-        this.tableData = data || []
+        this.tableData = data.contents || []
       }
     },
     async getRoles () {
@@ -186,7 +233,7 @@ export default {
     async removeUser (item) {
       this.$Modal.confirm({
         title: this.$t('confirm_delete'),
-        content: '确认删除用户',
+        content: `${this.$t('confirm_delete_content')}${item.username}`,
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
@@ -240,6 +287,23 @@ export default {
         this.getUserByRole(this.activeRole)
       }
     },
+    // 处理申请
+    async handle (item, statusCode) {
+      let data = [
+        {
+          id: item.id,
+          status: statusCode
+        }
+      ]
+      const { status } = await handleApplication(data)
+      if (status === 'OK') {
+        this.$Notice.success({
+          title: this.$t('successful'),
+          desc: this.$t('successful')
+        })
+        this.getTableData()
+      }
+    },
     tabChange (val) {
       this.activeTab = val
       this.getTableData()
@@ -250,7 +314,7 @@ export default {
 <style lang="scss" scoped>
 .tagContainers {
   overflow: auto;
-  height: calc(100vh - 700px);
+  height: calc(100vh - 650px);
 }
 .item-style {
   padding: 2px 4px;
@@ -264,5 +328,27 @@ export default {
 }
 .active-item {
   background-color: #2db7f5;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 12px 0;
+  display: inline-block;
+  .title-text {
+    display: inline-block;
+    margin-left: 6px;
+  }
+  .underline {
+    display: block;
+    margin-top: -10px;
+    margin-left: -6px;
+    width: 100%;
+    padding: 0 6px;
+    height: 12px;
+    border-radius: 12px;
+    background-color: #c6eafe;
+    box-sizing: content-box;
+  }
 }
 </style>

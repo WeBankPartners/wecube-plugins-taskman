@@ -24,6 +24,11 @@
                   {{ $t('change_password') }}
                 </a>
               </DropdownItem> -->
+              <DropdownItem name="userApply">
+                <a @click="roleApply" style="width: 100%; display: block">
+                  {{ $t('tw_apply_roles') }}
+                </a>
+              </DropdownItem>
               <DropdownItem name="userMgmt">
                 <a @click="userMgmt" style="width: 100%; display: block">
                   {{ $t('tw_user_mgmt') }}
@@ -66,10 +71,12 @@
       </div>
     </Header>
     <UserMgmt ref="userMgmtRef"></UserMgmt>
+    <RoleApply ref="roleApplyRef"></RoleApply>
   </div>
 </template>
 <script>
 import UserMgmt from './user-mgmt.vue'
+import RoleApply from './role-apply.vue'
 import Vue from 'vue'
 export default {
   data () {
@@ -127,7 +134,9 @@ export default {
     },
     userMgmt () {
       this.$refs.userMgmtRef.openModal()
-      console.log(123)
+    },
+    roleApply () {
+      this.$refs.roleApplyRef.openModal()
     },
     logout () {
       localStorage.removeItem('username')
@@ -151,7 +160,8 @@ export default {
     }
   },
   components: {
-    UserMgmt
+    UserMgmt,
+    RoleApply
   }
 }
 </script>

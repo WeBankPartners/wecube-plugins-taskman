@@ -434,7 +434,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			getInternationalizationStatus(language, row.Status),
 			getInternationalizationCurNode(language, row.CurNode),
 			row.Handler,
-			row.HandleRole,
+			row.HandleRoleDisplay,
 			strconv.Itoa(row.Progress) + "%",
 			getRequestStayTime(row, days),
 			row.ExpectTime,
@@ -443,7 +443,7 @@ func getRequestExportData(language string, rowsData []*models.PlatformDataObj) (
 			row.OperatorObjType,
 			row.OperatorObj,
 			row.CreatedBy,
-			row.Role,
+			row.RoleDisplay,
 			row.ReportTime,
 		}
 	}
@@ -463,6 +463,8 @@ func getInternationalizationCurNode(language, node string) string {
 			return "请求定版"
 		case RequestComplete:
 			return "请求完成"
+		case Confirm:
+			return "请求确认"
 		}
 	}
 	return node
@@ -483,6 +485,10 @@ func getInternationalizationStatus(language string, status string) string {
 			return "手动终止"
 		case string(models.RequestStatusCompleted):
 			return "成功"
+		case string(models.RequestStatusInApproval):
+			return "审批中"
+		case string(models.RequestStatusConfirm):
+			return "请求确认"
 		case string(models.RequestStatusInProgressTimeOuted):
 			return "节点超时"
 		case string(models.RequestStatusFaulted):
@@ -493,7 +499,7 @@ func getInternationalizationStatus(language string, status string) string {
 }
 
 func getRequestStayTime(dataObject *models.PlatformDataObj, format string) string {
-	return fmt.Sprintf("%d%s/%d%s", dataObject.RequestStayTime, format, dataObject.RequestStayTimeTotal, format)
+	return fmt.Sprintf("%s%s/%d%s", dataObject.RequestStayTime, format, dataObject.RequestStayTimeTotal, format)
 }
 
 // calcRequestStayTime 计算请求/任务停留时长

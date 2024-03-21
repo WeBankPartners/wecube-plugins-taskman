@@ -1,6 +1,6 @@
 <template>
-  <div class="workbench-data-bind" style="margin: 0 auto;min-width: 700px">
-    <Tabs v-if="nodes.length">
+  <div class="workbench-data-bind">
+    <Tabs v-if="nodes.length" class="tabs">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
           <ul v-if="node.classification && node.classification.length > 0">
@@ -395,7 +395,7 @@ export default {
 
 <style scoped lang="scss">
 .text-ellipsis {
-  width: 100%;
+  width: 450px;
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
@@ -410,6 +410,7 @@ export default {
 </style>
 <style lang="scss">
 .workbench-data-bind {
+  width: 100%;
   .ivu-checkbox-group-item {
     width: 100%;
   }

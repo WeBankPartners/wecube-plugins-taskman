@@ -11,5 +11,4 @@ taskman-ui/plugin
 taskman-ui/dist
 taskman-ui/node_modules
 taskman-ui/node
-taskman-ui/build
 taskman-ui/package-lock.json

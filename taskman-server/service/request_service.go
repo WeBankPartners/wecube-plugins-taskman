@@ -1854,8 +1854,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	parentRequest := &models.RequestTable{}
 	var requestTable []*models.RequestTable
 	var requestTemplate *models.RequestTemplateTable
-	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requestTable)
-	if err != nil {
+	if err = dao.X.SQL("select * from request where id=?", requestId).Find(&requestTable); err != nil {
 		return
 	}
 	if len(requestTable) == 0 {
@@ -1863,8 +1862,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 		return
 	}
 	parentRequest = requestTable[0]
-	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(parentRequest.RequestTemplate)
-	if err != nil {
+	if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(parentRequest.RequestTemplate); err != nil {
 		return
 	}
 	if requestTemplate == nil {
@@ -1877,39 +1875,15 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	d, _ := time.ParseDuration(fmt.Sprintf("%dh", 24*requestTemplate.ExpireDay))
 	parentRequest.ExpectTime = time.Now().Add(d).Format(models.DateTimeFormat)
 	result = *parentRequest
-	var formTable []*models.FormTable
-	err = dao.X.SQL("select * from form where id=?", parentRequest.Form).Find(&formTable)
-	if err != nil {
-		return
-	}
-	if len(formTable) == 0 {
-		err = fmt.Errorf("Can not find form %s from parent request:%s ", parentRequest.Form, parentRequest.Id)
-		return
-	}
-	parentForm := formTable[0]
-	var formItemTable []*models.FormItemTable
-	err = dao.X.SQL("select * from form_item where form=?", parentRequest.Form).Find(&formItemTable)
-	if err != nil {
-		return
-	}
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	formGuid := guid.CreateGuid()
-	newRequestId := newRequestId()
-	result.Id = newRequestId
-	formInsertAction := dao.ExecAction{Sql: "insert into form(id,name,description,form_template,created_time,created_by,updated_time,updated_by) value (?,?,?,?,?,?,?,?)"}
-	formInsertAction.Param = []interface{}{formGuid, parentRequest.Name + models.SysTableIdConnector + "form", "", parentForm.FormTemplate, nowTime, createdBy, nowTime, createdBy}
-	actions = append(actions, &formInsertAction)
-	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,form,request_template,reporter,emergency,report_role,status," +
-		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	requestInsertAction.Param = []interface{}{newRequestId, parentRequest.Name, formGuid, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency, parentRequest.ReportRole, "Draft", parentRequest.Cache,
-		"", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy, nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role}
+	result.Id = newRequestId()
+	requestInsertAction := dao.ExecAction{Sql: "insert into request(id,name,request_template,reporter,emergency,report_role,status," +
+		"cache,expire_time,expect_time,handler,created_by,created_time,updated_by,updated_time,parent,type,role) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	requestInsertAction.Param = []interface{}{result.Id, parentRequest.Name, parentRequest.RequestTemplate, createdBy, parentRequest.Emergency,
+		parentRequest.ReportRole, "Draft", parentRequest.Cache, "", parentRequest.ExpectTime, parentRequest.Handler, createdBy, nowTime, createdBy,
+		nowTime, parentRequest.Id, parentRequest.Type, parentRequest.Role}
 	actions = append(actions, &requestInsertAction)
-	for _, formItemRow := range formItemTable {
-		actions = append(actions, &dao.ExecAction{Sql: "INSERT INTO form_item (id,form,form_item_template,name,value,item_group,row_data_id) VALUES (?,?,?,?,?,?,?)", Param: []interface{}{
-			guid.CreateGuid(), formGuid, formItemRow.FormItemTemplate, formItemRow.Name, formItemRow.Value, formItemRow.ItemGroup, formItemRow.RowDataId,
-		}})
-	}
 	// copy attach file
 	var attachFileRows []*models.AttachFileTable
 	err = dao.X.SQL("select * from attach_file where request=?", requestId).Find(&attachFileRows)
@@ -1919,7 +1893,7 @@ func CopyRequest(requestId, createdBy string) (result models.RequestTable, err e
 	}
 	for _, v := range attachFileRows {
 		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-			guid.CreateGuid(), v.Name, v.S3BucketName, v.S3KeyName, newRequestId, createdBy, nowTime, createdBy, nowTime}})
+			guid.CreateGuid(), v.Name, v.S3BucketName, v.S3KeyName, result.Id, createdBy, nowTime, createdBy, nowTime}})
 	}
 	err = dao.TransactionWithoutForeignCheck(actions)
 	return

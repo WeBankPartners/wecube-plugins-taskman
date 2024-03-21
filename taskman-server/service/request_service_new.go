@@ -856,7 +856,9 @@ func transHistoryConditionToSQL(param *models.RequestHistoryParam) (where string
 	} else if param.Tab == "revoke" {
 		where = where + " and status = 'Draft' and revoke_flag = 1"
 	}
-	where = where + fmt.Sprintf(" and type = %d", param.Action)
+	if param.Action != 0 {
+		where = where + fmt.Sprintf(" and type = %d", param.Action)
+	}
 	where = where + transCommonRequestToSQL(param.CommonRequestParam)
 	return
 }

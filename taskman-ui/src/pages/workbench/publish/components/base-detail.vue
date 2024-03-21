@@ -238,9 +238,12 @@
     </div>
     <div class="footer-btn">
       <!--撤回-->
-      <Button v-if="jumpFrom === 'submit' && detail.status === 'Pending'" type="error" @click="handleRecall">{{
-        $t('tw_recall')
-      }}</Button>
+      <Button
+        v-if="jumpFrom === 'submit' && ['Pending', 'InApproval'].includes(detail.status) && detail.revokeBtn"
+        type="error"
+        @click="handleRecall"
+        >{{ $t('tw_recall') }}</Button
+      >
     </div>
     <!--编排流程图-->
     <template v-if="detail.associationWorkflow">
@@ -428,7 +431,7 @@ export default {
     // 撤回
     async handleRecall () {
       this.$Modal.confirm({
-        title: this.$t('tw_confirm') + this.$t('tw_recall'),
+        title: this.$t('confirm'),
         content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,

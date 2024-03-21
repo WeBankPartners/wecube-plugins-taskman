@@ -260,7 +260,7 @@ export default {
     async handleRecall (row) {
       this.$Modal.confirm({
         title: this.$t('tw_confirm') + this.$t('tw_recall'),
-        content: this.actionName === '1' ? this.$t('tw_recall_publish_tips') : this.$t('tw_recall_request_tips'),
+        content: this.$t('tw_recall_request_tips'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {

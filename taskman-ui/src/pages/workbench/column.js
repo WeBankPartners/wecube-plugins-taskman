@@ -321,8 +321,10 @@ export default {
                     </Tooltip>
                   )}
                 {// 撤回
-                // 我提交的定版状态可退回
-                  params.row.status === 'Pending' && this.tabName === 'submit' && (
+                // 我提交的定版或审批中revokeBtn为true可退回
+                  ['Pending', 'InApproval'].includes(params.row.status) &&
+                  params.row.revokeBtn &&
+                  this.tabName === 'submit' && (
                     <Tooltip content={this.$t('tw_recall')} placement="top">
                       <Button
                         type="error"

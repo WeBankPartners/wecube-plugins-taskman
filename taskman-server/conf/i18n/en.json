@@ -78,7 +78,7 @@
   },
   "revoke_request_error": {
     "code": 20100011,
-    "message": "Withdrawal Request Failed: The request has already been processed by the  approver. Please refresh and try again."
+    "message": "Withdrawal Request Failed: The request has already been processed by the approver. Please refresh and try again."
   },
   "get_request_preview_data_error": {
     "code": 20100012,

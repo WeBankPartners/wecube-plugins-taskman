@@ -78,7 +78,7 @@
   },
   "revoke_request_error": {
     "code": 20100011,
-    "message": "撤回请求失败：请求已被定版人处理，无法撤回，请刷新重试"
+    "message": "撤回请求失败：请求已被审批人处理，无法撤回，请刷新重试"
   },
   "get_request_preview_data_error": {
     "code": 20100012,

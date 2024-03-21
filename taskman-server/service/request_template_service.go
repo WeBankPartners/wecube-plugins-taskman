@@ -361,7 +361,7 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 				return err
 			}
 		}
-		// 开启了编排,创建编排任务
+		// 开启了编排,创建编排任务&数据表单数据初始化
 		if param.ProcDefId != "" {
 			err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, param.CreatedBy)
 			if err != nil {
@@ -1680,4 +1680,20 @@ func (s *RequestTemplateService) GetConfirmCount(user, userToken, language strin
 
 func (s *RequestTemplateService) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
 	return s.requestTemplateDao.QueryListByName(name)
+}
+
+func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Session, requestTemplateId, userToken, language string) (err error) {
+	var procDefEntities []*models.ProcEntity
+	procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, userToken, language)
+	if err != nil {
+		return
+	}
+	if len(procDefEntities) > 0 {
+		var entities []string
+		for _, entity := range procDefEntities {
+			entityStr := fmt.Sprintf("%s:%s", entity.PackageName, entity.Name)
+			entities = append(entities, entityStr)
+		}
+	}
+	return
 }

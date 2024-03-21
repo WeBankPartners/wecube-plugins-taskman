@@ -363,8 +363,11 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 		}
 		// 开启了编排,创建编排任务&数据表单数据初始化
 		if param.ProcDefId != "" {
-			err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, param.CreatedBy)
-			if err != nil {
+			// 初始化编排表单
+			if err = s.CreateWorkflowFormTemplate(session, newGuid, userToken, language); err != nil {
+				return err
+			}
+			if err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, param.CreatedBy); err != nil {
 				return err
 			}
 		}
@@ -463,7 +466,7 @@ func (s *RequestTemplateService) getRequestTemplateIdsBySql(sql string, param []
 }
 
 func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemplateUpdateParam, userToken, language string) (result models.RequestTemplateQueryObj, err error) {
-	var actions, insertTaskTemplateActions, deleteTaskTemplateActions, deleteFormActions []*dao.ExecAction
+	var actions, insertWorkflowFormTemplateActions, insertTaskTemplateActions, deleteTaskTemplateActions, deleteFormActions []*dao.ExecAction
 	var taskTemplateList, implementTaskTemplateList []*models.TaskTemplateTable
 	var workflowTaskNodeMap = make(map[string]*models.TaskTemplateTable)
 	var requestTemplate *models.RequestTemplateTable
@@ -471,12 +474,10 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	var updateActions []*dao.ExecAction
 	var delWorkFlowFormFlag bool
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id)
-	if err != nil {
+	if taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(param.Id); err != nil {
 		return
 	}
-	requestTemplate, err = s.GetRequestTemplate(param.Id)
-	if err != nil {
+	if requestTemplate, err = s.GetRequestTemplate(param.Id); err != nil {
 		return
 	}
 	result = models.RequestTemplateQueryObj{RequestTemplateDto: param.RequestTemplateDto, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
@@ -533,17 +534,21 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		// 先删除已有任务
 		for _, taskTemplate := range implementTaskTemplateList {
 			deleteTaskTemplateActions = []*dao.ExecAction{}
-			deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
-			if err != nil {
+			if deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id); err != nil {
 				return
 			}
 			if len(deleteTaskTemplateActions) > 0 {
 				actions = append(actions, deleteTaskTemplateActions...)
 			}
 		}
-		// 新增编排
-		insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system")
-		if err != nil {
+		// 新增编排表单&编排任务
+		if insertWorkflowFormTemplateActions, err = s.CreateWorkflowFormTemplateSql(param.Id, userToken, language); err != nil {
+			return
+		}
+		if len(insertWorkflowFormTemplateActions) > 0 {
+			actions = append(actions, insertWorkflowFormTemplateActions...)
+		}
+		if insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system"); err != nil {
 			return
 		}
 		if len(insertTaskTemplateActions) > 0 {
@@ -555,8 +560,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 		if param.ProcDefId == "" {
 			for _, taskTemplate := range implementTaskTemplateList {
 				deleteTaskTemplateActions = []*dao.ExecAction{}
-				deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id)
-				if err != nil {
+				if deleteTaskTemplateActions, err = GetTaskTemplateService().deleteTaskTemplateSql(param.Id, taskTemplate.Id); err != nil {
 					return
 				}
 				if len(deleteTaskTemplateActions) > 0 {
@@ -577,8 +581,14 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 						actions = append(actions, deleteTaskTemplateActions...)
 					}
 				}
-				insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system")
-				if err != nil {
+				// 新增编排表单&编排任务
+				if insertWorkflowFormTemplateActions, err = s.CreateWorkflowFormTemplateSql(param.Id, userToken, language); err != nil {
+					return
+				}
+				if len(insertWorkflowFormTemplateActions) > 0 {
+					actions = append(actions, insertWorkflowFormTemplateActions...)
+				}
+				if insertTaskTemplateActions, err = GetTaskTemplateService().createProcTaskTemplatesSql(param.ProcDefId, param.Id, userToken, language, "system"); err != nil {
 					return
 				}
 				if len(insertTaskTemplateActions) > 0 {
@@ -588,16 +598,14 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 			} else {
 				// 关联编排无改动,需要查找编排,看编排节点名称是否变更,有变更需要替换
 				// 查询编排任务节点
-				workflowTaskNodeList, err = GetTaskTemplateService().getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language)
-				if err != nil {
+				if workflowTaskNodeList, err = GetTaskTemplateService().getProcTaskTemplateNodes(requestTemplate.ProcDefId, userToken, language); err != nil {
 					return
 				}
 				if len(workflowTaskNodeList) > 0 {
 					for _, taskNode := range workflowTaskNodeList {
 						taskNodeTmp := workflowTaskNodeMap[taskNode.NodeDefId]
 						if taskNodeTmp != nil && (taskNodeTmp.NodeId != taskNode.NodeId || taskNodeTmp.NodeName != taskNode.NodeName) {
-							updateActions, err = GetTaskTemplateService().updateProcTaskTemplatesSql(taskNodeTmp.Id, taskNode.NodeId, taskNode.NodeName)
-							if err != nil {
+							if updateActions, err = GetTaskTemplateService().updateProcTaskTemplatesSql(taskNodeTmp.Id, taskNode.NodeId, taskNode.NodeName); err != nil {
 								return
 							}
 							actions = append(actions, updateActions...)
@@ -1689,10 +1697,32 @@ func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Sessio
 		return
 	}
 	if len(procDefEntities) > 0 {
-		var entities []string
-		for _, entity := range procDefEntities {
+		for index, entity := range procDefEntities {
 			entityStr := fmt.Sprintf("%s:%s", entity.PackageName, entity.Name)
-			entities = append(entities, entityStr)
+			_, err = session.Exec("insert into form_template(id,request_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,"+
+				"created_time,request_form_type) values(?,?,?,?,?,?,?,?,?)", guid.CreateGuid(), requestTemplateId, entityStr, entityStr, models.FormItemGroupTypeWorkflow,
+				"exist", index+1, time.Now().Format(models.DateTimeFormat), models.RequestFormTypeData)
+			if err != nil {
+				return
+			}
+		}
+	}
+	return
+}
+
+func (s *RequestTemplateService) CreateWorkflowFormTemplateSql(requestTemplateId, userToken, language string) (actions []*dao.ExecAction, err error) {
+	var procDefEntities []*models.ProcEntity
+	actions = []*dao.ExecAction{}
+	procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, userToken, language)
+	if err != nil {
+		return
+	}
+	if len(procDefEntities) > 0 {
+		for index, entity := range procDefEntities {
+			entityStr := fmt.Sprintf("%s:%s", entity.PackageName, entity.Name)
+			actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,item_group,item_group_name,item_group_type,item_group_rule," +
+				"item_group_sort,created_time,request_form_type) values(?,?,?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), requestTemplateId, entityStr, entityStr,
+				models.FormItemGroupTypeWorkflow, "exist", index + 1, time.Now().Format(models.DateTimeFormat), models.RequestFormTypeData}})
 		}
 	}
 	return

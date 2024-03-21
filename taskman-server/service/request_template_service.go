@@ -260,7 +260,7 @@ func (s *RequestTemplateService) QueryRequestTemplateEntity(requestTemplateId, u
 	})
 	// 配置了编排数据
 	if strings.TrimSpace(requestTemplate.ProcDefId) != "" {
-		procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, userToken, language)
+		procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, requestTemplate.ProcDefId, userToken, language)
 		if err != nil {
 			return
 		}
@@ -364,7 +364,7 @@ func (s *RequestTemplateService) CreateRequestTemplate(param models.RequestTempl
 		// 开启了编排,创建编排任务&数据表单数据初始化
 		if param.ProcDefId != "" {
 			// 初始化编排表单
-			if err = s.CreateWorkflowFormTemplate(session, newGuid, userToken, language); err != nil {
+			if err = s.CreateWorkflowFormTemplate(session, newGuid, param.ProcDefId, userToken, language); err != nil {
 				return err
 			}
 			if err = GetTaskTemplateService().createProcTaskTemplates(session, param.ProcDefId, newGuid, userToken, language, param.CreatedBy); err != nil {
@@ -542,7 +542,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 			}
 		}
 		// 新增编排表单&编排任务
-		if insertWorkflowFormTemplateActions, err = s.CreateWorkflowFormTemplateSql(param.Id, userToken, language); err != nil {
+		if insertWorkflowFormTemplateActions, err = s.CreateWorkflowFormTemplateSql(param.Id, param.ProcDefId, userToken, language); err != nil {
 			return
 		}
 		if len(insertWorkflowFormTemplateActions) > 0 {
@@ -582,7 +582,7 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 					}
 				}
 				// 新增编排表单&编排任务
-				if insertWorkflowFormTemplateActions, err = s.CreateWorkflowFormTemplateSql(param.Id, userToken, language); err != nil {
+				if insertWorkflowFormTemplateActions, err = s.CreateWorkflowFormTemplateSql(param.Id, param.ProcDefId, userToken, language); err != nil {
 					return
 				}
 				if len(insertWorkflowFormTemplateActions) > 0 {
@@ -672,10 +672,10 @@ func (s *RequestTemplateService) DeleteRequestTemplate(id string, getActionFlag 
 	return actions, err
 }
 
-func (s *RequestTemplateService) ListRequestTemplateEntityAttrs(id, userToken, language string) (result []*models.ProcEntity, err error) {
+func (s *RequestTemplateService) ListRequestTemplateEntityAttrs(id, procDefId, userToken, language string) (result []*models.ProcEntity, err error) {
 	var nodes []*models.ProcNodeObj
 	result = []*models.ProcEntity{}
-	nodes, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: id}, userToken, language, "all")
+	nodes, err = GetProcDefService().GetProcessDefineTaskNodes(&models.RequestTemplateTable{Id: id, ProcDefId: procDefId}, userToken, language, "all")
 	if err != nil {
 		return
 	}
@@ -1690,9 +1690,9 @@ func (s *RequestTemplateService) QueryListByName(name string) (list []*models.Re
 	return s.requestTemplateDao.QueryListByName(name)
 }
 
-func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Session, requestTemplateId, userToken, language string) (err error) {
+func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Session, requestTemplateId, procDefId, userToken, language string) (err error) {
 	var procDefEntities []*models.ProcEntity
-	procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, userToken, language)
+	procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, procDefId, userToken, language)
 	if err != nil {
 		return
 	}
@@ -1710,10 +1710,10 @@ func (s *RequestTemplateService) CreateWorkflowFormTemplate(session *xorm.Sessio
 	return
 }
 
-func (s *RequestTemplateService) CreateWorkflowFormTemplateSql(requestTemplateId, userToken, language string) (actions []*dao.ExecAction, err error) {
+func (s *RequestTemplateService) CreateWorkflowFormTemplateSql(requestTemplateId, procDefId, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var procDefEntities []*models.ProcEntity
 	actions = []*dao.ExecAction{}
-	procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, userToken, language)
+	procDefEntities, err = s.ListRequestTemplateEntityAttrs(requestTemplateId, procDefId, userToken, language)
 	if err != nil {
 		return
 	}

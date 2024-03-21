@@ -144,7 +144,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-handle/update", Method: "POST", HandlerFunc: task.UpdateTaskHandle},
 		&handlerFuncObj{Url: "/task/attach-file/:taskId/upload/:taskHandleId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
 
-		// login
+		// 转发auth接口
 		&handlerFuncObj{Url: "/login/seed", Method: "GET", HandlerFunc: login.GetSeed},
 		&handlerFuncObj{Url: "/login", Method: "POST", HandlerFunc: login.Login},
 	)
@@ -159,6 +159,9 @@ func init() {
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
 		&handlerFuncObj{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest},
 		&handlerFuncObj{Url: "/request-data/form/save/:requestId", Method: "POST", HandlerFunc: requestNew.SaveRequestFormData},
+		// 转发platform接口
+		&handlerFuncObj{Url: "/platform/models", Method: "GET", HandlerFunc: requestNew.GetPlatformAllModels},
+		&handlerFuncObj{Url: "/platform/:package/entities/:entity/query", Method: "POST", HandlerFunc: requestNew.QueryPlatformEntityData},
 	)
 }
 

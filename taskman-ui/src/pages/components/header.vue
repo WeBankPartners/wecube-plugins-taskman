@@ -15,9 +15,11 @@
       </div>
       <div class="header-right_container">
         <div class="profile">
-          <Dropdown style="cursor: pointer">
-            <img class="p-icon" src="../../images/icon/icon_usr.png" width="12" height="12" />{{ username }}
+          <Dropdown style="cursor: pointer" trigger="click">
+            <img class="p-icon" src="../../images/icon/icon_usr.png" width="12" height="12" />
+            <span>{{ username }}</span>
             <Icon type="ios-arrow-down"></Icon>
+            <Badge :count="pendingCount" @click="userMgmt"></Badge>
             <DropdownMenu slot="list">
               <!-- <DropdownItem name="logout" to="/login">
                 <a @click="showChangePassword" style="width: 100%; display: block">
@@ -30,8 +32,9 @@
                 </a>
               </DropdownItem>
               <DropdownItem name="userMgmt">
-                <a @click="userMgmt" style="width: 100%; display: block">
+                <a @click="userMgmt" style="width: 100%; display: block;">
                   {{ $t('tw_user_mgmt') }}
+                  <Badge :count="pendingCount" @click="userMgmt" style="top:-2px"></Badge>
                 </a>
               </DropdownItem>
               <DropdownItem name="logout" to="/login">
@@ -75,6 +78,7 @@
   </div>
 </template>
 <script>
+import { getProcessableList } from '@/api/server.js'
 import UserMgmt from './user-mgmt.vue'
 import RoleApply from './role-apply.vue'
 import Vue from 'vue'
@@ -107,7 +111,9 @@ export default {
       ],
       needLoad: true,
       version: '',
-      changePassword: false
+      changePassword: false,
+      pendingCount: 0, // 待审批数量
+      timer: null
     }
   },
   async created () {
@@ -120,10 +126,19 @@ export default {
     },
     $route: {
       handler (val) {
-        this.activeName = val.name
+        const activeMenu = this.menus.find(menu => val.name.startsWith(menu.path))
+        if (activeMenu) {
+          this.activeName = activeMenu.name
+        }
       },
       immediate: true
     }
+  },
+  mounted () {
+    this.getPendingCount()
+    this.timer = setInterval(() => {
+      this.getPendingCount()
+    }, 5 * 60 * 1000)
   },
   methods: {
     changeMenu (path) {
@@ -139,6 +154,7 @@ export default {
       this.$refs.roleApplyRef.openModal()
     },
     logout () {
+      clearInterval(this.timer)
       localStorage.removeItem('username')
       localStorage.removeItem('taskman-accessToken')
       localStorage.removeItem('taskman-refreshToken')
@@ -157,6 +173,32 @@ export default {
     },
     changeDocs () {
       window.open('http://webankpartners.gitee.io/wecube-docs')
+    },
+    async getPendingCount () {
+      const params = {
+        filters: [
+          {
+            name: 'status',
+            operator: 'in',
+            value: ['init']
+          }
+        ],
+        paging: true,
+        pageable: {
+          startIndex: 0,
+          pageSize: 10000
+        },
+        sorting: [
+          {
+            asc: false,
+            field: 'createdTime'
+          }
+        ]
+      }
+      const { status, data } = await getProcessableList(params)
+      if (status === 'OK') {
+        this.pendingCount = data.pageInfo.totalRows
+      }
     }
   },
   components: {

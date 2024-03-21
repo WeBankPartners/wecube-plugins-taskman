@@ -16,7 +16,8 @@
                 @on-open-change="getApplyRoles"
                 multiple
                 filterable
-                style="width: 50%;margin-right: 24px;"
+                :max-tag-count="3"
+                style="width: 60%;margin-right: 24px;"
                 :placeholder="$t('tw_apply_roles')"
               >
                 <Option v-for="role in roleList" :value="role.id" :key="role.id">{{ role.displayName }}</Option>
@@ -142,7 +143,6 @@ export default {
       const { status, data } = await getApplyList(params)
       if (status === 'OK') {
         this.tableData = data.contents || []
-        console.log(77, this.tableData)
       }
     },
     async apply () {

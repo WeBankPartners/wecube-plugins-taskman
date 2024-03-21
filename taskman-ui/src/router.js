@@ -11,8 +11,8 @@ export default new Router({
     },
     {
       path: '/',
-      name: 'home',
-      redirect: '/homepage',
+      name: '/taskman/workbench',
+      redirect: '/taskman/workbench',
       component: () => import('@/pages/index'),
       children: [
         {

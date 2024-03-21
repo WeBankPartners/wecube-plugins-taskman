@@ -90,7 +90,7 @@ func UpdateRequestTemplateHandler(c *gin.Context) {
 		middleware.ReturnError(c, err)
 		return
 	}
-	if requestTemplate.Status == string(models.RequestTemplateStatusConfirm) {
+	if requestTemplate.Status == string(models.RequestTemplateStatusConfirm) || requestTemplate.Status == string(models.RequestTemplateStatusPending) {
 		middleware.ReturnError(c, fmt.Errorf("request template has deployed"))
 		return
 	}

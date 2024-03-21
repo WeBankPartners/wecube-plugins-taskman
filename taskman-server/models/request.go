@@ -302,6 +302,7 @@ type RequestForm struct {
 	AttachFiles         []*AttachFileTable        `json:"attachFiles"`         // 请求附件
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
+	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
 }
 
 type CustomForm struct {

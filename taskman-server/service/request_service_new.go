@@ -661,7 +661,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			// 计算请求/任务停留时长
 			calcRequestStayTime(platformDataObj)
 			// 计算是否出撤回按钮
-			calcShowRequestRevokeButton(platformDataObj)
+			platformDataObj.RevokeBtn = calcShowRequestRevokeButton(platformDataObj.Id, platformDataObj.Status)
 			// 设置角色显示名
 			if v, ok := roleDisplayMap[platformDataObj.Role]; ok {
 				platformDataObj.RoleDisplay = v
@@ -1448,6 +1448,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		customForm.Title = items
 	}
 	form.CustomForm = customForm
+
 	form.AttachFiles = GetRequestAttachFileList(request.Id)
 	if request.Cache != "" {
 		var cacheObj models.RequestPreDataDto
@@ -1460,6 +1461,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		form.RootEntityId = cacheObj.RootEntityId
 		form.OperatorObj = cacheObj.EntityName
 	}
+	form.RevokeBtn = calcShowRequestRevokeButton(request.Id, request.Status)
 	return
 }
 
@@ -1953,20 +1955,20 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 	return
 }
 
-func calcShowRequestRevokeButton(dataObject *models.PlatformDataObj) {
+// calcShowRequestRevokeButton 计算是否出请求撤回按钮
+func calcShowRequestRevokeButton(requestId, requestStatus string) bool {
 	var taskList []*models.TaskTable
-	if dataObject.Status == string(models.RequestStatusDraft) || dataObject.Status == string(models.RequestStatusConfirm) || dataObject.Status == string(models.RequestStatusCompleted) {
-		return
+	if requestStatus == string(models.RequestStatusDraft) || requestStatus == string(models.RequestStatusConfirm) || requestStatus == string(models.RequestStatusCompleted) {
+		return false
 	}
 	// 当前正在请求定版
-	if dataObject.Status == string(models.RequestStatusPending) {
-		dataObject.RevokeBtn = true
-		return
+	if requestStatus == string(models.RequestStatusPending) {
+		return true
 	}
-	taskList, _ = GetTaskService().GetDoneTaskByRequestId(models.RequestTable{Id: dataObject.Id, Status: dataObject.Status})
+	taskList, _ = GetTaskService().GetDoneTaskByRequestId(models.RequestTable{Id: requestId, Status: requestStatus})
 	if len(taskList) == 1 {
 		// 只有一个任务完成,这个任务只能是任务提交,可以展示撤回按钮
-		dataObject.RevokeBtn = true
-		return
+		return true
 	}
+	return false
 }

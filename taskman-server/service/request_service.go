@@ -200,7 +200,8 @@ func RevokeRequest(requestId, user string) (err error) {
 		err = fmt.Errorf("param requestId:%s not exist", requestId)
 		return
 	}
-	if request.Status != "Pending" {
+	// 校验是否能撤回
+	if !calcShowRequestRevokeButton(requestId, request.Status) {
 		err = exterror.New().RevokeRequestError
 		return
 	}
@@ -1548,55 +1549,6 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 		result.ApprovalList = approvalList
 	}
 	result.Data = taskQueryList
-	return
-}
-
-func getCMDBSelectList(input []*models.RequestPreDataTableObj, userToken string) (output []*models.RequestPreDataTableObj, err error) {
-	ciAttrMap := make(map[string][]string)
-	ciAttrSelectMap := make(map[string][]*models.EntityDataObj)
-	for _, v := range input {
-		if v.Entity == "" {
-			continue
-		}
-		for _, vv := range v.Title {
-			if vv.ElementType == "select" && vv.RefEntity == "" {
-				if _, b := ciAttrMap[v.Entity]; b {
-					ciAttrMap[v.Entity] = append(ciAttrMap[v.Entity], vv.Name)
-				} else {
-					ciAttrMap[v.Entity] = []string{vv.Name}
-				}
-			}
-			vv.SelectList = []*models.EntityDataObj{}
-		}
-	}
-	output = input
-	if len(ciAttrMap) <= 0 {
-		return
-	}
-	for k, v := range ciAttrMap {
-		tmpV, tmpErr := getCMDBAttributeSelectList(k, userToken, v)
-		if tmpErr != nil {
-			err = tmpErr
-			break
-		}
-		for kk, vv := range tmpV {
-			ciAttrSelectMap[kk] = vv
-		}
-	}
-	if err != nil {
-		return
-	}
-	for _, v := range output {
-		if v.Entity == "" {
-			continue
-		}
-		for _, vv := range v.Title {
-			tmpKey := v.Entity + "_" + vv.Name
-			if tmpSelectList, b := ciAttrSelectMap[tmpKey]; b {
-				vv.SelectList = tmpSelectList
-			}
-		}
-	}
 	return
 }
 

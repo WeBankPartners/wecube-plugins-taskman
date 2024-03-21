@@ -10,7 +10,8 @@ if (window.request) {
     patch: (url, ...params) => pluginErrorMessage(window.request.patch(baseURL + url, ...params))
   }
 }
-export const login = data => req.post('/auth/v1/api/login', data)
+export const login = data => req.post('/taskman/api/v1/login', data)
+export const getEncryptKey = () => req.get(`/taskman/api/v1/login/seed`)
 // 获取可申请角色列表
 export const getApplyRoles = data => req.get(`/auth/v1/roles?all=${data.all}&roleAdmin=${data.roleAdmin}`)
 export const startApply = data => req.post('/auth/v1/roles/apply', data)

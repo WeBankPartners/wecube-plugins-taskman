@@ -51,12 +51,14 @@
   </div>
 </template>
 <script>
-import { login, getApplyRoles, startApply } from '@/api/server'
+import CryptoJS from 'crypto-js'
+import { login, getApplyRoles, startApply, getEncryptKey } from '@/api/server'
 export default {
   data () {
     return {
       username: '',
       password: '',
+      encryptKey: '',
       loading: false,
       showRoleApply: false,
       formValidate: {
@@ -86,12 +88,20 @@ export default {
     async login () {
       if (!this.username || !this.password) return
       this.loading = true
+      await this.getEncryptKey()
+      const key = CryptoJS.enc.Utf8.parse(this.encryptKey)
+      const config = {
+        iv: key,
+        mode: CryptoJS.mode.CBC
+        // padding: CryptoJS.pad.PKcs7
+      }
+      let encryptedPassword = CryptoJS.AES.encrypt(this.password, key, config).toString()
       const payload = {
         username: this.username,
-        password: this.password
+        password: encryptedPassword
       }
-      const { status, data } = await login(payload)
-      if (status === 'OK') {
+      const { statusCode, data } = await login(payload)
+      if (statusCode === 'OK') {
         localStorage.setItem('username', this.username)
         const accessTokenObj = data.find(d => d.tokenType === 'accessToken')
         const refreshTokenObj = data.find(d => d.tokenType === 'refreshToken')
@@ -107,6 +117,12 @@ export default {
         }
       }
       this.loading = false
+    },
+    async getEncryptKey () {
+      const { statusCode, data } = await getEncryptKey()
+      if (statusCode === 'OK') {
+        this.encryptKey = data
+      }
     },
     async getApplyRoles () {
       const params = {

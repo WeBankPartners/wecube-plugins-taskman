@@ -1,10 +1,6 @@
 <template>
   <div>
     <div class="body"></div>
-    <div class="header-login">
-      <div></div>
-    </div>
-    <br />
     <div class="login-form">
       <Input type="text" placeholder="username" v-model="username" name="user" @on-enter="login" />
 
@@ -103,8 +99,8 @@ export default {
       const { statusCode, data } = await login(payload)
       if (statusCode === 'OK') {
         localStorage.setItem('username', this.username)
-        const accessTokenObj = data.find(d => d.tokenType === 'accessToken')
-        const refreshTokenObj = data.find(d => d.tokenType === 'refreshToken')
+        const accessTokenObj = data.tokens.find(d => d.tokenType === 'accessToken')
+        const refreshTokenObj = data.tokens.find(d => d.tokenType === 'refreshToken')
         localStorage.setItem('taskman-accessToken', accessTokenObj.token)
         localStorage.setItem('taskman-refreshToken', refreshTokenObj.token)
         localStorage.setItem('taskman-expiration', refreshTokenObj.expiration)
@@ -174,25 +170,10 @@ export default {
   z-index: 0;
 }
 
-.header-login {
-  position: absolute;
-  top: calc(50% - 35px);
-  left: calc(50% - 355px);
-  z-index: 2;
-}
-
-.header-login div {
-  /* width: 600px;
-  height: 50px;
-  background-image: url('../assets/wecube-logo.png');
-  background-size: contain;
-  background-repeat: no-repeat; */
-}
-
 .login-form {
   position: absolute;
   top: calc(50% - 75px);
-  left: calc(50% - 50px);
+  left: calc(50% - 105px);
   height: 150px;
   width: 230px;
   padding: 10px;

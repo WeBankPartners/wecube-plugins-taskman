@@ -76,8 +76,8 @@ req.interceptors.response.use(
         return refreshRequest.then(
           resRefresh => {
             const data = resRefresh.data.data
-            const accessTokenObj = data.find(d => d.tokenType === 'accessToken')
-            const refreshTokenObj = data.find(d => d.tokenType === 'refreshToken')
+            const accessTokenObj = data.tokens.find(d => d.tokenType === 'accessToken')
+            const refreshTokenObj = data.tokens.find(d => d.tokenType === 'refreshToken')
             localStorage.setItem('taskman-accessToken', accessTokenObj.token)
             localStorage.setItem('taskman-refreshToken', refreshTokenObj.token)
             localStorage.setItem('taskman-expiration', refreshTokenObj.expiration)

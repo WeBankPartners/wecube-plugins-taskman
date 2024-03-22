@@ -244,13 +244,13 @@ func submitSQL(rollback, templateType int, queryTimeStart, queryTimeEnd, user st
 	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and created_time >= ? and created_time <= ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ) or (status = 'Draft' and revoke_flag = 1))"
 	if rollback == 1 {
 		// 被退回
-		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and rollback_desc is not null"
+		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and rollback_desc is not null and created_time >= ? and created_time <= ?"
 	} else if rollback == 2 {
 		// 其他
-		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status != 'Draft'"
+		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status != 'Draft' and created_time >= ? and created_time <= ?"
 	} else if rollback == 3 {
 		// 撤销
-		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and revoke_flag = 1 "
+		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and revoke_flag = 1 and created_time >= ? and created_time <= ?"
 	}
 	queryParam = append([]interface{}{user, templateType, queryTimeStart, queryTimeEnd})
 	return

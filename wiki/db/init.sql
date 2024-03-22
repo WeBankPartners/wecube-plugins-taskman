@@ -373,6 +373,7 @@ alter table request_template add column back_desc  text default null COMMENT '�
 alter table request_template modify column proc_def_key  varchar(255) default null COMMENT '编排key';
 alter table request_template modify column proc_def_id  varchar(255) default null COMMENT '编排id';
 alter table request_template modify column proc_def_name  varchar(255) default null COMMENT '编排名称';
+alter table request_template add column proc_def_version  varchar(64) default null COMMENT '编排版本';
 
 alter table request add column custom_form_cache text default null COMMENT '自定义表单cache';
 alter table request add column notes text default null COMMENT '请求确认备注';
@@ -388,6 +389,7 @@ alter table task add column type varchar(64) default null COMMENT '任务类型:
 alter table task add column sort int default '0' COMMENT '任务序号';
 alter table task add column task_result  varchar(64) default null COMMENT '处理结果:approve同意,deny拒绝,redraw打回,complete完成,uncompleted未完成';
 alter table task add column confirm_result varchar(64) default null COMMENT '任务确认结果:任务已完成 complete 未完成 uncompleted';
+alter table task add column request_created_time datetime default null COMMENT '请求创建时间';
 
 alter table form_item_template add column ref_id varchar(64) default null COMMENT '引用ID';
 

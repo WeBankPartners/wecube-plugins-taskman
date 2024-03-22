@@ -34,12 +34,13 @@
       <Col :span="3" class="line">{{ data.role || '-' }}</Col>
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
       <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
-      <Col :span="4" class="line">{{ data.updatedTime }}</Col>
+      <Col :span="2" class="line">{{ '-' }}</Col>
+      <Col :span="3" class="line">{{ data.updatedTime }}</Col>
       <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
       >
-      <Col :span="5" class="line">
+      <Col :span="4" class="line">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
           <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
             file.name
@@ -90,16 +91,7 @@ export default {
         if (this.data.type === 'implement_process') {
           resultName = i.handleResult
         }
-        // handleStatus 自定义任务前端枚举
-        const statusMap = {
-          complete: '完成',
-          uncompleted: this.$t('tw_incomplete')
-        }
-        let statusName = ''
-        if (this.data.type === 'implement_custom') {
-          statusName = statusMap[i.handleStatus]
-        }
-        return resultName || statusName || this.operation || '-'
+        return resultName || this.operation || '-'
       }
     },
     getHandleStatus () {
@@ -110,7 +102,7 @@ export default {
           uncompleted: this.$t('tw_incomplete')
         }
         let statusName = ''
-        if (this.data.type === 'implement_custom') {
+        if (['implement_custom', 'implement_process'].includes(this.data.type)) {
           statusName = statusMap[i.handleStatus]
         }
         return statusName || '-'

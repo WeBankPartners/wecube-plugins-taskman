@@ -1,6 +1,20 @@
 <template>
   <div>
-    <Modal v-model="showModal" :mask-closable="false" :closable="false" :width="800" :title="$t('tw_apply_roles')">
+    <Modal
+      v-model="showModal"
+      :mask-closable="false"
+      :fullscreen="isfullscreen"
+      :footer-hide="true"
+      :width="800"
+      :title="$t('tw_apply_roles')"
+    >
+      <div slot="header" class="custom-modal-header">
+        <span>
+          {{ $t('tw_apply_roles') }}
+        </span>
+        <Icon v-if="isfullscreen" @click="isfullscreen = !isfullscreen" class="fullscreen-icon" type="ios-contract" />
+        <Icon v-else @click="isfullscreen = !isfullscreen" class="fullscreen-icon" type="ios-expand" />
+      </div>
       <div>
         <div class="title" style="margin-top:0px">
           <div class="title-text">
@@ -38,7 +52,7 @@
         </Tabs>
         <div>
           <Table
-            height="300"
+            :height="tableHeight"
             size="small"
             :columns="this.activeTab === 'pending' ? pendingColumns : processedColumns"
             :data="tableData"
@@ -58,6 +72,7 @@ export default {
   data () {
     return {
       showModal: false,
+      isfullscreen: false,
       selectedRole: [],
       roleList: [],
       activeTab: 'pending',
@@ -106,6 +121,12 @@ export default {
           }
         }
       ]
+    }
+  },
+  computed: {
+    tableHeight () {
+      const innerHeight = window.innerHeight
+      return this.isfullscreen ? innerHeight - 300 : 400
     }
   },
   methods: {
@@ -211,6 +232,19 @@ export default {
     border-radius: 12px;
     background-color: #c6eafe;
     box-sizing: content-box;
+  }
+}
+
+.custom-modal-header {
+  line-height: 20px;
+  font-size: 16px;
+  color: #17233d;
+  font-weight: 500;
+  .fullscreen-icon {
+    float: right;
+    margin-right: 28px;
+    font-size: 18px;
+    cursor: pointer;
   }
 }
 </style>

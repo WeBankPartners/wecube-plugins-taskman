@@ -1,6 +1,20 @@
 <template>
   <div>
-    <Modal v-model="showModal" :mask-closable="false" :closable="false" :width="800" :title="$t('tw_user_mgmt')">
+    <Modal
+      v-model="showModal"
+      :mask-closable="false"
+      :fullscreen="isfullscreen"
+      :footer-hide="true"
+      :width="800"
+      :title="$t('tw_user_mgmt')"
+    >
+      <div slot="header" class="custom-modal-header">
+        <span>
+          {{ $t('tw_user_mgmt') }}
+        </span>
+        <Icon v-if="isfullscreen" @click="isfullscreen = !isfullscreen" class="fullscreen-icon" type="ios-contract" />
+        <Icon v-else @click="isfullscreen = !isfullscreen" class="fullscreen-icon" type="ios-expand" />
+      </div>
       <div>
         <div class="title" style="margin-top:0px">
           <div class="title-text">
@@ -14,7 +28,7 @@
         </Tabs>
         <div>
           <Table
-            height="150"
+            height="200"
             size="small"
             :columns="this.activeTab === 'pending' ? pendingColumns : processedColumns"
             :data="tableData"
@@ -31,7 +45,7 @@
         <Col span="12">
           <Card>
             <p slot="title" style="height:24px">{{ $t('manageRole') }}</p>
-            <div class="tagContainers">
+            <div class="tagContainers" :style="{ height: tableHeight + 'px' }">
               <div class="role-item" v-for="item in roleList" :key="item.id">
                 <div
                   class="item-style"
@@ -52,7 +66,7 @@
                 $t('tw_add_user')
               }}</Button>
             </p>
-            <div class="tagContainers">
+            <div class="tagContainers" :style="{ height: tableHeight + 'px' }">
               <div class="role-item" v-for="item in userList" :key="item.id">
                 <div class="item-style" style="width:80%;display: inline-block;">
                   {{ item.username }}
@@ -63,9 +77,6 @@
           </Card>
         </Col>
       </Row>
-      <div slot="footer">
-        <Button @click="showModal = false">{{ $t('cancel') }}</Button>
-      </div>
     </Modal>
     <Modal v-model="showSelectModel" :title="$t('tw_add_user')" :mask-closable="false">
       <Form :label-width="120">
@@ -97,6 +108,7 @@ export default {
   data () {
     return {
       showModal: false,
+      isfullscreen: false,
       activeTab: 'pending',
       pendingColumns: [
         {
@@ -170,6 +182,12 @@ export default {
       showSelectModel: false,
       pendingUser: [], // 待添加用户
       pendingUserOptions: [] // 待添加用户列表
+    }
+  },
+  computed: {
+    tableHeight () {
+      const innerHeight = window.innerHeight
+      return this.isfullscreen ? innerHeight - 540 : innerHeight - 700
     }
   },
   methods: {
@@ -314,7 +332,7 @@ export default {
 <style lang="scss" scoped>
 .tagContainers {
   overflow: auto;
-  height: calc(100vh - 650px);
+  // height: calc(100vh - 650px);
 }
 .item-style {
   padding: 2px 4px;
@@ -349,6 +367,18 @@ export default {
     border-radius: 12px;
     background-color: #c6eafe;
     box-sizing: content-box;
+  }
+}
+.custom-modal-header {
+  line-height: 20px;
+  font-size: 16px;
+  color: #17233d;
+  font-weight: 500;
+  .fullscreen-icon {
+    float: right;
+    margin-right: 28px;
+    font-size: 18px;
+    cursor: pointer;
   }
 }
 </style>

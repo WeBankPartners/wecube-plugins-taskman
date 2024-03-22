@@ -71,6 +71,8 @@ func (s *ProcDefService) GetCoreProcessListAll(userToken, language string) (proc
 				Status:      model.Status,
 				RootEntity:  entityMap[model.RootEntity],
 				CreatedTime: model.CreatedTime.Format(models.DateTimeFormat),
+				Version:     model.Version,
+				ManageRole:  model.ManageRole,
 			})
 		}
 	}

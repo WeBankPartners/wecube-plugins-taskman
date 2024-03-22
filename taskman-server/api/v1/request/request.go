@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -31,6 +32,13 @@ func CountPlatform(c *gin.Context) {
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	// 默认三个月前时间
+	if param.QueryTimeStart == "" {
+		param.QueryTimeStart = time.Now().AddDate(0, -3, 0).Format(models.DateTimeFormat)
+	}
+	if param.QueryTimeEnd == "" {
+		param.QueryTimeEnd = time.Now().Format(models.DateTimeFormat)
 	}
 	platformData, err := service.GetPlatformCount(param, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
@@ -70,6 +78,13 @@ func DataList(c *gin.Context) {
 	}
 	if param.PageSize == 0 {
 		param.PageSize = 10
+	}
+	// 默认三个月前时间
+	if param.QueryTimeStart == "" {
+		param.QueryTimeStart = time.Now().AddDate(0, -3, 0).Format(models.DateTimeFormat)
+	}
+	if param.QueryTimeEnd == "" {
+		param.QueryTimeEnd = time.Now().Format(models.DateTimeFormat)
 	}
 	pageInfo, rowData, err := service.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {

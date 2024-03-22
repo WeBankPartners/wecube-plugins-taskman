@@ -1336,6 +1336,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				processExistFlag = true
 				input.RequestTemplate.ProcDefId = v.ProcDefId
 				input.RequestTemplate.ProcDefKey = v.ProcDefKey
+				input.RequestTemplate.ProcDefVersion = v.Version
 			}
 		}
 		if !processExistFlag {

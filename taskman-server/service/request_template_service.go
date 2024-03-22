@@ -482,10 +482,10 @@ func (s *RequestTemplateService) UpdateRequestTemplate(param *models.RequestTemp
 	}
 	result = models.RequestTemplateQueryObj{RequestTemplateDto: param.RequestTemplateDto, MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
 	updateAction := dao.ExecAction{Sql: "update request_template set status='created',`group`=?,name=?,description=?,tags=?,package_name=?,entity_name=?," +
-		"proc_def_key=?,proc_def_id=?,proc_def_name=?,expire_day=?,handler=?,updated_by=?,updated_time=?,type=?,operator_obj_type=?,approve_by=?,check_switch=?," +
+		"proc_def_key=?,proc_def_id=?,proc_def_name=?,proc_def_version=?,expire_day=?,handler=?,updated_by=?,updated_time=?,type=?,operator_obj_type=?,approve_by=?,check_switch=?," +
 		"confirm_switch=?,back_desc=? where id=?"}
 	updateAction.Param = []interface{}{param.Group, param.Name, param.Description, param.Tags, param.PackageName, param.EntityName, param.ProcDefKey,
-		param.ProcDefId, param.ProcDefName, param.ExpireDay, param.Handler, param.UpdatedBy, nowTime, param.Type, param.OperatorObjType, param.ApproveBy,
+		param.ProcDefId, param.ProcDefName, param.ProcDefVersion, param.ExpireDay, param.Handler, param.UpdatedBy, nowTime, param.Type, param.OperatorObjType, param.ApproveBy,
 		param.CheckSwitch, param.ConfirmSwitch, param.BackDesc, param.Id}
 	actions = append(actions, &updateAction)
 	actions = append(actions, &dao.ExecAction{Sql: "delete from request_template_role where request_template=?", Param: []interface{}{param.Id}})

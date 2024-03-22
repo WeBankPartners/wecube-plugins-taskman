@@ -92,6 +92,7 @@ type PlatformDataObj struct {
 	ProcDefId             string `json:"procDefId" xorm:"proc_def_id"`                          // 编排 key
 	ProcDefKey            string `json:"procDefKey" xorm:"proc_def_key"`                        // 编排id
 	ProcDefName           string `json:"procDefName" xorm:"proc_def_name"`                      // 使用编排
+	ProcDefVersion        string `json:"procDefVersion" xorm:"proc_def_version"`                // 编排版本
 	Status                string `json:"status" xorm:"status"`                                  // 请求状态
 	CurNode               string `json:"curNode"  xorm:"cur_node"`                              // 当前节点
 	Progress              int    `json:"progress" xorm:"progress"`                              // 进展

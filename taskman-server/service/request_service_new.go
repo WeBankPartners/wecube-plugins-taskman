@@ -177,7 +177,7 @@ func GetMyPendingCountByScene(param models.CountPlatformParam, scene int, user s
 
 func getPlatRequestSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
-		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,"+
+		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,rt.proc_def_version,"+
 		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time,rt.expire_day from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 }
 

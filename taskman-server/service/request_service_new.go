@@ -61,9 +61,9 @@ func GetPlatformCount(param models.CountPlatformParam, user string, userRoles []
 	case "all":
 		platformData.Pending = GetPendingCount(param, userRoles)
 		platformData.MyPending = GetMyPendingCount(param, user, userRoles)
-		platformData.HasProcessed = GetHasProcessedCount(param, user)
-		platformData.Submit = GetSubmitCount(param, user)
-		platformData.Draft = GetDraftCount(param, user)
+		platformData.HasProcessed = GetHasProcessedCount(param.QueryTimeStart, param.QueryTimeEnd, user)
+		platformData.Submit = GetSubmitCount(param.QueryTimeStart, param.QueryTimeEnd, user)
+		platformData.Draft = GetDraftCount(param.QueryTimeStart, param.QueryTimeEnd, user)
 	case "pending":
 		platformData.Pending = GetPendingCount(param, userRoles)
 		platformData.MyPending = GetMyPendingCount(param, user, userRoles)
@@ -71,11 +71,11 @@ func GetPlatformCount(param models.CountPlatformParam, user string, userRoles []
 		platformData.Pending = GetPendingCount(param, userRoles)
 		platformData.MyPending = GetMyPendingCount(param, user, userRoles)
 	case "hasProcessed":
-		platformData.HasProcessed = GetHasProcessedCount(param, user)
+		platformData.HasProcessed = GetHasProcessedCount(param.QueryTimeStart, param.QueryTimeEnd, user)
 	case "submit":
-		platformData.Submit = GetSubmitCount(param, user)
+		platformData.Submit = GetSubmitCount(param.QueryTimeStart, param.QueryTimeEnd, user)
 	case "draft":
-		platformData.Draft = GetDraftCount(param, user)
+		platformData.Draft = GetDraftCount(param.QueryTimeStart, param.QueryTimeEnd, user)
 	}
 	return
 }
@@ -138,16 +138,16 @@ func GetPendingCountByScene(param models.CountPlatformParam, scene int, userRole
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
 	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
-	pTaskSQL, pendingTaskParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+	pTaskSQL, pendingTaskParam = pendingTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
 	pendingTask = dao.QueryCount(pTaskSQL, pendingTaskParam...)
 
-	pendingApproveSQL, pendingApproveParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+	pendingApproveSQL, pendingApproveParam = pendingTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
 	pendingApprove = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
 
-	pendingCheckSQL, pendingCheckParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+	pendingCheckSQL, pendingCheckParam = pendingTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
 	pendingCheck = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
 
-	pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+	pendingConfirmSQL, pendingConfirmParam = pendingTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
 	pendingConfirm = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
 
 	pending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
@@ -159,16 +159,16 @@ func GetMyPendingCountByScene(param models.CountPlatformParam, scene int, user s
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	var pendingTaskParam, pendingApproveParam, pendingCheckParam, pendingConfirmParam []interface{}
 	var pTaskSQL, pendingApproveSQL, pendingCheckSQL, pendingConfirmSQL string
-	pTaskSQL, pendingTaskParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
+	pTaskSQL, pendingTaskParam = pendingMyTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeImplement)
 	pendingTask = dao.QueryCount(pTaskSQL, pendingTaskParam...)
 
-	pendingApproveSQL, pendingApproveParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
+	pendingApproveSQL, pendingApproveParam = pendingMyTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeApprove)
 	pendingApprove = dao.QueryCount(pendingApproveSQL, pendingApproveParam...)
 
-	pendingCheckSQL, pendingCheckParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
+	pendingCheckSQL, pendingCheckParam = pendingMyTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeCheck)
 	pendingCheck = dao.QueryCount(pendingCheckSQL, pendingCheckParam...)
 
-	pendingConfirmSQL, pendingConfirmParam = pendingMyTaskSQL(scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
+	pendingConfirmSQL, pendingConfirmParam = pendingMyTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, scene, user, userRolesFilterSql, userRolesFilterParam, models.TaskTypeConfirm)
 	pendingConfirm = dao.QueryCount(pendingConfirmSQL, pendingConfirmParam...)
 
 	pending = pendingTask + pendingApprove + pendingCheck + pendingConfirm
@@ -185,63 +185,63 @@ func getPlatTaskSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id,t.task_handle_created_time,t.task_handle_updated_time from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
 }
 
-func pendingTaskSQL(templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
+func pendingTaskSQL(queryTimeStart, queryTimeEnd string, templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
 	if taskType == models.TaskTypeNone {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
-		queryParam = append([]interface{}{templateType}, userRolesFilterParam...)
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time,t.request_created_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and latest_flag = 1 and handle_result is null and request_created_time >= ? and request_created_time <= ? and task_handle_role in (" + userRolesFilterSql + ")"
+		queryParam = append([]interface{}{templateType, queryTimeStart, queryTimeEnd}, userRolesFilterParam...)
 	} else {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and task_handle_role in (" + userRolesFilterSql + ")"
-		queryParam = append([]interface{}{templateType, taskType}, userRolesFilterParam...)
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time,t.request_created_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and request_created_time >= ? and request_created_time <= ?  and task_handle_role in (" + userRolesFilterSql + ")"
+		queryParam = append([]interface{}{templateType, taskType, queryTimeStart, queryTimeEnd}, userRolesFilterParam...)
 	}
 	return
 }
 
-func pendingMyTaskSQL(templateType int, user, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
+func pendingMyTaskSQL(queryTimeStart, queryTimeEnd string, templateType int, user, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
-	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and (task_handler =? or task_handler is null) and task_handle_role in (" + userRolesFilterSql + ")"
-	queryParam = append([]interface{}{templateType, taskType, user}, userRolesFilterParam...)
+	sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time,t.request_created_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and status <> 'done' and template_type = ? and type = ? and latest_flag = 1 and handle_result is null and (task_handler =? or task_handler is null) and request_created_time >= ? and request_created_time <= ? and task_handle_role in (" + userRolesFilterSql + ")"
+	queryParam = append([]interface{}{templateType, taskType, user, queryTimeStart, queryTimeEnd}, userRolesFilterParam...)
 	return
 }
 
-func hasProcessedTaskSQL(templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
+func hasProcessedTaskSQL(queryTimeStart, queryTimeEnd string, templateType int, user string, taskType models.TaskType) (sql string, queryParam []interface{}) {
 	queryParam = []interface{}{}
 	if taskType == models.TaskTypeNone {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type != ? and task_handler =? and latest_flag = 1 "
-		queryParam = append([]interface{}{templateType, models.TaskTypeSubmit, user})
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time,t.request_created_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type != ? and task_handler =? and latest_flag = 1 and request_created_time >= ? and request_created_time <= ?"
+		queryParam = append([]interface{}{templateType, models.TaskTypeSubmit, user, queryTimeStart, queryTimeEnd})
 	} else {
-		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type = ? and task_handler =? and latest_flag = 1 "
-		queryParam = append([]interface{}{templateType, taskType, user})
+		sql = "select * from (select t.id,t.request,t.template_type,t.name,t.type,t.created_time as task_created_time,th.updated_time as task_approval_time,t.updated_time,t.status,t.expire_time,th.role as task_handle_role,th.id as task_handle_id,th.handler as task_handler,t.del_flag,th.latest_flag,th.handle_status,th.handle_result,th.created_time as task_handle_created_time,th.updated_time as task_handle_updated_time,t.request_created_time from task t right join task_handle th ON t.id = th.task) tha where del_flag = 0 and handle_result is not null and template_type = ? and type = ? and task_handler =? and latest_flag = 1  and request_created_time >= ? and request_created_time <= ?"
+		queryParam = append([]interface{}{templateType, taskType, user, queryTimeStart, queryTimeEnd})
 	}
 	return
 }
 
 // GetHasProcessedCount 统计已处理,包括:(1)处理定版 (2) 任务已审批
-func GetHasProcessedCount(param models.CountPlatformParam, user string) map[string]int {
+func GetHasProcessedCount(queryTimeStart, queryTimeEnd string, user string) map[string]int {
 	var resultMap = make(map[string]int)
 	for sceneName, sceneType := range sceneTypeMap {
-		hasProcessedSQL, hasProcessedParam := hasProcessedTaskSQL(int(sceneType), user, models.TaskTypeNone)
+		hasProcessedSQL, hasProcessedParam := hasProcessedTaskSQL(queryTimeStart, queryTimeEnd, int(sceneType), user, models.TaskTypeNone)
 		resultMap[string(sceneName)] = dao.QueryCount(hasProcessedSQL, hasProcessedParam...)
 	}
 	return resultMap
 }
 
 // GetSubmitCount  统计用户提交
-func GetSubmitCount(param models.CountPlatformParam, user string) map[string]int {
+func GetSubmitCount(queryTimeStart, queryTimeEnd, user string) map[string]int {
 	var resultMap = make(map[string]int)
 	var sql string
 	var queryParam []interface{}
 	var count int
 	for sceneName, sceneType := range sceneTypeMap {
-		sql, queryParam = submitSQL(0, int(sceneType), user)
+		sql, queryParam = submitSQL(0, int(sceneType), queryTimeStart, queryTimeEnd, user)
 		count = dao.QueryCount(sql, queryParam...)
 		resultMap[string(sceneName)] = count
 	}
 	return resultMap
 }
 
-func submitSQL(rollback, templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ) or (status = 'Draft' and revoke_flag = 1))"
+func submitSQL(rollback, templateType int, queryTimeStart, queryTimeEnd, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag=0 and created_by = ? and type = ? and created_time >= ? and created_time <= ? and (status != 'Draft' or ( status = 'Draft' and rollback_desc is not null ) or (status = 'Draft' and revoke_flag = 1))"
 	if rollback == 1 {
 		// 被退回
 		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and rollback_desc is not null"
@@ -252,39 +252,27 @@ func submitSQL(rollback, templateType int, user string) (sql string, queryParam 
 		// 撤销
 		sql = "select id from request where del_flag=0 and created_by = ? and type = ? and status = 'Draft' and revoke_flag = 1 "
 	}
-	queryParam = append([]interface{}{user, templateType})
+	queryParam = append([]interface{}{user, templateType, queryTimeStart, queryTimeEnd})
 	return
 }
 
 // GetDraftCount 统计用户暂存
-func GetDraftCount(param models.CountPlatformParam, user string) map[string]int {
+func GetDraftCount(queryTimeStart, queryTimeEnd, user string) map[string]int {
 	var resultMap = make(map[string]int)
 	var sql string
 	var queryParam []interface{}
 	var count int
 	for sceneName, sceneType := range sceneTypeMap {
-		sql, queryParam = draftSQL(int(sceneType), user)
+		sql, queryParam = draftSQL(int(sceneType), queryTimeStart, queryTimeEnd, user)
 		count = dao.QueryCount(sql, queryParam...)
 		resultMap[string(sceneName)] = count
 	}
 	return resultMap
 }
 
-func draftSQL(templateType int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ? and rollback_desc is null and revoke_flag = 0"
-	queryParam = append([]interface{}{user, templateType})
-	return
-}
-
-// GetCollectCount 统计用户收藏
-func GetCollectCount(scene int, user string) int {
-	sql, queryParam := collectSQL(scene, user)
-	return dao.QueryCount(sql, queryParam...)
-}
-
-func collectSQL(scene int, user string) (sql string, queryParam []interface{}) {
-	sql = "select id from collect_template where user = ? and type= ?"
-	queryParam = append([]interface{}{user, scene})
+func draftSQL(templateType int, queryTimeStart, queryTimeEnd, user string) (sql string, queryParam []interface{}) {
+	sql = "select id from request where del_flag=0 and created_by = ? and status = 'Draft' and type = ? and rollback_desc is null and revoke_flag = 0 and created_time >= ? and created_time <= ?"
+	queryParam = append([]interface{}{user, templateType, queryTimeStart, queryTimeEnd})
 	return
 }
 
@@ -298,19 +286,19 @@ func DataList(param *models.PlatformRequestParam, userRoles []string, userToken,
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(userRoles, "")
 	switch param.Tab {
 	case "myPending":
-		sql, queryParam = pendingMyTaskSQL(param.Action, user, userRolesFilterSql, userRolesFilterParam, taskType)
+		sql, queryParam = pendingMyTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, param.Action, user, userRolesFilterSql, userRolesFilterParam, taskType)
 		execSql = getPlatTaskSQL(where, sql)
 	case "pending":
-		sql, queryParam = pendingTaskSQL(param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
+		sql, queryParam = pendingTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, param.Action, userRolesFilterSql, userRolesFilterParam, taskType)
 		execSql = getPlatTaskSQL(where, sql)
 	case "hasProcessed":
-		sql, queryParam = hasProcessedTaskSQL(param.Action, user, taskType)
+		sql, queryParam = hasProcessedTaskSQL(param.QueryTimeStart, param.QueryTimeEnd, param.Action, user, taskType)
 		execSql = getPlatTaskSQL(where, sql)
 	case "submit":
-		sql, queryParam = submitSQL(param.Rollback, param.Action, user)
+		sql, queryParam = submitSQL(param.Rollback, param.Action, param.QueryTimeStart, param.QueryTimeEnd, user)
 		execSql = getPlatRequestSQL(where, sql)
 	case "draft":
-		sql, queryParam = draftSQL(param.Action, user)
+		sql, queryParam = draftSQL(param.Action, param.QueryTimeStart, param.QueryTimeEnd, user)
 		execSql = getPlatRequestSQL(where, sql)
 	default:
 		err = fmt.Errorf("request param err,tab:%s", param.Tab)
@@ -1662,8 +1650,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	taskSort = GetTaskService().GenerateTaskOrderByRequestId(request.Id)
 	// 新增提交请求任务
 	submitTaskId := "su_" + guid.CreateGuid()
-	action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,task_result,created_by,created_time,updated_by,updated_time,sort) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-	action.Param = []interface{}{submitTaskId, "submit", expireTime, request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, models.TaskHandleResultTypeComplete, "system", now, "system", now, taskSort}
+	action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,task_result,created_by,created_time,updated_by,updated_time,sort,request_created_time) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	action.Param = []interface{}{submitTaskId, "submit", expireTime, request.Type, models.TaskStatusDone, request.Id, submitTaskTemplateList[0].Id, models.TaskTypeSubmit, models.TaskHandleResultTypeComplete, "system", now, "system", now, taskSort, request.CreatedTime}
 	taskSort++
 	actions = append(actions, action)
 
@@ -1688,8 +1676,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 			err = fmt.Errorf("taskTemplate not find check template")
 		}
 		checkExpireTime := calcExpireTime(now, checkTaskTemplateList[0].ExpireDay)
-		action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort) values (?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-		action.Param = []interface{}{checkTaskId, "check", checkExpireTime, request.Type, models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, now, operator, now, taskSort}
+		action = &dao.ExecAction{Sql: "insert into task(id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort,request_created_time) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		action.Param = []interface{}{checkTaskId, "check", checkExpireTime, request.Type, models.TaskStatusCreated, request.Id, checkTaskTemplateList[0].Id, models.TaskTypeCheck, operator, now, operator, now, taskSort, request.CreatedTime}
 		actions = append(actions, action)
 		taskSort++
 
@@ -1762,16 +1750,16 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 			taskExpireTime := calcExpireTime(now, taskTemplate.ExpireDay)
 			// 审批模板配置自动通过,设置当前审批完成,并且直接下一个审批
 			if taskTemplate.HandleMode == string(models.TaskTemplateHandleModeAuto) {
-				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,task_result,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, models.TaskHandleResultTypeApprove, "system", now, "system", now, taskSort}
+				action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,task_result,created_by,created_time,updated_by,updated_time,sort,request_created_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+				action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusDone, request.Id, taskTemplate.Id, taskTemplate.Type, models.TaskHandleResultTypeApprove, "system", now, "system", now, taskSort, request.CreatedTime}
 				actions = append(actions, action)
 				taskSort++
 				continue
 			}
 
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, "system", now, "system", now, taskSort}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort,request_created_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, "system", now, "system", now, taskSort, request.CreatedTime}
 			actions = append(actions, action)
 			taskSort++
 
@@ -1858,8 +1846,8 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 			// 模版没有对应的的任务,需要创建当前任务
 			newTaskId = "im_" + guid.CreateGuid()
 			// 新增任务
-			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
-			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, "system", now, "system", now, taskSort}
+			action = &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,description,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort,request_created_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+			action.Param = []interface{}{newTaskId, taskTemplate.Name, taskExpireTime, request.Type, taskTemplate.Description, models.TaskStatusCreated, request.Id, taskTemplate.Id, taskTemplate.Type, "system", now, "system", now, taskSort, request.CreatedTime}
 			actions = append(actions, action)
 			taskSort++
 
@@ -1904,8 +1892,8 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskS
 	}
 	// 新增任务
 	taskExpireTime := calcExpireTime(now, taskTemplateList[0].ExpireDay)
-	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort) values(?,?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-		newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0].Id, models.TaskTypeConfirm, "system", now, "system", now, taskSort}})
+	actions = append(actions, &dao.ExecAction{Sql: "insert into task (id,name,expire_time,template_type,status,request,task_template,type,created_by,created_time,updated_by,updated_time,sort,request_created_time) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+		newTaskId, "confirm", taskExpireTime, request.Type, models.TaskStatusCreated, request.Id, taskTemplateList[0].Id, models.TaskTypeConfirm, "system", now, "system", now, taskSort, request.CreatedTime}})
 	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), newTaskId, request.Role, request.CreatedBy, now, now}})
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})

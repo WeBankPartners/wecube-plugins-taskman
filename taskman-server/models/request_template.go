@@ -19,6 +19,7 @@ type RequestTemplateTable struct {
 	ProcDefKey      string `json:"procDefKey" xorm:"proc_def_key"`
 	ProcDefId       string `json:"procDefId" xorm:"proc_def_id"`
 	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`
+	ProcDefVersion  string `json:"procDefVersion" xorm:"proc_def_version"`
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`

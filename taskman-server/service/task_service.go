@@ -128,12 +128,12 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	}
 	taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id," +
 		"node_name,callback_url,callback_parameter,reporter,report_role,report_time,emergency,cache,callback_request_id,next_option,expire_time," +
-		"handler,created_by,created_time,updated_by,updated_time,template_type,type,sort) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+		"handler,created_by,created_time,updated_by,updated_time,template_type,type,sort,request_created_time) value (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	taskInsertAction.Param = []interface{}{newTaskObj.Id, newTaskObj.Name, newTaskObj.Description, newTaskObj.Form, newTaskObj.Status,
 		newTaskObj.Request, newTaskObj.TaskTemplate, newTaskObj.ProcDefId, newTaskObj.ProcDefKey, newTaskObj.NodeDefId, newTaskObj.NodeName,
 		newTaskObj.CallbackUrl, newTaskObj.CallbackParameter, newTaskObj.Reporter, newTaskObj.ReportRole, nowTime, newTaskObj.Emergency,
 		input.TaskFormInput, callRequestId, newTaskObj.NextOption, newTaskObj.ExpireTime, newTaskObj.Handler, operator, nowTime, operator,
-		nowTime, newTaskObj.TemplateType, models.TaskTypeImplement, taskSort}
+		nowTime, newTaskObj.TemplateType, models.TaskTypeImplement, taskSort, requestTable[0].CreatedTime}
 	actions = append(actions, &taskInsertAction)
 	// 新增form
 	var formTemplateRows []*models.FormTemplateTable

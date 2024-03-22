@@ -25,7 +25,7 @@ func notifyAction() {
 	log.Logger.Info("Start notify action")
 	var taskTable []*models.TaskTable
 	var actions []*dao.ExecAction
-	err := dao.X.SQL("select id,created_time,expire_time,notify_count,type from task where status<>'done'").Find(&taskTable)
+	err := dao.X.SQL("select id,created_time,expire_time,notify_count,type,request from task where status<>'done'").Find(&taskTable)
 	if err != nil {
 		log.Logger.Error("notify action fail,query task error", log.Error(err))
 		return
@@ -40,7 +40,11 @@ func notifyAction() {
 			expireT, _ := time.Parse(models.DateTimeFormat, v.ExpireTime)
 			nowT, _ := time.Parse(models.DateTimeFormat, now)
 			if nowT.Sub(expireT) > 0 {
-				actions = append(actions, &dao.ExecAction{Sql: "update task set status =?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.TaskStatusDone, "system", now, v.Id}})
+				taskHandleList, _ := GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
+				if len(taskHandleList) > 0 {
+					actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handler_result =?,handle_status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, "system", now, v.Id}})
+				}
+				actions = append(actions, &dao.ExecAction{Sql: "update task set status =?,task_result=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeComplete, "system", now, v.Id}})
 				if v.Request != "" {
 					actions = append(actions, &dao.ExecAction{Sql: "update request set status =?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.RequestStatusCompleted, "system", now, v.Request}})
 				}

@@ -1,6 +1,6 @@
 const CompressionPlugin = require('compression-webpack-plugin')
 const path = require('path')
-const baseUrl = 'http://106.52.160.142:18080'
+const baseUrl = 'http://106.52.160.142:18080/'
 module.exports = {
   devServer: {
     // hot: true,
@@ -20,7 +20,8 @@ module.exports = {
     }
   },
   runtimeCompiler: true,
-  publicPath: '/taskman/',
+  // publicPath: '/taskman/',
+  publicPath: '/',
   chainWebpack: config => {
     if (process.env.PLUGIN !== 'plugin') {
       // remove the old loader

@@ -18,7 +18,7 @@ func TransAuthGetApplyRoles(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -30,7 +30,7 @@ func TransAuthStartApply(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -42,7 +42,7 @@ func TransAuthGetProcessableList(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -53,7 +53,7 @@ func TransAuthGetAllUser(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -64,7 +64,7 @@ func TransAuthGetUserByRole(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -76,7 +76,7 @@ func TransAuthRemoveUserFromRole(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -88,7 +88,7 @@ func TransAuthAddUserForRole(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -100,7 +100,7 @@ func TransAuthHandleApplication(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
 
@@ -112,6 +112,6 @@ func TransAuthGetApplyList(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }

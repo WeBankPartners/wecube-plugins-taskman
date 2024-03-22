@@ -15,6 +15,7 @@ export const getEncryptKey = () => req.get(`/taskman/api/v1/login/seed`)
 // 获取可申请角色列表
 export const getApplyRoles = data => req.get(`/taskman/api/v2/auth/roles?all=${data.all}&roleAdmin=${data.roleAdmin}`)
 export const startApply = data => req.post('/taskman/api/v2/auth/roles/apply', data)
+export const registerUser = data => req.post('/taskman/api/v2/auth/users/register', data)
 
 export const getTempGroupList = data => req.post('/taskman/api/v1/request-template-group/query', data)
 export const createTempGroup = data => req.post('/taskman/api/v1/request-template-group', data)

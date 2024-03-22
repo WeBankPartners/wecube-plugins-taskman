@@ -48,7 +48,7 @@
 </template>
 <script>
 import CryptoJS from 'crypto-js'
-import { login, getApplyRoles, startApply, getEncryptKey } from '@/api/server'
+import { login, getApplyRoles, registerUser, getEncryptKey } from '@/api/server'
 export default {
   data () {
     return {
@@ -133,7 +133,7 @@ export default {
     handleSubmit (name) {
       this.$refs[name].validate(async valid => {
         if (valid) {
-          const { status } = await startApply(this.formValidate)
+          const { status } = await registerUser(this.formValidate)
           if (status === 'OK') {
             this.$Notice.success({
               title: this.$t('successful'),

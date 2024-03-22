@@ -294,6 +294,6 @@ func UploadTaskAttachFile(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		service.GetOperationLogService().RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
-		middleware.ReturnData(c, service.GetTaskAttachFileList(taskId))
+		middleware.ReturnData(c, service.GetAttachFileListByTaskHandleId(taskHandleId))
 	}
 }

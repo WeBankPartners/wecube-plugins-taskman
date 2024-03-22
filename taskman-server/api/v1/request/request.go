@@ -437,10 +437,10 @@ func UploadRequestAttachFile(c *gin.Context) {
 
 func DownloadAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
-	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
+	/*if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
-	}
+	}*/
 	fileContent, fileName, err := service.DownloadAttachFile(fileId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

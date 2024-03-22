@@ -146,6 +146,12 @@ func GetTaskAttachFileList(taskId string) []*models.AttachFileTable {
 	return attachFileTable
 }
 
+func GetAttachFileListByTaskHandleId(taskHandleId string) []*models.AttachFileTable {
+	var attachFileTable []*models.AttachFileTable
+	dao.X.SQL("select id,name from attach_file where task_handle=?", taskHandleId).Find(&attachFileTable)
+	return attachFileTable
+}
+
 func getMinioServerObj() (ms file_server.MinioServer, err error) {
 	ms = file_server.MinioServer{ServerAddress: models.Config.AttachFile.MinioAddress, AccessKey: models.Config.AttachFile.MinioAccessKey, SecretKey: models.Config.AttachFile.MinioSecretKey, SSL: models.Config.AttachFile.SSL}
 	err = ms.Init()
@@ -160,39 +166,25 @@ func CheckAttachFilePermission(fileId, operator, operation string, roles []strin
 	var legalRoles []string
 	if fileObj.Request != "" {
 		var requestTemplateRoles []*models.RequestTemplateRoleTable
-		if operation == "download" {
-			dao.X.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id=?)) union select `role` from request_template_role where request_template in (select request_template from request where id=?)) t1", fileObj.Request, fileObj.Request).Find(&requestTemplateRoles)
-			for _, v := range requestTemplateRoles {
+		var requestTable []*models.RequestTable
+		dao.X.SQL("select id,created_by from request where id=?", fileObj.Request).Find(&requestTable)
+		if len(requestTable) > 0 {
+			if requestTable[0].CreatedBy == operator {
+				return nil
+			}
+		}
+		dao.X.SQL("select * from request_template_role where request_template in (select request_template from request where id=?)", fileObj.Request).Find(&requestTemplateRoles)
+		for _, v := range requestTemplateRoles {
+			if v.RoleType == "USE" {
 				legalRoles = append(legalRoles, v.Role)
-			}
-		} else {
-			var requestTable []*models.RequestTable
-			dao.X.SQL("select id,created_by from request where id=?", fileObj.Request).Find(&requestTable)
-			if len(requestTable) > 0 {
-				if requestTable[0].CreatedBy == operator {
-					return nil
-				}
-			}
-			dao.X.SQL("select * from request_template_role where request_template in (select request_template from request where id=?)", fileObj.Request).Find(&requestTemplateRoles)
-			for _, v := range requestTemplateRoles {
-				if v.RoleType == "USE" {
-					legalRoles = append(legalRoles, v.Role)
-				}
 			}
 		}
 	}
 	if fileObj.Task != "" {
-		var taskTemplateRoles []*models.TaskTemplateRoleTable
-		if operation == "download" {
-			dao.X.SQL("select distinct t1.`role` from (select `role` from task_template_role where task_template in (select id from task_template where request_template in (select request_template from request where id in (select request from task where id=?))) union select `role` from request_template_role where request_template in (select request_template from request where id in (select request from task where id=?))) t1", fileObj.Task, fileObj.Task).Find(&taskTemplateRoles)
-			for _, v := range taskTemplateRoles {
-				legalRoles = append(legalRoles, v.Role)
-			}
-		} else {
-			dao.X.SQL("select * from task_template_role where task_template in (select task_template from task where id=?)", fileObj.Task).Find(&taskTemplateRoles)
-			for _, v := range taskTemplateRoles {
-				legalRoles = append(legalRoles, v.Role)
-			}
+		var taskHandleList []*models.TaskHandleTable
+		dao.X.SQL("select * from task_handle where task=?", fileObj.Task).Find(&taskHandleList)
+		for _, v := range taskHandleList {
+			legalRoles = append(legalRoles, v.Role)
 		}
 	}
 	legalFlag := false

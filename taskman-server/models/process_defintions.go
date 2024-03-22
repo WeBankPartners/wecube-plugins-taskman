@@ -78,7 +78,7 @@ type ProcDefObj struct {
 	RootEntity  ProcEntity `json:"rootEntity"`
 	CreatedTime string     `json:"createdTime"`
 	Version     string     `json:"version"`
-	ManageRole  string     `json:"manageRole" ` // 属主
+	ManageRole  string     `json:"manageRole"` // 属主
 }
 
 type ProcAllDefObj struct {

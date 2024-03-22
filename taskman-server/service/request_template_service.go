@@ -1262,10 +1262,11 @@ func (s *RequestTemplateService) RequestTemplateExport(requestTemplateId string)
 	return
 }
 
-func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string) (templateName, backToken string, err error) {
+func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTemplateExport, userToken, language, confirmToken, operator string, userRoles []string) (templateName, backToken string, err error) {
 	var actions []*dao.ExecAction
 	var inputVersion = s.getTemplateVersion(models.ConvertRequestTemplateDto2Model(input.RequestTemplate))
 	var templateList []*models.RequestTemplateTable
+	var manageRole string
 	// 记录重复并且是草稿态的Id
 	var repeatTemplateIdList []string
 	if confirmToken == "" {
@@ -1324,6 +1325,25 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		err = fmt.Errorf("RequestTemplate id illegal ")
 		return
 	}
+
+	// 判断该平台是否有自选表单entity
+	// 自选数据项表单
+	var nodesList []*models.DataModel
+	var entityMap = make(map[string]bool)
+	if nodesList, err = rpc.QueryAllModels(userToken, language); err != nil {
+		return
+	}
+	if len(nodesList) > 0 {
+		for _, model := range nodesList {
+			if len(model.Entities) > 0 {
+				for _, entity := range model.Entities {
+					entityStr := fmt.Sprintf("%s:%s", entity.PackageName, entity.Name)
+					entityMap[entityStr] = true
+				}
+			}
+		}
+	}
+
 	if input.RequestTemplate.ProcDefId != "" {
 		allProcessList, processErr := GetProcDefService().GetCoreProcessListAll(userToken, language)
 		if processErr != nil {
@@ -1337,12 +1357,40 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				input.RequestTemplate.ProcDefId = v.ProcDefId
 				input.RequestTemplate.ProcDefKey = v.ProcDefKey
 				input.RequestTemplate.ProcDefVersion = v.Version
+				manageRole = v.ManageRole
 			}
 		}
 		if !processExistFlag {
 			err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
 			return
 		}
+		roleFlag := false
+		for _, role := range userRoles {
+			if role == manageRole {
+				roleFlag = true
+				break
+			}
+		}
+		if !roleFlag {
+			err = fmt.Errorf("user not has process:%s permission! ", input.RequestTemplate.ProcDefName)
+			return
+		}
+
+		// 设置模版属主角色
+		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
+		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+			Id:              guid.CreateGuid(),
+			RequestTemplate: input.RequestTemplate.Id,
+			Role:            manageRole,
+			RoleType:        string(models.RolePermissionMGMT),
+		})
+		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+			Id:              guid.CreateGuid(),
+			RequestTemplate: input.RequestTemplate.Id,
+			Role:            manageRole,
+			RoleType:        string(models.RolePermissionUse),
+		})
+
 		nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.ConvertRequestTemplateDto2Model(input.RequestTemplate), userToken, language, "template")
 		for i, v := range input.TaskTemplate {
 			if v.NodeId == "" {
@@ -1430,7 +1478,7 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 	var newFormTemplateIdMap = make(map[string]string)
 	var newFormItemTemplateIdMap = make(map[string]string)
 	var historyTemplateId = input.RequestTemplate.Id
-	var roleList []*models.SimpleLocalRoleDto
+	//var roleList []*models.SimpleLocalRoleDto
 	now := time.Now().Format(models.DateTimeFormat)
 	input.RequestTemplate.Id = guid.CreateGuid()
 	input.RequestTemplate.RecordId = recordId
@@ -1439,24 +1487,6 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 	input.RequestTemplate.UpdatedBy = operator
 	input.RequestTemplate.UpdatedTime = now
 	input.RequestTemplate.Handler = operator
-	// 模版导入,模版使用角色和属主角色取当前操作人角色
-	roleList, _ = rpc.QueryUserRoles(operator, userToken, language)
-	if len(roleList) > 0 {
-		role := roleList[0].Name
-		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            role,
-			RoleType:        string(models.RolePermissionMGMT),
-		})
-		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
-			Id:              guid.CreateGuid(),
-			RequestTemplate: input.RequestTemplate.Id,
-			Role:            role,
-			RoleType:        string(models.RolePermissionUse),
-		})
-	}
 	// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
 	for _, taskTemplate := range input.TaskTemplate {
 		historyTaskTemplateId := taskTemplate.Id

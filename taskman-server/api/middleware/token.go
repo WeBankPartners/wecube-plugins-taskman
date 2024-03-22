@@ -22,8 +22,8 @@ var (
 	whiteListUrl = map[string]struct{}{
 		models.UrlPrefix + "/api/v1/login/seed":       {},
 		models.UrlPrefix + "/api/v1/login":            {},
-		models.UrlPrefix + "/api/v1/auth/roles":       {},
-		models.UrlPrefix + "/api/v1/auth/roles/apply": {},
+		models.UrlPrefix + "/api/v2/auth/roles":       {},
+		models.UrlPrefix + "/api/v2/auth/roles/apply": {},
 	}
 )
 

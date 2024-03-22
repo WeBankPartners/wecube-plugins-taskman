@@ -115,3 +115,15 @@ func TransAuthGetApplyList(c *gin.Context) {
 		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }
+
+func TransAuthUserRegister(c *gin.Context) {
+	bodyString := c.GetString("requestBody")
+	responseBytes, err := rpc.HttpPost(models.Config.Wecube.BaseUrl+"/auth/v1/users/register",
+		c.GetHeader("Authorization"),
+		c.GetHeader(middleware.AcceptLanguageHeader), []byte(bodyString))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	} else {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
+	}
+}

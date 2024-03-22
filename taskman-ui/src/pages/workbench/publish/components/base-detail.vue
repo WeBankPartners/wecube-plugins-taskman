@@ -14,7 +14,7 @@
     </Row>
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
-        <!--请求信息-->
+        <!--基础信息-->
         <HeaderTitle :title="$t('tw_request_title')">
           <div style="padding-left:16px;">
             <Row :gutter="20">
@@ -112,8 +112,8 @@
             </Row>
           </div>
         </HeaderTitle>
-        <!--请求表单-->
-        <HeaderTitle title="请求表单">
+        <!--表单详情-->
+        <HeaderTitle title="表单详情">
           <div class="request-form">
             <template v-if="detail.customForm && detail.customForm.value">
               <Divider style="margin: 0 0 30px 0" orientation="left">
@@ -155,7 +155,7 @@
               :key="index"
               :hide-arrow="['revoke', 'submit'].includes(data.type) ? true : false"
             >
-              <!--提交请求-->
+              <!--提交-->
               <template v-if="data.type === 'submit'">
                 <div class="custom-panel">
                   <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
@@ -167,14 +167,14 @@
                   ></HeaderTag>
                 </div>
               </template>
-              <!--请求撤回-->
+              <!--撤回-->
               <template v-if="data.type === 'revoke'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">撤回请求</div>
-                  <HeaderTag class="custom-panel-header" :data="data" operation="撤回请求"></HeaderTag>
+                  <div class="custom-panel-title" style="margin-left:30px;">撤回</div>
+                  <HeaderTag class="custom-panel-header" :data="data" operation="撤回"></HeaderTag>
                 </div>
               </template>
-              <!--请求定版-->
+              <!--定版-->
               <template v-else-if="data.type === 'check'">
                 <div class="custom-panel">
                   <div class="custom-panel-title">{{ $t('tw_request_pending') }}</div>
@@ -212,15 +212,15 @@
                   </div>
                 </div>
               </template>
-              <!--请求确认-->
+              <!--确认-->
               <template v-else-if="data.type === 'confirm'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title">请求确认</div>
-                  <HeaderTag class="custom-panel-header" :data="data" operation="请求确认"></HeaderTag>
+                  <div class="custom-panel-title">{{ $t('tw_request_confirm') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_request_confirm')"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
                   <Form :label-width="80" label-position="left">
-                    <FormItem label="请求状态">
+                    <FormItem label="状态">
                       <Input disabled :value="completeStatus" />
                     </FormItem>
                     <FormItem label="未完成任务节点">
@@ -252,10 +252,7 @@
         <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
       </div>
       <div v-if="flowVisible" class="flow-expand">
-        <StaticFlow
-          v-if="['Draft', 'Pending', 'InApproval'].includes(detail.status)"
-          :requestTemplate="requestTemplate"
-        ></StaticFlow>
+        <StaticFlow v-if="!detail.procInstanceId" :requestTemplate="requestTemplate"></StaticFlow>
         <DynamicFlow v-else :flowId="detail.procInstanceId"></DynamicFlow>
       </div>
     </template>
@@ -344,7 +341,7 @@ export default {
           { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
           { label: '审批中', value: 'InApproval', color: '#1990ff' },
           { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
-          { label: '请求确认', value: 'Confirm', color: '#b886f8' },
+          { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
           { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
           { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
           { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },

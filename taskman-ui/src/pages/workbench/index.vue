@@ -81,7 +81,6 @@
 </template>
 
 <script>
-import WorkBench from '@/pages/components/workbench-menu.vue'
 import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
@@ -96,7 +95,6 @@ export default {
     HotLink,
     DataCard,
     BaseSearch,
-    WorkBench,
     CollectTable
   },
   mixins: [column, search],
@@ -604,7 +602,7 @@ export default {
   .create-time {
     width: 200px;
     position: absolute;
-    top: -40px;
+    top: -38px;
     right: 0px;
   }
   .header {

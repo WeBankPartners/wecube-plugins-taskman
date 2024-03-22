@@ -49,7 +49,7 @@ export default {
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
               { label: '审批中', value: 'InApproval', color: '#1990ff' },
               { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
-              { label: '请求确认', value: 'Confirm', color: '#b886f8' },
+              { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
               { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
               { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
@@ -80,7 +80,7 @@ export default {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
               sendRequest: this.$t('tw_commit_request'),
-              confirm: '请求确认',
+              confirm: this.$t('tw_request_confirm'),
               requestPending: this.$t('tw_request_pending'),
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
@@ -241,7 +241,7 @@ export default {
           key: 'operatorObj'
         },
         createdBy: {
-          title: '请求提交人',
+          title: '提交人',
           sortable: 'custom',
           minWidth: 170,
           key: 'createdBy',
@@ -442,7 +442,7 @@ export default {
         render: (h, params) => {
           const taskNameMap = {
             check: this.$t('tw_pending_tab'),
-            confirm: '请求确认'
+            confirm: this.$t('tw_request_confirm')
           }
           return (
             <span
@@ -494,7 +494,7 @@ export default {
         render: (h, params) => {
           const taskNameMap = {
             check: this.$t('tw_pending_tab'),
-            confirm: '请求确认'
+            confirm: this.$t('tw_request_confirm')
           }
           return (
             <span

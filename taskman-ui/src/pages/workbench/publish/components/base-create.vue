@@ -70,7 +70,7 @@
           </FormItem>
         </HeaderTitle>
         <!--请求表单-->
-        <HeaderTitle title="请求表单">
+        <HeaderTitle title="表单详情">
           <div class="request-form">
             <template v-if="Object.keys(form.customForm.value).length > 0">
               <Divider style="margin: 0 0 30px 0" orientation="left">
@@ -711,7 +711,7 @@ export default {
           .format('YYYY-MM-DD HH:mm:ss')
         this.initExpectTime = this.form.expectTime
       }
-      // 请求名称必填校验
+      // 名称必填校验
       if (!this.form.name) {
         this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
         return
@@ -721,16 +721,16 @@ export default {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
-      // 请求信息自定义表单必填校验
+      // 信息表单必填校验
       if (!this.customFormValid()) {
-        return this.$Message.warning('请求信息必填项为空')
+        return this.$Message.warning('信息表单必填项为空')
       }
-      // 请求表单必填项-校验提示
+      // 数据表单必填项-校验提示
       if (!requiredCheck(this.form.data, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
-      // 表格至少勾选一条数据校验
+      // 数据表单至少勾选一条数据校验
       if (!noChooseCheck(this.form.data, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Message.warning(`【${tabName}】${this.$t('tw_table_noChoose_tips')}`)

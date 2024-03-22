@@ -2,7 +2,7 @@
 <template>
   <div class="workbench-base-progress">
     <!--请求进度-->
-    <div class="steps">
+    <div class="workbench-base-progress-steps">
       <div class="title">{{ $t('tw_request_progress') }}：</div>
       <Steps :current="0" :style="{ width: progress.requestProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
@@ -37,7 +37,7 @@
       </div>
     </div>
     <!--审批进度-->
-    <div v-if="approvalExpand" class="steps" style="margin-top:15px;">
+    <div v-if="approvalExpand" class="workbench-base-progress-steps" style="margin-top:15px;">
       <span class="title">审批进度：</span>
       <Steps :current="0" :style="{ width: progress.approvalProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
@@ -58,7 +58,7 @@
       </Steps>
     </div>
     <!--任务进度-->
-    <div v-if="taskExpand" class="steps" style="margin-top:15px;">
+    <div v-if="taskExpand" class="workbench-base-progress-steps" style="margin-top:15px;">
       <span class="title">任务进度：</span>
       <Steps :current="0" :style="{ width: progress.taskProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
@@ -167,10 +167,10 @@ export default {
           item.color = statusColor[item.status]
           switch (item.node) {
             case 'submit':
-              item.name = this.$t('tw_commit_request') // 提交请求
+              item.name = this.$t('tw_commit_request') // 提交
               break
             case 'check':
-              item.name = this.$t('tw_request_pending') // 请求定版
+              item.name = this.$t('tw_request_pending') // 定版
               break
             case 'approval':
               item.name = '审批' // 审批
@@ -183,10 +183,10 @@ export default {
               item.handler = `${noAutoTagList.length}个节点`
               break
             case 'confirm':
-              item.name = '请求确认' // 请求确认
+              item.name = this.$t('tw_request_confirm') // 确认
               break
             case 'requestComplete':
-              item.name = this.$t('tw_request_complete') // 请求完成
+              item.name = this.$t('tw_request_complete') // 完成
               break
             case 'autoExit':
               item.name = this.$t('status_faulted') // 自动退出
@@ -260,11 +260,11 @@ export default {
   .ivu-alert.ivu-alert-with-icon {
     padding: 8px 5px 8px 38px;
   }
-  .steps .ivu-steps .ivu-steps-tail > i {
+  &-steps .ivu-steps .ivu-steps-tail > i {
     height: 3px;
     background: #8189a5;
   }
-  .steps {
+  &-steps {
     display: flex;
     align-items: flex-start;
     .title {

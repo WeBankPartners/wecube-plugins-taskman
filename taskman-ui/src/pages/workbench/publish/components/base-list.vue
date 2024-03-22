@@ -210,6 +210,7 @@ export default {
     },
     // 点击名称，id快捷跳转
     handleDbClick (row) {
+      if (this.activeTab === 'draft') return
       this.hanldeView(row)
     },
     // 表格操作-查看

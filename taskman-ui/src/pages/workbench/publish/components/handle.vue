@@ -1,7 +1,7 @@
 <!--当前处理-->
 <template>
   <div class="workbench-current-handle">
-    <!--请求定版-->
+    <!--定版-->
     <HeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
         <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_pending') }}</Tag>
@@ -82,9 +82,6 @@
           </div>
           <div class="content">
             <Form :label-width="80" label-position="left">
-              <!-- <FormItem :label="$t('task') + $t('description')">
-                <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
-              </FormItem> -->
               <!--处理结果-审批类型-->
               <FormItem v-if="handleData.type === 'approve'" required label="操作">
                 <Select v-model="taskForm.choseOption" @on-change="handleChoseOptionChange">
@@ -139,14 +136,14 @@
         </div>
       </div>
     </HeaderTitle>
-    <!--确认请求-->
+    <!--确认-->
     <HeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
-        <Tag class="tag" :color="handleTypeColor[handleData.type]">请求确认</Tag>
+        <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_confirm') }}</Tag>
       </div>
       <div style="padding:20px 16px;">
         <Form :label-width="80" label-position="left">
-          <FormItem label="请求状态">
+          <FormItem label="状态">
             <Select v-model="confirmRequestForm.completeStatus" @on-change="confirmRequestForm.markTaskId = []">
               <Option v-for="(i, index) in completeStatusList" :value="i.value" :key="index">{{ i.label }}</Option>
             </Select>
@@ -312,8 +309,12 @@ export default {
             if (item.id === this.taskHandleId) {
               if (['InApproval', 'InProgress'].includes(this.detail.status)) {
                 this.taskForm.comment = item.resultDesc
-                this.taskForm.choseOption = item.handleResult
-                // 后台默认下发'未完成'，第一次编辑前端写死'完成'
+                // 通过createdTime===updatedTime判断首次编辑时，给默认值
+                if (val.type === 'approve' && item.createdTime === item.updatedTime) {
+                  this.taskForm.choseOption = 'approve'
+                } else {
+                  this.taskForm.choseOption = item.handleResult
+                }
                 if (item.createdTime === item.updatedTime) {
                   this.taskForm.handleStatus = 'complete'
                 } else {

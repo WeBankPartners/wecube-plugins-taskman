@@ -1,6 +1,6 @@
 <template>
   <div class="workbench-entity-table">
-    <div class="radio-group">
+    <div class="workbench-entity-table-radio-group">
       <div
         v-for="(item, index) in requestData"
         :key="index"
@@ -125,12 +125,10 @@
 <script>
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import EntityItem from './edit-entity-item.vue'
 import LimitSelect from '@/pages/components/limit-select.vue'
 import dayjs from 'dayjs'
 export default {
   components: {
-    EntityItem,
     LimitSelect
   },
   props: {
@@ -441,11 +439,17 @@ export default {
       data.title.forEach(item => {
         // 选择已有数据添加一行，填充默认值
         if (source) {
-          entityData[item.name] = source[item.name] || ''
+          if (source.hasOwnProperty(item.name)) {
+            entityData[item.name] = source[item.name]
+          } else if (!source.hasOwnProperty(item.name) && item.defaultClear === 'no') {
+            entityData[item.name] = item.defaultValue
+          } else {
+            entityData[item.name] = ''
+          }
         } else {
-          // 默认清空标志为false,赋值默认值
+          // 模板自带默认值
           if (item.defaultClear === 'no') {
-            entityData[item.name] = item.defaultValue || ''
+            entityData[item.name] = item.defaultValue
           } else {
             entityData[item.name] = ''
           }
@@ -537,15 +541,16 @@ export default {
 <style lang="scss">
 .workbench-entity-table {
   width: 100%;
-  .radio-group {
+  &-radio-group {
     display: flex;
-    margin-bottom: 15px;
+    flex-wrap: wrap;
     .radio {
       padding: 5px 15px;
       border-radius: 32px;
       font-size: 14px;
       cursor: pointer;
       margin-right: 10px;
+      margin-bottom: 15px;
     }
     .custom {
       border: 1px solid #b886f8;

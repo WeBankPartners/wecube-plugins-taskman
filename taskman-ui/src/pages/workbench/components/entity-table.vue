@@ -96,6 +96,7 @@
       }}</Button>
       <!--选择已有数据添加一行-->
       <Select
+        ref="addRowSelect"
         v-if="isAdd && activeItem.itemGroupRule === 'exist'"
         v-model="addRowSource"
         filterable
@@ -103,7 +104,11 @@
         placeholder="选择已有数据添加一行"
         style="width:450px;"
         prefix="md-add-circle"
-        @on-open-change="getCmdbEntityList"
+        @on-open-change="
+          flag => {
+            if (flag) getCmdbEntityList()
+          }
+        "
         @on-change="addRow"
       >
         <template #prefix>
@@ -168,7 +173,7 @@ export default {
       tableData: [],
       addRowSource: '',
       addRowSourceOptions: [],
-      worklfowData: [] // 编排类表单默认下发value
+      worklfowDataIdsObj: {} // 编排类表单默认下发数据dataId集合
     }
   },
   computed: {
@@ -202,7 +207,11 @@ export default {
             }
             // 备份编排类表单初始value
             if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
-              this.worklfowData = deepClone(item.value || [])
+              const list = item.value || []
+              const ids = list.map(item => {
+                return item.dataId
+              })
+              this.$set(this.worklfowDataIdsObj, item.formTemplateId, ids)
             }
           })
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
@@ -215,12 +224,15 @@ export default {
     }
   },
   methods: {
+    // ref类型下拉框每次展开调用接口
     handleRefOpenChange (titleObj, row, index) {
       this.getRefOptions(titleObj, row, index, false)
     },
+    // 保存当前表单组的数据
     async saveCurrentTabData (item) {
       await saveFormData(this.requestId, item)
     },
+    // 时间选择器默认填充当前时分秒
     handleTimeChange (e, value, name) {
       if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
         value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
@@ -419,6 +431,7 @@ export default {
           const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
           this.handleAddRow(data, source)
           this.initTableData()
+          this.$refs.addRowSelect.clearSingleSelect()
         }
       }
     },
@@ -472,8 +485,9 @@ export default {
           })
         }
         if (this.activeItem.itemGroupType === 'workflow') {
-          const workflowDataIds = this.worklfowData.map(i => i.dataId)
-          this.addRowSourceOptions = this.addRowSourceOptions.filter(item => workflowDataIds.includes(item.id))
+          this.addRowSourceOptions = this.addRowSourceOptions.filter(item =>
+            this.worklfowDataIdsObj[this.activeItem.formTemplateId].includes(item.id)
+          )
         }
         this.addRowSourceOptions = this.addRowSourceOptions.filter(item => !ids.includes(item.id))
       }

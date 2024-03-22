@@ -1,12 +1,22 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <!-- <div class="create-time">
-      <span>创建时间：</span>
-      <Select v-model="actionName" @on-change="handleActionChange">
-        <Option v-for="i in actionList" :key="i.value" :value="i.value">{{ i.label }}</Option>
-      </Select>
-    </div> -->
+    <div class="create-time">
+      <DatePicker
+        :value="queryTime"
+        @on-change="
+          val => {
+            handleQueryDateRange(val)
+          }
+        "
+        type="daterange"
+        placement="bottom-end"
+        format="yyyy-MM-dd"
+        :placeholder="$t('tw_created_time')"
+        style="width: 200px"
+        :clearable="false"
+      />
+    </div>
     <DataCard
       ref="dataCard"
       :initTab="initTab"
@@ -78,6 +88,7 @@ import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
 import { getPlatformList, recallRequest, pendingHandle, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
+import dayjs from 'dayjs'
 import column from './column.js'
 import search from './search.js'
 export default {
@@ -91,6 +102,12 @@ export default {
   mixins: [column, search],
   data () {
     return {
+      queryTime: [
+        dayjs()
+          .subtract(3, 'month')
+          .format('YYYY-MM-DD'),
+        dayjs().format('YYYY-MM-DD')
+      ], // 全局时间过滤器
       tabName: 'myPending', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
@@ -193,6 +210,10 @@ export default {
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
+    handleQueryDateRange (val) {
+      this.queryTime = val
+      this.handleQuery(true)
+    },
     // 初始化加载数据(链接携带参数，跳转到指定标签)
     initData (val, action) {
       this.tabName = val
@@ -386,6 +407,8 @@ export default {
         action: Number(this.actionName),
         type: Number(this.type),
         rollback: Number(this.rollback),
+        queryTimeStart: this.queryTime[0] && this.queryTime[0] + ' 00:00:00',
+        queryTimeEnd: this.queryTime[1] && this.queryTime[1] + ' 23:59:59',
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
@@ -411,10 +434,10 @@ export default {
       }
       this.loading = false
     },
-    handleQuery (allData = false) {
+    handleQuery (all = false) {
       this.pagination.currentPage = 1
       this.getList()
-      this.$refs.dataCard.getData(allData)
+      this.$refs.dataCard.getData(all)
     },
     changPage (val) {
       this.pagination.currentPage = val
@@ -578,7 +601,7 @@ export default {
 <style lang="scss" scoped>
 .workbench {
   position: relative;
-  .scene-select {
+  .create-time {
     width: 200px;
     position: absolute;
     top: -40px;

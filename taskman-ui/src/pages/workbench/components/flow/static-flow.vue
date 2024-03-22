@@ -3,7 +3,10 @@
     <div style="margin-bottom: 8px;">
       <Alert type="warning" show-icon>{{ $t('tw_flow_tips') }}</Alert>
       <!-- <span class="custom-title">{{ $t('workflow_name') }}</span> -->
-      <span class="custom-display">{{ flowData.procDefName }}</span>
+      <span class="custom-display">
+        {{ flowData.procDefName }}
+        <span v-if="flowData.procDefVersion">{{ `【${flowData.procDefVersion}】` }}</span>
+      </span>
     </div>
     <div id="graphcontain">
       <div class="graph-container" id="flow" style="height: 96%"></div>

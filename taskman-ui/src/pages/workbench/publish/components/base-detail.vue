@@ -334,7 +334,7 @@ export default {
         4: '事件',
         5: '变更'
       },
-      lang: window.localStorage.getItem('lang')
+      lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
   computed: {

@@ -198,11 +198,24 @@ export default {
         },
         {
           title: this.$t('procDefId'),
-          minWidth: 80,
+          minWidth: 100,
           sortable: 'custom',
           key: 'procDefName',
           render: (h, params) => {
-            return <span>{params.row.procDefName || '-'}</span>
+            if (params.row.procDefName) {
+              return (
+                <span>
+                  {`${params.row.procDefName}`}
+                  {params.row.procDefVersion && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.procDefVersion}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         {

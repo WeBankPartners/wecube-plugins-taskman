@@ -168,13 +168,6 @@ export default {
         }
       }
     }
-    // getPendingNum () {
-    //   return function (type) {
-    //     return this.pendingNumObj[type].reduce((sum, cur) => {
-    //       return Number(sum) + Number(cur || 0)
-    //     }, 0)
-    //   }
-    // }
   },
   watch: {
     initAction: {
@@ -211,13 +204,12 @@ export default {
     }
   },
   methods: {
-    // handlePendGroupChange (val) {
-    //   this.pendingType = val
-    // },
     async getData (init = false, interval = false) {
       // ini为true，初始化拉取所有数据，后续拉取特定场景下的数据
       const params = {
-        tab: init ? 'all' : this.active
+        tab: init ? 'all' : this.active,
+        queryTimeStart: this.$parent.queryTime[0] && this.$parent.queryTime[0] + ' 00:00:00',
+        queryTimeEnd: this.$parent.queryTime[1] && this.$parent.queryTime[1] + ' 23:59:59'
       }
       // 设置每分钟轮询查询本人处理数据
       if (interval) {

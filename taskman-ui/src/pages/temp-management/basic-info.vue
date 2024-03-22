@@ -408,12 +408,14 @@ export default {
         cacheData.entityName = process.rootEntity.name
         cacheData.procDefKey = process.procDefKey
         cacheData.procDefName = process.procDefName
+        cacheData.procDefVersion = process.version
         cacheData.OperatorObjType = process.rootEntity.displayName
       } else {
         cacheData.packageName = ''
         cacheData.entityName = ''
         cacheData.procDefKey = ''
         cacheData.procDefName = ''
+        cacheData.procDefVersion = ''
         cacheData.OperatorObjType = ''
       }
       const method = this.basicInfo.id === '' ? createTemp : updateTemp

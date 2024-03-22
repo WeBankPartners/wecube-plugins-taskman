@@ -42,11 +42,11 @@ func notifyAction() {
 			if nowT.Sub(expireT) > 0 {
 				taskHandleList, _ := GetTaskHandleService().GetTaskHandleListByTaskId(v.Id)
 				if len(taskHandleList) > 0 {
-					actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handler_result =?,handle_status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, "system", now, v.Id}})
+					actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result =?,handle_status=?,updated_time=? where id=?", Param: []interface{}{models.TaskHandleResultTypeApprove, models.TaskHandleResultTypeComplete, now, taskHandleList[0].Id}})
 				}
 				actions = append(actions, &dao.ExecAction{Sql: "update task set status =?,task_result=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeComplete, "system", now, v.Id}})
 				if v.Request != "" {
-					actions = append(actions, &dao.ExecAction{Sql: "update request set status =?,updated_by=?,updated_time=? where id=?", Param: []interface{}{models.RequestStatusCompleted, "system", now, v.Request}})
+					actions = append(actions, &dao.ExecAction{Sql: "update request set status =?,updated_by=?,updated_time=?,complete_status=? where id=?", Param: []interface{}{models.RequestStatusCompleted, "system", now, models.TaskHandleResultTypeComplete, v.Request}})
 				}
 			}
 		}

@@ -1342,6 +1342,14 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				}
 			}
 		}
+		if len(input.FormTemplate) > 0 {
+			for _, formTemplate := range input.FormTemplate {
+				if formTemplate.ItemGroupType == "optional" && entityMap[formTemplate.ItemGroup] == false {
+					err = fmt.Errorf("optional process not has %s group", formTemplate.ItemGroup)
+					return
+				}
+			}
+		}
 	}
 
 	if input.RequestTemplate.ProcDefId != "" {

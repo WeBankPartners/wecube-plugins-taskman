@@ -179,19 +179,43 @@ export default {
           minWidth: 200,
           key: 'templateName',
           render: (h, params) => {
-            return (
-              <span>
-                {`${params.row.templateName}【${params.row.version}】`}
-                {/* <Tag>{params.row.version}</Tag> */}
-              </span>
-            )
+            if (params.row.templateName) {
+              return (
+                <span>
+                  {`${params.row.templateName}`}
+                  {params.row.version && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.version}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         procDefName: {
           title: this.$t('tw_template_flow'),
           sortable: 'custom',
-          minWidth: 150,
-          key: 'procDefName'
+          minWidth: 180,
+          key: 'procDefName',
+          render: (h, params) => {
+            if (params.row.procDefName) {
+              return (
+                <span>
+                  {`${params.row.procDefName}`}
+                  {params.row.procDefVersion && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.procDefVersion}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
+          }
         },
         operatorObjType: {
           title: this.$t('tw_operator_type'),

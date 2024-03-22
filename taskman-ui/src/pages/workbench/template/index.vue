@@ -243,7 +243,7 @@ export default {
           key: 'useRoleDisplay'
         }
       ],
-      lang: window.localStorage.getItem('lang'),
+      lang: window.localStorage.getItem('lang') || 'zh-CN',
       createRouteMap: {
         '1': 'createPublish',
         '2': 'createRequest',

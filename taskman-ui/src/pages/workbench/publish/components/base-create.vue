@@ -392,7 +392,7 @@ export default {
       },
       userRoleList: [], // 用户角色列表
       noRequestForm: false, // 请求表单为空标识
-      lang: window.localStorage.getItem('lang')
+      lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
   watch: {

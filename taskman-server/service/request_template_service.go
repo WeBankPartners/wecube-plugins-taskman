@@ -1383,8 +1383,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			err = fmt.Errorf("user not has process:%s permission! ", input.RequestTemplate.ProcDefName)
 			return
 		}
-
-		// 设置模版属主角色
+		// 重新设置模版属主角色
 		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
 		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
 			Id:              guid.CreateGuid(),
@@ -1486,7 +1485,7 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 	var newFormTemplateIdMap = make(map[string]string)
 	var newFormItemTemplateIdMap = make(map[string]string)
 	var historyTemplateId = input.RequestTemplate.Id
-	//var roleList []*models.SimpleLocalRoleDto
+	var roleList []*models.SimpleLocalRoleDto
 	now := time.Now().Format(models.DateTimeFormat)
 	input.RequestTemplate.Id = guid.CreateGuid()
 	input.RequestTemplate.RecordId = recordId
@@ -1495,6 +1494,24 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 	input.RequestTemplate.UpdatedBy = operator
 	input.RequestTemplate.UpdatedTime = now
 	input.RequestTemplate.Handler = operator
+	// 模版导入,模版使用角色和属主角色取当前操作人角色
+	roleList, _ = rpc.QueryUserRoles(operator, userToken, language)
+	if len(roleList) > 0 {
+		role := roleList[0].Name
+		input.RequestTemplateRole = make([]*models.RequestTemplateRoleTable, 0)
+		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+			Id:              guid.CreateGuid(),
+			RequestTemplate: input.RequestTemplate.Id,
+			Role:            role,
+			RoleType:        string(models.RolePermissionMGMT),
+		})
+		input.RequestTemplateRole = append(input.RequestTemplateRole, &models.RequestTemplateRoleTable{
+			Id:              guid.CreateGuid(),
+			RequestTemplate: input.RequestTemplate.Id,
+			Role:            role,
+			RoleType:        string(models.RolePermissionUse),
+		})
+	}
 	// 修改 taskTemplate中formTemplate,RequestTemplate,以及taskTemplateRole修改
 	for _, taskTemplate := range input.TaskTemplate {
 		historyTaskTemplateId := taskTemplate.Id

@@ -252,10 +252,7 @@
         <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
       </div>
       <div v-if="flowVisible" class="flow-expand">
-        <StaticFlow
-          v-if="['Draft', 'Pending', 'InApproval'].includes(detail.status)"
-          :requestTemplate="requestTemplate"
-        ></StaticFlow>
+        <StaticFlow v-if="!detail.procInstanceId" :requestTemplate="requestTemplate"></StaticFlow>
         <DynamicFlow v-else :flowId="detail.procInstanceId"></DynamicFlow>
       </div>
     </template>

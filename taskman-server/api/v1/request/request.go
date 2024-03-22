@@ -488,6 +488,8 @@ func RemoveAttachFile(c *gin.Context) {
 	} else {
 		if fileObj.Request != "" {
 			middleware.ReturnData(c, service.GetRequestAttachFileList(fileObj.Request))
+		} else if fileObj.TaskHandle != "" {
+			middleware.ReturnData(c, service.GetAttachFileListByTaskHandleId(fileObj.TaskHandle))
 		} else {
 			middleware.ReturnData(c, service.GetTaskAttachFileList(fileObj.Task))
 		}

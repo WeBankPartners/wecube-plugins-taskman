@@ -604,7 +604,7 @@ export default {
   .create-time {
     width: 200px;
     position: absolute;
-    top: -40px;
+    top: -38px;
     right: 0px;
   }
   .header {

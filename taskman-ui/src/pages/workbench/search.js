@@ -22,7 +22,7 @@ export default {
             { label: this.$t('status_pending'), value: 'Pending' },
             { label: this.$t('status_inProgress'), value: 'InProgress' },
             { label: '审批中', value: 'InApproval' },
-            { label: '请求确认', value: 'Confirm' },
+            { label: this.$t('tw_request_confirm'), value: 'Confirm' },
             { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
             { label: this.$t('status_termination'), value: 'Termination' },
             { label: this.$t('status_complete'), value: 'Completed' },
@@ -33,7 +33,7 @@ export default {
         },
         createdBy: {
           key: 'createdBy',
-          placeholder: '请求提交人',
+          placeholder: '提交人',
           component: 'select',
           multiple: true,
           list: []

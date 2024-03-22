@@ -889,7 +889,7 @@ func CheckRequest(request models.RequestTable, task *models.TaskTable, operator,
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,task_result=?,updated_by=?,updated_time=? where id=?",
 		Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeComplete, operator, nowTime, task.Id}})
 	taskSort = GetTaskService().GenerateTaskOrderByRequestId(request.Id)
-	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language, taskSort)
+	approvalActions, err = GetRequestService().CreateRequestApproval(request, "", userToken, language, taskSort, false)
 	if err != nil {
 		return
 	}

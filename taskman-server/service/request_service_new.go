@@ -1704,7 +1704,7 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	}
 
 	// 没有配置定版,请求继续往后面走
-	approvalActions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort)
+	approvalActions, err = s.CreateRequestApproval(request, "", userToken, language, taskSort, true)
 	if err != nil {
 		return
 	}
@@ -1715,8 +1715,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 	return
 }
 
-// CreateRequestApproval 创建请求审批
-func (s *RequestService) CreateRequestApproval(request models.RequestTable, curTaskId, userToken, language string, taskSort int) (actions []*dao.ExecAction, err error) {
+// CreateRequestApproval 创建请求审批, submitFlag 当前是否正在提交请求,如果是 taskList直接为空
+func (s *RequestService) CreateRequestApproval(request models.RequestTable, curTaskId, userToken, language string, taskSort int, submitFlag bool) (actions []*dao.ExecAction, err error) {
 	var requestTaskActions []*dao.ExecAction
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskList []*models.TaskTable
@@ -1734,8 +1734,10 @@ func (s *RequestService) CreateRequestApproval(request models.RequestTable, curT
 	}
 	for _, taskTemplate := range taskTemplateList {
 		taskList = []*models.TaskTable{}
-		// 查询
-		taskList, _ = GetTaskService().GetLatestTaskListByRequestIdAndTaskTemplateId(request.Id, taskTemplate.Id)
+		if !submitFlag {
+			// 查询
+			taskList, _ = GetTaskService().GetLatestTaskListByRequestIdAndTaskTemplateId(request.Id, taskTemplate.Id)
+		}
 		if len(taskList) > 0 {
 			// 取最新的任务
 			if taskList[0].Status == string(models.TaskStatusDone) || taskList[0].Id == curTaskId {

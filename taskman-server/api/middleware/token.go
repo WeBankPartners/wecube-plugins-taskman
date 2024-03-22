@@ -28,6 +28,9 @@ var (
 )
 
 func isWhiteListUrl(url string) (result bool) {
+	if paramIndex := strings.Index(url, "?"); paramIndex > 0 {
+		url = url[:paramIndex]
+	}
 	_, result = whiteListUrl[url]
 	return
 }

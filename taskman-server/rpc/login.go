@@ -13,7 +13,7 @@ func RemoteLogin(reqParam *models.LoginReq, userToken, language string) (result 
 	var response models.RemoteLoginResp
 	postBytes, _ := json.Marshal(reqParam)
 	log.Logger.Info("Start request", log.String("param", string(postBytes)))
-	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+"/auth/v1/api/login", userToken, language, postBytes)
+	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+"/auth/v1/api/taskLogin", userToken, language, postBytes)
 	if err != nil {
 		return
 	}

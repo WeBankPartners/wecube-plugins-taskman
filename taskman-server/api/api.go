@@ -172,6 +172,7 @@ func init() {
 		&handlerFuncObj{Url: "/auth/roles/:roleId/users", Method: "POST", HandlerFunc: requestNew.TransAuthAddUserForRole},
 		&handlerFuncObj{Url: "/auth/roles/apply", Method: "PUT", HandlerFunc: requestNew.TransAuthHandleApplication},
 		&handlerFuncObj{Url: "/auth/roles/apply/byapplier", Method: "POST", HandlerFunc: requestNew.TransAuthGetApplyList},
+		&handlerFuncObj{Url: "/auth/users/register", Method: "POST", HandlerFunc: requestNew.TransAuthUserRegister},
 	)
 }
 

@@ -125,12 +125,10 @@
 <script>
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import EntityItem from './edit-entity-item.vue'
 import LimitSelect from '@/pages/components/limit-select.vue'
 import dayjs from 'dayjs'
 export default {
   components: {
-    EntityItem,
     LimitSelect
   },
   props: {
@@ -545,13 +543,14 @@ export default {
   width: 100%;
   &-radio-group {
     display: flex;
-    margin-bottom: 15px;
+    flex-wrap: wrap;
     .radio {
       padding: 5px 15px;
       border-radius: 32px;
       font-size: 14px;
       cursor: pointer;
       margin-right: 10px;
+      margin-bottom: 15px;
     }
     .custom {
       border: 1px solid #b886f8;

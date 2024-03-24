@@ -1266,7 +1266,9 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	var actions []*dao.ExecAction
 	var inputVersion = s.getTemplateVersion(models.ConvertRequestTemplateDto2Model(input.RequestTemplate))
 	var templateList []*models.RequestTemplateTable
-	var manageRole string
+	var manageRole, maxVersionRecordId string
+	// 记录最大版本
+	var maxVersion int
 	// 记录重复并且是草稿态的Id
 	var repeatTemplateIdList []string
 	if confirmToken == "" {
@@ -1280,20 +1282,27 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			// 有名称重复数据,判断导入版本是否高于所有模板版本
 			for _, template := range templateList {
 				// 导入版本 低于同名版本,直接报错
-				if inputVersion <= s.getTemplateVersion(template) {
+				version := s.getTemplateVersion(template)
+				if inputVersion <= version {
 					err = exterror.New().ImportTemplateVersionConflictError
 					return
 				}
-				if template.Status == "created" {
+				if template.Status == string(models.RequestTemplateStatusCreated) || template.Status == string(models.RequestTemplateStatusPending) {
 					repeatTemplateIdList = append(repeatTemplateIdList, template.Id)
 					models.RequestTemplateImportMap[template.Id] = input
+					break
+				}
+				if maxVersion < version {
+					maxVersion = version
+					maxVersionRecordId = template.Id
 				}
 			}
 			if len(repeatTemplateIdList) > 0 {
 				backToken = strings.Join(repeatTemplateIdList, ",")
 				return
 			} else {
-				// 有重复数据,但是新导入模板版本最高,直接当成新建处理
+				// 有重复数据,但是新导入模板版本最高,直接当成新建处理,需要记录最新发布版本Id
+				input.RequestTemplate.RecordId = maxVersionRecordId
 				input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
 			}
 		} else {

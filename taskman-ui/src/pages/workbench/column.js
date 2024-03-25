@@ -224,13 +224,17 @@ export default {
           minWidth: 150,
           key: 'operatorObjType',
           render: (h, params) => {
-            return (
-              params.row.operatorObjType && (
-                <Tooltip content={params.row.operatorObjType} placement="top">
-                  <Tag>{params.row.operatorObjType}</Tag>
-                </Tooltip>
+            if (params.row.operatorObjType) {
+              return (
+                params.row.operatorObjType && (
+                  <Tooltip content={params.row.operatorObjType} placement="top">
+                    <Tag>{params.row.operatorObjType}</Tag>
+                  </Tooltip>
+                )
               )
-            )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         operatorObj: {
@@ -238,7 +242,10 @@ export default {
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObj'
+          key: 'operatorObj',
+          render: (h, params) => {
+            return <span>{params.row.operatorObj || '-'}</span>
+          }
         },
         createdBy: {
           title: '提交人',
@@ -540,7 +547,7 @@ export default {
           return (
             <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc}
+                {params.row.rollbackDesc || '-'}
               </span>
             </Tooltip>
           )
@@ -577,7 +584,7 @@ export default {
           return (
             <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc}
+                {params.row.rollbackDesc || '-'}
               </span>
             </Tooltip>
           )

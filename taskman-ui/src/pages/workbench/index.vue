@@ -243,11 +243,6 @@ export default {
       if (val !== 'collect') {
         this.handleReset()
         this.handleQuery(true)
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-          this.$refs.dataCard.getData()
-        })
       }
     },
     // 点击视图卡片触发查询
@@ -269,11 +264,6 @@ export default {
       if (val !== 'collect') {
         this.handleReset()
         this.handleQuery()
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-          this.$refs.dataCard.getData()
-        })
       }
     },
     // 切换type

@@ -163,3 +163,7 @@ func (s *RoleService) GetRoleDisplayName() (displayNameMap map[string]string, er
 	}
 	return
 }
+
+func (s *RoleService) GetUserInfo(userName, userToken, language string) (dto *models.SimpleLocalUserDto, err error) {
+	return rpc.GetUserInfo(userName, userToken, language)
+}

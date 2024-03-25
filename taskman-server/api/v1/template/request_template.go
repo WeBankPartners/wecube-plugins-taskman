@@ -111,6 +111,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 	var param models.RequestTemplateStatusUpdateParam
 	var requestTemplate *models.RequestTemplateTable
 	var err error
+	var taskTemplateList []*models.TaskTemplateDto
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -149,6 +150,28 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
+		}
+		// 提交审核,在编排任务情况下需要校验任务角色是否补充完整
+		if param.TargetStatus == string(models.RequestTemplateStatusPending) {
+			if requestTemplate.ProcDefId != "" {
+				if taskTemplateList, err = service.GetTaskTemplateService().ListTaskTemplates(requestTemplate.Id, string(models.TaskTypeImplement)); err != nil {
+					middleware.ReturnServerHandleError(c, err)
+					return
+				}
+				if len(taskTemplateList) > 0 {
+					for _, taskTemplate := range taskTemplateList {
+						if len(taskTemplate.HandleTemplates) > 0 {
+							for _, handleTemplate := range taskTemplate.HandleTemplates {
+								// 默认是模版指定、模版建议,前端没法校验提交数据,需要后端校验
+								if handleTemplate.Assign == "template" && handleTemplate.HandlerType == "template_suggest" && (handleTemplate.Role == "" || handleTemplate.Handler == "") {
+									middleware.ReturnServerHandleError(c, fmt.Errorf("task %s approve role or handler is empty", taskTemplate.Name))
+									return
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 	err = service.GetRequestTemplateService().UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)

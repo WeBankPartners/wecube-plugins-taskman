@@ -1069,7 +1069,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.loadPage()
+            this.getApprovalNodeGroups(this.activeEditingNode)
           }
         },
         onCancel: () => {}
@@ -1187,9 +1187,12 @@ export default {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
-        } else if ([4, 9].includes(nextStep)) {
+        } else if ([4].includes(nextStep)) {
           // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
+          this.getApprovalNodeGroups(this.activeEditingNode)
+        } else if ([9].includes(nextStep)) {
+          // this.updateFinalElement(elememt)
           this.getApprovalNodeGroups(this.activeEditingNode)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)
@@ -1254,12 +1257,12 @@ export default {
         const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
           this.$refs.approvalFormNodeRef.saveNode(4)
+          await this.saveGroup(10, {})
           this.submitTemplate()
         }
       }
     },
     async submitTemplate () {
-      // await this.saveGroup(10, {})
       this.$Modal.confirm({
         title: `${this.$t('submit_for_review')}`,
         content: `${this.$t('submit_for_review_tip')}`,

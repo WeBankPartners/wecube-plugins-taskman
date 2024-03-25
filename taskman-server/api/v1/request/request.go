@@ -436,18 +436,30 @@ func UploadRequestAttachFile(c *gin.Context) {
 }
 
 func DownloadAttachFile(c *gin.Context) {
+	var err error
+	var attachFile models.AttachFileTable
+	var fileContent []byte
+	var fileName string
+	var checkPermission bool
 	fileId := c.Param("fileId")
-	/*if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
+	if attachFile, err = service.GetAttachFileInfo(fileId); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if checkPermission, err = service.CheckDownloadPermission(attachFile, middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if !checkPermission {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
-	}*/
-	fileContent, fileName, err := service.DownloadAttachFile(fileId)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", fileName))
-		c.Data(http.StatusOK, "application/octet-stream", fileContent)
 	}
+	if fileContent, fileName, err = service.DownloadAttachFile(attachFile); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", fileName))
+	c.Data(http.StatusOK, "application/octet-stream", fileContent)
 }
 
 // UpdateRequestHandler 更新请求处理人,包括认领&转给我逻辑
@@ -478,7 +490,7 @@ func UpdateRequestHandler(c *gin.Context) {
 
 func RemoveAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
-	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
+	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}

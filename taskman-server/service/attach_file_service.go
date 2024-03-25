@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/WeBankPartners/go-common-lib/file_server"
 	"github.com/WeBankPartners/go-common-lib/guid"
@@ -49,46 +50,7 @@ func UploadAttachFile(requestId, taskId, taskHandleId, fileName, operator string
 	return dao.Transaction(actions)
 }
 
-func (s AttachFileService) UploadAttachFile(requestId, taskId, fileName, operator string, fileContent []byte) error {
-	if requestId == "" && taskId == "" {
-		return fmt.Errorf("requestId or taskId can not empty ")
-	}
-	ms, err := getMinioServerObj()
-	if err != nil {
-		return err
-	}
-	fileGuid := guid.CreateGuid()
-	uploadParam := file_server.MinioParam{Ctx: context.Background(), Bucket: models.Config.AttachFile.Bucket}
-	uploadParam.FileContent = fileContent
-	requestTemplateId := getAttachFileRequestTemplate(requestId, taskId)
-	if requestTemplateId != "" {
-		requestTemplateId = requestTemplateId + "/"
-	}
-	if requestId != "" {
-		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, requestId)
-	} else {
-		uploadParam.ObjectName = fmt.Sprintf("%s%s_%s", requestTemplateId, fileName, taskId)
-	}
-	err = ms.Upload(uploadParam)
-	if err != nil {
-		return err
-	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	var actions []*dao.ExecAction
-	if requestId != "" {
-		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,request,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, requestId, operator, nowTime, operator, nowTime}})
-	} else if taskId != "" {
-		actions = append(actions, &dao.ExecAction{Sql: "insert into attach_file(id,name,s3_bucket_name,s3_key_name,task,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?,?)", Param: []interface{}{fileGuid, fileName, models.Config.AttachFile.Bucket, uploadParam.ObjectName, taskId, operator, nowTime, operator, nowTime}})
-	}
-	return dao.Transaction(actions)
-}
-
-func DownloadAttachFile(fileId string) (fileContent []byte, fileName string, err error) {
-	fileObj, tmpErr := getAttachFileInfo(fileId)
-	if tmpErr != nil {
-		err = tmpErr
-		return
-	}
+func DownloadAttachFile(fileObj models.AttachFileTable) (fileContent []byte, fileName string, err error) {
 	fileName = fileObj.Name
 	ms, minioErr := getMinioServerObj()
 	if minioErr != nil {
@@ -102,7 +64,7 @@ func DownloadAttachFile(fileId string) (fileContent []byte, fileName string, err
 }
 
 func RemoveAttachFile(fileId string) (fileObj models.AttachFileTable, err error) {
-	fileObj, err = getAttachFileInfo(fileId)
+	fileObj, err = GetAttachFileInfo(fileId)
 	if err != nil {
 		return
 	}
@@ -121,7 +83,7 @@ func RemoveAttachFile(fileId string) (fileObj models.AttachFileTable, err error)
 	return
 }
 
-func getAttachFileInfo(fileId string) (fileObj models.AttachFileTable, err error) {
+func GetAttachFileInfo(fileId string) (fileObj models.AttachFileTable, err error) {
 	var attachFileTable []*models.AttachFileTable
 	err = dao.X.SQL("select * from attach_file where id=?", fileId).Find(&attachFileTable)
 	if err != nil {
@@ -158,8 +120,106 @@ func getMinioServerObj() (ms file_server.MinioServer, err error) {
 	return
 }
 
-func CheckAttachFilePermission(fileId, operator, operation string, roles []string) error {
-	fileObj, err := getAttachFileInfo(fileId)
+func getAttachFileRequestTemplate(requestId, taskId string) string {
+	var requestTable []*models.RequestTable
+	if requestId != "" {
+		dao.X.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
+	} else {
+		dao.X.SQL("select request_template from request where id in (select request from task where id=?)", taskId).Find(&requestTable)
+	}
+	if len(requestTable) > 0 {
+		return requestTable[0].RequestTemplate
+	}
+	return ""
+}
+
+func GetTaskHandleAttachFileList(taskHandleIds []string) (result []*models.AttachFileTable, err error) {
+	result = make([]*models.AttachFileTable, 0)
+	var attachFiles []*models.AttachFileTable
+	taskHandleIdsFilterSql, taskHandleIdsFilterParams := dao.CreateListParams(taskHandleIds, "")
+	err = dao.X.SQL("select * from attach_file where task_handle in ("+taskHandleIdsFilterSql+")", taskHandleIdsFilterParams...).Find(&attachFiles)
+	if err != nil {
+		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
+		return
+	}
+	if len(attachFiles) > 0 {
+		result = attachFiles
+	}
+	return
+}
+
+// CheckDownloadPermission 检查下载权限
+func CheckDownloadPermission(attachFile models.AttachFileTable, roles []string) (checkPermission bool, err error) {
+	var task models.TaskTable
+	var request models.RequestTable
+	var taskTemplateDtoList []*models.TaskTemplateDto
+	var roleMap = make(map[string]bool)
+	var requestTemplateRoleList []*models.RequestTemplateRoleTable
+	var taskHandleList []*models.TaskHandleTable
+	var requestId string
+	// 权限校验,下载需要文件模版使用角色和任务模版角色权限
+	if attachFile.Request == "" {
+		if task, err = GetSimpleTask(attachFile.Task); err != nil {
+			return
+		}
+		requestId = task.Request
+	} else {
+		requestId = attachFile.Request
+	}
+	if requestId == "" {
+		// 可能编排创建的任务,没有请求的任务
+		if taskHandleList, err = GetTaskHandleService().GetTaskHandleListByTaskId(attachFile.Task); err != nil {
+			return
+		}
+		if len(taskHandleList) > 0 {
+			for _, taskHandle := range taskHandleList {
+				if taskHandle.Role != "" {
+					roleMap[taskHandle.Role] = true
+				}
+			}
+		}
+	} else {
+		if request, err = GetSimpleRequest(requestId); err != nil {
+			return
+		}
+		// 统计审批、任务配置的处理角色
+		if request.TaskApprovalCache != "" {
+			json.Unmarshal([]byte(request.TaskApprovalCache), &taskTemplateDtoList)
+			if len(taskTemplateDtoList) > 0 {
+				for _, dto := range taskTemplateDtoList {
+					if dto != nil && len(dto.HandleTemplates) > 0 {
+						for _, template := range dto.HandleTemplates {
+							if template.Role != "" {
+								roleMap[template.Role] = true
+							}
+						}
+					}
+				}
+			}
+		}
+		// 统计模版使用角色
+		if requestTemplateRoleList, err = GetRequestTemplateService().GetRequestTemplateRole(request.RequestTemplate); err != nil {
+			return
+		}
+		if len(requestTemplateRoleList) > 0 {
+			for _, requestTemplateRole := range requestTemplateRoleList {
+				if requestTemplateRole.RoleType == string(models.RolePermissionUse) {
+					roleMap[requestTemplateRole.Role] = true
+				}
+			}
+		}
+	}
+	for _, role := range roles {
+		if _, ok := roleMap[role]; ok {
+			checkPermission = true
+			break
+		}
+	}
+	return
+}
+
+func CheckAttachFilePermission(fileId, operator string, roles []string) error {
+	fileObj, err := GetAttachFileInfo(fileId)
 	if err != nil {
 		return err
 	}
@@ -203,37 +263,4 @@ func CheckAttachFilePermission(fileId, operator, operation string, roles []strin
 		return fmt.Errorf("Permission illegal ")
 	}
 	return nil
-}
-
-func getAttachFileRequestTemplate(requestId, taskId string) string {
-	var requestTable []*models.RequestTable
-	if requestId != "" {
-		dao.X.SQL("select request_template from request where id=?", requestId).Find(&requestTable)
-	} else {
-		dao.X.SQL("select request_template from request where id in (select request from task where id=?)", taskId).Find(&requestTable)
-	}
-	if len(requestTable) > 0 {
-		return requestTable[0].RequestTemplate
-	}
-	return ""
-}
-
-func GetTaskHandleAttachFileList(ctx context.Context, taskHandleIds []string) (result []*models.AttachFileTable, err error) {
-	result = make([]*models.AttachFileTable, 0)
-	var attachFiles []*models.AttachFileTable
-	taskHandleIdsFilterSql, taskHandleIdsFilterParams := dao.CreateListParams(taskHandleIds, "")
-	err = dao.X.SQL("select * from attach_file where task_handle in ("+taskHandleIdsFilterSql+")", taskHandleIdsFilterParams...).Find(&attachFiles)
-	/*
-		err = dao.X.Context(ctx).Table(models.AttachFileTable{}.TableName()).
-			In("task_handle", taskHandleIds).
-			Find(&attachFiles)
-	*/
-	if err != nil {
-		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
-		return
-	}
-	if len(attachFiles) > 0 {
-		result = attachFiles
-	}
-	return
 }

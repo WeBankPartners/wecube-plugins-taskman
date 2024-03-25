@@ -757,7 +757,7 @@ func (s *RequestTemplateService) GetRequestTemplateManageRole(id string) (role s
 	return
 }
 
-func (s *RequestTemplateService) getRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
+func (s *RequestTemplateService) GetRequestTemplateRole(templateId string) (requestTemplateRoleList []*models.RequestTemplateRoleTable, err error) {
 	err = dao.X.SQL("select * from request_template_role where request_template=?", templateId).Find(&requestTemplateRoleList)
 	if err != nil {
 		err = fmt.Errorf("Try to query database fail,%s ", err.Error())

@@ -2035,7 +2035,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	// 查询 attach file
 	attachFileTaskHandleIdMap := make(map[string][]*models.AttachFileTable)
 	if len(taskHandleIds) > 0 {
-		attachFiles, tmpErr := GetTaskHandleAttachFileList(c, taskHandleIds)
+		attachFiles, tmpErr := GetTaskHandleAttachFileList(taskHandleIds)
 		if tmpErr != nil {
 			err = tmpErr
 			return

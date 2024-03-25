@@ -357,7 +357,7 @@ func QueryEntityExpressionData(expression, rootDataId, userToken, language strin
 	var response models.PluginQueryExpressionDataResponse
 	var byteArr []byte
 	postBytes, _ := json.Marshal(param)
-	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathQueryEntityExpressionData, userToken, "", postBytes)
+	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathQueryEntityExpressionData, userToken, language, postBytes)
 	if err != nil {
 		return
 	}

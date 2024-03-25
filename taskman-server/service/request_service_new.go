@@ -1102,7 +1102,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 					if requestTemplate != nil {
 						handler = requestTemplate.Handler
 					}
-					requestTemplateRoleList, _ = GetRequestTemplateService().getRequestTemplateRole(request.RequestTemplate)
+					requestTemplateRoleList, _ = GetRequestTemplateService().GetRequestTemplateRole(request.RequestTemplate)
 					if len(requestTemplateRoleList) > 0 {
 						for _, requestTemplateRole := range requestTemplateRoleList {
 							if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {

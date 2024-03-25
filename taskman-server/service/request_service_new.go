@@ -603,7 +603,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 						// 编排的完成,并不表示 请求完成
 						taskSort := GetTaskService().GenerateTaskOrderByRequestId(platformDataObj.Id)
 						confirmActions, _ = GetRequestService().CreateRequestConfirm(models.RequestTable{Id: platformDataObj.Id,
-							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy}, taskSort)
+							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy}, taskSort, req.UserToken, language)
 						if len(confirmActions) > 0 {
 							actions = append(actions, confirmActions...)
 						}
@@ -1695,6 +1695,13 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 					checkHandler = requestTemplate.Handler
 				}
 			}
+			if checkHandler != "" {
+				// 给对应处理人发送邮件
+				NotifyTaskAssignMail(request.Name, RequestPending, checkExpireTime, checkHandler, userToken, language)
+			} else {
+				// 给角色管理员发送邮件
+				NotifyTaskRoleAdministratorMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
+			}
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, checkRole, checkHandler, now, now}
 			actions = append(actions, action)
@@ -1827,7 +1834,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	}
 	// 没有任务,直接跳过到下一步,到请求确认
 	if len(taskTemplateList) == 0 {
-		return s.CreateRequestConfirm(request, taskSort)
+		return s.CreateRequestConfirm(request, taskSort, userToken, language)
 	}
 	for _, taskTemplate := range taskTemplateList {
 		if taskTemplate.NodeDefId != "" {
@@ -1865,7 +1872,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		}
 	}
 	// 所有审批都处理完成,走请求任务处理
-	requestConfirmActions, err = s.CreateRequestConfirm(request, taskSort)
+	requestConfirmActions, err = s.CreateRequestConfirm(request, taskSort, userToken, language)
 	if err != nil {
 		return
 	}
@@ -1876,7 +1883,7 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 }
 
 // CreateRequestConfirm 创建请求确认
-func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskSort int) (actions []*dao.ExecAction, err error) {
+func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskSort int, userToken, language string) (actions []*dao.ExecAction, err error) {
 	var newTaskId string
 	var taskTemplateList []*models.TaskTemplateTable
 	actions = []*dao.ExecAction{}
@@ -1899,14 +1906,14 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskS
 	actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), newTaskId, request.Role, request.CreatedBy, now, now}})
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})
+	// 发送请求确认邮件
+	NotifyTaskAssignMail(request.Name, Confirm, taskExpireTime, request.CreatedBy, userToken, language)
 	return
 }
 
-func (s *RequestService) CreateProcessTask(request models.RequestTable, task *models.TaskTable, userToken, language string, taskSort int) (actions []*dao.ExecAction, err error) {
+func (s *RequestService) CreateProcessTask(request models.RequestTable, task *models.TaskTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	log.Logger.Debug("CreateProcessTask", log.String("taskId", task.Id))
-	var taskTemplateList []*models.TaskTemplateTable
-	var requestTemplate *models.RequestTemplateTable
-	var requestConfirmActions, workflowActions []*dao.ExecAction
+	var workflowActions []*dao.ExecAction
 	actions = []*dao.ExecAction{}
 	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
 		// 关联编排,调用编排启动
@@ -1920,35 +1927,6 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 			actions = append(actions, workflowActions...)
 		}
 		return
-	}
-	return
-	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
-	if err != nil {
-		return
-	}
-	if requestTemplate == nil {
-		err = fmt.Errorf("requestTemplate is empty")
-		return
-	}
-	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeImplement).Find(&taskTemplateList)
-	if err != nil {
-		return
-	}
-	// 没有任务,直接跳过到下一步,到请求确认
-	if len(taskTemplateList) == 0 {
-		return s.CreateRequestConfirm(request, taskSort)
-	}
-	// 如果不是最后一个任务模版, 不处理
-	if task.TaskTemplate != taskTemplateList[len(taskTemplateList)-1].Id {
-		return
-	}
-	// 所有审批都处理完成,走请求任务处理
-	requestConfirmActions, err = s.CreateRequestConfirm(request, taskSort)
-	if err != nil {
-		return
-	}
-	if len(requestConfirmActions) > 0 {
-		actions = append(actions, requestConfirmActions...)
 	}
 	return
 }

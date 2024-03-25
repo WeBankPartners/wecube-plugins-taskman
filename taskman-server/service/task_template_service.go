@@ -557,7 +557,7 @@ func (s *TaskTemplateService) ListTaskTemplateIds(requestTemplateId, typ, userTo
 	return result, nil
 }
 
-func (s *TaskTemplateService) ListTaskTemplates(requestTemplateId, typ, userToken, language string) ([]*models.TaskTemplateDto, error) {
+func (s *TaskTemplateService) ListTaskTemplates(requestTemplateId, typ string) ([]*models.TaskTemplateDto, error) {
 	// 查询请求模板
 	requestTemplate, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {

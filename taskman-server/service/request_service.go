@@ -1522,7 +1522,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 			if newStatus == string(models.RequestStatusCompleted) {
 				// 编排的完成,并不表示 请求完成
 				taskSort := GetTaskService().GenerateTaskOrderByRequestId(requestId)
-				confirmActions, _ = GetRequestService().CreateRequestConfirm(*requests[0], taskSort)
+				confirmActions, _ = GetRequestService().CreateRequestConfirm(*requests[0], taskSort, userToken, language)
 				if len(confirmActions) > 0 {
 					actions = append(actions, confirmActions...)
 				}

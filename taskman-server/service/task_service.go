@@ -812,7 +812,7 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 			string(requestBytes), param.Comment, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), param.ChoseOption, "done", operator, nowTime, task.Id,
 		}})
 	}
-	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language, taskSort)
+	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language)
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
@@ -854,69 +854,6 @@ func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateRe
 	resultObj.Outputs = []*models.PluginTaskCreateOutputObj{{CallbackParameter: taskObj.CallbackParameter, Comment: taskObj.Result, ErrorCode: "0", TaskFormOutput: string(formBytes)}}
 	result.Results = resultObj
 	return
-}
-
-func SaveTaskForm(taskId, operator string, param models.TaskApproveParam) error {
-	var actions []*dao.ExecAction
-	taskObj, err := getSimpleTask(taskId)
-	if err != nil {
-		return err
-	}
-	var existFormItemTable []*models.FormItemTable
-	dao.X.SQL("select * from form_item where form in (select form from task where id=?)", taskId).Find(&existFormItemTable)
-	existFormItemMap := make(map[string]int)
-	inputItemMap := make(map[string]int)
-	for _, v := range existFormItemTable {
-		existFormItemMap[fmt.Sprintf("%s^%s^%s", v.ItemGroup, v.Name, v.RowDataId)] = 1
-	}
-	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions = append(actions, &dao.ExecAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, taskId}})
-	if taskObj.Request != "" {
-		for _, tableForm := range param.FormData {
-			tmpColumnMap := make(map[string]string)
-			tmpMultiMap := make(map[string]int)
-			for _, title := range tableForm.Title {
-				tmpColumnMap[title.Name] = title.Id
-				if title.Multiple == "Y" {
-					tmpMultiMap[title.Name] = 1
-				}
-			}
-			for _, valueObj := range tableForm.Value {
-				if valueObj.Id == "" {
-					valueObj.Id = fmt.Sprintf("tmp%s%s", models.SysTableIdConnector, guid.CreateGuid())
-				}
-				for k, v := range valueObj.EntityData {
-					if titleId, b := tmpColumnMap[k]; b {
-						tmpExistKey := fmt.Sprintf("%s^%s^%s", tableForm.ItemGroup, k, valueObj.Id)
-						inputItemMap[tmpExistKey] = 1
-						if _, bb := tmpMultiMap[k]; bb {
-							tmpV := []string{}
-							for _, interfaceV := range v.([]interface{}) {
-								tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
-							}
-							if _, bbb := existFormItemMap[tmpExistKey]; !bbb {
-								actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskObj.Form, titleId, k, strings.Join(tmpV, ","), tableForm.ItemGroup, valueObj.Id}})
-							} else {
-								actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{strings.Join(tmpV, ","), taskObj.Form, valueObj.Id, k}})
-							}
-						} else {
-							if _, bbb := existFormItemMap[tmpExistKey]; !bbb {
-								actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,item_group,row_data_id) value (?,?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), taskObj.Form, titleId, k, v, tableForm.ItemGroup, valueObj.Id}})
-							} else {
-								actions = append(actions, &dao.ExecAction{Sql: "update form_item set value=? where form=? and row_data_id=? and name=?", Param: []interface{}{v, taskObj.Form, valueObj.Id, k}})
-							}
-						}
-					}
-				}
-			}
-		}
-		for _, row := range existFormItemTable {
-			if _, ok := inputItemMap[fmt.Sprintf("%s^%s^%s", row.ItemGroup, row.Name, row.RowDataId)]; !ok {
-				actions = append(actions, &dao.ExecAction{Sql: "delete from form_item where id=?", Param: []interface{}{row.Id}})
-			}
-		}
-	}
-	return dao.Transaction(actions)
 }
 
 func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.TaskApproveParam) (err error) {
@@ -1161,51 +1098,6 @@ func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
 	} else {
 		taskObj.OperationOptions = []string{}
 	}
-}
-
-func NotifyTaskMail(taskId, userToken, language, mailSubject, mailContent string) error {
-	if !models.MailEnable {
-		return nil
-	}
-	taskObj, _ := getSimpleTask(taskId)
-	log.Logger.Info("Start notify task mail", log.String("taskId", taskId))
-	var roleTable []*models.RoleTable
-	dao.X.SQL("select id,email from `role` where id in (select `role` from task_template_role where role_type='USE' and task_template in (select task_template from task where id=?))", taskId).Find(&roleTable)
-	reportRoleString := taskObj.ReportRole
-	reportRoleString = strings.ReplaceAll(reportRoleString, "[", "")
-	reportRoleString = strings.ReplaceAll(reportRoleString, "]", "")
-	for _, v := range strings.Split(reportRoleString, ",") {
-		if v != "" {
-			roleTable = append(roleTable, &models.RoleTable{Id: v})
-		}
-	}
-	if len(roleTable) == 0 {
-		return fmt.Errorf("can not find handle role with task:%s ", taskId)
-	}
-	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
-	if len(mailList) == 0 {
-		log.Logger.Warn("Notify task mail break,email is empty", log.String("role", roleTable[0].Id))
-		return fmt.Errorf("handle role email is empty ")
-	}
-	var taskTable []*models.TaskTable
-	dao.X.SQL("select t1.id,t1.name,t1.description,t2.name as request,t1.node_name,t1.emergency,t1.reporter,t1.created_time from task t1 left join request t2 on t1.request=t2.id where t1.id=?", taskId).Find(&taskTable)
-	if len(taskTable) == 0 {
-		return fmt.Errorf("can not find task with id:%s ", taskId)
-	}
-	var subject, content string
-	subject = fmt.Sprintf("Taskman task [%s] %s[%s]", models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request)
-	content = fmt.Sprintf("Taskman task \nID:%s \nPriority:%s \nName:%s \nRequest:%s \nDescription:%s \nReporter:%s \nCreateTime:%s \n", taskTable[0].Id, models.PriorityLevelMap[taskTable[0].Emergency], taskTable[0].Name, taskTable[0].Request, taskTable[0].Description, taskTable[0].Reporter, taskTable[0].CreatedTime)
-	if mailSubject != "" {
-		subject = mailSubject
-	}
-	if mailContent != "" {
-		content = mailContent
-	}
-	err := models.MailSender.Send(subject, content, mailList)
-	if err != nil {
-		return fmt.Errorf("send notify email fail:%s ", err.Error())
-	}
-	return nil
 }
 
 func GetSimpleTask(taskId string) (task models.TaskTable, err error) {

@@ -276,13 +276,13 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 			break
 		}
 	}
-	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, "approve", token, language); getApproveErr != nil {
+	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, string(models.TaskTypeApprove)); getApproveErr != nil {
 		err = getApproveErr
 		return
 	} else {
 		saveParam.ApprovalList = append(saveParam.ApprovalList, approveList...)
 	}
-	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, "implement", token, language); getApproveErr != nil {
+	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, string(models.TaskTypeImplement)); getApproveErr != nil {
 		err = getApproveErr
 		return
 	} else {

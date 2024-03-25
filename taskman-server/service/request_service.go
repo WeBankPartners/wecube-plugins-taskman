@@ -1139,6 +1139,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,description = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, description, operator, nowTime, checkTask.Id}})
 		// 更新请求
 		actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", Param: []interface{}{status, description, operator, operator, nowTime, nowTime, requestId}})
+		// 定版退回邮件通知
+		NotifyTaskBackMail(request.Name, RequestPending, request.CreatedBy, taskHandleList[0].Handler, userToken, language)
 		err = dao.Transaction(actions)
 	} else {
 		_, err = dao.X.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)

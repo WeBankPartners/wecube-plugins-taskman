@@ -18,6 +18,7 @@ func startNotifyCronJob() {
 	for {
 		<-t
 		go notifyAction()
+		go notifyAndUpdateWorkflowResult()
 	}
 }
 
@@ -48,6 +49,14 @@ func notifyAction() {
 				if v.Request != "" {
 					actions = append(actions, &dao.ExecAction{Sql: "update request set status =?,updated_by=?,updated_time=?,complete_status=? where id=?", Param: []interface{}{models.RequestStatusCompleted, "system", now, models.TaskHandleResultTypeComplete, v.Request}})
 				}
+				if v.Request != "" {
+					var requestList []*models.RequestTable
+					dao.X.SQL("select name,created_by from request where id = ?", v.Request).Find(&requestList)
+					if len(requestList) > 0 {
+						// 请求完成,给创建人发邮件
+						NotifyRequestCompleteMail(requestList[0].Name, requestList[0].CreatedBy, models.CoreToken.GetCoreToken(), "")
+					}
+				}
 			}
 		}
 		if v.NotifyCount >= 2 {
@@ -76,6 +85,40 @@ func notifyAction() {
 		err = dao.Transaction(actions)
 		if err != nil {
 			log.Logger.Error("notify action error", log.Error(err))
+		}
+	}
+}
+
+// notifyAndUpdateWorkflowResult 通知并且更新编排结果
+func notifyAndUpdateWorkflowResult() {
+	var requestList []*models.RequestTable
+	var requestTemplate *models.RequestTemplateTable
+	var actions []*dao.ExecAction
+	var err error
+	err = dao.X.SQL("select id,name,proc_instance_id,request_template,created_by from request where status = ? and proc_instance_id is not null", models.RequestStatusInProgress).Find(&requestList)
+	if err != nil {
+		log.Logger.Error("notifyAndUpdateWorkflowResult fail,query request error", log.Error(err))
+		return
+	}
+	if len(requestList) > 0 {
+		for _, request := range requestList {
+			newStatus := getInstanceStatus(request.ProcInstanceId, models.CoreToken.GetCoreToken(), "")
+			if newStatus == "InternallyTerminated" {
+				newStatus = "Termination"
+			}
+			// 只处理自动退出&手动终止终止情况,需要发邮件
+			if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
+				actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), request.Id}})
+				if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate); err != nil {
+					continue
+				}
+				NotifyTaskWorkflowFailMail(request.Name, requestTemplate.ProcDefName, newStatus, request.CreatedBy, models.CoreToken.GetCoreToken(), "")
+			}
+		}
+	}
+	if len(actions) > 0 {
+		if err = dao.Transaction(actions); err != nil {
+			log.Logger.Error("notifyAndUpdateWorkflowResult  error", log.Error(err))
 		}
 	}
 }

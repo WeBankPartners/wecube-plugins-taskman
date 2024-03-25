@@ -179,7 +179,7 @@ func Confirm(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, fmt.Errorf("request status not confirm"))
 		return
 	}
-	err = service.RequestConfirm(param, user)
+	err = service.RequestConfirm(param, user, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

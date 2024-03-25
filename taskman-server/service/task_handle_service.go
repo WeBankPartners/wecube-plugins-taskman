@@ -31,6 +31,7 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 						if len(result) > 0 && result[0] != "" {
 							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
 								Param: []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}})
+							NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), result[0], userToken, language)
 						} else {
 							// 没有找到角色管理员,用本组兜底
 							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,created_time,updated_time) values(?,?,?,?,?,?)",
@@ -54,8 +55,12 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 										rand.Seed(time.Now().UnixNano())
 										handleTemplate.Handler = userList[rand.Intn(len(userList))].UserName
 									}
+									NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
 								}
 							}
+						} else if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeClaim) {
+							//  组内认领,给角色管理员发送邮件
+							NotifyTaskRoleAdministratorMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Role, userToken, language)
 						}
 						actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,handler_type,created_time,updated_time) values(?,?,?,?,?,?,?,?)",
 							Param: []interface{}{guid.CreateGuid(), handleTemplate.Id, taskId, handleTemplate.Role, handleTemplate.Handler, handleTemplate.HandlerType, now, now}})

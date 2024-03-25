@@ -732,12 +732,13 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeDeny, operator, now, task.Id}})
 		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusFaulted, operator, now, task.Request}})
-
+		NotifyTaskDenyMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
 	case string(models.TaskHandleResultTypeRedraw):
 		// 退回,请求变草稿,任务设置为处理完成
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeRedraw, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,description=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, param.Comment, operator, now, task.Id}})
 		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,rollback_desc=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusDraft, param.Comment, operator, now, task.Request}})
+		NotifyTaskBackMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
 	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
@@ -792,9 +793,6 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
-		//if strings.Contains(respResult.Message, "None process instance found") {
-		//	dao.X.Exec("update task set status='done',updated_by=?,updated_time=? where id=?", operator, nowTime, task.Id)
-		//}
 		return fmt.Errorf("Callback fail,%s ", respResult.Message)
 	}
 	request, getRequestErr := GetSimpleRequest(task.Request)
@@ -999,12 +997,16 @@ func getRequestPoolLatestItem(poolForms []*models.RequestPoolForm, dataId, name 
 	return
 }
 
-func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator string) (err error) {
+func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, language string) (err error) {
 	var task models.TaskTable
+	var request models.RequestTable
 	var taskHandleList []*models.TaskHandleTable
-	task, err = getSimpleTask(param.TaskId)
+	var requestName string
 	if common.GetLowVersionUnixMillis(task.UpdatedTime) != param.LatestUpdateTime {
 		err = exterror.New().DealWithAtTheSameTimeError
+		return
+	}
+	if task, err = getSimpleTask(param.TaskId); err != nil {
 		return
 	}
 	if task.Status == string(models.TaskStatusDone) {
@@ -1031,6 +1033,14 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator string) (err 
 			taskHandleList[0].Role, operator, taskHandleList[0].HandlerType, param.TaskHandleId, nowTime, nowTime, param.ChangeReason}})
 	}
 	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set latest_flag = 0 where id = ?", Param: []interface{}{param.TaskHandleId}})
+	// 给原处理人发送邮件
+	if task.Request != "" {
+		if request, err = GetSimpleRequest(task.Request); err != nil {
+			return
+		}
+		requestName = request.Name
+	}
+	NotifyTaskHandlerUpdateMail(requestName, task.Name, taskHandleList[0].Handler, userToken, language)
 	return dao.Transaction(actions)
 }
 

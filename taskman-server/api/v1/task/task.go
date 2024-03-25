@@ -257,7 +257,7 @@ func UpdateTaskHandle(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "taskId or taskHandleId")
 		return
 	}
-	err = service.UpdateTaskHandle(param, middleware.GetRequestUser(c))
+	err = service.UpdateTaskHandle(param, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

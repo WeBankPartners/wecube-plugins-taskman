@@ -64,16 +64,10 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 		log.Logger.Warn("NotifyTaskAssignMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", receiver))
 		return
 	}
-	switch taskName {
-	case RequestPending:
-		taskName = "请求定版"
-	}
+	taskName = getInternationalizationTaskName(taskName, language)
 	subject = "【任务被转单提醒】"
 	content = fmt.Sprintf("您有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理(若本人无法处理,组员可以将任务转单处理),点击查看详情", requestName, taskName, expireDate)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -100,15 +94,110 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 	if displayNameMap, err = GetRoleService().GetRoleDisplayName(); err != nil {
 		return
 	}
-	switch taskName {
-	case RequestPending:
-		taskName = "请求定版"
-	}
+	taskName = getInternationalizationTaskName(taskName, language)
 	subject = "【新增任务提醒】"
 	content = fmt.Sprintf("角色%s有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理,点击查看详情", displayNameMap[role], requestName, taskName, expireDate)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
-	if err != nil {
+	return
+}
+
+// NotifyTaskHandlerUpdateMail 定版/确认/任务/审批分配给“我”,但是被人点“转给我”抢单了
+func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken, language string) (err error) {
+	var subject, content string
+	var userInfo *models.SimpleLocalUserDto
+	if userInfo, err = GetRoleService().GetUserInfo(originHandler, userToken, language); err != nil {
+		return err
+	}
+	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+		log.Logger.Warn("NotifyTaskHandlerUpdateMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", originHandler))
 		return
 	}
+	subject = "【任务被转单提醒】"
+	content = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, originHandler)
+	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
 	return
+}
+
+// NotifyRequestCompleteMail 我提交的请求处理完成了
+func NotifyRequestCompleteMail(requestName, creator, userToken, language string) (err error) {
+	var subject, content string
+	var userInfo *models.SimpleLocalUserDto
+	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
+		return err
+	}
+	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+		log.Logger.Warn("NotifyRequestCompleteMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
+		return
+	}
+	subject = "【请求完成提醒】"
+	content = fmt.Sprintf("您发起的[请求:%s]已处理完成,点击链接查看详情", requestName)
+	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	return
+}
+
+// NotifyTaskBackMail 我提交的请求被定版退回/审批退回
+func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, language string) (err error) {
+	var subject, content string
+	var userInfo *models.SimpleLocalUserDto
+	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
+		return err
+	}
+	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+		log.Logger.Warn("NotifyTaskBackMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
+		return
+	}
+	taskName = getInternationalizationTaskName(taskName, language)
+	subject = "【请求退回提醒】"
+	content = fmt.Sprintf("您发起的[请求:%s],在%s节点被%s退回到草稿,请修改之后重新提交,点击链接查看详情", requestName, taskName, approval)
+	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	return
+}
+
+// NotifyTaskDenyMail 我提交的请求被审批拒绝
+func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, language string) (err error) {
+	var subject, content string
+	var userInfo *models.SimpleLocalUserDto
+	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
+		return err
+	}
+	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+		log.Logger.Warn("NotifyTaskDenyMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
+		return
+	}
+	taskName = getInternationalizationTaskName(taskName, language)
+	subject = "【请求终止提醒】"
+	content = fmt.Sprintf("您发起的[请求:%s],在%s审批节点被%s拒绝,请求已终止,请点击链接查看详情", requestName, taskName, approval)
+	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	return
+}
+
+// NotifyTaskWorkflowFailMail 我提交的请求在编排执行中被手动终止
+func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userToken, language string) (err error) {
+	var subject, content string
+	var userInfo *models.SimpleLocalUserDto
+	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
+		return err
+	}
+	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+		log.Logger.Warn("NotifyTaskWorkflowTerminationMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
+		return
+	}
+	subject = "【请求终止提醒】"
+	if status == string(models.RequestStatusTermination) {
+		content = fmt.Sprintf("因为编排%s被管理员[手动终止],导致\n您发起的[请求:%s]请求已终止,请点击链接查看详情", procDefName, requestName)
+	} else if status == string(models.RequestStatusFaulted) {
+		content = fmt.Sprintf("因为编排%s走到[自动退出]节点,导致\n您发起的[请求:%s]请求终止,请点击链接查看详情", procDefName, requestName)
+	}
+	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	return
+}
+
+func getInternationalizationTaskName(taskName, language string) string {
+	switch taskName {
+	case RequestPending:
+		taskName = "请求定版"
+	case Confirm:
+		taskName = "请求确认"
+	}
+	return taskName
 }

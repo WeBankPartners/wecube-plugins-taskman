@@ -1203,7 +1203,7 @@ export default {
         } else if (nextStep === 8) {
           this.$emit('gotoStep', this.requestTemplateId, 'backward')
         } else if (nextStep === 10) {
-          this.loadPage()
+          // this.loadPage()
         }
       }
     },

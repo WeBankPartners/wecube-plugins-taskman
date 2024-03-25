@@ -364,6 +364,15 @@ export default {
           this.nodeDetailResponseHeader = JSON.stringify(this.replaceParams(this.nodeDetailResponseHeader))
             .split(',')
             .join(',<br/>')
+          this.nodeDetailResponseHeader = this.nodeDetailResponseHeader.replace(
+            'errorMessage',
+            "<span style='color:red'>errorMessage</span>"
+          )
+          // const reg = new RegExp(data.errorMessage, 'g')
+          this.nodeDetailResponseHeader = this.nodeDetailResponseHeader.replace(
+            data.errorMessage,
+            "<span style='color:red'>" + data.errorMessage + '</span>'
+          )
           this.nodeDetailIO = data.requestObjects.map(ro => {
             ro['inputs'] = this.replaceParams(ro['inputs'])
             ro['outputs'] = this.replaceParams(ro['outputs'])

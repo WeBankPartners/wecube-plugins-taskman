@@ -1074,6 +1074,30 @@ fieldset[disabled] .ivu-input {
 .ivu-select-dropdown {
   max-height: 300px !important;
 }
+.radio-group {
+  margin-bottom: 15px;
+}
+/* 偶发样式在发布后不存在 */
+.radio-group-radio {
+  padding: 5px 15px;
+  border-radius: 32px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 4px;
+  display: inline-block;
+}
+.radio-group-custom {
+  border: 1px solid #b886f8;
+  color: #b886f8;
+}
+.radio-group-workflow {
+  border: 1px solid #cba43f;
+  color: #cba43f;
+}
+.radio-group-optional {
+  border: 1px solid #81b337;
+  color: #81b337;
+}
 </style>
 <style scoped lang="scss">
 .active-zone {

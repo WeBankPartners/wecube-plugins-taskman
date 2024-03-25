@@ -1053,7 +1053,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.loadPage()
+            this.getApprovalNodeGroups(this.activeEditingNode)
           }
         },
         onCancel: () => {}
@@ -1171,9 +1171,12 @@ export default {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
-        } else if ([4, 9].includes(nextStep)) {
+        } else if ([4].includes(nextStep)) {
           // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
+          this.getApprovalNodeGroups(this.activeEditingNode)
+        } else if ([9].includes(nextStep)) {
+          // this.updateFinalElement(elememt)
           this.getApprovalNodeGroups(this.activeEditingNode)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)

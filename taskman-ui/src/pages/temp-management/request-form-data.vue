@@ -850,15 +850,24 @@ export default {
       // })
     },
     async confirmRemoveGroupItem () {
-      const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.cancelGroup()
-        this.loadPage()
-      }
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.cancelGroup()
+            this.loadPage()
+          }
+        },
+        onCancel: () => {}
+      })
     },
     // 编辑组信息
     editGroupItem (groupItem) {

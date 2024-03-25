@@ -164,8 +164,8 @@ export default {
         handleMode: 'custom',
         handleTemplates: [
           {
-            assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-            handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+            assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+            handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
             handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -182,8 +182,8 @@ export default {
         { label: '自动通过', value: 'auto' }
       ],
       approvalSingle: {
-        assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-        handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+        assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+        handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
         handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -400,8 +400,8 @@ export default {
     changeRoleType () {
       this.activeApprovalNode.handleTemplates = [
         {
-          assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-          handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+          assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+          handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除

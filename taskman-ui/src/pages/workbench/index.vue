@@ -522,6 +522,8 @@ export default {
               desc: this.$t('successful')
             })
             this.getList()
+            // 刷新本人处理本组处理数量
+            this.$refs.dataCard.getData(false, true)
           }
         },
         onCancel: () => {}

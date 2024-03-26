@@ -59,7 +59,7 @@
                 @filterRuleChanged="singleFilterRuleChanged"
                 :disabled="!isCustomItemEditable"
                 :routineExpression="item.routineExpression || group.itemGroup"
-                :allEntityType="[]"
+                :allEntityType="allEntityType"
                 :currentSelectedEntity="group.itemGroup"
               >
               </ItemFilterRulesGroup>
@@ -188,7 +188,7 @@ export default {
     async getAllDataModels () {
       let { data, status } = await getAllDataModels()
       if (status === 'OK') {
-        this.allEntityType = data
+        this.allEntityType = data.filter(d => d.packageName === this.group.itemGroup.split(':')[0])
       }
     },
     // 定位规则回传
@@ -197,7 +197,7 @@ export default {
     },
     async loadPage (params) {
       await this.getRequestGroupForm(params)
-      // this.getAllDataModels()
+      this.getAllDataModels()
       if (params.isAdd) {
         this.group.itemGroupSort = params.itemGroupSort
         this.group.itemGroupRule = 'exist'

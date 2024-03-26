@@ -909,6 +909,112 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	return dao.TransactionWithoutForeignCheck(actions)
 }
 
+func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, operator string) (err error) {
+	var actions []*dao.ExecAction
+	var requestTemplateRoles []*models.RequestTemplateRoleTable
+	// 查询任务模版处理列表
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var taskTemplateList []*models.TaskTemplateTable
+	var formItemTemplateList []*models.FormItemTemplateTable
+	// 新任务模版ID和老模板ID映射
+	var newTaskTemplateIdMap = make(map[string]string)
+	// 新表单模版ID 和老模板ID映射
+	var newFormTemplateIdMap = make(map[string]string)
+	// 新表单项ID和老表单项ID映射
+	var newFormItemTemplateIdMap = make(map[string]string)
+	var requestTemplate *models.RequestTemplateTable
+
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplateId invalid")
+		return
+	}
+	nowTime := time.Now().Format(models.DateTimeFormat)
+	newRequestTemplateId := guid.CreateGuid()
+	var requestName = requestTemplate.Name + "(1)"
+	actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
+		"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
+		"entity_attrs,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) select '%s' as id,`group`,'%s' as name,description,"+
+		"tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,"+
+		"'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as `version`,'' as confirm_time,expire_day,handler, "+
+		"type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version from request_template where id='%s'", newRequestTemplateId, requestName, operator, nowTime, operator, nowTime, "", requestTemplate.Id)})
+
+	dao.X.SQL("select * from request_template_role where request_template=?", requestTemplate.Id).Find(&requestTemplateRoles)
+	for _, v := range requestTemplateRoles {
+		tmpId := newRequestTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
+		actions = append(actions, &dao.ExecAction{Sql: "insert into request_template_role(id,request_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newRequestTemplateId, v.Role, v.RoleType}})
+	}
+
+	// 查询 任务模板列表
+	err = dao.X.SQL("select * from task_template where request_template = ?", requestTemplateId).Find(&taskTemplateList)
+	if err != nil {
+		return
+	}
+	// 查询表单模板列表
+	var formTemplateList []*models.FormTemplateTable
+	err = dao.X.SQL("select * from form_template where request_template = ?", requestTemplateId).Find(&formTemplateList)
+	if len(formTemplateList) > 0 {
+		var tempFormItemTemplateList []*models.FormItemTemplateTable
+		for _, formTemplate := range formTemplateList {
+			newFormTemplateIdMap[formTemplate.Id] = guid.CreateGuid()
+			err = dao.X.SQL("select * from form_item_template where form_template = ?", formTemplate.Id).Find(&tempFormItemTemplateList)
+		}
+		if len(tempFormItemTemplateList) > 0 {
+			formItemTemplateList = append(formItemTemplateList, tempFormItemTemplateList...)
+		}
+		if len(formItemTemplateList) > 0 {
+			for _, formItemTemplate := range formItemTemplateList {
+				newFormItemTemplateIdMap[formItemTemplate.Id] = guid.CreateGuid()
+			}
+		}
+	}
+
+	if len(taskTemplateList) > 0 {
+		for _, taskTemplate := range taskTemplateList {
+			prefix, _ := taskTemplateService.genTaskIdPrefix(taskTemplate.Type)
+			newTaskTemplateIdMap[taskTemplate.Id] = prefix + "_" + guid.CreateGuid()
+			var tempTaskHandleTemplateList []*models.TaskHandleTemplateTable
+			err = dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplate.Id).Find(&tempTaskHandleTemplateList)
+			if err != nil {
+				return
+			}
+			if len(tempTaskHandleTemplateList) > 0 {
+				taskHandleTemplateList = append(taskHandleTemplateList, tempTaskHandleTemplateList...)
+			}
+			actions = append(actions, &dao.ExecAction{Sql: "insert into task_template(id,name,description,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time,del_flag,sort,handle_mode,type) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{newTaskTemplateIdMap[taskTemplate.Id], taskTemplate.Name, taskTemplate.Description, newRequestTemplateId, taskTemplate.NodeId, taskTemplate.NodeDefId, taskTemplate.NodeName, taskTemplate.ExpireDay, taskTemplate.Handler, taskTemplate.CreatedBy, taskTemplate.CreatedTime, taskTemplate.UpdatedBy, taskTemplate.UpdatedTime, taskTemplate.DelFlag, taskTemplate.Sort, taskTemplate.HandleMode, taskTemplate.Type}})
+		}
+		if len(taskHandleTemplateList) > 0 {
+			for _, taskHandleTemplate := range taskHandleTemplateList {
+				actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle_template(id,task_template,role,assign,handler_type,handler,handle_mode,sort)values(?,?,?,?,?,?,?,?)", Param: []interface{}{
+					guid.CreateGuid(), newTaskTemplateIdMap[taskHandleTemplate.TaskTemplate], taskHandleTemplate.Role, taskHandleTemplate.Assign, taskHandleTemplate.HandlerType, taskHandleTemplate.Handler, taskHandleTemplate.HandleMode, taskHandleTemplate.Sort,
+				}})
+			}
+		}
+		if len(formTemplateList) > 0 {
+			for _, formTemplate := range formTemplateList {
+				if formTemplate.TaskTemplate == "" {
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,created_time,ref_id,request_form_type,del_flag)values(?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+						newFormTemplateIdMap[formTemplate.Id], newRequestTemplateId, formTemplate.ItemGroup, formTemplate.ItemGroupName, formTemplate.ItemGroupType, formTemplate.ItemGroupRule, formTemplate.ItemGroupSort, nowTime, newFormTemplateIdMap[formTemplate.RefId], formTemplate.RequestFormType, formTemplate.DelFlag,
+					}})
+				} else {
+					actions = append(actions, &dao.ExecAction{Sql: "insert into form_template(id,request_template,task_template,item_group,item_group_name,item_group_type,item_group_rule,item_group_sort,created_time,ref_id,request_form_type,del_flag)values(?,?,?,?,?,?,?,?,?,?,?,?)", Param: []interface{}{
+						newFormTemplateIdMap[formTemplate.Id], newRequestTemplateId, newTaskTemplateIdMap[formTemplate.TaskTemplate], formTemplate.ItemGroup, formTemplate.ItemGroupName, formTemplate.ItemGroupType, formTemplate.ItemGroupRule, formTemplate.ItemGroupSort, nowTime, newFormTemplateIdMap[formTemplate.RefId], formTemplate.RequestFormType, formTemplate.DelFlag,
+					}})
+				}
+			}
+		}
+		if len(formItemTemplateList) > 0 {
+			for _, formItemTemplate := range formItemTemplateList {
+				actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into form_item_template(id,form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,ref_id,routine_expression) select '%s' as id,'%s' as form_template,name,description,default_value,sort,package_name,entity,attr_def_id,attr_def_name,attr_def_data_type,element_type,title,width,ref_package_name,ref_entity,data_options,required,regular,is_edit,is_view,is_output,item_group,item_group_name,in_display_name,is_ref_inside,multiple,default_clear,'%s' as ref_id,routine_expression from form_item_template where id='%s'", newFormItemTemplateIdMap[formItemTemplate.Id], newFormTemplateIdMap[formItemTemplate.FormTemplate], newFormItemTemplateIdMap[formItemTemplate.RefId], formItemTemplate.Id)})
+			}
+		}
+	}
+	return dao.TransactionWithoutForeignCheck(actions)
+}
+
 func (s *RequestTemplateService) ConfirmRequestTemplate(requestTemplateId, operator, userToken, language string) error {
 	var parentId string
 	var requestTemplateRoleList []*models.RequestTemplateRoleTable

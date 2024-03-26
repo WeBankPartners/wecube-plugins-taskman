@@ -61,6 +61,8 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 						} else if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeClaim) {
 							//  组内认领,给角色管理员发送邮件
 							NotifyTaskRoleAdministratorMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Role, userToken, language)
+						} else {
+							NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
 						}
 						actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,handler_type,created_time,updated_time) values(?,?,?,?,?,?,?,?)",
 							Param: []interface{}{guid.CreateGuid(), handleTemplate.Id, taskId, handleTemplate.Role, handleTemplate.Handler, handleTemplate.HandlerType, now, now}})

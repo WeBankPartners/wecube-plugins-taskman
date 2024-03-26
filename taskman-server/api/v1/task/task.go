@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -48,16 +49,35 @@ func CreateTask(c *gin.Context) {
 		requestLanguage = "en"
 	}
 	for _, input := range param.Inputs {
-		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
+		output, task, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
 		} else {
-			notifyErr := service.NotifyTaskMail(taskId, requestToken, requestLanguage, "", "")
-			if notifyErr != nil {
-				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
+			// 发送邮件
+			var taskHandleList []*models.TaskHandleTable
+			var handlerList, result []string
+			var request models.RequestTable
+			if err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList); err != nil {
+				log.Logger.Error("NotifyTaskExpireMail query db err", log.Error(err))
+				return
 			}
+			for _, taskHandle := range taskHandleList {
+				if taskHandle.Handler != "" {
+					handlerList = append(handlerList, taskHandle.Handler)
+				} else if taskHandle.Role != "" {
+					//添加角色管理员
+					if result, err = service.GetRoleService().GetRoleAdministrators(taskHandle.Role, requestToken, requestLanguage); err != nil {
+						continue
+					}
+					if len(result) > 0 {
+						handlerList = append(handlerList, result[0])
+					}
+				}
+			}
+			request, _ = service.GetSimpleRequest(task.Request)
+			service.NotifyTaskAssignListMail(request.Name, task.Name, task.ExpireTime, requestToken, requestLanguage, handlerList)
 		}
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}

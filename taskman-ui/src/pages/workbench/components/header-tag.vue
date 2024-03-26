@@ -4,7 +4,7 @@
       <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
       <Col :span="2" class="line">{{ $t('handler') }}</Col>
       <Col :span="2" class="line">{{ $t('t_action') }}</Col>
-      <Col :span="2" class="line">{{ '处理状态' }}</Col>
+      <Col :span="2" class="line">{{ $t('tw_handleStatus') }}</Col>
       <Col :span="3" class="line">{{ $t('handle_time') }}</Col>
       <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
@@ -78,11 +78,11 @@ export default {
   computed: {
     getOperationName () {
       return function (i) {
-        // handleResult 1.编排任务系统下操作显示，2审批和定版退回，前端枚举
+        // 1.编排任务系统下发选项，2审批和定版退回，前端枚举
         const resultMap = {
-          deny: '拒绝',
-          approve: '同意',
-          redraw: '退回'
+          deny: this.$t('tw_reject'), // 拒绝
+          approve: this.$t('tw_approve'), // 同意
+          redraw: this.$t('tw_send_back') // 退回
         }
         let resultName = ''
         if (['approve', 'check'].includes(this.data.type)) {
@@ -96,9 +96,9 @@ export default {
     },
     getHandleStatus () {
       return function (i) {
-        // handleStatus 自定义任务前端枚举
+        // 任务处理状态
         const statusMap = {
-          complete: '完成',
+          complete: this.$t('tw_completed'),
           uncompleted: this.$t('tw_incomplete')
         }
         let statusName = ''

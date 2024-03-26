@@ -141,13 +141,6 @@ export default {
         pageSize: 10
       },
       sorting: {}, // 表格默认排序
-      actionList: [
-        { label: '发布', value: '1' },
-        { label: '请求', value: '2' },
-        { label: '问题', value: '3' },
-        { label: '事件', value: '4' },
-        { label: '变更', value: '5' }
-      ],
       taskLabel: () => {
         return (
           <div>
@@ -161,7 +154,7 @@ export default {
       approveLabel: () => {
         return (
           <div>
-            <span>审批</span>
+            <span>{this.$t('tw_approval')}</span>
             {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Approve') > 0 && (
               <span class="badge">{this.getPendingNumber('Approve')}</span>
             )}

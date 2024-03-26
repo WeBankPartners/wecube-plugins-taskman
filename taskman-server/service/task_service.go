@@ -954,11 +954,11 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, l
 	var request models.RequestTable
 	var taskHandleList []*models.TaskHandleTable
 	var requestName string
-	if common.GetLowVersionUnixMillis(task.UpdatedTime) != param.LatestUpdateTime {
-		err = exterror.New().DealWithAtTheSameTimeError
+	if task, err = getSimpleTask(param.TaskId); err != nil {
 		return
 	}
-	if task, err = getSimpleTask(param.TaskId); err != nil {
+	if common.GetLowVersionUnixMillis(task.UpdatedTime) != param.LatestUpdateTime {
+		err = exterror.New().DealWithAtTheSameTimeError
 		return
 	}
 	if task.Status == string(models.TaskStatusDone) {

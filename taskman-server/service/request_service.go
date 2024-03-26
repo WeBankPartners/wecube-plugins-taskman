@@ -2319,8 +2319,8 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 
 	// 查询 form item template
 	var itemTemplates []*models.FormItemTemplateTable
-	actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams = dao.CreateListParams(actualFormTemplateIds, "")
-	err = dao.X.SQL("select * from form_item_template where form_template in ("+actualFormTemplateIdsFilterSql+") order by item_group,sort", actualFormTemplateIdsFilterParams...).Find(&itemTemplates)
+	formTemplateIdsFilterSql, formTemplateIdsFilterParams := dao.CreateListParams(formTemplateIds, "")
+	err = dao.X.SQL("select * from form_item_template where form_template in ("+formTemplateIdsFilterSql+") order by item_group,sort", formTemplateIdsFilterParams...).Find(&itemTemplates)
 
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)

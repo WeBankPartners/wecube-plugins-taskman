@@ -73,6 +73,7 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 // NotifyTaskAssignMail 定版/确认/任务/审批分配给“我”
 func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken, language string) (err error) {
 	if !models.MailEnable {
+		log.Logger.Info("mail not enable")
 		return nil
 	}
 	var subject, content string
@@ -90,6 +91,9 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 	content = content + fmt.Sprintf("\n\n\nYou have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -117,6 +121,9 @@ func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, lang
 	content = content + fmt.Sprintf("\n\n\nYou have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, mailList)
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -152,6 +159,9 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 	content = content + fmt.Sprintf("\n\n\nRole %s has a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible. Click to view details", displayNameMap[role], requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -174,6 +184,9 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken
 	content = content + fmt.Sprintf("\n\n\nThe task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, originHandler)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -196,6 +209,9 @@ func NotifyRequestCompleteMail(requestName, creator, userToken, language string)
 	content = content + fmt.Sprintf("\n\n\nThe [request: %s] you initiated has been processed. Click on the link to view details", requestName)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -219,6 +235,9 @@ func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, lan
 	content = content + fmt.Sprintf("The [request: %s] you initiated was returned to the draft by %s at node %s. Please make the necessary modifications and resubmit. Click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -242,6 +261,9 @@ func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, lan
 	content = content + fmt.Sprintf("\n\n\nThe [request: %s] you initiated was rejected by %s at the %s approval node, and the request has been terminated. Please click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 
@@ -270,6 +292,9 @@ func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userT
 		content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	}
 	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	if err != nil {
+		log.Logger.Error("send mail err", log.Error(err))
+	}
 	return
 }
 

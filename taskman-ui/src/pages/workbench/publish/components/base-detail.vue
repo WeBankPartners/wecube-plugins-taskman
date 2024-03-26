@@ -187,6 +187,7 @@
                     :requestId="requestId"
                     formDisable
                     :showBtn="false"
+                    :formData="detail.formData"
                   ></DataBind>
                 </div>
               </template>

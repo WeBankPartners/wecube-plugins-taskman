@@ -160,11 +160,6 @@ export default {
     formDisable: {
       type: Boolean,
       default: false
-    },
-    // 类型(1发布2请求)
-    type: {
-      type: String,
-      default: ''
     }
   },
   data () {

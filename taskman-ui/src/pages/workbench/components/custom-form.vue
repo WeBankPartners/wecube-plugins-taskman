@@ -42,6 +42,14 @@
                 style="width:100%;"
               >
               </LimitSelect>
+              <!--自定义分析类型-->
+              <Input
+                v-else-if="i.elementType === 'calculate'"
+                :value="value[i.name]"
+                type="textarea"
+                :disabled="true"
+                style="width:100%;"
+              ></Input>
               <!--日期时间类型-->
               <DatePicker
                 v-else-if="i.elementType === 'datePicker'"

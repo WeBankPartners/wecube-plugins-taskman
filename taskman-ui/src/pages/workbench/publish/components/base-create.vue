@@ -98,14 +98,7 @@
                 }}</Option>
               </Select>
             </FormItem>
-            <EntityTable
-              ref="entityTable"
-              :data="requestData"
-              :requestId="requestId"
-              :type="actionName"
-              isAdd
-              autoAddRow
-            ></EntityTable>
+            <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" isAdd autoAddRow></EntityTable>
             <div v-if="noRequestForm" class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </HeaderTitle>

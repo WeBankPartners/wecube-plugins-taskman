@@ -16,7 +16,7 @@
         <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
         <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
         <Col :span="2" class="line">{{ getHandleStatus(i) }}</Col>
-        <Col :span="3" class="line">{{ i.updatedTime }}</Col>
+        <Col :span="3" class="line">{{ i.updatedTime || '-' }}</Col>
         <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
         <Col :span="5" class="line"
           ><div class="text-overflow">{{ i.resultDesc || '-' }}</div></Col
@@ -35,7 +35,7 @@
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
       <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
       <Col :span="2" class="line">{{ '-' }}</Col>
-      <Col :span="3" class="line">{{ data.updatedTime }}</Col>
+      <Col :span="3" class="line">{{ data.updatedTime || '-' }}</Col>
       <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col

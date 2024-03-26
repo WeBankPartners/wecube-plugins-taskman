@@ -35,6 +35,7 @@
               :requestId="requestId"
               :formDisable="detail.status !== 'Pending'"
               :actionName="actionName"
+              :formData="detail.formData"
             ></DataBind>
           </div>
         </div>

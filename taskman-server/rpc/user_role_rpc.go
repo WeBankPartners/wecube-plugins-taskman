@@ -114,7 +114,7 @@ func QueryUserRoles(user, userToken, language string) (list []*models.SimpleLoca
 }
 
 // GetUserInfo 获取用户信息
-func GetUserInfo(userName, userToken, language string) (dto *models.SimpleLocalUserDto, err error) {
+func GetUserInfo(userName, userToken, language string) (dto *models.UserDto, err error) {
 	var response models.GetUserResponse
 	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathGetUserInfo, userName), userToken, language)
 	if err != nil {

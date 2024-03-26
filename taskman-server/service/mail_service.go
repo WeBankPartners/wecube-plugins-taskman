@@ -15,7 +15,7 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 	var requestName string
 	var mailList []string
 	var roleTableList []*models.RoleTable
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	/*if !models.MailEnable {
 		return nil
 	}*/
@@ -37,14 +37,14 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 			if userInfo, err = GetRoleService().GetUserInfo(taskHandle.Handler, userToken, language); err != nil {
 				return err
 			}
-			if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+			if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 				log.Logger.Warn("NotifyTaskExpireMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", task.Name), log.String("receiver", taskHandle.Handler))
 				return
 			}
 		} else if taskHandle.Role != "" {
 			roleTableList = append(roleTableList, &models.RoleTable{Id: taskHandle.Role})
 		}
-		mailList = append(mailList, userInfo.EmailAddr)
+		mailList = append(mailList, userInfo.Email)
 	}
 	if len(roleTableList) > 0 {
 		subMailList := GetRoleService().GetRoleMail(roleTableList, userToken, language)
@@ -78,11 +78,11 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 		return nil
 	}*/
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(receiver, userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyTaskAssignMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", receiver))
 		return
 	}
@@ -91,8 +91,8 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 	content = fmt.Sprintf("您有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理(若本人无法处理,组员可以将任务转单处理),点击查看详情", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n\n\nYou have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
-	log.Logger.Info("NotifyTaskAssignMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.EmailAddr))
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	log.Logger.Info("NotifyTaskAssignMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}
@@ -105,17 +105,17 @@ func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, lang
 		return nil
 	}*/
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	var mailList []string
 	for _, receiver := range receivers {
 		if userInfo, err = GetRoleService().GetUserInfo(receiver, userToken, language); err != nil {
 			return err
 		}
-		if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
-			log.Logger.Warn("NotifyTaskAssignMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", receiver))
+		if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
+			log.Logger.Warn("NotifyTaskAssignListMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", receiver))
 			return
 		}
-		mailList = append(mailList, userInfo.EmailAddr)
+		mailList = append(mailList, userInfo.Email)
 	}
 	taskName = getInternationalizationTaskName(taskName, language)
 	subject = "[wecube] [Task transfer reminder] +【任务被转单提醒】"
@@ -137,7 +137,7 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 	}*/
 	var subject, content string
 	var result []string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	var displayNameMap map[string]string
 	if result, err = GetRoleService().GetRoleAdministrators(role, userToken, language); err != nil {
 		return err
@@ -149,7 +149,7 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 	if userInfo, err = GetRoleService().GetUserInfo(result[0], userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyTaskRoleAdministratorMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", result[0]))
 		return
 	}
@@ -161,8 +161,8 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 	content = fmt.Sprintf("角色%s有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理,点击查看详情", displayNameMap[role], requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n\n\nRole %s has a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible. Click to view details", displayNameMap[role], requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
-	log.Logger.Info("NotifyTaskRoleAdministratorMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.EmailAddr))
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	log.Logger.Info("NotifyTaskRoleAdministratorMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}
@@ -175,11 +175,11 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken
 		return nil
 	}*/
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(originHandler, userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyTaskHandlerUpdateMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", originHandler))
 		return
 	}
@@ -187,8 +187,8 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken
 	content = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, originHandler)
 	content = content + fmt.Sprintf("\n\n\nThe task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, originHandler)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
-	log.Logger.Info("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.EmailAddr))
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	log.Logger.Info("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}
@@ -201,11 +201,11 @@ func NotifyRequestCompleteMail(requestName, creator, userToken, language string)
 		return nil
 	}
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyRequestCompleteMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
 		return
 	}
@@ -213,9 +213,9 @@ func NotifyRequestCompleteMail(requestName, creator, userToken, language string)
 	content = fmt.Sprintf("您发起的[请求:%s]已处理完成,点击链接查看详情", requestName)
 	content = content + fmt.Sprintf("\n\n\nThe [request: %s] you initiated has been processed. Click on the link to view details", requestName)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
-	log.Logger.Info("NotifyRequestCompleteMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.EmailAddr))
+	log.Logger.Info("NotifyRequestCompleteMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}
@@ -228,11 +228,11 @@ func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, lan
 		return nil
 	}
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyTaskBackMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
 		return
 	}
@@ -242,7 +242,7 @@ func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, lan
 	content = content + fmt.Sprintf("The [request: %s] you initiated was returned to the draft by %s at node %s. Please make the necessary modifications and resubmit. Click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}
@@ -255,11 +255,11 @@ func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, lan
 		return nil
 	}
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyTaskDenyMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
 		return
 	}
@@ -268,9 +268,9 @@ func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, lan
 	content = fmt.Sprintf("您发起的[请求:%s],在%s审批节点被%s拒绝,请求已终止,请点击链接查看详情", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n\n\nThe [request: %s] you initiated was rejected by %s at the %s approval node, and the request has been terminated. Please click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
-	log.Logger.Info("NotifyTaskDenyMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.EmailAddr))
+	log.Logger.Info("NotifyTaskDenyMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}
@@ -283,11 +283,11 @@ func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userT
 		return nil
 	}
 	var subject, content string
-	var userInfo *models.SimpleLocalUserDto
+	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(creator, userToken, language); err != nil {
 		return err
 	}
-	if userInfo == nil || strings.TrimSpace(userInfo.EmailAddr) == "" {
+	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
 		log.Logger.Warn("NotifyTaskWorkflowTerminationMail,requestName creator email is empty", log.String("requestName", requestName), log.String("creator", creator))
 		return
 	}
@@ -301,9 +301,9 @@ func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userT
 		content = content + fmt.Sprintf("\n\n\nDue to scheduling %s being manually terminated by the administrator, it resulted in The [Request: %s] request you initiated has been terminated. Please click on the link to view details", procDefName, requestName)
 		content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
 	}
-	log.Logger.Info("NotifyTaskWorkflowFailMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.EmailAddr))
+	log.Logger.Info("NotifyTaskWorkflowFailMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 
-	err = models.MailSender.Send(subject, content, []string{userInfo.EmailAddr})
+	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}

@@ -58,7 +58,7 @@ type QueryUserResponse struct {
 
 type GetUserResponse struct {
 	HttpResponseMeta
-	Data *SimpleLocalUserDto `json:"data"`
+	Data *UserDto `json:"data"`
 }
 
 type QueryProcessDefinitionResponse struct {

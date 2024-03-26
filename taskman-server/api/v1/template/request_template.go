@@ -343,6 +343,17 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
+func CopyConfirmRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("id")
+	err := service.GetRequestTemplateService().CopyConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "CopyConfirmRequestTemplate", c.Request.RequestURI, "")
+	middleware.ReturnSuccess(c)
+}
+
 func GetConfirmCount(c *gin.Context) {
 	var count int
 	count, err := service.GetRequestTemplateService().GetConfirmCount(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))

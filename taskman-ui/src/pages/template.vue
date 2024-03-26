@@ -617,10 +617,10 @@ export default {
     },
     async uploadSucess (val) {
       if (val.statusCode === 'CONFIRM') {
+        // 确认覆盖
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
-          content:
-            this.$t('tw_template_cover_tips_l') + `"${val.data.templateName}"` + this.$t('tw_template_cover_tips_r'),
+          content: this.$t('tw_template_cover_tips'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {
@@ -631,16 +631,19 @@ export default {
                 title: 'Successful',
                 desc: 'Successful'
               })
+              this.status = 'created'
               this.getTemplateList()
             }
           },
           onCancel: () => {}
         })
       } else if (val.statusCode === 'OK') {
+        // 导入成功
         this.$Notice.success({
           title: 'Successful',
           desc: 'Successful'
         })
+        this.status = 'created'
         this.getTemplateList()
       } else {
         this.$Notice.warning({

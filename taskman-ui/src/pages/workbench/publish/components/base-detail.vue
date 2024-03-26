@@ -158,7 +158,7 @@
               <!--提交-->
               <template v-if="data.type === 'submit'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_submit_request') }}</div>
                   <HeaderTag
                     class="custom-panel-header"
                     :showHeader="index === 0 ? true : false"
@@ -194,9 +194,14 @@
               <template v-else-if="['approve', 'implement_process', 'implement_custom'].includes(data.type)">
                 <div class="custom-panel">
                   <div class="custom-panel-title">
-                    <span class="type">{{ data.type === 'approve' ? $t('tw_approval') : $t('task') }}</span>
+                    <span class="type">{{
+                      `${{
+                        approve: $t('tw_approval'),
+                        implement_custom: $t('task'),
+                        implement_process: $t('task')
+                      }[data.type] || '-'}: ${data.name}`
+                    }}</span>
                     <span class="mode">{{ approvalTypeName[data.handleMode] || '' }}</span>
-                    {{ data.name }}
                   </div>
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
@@ -330,6 +335,13 @@ export default {
         3: this.$t('tw_question'),
         4: this.$t('tw_event'),
         5: this.$t('fork')
+      },
+      handleTypeColor: {
+        check: '#ffa2d3',
+        approve: '#2d8cf0',
+        implement_process: '#cba43f',
+        implement_custom: '#b886f8',
+        confirm: '#19be6b'
       },
       lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
@@ -516,18 +528,24 @@ export default {
       align-items: flex-start;
       width: 100%;
       &-title {
-        width: 100px;
+        width: 105px;
         font-weight: bold;
-        line-height: 22px;
-        .type {
-          font-size: 12px;
-          display: inline-block;
-          color: #19be6b;
-        }
+        line-height: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        // .type {
+        //   font-size: 12px;
+        //   display: inline-block;
+        //   color: #fff;
+        //   padding: 1px 5px;
+        //   border-radius: 2px;
+        // }
         .mode {
           font-size: 12px;
           display: inline-block;
-          color: #2db7f5;
+          color: #19be6b;
+          margin-top: 2px;
         }
       }
       &-header {
@@ -600,6 +618,7 @@ export default {
     padding-left: 0px !important;
     i {
       margin-top: 4px;
+      margin-right: 8px !important;
     }
   }
   .ivu-collapse-content-box {

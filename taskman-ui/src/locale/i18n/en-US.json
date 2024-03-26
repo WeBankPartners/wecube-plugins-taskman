@@ -291,6 +291,7 @@
   "tw_exceed": "Exceed",
   "tw_template_cover_tips_l": "Confirm Overwrite: The template ",
   "tw_template_cover_tips_r": "already exists in the draft. Executing the import will delete the existing template and requests initiated by this. Are you sure to import?",
+  "tw_template_cover_tips": "Import failed: A template with the same name already exists in the [draft]. Please delete the draft and try again",
   "tw_only_me": "Only Myself",
   "tw_commit": "Submit",
   "tw_confirm_commit": "Confirm Submission",

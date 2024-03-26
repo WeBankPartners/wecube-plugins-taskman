@@ -803,12 +803,17 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 		err = fmt.Errorf("requestTemplateId invalid")
 		return
 	}
-	existQuery, tmpErr := dao.X.QueryString("select id,name,version from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
+	existQuery, tmpErr := dao.X.QueryString("select id,name,version,status from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
 	if tmpErr != nil {
 		return fmt.Errorf("Query database fail,%s ", tmpErr.Error())
 	}
 	if len(existQuery) > 0 {
-		return fmt.Errorf("RequestTemplate already have a branch %s:%s", existQuery[0]["name"], existQuery[0]["version"])
+		if existQuery[0]["status"] == string(models.RequestTemplateStatusCreated) {
+			err = exterror.New().RequestTemplateHasDraftError
+		} else if existQuery[0]["status"] == string(models.RequestTemplateStatusPending) {
+			err = exterror.New().RequestTemplateHasPendingError
+		}
+		return err
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	version := common.BuildVersionNum(requestTemplate.Version)
@@ -816,18 +821,18 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	if requestTemplate.ParentId == "" {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
-			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc) select '%s' as id,`group`,name,description,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) select '%s' as id,`group`,name,description,"+
 			"tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,"+
 			"'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler, "+
-			"type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc from request_template where id='%s'", newRequestTemplateId, operator, nowTime, operator, nowTime,
+			"type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator, nowTime, operator, nowTime,
 			requestTemplate.Id, version, requestTemplate.Id)})
 	} else {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
-			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id,approve_by,check_switch,confirm_switch,back_desc) select '%s' as id,`group`,name,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) select '%s' as id,`group`,name,"+
 			"description,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,"+
 			"'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,"+
-			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id,approve_by,check_switch,confirm_switch,back_desc from request_template where id='%s'", newRequestTemplateId, operator,
+			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id,approve_by,check_switch,confirm_switch,back_desc,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplate.Id, version, requestTemplate.Id, requestTemplate.ParentId)})
 	}
 
@@ -1354,7 +1359,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		if len(input.FormTemplate) > 0 {
 			for _, formTemplate := range input.FormTemplate {
 				if formTemplate.ItemGroupType == "optional" && entityMap[formTemplate.ItemGroup] == false {
-					err = fmt.Errorf("optional process not has %s group", formTemplate.ItemGroup)
+					err = exterror.New().TemplateImportNotMatchEntityError.WithParam(formTemplate.ItemGroupName, formTemplate.ItemGroupName)
 					return
 				}
 			}
@@ -1378,7 +1383,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			}
 		}
 		if !processExistFlag {
-			err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+			err = exterror.New().TemplateImportNotWorkflowError.WithParam(input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion, input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion)
 			return
 		}
 		roleFlag := false
@@ -1389,7 +1394,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			}
 		}
 		if !roleFlag {
-			err = fmt.Errorf("user not has process:%s permission! ", input.RequestTemplate.ProcDefName)
+			err = exterror.New().TemplateImportNotWorkflowRoleError.WithParam(manageRole)
 			return
 		}
 		// 重新设置模版属主角色
@@ -1421,12 +1426,9 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				}
 			}
 			if !existFlag {
-				err = fmt.Errorf("Node:%s can not find in exist process:%s ", v.NodeName, input.RequestTemplate.ProcDefName)
-				break
+				err = exterror.New().TemplateImportNotMatchWorkflowTaskError.WithParam(input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion, input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion)
+				return
 			}
-		}
-		if err != nil {
-			return
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
@@ -1446,9 +1448,9 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	}
 	input.RequestTemplate.Status = "created"
 	input.RequestTemplate.ConfirmTime = ""
-	rtAction := dao.ExecAction{Sql: "insert into request_template(id,`group`,name,description,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
+	rtAction := dao.ExecAction{Sql: "insert into request_template(id,`group`,name,description,tags,record_id,`version`,confirm_time,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,expire_day,created_by,created_time,updated_by,updated_time,entity_attrs,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}
 	rtAction.Param = []interface{}{input.RequestTemplate.Id, input.RequestTemplate.Group, input.RequestTemplate.Name, input.RequestTemplate.Description, input.RequestTemplate.Tags, input.RequestTemplate.RecordId, input.RequestTemplate.Version, input.RequestTemplate.ConfirmTime, input.RequestTemplate.Status, input.RequestTemplate.PackageName, input.RequestTemplate.EntityName,
-		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, operator, nowTime, operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler, input.RequestTemplate.Type, input.RequestTemplate.OperatorObjType, input.RequestTemplate.ApproveBy, input.RequestTemplate.CheckSwitch, input.RequestTemplate.ConfirmSwitch, input.RequestTemplate.BackDesc}
+		input.RequestTemplate.ProcDefKey, input.RequestTemplate.ProcDefId, input.RequestTemplate.ProcDefName, input.RequestTemplate.ExpireDay, operator, nowTime, operator, nowTime, input.RequestTemplate.EntityAttrs, input.RequestTemplate.Handler, input.RequestTemplate.Type, input.RequestTemplate.OperatorObjType, input.RequestTemplate.ApproveBy, input.RequestTemplate.CheckSwitch, input.RequestTemplate.ConfirmSwitch, input.RequestTemplate.BackDesc, input.RequestTemplate.ProcDefVersion}
 	actions = append(actions, &rtAction)
 	for _, v := range input.TaskTemplate {
 		tmpAction := dao.ExecAction{Sql: "insert into task_template(id,name,description,request_template,node_id,node_def_id,node_name,expire_day,handler,created_by,created_time,updated_by,updated_time,sort,handle_mode,type) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"}

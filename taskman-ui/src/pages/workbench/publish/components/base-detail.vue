@@ -113,11 +113,11 @@
           </div>
         </HeaderTitle>
         <!--表单详情-->
-        <HeaderTitle title="表单详情">
+        <HeaderTitle :title="$t('tw_form_detail')">
           <div class="request-form">
             <template v-if="detail.customForm && detail.customForm.value">
               <Divider style="margin: 0 0 30px 0" orientation="left">
-                <span class="sub-header">信息表单</span>
+                <span class="sub-header">{{ $t('tw_information_form') }}</span>
               </Divider>
               <CustomForm
                 v-if="detail.customForm && detail.customForm.value"
@@ -128,7 +128,7 @@
               ></CustomForm>
             </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
-              <span class="sub-header">数据表单</span>
+              <span class="sub-header">{{ $t('tw_data_form') }}</span>
             </Divider>
             <FormItem
               v-if="detail.associationWorkflow"
@@ -143,7 +143,7 @@
               </Select>
             </FormItem>
             <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
-            <div v-else class="no-data">暂未配置表单</div>
+            <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </HeaderTitle>
         <!--处理历史-->
@@ -158,7 +158,7 @@
               <!--提交-->
               <template v-if="data.type === 'submit'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_submit_request') }}</div>
                   <HeaderTag
                     class="custom-panel-header"
                     :showHeader="index === 0 ? true : false"
@@ -170,8 +170,8 @@
               <!--撤回-->
               <template v-if="data.type === 'revoke'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">撤回</div>
-                  <HeaderTag class="custom-panel-header" :data="data" operation="撤回"></HeaderTag>
+                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_recall') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_recall')"></HeaderTag>
                 </div>
               </template>
               <!--定版-->
@@ -194,9 +194,14 @@
               <template v-else-if="['approve', 'implement_process', 'implement_custom'].includes(data.type)">
                 <div class="custom-panel">
                   <div class="custom-panel-title">
-                    <span class="type">{{ data.type === 'approve' ? '审批' : '任务' }}</span>
+                    <span class="type">{{
+                      `${{
+                        approve: $t('tw_approval'),
+                        implement_custom: $t('task'),
+                        implement_process: $t('task')
+                      }[data.type] || '-'}: ${data.name}`
+                    }}</span>
                     <span class="mode">{{ approvalTypeName[data.handleMode] || '' }}</span>
-                    {{ data.name }}
                   </div>
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
@@ -208,7 +213,7 @@
                     :formDisable="true"
                   ></EntityTable>
                   <div v-else class="no-data">
-                    暂未配置表单
+                    {{ $t('tw_no_formConfig') }}
                   </div>
                 </div>
               </template>
@@ -220,10 +225,10 @@
                 </div>
                 <div slot="content" class="history">
                   <Form :label-width="80" label-position="left">
-                    <FormItem label="状态">
+                    <FormItem :label="$t('status')">
                       <Input disabled :value="completeStatus" />
                     </FormItem>
-                    <FormItem label="未完成任务节点">
+                    <FormItem :label="$t('tw_uncompleted_tag')">
                       <Input disabled :value="uncompletedTasks.join(', ')" />
                     </FormItem>
                   </Form>
@@ -318,18 +323,25 @@ export default {
       uncompletedTasks: [], // 请求确认-未完成任务
       flowVisible: false,
       approvalTypeName: {
-        custom: '单人',
-        any: '协同',
-        all: '并行',
-        admin: '提交人角色管理员',
-        auto: '自动通过'
+        custom: this.$t('tw_onlyOne'), // 单人
+        any: this.$t('tw_anyWidth'), // 协同
+        all: this.$t('tw_allWidth'), // 并行
+        admin: this.$t('tw_roleAdmin'), // 提交人角色管理员
+        auto: this.$t('tw_autoWith') // 自动通过
       },
       typeMap: {
         1: this.$t('tw_publish'),
         2: this.$t('tw_request'),
-        3: '问题',
-        4: '事件',
-        5: '变更'
+        3: this.$t('tw_question'),
+        4: this.$t('tw_event'),
+        5: this.$t('fork')
+      },
+      handleTypeColor: {
+        check: '#ffa2d3',
+        approve: '#2d8cf0',
+        implement_process: '#cba43f',
+        implement_custom: '#b886f8',
+        confirm: '#19be6b'
       },
       lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
@@ -339,7 +351,7 @@ export default {
       return function (val) {
         const list = [
           { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-          { label: '审批中', value: 'InApproval', color: '#1990ff' },
+          { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
           { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
           { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
           { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
@@ -516,18 +528,24 @@ export default {
       align-items: flex-start;
       width: 100%;
       &-title {
-        width: 100px;
+        width: 105px;
         font-weight: bold;
-        line-height: 22px;
-        .type {
-          font-size: 12px;
-          display: inline-block;
-          color: #19be6b;
-        }
+        line-height: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        // .type {
+        //   font-size: 12px;
+        //   display: inline-block;
+        //   color: #fff;
+        //   padding: 1px 5px;
+        //   border-radius: 2px;
+        // }
         .mode {
           font-size: 12px;
           display: inline-block;
-          color: #2db7f5;
+          color: #19be6b;
+          margin-top: 2px;
         }
       }
       &-header {
@@ -600,6 +618,7 @@ export default {
     padding-left: 0px !important;
     i {
       margin-top: 4px;
+      margin-right: 8px !important;
     }
   }
   .ivu-collapse-content-box {

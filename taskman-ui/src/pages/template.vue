@@ -3,10 +3,14 @@
     <div>
       <Row>
         <Tabs v-model="status" @on-click="getTemplateList()">
-          <TabPane label="已发布" name="confirm"></TabPane>
-          <TabPane label="草稿" name="created"></TabPane>
+          <!--已发布-->
+          <TabPane :label="$t('status_confirm')" name="confirm"></TabPane>
+          <!--草稿-->
+          <TabPane :label="$t('status_draft')" name="created"></TabPane>
+          <!--待管理员确认-->
           <TabPane :label="pendingLabel" name="pending"></TabPane>
-          <TabPane label="已禁用" name="disable"></TabPane>
+          <!--已禁用-->
+          <TabPane :label="$t('tw_template_status_disable')" name="disable"></TabPane>
         </Tabs>
       </Row>
       <Row>
@@ -53,7 +57,7 @@
             clearable
             filterable
             multiple
-            placeholder="使用场景"
+            :placeholder="$t('tw_useScene')"
             style="width: 90%"
             @on-change="onSearch"
           >
@@ -188,7 +192,7 @@ export default {
           }
         },
         {
-          title: '使用场景',
+          title: this.$t('tw_useScene'),
           minWidth: 80,
           key: 'type',
           render: (h, params) => {
@@ -283,7 +287,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 180,
+          width: 170,
           align: 'center',
           render: (h, params) => {
             return (
@@ -337,7 +341,7 @@ export default {
                   </Tooltip>
                 )}
                 {/* 确认发布 */ this.status === 'pending' && this.username === params.row.administrator && (
-                  <Tooltip content={this.$t('确认发布')} placement="top">
+                  <Tooltip content={this.$t('tw_confirmPublish')} placement="top">
                     <Button
                       size="small"
                       type="success"
@@ -349,7 +353,7 @@ export default {
                   </Tooltip>
                 )}
                 {/* 退回草稿 */ this.status === 'pending' && this.username === params.row.administrator && (
-                  <Tooltip content={this.$t('退回草稿')} placement="top">
+                  <Tooltip content={this.$t('tw_redrawDraft')} placement="top">
                     <Button
                       size="small"
                       type="error"
@@ -422,18 +426,33 @@ export default {
       pendingLabel: () => {
         return (
           <div>
-            <span>待管理员确认</span>
+            <span>{this.$t('tw_waitAdminComfirm')}</span>
             {(this.confirmCount && <span class="badge">{this.confirmCount}</span>) || ''}
           </div>
         )
       },
       loading: false,
       typeList: [
-        { label: '发布', value: '1' },
-        { label: '请求', value: '2' },
-        { label: '问题', value: '3' },
-        { label: '事件', value: '4' },
-        { label: '变更', value: '5' }
+        {
+          value: '1',
+          label: this.$t('tw_publish') // 发布
+        },
+        {
+          value: '2',
+          label: this.$t('tw_request') // 请求
+        },
+        {
+          value: '3',
+          label: this.$t('tw_question') // 问题
+        },
+        {
+          value: '4',
+          label: this.$t('tw_event') // 事件
+        },
+        {
+          value: '5',
+          label: this.$t('fork') // 变更
+        }
       ]
     }
   },
@@ -511,7 +530,7 @@ export default {
     // 确认发布
     async confirmTemplate (row) {
       this.$Modal.confirm({
-        title: '确认发布？',
+        title: this.$t('tw_confirmPublish'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
@@ -537,7 +556,7 @@ export default {
     // 退回草稿
     async draftTemplate (row) {
       this.$Modal.confirm({
-        title: '确认退回草稿？',
+        title: this.$t('tw_confirmRedraeDraft'),
         'z-index': 1000000,
         loading: false,
         render: () => {
@@ -598,10 +617,10 @@ export default {
     },
     async uploadSucess (val) {
       if (val.statusCode === 'CONFIRM') {
+        // 确认覆盖
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
-          content:
-            this.$t('tw_template_cover_tips_l') + `"${val.data.templateName}"` + this.$t('tw_template_cover_tips_r'),
+          content: this.$t('tw_template_cover_tips'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {
@@ -612,16 +631,19 @@ export default {
                 title: 'Successful',
                 desc: 'Successful'
               })
+              this.status = 'created'
               this.getTemplateList()
             }
           },
           onCancel: () => {}
         })
       } else if (val.statusCode === 'OK') {
+        // 导入成功
         this.$Notice.success({
           title: 'Successful',
           desc: 'Successful'
         })
+        this.status = 'created'
         this.getTemplateList()
       } else {
         this.$Notice.warning({

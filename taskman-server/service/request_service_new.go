@@ -1570,10 +1570,12 @@ func GetFilterItem(param models.FilterRequestParam) (data *models.FilterItem, er
 }
 
 // RequestConfirm 请求确认
-func RequestConfirm(param models.RequestConfirmParam, user string) error {
+func RequestConfirm(param models.RequestConfirmParam, user, userToken, language string) error {
 	var taskList []*models.TaskTable
 	var actions []*dao.ExecAction
 	var action *dao.ExecAction
+	var request models.RequestTable
+	var err error
 	var markTaskIdMap = convertArray2Map(param.MarkTaskId)
 	now := time.Now().Format(models.DateTimeFormat)
 	dao.X.SQL("select * from task where request = ? and type = ?", param.Id, string(models.TaskTypeImplement)).Find(&taskList)
@@ -1593,6 +1595,10 @@ func RequestConfirm(param models.RequestConfirmParam, user string) error {
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeComplete, param.Notes, user, now, param.TaskId}})
 	// 更新请求表状态,设置为完成
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,complete_status = ?,updated_by = ?,updated_time= ? where id = ?", Param: []interface{}{models.RequestStatusCompleted, param.CompleteStatus, user, now, param.Id}})
+	if request, err = GetSimpleRequest(param.Id); err != nil {
+		return err
+	}
+	NotifyRequestCompleteMail(request.Name, request.CreatedBy, userToken, language)
 	return dao.Transaction(actions)
 }
 

@@ -9,11 +9,11 @@
       <!--请求-->
       <TabPane :label="$t('tw_request')" name="2"></TabPane>
       <!--问题-->
-      <TabPane label="问题" name="3"></TabPane>
+      <TabPane :label="$t('tw_question')" name="3"></TabPane>
       <!--事件-->
-      <TabPane label="事件" name="4"></TabPane>
+      <TabPane :label="$t('tw_event')" name="4"></TabPane>
       <!--变更-->
-      <TabPane label="变更" name="5"></TabPane>
+      <TabPane :label="$t('fork')" name="5"></TabPane>
     </Tabs>
     <BaseSearch :options="searchOptions" v-model="form" @search="handleQuery"></BaseSearch>
     <Button size="small" @click="handleExport" type="success" :loading="exportFlag" class="export">{{

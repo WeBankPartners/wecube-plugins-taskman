@@ -30,7 +30,13 @@
                   :required="i.required === 'yes'"
                   :rules="
                     i.required === 'yes'
-                      ? [{ required: true, message: `${i.title}为空`, trigger: ['change', 'blur'] }]
+                      ? [
+                          {
+                            required: true,
+                            message: `${i.title}${$t('can_not_be_empty')}`,
+                            trigger: ['change', 'blur']
+                          }
+                        ]
                       : []
                   "
                 >
@@ -91,6 +97,7 @@
       </div>
     </div>
     <div class="add-row">
+      <!--添加一行-->
       <Button v-if="isAdd && activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{
         $t('tw_add_row')
       }}</Button>
@@ -101,7 +108,7 @@
         v-model="addRowSource"
         filterable
         clearable
-        placeholder="选择已有数据添加一行"
+        :placeholder="$t('tw_addRow_exist')"
         style="width:450px;"
         prefix="md-add-circle"
         @on-open-change="

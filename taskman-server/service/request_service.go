@@ -1139,6 +1139,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,description = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, description, operator, nowTime, checkTask.Id}})
 		// 更新请求
 		actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,rollback_desc=?,updated_by=?,handler=?,updated_time=?,confirm_time=? where id=?", Param: []interface{}{status, description, operator, operator, nowTime, nowTime, requestId}})
+		// 定版退回邮件通知
+		NotifyTaskBackMail(request.Name, RequestPending, request.CreatedBy, taskHandleList[0].Handler, userToken, language)
 		err = dao.Transaction(actions)
 	} else {
 		_, err = dao.X.Exec("update request set status=?,updated_by=?,updated_time=? where id=?", status, operator, nowTime, requestId)
@@ -2047,11 +2049,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	// 查询 request
 	var requests []*models.RequestTable
 	err = dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
-	/*
-		err = dao.X.Context(c).Table(models.RequestTable{}.TableName()).
-			Where("id = ?", requestId).
-			Find(&requests)
-	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2066,10 +2063,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	// 查询 task
 	var tasks []*models.TaskTable
 	err = dao.X.SQL("select * from task where request=? and del_flag=0 order by sort", requestId).Find(&tasks)
-	//err = dao.X.Context(c).Table(models.TaskTable{}.TableName()).
-	//	Where("request = ?", requestId).
-	//	Asc("created_time").
-	//	Find(&tasks)
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2096,11 +2089,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	var taskTemplates []*models.TaskTemplateTable
 	taskTmplIdsFilterSql, taskTmplIdsFilterParams := dao.CreateListParams(taskTmplIds, "")
 	err = dao.X.SQL("select * from task_template where id in ("+taskTmplIdsFilterSql+")", taskTmplIdsFilterParams...).Find(&taskTemplates)
-	/*
-		err = dao.X.Context(c).Table(models.TaskTemplateTable{}.TableName()).
-			In("id", taskTmplIds).
-			Find(&taskTemplates)
-	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2114,12 +2102,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	var taskHandles []*models.TaskHandleTable
 	taskIdsFilterSql, taskIdsFilterParams := dao.CreateListParams(taskIds, "")
 	err = dao.X.SQL("select * from task_handle where task in ("+taskIdsFilterSql+") and latest_flag=1 order by updated_time asc", taskIdsFilterParams...).Find(&taskHandles)
-	/*
-		err = dao.X.Context(c).Table(models.TaskHandleTable{}.TableName()).
-			In("task", taskIds).
-			Asc("created_time").
-			Find(&taskHandles)
-	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
@@ -2137,6 +2119,11 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		taskHandleIds = append(taskHandleIds, taskHandle.Id)
 		if displayName, isExisted := roleDisplayMap[taskHandle.Role]; isExisted {
 			taskHandle.Role = displayName
+		}
+		// 任务节点没处理,清空 创建和更新时间
+		if taskHandle.HandleResult == "" {
+			taskHandle.UpdatedTime = ""
+			taskHandle.CreatedTime = ""
 		}
 	}
 
@@ -2175,7 +2162,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 	uncompletedTasks := make([]string, 0)
 	taskForHistoryList := make([]*models.TaskForHistory, 0, len(tasks))
-	// log.Logger.Debug(fmt.Sprintf("start handle tasks: [%s]", strings.Join(taskIds, ",")))
 	for _, task := range tasks {
 		if task.ConfirmResult == models.TaskConfirmResultUncompleted {
 			uncompletedTasks = append(uncompletedTasks, task.Name)
@@ -2217,7 +2203,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
 		}
 
-		// log.Logger.Debug(fmt.Sprintf("get task: %s form data", task.Id))
 		formData, err = getTaskFormData(c, curTaskForHistory)
 		if err != nil {
 			log.Logger.Error(fmt.Sprintf("get task form data for task: %s error", task.Id), log.Error(err))
@@ -2227,7 +2212,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 
 		taskForHistoryList = append(taskForHistoryList, curTaskForHistory)
 	}
-	// log.Logger.Debug(fmt.Sprintf("finish handle tasks: [%s]", strings.Join(taskIds, ",")))
 	result.Task = taskForHistoryList
 	result.Request.UncompletedTasks = uncompletedTasks
 	return
@@ -2239,17 +2223,12 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 	// 查询 form template
 	var formTemplates []*models.FormTemplateTable
 	err = dao.X.SQL("select * from form_template where task_template=?", taskObj.TaskTemplate).Find(&formTemplates)
-	/*
-		err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
-			Where("task_template = ?", taskObj.TaskTemplate).
-			Find(&formTemplates)
-	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
 	if len(formTemplates) == 0 {
-		log.Logger.Error(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
+		log.Logger.Info(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
 		return
 	}
 
@@ -2272,28 +2251,16 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		// 查询 form 实际使用的 formTemplate
 		actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams := dao.CreateListParams(actualFormTemplateIds, "")
 		err = dao.X.SQL("select * from form_template where id in ("+actualFormTemplateIdsFilterSql+")", actualFormTemplateIdsFilterParams...).Find(&actualFormTemplates)
-		/*
-			err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
-				In("id", actualFormTemplateIds).
-				Find(&actualFormTemplates)
-		*/
 		if err != nil {
 			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 			return
 		}
 		if len(actualFormTemplates) == 0 {
-			log.Logger.Error(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			log.Logger.Info(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
 			return
 		}
 	} else {
 		// 编排任务
-		/*
-			if itemGroupType != 'workflow' {
-				用ref_id
-			} else {
-				用id
-			}
-		*/
 		actualFormTemplateIds = make([]string, 0, len(formTemplates))
 		for _, formTmpl := range formTemplates {
 			if formTmpl.ItemGroupType == string(models.FormItemGroupTypeWorkflow) {
@@ -2312,16 +2279,10 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 			return
 		}
 		if len(actualFormTemplates) == 0 {
-			log.Logger.Error(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			log.Logger.Info(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
 			return
 		}
 	}
-	/*
-		actualFormTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)
-		for _, formTemplate := range actualFormTemplates {
-			actualFormTemplateIdMapInfo[formTemplate.Id] = formTemplate
-		}
-	*/
 
 	// 查询 form
 	var taskForms []*models.FormTable
@@ -2329,73 +2290,44 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 	actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams := dao.CreateListParams(actualFormTemplateIds, "")
 	taskFormsParamList = append(taskFormsParamList, actualFormTemplateIdsFilterParams...)
 	err = dao.X.SQL("select * from form where request=? and form_template in ("+actualFormTemplateIdsFilterSql+")", taskFormsParamList...).Find(&taskForms)
-	/*
-		err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
-			Where("request = ?", taskObj.Request).
-			In("form_template", actualFormTemplateIds).
-			Find(&taskForms)
-	*/
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
 	if len(taskForms) == 0 {
-		log.Logger.Error(fmt.Sprintf("can not find any forms with request: %s and formTemplates: [%s]",
+		log.Logger.Info(fmt.Sprintf("can not find any forms with request: %s and formTemplates: [%s]",
 			taskObj.Request, strings.Join(actualFormTemplateIds, ",")))
 		return
 	}
-	/*
-		taskFormIdMapInfo := make(map[string]*models.FormTable)
-		for _, form := range taskForms {
-			taskFormIdMapInfo[form.Id] = form
-		}
-	*/
 
 	// 查询 request 的 form item
 	taskUpdatedTime := taskObj.UpdatedTime
-	/*
-		taskHandleCnt := len(taskObj.TaskHandleList)
-		if taskHandleCnt > 0 {
-			taskUpdatedTime = taskObj.TaskHandleList[taskHandleCnt-1].UpdatedTime
-		}
-	*/
+
 	var requestFormItems []*models.FormItemTable
 	requestFormItemsParamList := []interface{}{taskObj.Request, taskUpdatedTime}
 	err = dao.X.SQL("select * from form_item where request = ? AND updated_time <= ? order by updated_time desc", requestFormItemsParamList...).Find(&requestFormItems)
-	/*
-		err = dao.X.Context(c).Table(models.FormItemTable{}.TableName()).
-			Where("request = ? AND updated_time <= ?", taskObj.Request, taskUpdatedTime).
-			Desc("updated_time").
-			Find(&requestFormItems)
-	*/
+
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
 	if len(requestFormItems) == 0 {
-		log.Logger.Error(fmt.Sprintf("can not find any form items with request: %s and updatedTime <= %s",
+		log.Logger.Info(fmt.Sprintf("can not find any form items with request: %s and updatedTime <= %s",
 			taskObj.Request, taskUpdatedTime))
 		return
 	}
 
 	// 查询 form item template
 	var itemTemplates []*models.FormItemTemplateTable
-	// err = dao.X.Context(c).SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
 	actualFormTemplateIdsFilterSql, actualFormTemplateIdsFilterParams = dao.CreateListParams(actualFormTemplateIds, "")
 	err = dao.X.SQL("select * from form_item_template where form_template in ("+actualFormTemplateIdsFilterSql+") order by item_group,sort", actualFormTemplateIdsFilterParams...).Find(&itemTemplates)
-	/*
-		err = dao.X.Context(c).Table(models.FormItemTemplateTable{}.TableName()).
-			In("form_template", actualFormTemplateIds).
-			OrderBy("item_group,sort").
-			Find(&itemTemplates)
-	*/
+
 	if err != nil {
 		err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 		return
 	}
 	if len(itemTemplates) == 0 {
-		// err = fmt.Errorf("can not find any form item template with task: %s", taskObj.Id)
-		log.Logger.Error(fmt.Sprintf("can not find any form item templates with formTemplates: [%s]",
+		log.Logger.Info(fmt.Sprintf("can not find any form item templates with formTemplates: [%s]",
 			strings.Join(actualFormTemplateIds, ",")))
 		return
 	}
@@ -2403,12 +2335,9 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 	result = formResult
 
 	// 通过筛选 requestFormItems 获取当前 task 的 form items
-	/*
-		dao.X.Context(c).SQL("select * from form_item where form=? order by item_group,row_data_id", taskObj.Form).Find(&items)
-	*/
 	taskFormItems := getTaskFormItems(requestFormItems, taskForms)
 	if len(taskFormItems) == 0 {
-		log.Logger.Error(fmt.Sprintf("can not find any form item for task: %s", taskObj.Id))
+		log.Logger.Info(fmt.Sprintf("can not find any form item for task: %s", taskObj.Id))
 		return
 	}
 
@@ -2437,11 +2366,11 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 			if tmpFormTemplate, isExisted2 := formTemplateIdMapInfo[tmpForm.FormTemplate]; isExisted2 {
 				itemGroup = tmpFormTemplate.ItemGroup
 			} else {
-				log.Logger.Error(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
+				log.Logger.Info(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
 				continue
 			}
 		} else {
-			log.Logger.Error(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
+			log.Logger.Info(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
 			continue
 		}
 
@@ -2514,11 +2443,6 @@ func getFormAndTemplateMapInfo(c *gin.Context, taskFormItems []*models.FormItemT
 		var forms []*models.FormTable
 		formIdsFilterSql, formIdsFilterParams := dao.CreateListParams(formIds, "")
 		err = dao.X.SQL("select * from form where id in ("+formIdsFilterSql+")", formIdsFilterParams...).Find(&forms)
-		/*
-			err = dao.X.Context(c).Table(models.FormTable{}.TableName()).
-				In("id", formIds).
-				Find(&forms)
-		*/
 		if err != nil {
 			err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 			return
@@ -2542,11 +2466,6 @@ func getFormAndTemplateMapInfo(c *gin.Context, taskFormItems []*models.FormItemT
 				var formTemplates []*models.FormTemplateTable
 				formTemplateIdsFilterSql, formTemplateIdsFilterParams := dao.CreateListParams(formTemplateIds, "")
 				err = dao.X.SQL("select * from form_template where id in ("+formTemplateIdsFilterSql+")", formTemplateIdsFilterParams...).Find(&formTemplates)
-				/*
-					err = dao.X.Context(c).Table(models.FormTemplateTable{}.TableName()).
-						In("id", formTemplateIds).
-						Find(&formTemplates)
-				*/
 				if err != nil {
 					err = exterror.Catch(exterror.New().DatabaseQueryError, err)
 					return

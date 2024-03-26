@@ -47,7 +47,7 @@ export default {
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-              { label: '审批中', value: 'InApproval', color: '#1990ff' },
+              { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
               { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
               { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
               { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
@@ -139,8 +139,8 @@ export default {
             return (
               <span>
                 {['myPending', 'pending', 'hasProcessed'].includes(this.tabName)
-                  ? '任务停留/有效期'
-                  : '请求停留/有效期'}
+                  ? this.$t('tw_taskTime_progress')
+                  : this.$t('tw_requestTime_progress')}
               </span>
             )
           },
@@ -248,7 +248,7 @@ export default {
           }
         },
         createdBy: {
-          title: '提交人',
+          title: this.$t('tw_reporter'),
           sortable: 'custom',
           minWidth: 170,
           key: 'createdBy',
@@ -464,13 +464,13 @@ export default {
         }
       },
       {
-        title: '任务更新',
+        title: this.$t('tw_taskUpdated'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskHandleUpdatedTime'
       },
       {
-        title: '任务截止',
+        title: this.$t('tw_taskEnd'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
@@ -516,13 +516,13 @@ export default {
         }
       },
       {
-        title: '任务创建',
+        title: this.$t('tw_taskCreated'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: '任务截止',
+        title: this.$t('tw_taskEnd'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'

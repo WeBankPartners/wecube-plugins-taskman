@@ -86,7 +86,7 @@
   },
   "import_template_version_conflict_error": {
     "code": 20100013,
-    "message": "Import Failed: The imported template version is lower than the platform version, which does not support importing."
+    "message": "Import failed: Import version is lower than environment version"
   },
   "report_request_not_permission": {
     "code": 20100014,
@@ -94,6 +94,46 @@
   },
   "deal_with_at_the_same_time_error": {
     "code": 20100015,
-    "message": "Operation Failed: The current request is being processed by another user. Multi-user simultaneous operation is not supported currently."
+    "message": "Processing failed: The current request has been processed by another user. Please refresh the list and try again"
+  },
+  "request_template_name_repeat_error": {
+    "code": 20100016,
+    "message": "Save failed: A template with the same name already exists"
+  },
+  "request_template_has_draft_error": {
+    "code": 20100017,
+    "message": "Change failed: There is already a change record in [draft]. Please continue editing or delete the draft and try again "
+  },
+  "request_template_has_pending_error": {
+    "code": 20100018,
+    "message": "Change failed: There is already a change record in [awaiting administrator confirmation]. Please urge the template owner role role role administrator to confirm and publish it"
+  },
+  "template_import_not_workflow_role_error": {
+    "code": 20100019,
+    "message": "Import failed: There is currently no template associated with the master role %s permission for the arrangement. Please first apply for role permission in [User Name - Role Application] in the upper right corner"
+  },
+  "template_import_not_workflow_error": {
+    "code": 20100020,
+    "message": "Import failed: There is currently no template associated with the layout %s version: %s. Please import the layout %s version: %s first before importing the template"
+  },
+  "template_import_not_match_workflow_task_error": {
+    "code": 20100021,
+    "message": "Import failed: The layout %s version: %s associated with the template does not match the layout task node of the template. Please first import the correct layout %s version: %s,  and try again"
+  },
+  "template_import_not_match_entity_error": {
+    "code": 20100022,
+    "message": "Import failure: Request form %s association failed, CMDB model %s does not exist in the platform"
+  },
+  "template_import_name_repeat_error": {
+    "code": 20100023,
+    "message": "Import failed: template with the same name already exists"
+  },
+  "template_import_exist_error": {
+    "code": 20100024,
+    "message": "Import failed: A template with the same name already exists in the [draft]. Please delete the draft and try again"
+  },
+  "template_submit_handler_empty_error": {
+    "code": 20100025,
+    "message": "Submission failed: The handler for task node %s was not filled in completely. Please supplement and try again"
   }
 }

@@ -438,3 +438,8 @@ func (s TaskProgressNodeSort) Swap(i, j int) {
 func (s TaskProgressNodeSort) Less(i, j int) bool {
 	return s[i].Sort < s[j].Sort
 }
+
+type HistoryResultToSort struct {
+	ItemGroupSort     int                     `json:"itemGroupSort"`
+	HistoryResultElem *RequestPreDataTableObj `json:"historyResultElem"`
+}

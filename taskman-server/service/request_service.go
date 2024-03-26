@@ -2232,6 +2232,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		return
 	}
 
+	formTemplateIdMap := make(map[string]*models.FormTemplateTable)
 	formTemplateIds := make([]string, 0, len(formTemplates))
 	formTemplateRefIds := make([]string, 0, len(formTemplates))
 	for _, formTmpl := range formTemplates {
@@ -2239,6 +2240,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		if formTmpl.RefId != "" {
 			formTemplateRefIds = append(formTemplateRefIds, formTmpl.RefId)
 		}
+		formTemplateIdMap[formTmpl.Id] = formTmpl
 	}
 
 	var actualFormTemplates []*models.FormTemplateTable
@@ -2317,7 +2319,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		return
 	}
 
-	// 查询 form item template
+	// 查询 form item template, 注意：此处的 form_template 需使用根据 taskObj.TaskTemplate 过滤出来的 form_tempalte
 	var itemTemplates []*models.FormItemTemplateTable
 	formTemplateIdsFilterSql, formTemplateIdsFilterParams := dao.CreateListParams(formTemplateIds, "")
 	err = dao.X.SQL("select * from form_item_template where form_template in ("+formTemplateIdsFilterSql+") order by item_group,sort", formTemplateIdsFilterParams...).Find(&itemTemplates)
@@ -2328,11 +2330,14 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 	}
 	if len(itemTemplates) == 0 {
 		log.Logger.Info(fmt.Sprintf("can not find any form item templates with formTemplates: [%s]",
-			strings.Join(actualFormTemplateIds, ",")))
+			strings.Join(formTemplateIds, ",")))
 		return
 	}
 	formResult := getItemTemplateTitle(itemTemplates)
 	result = formResult
+
+	// sort the result order by item_group_sort
+	result = sortHistoryResult(result, formTemplateIdMap)
 
 	// 通过筛选 requestFormItems 获取当前 task 的 form items
 	taskFormItems := getTaskFormItems(requestFormItems, taskForms)
@@ -2419,6 +2424,36 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}
 		}
+	}
+	return
+}
+
+func sortHistoryResult(historyResult []*models.RequestPreDataTableObj, formTemplateIdMap map[string]*models.FormTemplateTable) (result []*models.RequestPreDataTableObj) {
+	result = historyResult
+	if len(historyResult) < 2 || formTemplateIdMap == nil {
+		return
+	}
+
+	historyResultToSortList := make([]*models.HistoryResultToSort, 0, len(result))
+	for _, resultData := range historyResult {
+		itemGroupSort := 0
+		if formTmpl, isExisted := formTemplateIdMap[resultData.FormTemplateId]; isExisted {
+			itemGroupSort = formTmpl.ItemGroupSort
+		}
+
+		toSortElem := &models.HistoryResultToSort{
+			ItemGroupSort:     itemGroupSort,
+			HistoryResultElem: resultData,
+		}
+		historyResultToSortList = append(historyResultToSortList, toSortElem)
+	}
+	sort.Slice(historyResultToSortList, func(i int, j int) bool {
+		return historyResultToSortList[i].ItemGroupSort < historyResultToSortList[j].ItemGroupSort
+	})
+
+	result = make([]*models.RequestPreDataTableObj, 0, len(historyResult))
+	for _, resultElem := range historyResultToSortList {
+		result = append(result, resultElem.HistoryResultElem)
 	}
 	return
 }

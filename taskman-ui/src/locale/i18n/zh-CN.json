@@ -291,6 +291,7 @@
   "tw_exceed": "超期",
   "tw_template_cover_tips_l": "确认覆盖:模板草稿中已存在重名模板",
   "tw_template_cover_tips_r": ",执行导入会删除已有的模板和由模板发起的请求,确认导入吗?",
+  "tw_template_cover_tips": "确认覆盖:[草稿]中已有同名模版,确认覆盖该条草稿吗?",
   "tw_only_me": "仅本人处理",
   "tw_commit": "提交",
   "tw_confirm_commit": "确认提交",

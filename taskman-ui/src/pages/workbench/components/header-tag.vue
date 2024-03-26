@@ -196,6 +196,7 @@ export default {
     font-size: 12px;
     overflow: hidden;
     word-break: break-all;
+    min-height: 50px;
     .text-overflow {
       overflow: hidden;
       white-space: nowrap;

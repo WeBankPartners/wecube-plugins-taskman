@@ -14,7 +14,7 @@ func StartCornJob() {
 }
 
 func startNotifyCronJob() {
-	t := time.NewTicker(1 * time.Hour).C
+	t := time.NewTicker(10 * time.Minute).C
 	for {
 		<-t
 		go notifyAction()
@@ -26,7 +26,10 @@ func notifyAction() {
 	log.Logger.Info("Start notify action")
 	var taskTable []*models.TaskTable
 	var actions []*dao.ExecAction
-	err := dao.X.SQL("select id,created_time,expire_time,notify_count,type,request from task where status<>'done'").Find(&taskTable)
+	var yesterday time.Time
+	now := time.Now().Format(models.DateTimeFormat)
+	yesterday = time.Now().AddDate(0, 0, -1)
+	err := dao.X.SQL("select id,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", yesterday.Format(models.DateTimeFormat), now).Find(&taskTable)
 	if err != nil {
 		log.Logger.Error("notify action fail,query task error", log.Error(err))
 		return
@@ -37,7 +40,7 @@ func notifyAction() {
 	for _, v := range taskTable {
 		// 自动确认
 		if v.Type == string(models.TaskTypeConfirm) && v.ExpireTime != "" {
-			now := time.Now().Format(models.DateTimeFormat)
+
 			expireT, _ := time.Parse(models.DateTimeFormat, v.ExpireTime)
 			nowT, _ := time.Parse(models.DateTimeFormat, now)
 			if nowT.Sub(expireT) > 0 {
@@ -65,12 +68,14 @@ func notifyAction() {
 		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime, NowTime: time.Now().Format(models.DateTimeFormat)}
 		calcExpireObj(&tmpExpireObj)
 		if ((tmpExpireObj.Percent >= 75) && (v.NotifyCount == 0)) || ((tmpExpireObj.Percent >= 100) && (v.NotifyCount < 2)) {
-			mailSubject := "【任务超时提醒】"
+			mailSubject := "[wecube] [Task transfer reminder] +【任务超时提醒】"
 			mailContent := ""
 			if (tmpExpireObj.Percent >= 75) && (v.NotifyCount == 0) {
 				mailContent = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]快过期了,有效期到%s,请点击链接处理", v.Request, v.Name, v.ExpireTime)
+				mailContent = mailContent + fmt.Sprintf("\n\n\nThe task assigned to you [Request: %s Task: %s] is about to expire and is valid until %s. Please click the link to process it", v.Request, v.Name, v.ExpireTime)
 			} else {
 				mailContent = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]已过期,请点击链接尽快处理", v.Request, v.Name)
+				mailContent = mailContent + fmt.Sprintf("\n\n\nThe task assigned to you [Request: %s Task: %s] has expired. Please click the link to process it", v.Request, v.Name)
 			}
 
 			tmpErr := NotifyTaskMail(v.Id, models.CoreToken.GetCoreToken(), "", mailSubject, mailContent)
@@ -94,8 +99,11 @@ func notifyAndUpdateWorkflowResult() {
 	var requestList []*models.RequestTable
 	var requestTemplate *models.RequestTemplateTable
 	var actions []*dao.ExecAction
+	var yesterday time.Time
 	var err error
-	err = dao.X.SQL("select id,name,proc_instance_id,request_template,created_by from request where status = ? and proc_instance_id is not null", models.RequestStatusInProgress).Find(&requestList)
+	yesterday = time.Now().AddDate(0, 0, -1)
+	err = dao.X.SQL("select id,name,proc_instance_id,request_template,created_by from request where status = ? and proc_instance_id is not null and created_time >= ? and created_time <= ?",
+		models.RequestStatusInProgress, yesterday.Format(models.DateTimeFormat), time.Now().Format(models.DateTimeFormat)).Find(&requestList)
 	if err != nil {
 		log.Logger.Error("notifyAndUpdateWorkflowResult fail,query request error", log.Error(err))
 		return

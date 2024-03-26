@@ -803,12 +803,17 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 		err = fmt.Errorf("requestTemplateId invalid")
 		return
 	}
-	existQuery, tmpErr := dao.X.QueryString("select id,name,version from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
+	existQuery, tmpErr := dao.X.QueryString("select id,name,version,status from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
 	if tmpErr != nil {
 		return fmt.Errorf("Query database fail,%s ", tmpErr.Error())
 	}
 	if len(existQuery) > 0 {
-		return fmt.Errorf("RequestTemplate already have a branch %s:%s", existQuery[0]["name"], existQuery[0]["version"])
+		if existQuery[0]["status"] == string(models.RequestTemplateStatusCreated) {
+			err = exterror.New().RequestTemplateHasDraftError
+		} else if existQuery[0]["status"] == string(models.RequestTemplateStatusPending) {
+			err = exterror.New().RequestTemplateHasPendingError
+		}
+		return err
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	version := common.BuildVersionNum(requestTemplate.Version)
@@ -1354,7 +1359,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		if len(input.FormTemplate) > 0 {
 			for _, formTemplate := range input.FormTemplate {
 				if formTemplate.ItemGroupType == "optional" && entityMap[formTemplate.ItemGroup] == false {
-					err = fmt.Errorf("optional process not has %s group", formTemplate.ItemGroup)
+					err = exterror.New().TemplateImportNotMatchEntityError.WithParam(formTemplate.ItemGroupName, formTemplate.ItemGroupName)
 					return
 				}
 			}
@@ -1378,7 +1383,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			}
 		}
 		if !processExistFlag {
-			err = fmt.Errorf("Reqeust process:%s can not find! ", input.RequestTemplate.ProcDefName)
+			err = exterror.New().TemplateImportNotWorkflowError.WithParam(input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion, input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion)
 			return
 		}
 		roleFlag := false
@@ -1389,7 +1394,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 			}
 		}
 		if !roleFlag {
-			err = fmt.Errorf("user not has process:%s permission! ", input.RequestTemplate.ProcDefName)
+			err = exterror.New().TemplateImportNotWorkflowRoleError.WithParam(manageRole)
 			return
 		}
 		// 重新设置模版属主角色
@@ -1421,12 +1426,9 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				}
 			}
 			if !existFlag {
-				err = fmt.Errorf("Node:%s can not find in exist process:%s ", v.NodeName, input.RequestTemplate.ProcDefName)
-				break
+				err = exterror.New().TemplateImportNotMatchWorkflowTaskError.WithParam(input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion, input.RequestTemplate.ProcDefName, input.RequestTemplate.ProcDefVersion)
+				return
 			}
-		}
-		if err != nil {
-			return
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)

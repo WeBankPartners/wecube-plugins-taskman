@@ -49,7 +49,7 @@ func CreateRequestTemplate(c *gin.Context) {
 		return
 	}
 	if len(list) > 0 {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("name repeat"))
+		middleware.ReturnError(c, exterror.New().RequestTemplateNameRepeatError)
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
@@ -164,7 +164,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 							for _, handleTemplate := range taskTemplate.HandleTemplates {
 								// 默认是模版指定、模版建议,前端没法校验提交数据,需要后端校验
 								if handleTemplate.Assign == "template" && handleTemplate.HandlerType == "template_suggest" && (handleTemplate.Role == "" || handleTemplate.Handler == "") {
-									middleware.ReturnServerHandleError(c, fmt.Errorf("task %s approve role or handler is empty", taskTemplate.Name))
+									middleware.ReturnServerHandleError(c, exterror.New().TemplateSubmitHandlerEmptyError.WithParam(taskTemplate.Name))
 									return
 								}
 							}
@@ -229,7 +229,7 @@ func UpdateRequestTemplate(c *gin.Context) {
 		repeatFlag = false
 	}
 	if repeatFlag {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("name repeat"))
+		middleware.ReturnError(c, exterror.New().RequestTemplateNameRepeatError)
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)

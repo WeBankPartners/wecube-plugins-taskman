@@ -23,6 +23,11 @@ func (c CustomError) Error() string {
 	return c.Message
 }
 
+func (c CustomError) WithParam(params ...interface{}) CustomError {
+	c.MessageParams = params
+	return c
+}
+
 type ErrorTemplate struct {
 	CodeMessageMap map[int]string `json:"-"`
 	CodeKeyMap     map[int]string `json:"-"`
@@ -70,6 +75,26 @@ type ErrorTemplate struct {
 	ReportRequestNotPermission CustomError `json:"report_request_not_permission"`
 	// 同时处理报错
 	DealWithAtTheSameTimeError CustomError `json:"deal_with_at_the_same_time_error"`
+	// 模版名称重复
+	RequestTemplateNameRepeatError CustomError `json:"request_template_name_repeat_error"`
+	// 模版已有草稿
+	RequestTemplateHasDraftError CustomError `json:"request_template_has_draft_error"`
+	// 模版已有待管理员确认
+	RequestTemplateHasPendingError CustomError `json:"request_template_has_pending_error"`
+	// 导入失败,没有编排属主角色
+	TemplateImportNotWorkflowRoleError CustomError `json:"template_import_not_workflow_role_error"`
+	// 导入失败,没有编排
+	TemplateImportNotWorkflowError CustomError `json:"template_import_not_workflow_error"`
+	// 导入失败,编排任务节点不匹配
+	TemplateImportNotMatchWorkflowTaskError CustomError `json:"template_import_not_match_workflow_task_error"`
+	// 导入失败,entity表单不匹配
+	TemplateImportNotMatchEntityError CustomError `json:"template_import_not_match_entity_error"`
+	// 导入失败,同名模版已存在
+	TemplateImportNameRepeatError CustomError `json:"template_import_name_repeat_error"`
+	// 导入失败，已有一条草稿（在草稿或待确认)
+	TemplateImportExistError CustomError `json:"template_import_exist_error"`
+	// 模版提交审核,任务角色没有选择，拒绝提交
+	TemplateSubmitHandlerEmptyError CustomError `json:"template_submit_handler_empty_error"`
 }
 
 var (

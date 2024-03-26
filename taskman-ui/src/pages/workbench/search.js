@@ -21,7 +21,7 @@ export default {
           list: [
             { label: this.$t('status_pending'), value: 'Pending' },
             { label: this.$t('status_inProgress'), value: 'InProgress' },
-            { label: '审批中', value: 'InApproval' },
+            { label: this.$t('tw_inApproval'), value: 'InApproval' },
             { label: this.$t('tw_request_confirm'), value: 'Confirm' },
             { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)' },
             { label: this.$t('status_termination'), value: 'Termination' },
@@ -33,7 +33,7 @@ export default {
         },
         createdBy: {
           key: 'createdBy',
-          placeholder: '提交人',
+          placeholder: this.$t('tw_reporter'),
           component: 'select',
           multiple: true,
           list: []
@@ -88,7 +88,7 @@ export default {
       },
       {
         key: 'taskHandleUpdatedTime',
-        label: '任务更新',
+        label: this.$t('tw_taskUpdated'),
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
@@ -97,7 +97,7 @@ export default {
       this.baseSearch.status,
       {
         key: 'taskExpectTime',
-        label: '任务截止',
+        label: this.$t('tw_taskEnd'),
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
@@ -115,7 +115,7 @@ export default {
       this.baseSearch.status,
       {
         key: 'taskHandleUpdatedTime',
-        label: '任务更新',
+        label: this.$t('tw_taskUpdated'), // 任务更新
         dateType: 1,
         initValue: this.initDate,
         labelWidth: 110,
@@ -123,7 +123,7 @@ export default {
       },
       {
         key: 'taskExpectTime',
-        label: '任务截止',
+        label: this.$t('tw_taskEnd'), // 任务截止
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
@@ -158,14 +158,14 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'taskCreatedTime',
-        label: '任务创建',
+        label: this.$t('tw_taskCreated'), // 任务创建
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'taskExpectTime',
-        label: '任务截止',
+        label: this.$t('tw_taskEnd'), // 任务截止
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'
@@ -191,14 +191,14 @@ export default {
       this.baseSearch.operatorObjType,
       {
         key: 'taskCreatedTime',
-        label: '任务创建',
+        label: this.$t('tw_taskCreated'), // 任务创建
         dateType: 4,
         labelWidth: 110,
         component: 'custom-time'
       },
       {
         key: 'taskExpectTime',
-        label: '任务截止',
+        label: this.$t('tw_taskEnd'), // 任务截止
         dateType: 4,
         labelWidth: 140,
         component: 'custom-time'

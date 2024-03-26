@@ -35,7 +35,7 @@
         </TabPane>
       </template>
     </Tabs>
-    <div v-else class="no-data">暂未关联编排</div>
+    <div v-else class="no-data">{{ $t('tw_unbind_workflow') }}</div>
     <div v-if="showBtn" style="text-align: center;margin-top:12px">
       <!--暂存-->
       <Button @click="saveRequest('save')" :disabled="formDisable">{{ $t('tw_save_draft') }}</Button>

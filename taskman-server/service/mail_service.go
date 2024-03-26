@@ -16,9 +16,9 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 	var mailList []string
 	var roleTableList []*models.RoleTable
 	var userInfo *models.UserDto
-	/*if !models.MailEnable {
-		return nil
-	}*/
+	if !checkMailEnable() {
+		return
+	}
 	if err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList); err != nil {
 		log.Logger.Error("NotifyTaskExpireMail query db err", log.Error(err))
 		return
@@ -73,10 +73,9 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 
 // NotifyTaskAssignMail 定版/确认/任务/审批分配给“我”
 func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken, language string) (err error) {
-	/*if !models.MailEnable {
-		log.Logger.Info("mail not enable")
-		return nil
-	}*/
+	if !checkMailEnable() {
+		return
+	}
 	var subject, content string
 	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(receiver, userToken, language); err != nil {
@@ -101,9 +100,9 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 
 // NotifyTaskAssignListMail 定版/确认/任务/审批分配给多人
 func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, language string, receivers []string) (err error) {
-	/*if !models.MailEnable {
-		return nil
-	}*/
+	if !checkMailEnable() {
+		return
+	}
 	var subject, content string
 	var userInfo *models.UserDto
 	var mailList []string
@@ -132,9 +131,9 @@ func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, lang
 
 // NotifyTaskRoleAdministratorMail 定版/确认/任务/审批分配给一个组,处理人为空,我是管理员
 func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, userToken, language string) (err error) {
-	/*if !models.MailEnable {
-		return nil
-	}*/
+	if !checkMailEnable() {
+		return
+	}
 	var subject, content string
 	var result []string
 	var userInfo *models.UserDto
@@ -171,9 +170,9 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 
 // NotifyTaskHandlerUpdateMail 定版/确认/任务/审批分配给“我”,但是被人点“转给我”抢单了
 func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken, language string) (err error) {
-	/*	if !models.MailEnable {
-		return nil
-	}*/
+	if !checkMailEnable() {
+		return
+	}
 	var subject, content string
 	var userInfo *models.UserDto
 	if userInfo, err = GetRoleService().GetUserInfo(originHandler, userToken, language); err != nil {
@@ -197,8 +196,8 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken
 
 // NotifyRequestCompleteMail 我提交的请求处理完成了
 func NotifyRequestCompleteMail(requestName, creator, userToken, language string) (err error) {
-	if !models.MailEnable {
-		return nil
+	if !checkMailEnable() {
+		return
 	}
 	var subject, content string
 	var userInfo *models.UserDto
@@ -224,8 +223,8 @@ func NotifyRequestCompleteMail(requestName, creator, userToken, language string)
 
 // NotifyTaskBackMail 我提交的请求被定版退回/审批退回
 func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, language string) (err error) {
-	if !models.MailEnable {
-		return nil
+	if !checkMailEnable() {
+		return
 	}
 	var subject, content string
 	var userInfo *models.UserDto
@@ -251,8 +250,8 @@ func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, lan
 
 // NotifyTaskDenyMail 我提交的请求被审批拒绝
 func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, language string) (err error) {
-	if !models.MailEnable {
-		return nil
+	if !checkMailEnable() {
+		return
 	}
 	var subject, content string
 	var userInfo *models.UserDto
@@ -279,8 +278,8 @@ func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, lan
 
 // NotifyTaskWorkflowFailMail 我提交的请求在编排执行中被手动终止
 func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userToken, language string) (err error) {
-	if !models.MailEnable {
-		return nil
+	if !checkMailEnable() {
+		return
 	}
 	var subject, content string
 	var userInfo *models.UserDto
@@ -318,4 +317,9 @@ func getInternationalizationTaskName(taskName, language string) string {
 		taskName = "Confirm(确认)"
 	}
 	return taskName
+}
+
+func checkMailEnable() bool {
+	return true
+	return models.MailEnable
 }

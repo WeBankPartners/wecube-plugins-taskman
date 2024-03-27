@@ -608,6 +608,10 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 							actions = append(actions, confirmActions...)
 						}
 					} else {
+						// 只处理自动退出&手动终止终止情况,需要发邮件
+						if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
+							NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
+						}
 						actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
 							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
 						platformDataObj.Status = newStatus

@@ -2228,7 +2228,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 		return
 	}
 	if len(formTemplates) == 0 {
-		log.Logger.Info(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
+		log.Logger.Debug(fmt.Sprintf("can not find any form templates with taskTemplate: %s", taskObj.TaskTemplate))
 		return
 	}
 
@@ -2258,7 +2258,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 			return
 		}
 		if len(actualFormTemplates) == 0 {
-			log.Logger.Info(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			log.Logger.Debug(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
 			return
 		}
 	} else {
@@ -2281,7 +2281,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 			return
 		}
 		if len(actualFormTemplates) == 0 {
-			log.Logger.Info(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
+			log.Logger.Debug(fmt.Sprintf("can not find any form templates with actualFormTemplateIds: [%s]", strings.Join(actualFormTemplateIds, ",")))
 			return
 		}
 	}

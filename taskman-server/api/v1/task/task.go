@@ -26,6 +26,7 @@ func GetTaskFormStruct(c *gin.Context) {
 }
 
 func CreateTask(c *gin.Context) {
+	var request models.RequestTable
 	response := models.PluginTaskCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginTaskCreateOutput{}}
 	var err error
 	defer func() {
@@ -48,6 +49,7 @@ func CreateTask(c *gin.Context) {
 	if requestLanguage == "" {
 		requestLanguage = "en"
 	}
+	request, _ = service.GetSimpleRequest(param.RequestId)
 	for _, input := range param.Inputs {
 		output, task, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
 		if tmpErr != nil {
@@ -55,10 +57,10 @@ func CreateTask(c *gin.Context) {
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
 		} else {
+			log.Logger.Info("CreateTask send mail", log.String("taskId", task.Id))
 			// 发送邮件
 			var taskHandleList []*models.TaskHandleTable
-			var handlerList, result []string
-			var request models.RequestTable
+			var handlerList []string
 			if err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList); err != nil {
 				log.Logger.Error("NotifyTaskExpireMail query db err", log.Error(err))
 				return
@@ -67,17 +69,15 @@ func CreateTask(c *gin.Context) {
 				if taskHandle.Handler != "" {
 					handlerList = append(handlerList, taskHandle.Handler)
 				} else if taskHandle.Role != "" {
-					//添加角色管理员
-					if result, err = service.GetRoleService().GetRoleAdministrators(taskHandle.Role, requestToken, requestLanguage); err != nil {
-						continue
-					}
-					if len(result) > 0 {
-						handlerList = append(handlerList, result[0])
-					}
+					// 只有处理角色,给角色管理员发邮件
+					service.NotifyTaskRoleAdministratorMail(request.Name, task.Name, task.ExpireTime, taskHandle.Role, requestToken, requestLanguage)
 				}
 			}
-			request, _ = service.GetSimpleRequest(task.Request)
-			service.NotifyTaskAssignListMail(request.Name, task.Name, task.ExpireTime, requestToken, requestLanguage, handlerList)
+
+			if len(handlerList) > 0 {
+				// 给处理人发邮件
+				service.NotifyTaskAssignListMail(request.Name, task.Name, task.ExpireTime, requestToken, requestLanguage, handlerList)
+			}
 		}
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}

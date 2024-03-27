@@ -321,10 +321,10 @@
         </div>
       </Col>
     </Row>
-    <Modal v-model="showSelectModel" title="创建表单" :mask-closable="false">
+    <Modal v-model="showSelectModel" :title="$t('tw_create_form')" :mask-closable="false">
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
-          <FormItem :label="$t('表单模版类型')">
+          <FormItem :label="$t('tw_form_template_type')">
             <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable clearable>
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
@@ -733,11 +733,11 @@ export default {
               d.formTypeName = this.$t('tw_custom_form')
               d.entities = ['custom']
             } else if (d.formType === 'workflow') {
-              d.formTypeName = this.$t('编排entity表单')
+              d.formTypeName = this.$t('tw_orchestration')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             } else if (d.formType === 'optional') {
-              d.formTypeName = this.$t('自选entity表单')
+              d.formTypeName = this.$t('tw_custom')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             }

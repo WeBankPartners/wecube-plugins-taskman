@@ -253,9 +253,9 @@
                     </Form>
                   </div>
                 </div>
-                <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
+                <Modal v-model="showSelectModel" :title="$t('tw_reference_global_forms')" :mask-closable="false">
                   <Form :label-width="120">
-                    <FormItem :label="$t('全局请求表单')">
+                    <FormItem :label="$t('tw_global_forms')">
                       <Select style="width: 80%" v-model="itemGroup" filterable>
                         <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
                           item.itemGroupName

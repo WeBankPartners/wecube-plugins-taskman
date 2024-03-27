@@ -591,6 +591,12 @@ func UpdateSingleRequestForm(requestId, operator, now string, param *models.Requ
 	return actions
 }
 
+func UpdateSingleRequestFormNew(requestId, operator, now string, param *models.RequestPreDataTableObj) (actions []*dao.ExecAction, err error) {
+	updateParam := models.RequestPreDataDto{Data: []*models.RequestPreDataTableObj{param}}
+	actions, err = UpdateRequestFormItemNew(requestId, operator, now, &updateParam)
+	return
+}
+
 func GetRequestCache(requestId, cacheType string) (result interface{}, err error) {
 	var requestTable []*models.RequestTable
 	if cacheType == "data" {
@@ -2549,7 +2555,11 @@ func getTaskFormItems(requestFormItems []*models.FormItemTable, taskForms []*mod
 
 func SaveRequestForm(requestId, operator string, param *models.RequestPreDataTableObj) (err error) {
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions := UpdateSingleRequestForm(requestId, operator, nowTime, param)
+	actions, buildActionErr := UpdateSingleRequestFormNew(requestId, operator, nowTime, param)
+	if buildActionErr != nil {
+		err = buildActionErr
+		return
+	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
 	}

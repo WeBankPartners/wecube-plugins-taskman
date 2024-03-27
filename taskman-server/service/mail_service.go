@@ -86,7 +86,7 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 		return
 	}
 	taskName = getInternationalizationTaskName(taskName, language)
-	subject = "[wecube] [Task transfer reminder] +【任务被转单提醒】"
+	subject = "[wecube] [New Task reminder] +【新增任务提醒】"
 	content = fmt.Sprintf("您有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理(若本人无法处理,组员可以将任务转单处理),点击查看详情", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n\n\nYou have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.Wecube.BaseUrl)
@@ -320,6 +320,5 @@ func getInternationalizationTaskName(taskName, language string) string {
 }
 
 func checkMailEnable() bool {
-	return true
 	return models.MailEnable
 }

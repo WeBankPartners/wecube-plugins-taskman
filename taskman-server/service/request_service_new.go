@@ -545,6 +545,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 	var operatorObjTypeMap = make(map[string]string)
 	var roleDtoMap map[string]*models.SimpleLocalRoleDto
 	var roleDisplayMap = make(map[string]string)
+	// 请求已处理(防止同一个请求重复处理)
+	var processedRequestMap = make(map[string]bool)
 	// 排序处理
 	if req.Param.Sorting != nil {
 		hashMap, _ := dao.GetJsonToXormMap(models.PlatformDataObj{})
@@ -599,8 +601,12 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					newStatus = "Termination"
 				}
 				if newStatus != "" && newStatus != platformDataObj.Status {
+					// 编排的完成,并不表示 请求完成
 					if newStatus == string(models.RequestStatusCompleted) {
-						// 编排的完成,并不表示 请求完成
+						// 防止一个请求重复调用
+						if _, ok := processedRequestMap[platformDataObj.Id]; ok {
+							continue
+						}
 						taskSort := GetTaskService().GenerateTaskOrderByRequestId(platformDataObj.Id)
 						confirmActions, _ = GetRequestService().CreateRequestConfirm(models.RequestTable{Id: platformDataObj.Id,
 							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy, CreatedTime: platformDataObj.CreatedTime}, taskSort, req.UserToken, language)
@@ -608,6 +614,11 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 							actions = append(actions, confirmActions...)
 						}
 					} else {
+						// 防止一个请求重复调用
+						if _, ok := processedRequestMap[platformDataObj.Id]; ok {
+							platformDataObj.Status = newStatus
+							continue
+						}
 						// 只处理自动退出&手动终止终止情况,需要发邮件
 						if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
 							NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
@@ -616,6 +627,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
 						platformDataObj.Status = newStatus
 					}
+					processedRequestMap[platformDataObj.Id] = true
 				}
 			}
 			if collectMap[platformDataObj.ParentId] {

@@ -73,6 +73,7 @@ type GlobalConfig struct {
 	Mail            MailConfig       `json:"mail"`
 	AttachFile      AttachFileConfig `json:"attach_file"`
 	EncryptSeed     string           `json:"encrypt_seed"`
+	WebUrl          string           `json:"web_url"`
 }
 
 var (

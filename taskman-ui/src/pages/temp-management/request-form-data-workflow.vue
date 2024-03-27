@@ -10,7 +10,7 @@
       <Form :label-width="120">
         <FormItem :label="$t('tw_form_type')">
           <Button shape="circle" :style="groupStyle[group.itemGroupType]">{{
-            group.itemGroupType === 'workflow' ? '编排entity' : '自选entity'
+            group.itemGroupType === 'workflow' ? $t('tw_orchestration_entity') : $t('tw_custom_entity')
           }}</Button>
         </FormItem>
         <FormItem :label="$t('tw_form_name')">
@@ -19,13 +19,13 @@
         <FormItem :label="$t('data_type')">
           <Input v-model="group.itemGroupName" style="width: 96%;" disabled></Input>
         </FormItem>
-        <FormItem :label="$t('新增一行')">
+        <FormItem :label="$t('tw_add_a_new_row')">
           <Select v-model="group.itemGroupRule" style="width: 96%" filterable @on-change="paramsChanged">
             <Option v-for="item in groupRules" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
           <span style="color: red">*</span>
         </FormItem>
-        <Divider style="margin-top:40px">预制表单字段</Divider>
+        <Divider style="margin-top:40px">{{ $t('tw_predefined_analysis_fields') }}</Divider>
         <div>
           <Row>
             <Col span="12" v-for="system in group.systemItems" :key="system.id">
@@ -36,11 +36,11 @@
           </Row>
         </div>
         <template v-if="!(isCustomItemEditable === false && group.customItems.length === 0)">
-          <Divider style="margin-top:40px">自定义分析字段</Divider>
+          <Divider style="margin-top:40px">{{ $t('tw_custom_analysis_fields') }}</Divider>
           <Row>
             <Col span="1">&nbsp;&nbsp;&nbsp;&nbsp;</Col>
-            <Col span="6">{{ $t('display_name') }}</Col>
-            <Col span="16">数据查找规则</Col>
+            <Col span="5">{{ $t('display_name') }}</Col>
+            <Col span="16">{{ $t('tw_retrieval_rules') }}</Col>
           </Row>
           <Row v-for="(item, itemIndex) in group.customItems" :key="itemIndex" style="margin:6px 0">
             <Col span="1">

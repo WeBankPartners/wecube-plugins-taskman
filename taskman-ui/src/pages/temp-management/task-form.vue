@@ -1,7 +1,9 @@
 <template>
   <div>
     <div v-if="procDefId !== '' && approvalNodes.length === 0" style="margin: 100px 0">
-      <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>该模版关联的编排没有人工节点</Alert>
+      <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>{{
+        $t('tw_workflow_has_no_manual_nodes')
+      }}</Alert>
     </div>
     <Row type="flex" v-else>
       <Col span="24" style="padding: 0 20px">
@@ -46,7 +48,7 @@
             @nodeStatus="nodeStatus"
             :isCheck="isCheck"
             :procDefId="procDefId"
-            :nodeType="procDefId === '' ? $t('tw_auto') : '编排人工任务'"
+            :nodeType="procDefId === '' ? $t('tw_auto') : $t('tw_workflow_task')"
             @setFormConfigStatus="changeFormConfigStatus"
           ></TaskFormNode>
         </div>
@@ -243,7 +245,7 @@
                   </div>
                   <div style="margin: 12px 0 0 8px;">
                     <Form :label-width="90">
-                      <FormItem :label="$t('判断分支')" v-if="procDefId !== ''">
+                      <FormItem :label="$t('tw_conditional_branches')" v-if="procDefId !== ''">
                         <Select style="width:94%" @on-open-change="getWorkflowForkNode">
                           <Option v-for="(fork, forkIndex) in forkOptions" :value="fork" :key="forkIndex">{{
                             fork
@@ -262,9 +264,9 @@
                     </Form>
                   </div>
                 </div>
-                <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
+                <Modal v-model="showSelectModel" :title="$t('tw_reference_global_forms')" :mask-closable="false">
                   <Form :label-width="120">
-                    <FormItem :label="$t('全局请求表单')">
+                    <FormItem :label="$t('tw_global_forms')">
                       <Select style="width: 80%" v-model="itemGroup" filterable>
                         <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
                           item.itemGroupName

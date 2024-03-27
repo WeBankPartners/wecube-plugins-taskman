@@ -923,6 +923,7 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 	// 新表单项ID和老表单项ID映射
 	var newFormItemTemplateIdMap = make(map[string]string)
 	var requestTemplate *models.RequestTemplateTable
+	var list []*models.RequestTemplateTable
 
 	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -935,6 +936,14 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	newRequestTemplateId := guid.CreateGuid()
 	var requestName = requestTemplate.Name + "(1)"
+	// 查询 当前requestName是否存在
+	if list, err = s.requestTemplateDao.QueryListByName(requestName); err != nil {
+		return
+	}
+	if len(list) > 0 {
+		// 表示已经有重名模版,用当前时间
+		requestName = fmt.Sprintf("%s-%s", requestTemplate.Name, time.Now().Format(models.DateTimeFormat))
+	}
 	actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 		"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
 		"entity_attrs,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) select '%s' as id,`group`,'%s' as name,description,"+

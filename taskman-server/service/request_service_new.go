@@ -603,7 +603,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 						// 编排的完成,并不表示 请求完成
 						taskSort := GetTaskService().GenerateTaskOrderByRequestId(platformDataObj.Id)
 						confirmActions, _ = GetRequestService().CreateRequestConfirm(models.RequestTable{Id: platformDataObj.Id,
-							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy}, taskSort, req.UserToken, language)
+							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy, CreatedTime: platformDataObj.CreatedTime}, taskSort, req.UserToken, language)
 						if len(confirmActions) > 0 {
 							actions = append(actions, confirmActions...)
 						}

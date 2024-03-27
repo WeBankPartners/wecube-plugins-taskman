@@ -64,7 +64,7 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 		mailContent = mailContent + fmt.Sprintf("\n\n\n分配给您的任务[请求:%s-任务:%s]已过期,请点击链接尽快处理", requestName, task.Name)
 	}
 	mailContent = mailContent + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyTaskExpireMail", log.String("mailSubject", mailSubject), log.String("mailContent", mailContent), log.String("mailList", strings.Join(mailList, ",")))
+	log.Logger.Debug("NotifyTaskExpireMail", log.String("mailSubject", mailSubject), log.String("mailContent", mailContent), log.String("mailList", strings.Join(mailList, ",")))
 	if err = models.MailSender.Send(mailSubject, mailContent, mailList); err != nil {
 		log.Logger.Error("send notify email fail", log.Error(err))
 		return
@@ -91,7 +91,7 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 	content = fmt.Sprintf("You have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n\n\n您有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理(若本人无法处理,组员可以将任务转单处理),点击查看详情", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyTaskAssignMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	log.Logger.Debug("NotifyTaskAssignMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
@@ -118,11 +118,11 @@ func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, lang
 		mailList = append(mailList, userInfo.Email)
 	}
 	taskName = getInternationalizationTaskName(taskName, language)
-	subject = "[wecube] [Task transfer reminder]  【任务被转单提醒】"
+	subject = "[wecube] [New Task reminder]  【新增任务提醒】"
 	content = fmt.Sprintf("You have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n\n\n您有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理(若本人无法处理,组员可以将任务转单处理),点击查看详情", requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyTaskAssignListMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", strings.Join(mailList, ",")))
+	log.Logger.Debug("NotifyTaskAssignListMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", strings.Join(mailList, ",")))
 	err = models.MailSender.Send(subject, content, mailList)
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
@@ -161,7 +161,7 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 	content = fmt.Sprintf("Role %s has a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible. Click to view details", displayNameMap[role], requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n\n\n角色%s有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理,点击查看详情", displayNameMap[role], requestName, taskName, expireDate)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyTaskRoleAdministratorMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	log.Logger.Debug("NotifyTaskRoleAdministratorMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
@@ -188,7 +188,7 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, targetHan
 	content = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, originHandler)
 	content = content + fmt.Sprintf("\n\n\n分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, targetHandler)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	log.Logger.Debug("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
@@ -214,7 +214,7 @@ func NotifyRequestCompleteMail(requestName, creator, userToken, language string)
 	content = fmt.Sprintf("The [request: %s] you initiated has been processed. Click on the link to view details", requestName)
 	content = content + fmt.Sprintf("\n\n\n您发起的[请求:%s]已处理完成,点击链接查看详情", requestName)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyRequestCompleteMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	log.Logger.Debug("NotifyRequestCompleteMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
@@ -242,7 +242,6 @@ func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, lan
 	content = fmt.Sprintf("The [request: %s] you initiated was returned to the draft by %s at node %s. Please make the necessary modifications and resubmit. Click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n\n\n您发起的[请求:%s],在%s节点被%s退回到草稿,请修改之后重新提交,点击链接查看详情", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
@@ -269,7 +268,7 @@ func NotifyTaskDenyMail(requestName, taskName, creator, approval, userToken, lan
 	content = fmt.Sprintf("The [request: %s] you initiated was rejected by %s at the %s approval node, and the request has been terminated. Please click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n\n\n您发起的[请求:%s],在%s审批节点被%s拒绝,请求已终止,请点击链接查看详情", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Info("NotifyTaskDenyMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	log.Logger.Debug("NotifyTaskDenyMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
@@ -302,7 +301,7 @@ func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userT
 		content = content + fmt.Sprintf("\n\n\n因为编排%s走到[自动退出]节点,导致\n您发起的[请求:%s]请求终止,请点击链接查看详情", procDefName, requestName)
 		content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
 	}
-	log.Logger.Info("NotifyTaskWorkflowFailMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
+	log.Logger.Debug("NotifyTaskWorkflowFailMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
 
 	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {

@@ -385,5 +385,6 @@
   "tw_confirmPublish": "确认发布",
   "tw_redrawDraft": "退回草稿",
   "tw_confirmRedraeDraft": "确认退回草稿",
-  "tw_waitAdminComfirm": "待管理员确认"
+  "tw_waitAdminComfirm": "待管理员确认",
+  "tw_createdTime": "流程创建时间"
 }

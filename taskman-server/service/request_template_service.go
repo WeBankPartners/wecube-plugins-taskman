@@ -942,7 +942,7 @@ func (s *RequestTemplateService) CopyConfirmRequestTemplate(requestTemplateId, o
 	}
 	if len(list) > 0 {
 		// 表示已经有重名模版,用当前时间
-		requestName = fmt.Sprintf("%s-%s", requestTemplate.Name, time.Now().Format(models.DateTimeFormat))
+		requestName = fmt.Sprintf("%s-%s", requestTemplate.Name, time.Now().Format(models.NewDateTimeFormat))
 	}
 	actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 		"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+

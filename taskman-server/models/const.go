@@ -2,6 +2,7 @@ package models
 
 const (
 	DateTimeFormat       = "2006-01-02 15:04:05"
+	NewDateTimeFormat    = "20060102150405"
 	SysTableIdConnector  = "__"
 	UrlPrefix            = "/taskman"
 	RowDataPermissionErr = "Row data permission deny "

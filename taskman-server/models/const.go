@@ -129,15 +129,6 @@ const (
 	TaskHandleResultTypeUncompleted TaskHandleResultType = "uncompleted" // 未完成
 )
 
-// TaskHandleChangeReason 任务处理 变更原因
-type TaskHandleChangeReason string
-
-const (
-	TaskHandleChangeReasonAssign TaskHandleChangeReason = "assign" // 系统分配
-	TaskHandleChangeReasonClaim  TaskHandleChangeReason = "claim"  // 主动领取
-	TaskHandleChangeReasonGive   TaskHandleChangeReason = "give"   // 转给我
-)
-
 // RequestFormType 请求表单类型
 type RequestFormType string
 
@@ -154,18 +145,6 @@ const (
 	TaskStatusMarked  TaskStatus = "marked"  // 任务认领
 	TaskStatusDoing   TaskStatus = "doing"   // 任务进行中
 	TaskStatusDone    TaskStatus = "done"    // 任务完成
-)
-
-// ProgressStatus 请求状态
-type ProgressStatus int
-
-const (
-	ProgressStatusInProgress                 ProgressStatus = 1 // 进行中
-	ProgressStatusNotStart                   ProgressStatus = 2 // 未开始
-	ProgressStatusCompleted                  ProgressStatus = 3 // 已完成
-	ProgressStatusFail                       ProgressStatus = 4 // 报错失败,被拒绝了
-	ProgressStatusAutoExitStatus             ProgressStatus = 5 // 自动退出
-	ProgressStatusInternallyTerminatedStatus ProgressStatus = 6 // 自动退出
 )
 
 const (

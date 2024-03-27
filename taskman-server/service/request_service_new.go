@@ -1484,7 +1484,7 @@ func getRequestHandler(request models.RequestTable) (role, handler string) {
 	var roleArr, handlerArr []string
 	if request.Status == string(models.RequestStatusDraft) {
 		// 草稿状态,定版处理人和角色需要读取模版和定版配置
-		return GetTaskTemplateService().GetCheckHandlerAndRole(request.RequestTemplate)
+		return GetTaskTemplateService().GetCheckRoleAndHandler(request.RequestTemplate)
 	}
 	task, _ = GetTaskService().GetDoingTask(request.Id, request.RequestTemplate)
 	if task != nil {

@@ -2127,7 +2127,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			taskHandle.Role = displayName
 		}
 		// 任务节点没处理,清空 创建和更新时间
-		if taskHandle.HandleResult == "" {
+		if taskHandle.HandleResult == "" && taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
 			taskHandle.UpdatedTime = ""
 			taskHandle.CreatedTime = ""
 		}

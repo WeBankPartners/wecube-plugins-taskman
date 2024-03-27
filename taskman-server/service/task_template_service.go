@@ -686,7 +686,7 @@ func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplate(requestTemp
 	return s.taskTemplateDao.QueryByRequestTemplate(requestTemplateId)
 }
 
-func (s *TaskTemplateService) GetCheckHandlerAndRole(requestTemplateId string) (handler, role string) {
+func (s *TaskTemplateService) GetCheckRoleAndHandler(requestTemplateId string) (role, handler string) {
 	// 先查询 定版配置
 	var taskTemplateList []*models.TaskTemplateTable
 	var taskHandleTemplateList []*models.TaskHandleTemplateTable

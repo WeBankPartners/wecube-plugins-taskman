@@ -23,6 +23,7 @@ export const getProcess = role => req.get(`/taskman/api/v1/process/list?role=${r
 export const createTemp = data => req.post('/taskman/api/v1/request-template', data)
 export const updateTemp = data => req.put('/taskman/api/v1/request-template', data)
 export const deleteTemp = data => req.delete('/taskman/api/v1/request-template', data)
+export const copyTemplate = id => req.post(`/taskman/api/v1/request-template/copy/${id}`)
 
 export const getFormList = requestTemplateId =>
   req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/list`)

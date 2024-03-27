@@ -2,6 +2,7 @@
 <template>
   <div class="workbench">
     <div class="create-time">
+      <span>{{ $t('tw_createdTime') }}</span>
       <DatePicker
         :value="queryTime"
         @on-change="
@@ -585,10 +586,15 @@ export default {
 .workbench {
   position: relative;
   .create-time {
-    width: 200px;
+    display: flex;
+    align-items: center;
+    width: 300px;
     position: absolute;
     top: -38px;
     right: 0px;
+    span {
+      margin-right: 10px;
+    }
   }
   .header {
     display: flex;

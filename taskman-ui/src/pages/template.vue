@@ -120,6 +120,7 @@ import {
   getTemplateList,
   deleteTemplate,
   forkTemplate,
+  copyTemplate,
   getManagementRoles,
   confirmUploadTemplate,
   enableTemplate,
@@ -287,7 +288,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 170,
+          width: 205,
           align: 'center',
           render: (h, params) => {
             return (
@@ -373,6 +374,18 @@ export default {
                       onClick={() => this.forkTemplate(params.row)}
                     >
                       <Icon type="md-git-branch" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 复制 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('fork')} placement="top">
+                    <Button
+                      size="small"
+                      type="info"
+                      style="margin-right:5px;"
+                      onClick={() => this.copyTemplate(params.row)}
+                    >
+                      <Icon type="md-copy" size="16"></Icon>
                     </Button>
                   </Tooltip>
                 )}
@@ -552,6 +565,14 @@ export default {
         },
         onCancel: () => {}
       })
+    },
+    // 复制模板
+    async copyTemplate (row) {
+      const { statusCode } = await copyTemplate(row.id)
+      if (statusCode === 'OK') {
+        this.status = 'created'
+        this.getTemplateList()
+      }
     },
     // 退回草稿
     async draftTemplate (row) {

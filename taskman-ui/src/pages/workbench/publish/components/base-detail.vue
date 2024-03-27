@@ -170,7 +170,7 @@
               <!--撤回-->
               <template v-if="data.type === 'revoke'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_recall') }}</div>
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_recall') }}</div>
                   <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_recall')"></HeaderTag>
                 </div>
               </template>

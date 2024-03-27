@@ -992,7 +992,7 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, l
 		}
 		requestName = request.Name
 	}
-	NotifyTaskHandlerUpdateMail(requestName, task.Name, taskHandleList[0].Handler, userToken, language)
+	NotifyTaskHandlerUpdateMail(requestName, task.Name, taskHandleList[0].Handler, operator, userToken, language)
 	return dao.Transaction(actions)
 }
 

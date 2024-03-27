@@ -32,6 +32,7 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 		}
 		requestName = request.Name
 	}
+	task.Name = getInternationalizationTaskName(task.Name, language)
 	for _, taskHandle := range taskHandleList {
 		if taskHandle.Handler != "" {
 			if userInfo, err = GetRoleService().GetUserInfo(taskHandle.Handler, userToken, language); err != nil {
@@ -169,7 +170,7 @@ func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, us
 }
 
 // NotifyTaskHandlerUpdateMail 定版/确认/任务/审批分配给“我”,但是被人点“转给我”抢单了
-func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken, language string) (err error) {
+func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, targetHandler, userToken, language string) (err error) {
 	if !checkMailEnable() {
 		return
 	}
@@ -182,8 +183,9 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, userToken
 		log.Logger.Warn("NotifyTaskHandlerUpdateMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", originHandler))
 		return
 	}
+	taskName = getInternationalizationTaskName(taskName, language)
 	subject = "[wecube] [Task transfer reminder] +【任务被转单提醒】"
-	content = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, originHandler)
+	content = fmt.Sprintf("分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, targetHandler)
 	content = content + fmt.Sprintf("\n\n\nThe task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, originHandler)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
 	log.Logger.Info("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
@@ -312,7 +314,9 @@ func NotifyTaskWorkflowFailMail(requestName, procDefName, status, creator, userT
 func getInternationalizationTaskName(taskName, language string) string {
 	switch taskName {
 	case RequestPending:
-		taskName = "Pending(定版)"
+		taskName = "Check(定版)"
+	case "check":
+		taskName = "Check(定版)"
 	case Confirm:
 		taskName = "Confirm(确认)"
 	}

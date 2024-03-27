@@ -478,7 +478,7 @@ func (s *TaskTemplateService) DeleteTaskTemplate(requestTemplateId, id string) (
 	return result, nil
 }
 
-func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, typ, userToken, language string) (*models.TaskTemplateDto, error) {
+func (s *TaskTemplateService) GetTaskTemplate(requestTemplateId, id, typ string) (*models.TaskTemplateDto, error) {
 	// 查询请求模板
 	requestTemplate, err := GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 	if err != nil {
@@ -657,11 +657,6 @@ func (s *TaskTemplateService) genTaskIdPrefix(typ string) (string, error) {
 	}
 }
 
-func (s *TaskTemplateService) getTaskTemplateHandler(requestTemplate string) (taskTemplateMap map[string]*models.TaskTemplateDto, err error) {
-	taskTemplateMap = make(map[string]*models.TaskTemplateDto)
-	return
-}
-
 func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplateAndType(requestTemplateId, templateType string) (list []*models.TaskTemplateTable, err error) {
 	return s.taskTemplateDao.QueryByRequestTemplateAndType(requestTemplateId, templateType)
 }
@@ -689,4 +684,37 @@ func (s *TaskTemplateService) GetTaskTemplateListByRequestId(requestId string) (
 
 func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplate(requestTemplateId string) (list []*models.TaskTemplateTable, err error) {
 	return s.taskTemplateDao.QueryByRequestTemplate(requestTemplateId)
+}
+
+func (s *TaskTemplateService) GetCheckHandlerAndRole(requestTemplateId string) (handler, role string) {
+	// 先查询 定版配置
+	var taskTemplateList []*models.TaskTemplateTable
+	var taskHandleTemplateList []*models.TaskHandleTemplateTable
+	var requestTemplate *models.RequestTemplateTable
+	var requestTemplateRoleList []*models.RequestTemplateRoleTable
+	dao.X.SQL("select * from task_template where request_template = ? and type = ?", requestTemplateId, models.TaskTypeCheck).Find(&taskTemplateList)
+	if len(taskTemplateList) > 0 {
+		dao.X.SQL("select * from task_handle_template where task_template = ?", taskTemplateList[0].Id).Find(&taskHandleTemplateList)
+		if len(taskHandleTemplateList) > 0 {
+			role = taskHandleTemplateList[0].Role
+			handler = taskHandleTemplateList[0].Handler
+		}
+	}
+	// 定版没配置处理人,查找模版属主
+	if handler == "" {
+		requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
+		if requestTemplate != nil {
+			handler = requestTemplate.Handler
+		}
+		requestTemplateRoleList, _ = GetRequestTemplateService().GetRequestTemplateRole(requestTemplateId)
+		if len(requestTemplateRoleList) > 0 {
+			for _, requestTemplateRole := range requestTemplateRoleList {
+				if requestTemplateRole.RoleType == string(models.RolePermissionMGMT) {
+					role = requestTemplateRole.Role
+					break
+				}
+			}
+		}
+	}
+	return
 }

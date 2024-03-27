@@ -636,6 +636,10 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			if platformDataObj.OperatorObjType == "" {
 				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
 			}
+			if platformDataObj.Status == string(models.RequestStatusDraft) {
+				// 草稿状态,定版处理人和角色需要读取模版和定版配置
+				platformDataObj.Handler, platformDataObj.HandleRole = GetTaskTemplateService().GetCheckHandlerAndRole(platformDataObj.TemplateId)
+			}
 			// 人员设置方式: 模板指定,提交人指定, 只能: 处理人(处理)和角色管理员(转给我),需要RoleAdministrator、HandlerType返回给前端判断
 			// 设置角色管理员
 			if v, ok := roleDtoMap[platformDataObj.Role]; ok {

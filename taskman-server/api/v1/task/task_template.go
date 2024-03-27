@@ -145,7 +145,7 @@ func GetTaskTemplate(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, errors.New("param empty"))
 		return
 	}
-	result, err := service.GetTaskTemplateService().GetTaskTemplate(requestTemplateId, id, typ, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, err := service.GetTaskTemplateService().GetTaskTemplate(requestTemplateId, id, typ)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

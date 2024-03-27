@@ -636,10 +636,6 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			if platformDataObj.OperatorObjType == "" {
 				platformDataObj.OperatorObjType = operatorObjTypeMap[platformDataObj.ProcDefKey]
 			}
-			if platformDataObj.Status == string(models.RequestStatusDraft) {
-				// 草稿状态,定版处理人和角色需要读取模版和定版配置
-				platformDataObj.Handler, platformDataObj.HandleRole = GetTaskTemplateService().GetCheckHandlerAndRole(platformDataObj.TemplateId)
-			}
 			// 人员设置方式: 模板指定,提交人指定, 只能: 处理人(处理)和角色管理员(转给我),需要RoleAdministrator、HandlerType返回给前端判断
 			// 设置角色管理员
 			if v, ok := roleDtoMap[platformDataObj.Role]; ok {
@@ -665,7 +661,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id, platformDataObj.TemplateId)
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(models.RequestTable{Id: platformDataObj.Id, Status: platformDataObj.Status, RequestTemplate: platformDataObj.TemplateId})
 			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
 			if req.Tab == "pending" || req.Tab == "myPending" {
 				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
@@ -1450,7 +1446,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}
-	_, form.Handler = getRequestHandler(request.Id, request.RequestTemplate)
+	_, form.Handler = getRequestHandler(*request)
 	if request.CustomFormCache != "" {
 		err = json.Unmarshal([]byte(request.CustomFormCache), &customForm)
 		if err != nil {
@@ -1482,16 +1478,15 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态
-func getRequestHandler(requestId, templateId string) (role, handler string) {
-	var request models.RequestTable
+func getRequestHandler(request models.RequestTable) (role, handler string) {
 	var task *models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
 	var roleArr, handlerArr []string
-	request, _ = GetSimpleRequest(requestId)
 	if request.Status == string(models.RequestStatusDraft) {
-		return request.Role, request.CreatedBy
+		// 草稿状态,定版处理人和角色需要读取模版和定版配置
+		return GetTaskTemplateService().GetCheckHandlerAndRole(request.RequestTemplate)
 	}
-	task, _ = GetTaskService().GetDoingTask(requestId, templateId)
+	task, _ = GetTaskService().GetDoingTask(request.Id, request.RequestTemplate)
 	if task != nil {
 		// 根据任务查询 任务处理人
 		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)

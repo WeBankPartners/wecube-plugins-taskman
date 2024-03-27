@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-scroll-column">
-    <div v-for="(i, index) in list" :key="index" class="tag-111">
+    <div v-for="(i, index) in list" :key="index" class="tag">
       {{ i }}
     </div>
   </div>
@@ -19,15 +19,20 @@ export default {
 
 <style lang="scss" scoped>
 .taskman-scroll-column {
-  max-height: 66px;
+  max-height: 72px;
   overflow-y: scroll;
   padding-right: 3px;
-  .tag-111 {
-    padding: 4px 5px;
+  padding: 6px 0;
+  .tag {
+    width: fit-content;
+    padding: 2px 5px;
+    background: #f7f7f7;
+    border: 1px solid #e8eaec;
     border-radius: 3px;
-    background: #2d8cf0;
-    color: #fff;
-    margin-top: 5px;
+    font-size: 12px;
+    &:not(:last-child) {
+      margin-bottom: 5px;
+    }
   }
 }
 ::-webkit-scrollbar {

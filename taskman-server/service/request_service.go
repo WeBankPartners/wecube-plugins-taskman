@@ -2199,7 +2199,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			attachFiles = attachFileTaskHandleIdMap[taskHandle.Id]
 		}
 		curTaskHandleForHistory := &models.TaskHandleForHistory{
-			TaskHandleTable: *taskHandle,
+			TaskHandleTable: taskHandle,
 			AttachFiles:     attachFiles,
 		}
 		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)

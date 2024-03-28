@@ -379,7 +379,7 @@ type RequestForHistory struct {
 }
 
 type TaskHandleForHistory struct {
-	TaskHandleTable
+	*TaskHandleTable
 	AttachFiles []*AttachFileTable `json:"attachFiles"`
 }
 

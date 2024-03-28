@@ -47,14 +47,15 @@ export default {
       expand: true,
       activeName: '',
       openNames: [],
+      lang: window.localStorage.getItem('lang') || 'zh-CN',
       menuList: [
         {
           title: this.$t('tw_publish'),
           icon: 'md-person-add',
           name: '1',
           children: [
-            { title: this.$t('tw_new_publish'), path: '/taskman/workbench/template?type=1', name: '1-1' },
-            { title: this.$t('tw_publish_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=1', name: '1-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/publishHistory', name: '1-2' }
           ]
         },
         {
@@ -62,35 +63,35 @@ export default {
           icon: 'ios-send',
           name: '2',
           children: [
-            { title: this.$t('tw_new_request'), path: '/taskman/workbench/template?type=2', name: '2-1' },
-            { title: this.$t('tw_request_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=2', name: '2-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/requestHistory', name: '2-2' }
           ]
         },
         {
-          title: '问题',
+          title: this.$t('tw_question'),
           icon: 'md-help-circle',
           name: '3',
           children: [
-            { title: '新建问题', path: '/taskman/workbench/template?type=3', name: '3-1' },
-            { title: '问题历史', path: '/taskman/workbench/problemHistory', name: '3-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=3', name: '3-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/problemHistory', name: '3-2' }
           ]
         },
         {
-          title: '事件',
+          title: this.$t('tw_event'),
           icon: 'md-pulse',
           name: '4',
           children: [
-            { title: '新建事件', path: '/taskman/workbench/template?type=4', name: '4-1' },
-            { title: '事件历史', path: '/taskman/workbench/eventHistory', name: '4-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=4', name: '4-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/eventHistory', name: '4-2' }
           ]
         },
         {
-          title: '变更',
+          title: this.$t('fork'),
           icon: 'md-git-merge',
           name: '5',
           children: [
-            { title: '新建变更', path: '/taskman/workbench/template?type=5', name: '5-1' },
-            { title: '变更历史', path: '/taskman/workbench/changeHistory', name: '5-2' }
+            { title: this.$t('tw_new'), path: '/taskman/workbench/template?type=5', name: '5-1' },
+            { title: this.$t('tw_history'), path: '/taskman/workbench/changeHistory', name: '5-2' }
           ]
         }
       ]

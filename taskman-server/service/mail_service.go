@@ -126,37 +126,6 @@ func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken
 	return
 }
 
-// NotifyTaskAssignListMail 定版/确认/任务/审批分配给多人
-func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, language string, receivers []string) (err error) {
-	if !checkMailEnable() {
-		return
-	}
-	var subject, content string
-	var userInfo *models.UserDto
-	var mailList []string
-	for _, receiver := range receivers {
-		if userInfo, err = GetRoleService().GetUserInfo(receiver, userToken, language); err != nil {
-			return err
-		}
-		if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
-			log.Logger.Warn("NotifyTaskAssignListMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", receiver))
-			return
-		}
-		mailList = append(mailList, userInfo.Email)
-	}
-	taskName = getInternationalizationTaskName(taskName, language)
-	subject = "[wecube] [New Task reminder]  【新增任务提醒】"
-	content = fmt.Sprintf("You have a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible (if you are unable to process it, team members can transfer the task to another order for processing). Click to view details", requestName, taskName, expireDate)
-	content = content + fmt.Sprintf("\n\n\n您有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理(若本人无法处理,组员可以将任务转单处理),点击查看详情", requestName, taskName, expireDate)
-	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Debug("NotifyTaskAssignListMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", strings.Join(mailList, ",")))
-	err = models.MailSender.Send(subject, content, mailList)
-	if err != nil {
-		log.Logger.Error("send mail err", log.Error(err))
-	}
-	return
-}
-
 // NotifyTaskHandlerUpdateMail 定版/确认/任务/审批分配给“我”,但是被人点“转给我”抢单了
 func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, targetHandler, userToken, language string) (err error) {
 	if !checkMailEnable() {

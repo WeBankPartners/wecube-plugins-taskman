@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
@@ -26,7 +25,6 @@ func GetTaskFormStruct(c *gin.Context) {
 }
 
 func CreateTask(c *gin.Context) {
-	var request models.RequestTable
 	response := models.PluginTaskCreateResp{ResultCode: "0", ResultMessage: "success", Results: models.PluginTaskCreateOutput{}}
 	var err error
 	defer func() {
@@ -49,35 +47,12 @@ func CreateTask(c *gin.Context) {
 	if requestLanguage == "" {
 		requestLanguage = "en"
 	}
-	request, _ = service.GetSimpleRequest(param.RequestId)
 	for _, input := range param.Inputs {
-		output, task, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
+		output, _, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
-		} else {
-			log.Logger.Info("CreateTask send mail", log.String("taskId", task.Id))
-			// 发送邮件
-			var taskHandleList []*models.TaskHandleTable
-			var handlerList []string
-			if err = dao.X.SQL("select * from task_handle where task = ?", task.Id).Find(&taskHandleList); err != nil {
-				log.Logger.Error("NotifyTaskExpireMail query db err", log.Error(err))
-				return
-			}
-			for _, taskHandle := range taskHandleList {
-				if taskHandle.Handler != "" {
-					handlerList = append(handlerList, taskHandle.Handler)
-				} else if taskHandle.Role != "" {
-					// 只有处理角色,给角色发邮件
-					service.NotifyTaskRoleMail(request.Name, task.Name, task.ExpireTime, taskHandle.Role, requestToken, requestLanguage)
-				}
-			}
-
-			if len(handlerList) > 0 {
-				// 给处理人发邮件
-				service.NotifyTaskAssignListMail(request.Name, task.Name, task.ExpireTime, requestToken, requestLanguage, handlerList)
-			}
 		}
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}

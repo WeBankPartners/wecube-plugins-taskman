@@ -28,7 +28,7 @@ func notifyAction() {
 	var yesterday time.Time
 	now := time.Now().Format(models.DateTimeFormat)
 	yesterday = time.Now().AddDate(0, 0, -1)
-	err := dao.X.SQL("select id,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", yesterday.Format(models.DateTimeFormat), now).Find(&taskTable)
+	err := dao.X.SQL("select id,name,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", yesterday.Format(models.DateTimeFormat), now).Find(&taskTable)
 	if err != nil {
 		log.Logger.Error("notify action fail,query task error", log.Error(err))
 		return

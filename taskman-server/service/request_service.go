@@ -2126,11 +2126,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		if displayName, isExisted := roleDisplayMap[taskHandle.Role]; isExisted {
 			taskHandle.Role = displayName
 		}
-		// 任务节点没处理,清空 创建和更新时间
-		if taskHandle.HandleResult == "" && taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
-			taskHandle.UpdatedTime = ""
-			taskHandle.CreatedTime = ""
-		}
 	}
 
 	// 查询 attach file
@@ -2206,7 +2201,19 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			FormData:       formData,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
-			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
+			taskHandleForHistoryList := taskIdMapHandle[task.Id]
+			// 审批未处理的不展示处理时间
+			if task.Type == string(models.TaskTypeApprove) && len(taskHandleForHistoryList) > 0 {
+				for _, history := range taskHandleForHistoryList {
+					taskHandle := history.TaskHandleTable
+					// 任务节点没处理,清空 创建和更新时间
+					if taskHandle.HandleResult == "" && taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+						taskHandle.UpdatedTime = ""
+						taskHandle.CreatedTime = ""
+					}
+				}
+			}
+			curTaskForHistory.TaskHandleList = taskHandleForHistoryList
 		}
 
 		formData, err = getTaskFormData(c, curTaskForHistory)

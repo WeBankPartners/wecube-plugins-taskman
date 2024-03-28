@@ -588,7 +588,8 @@ export default {
   .create-time {
     display: flex;
     align-items: center;
-    width: 300px;
+    justify-content: flex-end;
+    width: 360px;
     position: absolute;
     top: -38px;
     right: 0px;

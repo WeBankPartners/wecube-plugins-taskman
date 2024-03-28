@@ -157,7 +157,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 				return
 			}
 			for _, taskTemplate := range taskTemplateList {
-				if taskTemplate.Type == string(models.TaskTypeApprove) && taskTemplate.Type == string(models.TaskTypeImplement) {
+				if taskTemplate.Type == string(models.TaskTypeApprove) || taskTemplate.Type == string(models.TaskTypeImplement) {
 					if err = service.GetTaskTemplateService().CheckHandleTemplates(taskTemplate); err != nil {
 						if taskTemplate.Type == string(models.TaskTypeApprove) {
 							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)

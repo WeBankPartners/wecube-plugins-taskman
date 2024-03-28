@@ -59,8 +59,8 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 								}
 							}
 						} else if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeClaim) {
-							//  组内认领,给角色管理员发送邮件
-							NotifyTaskRoleAdministratorMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Role, userToken, language)
+							//  组内认领,给角色发送邮件
+							NotifyTaskRoleMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Role, userToken, language)
 						} else {
 							NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
 						}

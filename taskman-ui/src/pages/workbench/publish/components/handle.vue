@@ -328,6 +328,22 @@ export default {
               }
             }
           })
+          // 表单数据默认值赋值
+          val.formData.forEach(item => {
+            if (item.value && item.value.length) {
+              item.value.forEach(v => {
+                item.title.forEach(t => {
+                  // 默认清空标志为false, 且初始值为空，赋值默认值
+                  if (t.defaultClear === 'no' && !v.entityData[t.name]) {
+                    v.entityData[t.name] = t.defaultValue || ''
+                  }
+                  if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
+                    v.entityData[t.name] = ''
+                  }
+                })
+              })
+            }
+          })
         }
       },
       deep: true

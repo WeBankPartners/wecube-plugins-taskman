@@ -522,4 +522,13 @@ alter table form_item add constraint fore_form_item_task_handle foreign key(task
 alter table attach_file add column task_handle varchar(64) default null COMMENT '任务处理';
 alter table attach_file add constraint fore_attach_file_task_handle foreign key(task_handle) REFERENCES task_handle(id);
 alter table form_item_template add column routine_expression text default null COMMENT '表单项计算表达式';
+
+alter table task add index task_request_created_time(request_created_time);
+alter table task add index task_type (type);
+alter table task_handle add index task_handle_latest_flag(latest_flag);
+alter table task_handle add index task_handle_created_time(created_time);
+alter table task_handle add index task_handle_updated_time(updated_time);
+alter table task_handle add index task_handle_result(handle_result);
+alter table task_handle add index task_handle_handler(handler);
+
 #@v1.0.5-end@;

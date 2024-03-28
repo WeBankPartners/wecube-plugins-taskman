@@ -130,8 +130,12 @@ import {
   templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
+import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
   name: '',
+  components: {
+    ScrollTag
+  },
   data () {
     return {
       MODALHEIGHT: 500,
@@ -267,9 +271,10 @@ export default {
           minWidth: 140,
           key: 'mgmtRoles',
           render: (h, params) => {
-            return params.row.useRoles.map(item => {
-              return <Tag>{item.displayName}</Tag>
+            const list = params.row.useRoles.map(item => {
+              return item.displayName
             })
+            return <ScrollTag list={list} />
           }
         },
         {
@@ -365,6 +370,18 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
+                {/* 复制 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('copy')} placement="top">
+                    <Button
+                      size="small"
+                      type="primary"
+                      style="margin-right:5px;"
+                      onClick={() => this.copyTemplate(params.row)}
+                    >
+                      <Icon type="md-copy" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
                 {/* 变更 */ this.status === 'confirm' && (
                   <Tooltip content={this.$t('fork')} placement="top">
                     <Button
@@ -374,18 +391,6 @@ export default {
                       onClick={() => this.forkTemplate(params.row)}
                     >
                       <Icon type="md-git-branch" size="16"></Icon>
-                    </Button>
-                  </Tooltip>
-                )}
-                {/* 复制 */ this.status === 'confirm' && (
-                  <Tooltip content={this.$t('fork')} placement="top">
-                    <Button
-                      size="small"
-                      type="info"
-                      style="margin-right:5px;"
-                      onClick={() => this.copyTemplate(params.row)}
-                    >
-                      <Icon type="md-copy" size="16"></Icon>
                     </Button>
                   </Tooltip>
                 )}

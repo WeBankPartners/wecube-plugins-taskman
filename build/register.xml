@@ -103,7 +103,7 @@
             </interface>
         </plugin>
         <plugin name="request">
-            <interface action="create" path="/taskman/api/v2/plugin/request/create" httpMethod="POST">
+            <interface action="create" path="/taskman/api/v2/plugin/request/create" httpMethod="POST" type="EXECUTION">
                 <inputParameters>
                     <parameter datatype="string" mappingType="constant" required="Y">requestTemplate</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">rootDataId</parameter>

@@ -94,7 +94,9 @@ type ErrorTemplate struct {
 	// 导入失败，已有一条草稿（在草稿或待确认)
 	TemplateImportExistError CustomError `json:"template_import_exist_error"`
 	// 模版提交审核,任务角色没有选择，拒绝提交
-	TemplateSubmitHandlerEmptyError CustomError `json:"template_submit_handler_empty_error"`
+	TemplateSubmitTaskHandlerEmptyError CustomError `json:"template_submit_task_handler_empty_error"`
+	//  模版提交审核,审批角色没有选择，拒绝提交
+	TemplateSubmitApproveHandlerEmptyError CustomError `json:"template_submit_approve_handler_empty_error"`
 }
 
 var (

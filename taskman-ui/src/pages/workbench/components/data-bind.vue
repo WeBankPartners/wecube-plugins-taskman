@@ -3,44 +3,44 @@
     <Tabs v-if="nodes.length" class="tabs">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
-          <Row v-if="node.classification && node.classification.length > 0">
+          <template v-if="node.classification && node.classification.length > 0">
             <CheckboxGroup v-model="node.bindData">
-              <template v-for="(entity, entityIndex) in node.classification">
-                <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider>
-                <template v-for="item in filterBindData(node)">
-                  <Col
-                    v-if="item.entityName === entity"
-                    :key="item.id + entityIndex"
-                    :span="12"
-                    class="tabs-item"
-                  >
-                    <Checkbox :label="item.id" :disabled="formDisable" class="tabs-item-box">
-                      <div class="tabs-item-box-content">
-                        <Tooltip
-                          :content="item.displayName"
-                          :delay="500"
-                          :disabled="item.displayName.length < 30"
-                          max-width="300"
-                        >
-                          <div class="text-ellipsis">
-                            <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
-                            {{ item.displayName }}
-                          </div>
-                        </Tooltip>
-                        <Icon
-                          type="md-eye"
-                          size="26"
-                          color="#515a6e"
-                          @click.stop.prevent="handleViewForm(item)"
-                          style="margin-left:15px;cursor:pointer;"
-                        />
-                      </div>
-                    </Checkbox>
-                  </Col>
-                </template>
-              </template>
+              <div v-for="(entity, entityIndex) in node.classification" :key="entityIndex">
+                <!-- <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider> -->
+                <div class="radio-button">
+                  {{ `${entity}` }}<span class="count">{{ '' }}</span>
+                </div>
+                <Row class="box-wrap">
+                  <div v-for="item in filterBindData(node)" :key="item.id + entityIndex">
+                    <Col v-if="item.entityName === entity" :span="12" class="tabs-item">
+                      <Checkbox :label="item.id" :disabled="formDisable" class="tabs-item-box">
+                        <div class="tabs-item-box-content">
+                          <Tooltip
+                            :content="item.displayName"
+                            :delay="500"
+                            :disabled="item.displayName.length < 30"
+                            max-width="300"
+                          >
+                            <div class="text-ellipsis">
+                              <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
+                              {{ item.displayName }}
+                            </div>
+                          </Tooltip>
+                          <Icon
+                            type="md-eye"
+                            size="26"
+                            color="#515a6e"
+                            @click.stop.prevent="handleViewForm(item)"
+                            style="margin-left:15px;cursor:pointer;"
+                          />
+                        </div>
+                      </Checkbox>
+                    </Col>
+                  </div>
+                </Row>
+              </div>
             </CheckboxGroup>
-          </Row>
+          </template>
           <div v-else>{{ $t('tw_no_data') }}</div>
         </TabPane>
       </template>
@@ -447,6 +447,20 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.radio-button {
+  padding: 5px 15px;
+  margin-bottom: 10px;
+  width: fit-content;
+  border-radius: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #cba43f;
+  color: #cba43f;
+  // background: #ebdcb4;
+}
+.box-wrap {
+  margin: 10px 0 30px 0;
+}
 .tabs-item {
   display: flex;
   align-items: center;

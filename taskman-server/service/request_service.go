@@ -1059,6 +1059,10 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 		err = fmt.Errorf("Can not find requestTemplate with request:%s ,requestTemplateId:%s ", request.Id, request.RequestTemplate)
 		return
 	}
+	if err = buildCacheDataWithPool(request.Id, &cacheData); err != nil {
+		err = fmt.Errorf("build cache data with request pool fail,%s ", err.Error())
+		return
+	}
 	cacheData.ProcDefId = requestTemplateTable[0].ProcDefId
 	cacheData.ProcDefKey = requestTemplateTable[0].ProcDefKey
 	entityDepMap, tmpErr := AppendUselessEntity(requestTemplateTable[0].Id, userToken, language, &cacheData)
@@ -1082,6 +1086,46 @@ func StartRequestNew(request models.RequestTable, userToken, language string, ca
 	actions = append(actions, &dao.ExecAction{Sql: "update request set proc_instance_id=?,proc_instance_key=?,status=?,updated_time=? where id=?", Param: []interface{}{
 		procInstId, result.ProcInstKey, result.Status, nowTime, request.Id,
 	}})
+	return
+}
+
+func buildCacheDataWithPool(requestId string, cacheData *models.RequestCacheData) (err error) {
+	// 查请求数据池里的数据(里面的数据可能包含当前任务之前保存的数据)
+	requestPoolRows := models.RequestPoolDataQueryRows{}
+	if err = dao.X.SQL("select t1.id as form_id,t1.task,t1.form_template,t3.item_group,t3.item_group_type ,t1.data_id,t2.id as form_item_id,t2.form_item_template,t2.name,t2.value,t2.updated_time from form t1 left join form_item t2 on t1.id=t2.form left join form_template t3 on t1.form_template=t3.id where t1.request=?", requestId).Find(&requestPoolRows); err != nil {
+		err = fmt.Errorf("query request item pool data fail,%s ", err.Error())
+		return
+	}
+	requestPoolForms := requestPoolRows.DataParse()
+	rowAttrMap := make(map[string]map[string]string)
+	for _, poolForm := range requestPoolForms {
+		tmpKVMap := make(map[string]string)
+		for _, row := range poolForm.Items {
+			if _, existFlag := tmpKVMap[row.Name]; !existFlag {
+				matchItem := getRequestPoolLatestItem(requestPoolForms, poolForm.DataId, row.Name)
+				tmpKVMap[row.Name] = matchItem.Value
+			}
+		}
+		rowAttrMap[poolForm.DataId] = tmpKVMap
+	}
+	if rowKVData, ok := rowAttrMap[cacheData.RootEntityValue.Oid]; ok {
+		for _, v := range cacheData.RootEntityValue.AttrValues {
+			if newValue, matchFlag := rowKVData[v.AttrName]; matchFlag {
+				v.DataValue = newValue
+			}
+		}
+	}
+	for _, node := range cacheData.TaskNodeBindInfos {
+		for _, boundEntity := range node.BoundEntityValues {
+			if rowKVData, ok := rowAttrMap[boundEntity.Oid]; ok {
+				for _, v := range boundEntity.AttrValues {
+					if newValue, matchFlag := rowKVData[v.AttrName]; matchFlag {
+						v.DataValue = newValue
+					}
+				}
+			}
+		}
+	}
 	return
 }
 
@@ -2126,11 +2170,6 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 		if displayName, isExisted := roleDisplayMap[taskHandle.Role]; isExisted {
 			taskHandle.Role = displayName
 		}
-		// 任务节点没处理,清空 创建和更新时间
-		if taskHandle.HandleResult == "" {
-			taskHandle.UpdatedTime = ""
-			taskHandle.CreatedTime = ""
-		}
 	}
 
 	// 查询 attach file
@@ -2160,7 +2199,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			attachFiles = attachFileTaskHandleIdMap[taskHandle.Id]
 		}
 		curTaskHandleForHistory := &models.TaskHandleForHistory{
-			TaskHandleTable: *taskHandle,
+			TaskHandleTable: taskHandle,
 			AttachFiles:     attachFiles,
 		}
 		taskIdMapHandle[taskHandle.Task] = append(taskIdMapHandle[taskHandle.Task], curTaskHandleForHistory)
@@ -2206,7 +2245,19 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			FormData:       formData,
 		}
 		if _, isExisted := taskIdMapHandle[task.Id]; isExisted {
-			curTaskForHistory.TaskHandleList = taskIdMapHandle[task.Id]
+			taskHandleForHistoryList := taskIdMapHandle[task.Id]
+			// 审批未处理的不展示处理时间
+			if task.Type == string(models.TaskTypeApprove) && len(taskHandleForHistoryList) > 0 {
+				for _, history := range taskHandleForHistoryList {
+					taskHandle := history.TaskHandleTable
+					// 任务节点没处理,清空 创建和更新时间
+					if taskHandle.HandleResult == "" && taskHandle.HandleStatus == string(models.TaskHandleResultTypeUncompleted) {
+						taskHandle.UpdatedTime = ""
+						taskHandle.CreatedTime = ""
+					}
+				}
+			}
+			curTaskForHistory.TaskHandleList = taskHandleForHistoryList
 		}
 
 		formData, err = getTaskFormData(c, curTaskForHistory)

@@ -545,6 +545,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 	var operatorObjTypeMap = make(map[string]string)
 	var roleDtoMap map[string]*models.SimpleLocalRoleDto
 	var roleDisplayMap = make(map[string]string)
+	// 请求已处理(防止同一个请求重复处理)
+	var processedRequestMap = make(map[string]bool)
 	// 排序处理
 	if req.Param.Sorting != nil {
 		hashMap, _ := dao.GetJsonToXormMap(models.PlatformDataObj{})
@@ -599,8 +601,12 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					newStatus = "Termination"
 				}
 				if newStatus != "" && newStatus != platformDataObj.Status {
+					// 编排的完成,并不表示 请求完成
 					if newStatus == string(models.RequestStatusCompleted) {
-						// 编排的完成,并不表示 请求完成
+						// 防止一个请求重复调用
+						if _, ok := processedRequestMap[platformDataObj.Id]; ok {
+							continue
+						}
 						taskSort := GetTaskService().GenerateTaskOrderByRequestId(platformDataObj.Id)
 						confirmActions, _ = GetRequestService().CreateRequestConfirm(models.RequestTable{Id: platformDataObj.Id,
 							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy, CreatedTime: platformDataObj.CreatedTime}, taskSort, req.UserToken, language)
@@ -608,6 +614,11 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 							actions = append(actions, confirmActions...)
 						}
 					} else {
+						// 防止一个请求重复调用
+						if _, ok := processedRequestMap[platformDataObj.Id]; ok {
+							platformDataObj.Status = newStatus
+							continue
+						}
 						// 只处理自动退出&手动终止终止情况,需要发邮件
 						if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
 							NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
@@ -616,6 +627,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
 						platformDataObj.Status = newStatus
 					}
+					processedRequestMap[platformDataObj.Id] = true
 				}
 			}
 			if collectMap[platformDataObj.ParentId] {
@@ -649,7 +661,14 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(platformDataObj.Id, platformDataObj.TemplateId)
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(models.RequestTable{Id: platformDataObj.Id, Status: platformDataObj.Status, RequestTemplate: platformDataObj.TemplateId, CreatedBy: platformDataObj.CreatedBy, Role: platformDataObj.Role})
+			if platformDataObj.Status == string(models.RequestStatusDraft) {
+				// 草稿状态,定版处理人和角色需要读取模版和定版配置
+				platformDataObj.CheckHandleRole, platformDataObj.CheckHandler = GetTaskTemplateService().GetCheckRoleAndHandler(platformDataObj.TemplateId)
+				if platformDataObj.CheckHandleRole != "" {
+					platformDataObj.CheckHandleRoleDisplay = roleDisplayMap[platformDataObj.CheckHandleRole]
+				}
+			}
 			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
 			if req.Tab == "pending" || req.Tab == "myPending" {
 				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
@@ -1434,7 +1453,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}
-	_, form.Handler = getRequestHandler(request.Id, request.RequestTemplate)
+	_, form.Handler = getRequestHandler(*request)
 	if request.CustomFormCache != "" {
 		err = json.Unmarshal([]byte(request.CustomFormCache), &customForm)
 		if err != nil {
@@ -1466,16 +1485,15 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态
-func getRequestHandler(requestId, templateId string) (role, handler string) {
-	var request models.RequestTable
+func getRequestHandler(request models.RequestTable) (role, handler string) {
 	var task *models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
 	var roleArr, handlerArr []string
-	request, _ = GetSimpleRequest(requestId)
 	if request.Status == string(models.RequestStatusDraft) {
+		// 草稿状态,当前处理人为自己
 		return request.Role, request.CreatedBy
 	}
-	task, _ = GetTaskService().GetDoingTask(requestId, templateId)
+	task, _ = GetTaskService().GetDoingTask(request.Id, request.RequestTemplate)
 	if task != nil {
 		// 根据任务查询 任务处理人
 		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)
@@ -1709,8 +1727,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 				// 给对应处理人发送邮件
 				NotifyTaskAssignMail(request.Name, RequestPending, checkExpireTime, checkHandler, userToken, language)
 			} else {
-				// 给角色管理员发送邮件
-				NotifyTaskRoleAdministratorMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
+				// 给角色发送邮件
+				NotifyTaskRoleMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
 			}
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, checkRole, checkHandler, now, now}

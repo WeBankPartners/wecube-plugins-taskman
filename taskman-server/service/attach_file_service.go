@@ -90,7 +90,7 @@ func GetAttachFileInfo(fileId string) (fileObj models.AttachFileTable, err error
 		return fileObj, err
 	}
 	if len(attachFileTable) == 0 {
-		return fileObj, fmt.Errorf("Can not find attach file with id:%s ", fileId)
+		return fileObj, fmt.Errorf("can not find attach file with id:%s ", fileId)
 	}
 	fileObj = *attachFileTable[0]
 	return fileObj, nil
@@ -260,7 +260,7 @@ func CheckAttachFilePermission(fileId, operator string, roles []string) error {
 		}
 	}
 	if !legalFlag {
-		return fmt.Errorf("Permission illegal ")
+		return fmt.Errorf("permission illegal ")
 	}
 	return nil
 }

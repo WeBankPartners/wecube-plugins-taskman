@@ -183,9 +183,9 @@ type RequestTemplateExport struct {
 }
 
 type RequestTemplateTmp struct {
-	ProcDefId         string `json:"procDefId" xorm:"proc_def_id`
-	TemplateName      string `json:"templateName" xorm:"template_name`
-	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
+	ProcDefId         string `json:"procDefId" xorm:"proc_def_id"`
+	TemplateName      string `json:"templateName" xorm:"template_name"`
+	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name"`
 	Version           string `json:"version" xorm:"version"`
 	Status            string `json:"status" xorm:"status"`
 	ExpireDay         int    `json:"expireDay" xorm:"expire_day"`

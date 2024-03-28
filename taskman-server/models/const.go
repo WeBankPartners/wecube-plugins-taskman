@@ -5,7 +5,7 @@ const (
 	NewDateTimeFormat    = "20060102150405"
 	SysTableIdConnector  = "__"
 	UrlPrefix            = "/taskman"
-	RowDataPermissionErr = "Row data permission deny "
+	RowDataPermissionErr = "row data permission deny "
 	AdminRole            = "SUPER_ADMIN"
 	UploadFileMaxSize    = 10485760
 	DefaultHttpErrorCode = "ERROR"

@@ -103,17 +103,17 @@ func checkIfNeedAnalyze(input *models.RefSelectParam) (refFlag int, options []*m
 func getCMDBRefFilter(attrId, userToken string) (filterString string, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, strings.Split(attrId, models.SysTableIdConnector)[0]), nil)
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Try to request cmdb ci attr fail,response code:%d ", resp.StatusCode)
+		err = fmt.Errorf("try to request cmdb ci attr fail,response code:%d ", resp.StatusCode)
 		return
 	}
 	var responseData models.CiTypeAttrQueryResponse
@@ -155,23 +155,23 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 	result = []*models.CiReferenceDataQueryObj{}
 	paramBytes, tmpErr := json.Marshal(input.Param)
 	if tmpErr != nil {
-		err = fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
+		err = fmt.Errorf("json marshal param data fail,%s ", tmpErr.Error())
 		return
 	}
 	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/wecmdb/api/v1/ci-data/reference-data/query/%s", models.Config.Wecube.BaseUrl, input.AttrId), bytes.NewReader(paramBytes))
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", input.UserToken)
 	req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Try to request cmdb reference data fail,statusCode:%d ", resp.StatusCode)
+		err = fmt.Errorf("try to request cmdb reference data fail,statusCode:%d ", resp.StatusCode)
 		return
 	}
 	var response models.CiReferenceDataQueryResponse
@@ -182,15 +182,15 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 	return
 }
 
-func getRefSelectEntity(requestId, attrId string) (refEntity string, err error) {
-	var formItemTemplates []*models.FormItemTemplateTable
-	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
-	dao.X.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?)  union select form_template from task_template where request_template in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId, requestId).Find(&formItemTemplates)
-	if len(formItemTemplates) == 0 {
-		return refEntity, fmt.Errorf("Can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
-	}
-	return formItemTemplates[0].RefEntity, nil
-}
+// func getRefSelectEntity(requestId, attrId string) (refEntity string, err error) {
+// 	var formItemTemplates []*models.FormItemTemplateTable
+// 	attrSplit := strings.Split(attrId, models.SysTableIdConnector)
+// 	dao.X.SQL("select id,ref_package_name,ref_entity from form_item_template where entity=? and name=? and form_template in (select form_template from request_template where id in (select request_template from request where id=?)  union select form_template from task_template where request_template in (select request_template from request where id=?))", attrSplit[0], attrSplit[1], requestId, requestId).Find(&formItemTemplates)
+// 	if len(formItemTemplates) == 0 {
+// 		return refEntity, fmt.Errorf("can not find form item template with entity:%s name:%s ", attrSplit[0], attrSplit[1])
+// 	}
+// 	return formItemTemplates[0].RefEntity, nil
+// }
 
 func getRequestCacheNewData(requestId string, formItemTemplate *models.FormItemTemplateTable) (result []*models.CiReferenceDataQueryObj, err error) {
 	//refEntity, tmpErr := getRefSelectEntity(requestId, attrId)
@@ -220,16 +220,16 @@ func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDat
 	var filters []map[string]models.CiDataRefFilterObj
 	err = json.Unmarshal([]byte(input.Filter), &filters)
 	if err != nil {
-		err = fmt.Errorf("Json unmarshal filters string fail,%s ", err.Error())
+		err = fmt.Errorf("json unmarshal filters string fail,%s ", err.Error())
 		return
 	}
 	if len(filters) == 0 {
-		err = fmt.Errorf("Get ci reference data fail,filters string illgeal ")
+		err = fmt.Errorf("get ci reference data fail,filters string illgeal ")
 		return
 	}
 	newData, tmpErr := getRequestNewData(input.RequestId)
 	if tmpErr != nil {
-		return result, fmt.Errorf("Try to get request new data fail,%s ", tmpErr.Error())
+		return result, fmt.Errorf("try to get request new data fail,%s ", tmpErr.Error())
 	}
 	//refEntity, tmpErr := getRefSelectEntity(input.RequestId, input.AttrId)
 	//if tmpErr != nil {
@@ -238,9 +238,7 @@ func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDat
 	refEntity := input.FormItemTemplate.RefEntity
 	attrName := strings.Split(input.AttrId, models.SysTableIdConnector)[1]
 	filterMap := input.Param.Dialect.AssociatedData
-	if _, b := filterMap[attrName]; b {
-		delete(filterMap, attrName)
-	}
+	delete(filterMap, attrName)
 	var filterQueryParam models.EntityQueryParam
 	for _, filter := range filters[0] {
 		tmpParam := models.GetExpressResultParam{
@@ -273,9 +271,7 @@ func analyzeFilterData(input *models.RefSelectParam) (result []*models.EntityDat
 func getRefFilterParam(param *models.GetExpressResultParam) (queryParam models.EntityQueryObj, err error) {
 	filter := param.Filter
 	startCiType := filter.Left[:strings.LastIndex(filter.Left, "[")]
-	if _, b := param.FilterMap[startCiType]; b {
-		delete(param.FilterMap, startCiType)
-	}
+	delete(param.FilterMap, startCiType)
 	column := filter.Left[strings.LastIndex(filter.Left, "[")+1 : strings.LastIndex(filter.Left, "]")]
 	var valueList []string
 	if filter.Right.Type == "expression" {
@@ -455,24 +451,24 @@ func getExpressResultList(param *models.GetExpressResultParam) (result []string,
 func getCiData(param models.EntityQueryParam, ciType, userToken string, newData map[string]map[string]interface{}) (result []map[string]interface{}, err error) {
 	paramBytes, tmpErr := json.Marshal(param)
 	if tmpErr != nil {
-		err = fmt.Errorf("Json marshal param data fail,%s ", tmpErr.Error())
+		err = fmt.Errorf("json marshal param data fail,%s ", tmpErr.Error())
 		return
 	}
 	log.Logger.Info("getCiData", log.String("ciType", ciType), log.String("param", string(paramBytes)))
 	req, newReqErr := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/wecmdb/entities/%s/query", models.Config.Wecube.BaseUrl, ciType), bytes.NewReader(paramBytes))
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Try to request cmdb reference data fail,statusCode:%d ", resp.StatusCode)
+		err = fmt.Errorf("try to request cmdb reference data fail,statusCode:%d ", resp.StatusCode)
 		return
 	}
 	var response models.EntityResponse
@@ -589,26 +585,26 @@ func getCMDBAttributeOptions(entity, attribute, userToken string) (result []*mod
 	result = []*models.EntityDataObj{}
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, entity), nil)
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	//req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	responseBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Request cmdb attribute fail,%s ", string(responseBytes))
+		err = fmt.Errorf("request cmdb attribute fail,%s ", string(responseBytes))
 		return
 	}
 	var attrQueryResp models.EntityAttributeQueryResponse
 	err = json.Unmarshal(responseBytes, &attrQueryResp)
 	if err != nil {
-		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
+		err = fmt.Errorf("json unmarshal attr response fail,%s ", err.Error())
 		return
 	}
 	for _, v := range attrQueryResp.Data {
@@ -637,7 +633,7 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 	log.Logger.Info("curl rpc entity options", log.String("url", url), log.String("method", method), log.String("param", reqParam))
 	req, reqErr := http.NewRequest(method, url, strings.NewReader(reqParam))
 	if reqErr != nil {
-		err = fmt.Errorf("Try to new request fail,%s ", reqErr.Error())
+		err = fmt.Errorf("try to new request fail,%s ", reqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
@@ -646,18 +642,18 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 	}
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do request fail,%s ", respErr.Error())
 		return
 	}
 	b, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return result, fmt.Errorf("Do request fail,response statusCode:%d resp:%s ", resp.StatusCode, string(b))
+		return result, fmt.Errorf("do request fail,response statusCode:%d resp:%s ", resp.StatusCode, string(b))
 	}
 	var response models.ProcDefRootEntityResponse
 	err = json.Unmarshal(b, &response)
 	if err != nil {
-		return result, fmt.Errorf("Json unmarshal response body fail,%s ", err.Error())
+		return result, fmt.Errorf("json unmarshal response body fail,%s ", err.Error())
 	}
 	for _, v := range response.Data {
 		result = append(result, &models.EntityDataObj{Id: v.Id, DisplayName: v.DisplayName})
@@ -679,26 +675,26 @@ func getSimpleFormItemTemplate(formItemTemplateId string) (formItemTemplateObj *
 func getCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.EntityAttributeObj, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/wecmdb/api/v1/ci-types-attr/%s/attributes", models.Config.Wecube.BaseUrl, ciTypeEntity), nil)
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	//req.Header.Set("Content-Type", "application/json")
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
 	responseBytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		err = fmt.Errorf("Request cmdb attribute fail,%s ", string(responseBytes))
+		err = fmt.Errorf("request cmdb attribute fail,%s ", string(responseBytes))
 		return
 	}
 	var attrQueryResp models.EntityAttributeQueryResponse
 	err = json.Unmarshal(responseBytes, &attrQueryResp)
 	if err != nil {
-		err = fmt.Errorf("Json unmarshal attr response fail,%s ", err.Error())
+		err = fmt.Errorf("json unmarshal attr response fail,%s ", err.Error())
 		return
 	}
 	attributes = attrQueryResp.Data

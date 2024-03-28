@@ -110,8 +110,15 @@ export default {
           minWidth: 170,
           key: 'handler',
           render: (h, params) => {
-            const handlerArr = params.row.handler.split(',') || []
-            const roleArr = params.row.handleRoleDisplay.split(',') || []
+            let handlerArr = []
+            let roleArr = []
+            if (this.tabName === 'draft' || (this.tabName === 'submit' && ['1', '3'].includes(this.rollback))) {
+              handlerArr = params.row.checkHandler.split(',') || []
+              roleArr = params.row.checkHandleRoleDisplay.split(',') || []
+            } else {
+              handlerArr = params.row.handler.split(',') || []
+              roleArr = params.row.handleRoleDisplay.split(',') || []
+            }
             return (
               <div style="display:flex;flex-direction:column;">
                 {handlerArr.map((item, index) => {

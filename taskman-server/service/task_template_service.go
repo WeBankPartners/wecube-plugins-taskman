@@ -85,7 +85,7 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 	if param.Sort != len(taskTemplates)+1 {
 		for i := param.Sort; i < len(taskTemplates)+1; i++ {
 			t := taskTemplates[i-1]
-			t.Sort += 1
+			t.Sort = i + 1
 			t.UpdatedBy = operator
 			t.UpdatedTime = nowTime
 
@@ -426,7 +426,7 @@ func (s *TaskTemplateService) DeleteTaskTemplate(requestTemplateId, id string) (
 	var updateTaskTemplates []*models.TaskTemplateTable
 	if taskTemplate.Sort != len(taskTemplates) {
 		for i := taskTemplate.Sort; i < len(taskTemplates); i++ {
-			t := taskTemplates[i-1]
+			t := taskTemplates[i]
 			t.Sort = i
 			updateTaskTemplate := t
 			updateTaskTemplates = append(updateTaskTemplates, updateTaskTemplate)

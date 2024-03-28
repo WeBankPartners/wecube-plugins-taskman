@@ -69,8 +69,8 @@ func CreateTask(c *gin.Context) {
 				if taskHandle.Handler != "" {
 					handlerList = append(handlerList, taskHandle.Handler)
 				} else if taskHandle.Role != "" {
-					// 只有处理角色,给角色管理员发邮件
-					service.NotifyTaskRoleAdministratorMail(request.Name, task.Name, task.ExpireTime, taskHandle.Role, requestToken, requestLanguage)
+					// 只有处理角色,给角色发邮件
+					service.NotifyTaskRoleMail(request.Name, task.Name, task.ExpireTime, taskHandle.Role, requestToken, requestLanguage)
 				}
 			}
 

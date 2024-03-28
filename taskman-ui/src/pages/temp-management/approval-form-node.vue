@@ -189,11 +189,11 @@ export default {
         handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
       },
       approvalRoleTypeOptions: [
-        { label: this.$t('Template specified'), value: 'template' },
+        { label: this.$t('tw_template_assign'), value: 'template' },
         { label: this.$t('tw_reporter_assign'), value: 'custom' }
       ],
       handlerTypeOptions: [
-        { label: this.$t('Template specified'), value: 'template', used: ['template'] },
+        { label: this.$t('tw_template_assign'), value: 'template', used: ['template'] },
         { label: this.$t('tw_template_suggest'), value: 'template_suggest', used: ['template'] },
         { label: this.$t('tw_reporter_assign'), value: 'custom', used: ['template', 'custom'] },
         { label: this.$t('tw_reporter_suggest'), value: 'custom_suggest', used: ['template', 'custom'] },

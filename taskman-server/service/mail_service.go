@@ -72,6 +72,33 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 	return nil
 }
 
+// NotifyTaskRoleMail 给角色发邮件
+func NotifyTaskRoleMail(requestName, taskName, expireDate, role, userToken, language string) (err error) {
+	var mailList []string
+	if !checkMailEnable() {
+		return
+	}
+	var subject, content string
+	var displayNameMap map[string]string
+	taskName = getInternationalizationTaskName(taskName, language)
+	if displayNameMap, err = GetRoleService().GetRoleDisplayName(); err != nil {
+		return
+	}
+	subject = "[wecube] [New Task Reminder]  【新增任务提醒】"
+	content = fmt.Sprintf("Role %s has a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible. Click to view details", displayNameMap[role], requestName, taskName, expireDate)
+	content = content + fmt.Sprintf("\n\n\n角色%s有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理,点击查看详情", displayNameMap[role], requestName, taskName, expireDate)
+	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
+	mailList = GetRoleService().GetRoleMail([]*models.RoleTable{{Id: role}}, userToken, language)
+	if len(mailList) > 0 {
+		log.Logger.Debug("NotifyTaskRoleMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", mailList[0]))
+		err = models.MailSender.Send(subject, content, mailList)
+		if err != nil {
+			log.Logger.Error("send mail err", log.Error(err))
+		}
+	}
+	return
+}
+
 // NotifyTaskAssignMail 定版/确认/任务/审批分配给“我”
 func NotifyTaskAssignMail(requestName, taskName, expireDate, receiver, userToken, language string) (err error) {
 	if !checkMailEnable() {
@@ -124,45 +151,6 @@ func NotifyTaskAssignListMail(requestName, taskName, expireDate, userToken, lang
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
 	log.Logger.Debug("NotifyTaskAssignListMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", strings.Join(mailList, ",")))
 	err = models.MailSender.Send(subject, content, mailList)
-	if err != nil {
-		log.Logger.Error("send mail err", log.Error(err))
-	}
-	return
-}
-
-// NotifyTaskRoleAdministratorMail 定版/确认/任务/审批分配给一个组,处理人为空,我是管理员
-func NotifyTaskRoleAdministratorMail(requestName, taskName, expireDate, role, userToken, language string) (err error) {
-	if !checkMailEnable() {
-		return
-	}
-	var subject, content string
-	var result []string
-	var userInfo *models.UserDto
-	var displayNameMap map[string]string
-	if result, err = GetRoleService().GetRoleAdministrators(role, userToken, language); err != nil {
-		return err
-	}
-	if len(result) == 0 {
-		log.Logger.Warn("NotifyTaskAssignMail,taskName role administrator is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("role", role))
-		return
-	}
-	if userInfo, err = GetRoleService().GetUserInfo(result[0], userToken, language); err != nil {
-		return err
-	}
-	if userInfo == nil || strings.TrimSpace(userInfo.Email) == "" {
-		log.Logger.Warn("NotifyTaskRoleAdministratorMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", taskName), log.String("receiver", result[0]))
-		return
-	}
-	if displayNameMap, err = GetRoleService().GetRoleDisplayName(); err != nil {
-		return
-	}
-	taskName = getInternationalizationTaskName(taskName, language)
-	subject = "[wecube] [New Task Reminder]  【新增任务提醒】"
-	content = fmt.Sprintf("Role %s has a pending task [Request: %s Task: %s], which is valid until %s. Please process it as soon as possible. Click to view details", displayNameMap[role], requestName, taskName, expireDate)
-	content = content + fmt.Sprintf("\n\n\n角色%s有一条待处理任务[请求:%s-任务:%s],有效期截止到%s,请尽快处理,点击查看详情", displayNameMap[role], requestName, taskName, expireDate)
-	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
-	log.Logger.Debug("NotifyTaskRoleAdministratorMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))
-	err = models.MailSender.Send(subject, content, []string{userInfo.Email})
 	if err != nil {
 		log.Logger.Error("send mail err", log.Error(err))
 	}

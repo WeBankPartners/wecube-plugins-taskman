@@ -130,7 +130,7 @@ func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, 
 	return result, nil
 }
 
-func (s *TaskTemplateService) checkHandleTemplates(param *models.TaskTemplateDto) error {
+func (s *TaskTemplateService) CheckHandleTemplates(param *models.TaskTemplateDto) error {
 	if param.HandleMode == string(models.TaskTemplateHandleModeAdmin) ||
 		param.HandleMode == string(models.TaskTemplateHandleModeAuto) {
 		if len(param.HandleTemplates) > 0 {
@@ -296,7 +296,7 @@ func (s *TaskTemplateService) UpdateTaskTemplate(param *models.TaskTemplateDto, 
 	if taskTemplate.Type != param.Type || taskTemplate.Sort != param.Sort || taskTemplate.RequestTemplate != param.RequestTemplate || taskTemplate.NodeId != param.NodeId || taskTemplate.NodeDefId != param.NodeDefId || taskTemplate.NodeName != param.NodeDefName {
 		return nil, errors.New("param wrong")
 	}
-	if err := s.checkHandleTemplates(param); err != nil {
+	if err := s.CheckHandleTemplates(param); err != nil {
 		return nil, err
 	}
 	// 更新任务模板
@@ -684,6 +684,23 @@ func (s *TaskTemplateService) GetTaskTemplateListByRequestId(requestId string) (
 
 func (s *TaskTemplateService) QueryTaskTemplateListByRequestTemplate(requestTemplateId string) (list []*models.TaskTemplateTable, err error) {
 	return s.taskTemplateDao.QueryByRequestTemplate(requestTemplateId)
+}
+
+func (s *TaskTemplateService) QueryTaskTemplateDtoListByRequestTemplate(requestTemplateId string) (result []*models.TaskTemplateDto, err error) {
+	var taskTemplateList []*models.TaskTemplateTable
+	if taskTemplateList, err = s.taskTemplateDao.QueryByRequestTemplate(requestTemplateId); err != nil {
+		return
+	}
+	if len(taskTemplateList) > 0 {
+		// 构造返回结果
+		result = make([]*models.TaskTemplateDto, len(taskTemplateList))
+		for i, taskTemplate := range taskTemplateList {
+			if result[i], err = s.genTaskTemplateDto(taskTemplate.Id); err != nil {
+				return
+			}
+		}
+	}
+	return
 }
 
 func (s *TaskTemplateService) GetCheckRoleAndHandler(requestTemplateId string) (role, handler string) {

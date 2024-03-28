@@ -2,8 +2,12 @@
   <div>
     <Row type="flex">
       <Col span="24" style="padding: 0 20px">
-        <div style="margin-bottom: 12px">
-          <span v-for="(approval, approvalIndex) in approvalNodes" :key="approval.id" style="margin-right:6px;">
+        <div>
+          <span
+            v-for="(approval, approvalIndex) in approvalNodes"
+            :key="approval.id"
+            style="margin-right:6px;line-height: 40px;"
+          >
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
               @click="editNode(approval, true)"
@@ -787,6 +791,7 @@ export default {
         } else {
           this.approvalNodes = data.ids
           this.activeEditingNode = id === '' ? this.approvalNodes[0] : this.approvalNodes.find(node => node.id === id)
+          console.log(this.approvalNodes, id, this.activeEditingNode)
           this.editNode(this.activeEditingNode, false)
         }
       }
@@ -830,6 +835,7 @@ export default {
           title: this.$t('confirm_delete'),
           'z-index': 1000000,
           loading: true,
+          okText: this.$t('tw_request_confirm'),
           onOk: async () => {
             this.$Modal.remove()
             const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
@@ -840,6 +846,21 @@ export default {
           onCancel: () => {}
         })
       }
+
+      // this.$Modal.confirm({
+      //   title: this.$t('confirm_delete'),
+      //   'z-index': 1000000,
+      //   loading: true,
+      //   okText: this.$t('tw_request_confirm'),
+      //   onOk: async () => {
+      //     this.$Modal.remove()
+      //     const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
+      //     if (statusCode === 'OK') {
+      //       this.getApprovalNode(this.activeEditingNode)
+      //     }
+      //   },
+      //   onCancel: () => {}
+      // })
     },
     // 在弹窗关闭、保存、还原状态下回显group内容
     reloadGroup () {
@@ -1045,6 +1066,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
+        okText: this.$t('tw_request_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)

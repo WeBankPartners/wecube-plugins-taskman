@@ -146,29 +146,25 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 	}
 	if requestTemplate.Status == string(models.RequestTemplateStatusCreated) {
 		// 校验是否有修改权限
-		err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
-		if err != nil {
+		if err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c)); err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
 		}
-		// 提交审核,在编排任务情况下需要校验任务角色是否补充完整
+		// 提交审核,需要校验任务角色是否补充完整
 		if param.TargetStatus == string(models.RequestTemplateStatusPending) {
-			if requestTemplate.ProcDefId != "" {
-				if taskTemplateList, err = service.GetTaskTemplateService().ListTaskTemplates(requestTemplate.Id, string(models.TaskTypeImplement)); err != nil {
-					middleware.ReturnServerHandleError(c, err)
-					return
-				}
-				if len(taskTemplateList) > 0 {
-					for _, taskTemplate := range taskTemplateList {
-						if len(taskTemplate.HandleTemplates) > 0 {
-							for _, handleTemplate := range taskTemplate.HandleTemplates {
-								// 默认是模版指定、模版建议,前端没法校验提交数据,需要后端校验
-								if handleTemplate.Assign == "template" && handleTemplate.HandlerType == "template_suggest" && (handleTemplate.Role == "" || handleTemplate.Handler == "") {
-									middleware.ReturnServerHandleError(c, exterror.New().TemplateSubmitHandlerEmptyError.WithParam(taskTemplate.Name))
-									return
-								}
-							}
+			if taskTemplateList, err = service.GetTaskTemplateService().QueryTaskTemplateDtoListByRequestTemplate(requestTemplate.Id); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+			for _, taskTemplate := range taskTemplateList {
+				if taskTemplate.Type == string(models.TaskTypeApprove) && taskTemplate.Type == string(models.TaskTypeImplement) {
+					if err = service.GetTaskTemplateService().CheckHandleTemplates(taskTemplate); err != nil {
+						if taskTemplate.Type == string(models.TaskTypeApprove) {
+							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
+						} else if taskTemplate.Type == string(models.TaskTypeImplement) {
+							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
 						}
+						return
 					}
 				}
 			}

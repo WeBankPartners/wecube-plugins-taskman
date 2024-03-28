@@ -661,7 +661,14 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(models.RequestTable{Id: platformDataObj.Id, Status: platformDataObj.Status, RequestTemplate: platformDataObj.TemplateId})
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(models.RequestTable{Id: platformDataObj.Id, Status: platformDataObj.Status, RequestTemplate: platformDataObj.TemplateId, CreatedBy: platformDataObj.CreatedBy, Role: platformDataObj.Role})
+			if platformDataObj.Status == string(models.RequestStatusDraft) {
+				// 草稿状态,定版处理人和角色需要读取模版和定版配置
+				platformDataObj.CheckHandleRole, platformDataObj.CheckHandler = GetTaskTemplateService().GetCheckRoleAndHandler(platformDataObj.TemplateId)
+				if platformDataObj.CheckHandleRole != "" {
+					platformDataObj.CheckHandleRoleDisplay = roleDisplayMap[platformDataObj.CheckHandleRole]
+				}
+			}
 			//如果是待处理tab, 会出现同一个人,2个处理角色,采用2条记录返回,同时每个处理角色和人与每条记录适配
 			if req.Tab == "pending" || req.Tab == "myPending" {
 				platformDataObj.HandleRole = platformDataObj.TaskHandleRole
@@ -1483,8 +1490,8 @@ func getRequestHandler(request models.RequestTable) (role, handler string) {
 	var taskHandleList []*models.TaskHandleTable
 	var roleArr, handlerArr []string
 	if request.Status == string(models.RequestStatusDraft) {
-		// 草稿状态,定版处理人和角色需要读取模版和定版配置
-		return GetTaskTemplateService().GetCheckRoleAndHandler(request.RequestTemplate)
+		// 草稿状态,当前处理人为自己
+		return request.Role, request.CreatedBy
 	}
 	task, _ = GetTaskService().GetDoingTask(request.Id, request.RequestTemplate)
 	if task != nil {
@@ -1720,8 +1727,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 				// 给对应处理人发送邮件
 				NotifyTaskAssignMail(request.Name, RequestPending, checkExpireTime, checkHandler, userToken, language)
 			} else {
-				// 给角色管理员发送邮件
-				NotifyTaskRoleAdministratorMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
+				// 给角色发送邮件
+				NotifyTaskRoleMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
 			}
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, checkRole, checkHandler, now, now}

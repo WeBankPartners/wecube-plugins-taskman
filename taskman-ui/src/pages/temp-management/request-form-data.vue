@@ -34,7 +34,7 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('request_form_settings') }}
+              {{ $t('request_form_details') }}
               <span class="underline"></span>
             </div>
           </div>
@@ -854,6 +854,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
+        okText: this.$t('tw_request_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)

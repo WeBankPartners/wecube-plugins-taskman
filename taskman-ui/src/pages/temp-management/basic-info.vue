@@ -104,7 +104,7 @@
                     </div>
                   </FormItem>
                   <!-- 请求时效 -->
-                  <FormItem :label="$t('request_time_limit')">
+                  <FormItem :label="$t('tw_validity_period')">
                     <Select v-model="basicInfo.expireDay" filterable style="width: 96%;" @on-change="paramsChanged">
                       <Option v-for="item in expireDayOptions" :value="item" :key="item"
                         >{{ item }}{{ $t('day') }}</Option

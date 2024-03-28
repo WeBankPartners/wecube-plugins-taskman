@@ -7,9 +7,9 @@
       <Col span="16" offset="4">
         <Steps :current="currentStep">
           <Step :title="$t('basic_information_settings')"></Step>
-          <Step :title="$t('request_form_settings')"></Step>
-          <Step :title="$t('approval_form_settings')"></Step>
-          <Step :title="$t('task_form_settings')"></Step>
+          <Step :title="$t('form')"></Step>
+          <Step :title="$t('tw_approval')"></Step>
+          <Step :title="$t('task')"></Step>
         </Steps>
       </Col>
     </Row>

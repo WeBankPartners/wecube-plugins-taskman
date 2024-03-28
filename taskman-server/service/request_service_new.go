@@ -1720,8 +1720,8 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 				// 给对应处理人发送邮件
 				NotifyTaskAssignMail(request.Name, RequestPending, checkExpireTime, checkHandler, userToken, language)
 			} else {
-				// 给角色管理员发送邮件
-				NotifyTaskRoleAdministratorMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
+				// 给角色发送邮件
+				NotifyTaskRoleMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
 			}
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, checkRole, checkHandler, now, now}

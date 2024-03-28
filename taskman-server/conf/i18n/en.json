@@ -132,8 +132,12 @@
     "code": 20100024,
     "message": "Import failed: A template with the same name already exists in the [draft]. Please delete the draft and try again"
   },
-  "template_submit_handler_empty_error": {
+  "template_submit_task_handler_empty_error": {
     "code": 20100025,
     "message": "Submission failed: The handler for task node %s was not filled in completely. Please supplement and try again"
+  },
+  "template_submit_handler_empty_error": {
+    "code": 20100026,
+    "message": "Submission failed: The handler for  approval node %s was not filled in completely. Please supplement and try again"
   }
 }

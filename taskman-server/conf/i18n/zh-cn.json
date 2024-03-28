@@ -132,8 +132,12 @@
     "code": 20100024,
     "message": "导入失败:[草稿]中已有同名模版,请删除草稿重试"
   },
-  "template_submit_handler_empty_error": {
+  "template_submit_task_handler_empty_error": {
     "code": 20100025,
     "message": "提交失败:任务节点%s的处理人未填写完整,请补充后重试"
+  },
+  "template_submit_handler_empty_error": {
+    "code": 20100026,
+    "message": "提交失败:审批节点%s的处理人未填写完整,请补充后重试"
   }
 }

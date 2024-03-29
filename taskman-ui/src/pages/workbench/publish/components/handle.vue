@@ -189,7 +189,7 @@ import EntityTable from '../../components/entity-table.vue'
 import DataBind from '../../components/data-bind.vue'
 import UploadFile from '../../components/upload.vue'
 import { deepClone } from '@/pages/util/index'
-import { commitTaskData, saveTaskData, geTaskTagList, confirmRequest } from '@/api/server'
+import { commitTaskData, geTaskTagList, confirmRequest } from '@/api/server'
 import { requiredCheck, noChooseCheck } from '../../util'
 export default {
   components: {
@@ -341,9 +341,9 @@ export default {
                       this.$set(v.entityData, t.name, t.defaultValue)
                     }
                   }
-                  if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
-                    v.entityData[t.name] = ''
-                  }
+                  // if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
+                  //   v.entityData[t.name] = ''
+                  // }
                 })
               })
             }
@@ -361,11 +361,11 @@ export default {
         this.taskForm.comment = this.$t('tw_send_back')
       }
     },
-    // 任务审批保存
-    async saveTaskData () {
+    // 任务审批提交
+    async commitTaskData () {
       // 提取表格勾选的数据
       const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
-      this.handleData.formData =
+      const formData =
         requestData.map(item => {
           let refKeys = []
           item.title.forEach(t => {
@@ -384,12 +384,12 @@ export default {
           return item
         }) || []
       // 表单必填项校验提示
-      if (!requiredCheck(this.handleData.formData, this.$refs.entityTable)) {
+      if (!requiredCheck(formData, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
       // 表单至少勾选一条数据校验
-      if (!noChooseCheck(this.handleData.formData, this.$refs.entityTable)) {
+      if (!noChooseCheck(formData, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Notice.warning({
           title: this.$t('warning'),
@@ -397,57 +397,7 @@ export default {
         })
       }
       const params = {
-        formData: this.handleData.formData,
-        comment: this.taskForm.comment,
-        choseOption: this.taskForm.choseOption,
-        handleStatus: this.taskForm.handleStatus,
-        taskHandleId: this.taskHandleId
-      }
-      const { statusCode } = await saveTaskData(this.handleData.id, params)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-      }
-    },
-    // 任务审批提交
-    async commitTaskData () {
-      // 提取表格勾选的数据
-      const requestData = deepClone((this.$refs.entityTable && this.$refs.entityTable.requestData) || [])
-      this.handleData.formData =
-        requestData.map(item => {
-          let refKeys = []
-          item.title.forEach(t => {
-            if (t.elementType === 'select' || t.elementType === 'wecmdbEntity') {
-              refKeys.push(t.name)
-            }
-          })
-          if (Array.isArray(item.value)) {
-            // 删除多余的属性
-            item.value.forEach(v => {
-              refKeys.forEach(ref => {
-                delete v.entityData[ref + 'Options']
-              })
-            })
-          }
-          return item
-        }) || []
-      // 必填项校验提示
-      if (!requiredCheck(this.handleData.formData, this.$refs.entityTable)) {
-        const tabName = this.$refs.entityTable.activeTab
-        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
-      }
-      // 表格至少勾选一条数据校验
-      if (!noChooseCheck(this.handleData.formData, this.$refs.entityTable)) {
-        const tabName = this.$refs.entityTable.activeTab
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: `【${tabName}】${this.$t('tw_table_noChoose_tips')}`
-        })
-      }
-      const params = {
-        formData: this.handleData.formData,
+        formData: formData,
         comment: this.taskForm.comment,
         choseOption: this.taskForm.choseOption,
         handleStatus: this.taskForm.handleStatus,

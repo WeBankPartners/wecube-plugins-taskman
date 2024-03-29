@@ -92,8 +92,9 @@ func notifyAction() {
 		calcExpireObj(tmpExpireObj)
 		if (tmpExpireObj.Percent >= 75) && (doingNotifyCount == 0) || ((tmpExpireObj.Percent >= 100) && (timeoutNotifyCount == 0)) {
 			tmpErr := NotifyTaskExpireMail(v, tmpExpireObj, models.CoreToken.GetCoreToken(), "")
-			errMsg := tmpErr.Error()
+			var errMsg string
 			if tmpErr != nil {
+				errMsg = tmpErr.Error()
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			}
 			if len(taskNotifyList) > 0 {

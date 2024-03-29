@@ -108,6 +108,7 @@
                     <parameter datatype="string" mappingType="constant" required="Y">requestTemplate</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">rootDataId</parameter>
                     <parameter datatype="string" mappingType="constant" required="Y">reportRole</parameter>
+                    <parameter datatype="string" mappingType="constant" required="Y">reportUser</parameter>
                     <parameter datatype="string" mappingType="context" required="N">procInstId</parameter>
                 </inputParameters>
                 <outputParameters>

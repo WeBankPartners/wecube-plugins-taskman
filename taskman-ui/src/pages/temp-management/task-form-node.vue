@@ -127,11 +127,11 @@
           ></Button> -->
         </FormItem>
       </Form>
-      <div style="text-align: center;">
+      <!-- <div style="text-align: center;">
         <Button v-if="isCheck !== 'Y'" type="primary" :disabled="isSaveNodeDisable" @click="saveNode(1)">{{
           $t('save')
         }}</Button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

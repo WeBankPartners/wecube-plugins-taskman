@@ -239,7 +239,12 @@
           </Collapse>
         </HeaderTitle>
         <!--当前处理-->
-        <CurrentHandle v-if="isHandle" :detail="detail" :handleData="handleData" :actionName="actionName" />
+        <CurrentHandle
+          v-if="isHandle && Object.keys(handleData).length > 0"
+          :detail="detail"
+          :handleData="handleData"
+          :actionName="actionName"
+        />
       </Form>
     </div>
     <div class="footer-btn">
@@ -427,9 +432,7 @@ export default {
         // 当前处理-任务、审批、请求确认
         if (['Pending', 'InProgress', 'InApproval', 'Confirm'].includes(this.detail.status)) {
           // 当前处理数据
-          this.handleData = this.historyData.find(item => item.id === this.taskId) || {}
-          // const index = this.historyData.findIndex(item => item.editable === true)
-          // this.handleData = this.historyData[index]
+          this.handleData = this.historyData.find(item => item.id === this.taskId && item.editable === true) || {}
           // 处理历史列表
           this.historyData = this.historyData.filter(item => item.editable === false)
         }

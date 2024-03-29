@@ -62,9 +62,15 @@
           <Card>
             <p slot="title" style="height:24px">
               {{ $t('tw_user') }}
-              <Button type="success" @click="startAddUser" size="small" ghost style="margin-left: 20px;">{{
-                $t('tw_add_user')
-              }}</Button>
+              <Button
+                type="success"
+                :disabled="!activeRole"
+                @click="startAddUser"
+                size="small"
+                ghost
+                style="margin-left: 20px;"
+                >{{ $t('tw_add_user') }}</Button
+              >
             </p>
             <div class="tagContainers" :style="{ height: tableHeight + 'px' }">
               <div class="role-item" v-for="item in userList" :key="item.id">

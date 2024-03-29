@@ -159,6 +159,10 @@ func CheckRequest(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
+	if request.Status == string(models.RequestStatusDraft) {
+		middleware.ReturnError(c, exterror.New().RequestHandleError)
+		return
+	}
 	task, err = service.GetTaskService().GetLatestCheckTask(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)

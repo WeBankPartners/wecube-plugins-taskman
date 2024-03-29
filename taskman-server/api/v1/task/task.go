@@ -142,6 +142,7 @@ func ApproveTask(c *gin.Context) {
 	var err error
 	var operator = middleware.GetRequestUser(c)
 	var taskHandle *models.TaskHandleTable
+	var request models.RequestTable
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -166,12 +167,18 @@ func ApproveTask(c *gin.Context) {
 		return
 	}
 	if taskTable.Request == "" {
-		err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
-		if err != nil {
+		if err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param); err != nil {
 			middleware.ReturnServerHandleError(c, err)
-		} else {
-			middleware.ReturnSuccess(c)
+			return
 		}
+		middleware.ReturnSuccess(c)
+		return
+	}
+	if request, err = service.GetSimpleRequest(taskTable.Request); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	}
+	if request.Status == string(models.RequestStatusDraft) {
+		middleware.ReturnError(c, exterror.New().RequestHandleError)
 		return
 	}
 	if param.TaskHandleId == "" {

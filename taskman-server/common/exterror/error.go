@@ -99,6 +99,8 @@ type ErrorTemplate struct {
 	TemplateSubmitApproveHandlerEmptyError CustomError `json:"template_submit_approve_handler_empty_error"`
 	// 审批已完成
 	TemplateApproveCompleteError CustomError `json:"template_approve_complete_error"`
+	// 请求定版，审批失败,请求已被提交人撤回
+	RequestHandleError CustomError `json:"request_handle_error"`
 }
 
 var (

@@ -212,16 +212,6 @@ func GetRequest(c *gin.Context) {
 	middleware.ReturnData(c, result)
 }
 
-func GetRequestDetail(c *gin.Context) {
-	requestId := c.Param("requestId")
-	result, err := service.GetRequestTaskList(requestId)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
-	}
-}
-
 func GetRequestRootForm(c *gin.Context) {
 	requestId := c.Param("requestId")
 	result, err := service.GetRequestRootForm(requestId)

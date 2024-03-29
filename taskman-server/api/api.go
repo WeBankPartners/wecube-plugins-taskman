@@ -116,7 +116,6 @@ func init() {
 		&handlerFuncObj{Url: "/user/request/revoke/:requestId", Method: "POST", HandlerFunc: request.RevokeRequest},
 		&handlerFuncObj{Url: "/user/request/:permission", Method: "POST", HandlerFunc: request.ListRequest},
 
-		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: request.GetRequestDetail},
 		&handlerFuncObj{Url: "/request/start/:requestId", Method: "POST", HandlerFunc: request.StartRequest},
 		&handlerFuncObj{Url: "/request/terminate/:requestId", Method: "POST", HandlerFunc: request.TerminateRequest},
 		&handlerFuncObj{Url: "/request/attach-file/upload/:requestId", Method: "POST", HandlerFunc: request.UploadRequestAttachFile},
@@ -137,8 +136,6 @@ func init() {
 		&handlerFuncObj{Url: "/plugin/task/create", Method: "POST", HandlerFunc: task.CreateTask},
 		&handlerFuncObj{Url: "/plugin/task/create/custom", Method: "POST", HandlerFunc: task.CreateTask},
 
-		&handlerFuncObj{Url: "/task/list", Method: "POST", HandlerFunc: task.ListTask},
-		&handlerFuncObj{Url: "/task/detail/:taskId", Method: "GET", HandlerFunc: task.GetTask},
 		&handlerFuncObj{Url: "/task/save/:taskId", Method: "POST", HandlerFunc: task.SaveTaskForm},
 		&handlerFuncObj{Url: "/task/approve/:taskId", Method: "POST", HandlerFunc: task.ApproveTask},
 		&handlerFuncObj{Url: "/task/status/:operation/:taskId/:latestUpdateTime", Method: "POST", HandlerFunc: task.ChangeTaskStatus},

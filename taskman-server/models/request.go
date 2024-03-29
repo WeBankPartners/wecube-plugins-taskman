@@ -359,8 +359,7 @@ type FilterObj struct {
 }
 
 type RequestDetail struct {
-	Request      RequestForm        `json:"request"` // 请求信息
-	Data         []*TaskQueryObj    `json:"data"`
+	Request      RequestForm        `json:"request"`      // 请求信息
 	ApprovalList []*TaskTemplateDto `json:"approvalList"` //审批列表
 }
 

@@ -58,30 +58,6 @@ func CreateTask(c *gin.Context) {
 	}
 }
 
-func ListTask(c *gin.Context) {
-	var param models.QueryRequestParam
-	if err := c.ShouldBindJSON(&param); err != nil {
-		middleware.ReturnParamValidateError(c, err)
-		return
-	}
-	pageInfo, rowData, err := service.ListTask(&param, middleware.GetRequestRoles(c), middleware.GetRequestUser(c))
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnPageData(c, pageInfo, rowData)
-	}
-}
-
-func GetTask(c *gin.Context) {
-	taskId := c.Param("taskId")
-	result, err := service.GetTask(taskId)
-	if err != nil {
-		middleware.ReturnServerHandleError(c, err)
-	} else {
-		middleware.ReturnData(c, result)
-	}
-}
-
 func SaveTaskForm(c *gin.Context) {
 	taskId := c.Param("taskId")
 	var param models.TaskApproveParam

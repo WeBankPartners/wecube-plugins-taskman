@@ -27,6 +27,24 @@ func (s *RoleService) GetRoleMap(userToken, language string) (roleMap map[string
 	}
 	return
 }
+func (s *RoleService) QueryRoleList(userToken, language string) (list []*models.RoleTable, err error) {
+	var roleDtoMap = make(map[string]*models.SimpleLocalRoleDto)
+	if roleDtoMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
+		return
+	}
+	list = make([]*models.RoleTable, 0)
+	if len(roleDtoMap) > 0 {
+		for _, roleDto := range roleDtoMap {
+			list = append(list, &models.RoleTable{
+				Id:          roleDto.Name,
+				DisplayName: roleDto.DisplayName,
+				CoreId:      roleDto.ID,
+				Email:       roleDto.Email,
+			})
+		}
+	}
+	return
+}
 
 func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, language string) (mailList []string) {
 	var roleMap map[string]*models.SimpleLocalRoleDto

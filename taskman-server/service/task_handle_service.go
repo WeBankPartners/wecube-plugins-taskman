@@ -43,9 +43,11 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 						// 组内系统分配,随机给一个
 						if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeSystem) {
 							if handleTemplate.Role != "" {
-								var roleTableList []*models.RoleTable
 								//将 roleName =>roleId
-								dao.X.SQL("select * from `role` where id =?", handleTemplate.Role).Find(&roleTableList)
+								roleTableList, err := GetRoleService().QueryRoleList(userToken, language)
+								if err != nil {
+									log.Logger.Error("QueryRoleList fail", log.Error(err))
+								}
 								if len(roleTableList) > 0 {
 									userList, err := rpc.QueryRolesUsers(roleTableList[0].CoreId, userToken, language)
 									if err != nil {

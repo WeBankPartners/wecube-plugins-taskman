@@ -442,5 +442,6 @@
   "tw_user_based_config": "User-based config",
   "tw_role_based_config": "Role-based config",
   "tw_allocation": "Allocation",
-  "tw_validity_period": "Validity Period"
+  "tw_validity_period": "Validity Period",
+  "tw_home": "Home"
 }

@@ -365,8 +365,6 @@ export default {
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
       role: this.$route.query.role,
-      // procDefId: '',
-      // procDefKey: '',
       form: {
         name: '',
         description: '',

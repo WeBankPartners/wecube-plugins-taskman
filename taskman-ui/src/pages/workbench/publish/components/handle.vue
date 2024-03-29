@@ -333,9 +333,13 @@ export default {
             if (item.value && item.value.length) {
               item.value.forEach(v => {
                 item.title.forEach(t => {
-                  // 默认清空标志为false, 且初始值为空，赋值默认值
+                  // 默认清空标志为no, 且初始值为空，赋值默认值
                   if (t.defaultClear === 'no' && !v.entityData[t.name]) {
-                    v.entityData[t.name] = t.defaultValue || ''
+                    if (v.entityData.hasOwnProperty(t.name)) {
+                      v.entityData[t.name] = t.defaultValue
+                    } else {
+                      this.$set(v.entityData, t.name, t.defaultValue)
+                    }
                   }
                   if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
                     v.entityData[t.name] = ''
@@ -379,14 +383,12 @@ export default {
           }
           return item
         }) || []
-      // 必填项校验提示
+      // 表单必填项校验提示
       if (!requiredCheck(this.handleData.formData, this.$refs.entityTable)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
-      // 表格至少勾选一条数据校验
+      // 表单至少勾选一条数据校验
       if (!noChooseCheck(this.handleData.formData, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Notice.warning({
@@ -433,10 +435,8 @@ export default {
         }) || []
       // 必填项校验提示
       if (!requiredCheck(this.handleData.formData, this.$refs.entityTable)) {
-        return this.$Notice.warning({
-          title: this.$t('warning'),
-          desc: this.$t('required_tip')
-        })
+        const tabName = this.$refs.entityTable.activeTab
+        return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
       // 表格至少勾选一条数据校验
       if (!noChooseCheck(this.handleData.formData, this.$refs.entityTable)) {

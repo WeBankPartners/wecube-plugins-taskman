@@ -82,7 +82,7 @@
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_creatby_role') }}：</div>
-                <div class="info-item-value">{{ detail.role || '-' }}</div>
+                <div class="info-item-value">{{ detail.roleDisplay || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">

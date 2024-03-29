@@ -12,7 +12,7 @@
                 </div>
                 <Row class="box-wrap">
                   <div v-for="item in filterBindData(node)" :key="item.id + entityIndex">
-                    <Col v-if="item.entityName === entity" :span="12" class="tabs-item">
+                    <Col v-if="`${item.packageName}:${item.entityName}` === entity" :span="12" class="tabs-item">
                       <Checkbox :label="item.id" :disabled="formDisable" class="tabs-item-box">
                         <div class="tabs-item-box-content">
                           <Tooltip
@@ -291,7 +291,7 @@ export default {
               node.bindOptions = find.boundEntityValues || []
               let classification = new Set()
               node.bindOptions.forEach(d => {
-                classification.add(d.entityName)
+                classification.add(`${d.packageName}:${d.entityName}`)
               })
               // node.classification = Array.from(classification)
               this.$set(node, 'classification', Array.from(classification))

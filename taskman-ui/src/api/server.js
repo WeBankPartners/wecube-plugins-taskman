@@ -1,6 +1,7 @@
 import { req as request, baseURL } from './base'
 import { pluginErrorMessage } from './base-plugin'
 let req = request
+// 插件模式
 if (window.request) {
   req = {
     post: (url, ...params) => pluginErrorMessage(window.request.post(baseURL + url, ...params)),

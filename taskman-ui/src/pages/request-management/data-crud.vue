@@ -74,7 +74,7 @@
 <script>
 import DataMgmt from './data-mgmt'
 import axios from 'axios'
-import { getCookie } from '@/pages/util/cookie'
+import { getAccessToken } from '@/pages/util/token'
 import {
   getRootEntity,
   getEntityData,
@@ -103,7 +103,7 @@ export default {
   mounted () {
     this.requestId = this.$parent.requestId
     this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${this.requestId}`
-    const accessToken = getCookie('accessToken')
+    const accessToken = getAccessToken()
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }

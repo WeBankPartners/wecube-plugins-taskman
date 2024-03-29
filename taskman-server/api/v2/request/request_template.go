@@ -39,6 +39,6 @@ func QueryPlatformEntityData(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }

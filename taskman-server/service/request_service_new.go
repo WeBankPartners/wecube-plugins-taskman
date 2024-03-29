@@ -609,7 +609,8 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 						}
 						taskSort := GetTaskService().GenerateTaskOrderByRequestId(platformDataObj.Id)
 						confirmActions, _ = GetRequestService().CreateRequestConfirm(models.RequestTable{Id: platformDataObj.Id,
-							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy, CreatedTime: platformDataObj.CreatedTime}, taskSort, req.UserToken, language)
+							RequestTemplate: platformDataObj.TemplateId, Type: platformDataObj.Type, Role: platformDataObj.Role, CreatedBy: platformDataObj.CreatedBy,
+							CreatedTime: platformDataObj.CreatedTime, Name: platformDataObj.Name}, taskSort, req.UserToken, language)
 						if len(confirmActions) > 0 {
 							actions = append(actions, confirmActions...)
 						}
@@ -1612,7 +1613,7 @@ func RequestConfirm(param models.RequestConfirmParam, user, userToken, language 
 		}
 	}
 	// 更新处理节点
-	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,updated_time = ?,handle_status = ? where task = ?", Param: []interface{}{models.TaskHandleResultTypeApprove, now, models.TaskHandleResultTypeComplete, param.TaskId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result = ?,updated_time = ?,handle_status = ?,result_desc = ? where task = ?", Param: []interface{}{models.TaskHandleResultTypeApprove, now, models.TaskHandleResultTypeComplete, param.Notes, param.TaskId}})
 	// 更新请求确认任务设置为已完成
 	actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,description = ? ,updated_by = ?,updated_time = ? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeComplete, param.Notes, user, now, param.TaskId}})
 	// 更新请求表状态,设置为完成

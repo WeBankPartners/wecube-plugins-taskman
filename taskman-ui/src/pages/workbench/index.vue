@@ -1,7 +1,7 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <div class="create-time" :style="{ top: `${-(rectTop - 53)}px` }">
+    <div class="create-time" :style="{ marginTop: `${-(rectTop - 53)}px` }">
       <span>{{ $t('tw_createdTime') }}</span>
       <DatePicker
         :value="queryTime"
@@ -594,7 +594,6 @@ export default {
     justify-content: flex-end;
     width: 360px;
     position: absolute;
-    top: -38px;
     right: 0px;
     span {
       margin-right: 10px;

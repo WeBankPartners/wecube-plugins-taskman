@@ -531,4 +531,17 @@ alter table task_handle add index task_handle_updated_time(updated_time);
 alter table task_handle add index task_handle_result(handle_result);
 alter table task_handle add index task_handle_handler(handler);
 
+CREATE TABLE IF NOT EXISTS `task_notify` (
+    `id` varchar(64)  NOT NULL,
+    `task` varchar(64)  DEFAULT NULL,
+    `doing_notify_count` TINYINT  DEFAULT 0,
+    `timeout_notify_count` TINYINT  DEFAULT 0,
+    `err_msg` text  DEFAULT NULL,
+    `updated_time` datetime  NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `task_notify_task_Id` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务通知表';
+alter table task_notify add index task_notify_updated_time(updated_time);
+alter table request_template_role DROP FOREIGN KEY fore_request_template_role;
+alter table request_template_group DROP FOREIGN KEY fore_template_group_role;
 #@v1.0.5-end@;

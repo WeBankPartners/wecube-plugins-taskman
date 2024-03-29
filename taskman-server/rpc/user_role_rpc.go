@@ -30,7 +30,7 @@ func QueryAllRoles(requiredAll, userToken, language string) (roleMap map[string]
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -52,6 +52,31 @@ func QueryAllRoles(requiredAll, userToken, language string) (roleMap map[string]
 	return
 }
 
+// QueryAllRolesSimple 查询所有角色
+func QueryAllRolesSimple(requiredAll, userToken, language string) (roleMap map[string]*models.SimpleLocalRoleDto, err error) {
+	var response models.QueryRolesResponse
+	roleMap = make(map[string]*models.SimpleLocalRoleDto)
+	byteArr, err := HttpGet(fmt.Sprintf(models.Config.Wecube.BaseUrl+pathRetrieveAllRoles, requiredAll), userToken, language)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(byteArr, &response)
+	if err != nil {
+		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return
+	}
+	if response.Status != "OK" {
+		err = fmt.Errorf(response.Message)
+		return
+	}
+	if len(response.Data) > 0 {
+		for _, data := range response.Data {
+			roleMap[data.Name] = data
+		}
+	}
+	return
+}
+
 // QueryAllUser 查询所有用户
 func QueryAllUser(userToken, language string) (userMap map[string]*models.UserDto, err error) {
 	var response models.QueryUserResponse
@@ -62,7 +87,7 @@ func QueryAllUser(userToken, language string) (userMap map[string]*models.UserDt
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -85,7 +110,7 @@ func QueryRolesUsers(roleId, userToken, language string) (list []*models.UserDto
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -104,7 +129,7 @@ func QueryUserRoles(user, userToken, language string) (list []*models.SimpleLoca
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -123,7 +148,7 @@ func GetUserInfo(userName, userToken, language string) (dto *models.UserDto, err
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {

@@ -60,7 +60,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 	if len(resultList) == 0 {
 		return
 	}
-	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
 	if err != nil {
 		return
 	}

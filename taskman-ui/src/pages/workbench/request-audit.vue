@@ -44,7 +44,7 @@ import axios from 'axios'
 import BaseSearch from '@/pages/components/base-search.vue'
 import { getPublishList } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
-import { getCookie } from '@/pages/util/cookie'
+import { getAccessToken } from '@/pages/util/token'
 import column from './column'
 import search from './search'
 export default {
@@ -90,7 +90,7 @@ export default {
     }
   },
   mounted () {
-    const accessToken = getCookie('accessToken')
+    const accessToken = getAccessToken()
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }

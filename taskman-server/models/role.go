@@ -7,7 +7,3 @@ type RoleTable struct {
 	CoreId      string `json:"coreId" xorm:"core_id"`
 	Email       string `json:"email"`
 }
-
-func (RoleTable) TableName() string {
-	return "role"
-}

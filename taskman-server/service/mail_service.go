@@ -9,7 +9,7 @@ import (
 )
 
 // NotifyTaskExpireMail 定版/确认/任务/审批分配给“我”,快超时了或者超时发送邮件
-func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, userToken, language string) (err error) {
+func NotifyTaskExpireMail(task *models.TaskTable, expireObj *models.ExpireObj, userToken, language string) (err error) {
 	var taskHandleList []*models.TaskHandleTable
 	var request models.RequestTable
 	var requestName string
@@ -42,10 +42,10 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 				log.Logger.Warn("NotifyTaskExpireMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", task.Name), log.String("receiver", taskHandle.Handler))
 				return
 			}
+			mailList = append(mailList, userInfo.Email)
 		} else if taskHandle.Role != "" {
 			roleTableList = append(roleTableList, &models.RoleTable{Id: taskHandle.Role})
 		}
-		mailList = append(mailList, userInfo.Email)
 	}
 	if len(roleTableList) > 0 {
 		subMailList := GetRoleService().GetRoleMail(roleTableList, userToken, language)
@@ -56,10 +56,12 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj models.ExpireObj, us
 
 	var mailSubject = "[wecube] [Task transfer reminder] 【任务超时提醒】"
 	var mailContent string
-	if (expireObj.Percent >= 75) && (task.NotifyCount == 0) {
+	if (expireObj.Percent >= 75) && (expireObj.DoingNotifyCount == 0) {
+		expireObj.DoingNotifyCount++
 		mailContent = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] is about to expire and is valid until %s. Please click the link to process it", requestName, task.Name, task.ExpireTime)
 		mailContent = mailContent + fmt.Sprintf("\n\n\n分配给您的任务[请求:%s-任务:%s]快过期了,有效期到%s,请点击链接处理", requestName, task.Name, task.ExpireTime)
 	} else {
+		expireObj.TimeoutNotifyCount++
 		mailContent = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] has expired. Please click the link to process it", requestName, task.Name)
 		mailContent = mailContent + fmt.Sprintf("\n\n\n分配给您的任务[请求:%s-任务:%s]已过期,请点击链接尽快处理", requestName, task.Name)
 	}
@@ -81,7 +83,7 @@ func NotifyTaskRoleMail(requestName, taskName, expireDate, role, userToken, lang
 	var subject, content string
 	var displayNameMap map[string]string
 	taskName = getInternationalizationTaskName(taskName, language)
-	if displayNameMap, err = GetRoleService().GetRoleDisplayName(); err != nil {
+	if displayNameMap, err = GetRoleService().GetRoleDisplayName(userToken, language); err != nil {
 		return
 	}
 	subject = "[wecube] [New Task Reminder]  【新增任务提醒】"
@@ -142,7 +144,7 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, targetHan
 	}
 	taskName = getInternationalizationTaskName(taskName, language)
 	subject = "[wecube] [Task transfer reminder]  【任务被转单提醒】"
-	content = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, originHandler)
+	content = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, targetHandler)
 	content = content + fmt.Sprintf("\n\n\n分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, targetHandler)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
 	log.Logger.Debug("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))

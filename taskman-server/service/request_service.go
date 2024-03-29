@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io/ioutil"
 	"net/http"
@@ -1556,117 +1557,9 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateDto, entityData m
 	return
 }
 
-func GetRequestTaskList(requestId string) (result models.TaskQueryResult, err error) {
-	var taskTable []*models.TaskTable
-	err = dao.X.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
-	if err != nil {
-		return
-	}
-	if len(taskTable) > 0 {
-		result, err = GetTask(taskTable[0].Id)
-		return
-	}
-	// get request
-	var requests []*models.RequestTable
-	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
-	if len(requests) == 0 {
-		return result, fmt.Errorf("Can not find request with id:%s ", requestId)
-	}
-	var requestCache models.RequestPreDataDto
-	err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
-	if err != nil {
-		return result, fmt.Errorf("Try to json unmarshal request cache fail,%s ", err.Error())
-	}
-	var requestTemplateTable []*models.RequestTemplateTable
-	dao.X.SQL("select * from request_template where id in (select request_template from request where id=?)", requestId).Find(&requestTemplateTable)
-	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false}
-	requestQuery.FormData = requestCache.Data
-	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
-	requestQuery.ExpireTime = requests[0].ExpireTime
-	requestQuery.ExpectTime = requests[0].ExpectTime
-	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
-	if len(requestTemplateTable) > 0 {
-		requestQuery.RequestTemplate = requestTemplateTable[0].Name
-	}
-	result.Data = []*models.TaskQueryObj{&requestQuery}
-	result.TimeStep, err = getRequestTimeStep(requests[0].RequestTemplate)
-	if len(result.TimeStep) > 0 {
-		result.TimeStep[0].Active = true
-	}
-	return
-}
-
-func GetRequestTaskListV2(requestId string) (taskQueryList []*models.TaskQueryObj, err error) {
-	var taskTable []*models.TaskTable
-	err = dao.X.SQL("select id from task where request=? order by created_time desc", requestId).Find(&taskTable)
-	if err != nil {
-		return
-	}
-	if len(taskTable) > 0 {
-		taskQueryList, err = GetTaskV2(taskTable[0].Id)
-		return
-	}
-	// get request
-	var requests []*models.RequestTable
-	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
-	if len(requests) == 0 {
-		err = fmt.Errorf("Can not find request with id:%s ", requestId)
-		return
-	}
-	requestQuery := models.TaskQueryObj{RequestId: requestId, RequestName: requests[0].Name, Reporter: requests[0].Reporter, ReportTime: requests[0].ReportTime, Comment: requests[0].Result, Editable: false, RollbackDesc: requests[0].RollbackDesc}
-	if requests[0].Cache != "" {
-		var requestCache models.RequestPreDataDto
-		err = json.Unmarshal([]byte(requests[0].Cache), &requestCache)
-		if err != nil {
-			return
-		}
-		requestQuery.FormData = requestCache.Data
-	}
-	requestQuery.AttachFiles = GetRequestAttachFileList(requestId)
-	requestQuery.ExpireTime = requests[0].ExpireTime
-	requestQuery.ExpectTime = requests[0].ExpectTime
-	requestQuery.ProcInstanceId = requests[0].ProcInstanceId
-	requestQuery.CreatedTime = requests[0].CreatedTime
-	requestQuery.HandleTime = requests[0].ReportTime
-	requestQuery.HandleRoleName = requests[0].Role
-	requestQuery.Handler = requests[0].CreatedBy
-	taskQueryList = append(taskQueryList, []*models.TaskQueryObj{&requestQuery, getPendingRequestData(requests[0])}...)
-	return
-}
-
-func getPendingRequestData(request *models.RequestTable) *models.TaskQueryObj {
-	var role string
-	// 请求在定版状态,从模板角色表中读取
-	rtRoleMap := getRequestTemplateMGMTRole()
-	roles := rtRoleMap[request.RequestTemplate]
-	if len(roles) > 0 {
-		role = roles[0]
-	}
-	taskQueryObj := &models.TaskQueryObj{
-		RequestId:      request.Id,
-		RequestName:    request.Name,
-		Editable:       false,
-		Status:         "",
-		ExpireTime:     request.ExpireTime,
-		ExpectTime:     request.ExpectTime,
-		Handler:        request.Handler,
-		HandleTime:     request.UpdatedTime,
-		FormData:       nil,
-		IsHistory:      false,
-		HandleRoleName: role,
-		CreatedTime:    request.ReportTime,
-		RollbackDesc:   request.RollbackDesc,
-	}
-	if request.Status != "Draft" && request.Status != "Pending" {
-		taskQueryObj.HandleTime = request.UpdatedTime
-	}
-	return taskQueryObj
-}
-
 func GetRequestDetailV2(requestId, userToken, language string) (result models.RequestDetail, err error) {
 	// get request
 	var requests []*models.RequestTable
-	var taskQueryList []*models.TaskQueryObj
 	var actions, confirmActions []*dao.ExecAction
 	var approvalList []*models.TaskTemplateDto
 	dao.X.SQL("select * from request where id=?", requestId).Find(&requests)
@@ -1700,7 +1593,6 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 		}
 	}
 	result.Request = getRequestForm(requests[0], userToken, language)
-	taskQueryList, err = GetRequestTaskListV2(requestId)
 	if err != nil {
 		return
 	}
@@ -1708,7 +1600,6 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 		json.Unmarshal([]byte(requests[0].TaskApprovalCache), &approvalList)
 		result.ApprovalList = approvalList
 	}
-	result.Data = taskQueryList
 	return
 }
 
@@ -1976,40 +1867,6 @@ func listContains(inputList []string, element string) bool {
 	return result
 }
 
-func notifyRoleMail(requestId, userToken, language string) error {
-	if !models.MailEnable {
-		return nil
-	}
-	log.Logger.Info("Start notify request mail", log.String("requestId", requestId))
-	var roleTable []*models.RoleTable
-	err := dao.X.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
-	if err != nil {
-		return fmt.Errorf("Notify role mail query roles fail,%s ", err.Error())
-	}
-	if len(roleTable) == 0 {
-		return nil
-	}
-	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
-	if len(mailList) == 0 {
-		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
-		return nil
-	}
-	var requestTable []*models.RequestTable
-	dao.X.SQL("select t1.id,t1.name,t2.name as request_template,t1.reporter,t1.report_time,t1.emergency from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id=?", requestId).Find(&requestTable)
-	if len(requestTable) == 0 {
-		return nil
-	}
-	var subject, content string
-	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
-	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
-	err = models.MailSender.Send(subject, content, mailList)
-	if err != nil {
-		log.Logger.Error("Notify role mail fail", log.Error(err))
-		return fmt.Errorf("Notify role mail fail,%s ", err.Error())
-	}
-	return nil
-}
-
 func CopyRequest(requestId, createdBy string) (result models.RequestTable, err error) {
 	parentRequest := &models.RequestTable{}
 	var requestTable []*models.RequestTable
@@ -2158,7 +2015,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	}
 
 	roleDisplayMap := make(map[string]string)
-	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		err = fmt.Errorf("get role display name failed: %s", err.Error())
 		return

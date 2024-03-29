@@ -53,6 +53,15 @@ func (TaskTable) TableName() string {
 	return "task"
 }
 
+type TaskNotifyTable struct {
+	Id                 string `json:"id" xorm:"'id' pk" primary-key:"id"`
+	Task               string `json:"task" xorm:"task"`
+	DoingNotifyCount   int    `json:"doingNotifyCount" xorm:"'doing_notify_count'"`
+	TimeoutNotifyCount int    `json:"timeoutNotifyCount" xorm:"'timeout_notify_count'"`
+	ErrMsg             string `json:"errMsg" xorm:"'err_msg'"`
+	UpdatedTime        string `json:"updatedTime" xorm:"updated_time"`
+}
+
 type TaskDto struct {
 	Id           string           `json:"id"`
 	Name         string           `json:"name"`

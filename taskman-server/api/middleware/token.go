@@ -79,14 +79,14 @@ type pluginInterfaceResultOutput struct {
 func authCoreRequest(c *gin.Context) error {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
-		return fmt.Errorf("Can not find Request Header Authorization ")
+		return fmt.Errorf("can not find Request Header Authorization ")
 	}
 	authToken, err := token.DecodeJwtToken(authHeader, models.Config.Wecube.JwtSigningKey)
 	if err != nil {
 		return err
 	}
 	if authToken.User == "" {
-		return fmt.Errorf("Token content is illegal,main message is empty ")
+		return fmt.Errorf("token content is illegal,main message is empty ")
 	}
 	c.Set("user", strings.ReplaceAll(authToken.User, " ", ""))
 	var roles []string

@@ -1083,19 +1083,6 @@ func (s *RequestTemplateService) getFormCopyActions(oldFormTemplateId, newFormTe
 	return
 }
 
-func (s *RequestTemplateService) getTaskTemplateRoleActions(oldTaskTemplateId, newTaskTemplateId string) (actions []*dao.ExecAction, err error) {
-	var taskTemplateRoles []*models.TaskTemplateRoleTable
-	err = dao.X.SQL("select * from task_template_role where task_template=?", oldTaskTemplateId).Find(&taskTemplateRoles)
-	if err != nil {
-		return
-	}
-	for _, v := range taskTemplateRoles {
-		tmpId := newTaskTemplateId + models.SysTableIdConnector + v.Role + models.SysTableIdConnector + v.RoleType
-		actions = append(actions, &dao.ExecAction{Sql: "insert into task_template_role(id,task_template,`role`,role_type) value (?,?,?,?)", Param: []interface{}{tmpId, newTaskTemplateId, v.Role, v.RoleType}})
-	}
-	return
-}
-
 func (s *RequestTemplateService) validateConfirm(requestTemplateId string) error {
 	var taskTemplateTable []*models.TaskTemplateTable
 	dao.X.SQL("select id from task_template where request_template=? and form_template IS NOT NULL", requestTemplateId).Find(&taskTemplateTable)
@@ -1117,7 +1104,7 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
 	var userRoleMap = convertArray2Map(userRoles)
 	var roleDisplayNameMap map[string]string
-	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
 	if err != nil {
 		return
 	}
@@ -1548,7 +1535,9 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	var roleTable []*models.RoleTable
-	dao.X.SQL("select id from `role`").Find(&roleTable)
+	if roleTable, err = GetRoleService().QueryRoleList(userToken, language); err != nil {
+		return
+	}
 	roleMap := make(map[string]int)
 	for _, v := range roleTable {
 		roleMap[v.Id] = 1

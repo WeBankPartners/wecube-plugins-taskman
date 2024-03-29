@@ -39,7 +39,7 @@ export default {
     setBreadcrumbStyle () {
       // 给侧边菜单栏适配样式
       return {
-        margin: this.expandSideMenu ? '10px 0 10px 140px' : '10px 0'
+        margin: this.expandSideMenu ? '0 0 10px 140px' : '0 0 10px 0'
       }
     }
   },

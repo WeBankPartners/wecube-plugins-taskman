@@ -1,5 +1,5 @@
 <template>
-  <div class="taskman-workbench-data-card">
+  <div ref="dataCardWrap" class="taskman-workbench-data-card">
     <Card v-for="(i, index) in cardList" :key="index" border :style="activeStyles(i)">
       <div class="content" @click="handleTabChange(i)">
         <div class="w-header">

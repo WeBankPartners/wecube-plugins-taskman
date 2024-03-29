@@ -1,7 +1,7 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <div class="create-time">
+    <div class="create-time" :style="{ top: `${-(rectTop - 53)}px` }">
       <span>{{ $t('tw_createdTime') }}</span>
       <DatePicker
         :value="queryTime"
@@ -107,6 +107,7 @@ export default {
           .format('YYYY-MM-DD'),
         dayjs().format('YYYY-MM-DD')
       ], // 全局时间过滤器
+      rectTop: 92,
       tabName: 'myPending', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
@@ -200,6 +201,8 @@ export default {
   mounted () {
     this.initTab = this.$route.query.tabName || 'myPending'
     this.initAction = this.$route.query.actionName || '1'
+    const rect = this.$refs.dataCard.$refs.dataCardWrap.getBoundingClientRect()
+    this.rectTop = rect.top
   },
   methods: {
     handleQueryDateRange (val) {

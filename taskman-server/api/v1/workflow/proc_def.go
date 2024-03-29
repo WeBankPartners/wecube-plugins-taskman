@@ -60,7 +60,7 @@ func ProcessDataPreview(c *gin.Context) {
 	requestTemplateId := c.Query("requestTemplateId")
 	entityDataId := c.Query("entityDataId")
 	if requestTemplateId == "" || entityDataId == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestTemplateId or entityDataId can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param requestTemplateId or entityDataId can not empty "))
 		return
 	}
 	result, err := service.ProcessDataPreview(requestTemplateId, entityDataId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
@@ -74,7 +74,7 @@ func ProcessDataPreview(c *gin.Context) {
 func GetEntityData(c *gin.Context) {
 	id := c.Query("requestId")
 	if id == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestId can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param requestId can not empty "))
 		return
 	}
 	result, err := service.GetEntityData(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))

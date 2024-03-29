@@ -3,11 +3,11 @@ package exterror
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
+
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 )
 
 type CustomError struct {
@@ -109,7 +109,7 @@ func InitErrorTemplateList(dirPath string, detailReturn bool) (err error) {
 	if !strings.HasSuffix(dirPath, "/") {
 		dirPath = dirPath + "/"
 	}
-	fs, readDirErr := ioutil.ReadDir(dirPath)
+	fs, readDirErr := os.ReadDir(dirPath)
 	if readDirErr != nil {
 		return readDirErr
 	}
@@ -120,7 +120,7 @@ func InitErrorTemplateList(dirPath string, detailReturn bool) (err error) {
 		if !strings.HasSuffix(v.Name(), ".json") {
 			continue
 		}
-		tmpFileBytes, _ := ioutil.ReadFile(dirPath + v.Name())
+		tmpFileBytes, _ := os.ReadFile(dirPath + v.Name())
 		tmpErrorTemplate := ErrorTemplate{}
 		tmpErr := json.Unmarshal(tmpFileBytes, &tmpErrorTemplate)
 		if tmpErr != nil {
@@ -212,8 +212,5 @@ func buildErrMessage(templateMessage string, params []interface{}) (message stri
 }
 
 func IsBusinessErrorCode(errorCode int) bool {
-	if strings.HasPrefix(fmt.Sprintf("%d", errorCode), "2") {
-		return true
-	}
-	return false
+	return strings.HasPrefix(fmt.Sprintf("%d", errorCode), "2")
 }

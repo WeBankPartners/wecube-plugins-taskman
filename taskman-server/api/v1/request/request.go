@@ -2,6 +2,10 @@ package request
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"time"
+
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
@@ -9,9 +13,6 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"net/http"
-	"time"
 )
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -229,7 +230,7 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	if param.Name == "" || param.RequestTemplate == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param name and requestTemplate can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param name and requestTemplate can not empty "))
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
@@ -250,7 +251,7 @@ func UpdateRequest(c *gin.Context) {
 	}
 	param.Id = c.Param("requestId")
 	if param.Id == "" || param.Name == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param id and name can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param id and name can not empty "))
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
@@ -411,7 +412,7 @@ func UploadRequestAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
 		return
 	}
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	defer f.Close()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})

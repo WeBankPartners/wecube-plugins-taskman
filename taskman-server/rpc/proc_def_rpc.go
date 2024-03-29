@@ -55,7 +55,7 @@ func QueryProcessDefinitionList(userToken, language, manageRole string, param mo
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -90,7 +90,7 @@ func GetProcessDefineTaskNodes(procDefId, userToken, language string) (list []*m
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -113,7 +113,7 @@ func QueryAllProcessDefinitionList(userToken, language string) (processList []*m
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -136,7 +136,7 @@ func QueryAllModels(userToken, language string) (modelList []*models.DataModel, 
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -159,7 +159,7 @@ func QueryEntityAttributes(param models.QueryExpressionDataParam, userToken, lan
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -180,7 +180,7 @@ func GetProcessInstance(userToken, language, instanceId string) (processInstance
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -199,7 +199,7 @@ func GetProcessDefine(procDefId, userToken, language string) (result *models.Def
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -218,7 +218,7 @@ func GetProcDefRootEntities(procDefId, userToken, language string) (list []*mode
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -237,7 +237,7 @@ func GetProcDefDataPreview(procDefId, entityDataId, userToken, language string) 
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -257,7 +257,7 @@ func GetProcDefTaskNodeContext(procInstanceId, taskNodeId, userToken, language s
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -278,7 +278,7 @@ func TerminationsProcDefInstance(param models.TerminateInstanceParam, userToken,
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -299,7 +299,7 @@ func StartProcDefInstances(param models.RequestProcessData, userToken, language 
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -319,7 +319,7 @@ func GetEntityModel(packageName, entityName, userToken, language string) (data i
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -339,7 +339,7 @@ func SyncWorkflowUseRole(param models.SyncUseRoleParam, userToken, language stri
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -363,7 +363,7 @@ func QueryEntityExpressionData(expression, rootDataId, userToken, language strin
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {
@@ -383,7 +383,7 @@ func GetProcessNodeAllowOptions(procDefId, procNodeId, userToken, language strin
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {

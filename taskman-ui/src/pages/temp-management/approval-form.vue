@@ -827,40 +827,24 @@ export default {
       // this.loadPage()
     },
     async removeNode (node) {
-      const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
-      if (nodeStatus === 'canSave') {
-        this.$refs.approvalFormNodeRef.saveNode(3)
-        this.saveGroup(3, node)
-        this.$Modal.confirm({
-          title: this.$t('confirm_delete'),
-          'z-index': 1000000,
-          loading: true,
-          okText: this.$t('tw_request_confirm'),
-          onOk: async () => {
-            this.$Modal.remove()
-            const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
-            if (statusCode === 'OK') {
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        'z-index': 1000000,
+        loading: true,
+        okText: this.$t('tw_request_confirm'),
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
+          if (statusCode === 'OK') {
+            if (this.activeEditingNode.id === node.id) {
               this.getApprovalNode()
+            } else {
+              this.getApprovalNode(this.activeEditingNode.id)
             }
-          },
-          onCancel: () => {}
-        })
-      }
-
-      // this.$Modal.confirm({
-      //   title: this.$t('confirm_delete'),
-      //   'z-index': 1000000,
-      //   loading: true,
-      //   okText: this.$t('tw_request_confirm'),
-      //   onOk: async () => {
-      //     this.$Modal.remove()
-      //     const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
-      //     if (statusCode === 'OK') {
-      //       this.getApprovalNode(this.activeEditingNode)
-      //     }
-      //   },
-      //   onCancel: () => {}
-      // })
+          }
+        },
+        onCancel: () => {}
+      })
     },
     // 在弹窗关闭、保存、还原状态下回显group内容
     reloadGroup () {

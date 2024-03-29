@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
+
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
-	"io/ioutil"
-	"net/http"
-	"strings"
 )
 
 type RefSelectService struct {
@@ -117,7 +118,7 @@ func getCMDBRefFilter(attrId, userToken string) (filterString string, err error)
 		return
 	}
 	var responseData models.CiTypeAttrQueryResponse
-	respBodyBytes, _ := ioutil.ReadAll(resp.Body)
+	respBodyBytes, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	json.Unmarshal(respBodyBytes, &responseData)
 	for _, v := range responseData.Data {
@@ -175,7 +176,7 @@ func getCMDBRefData(input *models.RefSelectParam) (result []*models.CiReferenceD
 		return
 	}
 	var response models.CiReferenceDataQueryResponse
-	responseBody, _ := ioutil.ReadAll(resp.Body)
+	responseBody, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	json.Unmarshal(responseBody, &response)
 	result = response.Data
@@ -472,7 +473,7 @@ func getCiData(param models.EntityQueryParam, ciType, userToken string, newData 
 		return
 	}
 	var response models.EntityResponse
-	responseBody, _ := ioutil.ReadAll(resp.Body)
+	responseBody, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	log.Logger.Info("getCiDataRemote", log.String("ciType", ciType), log.String("response", string(responseBody)))
 	json.Unmarshal(responseBody, &response)
@@ -595,7 +596,7 @@ func getCMDBAttributeOptions(entity, attribute, userToken string) (result []*mod
 		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
-	responseBytes, _ := ioutil.ReadAll(resp.Body)
+	responseBytes, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("request cmdb attribute fail,%s ", string(responseBytes))
@@ -645,7 +646,7 @@ func getRemoteEntityOptions(url, userToken string, inputMap map[string]string) (
 		err = fmt.Errorf("try to do request fail,%s ", respErr.Error())
 		return
 	}
-	b, _ := ioutil.ReadAll(resp.Body)
+	b, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return result, fmt.Errorf("do request fail,response statusCode:%d resp:%s ", resp.StatusCode, string(b))
@@ -685,7 +686,7 @@ func getCMDBCiAttrDefs(ciTypeEntity, userToken string) (attributes []*models.Ent
 		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
-	responseBytes, _ := ioutil.ReadAll(resp.Body)
+	responseBytes, _ := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("request cmdb attribute fail,%s ", string(responseBytes))

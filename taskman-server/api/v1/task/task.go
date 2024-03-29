@@ -3,13 +3,14 @@ package task
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/service"
 	"github.com/gin-gonic/gin"
-	"io/ioutil"
-	"net/http"
 )
 
 func GetTaskFormStruct(c *gin.Context) {
@@ -136,10 +137,10 @@ func validateFormRequire(param *models.RequestPreDataTableObj) error {
 		for dataKey, dataValue := range v.EntityData {
 			if _, b := requireMap[dataKey]; b {
 				if dataValue == nil {
-					err = fmt.Errorf("Form:%s:%s data:%s can not empty ", v.PackageName, v.EntityName, dataKey)
+					err = fmt.Errorf("form:%s:%s data:%s can not empty ", v.PackageName, v.EntityName, dataKey)
 				} else {
 					if fmt.Sprintf("%s", dataValue) == "" {
-						err = fmt.Errorf("Form:%s:%s data:%s can not empty ", v.PackageName, v.EntityName, dataKey)
+						err = fmt.Errorf("form:%s:%s data:%s can not empty ", v.PackageName, v.EntityName, dataKey)
 					}
 				}
 			}
@@ -278,7 +279,7 @@ func UploadTaskAttachFile(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "File open error:" + err.Error(), Data: nil})
 		return
 	}
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	defer f.Close()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})

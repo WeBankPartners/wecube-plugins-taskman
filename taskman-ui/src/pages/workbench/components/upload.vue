@@ -34,7 +34,7 @@
 <script>
 import axios from 'axios'
 import { deleteAttach } from '@/api/server'
-import { getCookie } from '@/pages/util/cookie'
+import { getAccessToken } from '@/pages/util/token'
 export default {
   props: {
     // request请求，task任务
@@ -75,14 +75,14 @@ export default {
       handler (val) {
         if (val && this.type === 'request') {
           this.uploadUrl = `/taskman/api/v1/request/attach-file/upload/${val}`
-          const accessToken = getCookie('accessToken')
+          const accessToken = getAccessToken()
           this.headers = {
             Authorization: 'Bearer ' + accessToken
           }
         }
         if (val && this.taskHandleId && this.type === 'task') {
           this.uploadUrl = `/taskman/api/v1/task/attach-file/${val}/upload/${this.taskHandleId}`
-          const accessToken = getCookie('accessToken')
+          const accessToken = getAccessToken()
           this.headers = {
             Authorization: 'Bearer ' + accessToken
           }
@@ -94,7 +94,7 @@ export default {
       handler (val) {
         if (val && this.id && this.type === 'task') {
           this.uploadUrl = `/taskman/api/v1/task/attach-file/${this.id}/upload/${val}`
-          const accessToken = getCookie('accessToken')
+          const accessToken = getAccessToken()
           this.headers = {
             Authorization: 'Bearer ' + accessToken
           }

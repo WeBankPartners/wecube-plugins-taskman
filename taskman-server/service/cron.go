@@ -1,11 +1,14 @@
 package service
 
 import (
+	"github.com/WeBankPartners/go-common-lib/guid"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"time"
 )
+
+const periods = 10
 
 func StartCornJob() {
 	go startNotifyCronJob()
@@ -13,7 +16,7 @@ func StartCornJob() {
 }
 
 func startNotifyCronJob() {
-	t := time.NewTicker(10 * time.Minute).C
+	t := time.NewTicker(periods * time.Minute).C
 	for {
 		<-t
 		go notifyAction()
@@ -25,7 +28,9 @@ func notifyAction() {
 	log.Logger.Info("Start notify action")
 	var taskTable []*models.TaskTable
 	var actions []*dao.ExecAction
+	var taskNotifyList []*models.TaskNotifyTable
 	var yesterday time.Time
+	var doingNotifyCount, timeoutNotifyCount int
 	now := time.Now().Format(models.DateTimeFormat)
 	yesterday = time.Now().AddDate(0, 0, -1)
 	err := dao.X.SQL("select id,name,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", yesterday.Format(models.DateTimeFormat), now).Find(&taskTable)
@@ -37,9 +42,14 @@ func notifyAction() {
 		return
 	}
 	for _, v := range taskTable {
+		taskNotifyList = []*models.TaskNotifyTable{}
+		beforeMinutes := time.Now().Add(-periods * time.Minute).Format(models.DateTimeFormat)
+		dao.X.SQL("select doing_notify_count,timeout_notify_count,updated_time from notity_task where task = ? and updated_time > ?", v.Id, beforeMinutes).Find(&taskNotifyList)
+		if len(taskNotifyList) > 0 {
+			continue
+		}
 		// 自动确认
 		if v.Type == string(models.TaskTypeConfirm) && v.ExpireTime != "" {
-
 			expireT, _ := time.Parse(models.DateTimeFormat, v.ExpireTime)
 			nowT, _ := time.Parse(models.DateTimeFormat, now)
 			if nowT.Sub(expireT) > 0 {
@@ -61,17 +71,34 @@ func notifyAction() {
 				}
 			}
 		}
-		if v.NotifyCount >= 2 {
+		doingNotifyCount = 0
+		timeoutNotifyCount = 0
+		dao.X.SQL("select id,doing_notify_count,timeout_notify_count,updated_time from notity_task where task = ? order by updated_time desc limit 0,1", v.Id).Find(&taskNotifyList)
+		if len(taskNotifyList) > 0 {
+			doingNotifyCount = taskNotifyList[0].DoingNotifyCount
+			timeoutNotifyCount = taskNotifyList[0].TimeoutNotifyCount
+		}
+		// 通知过一次,则直接跳过
+		if doingNotifyCount >= 1 && timeoutNotifyCount >= 1 {
 			continue
 		}
-		tmpExpireObj := models.ExpireObj{ReportTime: v.CreatedTime, ExpireTime: v.ExpireTime, NowTime: time.Now().Format(models.DateTimeFormat)}
-		calcExpireObj(&tmpExpireObj)
-		if ((tmpExpireObj.Percent >= 75) && (v.NotifyCount == 0)) || ((tmpExpireObj.Percent >= 100) && (v.NotifyCount < 2)) {
+		tmpExpireObj := &models.ExpireObj{
+			ReportTime:         v.CreatedTime,
+			ExpireTime:         v.ExpireTime,
+			NowTime:            time.Now().Format(models.DateTimeFormat),
+			DoingNotifyCount:   doingNotifyCount,
+			TimeoutNotifyCount: timeoutNotifyCount,
+		}
+		calcExpireObj(tmpExpireObj)
+		if (tmpExpireObj.Percent >= 75) && (doingNotifyCount == 0) || ((tmpExpireObj.Percent >= 100) && (timeoutNotifyCount == 0)) {
 			tmpErr := NotifyTaskExpireMail(v, tmpExpireObj, models.CoreToken.GetCoreToken(), "")
 			if tmpErr != nil {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
+			}
+			if len(taskNotifyList) > 0 {
+				actions = append(actions, &dao.ExecAction{Sql: "update notity_task set doing_notify_count = ?,timeout_notify_count = ?,err_msg = ?,updated_time = ? where id=?", Param: []interface{}{tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat), taskNotifyList[0].Id}})
 			} else {
-				actions = append(actions, &dao.ExecAction{Sql: "update task set notify_count=? where id=?", Param: []interface{}{v.NotifyCount + 1, v.Id}})
+				actions = append(actions, &dao.ExecAction{Sql: "insert into notity_task(id,task,doing_notify_count,timeout_notify_count,err_msg,updated_time)values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat)}})
 			}
 		}
 	}

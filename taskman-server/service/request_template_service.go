@@ -1123,7 +1123,7 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 	var requestTemplateLatestMap = make(map[string]*models.RequestTemplateTable)
 	var userRoleMap = convertArray2Map(userRoles)
 	var roleDisplayNameMap map[string]string
-	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayNameMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
 	if err != nil {
 		return
 	}

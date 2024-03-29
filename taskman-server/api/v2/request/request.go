@@ -247,9 +247,9 @@ func PluginCreateRequest(c *gin.Context) {
 
 func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRequestId, token, language string) (result *models.PluginRequestCreateOutputObj, err error) {
 	result = &models.PluginRequestCreateOutputObj{CallbackParameter: input.CallbackParameter}
-	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.ReportRole}
+	requestObj := models.RequestTable{RequestTemplate: input.RequestTemplate, Role: input.ReportRole, CreatedBy: input.ReportUser}
 	// 创建请求
-	if err = handleCreateRequest(&requestObj, []string{}, token, language); err != nil {
+	if err = handleCreateRequest(&requestObj, []string{input.ReportRole}, token, language); err != nil {
 		return
 	}
 	if requestObj.Id == "" {

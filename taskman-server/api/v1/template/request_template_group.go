@@ -13,7 +13,7 @@ func QueryRequestTemplateGroup(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	pageInfo, rowData, err := service.GetRequestTemplateGroupService().QueryRequestTemplateGroup(&param, middleware.GetRequestRoles(c))
+	pageInfo, rowData, err := service.GetRequestTemplateGroupService().QueryRequestTemplateGroup(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

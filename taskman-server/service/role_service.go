@@ -1,15 +1,31 @@
 package service
 
 import (
-	"strings"
-
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
-	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 )
 
 type RoleService struct {
+}
+
+func (s *RoleService) GetRoleMap(userToken, language string) (roleMap map[string]*models.RoleTable, err error) {
+	var roleDtoMap = make(map[string]*models.SimpleLocalRoleDto)
+	if roleDtoMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
+		return
+	}
+	roleMap = make(map[string]*models.RoleTable)
+	if len(roleDtoMap) > 0 {
+		for _, roleDto := range roleDtoMap {
+			roleMap[roleDto.Name] = &models.RoleTable{
+				Id:          roleDto.Name,
+				DisplayName: roleDto.DisplayName,
+				CoreId:      roleDto.ID,
+				Email:       roleDto.Email,
+			}
+		}
+	}
+	return
 }
 
 func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, language string) (mailList []string) {
@@ -18,8 +34,7 @@ func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, langu
 	if models.CoreToken.BaseUrl == "" || len(roleList) == 0 {
 		return
 	}
-	roleMap, err = rpc.QueryAllRoles("N", userToken, language)
-	if err != nil {
+	if roleMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
 		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
 		return
 	}
@@ -38,92 +53,58 @@ func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, langu
 	return
 }
 
-func (s *RoleService) SyncCoreRole(userToken, language string) {
+func (s *RoleService) GetRoleList(ids []string, userToken, language string) (result []*models.RoleTable, err error) {
 	var roleMap map[string]*models.SimpleLocalRoleDto
-	var err error
-	if models.CoreToken.BaseUrl == "" {
-		return
-	}
-	roleMap, err = rpc.QueryAllRoles("N", userToken, language)
-	if err != nil {
-		log.Logger.Error("sync core role fail", log.Error(err))
-		return
-	}
-	var roleTable, addRoleList, delRoleList []*models.RoleTable
-	err = dao.X.SQL("select * from role").Find(&roleTable)
-	if err != nil {
-		log.Logger.Error("Try to sync core role fail", log.Error(err))
-		return
-	}
-	for _, v := range roleMap {
-		existFlag := false
-		for _, vv := range roleTable {
-			if v.Name == vv.Id {
-				existFlag = true
-				break
-			}
-		}
-		if !existFlag {
-			addRoleList = append(addRoleList, &models.RoleTable{Id: v.Name, DisplayName: v.DisplayName, CoreId: v.ID, Email: v.Email})
-		}
-	}
-	for _, v := range roleTable {
-		existFlag := false
-		for _, vv := range roleMap {
-			if v.Id == vv.Name {
-				existFlag = true
-				break
-			}
-		}
-		if !existFlag {
-			delRoleList = append(delRoleList, &models.RoleTable{Id: v.Id})
-		}
-	}
-	var actions []*dao.ExecAction
-	for _, role := range addRoleList {
-		actions = append(actions, &dao.ExecAction{Sql: "insert into `role`(id,display_name,core_id,email,updated_time) value (?,?,?,?,NOW())", Param: []interface{}{role.Id, role.DisplayName, role.CoreId, role.Email}})
-	}
-	if len(delRoleList) > 0 {
-		roleIdList := []string{}
-		for _, role := range delRoleList {
-			actions = append(actions, &dao.ExecAction{Sql: "delete from `role` where id=?", Param: []interface{}{role.Id}})
-			roleIdList = append(roleIdList, role.Id)
-		}
-		actions = append(actions, &dao.ExecAction{Sql: "update request_template_group set manage_role=NULL where manage_role in ('" + strings.Join(roleIdList, "','") + "')"})
-	}
-	if len(actions) > 0 {
-		err = dao.TransactionWithoutForeignCheck(actions)
-		if err != nil {
-			log.Logger.Error("Sync core role fail", log.Error(err))
-		}
-	}
-}
-
-func (s *RoleService) GetRoleList(ids []string) (result []*models.RoleTable, err error) {
 	result = []*models.RoleTable{}
+	if roleMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
+		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
+		return
+	}
 	if len(ids) == 0 {
-		err = dao.X.SQL("select * from role").Find(&result)
-	} else {
-		idFilterSql, idFilterParam := dao.CreateListParams(ids, "")
-		err = dao.X.SQL("select * from role where id in ("+idFilterSql+")", idFilterParam...).Find(&result)
+		for key, value := range roleMap {
+			result = append(result, &models.RoleTable{
+				Id:          key,
+				DisplayName: value.DisplayName,
+				CoreId:      value.ID,
+				Email:       value.Email,
+			})
+		}
+		return
+	}
+	for _, id := range ids {
+		if v, ok := roleMap[id]; ok {
+			result = append(result, &models.RoleTable{
+				Id:          v.Name,
+				DisplayName: v.DisplayName,
+				CoreId:      v.ID,
+				Email:       v.Email,
+			})
+		}
 	}
 	return
 }
 
 func (s *RoleService) QueryUserByRoles(roles []string, userToken, language string) (result []string, err error) {
 	result = []string{}
-	var roleTable []*models.RoleTable
-	rolesFilterSql, rolesFilterParam := dao.CreateListParams(roles, "")
-	err = dao.X.SQL("select * from `role` where id in ("+rolesFilterSql+")", rolesFilterParam...).Find(&roleTable)
-	if err != nil || len(roleTable) == 0 {
+	var roleMap map[string]*models.SimpleLocalRoleDto
+	var list []*models.SimpleLocalRoleDto
+	if roleMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
+		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
 		return
 	}
+	if len(roles) > 0 {
+		for _, role := range roles {
+			if v, ok := roleMap[role]; ok {
+				list = append(list, v)
+			}
+		}
+	}
 	existMap := make(map[string]int)
-	for _, v := range roleTable {
-		if v.CoreId == "" {
+	for _, v := range list {
+		if v.ID == "" {
 			continue
 		}
-		tmpResult, tmpErr := rpc.QueryRolesUsers(v.CoreId, userToken, language)
+		tmpResult, tmpErr := rpc.QueryRolesUsers(v.ID, userToken, language)
 		if tmpErr != nil {
 			err = tmpErr
 			break
@@ -153,17 +134,15 @@ func (s *RoleService) GetRoleAdministrators(role string, userToken, language str
 	return
 }
 
-func (s *RoleService) GetRoleDisplayName() (displayNameMap map[string]string, err error) {
-	var roleList []*models.RoleTable
+func (s *RoleService) GetRoleDisplayName(userToken, language string) (displayNameMap map[string]string, err error) {
 	displayNameMap = make(map[string]string)
-	err = dao.X.SQL("select * from role").Find(&roleList)
-	if err != nil {
+	var roleMap map[string]*models.SimpleLocalRoleDto
+	if roleMap, err = rpc.QueryAllRoles("Y", userToken, language); err != nil {
+		log.Logger.Error("QueryAllRoles err:%+v", log.Error(err))
 		return
 	}
-	if len(roleList) > 0 {
-		for _, role := range roleList {
-			displayNameMap[role.Id] = role.DisplayName
-		}
+	for key, value := range roleMap {
+		displayNameMap[key] = value.DisplayName
 	}
 	return
 }

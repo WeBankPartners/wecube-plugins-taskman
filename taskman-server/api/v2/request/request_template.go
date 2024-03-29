@@ -12,7 +12,6 @@ import (
 
 // GetRequestTemplateByUser 选择模板
 func GetRequestTemplateByUser(c *gin.Context) {
-	service.GetRoleService().SyncCoreRole(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	result, err := service.GetRequestTemplateService().GetRequestTemplateByUserV2(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
@@ -40,6 +39,6 @@ func QueryPlatformEntityData(c *gin.Context) {
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
-		c.JSON(http.StatusOK, responseBytes)
+		c.Data(http.StatusOK, "application/json; charset=utf-8", responseBytes)
 	}
 }

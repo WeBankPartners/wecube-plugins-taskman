@@ -142,7 +142,7 @@ func NotifyTaskHandlerUpdateMail(requestName, taskName, originHandler, targetHan
 	}
 	taskName = getInternationalizationTaskName(taskName, language)
 	subject = "[wecube] [Task transfer reminder]  【任务被转单提醒】"
-	content = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, originHandler)
+	content = fmt.Sprintf("The task assigned to you [Request: %s Task: %s] has been transferred to %s. Click the link to view details", requestName, taskName, targetHandler)
 	content = content + fmt.Sprintf("\n\n\n分配给您的任务[请求:%s-任务:%s]已被转单给%s,点击链接查看详情", requestName, taskName, targetHandler)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)
 	log.Logger.Debug("NotifyTaskHandlerUpdateMail", log.String("mailSubject", subject), log.String("mailContent", content), log.String("mailList", userInfo.Email))

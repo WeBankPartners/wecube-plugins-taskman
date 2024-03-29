@@ -405,6 +405,7 @@ type PluginRequestCreateParamObj struct {
 	RequestTemplate   string `json:"requestTemplate"`
 	RootDataId        string `json:"rootDataId"`
 	ReportRole        string `json:"reportRole"`
+	ReportUser        string `json:"reportUser"`
 }
 
 type PluginRequestCreateResp struct {

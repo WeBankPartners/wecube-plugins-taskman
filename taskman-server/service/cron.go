@@ -44,7 +44,7 @@ func notifyAction() {
 	for _, v := range taskTable {
 		taskNotifyList = []*models.TaskNotifyTable{}
 		beforeMinutes := time.Now().Add(-periods * time.Minute).Format(models.DateTimeFormat)
-		dao.X.SQL("select doing_notify_count,timeout_notify_count,updated_time from notity_task where task = ? and updated_time > ?", v.Id, beforeMinutes).Find(&taskNotifyList)
+		dao.X.SQL("select doing_notify_count,timeout_notify_count,updated_time from task_notify where task = ? and updated_time > ?", v.Id, beforeMinutes).Find(&taskNotifyList)
 		if len(taskNotifyList) > 0 {
 			continue
 		}
@@ -73,7 +73,7 @@ func notifyAction() {
 		}
 		doingNotifyCount = 0
 		timeoutNotifyCount = 0
-		dao.X.SQL("select id,doing_notify_count,timeout_notify_count,updated_time from notity_task where task = ? order by updated_time desc limit 0,1", v.Id).Find(&taskNotifyList)
+		dao.X.SQL("select id,doing_notify_count,timeout_notify_count,updated_time from task_notify where task = ? order by updated_time desc limit 0,1", v.Id).Find(&taskNotifyList)
 		if len(taskNotifyList) > 0 {
 			doingNotifyCount = taskNotifyList[0].DoingNotifyCount
 			timeoutNotifyCount = taskNotifyList[0].TimeoutNotifyCount

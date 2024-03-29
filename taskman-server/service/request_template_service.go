@@ -1434,6 +1434,21 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		}
 		// 新建模板&模板相关表属性
 		input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
+		// 查询 当前最新模版,记录recordId
+		templateName = input.RequestTemplate.Name
+		templateList, _ = s.getTemplateListByName(input.RequestTemplate.Name)
+		if len(templateList) > 0 {
+			// 有名称重复数据,判断导入版本是否高于所有模板版本
+			for _, template := range templateList {
+				version := s.getTemplateVersion(template)
+				if maxVersion < version {
+					maxVersion = version
+					maxVersionRecordId = template.Id
+				}
+			}
+			// 有重复数据,但是新导入模板版本最高,直接当成新建处理,需要记录最新发布版本Id
+			input.RequestTemplate.RecordId = maxVersionRecordId
+		}
 	}
 	if input.RequestTemplate.Id == "" {
 		err = fmt.Errorf("RequestTemplate id illegal ")

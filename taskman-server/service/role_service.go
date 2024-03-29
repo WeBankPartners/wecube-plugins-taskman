@@ -4,6 +4,7 @@ import (
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/log"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/models"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
+	"strings"
 )
 
 type RoleService struct {
@@ -160,7 +161,9 @@ func (s *RoleService) GetRoleDisplayName(userToken, language string) (displayNam
 		return
 	}
 	for key, value := range roleMap {
-		displayNameMap[key] = value.DisplayName
+		if key != "" && strings.TrimSpace(key) != "" {
+			displayNameMap[key] = value.DisplayName
+		}
 	}
 	return
 }

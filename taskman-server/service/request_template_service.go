@@ -138,11 +138,11 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	for _, row := range rowData {
 		rtIds = append(rtIds, row.Id)
 	}
-	queryRoleSql := "select t4.id,t4.role,'mgmt' as 'role_type' from ("
+	queryRoleSql := "select t4.id,GROUP_CONCAT(t4.role) as 'role','mgmt' as 'role_type' from ("
 	queryRoleSql += "select t1.id,t2.role from request_template t1 left join request_template_role t2 on t1.id=t2.request_template  where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='MGMT'"
 	queryRoleSql += ") t4 group by t4.id"
 	queryRoleSql += " UNION "
-	queryRoleSql += "select t4.id,t4.role,'use' as 'role_type' from ("
+	queryRoleSql += "select t4.id,GROUP_CONCAT(t4.role) as 'role','use' as 'role_type' from ("
 	queryRoleSql += "select t1.id,t2.role from request_template t1 left join request_template_role t2 on t1.id=t2.request_template  where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='USE'"
 	queryRoleSql += ") t4 group by t4.id"
 	var requestTemplateRows []*models.RequestTemplateRoleTable

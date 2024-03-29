@@ -325,7 +325,15 @@
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
           <FormItem :label="$t('tw_form_template_type')">
-            <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable clearable>
+            <Select
+              style="width: 80%"
+              v-model="itemGroup"
+              ref="selectRef"
+              v-if="showSelectModel"
+              filterable
+              clearable
+              @on-open-change="selectRef"
+            >
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
               </OptionGroup>
@@ -718,7 +726,7 @@ export default {
     },
     async selectItemGroup () {
       this.itemGroup = ''
-      this.groupOptions = []
+      // this.groupOptions = []
       const { statusCode, data } = await getEntityByTemplateId(this.requestTemplateId)
       if (statusCode === 'OK') {
         // workflow  2.编排数据, 3.optional 自选数据项表单,  custom 1.自定义表单
@@ -1051,6 +1059,10 @@ export default {
       } else {
         this.saveGroup(8)
       }
+    },
+    // 此处的select在选中再点时，会将选中值当做条件过滤，这里清空query
+    clearQuery () {
+      this.$refs.selectRef.query = ''
     }
   },
   components: {

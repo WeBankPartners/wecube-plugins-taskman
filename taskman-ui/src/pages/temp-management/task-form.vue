@@ -470,13 +470,13 @@
           class="btn-footer-margin"
           >{{ $t('forward') }}</Button
         >
-        <!-- <Button
-          v-if="isCheck !== 'Y' && !isTopButtonDisable"
+        <Button
+          :disabled="isCheck !== 'Y' && isTopButtonDisable"
           @click="saveApprovalFromNode"
           type="info"
           class="btn-footer-margin"
           >{{ $t('save') }}</Button
-        > -->
+        >
         <Button
           v-if="isCheck !== 'Y'"
           :disabled="isTopButtonDisable"

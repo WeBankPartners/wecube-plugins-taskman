@@ -71,6 +71,9 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
 	isQueryMessage := false
+	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
+		return
+	}
 	if len(param.Filters) > 0 {
 		var newFilters []*models.QueryRequestFilterObj
 		for _, v := range param.Filters {
@@ -135,12 +138,12 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	for _, row := range rowData {
 		rtIds = append(rtIds, row.Id)
 	}
-	queryRoleSql := "select t4.id,GROUP_CONCAT(t4.role_obj) as 'role','mgmt' as 'role_type' from ("
-	queryRoleSql += "select t1.id,CONCAT(t2.role,'::',t3.display_name) as 'role_obj' from request_template t1 left join request_template_role t2 on t1.id=t2.request_template left join role t3 on t2.role=t3.id where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='MGMT'"
+	queryRoleSql := "select t4.id,t4.role,'mgmt' as 'role_type' from ("
+	queryRoleSql += "select t1.id,t2.role from request_template t1 left join request_template_role t2 on t1.id=t2.request_template  where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='MGMT'"
 	queryRoleSql += ") t4 group by t4.id"
 	queryRoleSql += " UNION "
-	queryRoleSql += "select t4.id,GROUP_CONCAT(t4.role_obj) as 'role','use' as 'role_type' from ("
-	queryRoleSql += "select t1.id,CONCAT(t2.role,'::',t3.display_name) as 'role_obj' from request_template t1 left join request_template_role t2 on t1.id=t2.request_template left join role t3 on t2.role=t3.id where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='USE'"
+	queryRoleSql += "select t4.id,t4.role,'use' as 'role_type' from ("
+	queryRoleSql += "select t1.id,t2.role from request_template t1 left join request_template_role t2 on t1.id=t2.request_template  where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='USE'"
 	queryRoleSql += ") t4 group by t4.id"
 	var requestTemplateRows []*models.RequestTemplateRoleTable
 	err = dao.X.SQL(queryRoleSql).Find(&requestTemplateRows)
@@ -152,9 +155,8 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	for _, v := range requestTemplateRows {
 		var tmpRoles []*models.RoleTable
 		for _, vv := range strings.Split(v.Role, ",") {
-			tmpSplit := strings.Split(vv, "::")
-			if len(tmpSplit) > 1 {
-				tmpRoles = append(tmpRoles, &models.RoleTable{Id: tmpSplit[0], DisplayName: tmpSplit[1]})
+			if roleDto, ok := roleMap[vv]; ok {
+				tmpRoles = append(tmpRoles, &models.RoleTable{Id: roleDto.Name, DisplayName: roleDto.DisplayName})
 			}
 		}
 		if v.RoleType == "mgmt" {
@@ -176,10 +178,6 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 		if err != nil {
 			return
 		}
-	}
-	roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language)
-	if err != nil {
-		return
 	}
 	for _, v := range rowData {
 		tmpObj := models.RequestTemplateQueryObj{RequestTemplateDto: *s.GetDtoByRequestTemplate(v), MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}

@@ -3,6 +3,7 @@ package task
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"io"
 	"net/http"
 
@@ -160,6 +161,10 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, getTaskErr)
 		return
 	}
+	if taskTable.Status == string(models.TaskStatusDone) {
+		middleware.ReturnError(c, exterror.New().TemplateApproveCompleteError)
+		return
+	}
 	if taskTable.Request == "" {
 		err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
 		if err != nil {
@@ -169,18 +174,18 @@ func ApproveTask(c *gin.Context) {
 		}
 		return
 	}
-	taskHandle, err = service.GetTaskHandleService().Get(param.TaskHandleId)
+	if param.TaskHandleId == "" {
+		err = fmt.Errorf("param taskHandleId is empty")
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	taskHandle, err = service.GetTaskHandleService().GetIgnoreDeleted(param.TaskHandleId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	if taskHandle == nil {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("taskHandleId is invalid"))
-		return
-	}
-	if param.TaskHandleId == "" {
-		err = fmt.Errorf("param taskHandleId is empty")
-		middleware.ReturnParamValidateError(c, err)
 		return
 	}
 	if taskHandle.LatestFlag == 0 {

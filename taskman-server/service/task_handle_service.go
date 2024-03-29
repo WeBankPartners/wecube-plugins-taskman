@@ -105,6 +105,19 @@ func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, 
 	return
 }
 
+// GetIgnoreDeleted 忽略被删除
+func (s *TaskHandleService) GetIgnoreDeleted(id string) (taskHandle *models.TaskHandleTable, err error) {
+	var taskHandleList []*models.TaskHandleTable
+	err = dao.X.SQL("select * from task_handle where id = ?", id).Find(&taskHandleList)
+	if err != nil {
+		return
+	}
+	if len(taskHandleList) > 0 {
+		taskHandle = taskHandleList[0]
+	}
+	return
+}
+
 func (s *TaskHandleService) GetLatestRequestCheckTaskHandleByRequestId(requestId string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskList []*models.TaskTable
 	var taskHandleList []*models.TaskHandleTable

@@ -139,5 +139,9 @@
   "template_submit_handler_empty_error": {
     "code": 20100026,
     "message": "Submission failed: The handler for  approval node %s was not filled in completely. Please supplement and try again"
+  },
+  "template_approve_complete_error": {
+    "code": 20100027,
+    "message": "当前审批已完成,请进入工作台重新刷新"
   }
 }

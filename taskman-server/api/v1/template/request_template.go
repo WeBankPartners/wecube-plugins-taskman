@@ -164,14 +164,14 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 						} else if taskTemplate.Type == string(models.TaskTypeImplement) {
 							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
 						}
+						middleware.ReturnError(c, err)
 						return
 					}
 				}
 			}
 		}
 	}
-	err = service.GetRequestTemplateService().UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)
-	if err != nil {
+	if err = service.GetRequestTemplateService().UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason); err != nil {
 		middleware.ReturnError(c, err)
 		return
 	}

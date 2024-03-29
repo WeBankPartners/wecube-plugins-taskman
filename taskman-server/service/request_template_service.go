@@ -1438,8 +1438,10 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		templateName = input.RequestTemplate.Name
 		templateList, _ = s.getTemplateListByName(input.RequestTemplate.Name)
 		if len(templateList) > 0 {
-			// 有名称重复数据,判断导入版本是否高于所有模板版本
 			for _, template := range templateList {
+				if _, ok := models.RequestTemplateImportMap[template.Id]; ok {
+					continue
+				}
 				version := s.getTemplateVersion(template)
 				if maxVersion < version {
 					maxVersion = version

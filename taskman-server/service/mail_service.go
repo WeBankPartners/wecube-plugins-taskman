@@ -197,7 +197,7 @@ func NotifyTaskBackMail(requestName, taskName, creator, approval, userToken, lan
 		return
 	}
 	taskName = getInternationalizationTaskName(taskName, language)
-	subject = "[wecube] [Request completion reminder]  【请求退回提醒】"
+	subject = "[wecube] [Request back reminder]  【请求退回提醒】"
 	content = fmt.Sprintf("The [request: %s] you initiated was returned to the draft by %s at node %s. Please make the necessary modifications and resubmit. Click the link to view details", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n\n\n您发起的[请求:%s],在%s节点被%s退回到草稿,请修改之后重新提交,点击链接查看详情", requestName, taskName, approval)
 	content = content + fmt.Sprintf("\n%s/#/taskman/workbench", models.Config.WebUrl)

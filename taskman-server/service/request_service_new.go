@@ -558,7 +558,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 			}
 		}
 	}
-	roleDisplayMap, _ = GetRoleService().GetRoleDisplayName()
+	roleDisplayMap, _ = GetRoleService().GetRoleDisplayName(req.UserToken, language)
 	// 分页处理
 	if page {
 		pageInfo.StartIndex = req.Param.StartIndex
@@ -1033,7 +1033,7 @@ func GetRequestProgress(requestId, userToken, language string) (rowData *models.
 	if err != nil {
 		return
 	}
-	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
 	if err != nil {
 		return
 	}
@@ -1418,7 +1418,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 		err = fmt.Errorf("can not find request_template with id:%s ", request.Id)
 		return
 	}
-	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
 	if err != nil {
 		return
 	}

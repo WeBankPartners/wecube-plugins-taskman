@@ -8,8 +8,7 @@ import (
 )
 
 func GetUserRoles(c *gin.Context) {
-	service.GetRoleService().SyncCoreRole(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	result, err := service.GetRoleService().GetRoleList(middleware.GetRequestRoles(c))
+	result, err := service.GetRoleService().GetRoleList(middleware.GetRequestRoles(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
@@ -40,8 +39,7 @@ func GetRoleAdministrators(c *gin.Context) {
 }
 
 func GetRoleList(c *gin.Context) {
-	service.GetRoleService().SyncCoreRole(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
-	result, err := service.GetRoleService().GetRoleList([]string{})
+	result, err := service.GetRoleService().GetRoleList([]string{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

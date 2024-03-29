@@ -171,13 +171,15 @@ type TaskHandleNode struct {
 }
 
 type ExpireObj struct {
-	Percent    float64 `json:"percent"`
-	ReportTime string  `json:"reportTime"`
-	ExpireTime string  `json:"expireTime"`
-	NowTime    string  `json:"nowTime"`
-	TotalDay   float64 `json:"totalDay"`
-	LeftDay    float64 `json:"leftDay"`
-	UseDay     float64 `json:"useDay"`
+	Percent            float64 `json:"percent"`
+	ReportTime         string  `json:"reportTime"`
+	ExpireTime         string  `json:"expireTime"`
+	NowTime            string  `json:"nowTime"`
+	TotalDay           float64 `json:"totalDay"`
+	LeftDay            float64 `json:"leftDay"`
+	UseDay             float64 `json:"useDay"`
+	DoingNotifyCount   int     `json:"doingNotifyCount"`
+	TimeoutNotifyCount int     `json:"timeoutNotifyCount"`
 }
 
 type RequestCacheData struct {

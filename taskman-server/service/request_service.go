@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/rpc"
 	"io/ioutil"
 	"net/http"
@@ -2158,7 +2159,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	}
 
 	roleDisplayMap := make(map[string]string)
-	roleDisplayMap, err = GetRoleService().GetRoleDisplayName()
+	roleDisplayMap, err = GetRoleService().GetRoleDisplayName(c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		err = fmt.Errorf("get role display name failed: %s", err.Error())
 		return

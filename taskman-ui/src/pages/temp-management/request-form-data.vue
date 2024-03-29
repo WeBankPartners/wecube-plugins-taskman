@@ -332,7 +332,7 @@
               v-if="showSelectModel"
               filterable
               clearable
-              @on-open-change="selectRef"
+              @on-open-change="clearQuery"
             >
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>

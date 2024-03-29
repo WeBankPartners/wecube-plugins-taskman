@@ -1416,6 +1416,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		}
 	} else {
 		// 删除冲突模板数据
+		var tempTemplateIdMap = make(map[string]bool)
 		confirmTokenList := strings.Split(confirmToken, ",")
 		for _, ct := range confirmTokenList {
 			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
@@ -1424,6 +1425,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				err = fmt.Errorf("Fetch input cache fail,please refersh and try again ")
 				return
 			}
+			tempTemplateIdMap[ct] = true
 			delete(models.RequestTemplateImportMap, ct)
 			delActions, delErr := s.DeleteRequestTemplate(ct, true)
 			if delErr != nil {
@@ -1439,7 +1441,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		templateList, _ = s.getTemplateListByName(input.RequestTemplate.Name)
 		if len(templateList) > 0 {
 			for _, template := range templateList {
-				if _, ok := models.RequestTemplateImportMap[template.Id]; ok {
+				if _, ok := tempTemplateIdMap[template.Id]; ok {
 					continue
 				}
 				version := s.getTemplateVersion(template)

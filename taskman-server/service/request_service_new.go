@@ -1425,12 +1425,10 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	form.CreatedTime = request.CreatedTime
 	form.ExpectTime = request.ExpectTime
 	form.CreatedBy = request.CreatedBy
+	form.Role = request.Role
 	if v, ok := roleDisplayMap[request.Role]; ok {
-		form.Role = v
-	} else {
-		form.Role = request.Role
+		form.RoleDisplay = v
 	}
-
 	form.Description = request.Description
 	form.Status = request.Status
 	form.ProcInstanceId = request.ProcInstanceId

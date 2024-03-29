@@ -294,6 +294,7 @@ type RequestForm struct {
 	Handler             string                    `json:"handler"`             // 当前处理人
 	CreatedBy           string                    `json:"createdBy"`           // 创建人
 	Role                string                    `json:"role"`                // 创建人角色
+	RoleDisplay         string                    `json:"roleDisplay"`         // 角色显示名
 	TemplateName        string                    `json:"templateName"`        // 使用模板
 	Version             string                    `json:"version"`             // 模板版本
 	TemplateGroupName   string                    `json:"templateGroupName"`   // 使用模板组

@@ -42,10 +42,10 @@ func NotifyTaskExpireMail(task *models.TaskTable, expireObj *models.ExpireObj, u
 				log.Logger.Warn("NotifyTaskExpireMail,taskName receiver email is empty", log.String("requestName", requestName), log.String("taskName", task.Name), log.String("receiver", taskHandle.Handler))
 				return
 			}
+			mailList = append(mailList, userInfo.Email)
 		} else if taskHandle.Role != "" {
 			roleTableList = append(roleTableList, &models.RoleTable{Id: taskHandle.Role})
 		}
-		mailList = append(mailList, userInfo.Email)
 	}
 	if len(roleTableList) > 0 {
 		subMailList := GetRoleService().GetRoleMail(roleTableList, userToken, language)

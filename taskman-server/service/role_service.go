@@ -9,6 +9,25 @@ import (
 type RoleService struct {
 }
 
+func (s *RoleService) GetRoleMap(userToken, language string) (roleMap map[string]*models.RoleTable, err error) {
+	var roleDtoMap = make(map[string]*models.SimpleLocalRoleDto)
+	if roleDtoMap, err = rpc.QueryAllRoles("N", userToken, language); err != nil {
+		return
+	}
+	roleMap = make(map[string]*models.RoleTable)
+	if len(roleDtoMap) > 0 {
+		for _, roleDto := range roleDtoMap {
+			roleMap[roleDto.Name] = &models.RoleTable{
+				Id:          roleDto.Name,
+				DisplayName: roleDto.DisplayName,
+				CoreId:      roleDto.ID,
+				Email:       roleDto.Email,
+			}
+		}
+	}
+	return
+}
+
 func (s *RoleService) GetRoleMail(roleList []*models.RoleTable, userToken, language string) (mailList []string) {
 	var roleMap map[string]*models.SimpleLocalRoleDto
 	var err error

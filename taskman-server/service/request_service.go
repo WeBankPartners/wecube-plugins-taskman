@@ -1977,40 +1977,6 @@ func listContains(inputList []string, element string) bool {
 	return result
 }
 
-func notifyRoleMail(requestId, userToken, language string) error {
-	if !models.MailEnable {
-		return nil
-	}
-	log.Logger.Info("Start notify request mail", log.String("requestId", requestId))
-	var roleTable []*models.RoleTable
-	err := dao.X.SQL("select id,email from `role` where id in (select `role` from request_template_role where role_type='MGMT' and request_template in (select request_template from request where id=?))", requestId).Find(&roleTable)
-	if err != nil {
-		return fmt.Errorf("Notify role mail query roles fail,%s ", err.Error())
-	}
-	if len(roleTable) == 0 {
-		return nil
-	}
-	mailList := GetRoleService().GetRoleMail(roleTable, userToken, language)
-	if len(mailList) == 0 {
-		log.Logger.Warn("Notify role mail break,email is empty", log.String("role", roleTable[0].Id))
-		return nil
-	}
-	var requestTable []*models.RequestTable
-	dao.X.SQL("select t1.id,t1.name,t2.name as request_template,t1.reporter,t1.report_time,t1.emergency from request t1 left join request_template t2 on t1.request_template=t2.id where t1.id=?", requestId).Find(&requestTable)
-	if len(requestTable) == 0 {
-		return nil
-	}
-	var subject, content string
-	subject = fmt.Sprintf("Taskman Request [%s] %s[%s]", models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate)
-	content = fmt.Sprintf("Taskman Request \nID:%s \nPriority:%s \nName:%s \nTemplate:%s \nReporter:%s \nReportTime:%s\n", requestTable[0].Id, models.PriorityLevelMap[requestTable[0].Emergency], requestTable[0].Name, requestTable[0].RequestTemplate, requestTable[0].Reporter, requestTable[0].ReportTime)
-	err = models.MailSender.Send(subject, content, mailList)
-	if err != nil {
-		log.Logger.Error("Notify role mail fail", log.Error(err))
-		return fmt.Errorf("Notify role mail fail,%s ", err.Error())
-	}
-	return nil
-}
-
 func CopyRequest(requestId, createdBy string) (result models.RequestTable, err error) {
 	parentRequest := &models.RequestTable{}
 	var requestTable []*models.RequestTable

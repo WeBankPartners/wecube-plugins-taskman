@@ -59,7 +59,7 @@ type TaskNotifyTable struct {
 	DoingNotifyCount   int    `json:"doingNotifyCount" xorm:"'doing_notify_count'"`
 	TimeoutNotifyCount int    `json:"timeoutNotifyCount" xorm:"'timeout_notify_count'"`
 	ErrMsg             string `json:"errMsg" xorm:"'err_msg'"`
-	CreatedTime        string `json:"createdTime" xorm:"created_time"`
+	UpdatedTime        string `json:"updatedTime" xorm:"updated_time"`
 }
 
 type TaskDto struct {

@@ -44,7 +44,7 @@ func notifyAction() {
 	for _, v := range taskTable {
 		taskNotifyList = []*models.TaskNotifyTable{}
 		beforeMinutes := time.Now().Add(-periods * time.Minute).Format(models.DateTimeFormat)
-		dao.X.SQL("select doing_notify_count,timeout_notify_count,created_time from notity_task where task = ? and created_time > ?", v.Id, beforeMinutes).Find(&taskNotifyList)
+		dao.X.SQL("select doing_notify_count,timeout_notify_count,updated_time from notity_task where task = ? and updated_time > ?", v.Id, beforeMinutes).Find(&taskNotifyList)
 		if len(taskNotifyList) > 0 {
 			continue
 		}
@@ -73,7 +73,7 @@ func notifyAction() {
 		}
 		doingNotifyCount = 0
 		timeoutNotifyCount = 0
-		dao.X.SQL("select id,doing_notify_count,timeout_notify_count,created_time from notity_task where task = ? order by created_time desc limit 0,1", v.Id).Find(&taskNotifyList)
+		dao.X.SQL("select id,doing_notify_count,timeout_notify_count,updated_time from notity_task where task = ? order by updated_time desc limit 0,1", v.Id).Find(&taskNotifyList)
 		if len(taskNotifyList) > 0 {
 			doingNotifyCount = taskNotifyList[0].DoingNotifyCount
 			timeoutNotifyCount = taskNotifyList[0].TimeoutNotifyCount
@@ -96,9 +96,9 @@ func notifyAction() {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			}
 			if len(taskNotifyList) > 0 {
-				actions = append(actions, &dao.ExecAction{Sql: "update notity_task set doing_notify_count=?,timeout_notify_count =?,err_msg=? where id=?", Param: []interface{}{tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), taskNotifyList[0].Id}})
+				actions = append(actions, &dao.ExecAction{Sql: "update notity_task set doing_notify_count = ?,timeout_notify_count = ?,err_msg = ?,updated_time = ? where id=?", Param: []interface{}{tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat), taskNotifyList[0].Id}})
 			} else {
-				actions = append(actions, &dao.ExecAction{Sql: "insert into notity_task(id,task,doing_notify_count,timeout_notify_count,err_msg,created_time)values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat)}})
+				actions = append(actions, &dao.ExecAction{Sql: "insert into notity_task(id,task,doing_notify_count,timeout_notify_count,err_msg,updated_time)values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat)}})
 			}
 		}
 	}

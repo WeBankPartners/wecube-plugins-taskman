@@ -537,10 +537,10 @@ CREATE TABLE IF NOT EXISTS `task_notify` (
     `doing_notify_count` TINYINT  DEFAULT 0,
     `timeout_notify_count` TINYINT  DEFAULT 0,
     `err_msg` text  DEFAULT NULL,
-    `created_time` datetime  NOT NULL,
+    `updated_time` datetime  NOT NULL,
     PRIMARY KEY (`id`),
     CONSTRAINT `task_notify_task_Id` FOREIGN KEY (`task`) REFERENCES `task` (`id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='任务通知表';
-alter table task_notify add index task_notify_created_time(created_time);
+alter table task_notify add index task_notify_updated_time(updated_time);
 
 #@v1.0.5-end@;

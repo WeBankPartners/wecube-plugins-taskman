@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 // import exportFile from '@/const/export-file'
-import { getCookie } from '../pages/util/cookie'
+// import { getCookie } from '../pages/util/cookie'
 
 export const baseURL = ''
 export const req = axios.create({
@@ -27,7 +27,7 @@ req.interceptors.request.use(
       } else {
         config.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
       }
-      const accessToken = getCookie('accessToken')
+      const accessToken = localStorage.getItem('taskman-accessToken')
       if (accessToken && config.url !== '/auth/v1/api/login') {
         config.headers.Authorization = 'Bearer ' + accessToken
         resolve(config)
@@ -44,8 +44,9 @@ req.interceptors.request.use(
 req.interceptors.response.use(
   res => {
     if (res.status === 200) {
-      if (res.data.statusCode && res.data.statusCode !== 'OK') {
-        const errorMes = res.data.statusMessage
+      const finalStatus = res.data.statusCode || res.data.status
+      if (finalStatus && finalStatus !== 'OK') {
+        const errorMes = res.data.statusMessage || res.data.message
         Vue.prototype.$Notice.error({
           title: 'Error',
           desc: errorMes,
@@ -63,7 +64,87 @@ req.interceptors.response.use(
     }
   },
   err => {
-    console.log(err)
+    const { response } = err
+    if (response.status === 401 && err.config.url !== '/auth/v1/api/login') {
+      let refreshToken = localStorage.getItem('taskman-refreshToken')
+      if (refreshToken.length > 0) {
+        let refreshRequest = axios.get('/auth/v1/api/token', {
+          headers: {
+            Authorization: 'Bearer ' + refreshToken
+          }
+        })
+        return refreshRequest.then(
+          resRefresh => {
+            const data = resRefresh.data.data
+            const accessTokenObj = data.tokens.find(d => d.tokenType === 'accessToken')
+            const refreshTokenObj = data.tokens.find(d => d.tokenType === 'refreshToken')
+            localStorage.setItem('taskman-accessToken', accessTokenObj.token)
+            localStorage.setItem('taskman-refreshToken', refreshTokenObj.token)
+            localStorage.setItem('taskman-expiration', refreshTokenObj.expiration)
+            // replace token with new one and replay request
+            err.config.headers.Authorization = 'Bearer ' + localStorage.getItem('taskman-accessToken')
+            let retryRequest = axios(err.config)
+            return retryRequest.then(
+              res => {
+                if (res.status === 200) {
+                  // do request success again
+                  if (res.data.status === 'ERROR') {
+                    const errorMes = Array.isArray(res.data.data)
+                      ? res.data.data.map(_ => _.message || _.errorMessage).join('<br/>')
+                      : res.data.message
+                    Vue.prototype.$Notice.warning({
+                      title: 'Error',
+                      desc: errorMes,
+                      duration: 10
+                    })
+                  }
+                  return res.data instanceof Array ? res.data : { ...res.data }
+                } else {
+                  return {
+                    data: throwError(res)
+                  }
+                }
+              },
+              err => {
+                const { response } = err
+                return new Promise((resolve, reject) => {
+                  resolve({
+                    data: throwError(response)
+                  })
+                })
+              }
+            )
+          },
+          // eslint-disable-next-line handle-callback-err
+          errRefresh => {
+            localStorage.removeItem('taskman-accessToken')
+            localStorage.removeItem('taskman-refreshToken')
+            localStorage.removeItem('taskman-expiration')
+            window.location.href = window.location.origin + window.location.pathname + '#/login'
+            return {
+              data: {} // throwError(errRefresh.response)
+            }
+          }
+        )
+      } else {
+        window.location.href = window.location.origin + window.location.pathname + '#/login'
+        if (response.config.url === '/auth/v1/api/login') {
+          Vue.prototype.$Notice.warning({
+            title: 'Error',
+            desc: response.data.message || '401',
+            duration: 10
+          })
+        }
+        // throwInfo(response)
+        return response
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      resolve({
+        data: throwError(response)
+      })
+    })
   }
 )
 

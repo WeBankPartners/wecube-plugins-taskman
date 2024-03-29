@@ -48,15 +48,15 @@ const router = [
     component: requestCheck
   },
   {
-    path: '/taskman',
-    name: 'taskman',
-    component: () => import('@/pages/index'),
-    redirect: '/taskman/workbench',
+    path: '/taskman/workbench',
+    name: 'taskman/workbench',
+    component: () => import('@/pages/workbench.vue'),
+    redirect: '/taskman/workbench/dashboard',
     children: [
       // 个人工作台
       {
-        path: '/taskman/workbench',
-        name: '/taskman/workbench',
+        path: '/taskman/workbench/dashboard',
+        name: '/taskman/workbench/dashboard',
         component: () => import('@/pages/workbench/index.vue')
       },
       // 模板选择

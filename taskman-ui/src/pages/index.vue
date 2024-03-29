@@ -1,48 +1,45 @@
 <template>
   <div id="taskman">
-    <div class="taskman-content-container" :style="workbenchStyle">
+    <div class="header">
+      <Header></Header>
+    </div>
+    <div class="taskman-content-container">
       <transition name="fade" mode="out-in">
         <router-view></router-view>
       </transition>
-      <WorkbenchMenu></WorkbenchMenu>
     </div>
   </div>
 </template>
 
 <script>
-import WorkbenchMenu from '@/pages/components/workbench-menu.vue'
-import Vue from 'vue'
-Vue.prototype.$bus = new Vue()
+import Header from '@/pages/components/header'
 export default {
   components: {
-    WorkbenchMenu
+    Header
   },
   data () {
     return {
       isShowBreadcrum: true,
       allMenusAry: [],
-      parentBreadcrumb: '',
       childBreadcrumb: '',
-      isSetting: this.$route.path.startsWith('/setting'),
-      expand: true
+      isSetting: this.$route.path.startsWith('/setting')
     }
   },
-  computed: {
-    workbenchStyle () {
-      return {
-        paddingLeft: this.expand ? '140px' : '0px'
-      }
+  watch: {
+    $route: {
+      handler (val) {
+        this.setBreadcrumb()
+      },
+      immediate: true
     }
   },
-  mounted () {
-    if (this.$eventBusP) {
-      this.$eventBusP.$on('expand-menu', val => {
-        this.expand = val
-      })
-    } else {
-      this.$bus.$on('expand-menu', val => {
-        this.expand = val
-      })
+  methods: {
+    setBreadcrumb () {
+      this.childBreadcrumb = '453264'
+    },
+    homePageClickHandler () {
+      window.needReLoad = false
+      this.$router.push('/taskman/workbench')
     }
   }
 }
@@ -59,6 +56,7 @@ export default {
 }
 .taskman-content-container {
   height: calc(100% - 50px);
+  padding: 10px 20px;
 }
 </style>
 <style lang="scss">

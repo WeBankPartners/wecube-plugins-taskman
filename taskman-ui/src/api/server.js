@@ -10,6 +10,12 @@ if (window.request) {
     patch: (url, ...params) => pluginErrorMessage(window.request.patch(baseURL + url, ...params))
   }
 }
+export const login = data => req.post('/taskman/api/v1/login', data)
+export const getEncryptKey = () => req.get(`/taskman/api/v1/login/seed`)
+// 获取可申请角色列表
+export const getApplyRoles = data => req.get(`/taskman/api/v2/auth/roles?all=${data.all}&roleAdmin=${data.roleAdmin}`)
+export const startApply = data => req.post('/taskman/api/v2/auth/roles/apply', data)
+export const registerUser = data => req.post('/taskman/api/v2/auth/users/register', data)
 
 export const getTempGroupList = data => req.post('/taskman/api/v1/request-template-group/query', data)
 export const createTempGroup = data => req.post('/taskman/api/v1/request-template-group', data)
@@ -90,7 +96,7 @@ export const getRefOptions = (requestId, attr, params, attrName) =>
   req.post(`/taskman/api/v1/request-data/reference/query/${attr}/${requestId}/${attrName}`, params)
 
 export const getWeCmdbOptions = (packageName, ciType, params) =>
-  req.post(`/${packageName}/entities/${ciType}/query`, params)
+  req.post(`/taskman/api/v2/platform/${packageName}/entities/${ciType}/query`, params)
 
 export const taskList = params => req.post(`/taskman/api/v1/task/list`, params)
 export const getTaskDetail = taskId => req.get(`/taskman/api/v1/task/detail/${taskId}`)
@@ -171,7 +177,7 @@ export const getFlowByInstanceId = instanceId => req.get(`/taskman/api/v1/reques
 export const getNodeContextByNodeId = (instanceId, nodeId) =>
   req.post(`/taskman/api/v1/request/workflow/task_node/${instanceId}/${nodeId}`)
 
-export const getAllDataModels = () => req.get(`/platform/v1/models`)
+export const getAllDataModels = () => req.get(`/taskman/api/v2/platform/models`)
 // 获取可添加表单组
 export const getEntityByTemplateId = tmpId => req.get(`/taskman/api/v1/request-template/${tmpId}/entity`)
 
@@ -223,6 +229,19 @@ export const getTargetOptions = (pkgName, entityName) =>
 export const getEntityRefsByPkgNameAndEntityName = (pkgName, entityName) =>
   req.get(`/taskman/api/v1/models/package/${pkgName}/entity/${entityName}`)
 
+// 申请列表-管理员视角
+export const getProcessableList = data => req.post(`/taskman/api/v2/auth/roles/apply/byhandler`, data)
+// 获取所有用户
+export const getAllUser = roleId => req.get(`/taskman/api/v2/auth/users`)
+// 获取角色下用户
+export const getUserByRole = roleId => req.get(`/taskman/api/v2/auth/roles/${roleId}/users`)
+// 从角色中删除用户
+export const removeUserFromRole = (roleId, data) => req.post(`/taskman/api/v2/auth/roles/${roleId}/users/revoke`, data)
+// 为角色添加用户
+export const addUserForRole = (roleId, data) => req.post(`/taskman/api/v2/auth/roles/${roleId}/users`, data)
+export const handleApplication = data => req.put(`/taskman/api/v2/auth/roles/apply`, data)
+// 申请列表-用户视角
+export const getApplyList = data => req.post(`/taskman/api/v2/auth/roles/apply/byapplier`, data)
 // 获取编排下的判断分支
 export const getWorkflowForkNode = taskTemplateId =>
   req.get(`/taskman/api/v1/task-template/workflow/options?taskTemplateId=${taskTemplateId}`)

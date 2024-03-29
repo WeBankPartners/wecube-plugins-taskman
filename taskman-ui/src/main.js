@@ -20,6 +20,15 @@ Vue.use(ViewUI, {
   locale
 })
 
+router.beforeEach((to, from, next) => {
+  const ls = localStorage.getItem('taskman-accessToken')
+  if (ls !== null || to.path === '/login') {
+    next()
+  } else {
+    next('/login')
+  }
+})
+
 new Vue({
   router,
   render: h => h(App)

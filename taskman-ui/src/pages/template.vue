@@ -3,10 +3,14 @@
     <div>
       <Row>
         <Tabs v-model="status" @on-click="getTemplateList()">
-          <TabPane label="已发布" name="confirm"></TabPane>
-          <TabPane label="草稿" name="created"></TabPane>
+          <!--已发布-->
+          <TabPane :label="$t('status_confirm')" name="confirm"></TabPane>
+          <!--草稿-->
+          <TabPane :label="$t('status_draft')" name="created"></TabPane>
+          <!--待管理员确认-->
           <TabPane :label="pendingLabel" name="pending"></TabPane>
-          <TabPane label="已禁用" name="disable"></TabPane>
+          <!--已禁用-->
+          <TabPane :label="$t('tw_template_status_disable')" name="disable"></TabPane>
         </Tabs>
       </Row>
       <Row>
@@ -53,7 +57,7 @@
             clearable
             filterable
             multiple
-            placeholder="使用场景"
+            :placeholder="$t('tw_useScene')"
             style="width: 90%"
             @on-change="onSearch"
           >
@@ -116,6 +120,7 @@ import {
   getTemplateList,
   deleteTemplate,
   forkTemplate,
+  copyTemplate,
   getManagementRoles,
   confirmUploadTemplate,
   enableTemplate,
@@ -125,8 +130,12 @@ import {
   templateConfirmCount
 } from '@/api/server'
 import { debounce } from '@/pages/util'
+import ScrollTag from '@/pages/components/scroll-tag.vue'
 export default {
   name: '',
+  components: {
+    ScrollTag
+  },
   data () {
     return {
       MODALHEIGHT: 500,
@@ -188,7 +197,7 @@ export default {
           }
         },
         {
-          title: '使用场景',
+          title: this.$t('tw_useScene'),
           minWidth: 80,
           key: 'type',
           render: (h, params) => {
@@ -198,11 +207,24 @@ export default {
         },
         {
           title: this.$t('procDefId'),
-          minWidth: 80,
+          minWidth: 100,
           sortable: 'custom',
           key: 'procDefName',
           render: (h, params) => {
-            return <span>{params.row.procDefName || '-'}</span>
+            if (params.row.procDefName) {
+              return (
+                <span>
+                  {`${params.row.procDefName}`}
+                  {params.row.procDefVersion && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.procDefVersion}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         {
@@ -249,9 +271,10 @@ export default {
           minWidth: 140,
           key: 'mgmtRoles',
           render: (h, params) => {
-            return params.row.useRoles.map(item => {
-              return <Tag>{item.displayName}</Tag>
+            const list = params.row.useRoles.map(item => {
+              return item.displayName
             })
+            return <ScrollTag list={list} />
           }
         },
         {
@@ -270,7 +293,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 180,
+          width: 205,
           align: 'center',
           render: (h, params) => {
             return (
@@ -324,7 +347,7 @@ export default {
                   </Tooltip>
                 )}
                 {/* 确认发布 */ this.status === 'pending' && this.username === params.row.administrator && (
-                  <Tooltip content={this.$t('确认发布')} placement="top">
+                  <Tooltip content={this.$t('tw_confirmPublish')} placement="top">
                     <Button
                       size="small"
                       type="success"
@@ -336,7 +359,7 @@ export default {
                   </Tooltip>
                 )}
                 {/* 退回草稿 */ this.status === 'pending' && this.username === params.row.administrator && (
-                  <Tooltip content={this.$t('退回草稿')} placement="top">
+                  <Tooltip content={this.$t('tw_redrawDraft')} placement="top">
                     <Button
                       size="small"
                       type="error"
@@ -344,6 +367,18 @@ export default {
                       onClick={() => this.draftTemplate(params.row)}
                     >
                       <Icon type="ios-redo" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
+                {/* 复制 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('copy')} placement="top">
+                    <Button
+                      size="small"
+                      type="primary"
+                      style="margin-right:5px;"
+                      onClick={() => this.copyTemplate(params.row)}
+                    >
+                      <Icon type="md-copy" size="16"></Icon>
                     </Button>
                   </Tooltip>
                 )}
@@ -409,18 +444,33 @@ export default {
       pendingLabel: () => {
         return (
           <div>
-            <span>待管理员确认</span>
+            <span>{this.$t('tw_waitAdminComfirm')}</span>
             {(this.confirmCount && <span class="badge">{this.confirmCount}</span>) || ''}
           </div>
         )
       },
       loading: false,
       typeList: [
-        { label: '发布', value: '1' },
-        { label: '请求', value: '2' },
-        { label: '问题', value: '3' },
-        { label: '事件', value: '4' },
-        { label: '变更', value: '5' }
+        {
+          value: '1',
+          label: this.$t('tw_publish') // 发布
+        },
+        {
+          value: '2',
+          label: this.$t('tw_request') // 请求
+        },
+        {
+          value: '3',
+          label: this.$t('tw_question') // 问题
+        },
+        {
+          value: '4',
+          label: this.$t('tw_event') // 事件
+        },
+        {
+          value: '5',
+          label: this.$t('fork') // 变更
+        }
       ]
     }
   },
@@ -487,14 +537,18 @@ export default {
       }
       const { statusCode } = await templateGiveMe(params)
       if (statusCode === 'OK') {
+        this.$Notice.success({
+          title: 'Successful',
+          desc: 'Successful'
+        })
         this.getTemplateList()
-        // this.editTemplate(row)
+        this.editTemplate(row)
       }
     },
     // 确认发布
     async confirmTemplate (row) {
       this.$Modal.confirm({
-        title: '确认发布？',
+        title: this.$t('tw_confirmPublish'),
         'z-index': 1000000,
         loading: true,
         onOk: async () => {
@@ -517,10 +571,18 @@ export default {
         onCancel: () => {}
       })
     },
+    // 复制模板
+    async copyTemplate (row) {
+      const { statusCode } = await copyTemplate(row.id)
+      if (statusCode === 'OK') {
+        this.status = 'created'
+        this.getTemplateList()
+      }
+    },
     // 退回草稿
     async draftTemplate (row) {
       this.$Modal.confirm({
-        title: '确认退回草稿？',
+        title: this.$t('tw_confirmRedraeDraft'),
         'z-index': 1000000,
         loading: false,
         render: () => {
@@ -581,10 +643,10 @@ export default {
     },
     async uploadSucess (val) {
       if (val.statusCode === 'CONFIRM') {
+        // 确认覆盖
         this.$Modal.confirm({
           title: this.$t('confirm_import'),
-          content:
-            this.$t('tw_template_cover_tips_l') + `"${val.data.templateName}"` + this.$t('tw_template_cover_tips_r'),
+          content: this.$t('tw_template_cover_tips'),
           'z-index': 1000000,
           loading: true,
           onOk: async () => {
@@ -595,16 +657,19 @@ export default {
                 title: 'Successful',
                 desc: 'Successful'
               })
+              this.status = 'created'
               this.getTemplateList()
             }
           },
           onCancel: () => {}
         })
       } else if (val.statusCode === 'OK') {
+        // 导入成功
         this.$Notice.success({
           title: 'Successful',
           desc: 'Successful'
         })
+        this.status = 'created'
         this.getTemplateList()
       } else {
         this.$Notice.warning({
@@ -678,6 +743,7 @@ export default {
           let res = await forkTemplate(row.id)
           if (res.statusCode === 'OK') {
             this.success()
+            this.status = 'created'
             this.getTemplateList()
           }
         },
@@ -789,13 +855,21 @@ export default {
       this.modalShow = row.id
     },
     async disableInit () {
-      await disableTemplate(this.modalShow)
+      const res = await disableTemplate(this.modalShow)
       this.modalShow = false
-      this.getTemplateList()
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.status = 'disable'
+        this.getTemplateList()
+      }
     },
     async enableTemplate (row) {
-      await enableTemplate(row.id)
-      this.getTemplateList()
+      const res = await enableTemplate(row.id)
+      if (res.statusCode === 'OK') {
+        this.success()
+        this.status = 'confirm'
+        this.getTemplateList()
+      }
     },
     async getConfirmCount () {
       const { statusCode, data } = await templateConfirmCount()

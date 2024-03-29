@@ -31,6 +31,7 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 						if len(result) > 0 && result[0] != "" {
 							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,handler,created_time,updated_time) values(?,?,?,?,?,?)",
 								Param: []interface{}{guid.CreateGuid(), taskId, request.Role, result[0], now, now}})
+							NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), result[0], userToken, language)
 						} else {
 							// 没有找到角色管理员,用本组兜底
 							actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task,role,created_time,updated_time) values(?,?,?,?,?,?)",
@@ -54,8 +55,14 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 										rand.Seed(time.Now().UnixNano())
 										handleTemplate.Handler = userList[rand.Intn(len(userList))].UserName
 									}
+									NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
 								}
 							}
+						} else if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeClaim) {
+							//  组内认领,给角色发送邮件
+							NotifyTaskRoleMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Role, userToken, language)
+						} else {
+							NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
 						}
 						actions = append(actions, &dao.ExecAction{Sql: "insert into task_handle (id,task_handle_template,task,role,handler,handler_type,created_time,updated_time) values(?,?,?,?,?,?,?,?)",
 							Param: []interface{}{guid.CreateGuid(), handleTemplate.Id, taskId, handleTemplate.Role, handleTemplate.Handler, handleTemplate.HandlerType, now, now}})
@@ -69,7 +76,7 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 
 func (s *TaskHandleService) GetRequestCheckTaskHandle(taskId string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskHandleList []*models.TaskHandleTable
-	err = dao.X.SQL("select * from task_handle where task = ?", taskId).Find(&taskHandleList)
+	err = dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", taskId).Find(&taskHandleList)
 	if err != nil {
 		return
 	}
@@ -86,7 +93,7 @@ func (s *TaskHandleService) GetTaskHandleListByTaskId(taskId string) (taskHandle
 
 func (s *TaskHandleService) Get(id string) (taskHandle *models.TaskHandleTable, err error) {
 	var taskHandleList []*models.TaskHandleTable
-	err = dao.X.SQL("select * from task_handle where id = ?", id).Find(&taskHandleList)
+	err = dao.X.SQL("select * from task_handle where id = ? and latest_flag = 1", id).Find(&taskHandleList)
 	if err != nil {
 		return
 	}
@@ -102,7 +109,8 @@ func (s *TaskHandleService) GetLatestRequestCheckTaskHandleByRequestId(requestId
 	if requestId == "" {
 		return
 	}
-	err = dao.X.SQL("select * from task   where request = ? and type = ?", requestId, models.TaskTypeCheck).Find(&taskList)
+	// 可能会有多次定版,取最新一次
+	err = dao.X.SQL("select * from task   where request = ? and type = ? order by sort desc", requestId, models.TaskTypeCheck).Find(&taskList)
 	if err != nil {
 		return
 	}

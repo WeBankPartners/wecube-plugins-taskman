@@ -78,7 +78,7 @@
   },
   "revoke_request_error": {
     "code": 20100011,
-    "message": "撤回请求失败：请求已被定版人处理，无法撤回，请刷新重试"
+    "message": "撤回请求失败：请求已被审批人处理，无法撤回，请刷新重试"
   },
   "get_request_preview_data_error": {
     "code": 20100012,
@@ -86,7 +86,7 @@
   },
   "import_template_version_conflict_error": {
     "code": 20100013,
-    "message": "导入失败:导入的模板版本低于平台版本,暂不支持导入"
+    "message": "导入失败:导入版本低于环境版本"
   },
   "report_request_not_permission": {
     "code": 20100014,
@@ -94,6 +94,50 @@
   },
   "deal_with_at_the_same_time_error": {
     "code": 20100015,
-    "message": "操作失败：当前请求正在被其他用户处理，暂不支持多用户同时操作同一请求"
+    "message": "处理失败:当前请求已被其他用户处理,请刷新列表重试"
+  },
+  "request_template_name_repeat_error": {
+    "code": 20100016,
+    "message": "保存失败:同名模版已存在"
+  },
+  "request_template_has_draft_error": {
+    "code": 20100017,
+    "message": "变更失败:已有变更记录在[草稿]请继续编辑,或者删除草稿重试"
+  },
+  "request_template_has_pending_error": {
+    "code": 20100018,
+    "message": "变更失败:已有变更记录在[待管理员确认],请催促模版-属主角色-角色管理员确认发布"
+  },
+  "template_import_not_workflow_role_error": {
+    "code": 20100019,
+    "message": "导入失败:暂无模版关联的编排的属主角色%s权限,请先在[右上角用户名-角色申请]申请角色权限"
+  },
+  "template_import_not_workflow_error": {
+    "code": 20100020,
+    "message": "导入失败:暂无模版关联的编排%s 版本:%s,请先导入编排%s 版本:%s,再导入模版"
+  },
+  "template_import_not_match_workflow_task_error": {
+    "code": 20100021,
+    "message": "导入失败:模版关联的编排%s版本:%s和模版的编排任务节点不匹配,请先导入正确的编排%s版本:%s,再导入模版"
+  },
+  "template_import_not_match_entity_error": {
+    "code": 20100022,
+    "message": "导入失败:请求表单%s关联失败,平台内不存在CMDB模型%s"
+  },
+  "template_import_name_repeat_error": {
+    "code": 20100023,
+    "message": "导入失败:同名模版已存在"
+  },
+  "template_import_exist_error": {
+    "code": 20100024,
+    "message": "导入失败:[草稿]中已有同名模版,请删除草稿重试"
+  },
+  "template_submit_task_handler_empty_error": {
+    "code": 20100025,
+    "message": "提交失败:任务节点%s的处理人未填写完整,请补充后重试"
+  },
+  "template_submit_handler_empty_error": {
+    "code": 20100026,
+    "message": "提交失败:审批节点%s的处理人未填写完整,请补充后重试"
   }
 }

@@ -7,7 +7,7 @@
             <div class="basci-info-left">
               <div class="title">
                 <div class="title-text">
-                  1.模版信息
+                  1.{{ $t('tw_template_information') }}
                   <span class="underline"></span>
                 </div>
               </div>
@@ -104,7 +104,7 @@
                     </div>
                   </FormItem>
                   <!-- 请求时效 -->
-                  <FormItem :label="$t('request_time_limit')">
+                  <FormItem :label="$t('tw_validity_period')">
                     <Select v-model="basicInfo.expireDay" filterable style="width: 96%;" @on-change="paramsChanged">
                       <Option v-for="item in expireDayOptions" :value="item" :key="item"
                         >{{ item }}{{ $t('day') }}</Option
@@ -150,17 +150,17 @@
             <div class="basci-info-right">
               <div class="title">
                 <div class="title-text">
-                  2.模版配置
+                  2.{{ $t('tw_template_configuration') }}
                   <span class="underline"></span>
                 </div>
               </div>
               <div class="basci-info-content">
                 <Form :label-width="120">
-                  <FormItem :label="$t('[起始]定版节点')">
+                  <FormItem :label="$t('tw_start_node')">
                     <i-switch v-model="basicInfo.pendingSwitch" @on-change="pendingSwitchChange" />
                     <Tooltip content="">
                       <div slot="content" style="white-space: normal;">
-                        实际定版人将按优先级寻找:[处理人(选填)]->[处理角色(选填,组员认领)]->[模版属主人(选填)]->[模版属主角色(必填,组员认领)]
+                        {{ $t('tw_versioning_node_tip') }}
                       </div>
                       <Icon type="ios-alert-outline" />
                     </Tooltip>
@@ -195,7 +195,7 @@
                         </Select>
                       </FormItem>
                       <!-- 节点时效 -->
-                      <FormItem :label="$t('节点时效')">
+                      <FormItem :label="$t('tw_node_validity_period')">
                         <Select v-model="basicInfo.pendingExpireDay" filterable style="width: 96%;">
                           <Option v-for="item in expireDayOptions" :value="item" :key="item"
                             >{{ item }}{{ $t('day') }}</Option
@@ -206,7 +206,7 @@
                     </div>
                   </template>
                   <!-- [中间]关联编排 -->
-                  <FormItem :label="$t('[中间]关联编排')">
+                  <FormItem :label="$t('tw_middle_node')">
                     <i-switch v-model="showFlow" @on-change="showSwitchChange" />
                   </FormItem>
                   <template v-if="showFlow">
@@ -237,12 +237,12 @@
                     </div>
                   </template>
                   <!-- [结束]确认节点 -->
-                  <FormItem :label="$t('[结束]确认节点')">
+                  <FormItem :label="$t('tw_end_node')">
                     <i-switch v-model="basicInfo.confirmSwitch" @on-change="basicInfo.confirmExpireDay = 1" />
                   </FormItem>
                   <template v-if="basicInfo.confirmSwitch">
                     <div>
-                      <FormItem :label="$t('节点时效')">
+                      <FormItem :label="$t('tw_node_validity_period')">
                         <Select v-model="basicInfo.confirmExpireDay" filterable style="width: 96%;">
                           <Option v-for="item in expireDayOptions" :value="item" :key="item"
                             >{{ item }}{{ $t('day') }}</Option
@@ -408,11 +408,15 @@ export default {
         cacheData.entityName = process.rootEntity.name
         cacheData.procDefKey = process.procDefKey
         cacheData.procDefName = process.procDefName
+        cacheData.procDefVersion = process.version
+        cacheData.OperatorObjType = process.rootEntity.displayName
       } else {
         cacheData.packageName = ''
         cacheData.entityName = ''
         cacheData.procDefKey = ''
         cacheData.procDefName = ''
+        cacheData.procDefVersion = ''
+        cacheData.OperatorObjType = ''
       }
       const method = this.basicInfo.id === '' ? createTemp : updateTemp
       const { statusCode, data } = await method(cacheData)
@@ -587,8 +591,8 @@ export default {
     // 改变管理编排
     showSwitchChange (val) {
       this.$Modal.confirm({
-        title: this.$t('[中间]关联编排'),
-        content: this.$t('切换编排会导致已配置的请求表单、审批表单、任务表单数据丢失,确认切换吗?'),
+        title: this.$t('tw_middle_node'),
+        content: this.$t('tw_workflow_change_tip'),
         'z-index': 1000000,
         onOk: async () => {
           this.basicInfo.procDefId = ''

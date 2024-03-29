@@ -176,7 +176,11 @@ export default {
           title: this.$t('tw_operator_type'),
           key: 'operatorObjType',
           render: (h, params) => {
-            return params.row.operatorObjType && <Tag>{params.row.operatorObjType}</Tag>
+            if (params.row.operatorObjType) {
+              return <Tag>{params.row.operatorObjType}</Tag>
+            } else {
+              return <span>-</span>
+            }
           }
         },
         {
@@ -239,7 +243,7 @@ export default {
           key: 'useRoleDisplay'
         }
       ],
-      lang: window.localStorage.getItem('lang'),
+      lang: window.localStorage.getItem('lang') || 'zh-CN',
       createRouteMap: {
         '1': 'createPublish',
         '2': 'createRequest',

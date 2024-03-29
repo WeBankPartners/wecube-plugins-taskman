@@ -18,7 +18,7 @@
             >{{ $t('tw_form_name') }}{{ $t('can_not_be_empty') }}</span
           >
         </FormItem>
-        <FormItem :label="$t('新增一行')">
+        <FormItem :label="$t('tw_add_a_new_row')">
           <Select v-model="group.itemGroupRule" style="width: 96%" filterable disabled>
             <Option v-for="item in groupRules" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>

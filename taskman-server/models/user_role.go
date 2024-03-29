@@ -10,8 +10,10 @@ type SimpleLocalRoleDto struct {
 }
 
 type UserDto struct {
-	ID       string `json:"id"`
-	UserName string `json:"username"`
-	Password string `json:"password"`
-	AuthType string `json:"authType"` // LOCAL,UM
+	ID                string `json:"id"`
+	UserName          string `json:"username"`
+	Password          string `json:"password"`
+	AuthType          string `json:"authType"` // LOCAL,UM
+	RoleAdministrator string `json:"roleAdministrator"`
+	Email             string `json:"email"`
 }

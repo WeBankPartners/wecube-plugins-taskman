@@ -1,6 +1,6 @@
 <template>
   <div class="workbench-entity-table">
-    <div class="radio-group">
+    <div class="workbench-entity-table-radio-group">
       <div
         v-for="(item, index) in requestData"
         :key="index"
@@ -14,7 +14,7 @@
         }"
         :style="activeStyle(item)"
       >
-        {{ `${item.itemGroup}` }}<span class="count">{{ item.value.length }}</span>
+        {{ `${item.itemGroupName}` }}<span class="count">{{ item.value.length }}</span>
       </div>
     </div>
     <div class="form-table">
@@ -30,7 +30,13 @@
                   :required="i.required === 'yes'"
                   :rules="
                     i.required === 'yes'
-                      ? [{ required: true, message: `${i.title}为空`, trigger: ['change', 'blur'] }]
+                      ? [
+                          {
+                            required: true,
+                            message: `${i.title}${$t('can_not_be_empty')}`,
+                            trigger: ['change', 'blur']
+                          }
+                        ]
                       : []
                   "
                 >
@@ -56,9 +62,9 @@
                     :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
                     :options="value[i.name + 'Options']"
                     :disabled="i.isEdit === 'no' || formDisable"
-                    :multiple="i.multiple === 'Y'"
+                    :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
                     style="width: calc(100% - 20px)"
-                    @open-change="handleSelectOpenChange(i, value, index)"
+                    @open-change="handleRefOpenChange(i, value, index)"
                   >
                   </LimitSelect>
                   <!--自定义分析类型-->
@@ -91,26 +97,32 @@
       </div>
     </div>
     <div class="add-row">
+      <!--添加一行-->
       <Button v-if="isAdd && activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{
         $t('tw_add_row')
       }}</Button>
       <!--选择已有数据添加一行-->
       <Select
+        ref="addRowSelect"
         v-if="isAdd && activeItem.itemGroupRule === 'exist'"
         v-model="addRowSource"
         filterable
         clearable
-        placeholder="选择已有数据添加一行"
+        :placeholder="$t('tw_addRow_exist')"
         style="width:450px;"
         prefix="md-add-circle"
-        @on-open-change="getCmdbEntityList"
+        @on-open-change="
+          flag => {
+            if (flag) getCmdbEntityList()
+          }
+        "
         @on-change="addRow"
       >
         <template #prefix>
           <Icon type="md-add-circle" color="#2d8cf0" :size="24"></Icon>
         </template>
-        <template v-for="(i, index) in addRowSourceOptions">
-          <Option :key="index" :value="i.id">{{ i.displayName }}</Option>
+        <template v-for="i in addRowSourceOptions">
+          <Option :key="i.id" :value="i.id">{{ i.displayName }}</Option>
         </template>
       </Select>
     </div>
@@ -120,12 +132,10 @@
 <script>
 import { getRefOptions, getWeCmdbOptions, saveFormData, getExpressionData } from '@/api/server'
 import { debounce, deepClone } from '@/pages/util'
-import EntityItem from './edit-entity-item.vue'
 import LimitSelect from '@/pages/components/limit-select.vue'
 import dayjs from 'dayjs'
 export default {
   components: {
-    EntityItem,
     LimitSelect
   },
   props: {
@@ -150,11 +160,6 @@ export default {
     formDisable: {
       type: Boolean,
       default: false
-    },
-    // 类型(1发布2请求)
-    type: {
-      type: String,
-      default: ''
     }
   },
   data () {
@@ -168,7 +173,7 @@ export default {
       tableData: [],
       addRowSource: '',
       addRowSourceOptions: [],
-      worklfowData: [] // 编排类表单默认下发value
+      worklfowDataIdsObj: {} // 编排类表单默认下发数据dataId集合
     }
   },
   computed: {
@@ -200,9 +205,13 @@ export default {
             if (item.value.length === 0 && this.autoAddRow && item.itemGroupRule !== 'exist') {
               this.handleAddRow(item)
             }
-            // 备份编排类表单初始下发value
+            // 备份编排类表单初始value
             if (item.itemGroupRule === 'exist' && item.itemGroupType === 'workflow') {
-              this.worklfowData = item.value || []
+              const list = item.value || []
+              const ids = list.map(item => {
+                return item.dataId
+              })
+              this.$set(this.worklfowDataIdsObj, item.formTemplateId, ids)
             }
           })
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
@@ -215,12 +224,15 @@ export default {
     }
   },
   methods: {
-    handleSelectOpenChange (titleObj, row, index) {
+    // ref类型下拉框每次展开调用接口
+    handleRefOpenChange (titleObj, row, index) {
       this.getRefOptions(titleObj, row, index, false)
     },
+    // 保存当前表单组的数据
     async saveCurrentTabData (item) {
       await saveFormData(this.requestId, item)
     },
+    // 时间选择器默认填充当前时分秒
     handleTimeChange (e, value, name) {
       if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
         value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
@@ -242,9 +254,9 @@ export default {
 
       this.activeTab = item.entity || item.itemGroup
       this.activeItem = item
-      this.initTableData()
       this.addRowSource = ''
       this.addRowSourceOptions = []
+      this.initTableData()
     }, 100),
     async initTableData () {
       // 当前选择tab数据
@@ -320,6 +332,7 @@ export default {
       if (titleObj.elementType === 'wecmdbEntity') {
         if (!first) return
         const [packageName, ciType] = (titleObj.dataOptions && titleObj.dataOptions.split(':')) || []
+        if (!packageName || !ciType) return
         const { status, data } = await getWeCmdbOptions(packageName, ciType, {})
         if (status === 'OK') {
           row[titleObj.name + 'Options'] = data
@@ -379,7 +392,7 @@ export default {
       }
     },
     // 获取自定义计算分析类型的值
-    async getExpressionData (titleObj, value, index) {
+    async getExpressionData (titleObj, value) {
       const { statusCode, data } = await getExpressionData(titleObj.id, value.dataId)
       if (statusCode === 'OK') {
         const displayNameArr = data.map(item => {
@@ -418,6 +431,7 @@ export default {
           const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
           this.handleAddRow(data, source)
           this.initTableData()
+          this.$refs.addRowSelect.clearSingleSelect()
         }
       }
     },
@@ -427,11 +441,17 @@ export default {
       data.title.forEach(item => {
         // 选择已有数据添加一行，填充默认值
         if (source) {
-          entityData[item.name] = source[item.name] || ''
+          if (source.hasOwnProperty(item.name)) {
+            entityData[item.name] = source[item.name]
+          } else if (!source.hasOwnProperty(item.name) && item.defaultClear === 'no') {
+            entityData[item.name] = item.defaultValue
+          } else {
+            entityData[item.name] = ''
+          }
         } else {
-          // 默认清空标志为false,赋值默认值
+          // 模板自带默认值
           if (item.defaultClear === 'no') {
-            entityData[item.name] = item.defaultValue || ''
+            entityData[item.name] = item.defaultValue
           } else {
             entityData[item.name] = ''
           }
@@ -471,8 +491,9 @@ export default {
           })
         }
         if (this.activeItem.itemGroupType === 'workflow') {
-          const workflowDataIds = this.worklfowData.map(i => i.dataId)
-          this.addRowSourceOptions = this.addRowSourceOptions.filter(item => workflowDataIds.includes(item.id))
+          this.addRowSourceOptions = this.addRowSourceOptions.filter(item =>
+            this.worklfowDataIdsObj[this.activeItem.formTemplateId].includes(item.id)
+          )
         }
         this.addRowSourceOptions = this.addRowSourceOptions.filter(item => !ids.includes(item.id))
       }
@@ -522,15 +543,16 @@ export default {
 <style lang="scss">
 .workbench-entity-table {
   width: 100%;
-  .radio-group {
+  &-radio-group {
     display: flex;
-    margin-bottom: 15px;
+    flex-wrap: wrap;
     .radio {
       padding: 5px 15px;
       border-radius: 32px;
       font-size: 14px;
       cursor: pointer;
       margin-right: 10px;
+      margin-bottom: 15px;
     }
     .custom {
       border: 1px solid #b886f8;

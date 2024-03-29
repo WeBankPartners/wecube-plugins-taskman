@@ -80,59 +80,64 @@ type PlatformData struct {
 
 // PlatformDataObj 工作台返回数据
 type PlatformDataObj struct {
-	Id                    string `json:"id" xorm:"'id' pk" primary-key:"id"`                    // 请求ID
-	Name                  string `json:"name" xorm:"name"`                                      // 请求名称
-	TemplateId            string `json:"templateId" xorm:"template_id"`                         // 模板ID
-	TemplateName          string `json:"templateName" xorm:"template_name"`                     // 使用模板名称
-	Type                  int    `json:"type" xorm:"type"`                                      // 模板类型: 0表示请求,1表示发布
-	Version               string `json:"version" xorm:"version"`                                // 模板版本
-	OperatorObj           string `json:"operatorObj" xorm:"operator_obj"`                       // 操作对象
-	OperatorObjType       string `json:"operatorObjType" xorm:"operator_obj_type"`              // 操作对象类型
-	ProcInstanceId        string `json:"procInstanceId" xorm:"proc_instance_id"`                // 编排实例id
-	ProcDefId             string `json:"procDefId" xorm:"proc_def_id"`                          // 编排 key
-	ProcDefKey            string `json:"procDefKey" xorm:"proc_def_key"`                        // 编排id
-	ProcDefName           string `json:"procDefName" xorm:"proc_def_name"`                      // 使用编排
-	Status                string `json:"status" xorm:"status"`                                  // 请求状态
-	CurNode               string `json:"curNode"  xorm:"cur_node"`                              // 当前节点
-	Progress              int    `json:"progress" xorm:"progress"`                              // 进展
-	CreatedBy             string `json:"createdBy" xorm:"created_by"`                           // 创建人
-	Handler               string `json:"handler" xorm:"handler"`                                // 当前处理人
-	CreatedTime           string `json:"createdTime" xorm:"created_time"`                       // 创建时间
-	ReportTime            string `json:"reportTime" xorm:"report_time"`                         // 请求提交时间
-	ExpectTime            string `json:"expectTime" xorm:"expect_time"`                         // 期望完成时间
-	UpdatedTime           string `json:"updatedTime" xorm:"updated_time"`                       // 更新时间
-	ApprovalTime          string `json:"approvalTime" xorm:"approval_time"`                     // 请求处理时间
-	CollectFlag           int    `json:"collectFlag" xorm:"collect_flag"`                       // 收藏标记,1表示已收藏
-	Role                  string `json:"role" xorm:"role"`                                      // 创建请求Role
-	RoleDisplay           string `json:"roleDisplay" xorm:"-"`                                  // 创建请求Role
-	HandleRole            string `json:"handleRole" xorm:"handle_role"`                         // 处理role
-	HandleRoleDisplay     string `json:"handleRoleDisplay" xorm:"-"`                            // 处理role
-	RollbackDesc          string `json:"rollbackDesc" xorm:"rollback_desc"`                     // 回退原因
-	RevokeFlag            int    `json:"revokeFlag" xorm:"revoke_flag"`                         // 是否撤回,0表示否,1表示撤回
-	StartTime             string `json:"startTime" xorm:"-"`                                    // 开始时间
-	EffectiveDays         int    `json:"effectiveDays" xorm:"-"`                                // 有效天数
-	ParentId              string `json:"parentId" xorm:"parent_id"`                             // 模板父类id
-	Cache                 string `json:"-" xorm:"cache"`                                        // request cache
-	TaskId                string `json:"taskId" xorm:"task_id"`                                 // 当前正在进行中的taskId
-	TaskName              string `json:"taskName" xorm:"task_name"`                             // taskName
-	TaskCreatedTime       string `json:"taskCreatedTime" xorm:"task_created_time"`              // task创建时间
-	TaskApprovalTime      string `json:"taskApprovalTime" xorm:"task_approval_time"`            // 任务处理时间
-	TaskExpectTime        string `json:"taskExpectTime" xorm:"task_expect_time"`                // 任务期望完成时间
-	TaskHandleRole        string `json:"taskHandleRole" xorm:"task_handle_role"`                // 任务处理角色
-	TaskHandleRoleDisplay string `json:"taskHandleRoleDisplay" xorm:"-"`                        // 任务处理角色
-	TaskHandler           string `json:"taskHandler" xorm:"task_handler"`                       // 任务审批人
-	TaskHandleId          string `json:"taskHandleId" xorm:"task_handle_id"`                    // 任务处理ID
-	TaskUpdatedTime       string `json:"taskUpdatedTime" xorm:"task_updated_time"`              // 任务更新时间
-	TaskHandleCreatedTime string `json:"taskHandleCreatedTime" xorm:"task_handle_created_time"` // 任务处理创建时间
-	TaskHandleUpdatedTime string `json:"taskHandleUpdatedTime" xorm:"task_handle_updated_time"` // 任务处理更新时间
-	TaskStatus            string `json:"taskStatus" xorm:"task_status"`                         // 当前任务状态
-	RequestStayTime       string `json:"requestStayTime" xorm:"-"`                              // 请求停留时长
-	RequestStayTimeTotal  int    `json:"requestStayTimeTotal" xorm:"-"`                         // 请求停留时长总数
-	TaskStayTime          string `json:"taskStayTime" xorm:"-"`                                 // 任务停留时长
-	TaskStayTimeTotal     int    `json:"taskStayTimeTotal" xorm:"-"`                            // 任务停留时长总数
-	HandlerType           string `json:"handlerType" xorm:"-"`                                  // 人员设置方式,template.模板指定，custom 提交人指定等
-	RoleAdministrator     string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
-	ExpireDay             int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
+	Id                     string `json:"id" xorm:"'id' pk" primary-key:"id"`                    // 请求ID
+	Name                   string `json:"name" xorm:"name"`                                      // 请求名称
+	TemplateId             string `json:"templateId" xorm:"template_id"`                         // 模板ID
+	TemplateName           string `json:"templateName" xorm:"template_name"`                     // 使用模板名称
+	Type                   int    `json:"type" xorm:"type"`                                      // 模板类型: 0表示请求,1表示发布
+	Version                string `json:"version" xorm:"version"`                                // 模板版本
+	OperatorObj            string `json:"operatorObj" xorm:"operator_obj"`                       // 操作对象
+	OperatorObjType        string `json:"operatorObjType" xorm:"operator_obj_type"`              // 操作对象类型
+	ProcInstanceId         string `json:"procInstanceId" xorm:"proc_instance_id"`                // 编排实例id
+	ProcDefId              string `json:"procDefId" xorm:"proc_def_id"`                          // 编排 key
+	ProcDefKey             string `json:"procDefKey" xorm:"proc_def_key"`                        // 编排id
+	ProcDefName            string `json:"procDefName" xorm:"proc_def_name"`                      // 使用编排
+	ProcDefVersion         string `json:"procDefVersion" xorm:"proc_def_version"`                // 编排版本
+	Status                 string `json:"status" xorm:"status"`                                  // 请求状态
+	CurNode                string `json:"curNode"  xorm:"cur_node"`                              // 当前节点
+	Progress               int    `json:"progress" xorm:"progress"`                              // 进展
+	CreatedBy              string `json:"createdBy" xorm:"created_by"`                           // 创建人
+	Handler                string `json:"handler" xorm:"handler"`                                // 当前处理人
+	CheckHandler           string `json:"checkHandler" xorm:"-"`                                 // 定版处理人
+	CreatedTime            string `json:"createdTime" xorm:"created_time"`                       // 创建时间
+	ReportTime             string `json:"reportTime" xorm:"report_time"`                         // 请求提交时间
+	ExpectTime             string `json:"expectTime" xorm:"expect_time"`                         // 期望完成时间
+	UpdatedTime            string `json:"updatedTime" xorm:"updated_time"`                       // 更新时间
+	ApprovalTime           string `json:"approvalTime" xorm:"approval_time"`                     // 请求处理时间
+	CollectFlag            int    `json:"collectFlag" xorm:"collect_flag"`                       // 收藏标记,1表示已收藏
+	Role                   string `json:"role" xorm:"role"`                                      // 创建请求Role
+	RoleDisplay            string `json:"roleDisplay" xorm:"-"`                                  // 创建请求Role
+	HandleRole             string `json:"handleRole" xorm:"handle_role"`                         // 处理role
+	HandleRoleDisplay      string `json:"handleRoleDisplay" xorm:"-"`                            // 处理role
+	CheckHandleRole        string `json:"checkHandleRole" xorm:"-"`                              // 定版处理人角色
+	CheckHandleRoleDisplay string `json:"checkHandleRoleDisplay" xorm:"-"`                       // 定版处理role
+	RollbackDesc           string `json:"rollbackDesc" xorm:"rollback_desc"`                     // 回退原因
+	RevokeFlag             int    `json:"revokeFlag" xorm:"revoke_flag"`                         // 是否撤回,0表示否,1表示撤回
+	RevokeBtn              bool   `json:"revokeBtn" xorm:"-"`                                    // 是否出撤回按钮
+	StartTime              string `json:"startTime" xorm:"-"`                                    // 开始时间
+	EffectiveDays          int    `json:"effectiveDays" xorm:"-"`                                // 有效天数
+	ParentId               string `json:"parentId" xorm:"parent_id"`                             // 模板父类id
+	Cache                  string `json:"-" xorm:"cache"`                                        // request cache
+	TaskId                 string `json:"taskId" xorm:"task_id"`                                 // 当前正在进行中的taskId
+	TaskName               string `json:"taskName" xorm:"task_name"`                             // taskName
+	TaskCreatedTime        string `json:"taskCreatedTime" xorm:"task_created_time"`              // task创建时间
+	TaskApprovalTime       string `json:"taskApprovalTime" xorm:"task_approval_time"`            // 任务处理时间
+	TaskExpectTime         string `json:"taskExpectTime" xorm:"task_expect_time"`                // 任务期望完成时间
+	TaskHandleRole         string `json:"taskHandleRole" xorm:"task_handle_role"`                // 任务处理角色
+	TaskHandleRoleDisplay  string `json:"taskHandleRoleDisplay" xorm:"-"`                        // 任务处理角色
+	TaskHandler            string `json:"taskHandler" xorm:"task_handler"`                       // 任务审批人
+	TaskHandleId           string `json:"taskHandleId" xorm:"task_handle_id"`                    // 任务处理ID
+	TaskUpdatedTime        string `json:"taskUpdatedTime" xorm:"task_updated_time"`              // 任务更新时间
+	TaskHandleCreatedTime  string `json:"taskHandleCreatedTime" xorm:"task_handle_created_time"` // 任务处理创建时间
+	TaskHandleUpdatedTime  string `json:"taskHandleUpdatedTime" xorm:"task_handle_updated_time"` // 任务处理更新时间
+	TaskStatus             string `json:"taskStatus" xorm:"task_status"`                         // 当前任务状态
+	RequestStayTime        string `json:"requestStayTime" xorm:"-"`                              // 请求停留时长
+	RequestStayTimeTotal   int    `json:"requestStayTimeTotal" xorm:"-"`                         // 请求停留时长总数
+	TaskStayTime           string `json:"taskStayTime" xorm:"-"`                                 // 任务停留时长
+	TaskStayTimeTotal      int    `json:"taskStayTimeTotal" xorm:"-"`                            // 任务停留时长总数
+	HandlerType            string `json:"handlerType" xorm:"-"`                                  // 人员设置方式,template.模板指定，custom 提交人指定等
+	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
+	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
 }
 
 // RequestProgress 请求进度
@@ -301,6 +306,7 @@ type RequestForm struct {
 	AttachFiles         []*AttachFileTable        `json:"attachFiles"`         // 请求附件
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
+	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
 }
 
 type CustomForm struct {
@@ -331,11 +337,7 @@ func (q KeyValueSort) Len() int {
 }
 
 func (q KeyValueSort) Less(i, j int) bool {
-	t := strings.Compare(q[i].TemplateName, q[j].TemplateName)
-	if t < 0 {
-		return true
-	}
-	return false
+	return strings.Compare(q[i].TemplateName, q[j].TemplateName) < 0
 }
 
 func (q KeyValueSort) Swap(i, j int) {
@@ -376,7 +378,7 @@ type RequestForHistory struct {
 }
 
 type TaskHandleForHistory struct {
-	TaskHandleTable
+	*TaskHandleTable
 	AttachFiles []*AttachFileTable `json:"attachFiles"`
 }
 
@@ -434,4 +436,9 @@ func (s TaskProgressNodeSort) Swap(i, j int) {
 
 func (s TaskProgressNodeSort) Less(i, j int) bool {
 	return s[i].Sort < s[j].Sort
+}
+
+type HistoryResultToSort struct {
+	ItemGroupSort     int                     `json:"itemGroupSort"`
+	HistoryResultElem *RequestPreDataTableObj `json:"historyResultElem"`
 }

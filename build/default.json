@@ -47,5 +47,6 @@
     "bucket": "taskman-file",
     "ssl": false
   },
-  "encrypt_seed": "{{ENCRYPT_SEED}}"
+  "encrypt_seed": "{{ENCRYPT_SEED}}",
+  "web_url": "{{TASKMAN_WEB_URL}}"
 }

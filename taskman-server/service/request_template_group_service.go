@@ -44,7 +44,7 @@ func (s *RequestTemplateGroupService) CreateRequestTemplateGroup(param *models.R
 	_, err := dao.X.Exec("insert into request_template_group(id,name,description,manage_role,created_by,created_time,updated_by,updated_time) value (?,?,?,?,?,?,?,?)",
 		param.Id, param.Name, param.Description, param.ManageRole, param.CreatedBy, nowTime, param.CreatedBy, nowTime)
 	if err != nil {
-		err = fmt.Errorf("Insert database error:%s ", err.Error())
+		err = fmt.Errorf("insert database error:%s ", err.Error())
 	}
 	return err
 }
@@ -54,7 +54,7 @@ func (s *RequestTemplateGroupService) UpdateRequestTemplateGroup(param *models.R
 	_, err := dao.X.Exec("update request_template_group set name=?,description =?,manage_role=?,updated_by=?,updated_time=? where id=?",
 		param.Name, param.Description, param.ManageRole, param.UpdatedBy, nowTime, param.Id)
 	if err != nil {
-		err = fmt.Errorf("Update database error:%s ", err.Error())
+		err = fmt.Errorf("update database error:%s ", err.Error())
 	}
 	return err
 }
@@ -62,7 +62,7 @@ func (s *RequestTemplateGroupService) UpdateRequestTemplateGroup(param *models.R
 func (s *RequestTemplateGroupService) DeleteRequestTemplateGroup(id string) error {
 	_, err := dao.X.Exec("update request_template_group set del_flag=1 where id=?", id)
 	if err != nil {
-		err = fmt.Errorf("Delete database error:%s ", err.Error())
+		err = fmt.Errorf("delete database error:%s ", err.Error())
 	}
 	return err
 }
@@ -73,7 +73,7 @@ func (s *RequestTemplateGroupService) CheckRequestTemplateGroupRoles(id string, 
 	rolesFilterParam = append([]interface{}{id}, rolesFilterParam...)
 	err := dao.X.SQL("select id from request_template_group where id=? and manage_role in ("+rolesFilterSql+")", rolesFilterParam...).Find(&requestTemplateGroupRows)
 	if err != nil {
-		return fmt.Errorf("Try to query database data fail,%s ", err.Error())
+		return fmt.Errorf("try to query database data fail,%s ", err.Error())
 	}
 	if len(requestTemplateGroupRows) == 0 {
 		return fmt.Errorf(models.RowDataPermissionErr)

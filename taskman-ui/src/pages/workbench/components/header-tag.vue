@@ -4,22 +4,24 @@
       <Col :span="3" class="line">{{ $t('handler_role') }}</Col>
       <Col :span="2" class="line">{{ $t('handler') }}</Col>
       <Col :span="2" class="line">{{ $t('t_action') }}</Col>
-      <Col :span="4" class="line">{{ $t('handle_time') }}</Col>
+      <Col :span="2" class="line">{{ $t('tw_handleStatus') }}</Col>
+      <Col :span="3" class="line">{{ $t('handle_time') }}</Col>
       <Col :span="3" class="line">{{ $t('tw_assume') }}</Col>
       <Col :span="5" class="line">{{ $t('tw_note') }}</Col>
-      <Col :span="5" class="line">{{ $t('tw_attach') }}</Col>
+      <Col :span="4" class="line">{{ $t('tw_attach') }}</Col>
     </Row>
     <template v-if="data.taskHandleList && data.taskHandleList.length > 0">
       <Row v-for="i in data.taskHandleList" :key="i.id" class="content" :gutter="10">
         <Col :span="3" class="line">{{ i.role || '-' }}</Col>
         <Col :span="2" class="line">{{ i.handler || '-' }}</Col>
         <Col :span="2" class="line">{{ getOperationName(i) }}</Col>
-        <Col :span="4" class="line">{{ i.updatedTime }}</Col>
+        <Col :span="2" class="line">{{ getHandleStatus(i) }}</Col>
+        <Col :span="3" class="line">{{ i.updatedTime || '-' }}</Col>
         <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
         <Col :span="5" class="line"
           ><div class="text-overflow">{{ i.resultDesc || '-' }}</div></Col
         >
-        <Col :span="5" class="line">
+        <Col :span="4" class="line">
           <div v-for="file in i.attachFiles" style="display:inline-block;" :key="file.id">
             <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
               file.name
@@ -32,12 +34,13 @@
       <Col :span="3" class="line">{{ data.role || '-' }}</Col>
       <Col :span="2" class="line">{{ data.handler || '-' }}</Col>
       <Col :span="2" class="line">{{ data.choseOption || operation || '-' }}</Col>
-      <Col :span="4" class="line">{{ data.updatedTime }}</Col>
+      <Col :span="2" class="line">{{ '-' }}</Col>
+      <Col :span="3" class="line">{{ data.updatedTime || '-' }}</Col>
       <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
       <Col :span="5" class="line"
         ><div class="text-overflow">{{ data.comment }}</div></Col
       >
-      <Col :span="5" class="line">
+      <Col :span="4" class="line">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
           <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
             file.name
@@ -69,26 +72,40 @@ export default {
   },
   data () {
     return {
-      headers: {},
-      approvalOperation: {
-        deny: '拒绝',
-        approve: '同意',
-        redraw: '退回',
-        complete: '完成',
-        uncompleted: this.$t('tw_incomplete')
-      }
+      headers: {}
     }
   },
   computed: {
     getOperationName () {
       return function (i) {
-        let name = ''
-        if (['approve', 'check', 'implement_custom'].includes(this.data.type)) {
-          name = this.approvalOperation[i.handleResult]
-        } else if (this.data.type === 'implement_process') {
-          name = i.handleResult
+        // 1.编排任务系统下发选项，2审批和定版退回，前端枚举
+        const resultMap = {
+          deny: this.$t('tw_reject'), // 拒绝
+          approve: this.$t('tw_approve'), // 同意
+          redraw: this.$t('tw_send_back') // 退回
         }
-        return name || this.operation || '-'
+        let resultName = ''
+        if (['approve', 'check'].includes(this.data.type)) {
+          resultName = resultMap[i.handleResult]
+        }
+        if (this.data.type === 'implement_process') {
+          resultName = i.handleResult
+        }
+        return resultName || this.operation || '-'
+      }
+    },
+    getHandleStatus () {
+      return function (i) {
+        // 任务处理状态
+        const statusMap = {
+          complete: this.$t('tw_completed'),
+          uncompleted: this.$t('tw_incomplete')
+        }
+        let statusName = ''
+        if (['implement_custom', 'implement_process'].includes(this.data.type)) {
+          statusName = statusMap[i.handleStatus]
+        }
+        return statusName || '-'
       }
     },
     getDiffTime () {
@@ -179,6 +196,7 @@ export default {
     font-size: 12px;
     overflow: hidden;
     word-break: break-all;
+    min-height: 50px;
     .text-overflow {
       overflow: hidden;
       white-space: nowrap;

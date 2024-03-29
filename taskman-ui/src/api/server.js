@@ -29,6 +29,7 @@ export const getProcess = role => req.get(`/taskman/api/v1/process/list?role=${r
 export const createTemp = data => req.post('/taskman/api/v1/request-template', data)
 export const updateTemp = data => req.put('/taskman/api/v1/request-template', data)
 export const deleteTemp = data => req.delete('/taskman/api/v1/request-template', data)
+export const copyTemplate = id => req.post(`/taskman/api/v1/request-template/copy/${id}`)
 
 export const getFormList = requestTemplateId =>
   req.get(`/taskman/api/v1/request-template/${requestTemplateId}/attrs/list`)
@@ -241,3 +242,6 @@ export const addUserForRole = (roleId, data) => req.post(`/taskman/api/v2/auth/r
 export const handleApplication = data => req.put(`/taskman/api/v2/auth/roles/apply`, data)
 // 申请列表-用户视角
 export const getApplyList = data => req.post(`/taskman/api/v2/auth/roles/apply/byapplier`, data)
+// 获取编排下的判断分支
+export const getWorkflowForkNode = taskTemplateId =>
+  req.get(`/taskman/api/v1/task-template/workflow/options?taskTemplateId=${taskTemplateId}`)

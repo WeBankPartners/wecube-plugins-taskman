@@ -20,12 +20,18 @@ func GetRequestRoles(c *gin.Context) []string {
 
 var (
 	whiteListUrl = map[string]struct{}{
-		models.UrlPrefix + "/api/v1/login/seed": {},
-		models.UrlPrefix + "/api/v1/login":      {},
+		models.UrlPrefix + "/api/v1/login/seed":          {},
+		models.UrlPrefix + "/api/v1/login":               {},
+		models.UrlPrefix + "/api/v2/auth/roles":          {},
+		models.UrlPrefix + "/api/v2/auth/roles/apply":    {},
+		models.UrlPrefix + "/api/v2/auth/users/register": {},
 	}
 )
 
 func isWhiteListUrl(url string) (result bool) {
+	if paramIndex := strings.Index(url, "?"); paramIndex > 0 {
+		url = url[:paramIndex]
+	}
 	_, result = whiteListUrl[url]
 	return
 }

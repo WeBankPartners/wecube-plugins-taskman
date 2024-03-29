@@ -3,49 +3,50 @@ package models
 import "time"
 
 type TaskTable struct {
-	Id                string   `json:"id" xorm:"'id' pk" primary-key:"id"`
-	Name              string   `json:"name" xorm:"name"`
-	Description       string   `json:"description" xorm:"description"`
-	Form              string   `json:"form" xorm:"form"`
-	AttachFile        string   `json:"attachFile" xorm:"attach_file"`
-	Status            string   `json:"status" xorm:"status"`
-	Version           string   `json:"version" xorm:"version"`
-	Request           string   `json:"request" xorm:"request"`
-	Parent            string   `json:"parent" xorm:"parent"`
-	TaskTemplate      string   `json:"taskTemplate" xorm:"task_template"`
-	PackageName       string   `json:"packageName" xorm:"package_name"`
-	EntityName        string   `json:"entityName" xorm:"entity_name"`
-	ProcDefId         string   `json:"procDefId" xorm:"proc_def_id"`
-	ProcDefKey        string   `json:"procDefKey" xorm:"proc_def_key"`
-	ProcDefName       string   `json:"procDefName" xorm:"proc_def_name"`
-	NodeDefId         string   `json:"nodeDefId" xorm:"node_def_id"`
-	NodeName          string   `json:"nodeName" xorm:"node_name"`
-	CallbackUrl       string   `json:"callbackUrl" xorm:"callback_url"`
-	CallbackParameter string   `json:"callbackParameter" xorm:"callback_parameter"`
-	CallbackData      string   `json:"callbackData" xorm:"callback_data"`
-	Emergency         int      `json:"emergency" xorm:"emergency"`
-	Result            string   `json:"result" xorm:"result"`
-	Cache             string   `json:"cache" xorm:"cache"`
-	CallbackRequestId string   `json:"callbackRequestId" xorm:"callback_request_id"`
-	Reporter          string   `json:"reporter" xorm:"reporter"`
-	ReportTime        string   `json:"reportTime" xorm:"report_time"`
-	ReportRole        string   `json:"reportRole" xorm:"report_role"`
-	Handler           string   `json:"handler" xorm:"handler"`
-	NextOption        string   `json:"nextOption" xorm:"next_option"`
-	ChoseOption       string   `json:"choseOption" xorm:"chose_option"`
-	CreatedBy         string   `json:"createdBy" xorm:"created_by"`
-	CreatedTime       string   `json:"createdTime" xorm:"created_time"`
-	UpdatedBy         string   `json:"updatedBy" xorm:"updated_by"`
-	UpdatedTime       string   `json:"updatedTime" xorm:"updated_time"`
-	DelFlag           string   `json:"delFlag" xorm:"del_flag"`
-	OperationOptions  []string `json:"operationOptions" xorm:"-"`
-	ExpireTime        string   `json:"expireTime" xorm:"expire_time"`
-	NotifyCount       int      `json:"notifyCount" xorm:"notify_count"`
-	TemplateType      int      `json:"templateType" xorm:"template_type"` // 请求模板类型 0表示请求,1表示发布
-	Type              string   `json:"type" xorm:"type"`
-	Sort              int      `json:"sort" xorm:"sort"`
-	TaskResult        string   `json:"taskResult" xorm:"task_result"`
-	ConfirmResult     string   `json:"confirmResult" xorm:"confirm_result"`
+	Id                 string   `json:"id" xorm:"'id' pk" primary-key:"id"`
+	Name               string   `json:"name" xorm:"name"`
+	Description        string   `json:"description" xorm:"description"`
+	Form               string   `json:"form" xorm:"form"`
+	AttachFile         string   `json:"attachFile" xorm:"attach_file"`
+	Status             string   `json:"status" xorm:"status"`
+	Version            string   `json:"version" xorm:"version"`
+	Request            string   `json:"request" xorm:"request"`
+	Parent             string   `json:"parent" xorm:"parent"`
+	TaskTemplate       string   `json:"taskTemplate" xorm:"task_template"`
+	PackageName        string   `json:"packageName" xorm:"package_name"`
+	EntityName         string   `json:"entityName" xorm:"entity_name"`
+	ProcDefId          string   `json:"procDefId" xorm:"proc_def_id"`
+	ProcDefKey         string   `json:"procDefKey" xorm:"proc_def_key"`
+	ProcDefName        string   `json:"procDefName" xorm:"proc_def_name"`
+	NodeDefId          string   `json:"nodeDefId" xorm:"node_def_id"`
+	NodeName           string   `json:"nodeName" xorm:"node_name"`
+	CallbackUrl        string   `json:"callbackUrl" xorm:"callback_url"`
+	CallbackParameter  string   `json:"callbackParameter" xorm:"callback_parameter"`
+	CallbackData       string   `json:"callbackData" xorm:"callback_data"`
+	Emergency          int      `json:"emergency" xorm:"emergency"`
+	Result             string   `json:"result" xorm:"result"`
+	Cache              string   `json:"cache" xorm:"cache"`
+	CallbackRequestId  string   `json:"callbackRequestId" xorm:"callback_request_id"`
+	Reporter           string   `json:"reporter" xorm:"reporter"`
+	ReportTime         string   `json:"reportTime" xorm:"report_time"`
+	ReportRole         string   `json:"reportRole" xorm:"report_role"`
+	Handler            string   `json:"handler" xorm:"handler"`
+	NextOption         string   `json:"nextOption" xorm:"next_option"`
+	ChoseOption        string   `json:"choseOption" xorm:"chose_option"`
+	CreatedBy          string   `json:"createdBy" xorm:"created_by"`
+	CreatedTime        string   `json:"createdTime" xorm:"created_time"`
+	UpdatedBy          string   `json:"updatedBy" xorm:"updated_by"`
+	UpdatedTime        string   `json:"updatedTime" xorm:"updated_time"`
+	DelFlag            string   `json:"delFlag" xorm:"del_flag"`
+	OperationOptions   []string `json:"operationOptions" xorm:"-"`
+	ExpireTime         string   `json:"expireTime" xorm:"expire_time"`
+	NotifyCount        int      `json:"notifyCount" xorm:"notify_count"`
+	TemplateType       int      `json:"templateType" xorm:"template_type"` // 请求模板类型 0表示请求,1表示发布
+	Type               string   `json:"type" xorm:"type"`
+	Sort               int      `json:"sort" xorm:"sort"`
+	TaskResult         string   `json:"taskResult" xorm:"task_result"`
+	ConfirmResult      string   `json:"confirmResult" xorm:"confirm_result"`
+	RequestCreatedTime string   `json:"requestCreatedTime" xorm:"request_created_time"` // 请求创建时间
 }
 
 func (TaskTable) TableName() string {

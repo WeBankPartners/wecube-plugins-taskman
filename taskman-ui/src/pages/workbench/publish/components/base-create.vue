@@ -7,15 +7,21 @@
         <Tag size="medium">{{ detail.version || detail.templateVersion || '' }}</Tag>
       </span>
     </Row>
-    <Row class="w-header">
-      <Col span="24">
+    <div class="w-header">
+      <div class="w-header-progress">
         <!--请求进度-->
         <BaseProgress ref="progress"></BaseProgress>
-      </Col>
-    </Row>
+      </div>
+      <div class="w-header-btn">
+        <!--保存草稿-->
+        <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
+        <!--提交-->
+        <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
+      </div>
+    </div>
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
-        <!--请求信息-->
+        <!--基础信息-->
         <HeaderTitle :title="$t('tw_request_title')">
           <!--请求名-->
           <FormItem :label="$t('request_name')" required>
@@ -63,42 +69,41 @@
             <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
           </FormItem>
         </HeaderTitle>
-        <!--请求表单-->
-        <HeaderTitle title="请求表单">
+        <!--表单详情-->
+        <HeaderTitle :title="$t('tw_form_detail')">
           <div class="request-form">
-            <Divider style="margin: 0 0 30px 0" orientation="left">
-              <span class="sub-header">信息表单</span>
-            </Divider>
-            <CustomForm
-              v-model="form.customForm.value"
-              :options="form.customForm.title"
-              :requestId="requestId"
-            ></CustomForm>
-            <div v-if="Object.keys(form.customForm.value).length === 0" class="no-data">暂未配置表单</div>
+            <template v-if="Object.keys(form.customForm.value).length > 0">
+              <Divider style="margin: 0 0 30px 0" orientation="left">
+                <span class="sub-header">{{ $t('tw_information_form') }}</span>
+              </Divider>
+              <CustomForm
+                v-model="form.customForm.value"
+                :options="form.customForm.title"
+                :requestId="requestId"
+              ></CustomForm>
+            </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
-              <span class="sub-header">数据表单</span>
+              <span class="sub-header">{{ $t('tw_data_form') }}</span>
             </Divider>
             <!--选择目标对象-->
-            <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+            <FormItem
+              v-if="detail.associationWorkflow"
+              :label="$t('tw_choose_object')"
+              :label-width="lang === 'zh-CN' ? 110 : 150"
+              required
+            >
               <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
               </Select>
             </FormItem>
-            <EntityTable
-              ref="entityTable"
-              :data="requestData"
-              :requestId="requestId"
-              :type="actionName"
-              isAdd
-              autoAddRow
-            ></EntityTable>
-            <div v-if="noRequestForm" class="no-data">暂未配置表单</div>
+            <EntityTable ref="entityTable" :data="requestData" :requestId="requestId" isAdd autoAddRow></EntityTable>
+            <div v-if="noRequestForm" class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </HeaderTitle>
         <!--审批流程-->
-        <HeaderTitle v-if="approvalList.length > 0" title="审批流程">
+        <HeaderTitle v-if="approvalList.length > 0" :title="$t('tw_approval_step')">
           <div class="step-wrap">
             <div v-for="(i, index) in approvalList" :key="index" class="step-item">
               <div class="step-item-left">
@@ -111,7 +116,7 @@
                   <Tag color="default">{{ approvalTypeName[i.handleMode] }}</Tag>
                   <span style="color:#808695;">{{ i.description }}</span>
                   <Icon size="24" color="#19be6b" type="md-time" />
-                  <span style="color:#19be6b;">{{ i.expireDay }}天</span>
+                  <span style="color:#19be6b;">{{ `${i.expireDay}${$t('day')}` }}</span>
                 </div>
                 <!--单人自定义、协同、并行-->
                 <div v-if="['custom', 'any', 'all'].includes(i.handleMode)" class="step-background">
@@ -123,7 +128,7 @@
                         v-model="j.role"
                         filterable
                         :disabled="j.assign === 'template' ? true : false"
-                        placeholder="请选择处理角色"
+                        :placeholder="$t('tw_handleRole_placeholder')"
                         style="width:300px;"
                         @on-change="j.handler = ''"
                       >
@@ -136,26 +141,33 @@
                         v-if="['template', 'template_suggest'].includes(j.handlerType)"
                         v-model="j.handler"
                         disabled
-                        placeholder="请选择处理人"
+                        :placeholder="$t('tw_handler_placeholder')"
                         style="width:300px;"
                       />
                       <Select
                         v-else-if="['custom', 'custom_suggest'].includes(j.handlerType)"
                         v-model="j.handler"
                         filterable
-                        placeholder="请选择处理人"
+                        :placeholder="$t('tw_handler_placeholder')"
                         style="width:300px;"
                         @on-open-change="getHandlerByRole(i, j)"
                       >
                         <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
+                      <!--组内系统分配-->
                       <Input
                         v-else-if="j.handlerType === 'system'"
-                        value="组内系统分配"
+                        :value="$t('tw_group_assign')"
                         disabled
                         style="width:300px;"
                       />
-                      <Input v-else-if="j.handlerType === 'claim'" value="组内主动认领" disabled style="width:300px;" />
+                      <!--组内主动认领-->
+                      <Input
+                        v-else-if="j.handlerType === 'claim'"
+                        :value="$t('tw_group_claim')"
+                        disabled
+                        style="width:300px;"
+                      />
                     </FormItem>
                   </div>
                 </div>
@@ -166,7 +178,7 @@
                       <Select
                         v-model="i.handleTemplates[0].role"
                         disabled
-                        placeholder="请选择处理角色"
+                        :placeholder="$t('tw_handleRole_placeholder')"
                         style="width:300px;"
                       >
                         <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
@@ -176,7 +188,7 @@
                       <Input
                         v-model="i.handleTemplates[0].handler"
                         disabled
-                        placeholder="请选择处理人"
+                        :placeholder="$t('tw_handler_placeholder')"
                         style="width:300px;"
                       />
                     </FormItem>
@@ -187,7 +199,7 @@
           </div>
         </HeaderTitle>
         <!--任务流程-->
-        <HeaderTitle v-if="taskList.length > 0" title="任务流程">
+        <HeaderTitle v-if="taskList.length > 0" :title="$t('tw_task_step')">
           <div class="step-wrap">
             <div v-for="(i, index) in taskList" :key="index" class="step-item">
               <div class="step-item-left">
@@ -198,10 +210,12 @@
                 <div class="title">
                   {{ i.name }}
                   <Tag v-if="approvalTypeName[i.handleMode]" color="default">{{ approvalTypeName[i.handleMode] }}</Tag>
-                  <Tag :color="i.nodeDefId ? 'gold' : 'purple'">{{ i.nodeDefId ? '编排人工任务' : '自定义任务' }}</Tag>
+                  <Tag :color="i.nodeDefId ? 'gold' : 'purple'">{{
+                    i.nodeDefId ? $t('tw_workflow_task') : $t('tw_custom_task')
+                  }}</Tag>
                   <span style="color:#808695;">{{ i.description }}</span>
                   <Icon size="24" color="#19be6b" type="md-time" />
-                  <span style="color:#19be6b;">{{ i.expireDay }}天</span>
+                  <span style="color:#19be6b;">{{ `${i.expireDay}${$t('day')}` }}</span>
                 </div>
                 <!--单人自定义-->
                 <div v-if="i.handleMode === 'custom'" class="step-background">
@@ -213,7 +227,7 @@
                         v-model="j.role"
                         filterable
                         :disabled="j.assign === 'template' ? true : false"
-                        placeholder="请选择处理角色"
+                        :placeholder="$t('tw_handleRole_placeholder')"
                         style="width:300px;"
                         @on-change="j.handler = ''"
                       >
@@ -226,26 +240,33 @@
                         v-if="['template', 'template_suggest'].includes(j.handlerType)"
                         v-model="j.handler"
                         disabled
-                        placeholder="请选择处理人"
+                        :placeholder="$t('tw_handler_placeholder')"
                         style="width:300px;"
                       />
                       <Select
                         v-else-if="['custom', 'custom_suggest'].includes(j.handlerType)"
                         v-model="j.handler"
                         filterable
-                        placeholder="请选择处理人"
+                        :placeholder="$t('tw_handler_placeholder')"
                         style="width:300px;"
                         @on-open-change="getHandlerByRole(i, j)"
                       >
                         <Option v-for="i in j.handlerList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
                       </Select>
+                      <!--组内系统分配-->
                       <Input
                         v-else-if="j.handlerType === 'system'"
-                        value="组内系统分配"
+                        :value="$t('tw_group_assign')"
                         disabled
                         style="width:300px;"
                       />
-                      <Input v-else-if="j.handlerType === 'claim'" value="组内主动认领" disabled style="width:300px;" />
+                      <!--组内主动认领-->
+                      <Input
+                        v-else-if="j.handlerType === 'claim'"
+                        :value="$t('tw_group_claim')"
+                        disabled
+                        style="width:300px;"
+                      />
                     </FormItem>
                   </div>
                 </div>
@@ -256,7 +277,7 @@
                       <Select
                         v-model="i.handleTemplates[0].role"
                         disabled
-                        placeholder="请选择处理角色"
+                        :placeholder="$t('tw_handleRole_placeholder')"
                         style="width:300px;"
                       >
                         <Option v-for="i in userRoleList" :key="i.id" :value="i.id">{{ i.displayName }}</Option>
@@ -266,7 +287,7 @@
                       <Input
                         v-model="i.handleTemplates[0].handler"
                         disabled
-                        placeholder="请选择处理人"
+                        :placeholder="$t('tw_handler_placeholder')"
                         style="width:300px;"
                       />
                     </FormItem>
@@ -277,12 +298,6 @@
           </div>
         </HeaderTitle>
       </Form>
-    </div>
-    <div class="footer-btn">
-      <!--保存草稿-->
-      <Button @click="handleDraft(false)" style="margin-right:10px;">{{ $t('tw_save_draft') }}</Button>
-      <!--提交-->
-      <Button type="primary" @click="handlePublish">{{ $t('tw_commit') }}</Button>
     </div>
     <!--编排流程图-->
     <template v-if="detail.associationWorkflow">
@@ -374,14 +389,15 @@ export default {
       approvalList: [], // 审批流程
       taskList: [], // 任务流程
       approvalTypeName: {
-        custom: '单人',
-        any: '协同',
-        all: '并行',
-        admin: '提交人角色管理员',
-        auto: '自动通过'
+        custom: this.$t('tw_onlyOne'), // 单人
+        any: this.$t('tw_anyWidth'), // 协同
+        all: this.$t('tw_allWidth'), // 并行
+        admin: this.$t('tw_roleAdmin'), // 提交人角色管理员
+        auto: this.$t('tw_autoWith') // 自动通过
       },
       userRoleList: [], // 用户角色列表
-      noRequestForm: false // 请求表单为空标识
+      noRequestForm: false, // 请求表单为空标识
+      lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
   watch: {
@@ -412,11 +428,15 @@ export default {
   },
   methods: {
     handleToHome () {
-      this.$router.push({
-        path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
-          this.jumpFrom === 'submit' ? 'rollback' : 'type'
-        }=${this.type}`
-      })
+      if (this.$route.query.requestId) {
+        this.$router.push({
+          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+            this.jumpFrom === 'submit' ? 'rollback' : 'type'
+          }=${this.type}`
+        })
+      } else {
+        this.$router.back()
+      }
     },
     async getCreateInfo () {
       const params = {
@@ -472,9 +492,9 @@ export default {
           if (!this.form.customForm.value.hasOwnProperty(item.name)) {
             // 默认清空标志为false,赋值默认值
             if (item.defaultClear === 'no') {
-              this.form.customForm.value[item.name] = item.defaultValue || ''
+              this.$set(this.form.customForm.value, item.name, item.defaultValue)
             } else {
-              this.form.customForm.value[item.name] = ''
+              this.$set(this.form.customForm.value, item.name, '')
             }
           }
         })
@@ -533,7 +553,6 @@ export default {
       const { statusCode, data } = await getRootEntity(params)
       if (statusCode === 'OK') {
         this.rootEntityOptions = data.data || []
-        // this.form.rootEntityId = this.rootEntityOptions[0] && this.rootEntityOptions[0].guid
       }
     },
     // 获取目标对象对应表单配置
@@ -696,7 +715,7 @@ export default {
           .format('YYYY-MM-DD HH:mm:ss')
         this.initExpectTime = this.form.expectTime
       }
-      // 请求名称必填校验
+      // 名称必填校验
       if (!this.form.name) {
         this.$Message.warning(this.$t('request_name') + this.$t('can_not_be_empty'))
         return
@@ -706,26 +725,27 @@ export default {
         this.$Message.warning(this.$t('root_entity') + this.$t('can_not_be_empty'))
         return
       }
-      // 请求信息自定义表单必填校验
+      // 信息表单必填校验
       if (!this.customFormValid()) {
-        return this.$Message.warning('请求信息必填项为空')
+        return this.$Message.warning(this.$t('tw_infoForm_valid'))
       }
-      // 请求表单必填项-校验提示
+      // 数据表单必填项-校验提示
       if (!requiredCheck(this.form.data, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Message.warning(`【${tabName}】${this.$t('required_tip')}`)
       }
-      // 表格至少勾选一条数据校验
+      // 数据表单至少勾选一条数据校验
       if (!noChooseCheck(this.form.data, this.$refs.entityTable)) {
         const tabName = this.$refs.entityTable.activeTab
         return this.$Message.warning(`【${tabName}】${this.$t('tw_table_noChoose_tips')}`)
       }
-      // 审批任务流程角色和用户必填校验
+      // 审批流程角色和用户必填校验
       if (!approvalCheck(this.approvalList)) {
-        return this.$Message.warning('审批流程处理角色和处理人必填')
+        return this.$Message.warning(this.$t('tw_approvalStep_valid'))
       }
+      // 任务流程角色和用户必填校验
       if (!approvalCheck(this.taskList)) {
-        return this.$Message.warning('任务流程处理角色和处理人必填')
+        return this.$Message.warning(this.$t('tw_taskStep_valid'))
       }
       const { statusCode } = await savePublishData(this.requestId, this.form)
       if (statusCode === 'OK') {
@@ -811,9 +831,17 @@ export default {
     }
   }
   .w-header {
-    padding-bottom: 15px;
+    padding-bottom: 10px;
     margin-bottom: 20px;
     border-bottom: 2px dashed #d7dadc;
+    display: flex;
+    &-progress {
+      flex: 1;
+    }
+    &-btn {
+      width: 220px;
+      text-align: right;
+    }
   }
   .content {
     display: flex;

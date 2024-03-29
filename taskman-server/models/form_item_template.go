@@ -88,6 +88,12 @@ func (s FormItemTemplateDtoSort) Swap(i, j int) {
 }
 
 func (s FormItemTemplateDtoSort) Less(i, j int) bool {
+	if s[i].Sort == 0 {
+		return false
+	}
+	if s[j].Sort == 0 {
+		return true
+	}
 	if s[i].Sort < s[j].Sort {
 		return true
 	}

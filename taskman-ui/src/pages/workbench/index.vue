@@ -1,11 +1,23 @@
 <!--工作台-->
 <template>
   <div class="workbench">
-    <!-- <div class="scene-select">
-      <Select v-model="actionName" @on-change="handleActionChange">
-        <Option v-for="i in actionList" :key="i.value" :value="i.value">{{ i.label }}</Option>
-      </Select>
-    </div> -->
+    <div class="create-time">
+      <span>{{ $t('tw_createdTime') }}</span>
+      <DatePicker
+        :value="queryTime"
+        @on-change="
+          val => {
+            handleQueryDateRange(val)
+          }
+        "
+        type="daterange"
+        placement="bottom-end"
+        format="yyyy-MM-dd"
+        :placeholder="$t('tw_created_time')"
+        style="width: 200px"
+        :clearable="false"
+      />
+    </div>
     <DataCard
       ref="dataCard"
       :initTab="initTab"
@@ -70,13 +82,13 @@
 </template>
 
 <script>
-import WorkBench from '@/pages/components/workbench-menu.vue'
 import HotLink from './components/hot-link.vue'
 import DataCard from './components/data-card.vue'
 import BaseSearch from '../components/base-search.vue'
 import CollectTable from './collect-table.vue'
 import { getPlatformList, recallRequest, pendingHandle, deleteRequest, reRequest } from '@/api/server'
 import { deepClone } from '@/pages/util/index'
+import dayjs from 'dayjs'
 import column from './column.js'
 import search from './search.js'
 export default {
@@ -84,12 +96,17 @@ export default {
     HotLink,
     DataCard,
     BaseSearch,
-    WorkBench,
     CollectTable
   },
   mixins: [column, search],
   data () {
     return {
+      queryTime: [
+        dayjs()
+          .subtract(3, 'month')
+          .format('YYYY-MM-DD'),
+        dayjs().format('YYYY-MM-DD')
+      ], // 全局时间过滤器
       tabName: 'myPending', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存,collect收藏
       actionName: '1', // 1发布,2请求,3问题,4事件,5变更
       initTab: '',
@@ -111,6 +128,7 @@ export default {
         reportTime: [], // 请求提交时间
         approvalTime: [], // 请求处理时间
         taskCreatedTime: [], // 任务提交时间
+        taskHandleUpdatedTime: [], // 任务更新时间
         taskApprovalTime: [], // 任务审批时间
         taskExpectTime: [] // 任务期望时间
       },
@@ -124,13 +142,6 @@ export default {
         pageSize: 10
       },
       sorting: {}, // 表格默认排序
-      actionList: [
-        { label: '发布', value: '1' },
-        { label: '请求', value: '2' },
-        { label: '问题', value: '3' },
-        { label: '事件', value: '4' },
-        { label: '变更', value: '5' }
-      ],
       taskLabel: () => {
         return (
           <div>
@@ -144,7 +155,7 @@ export default {
       approveLabel: () => {
         return (
           <div>
-            <span>审批</span>
+            <span>{this.$t('tw_approval')}</span>
             {['myPending', 'pending'].includes(this.tabName) && this.getPendingNumber('Approve') > 0 && (
               <span class="badge">{this.getPendingNumber('Approve')}</span>
             )}
@@ -191,6 +202,10 @@ export default {
     this.initAction = this.$route.query.actionName || '1'
   },
   methods: {
+    handleQueryDateRange (val) {
+      this.queryTime = val
+      this.handleQuery(true)
+    },
     // 初始化加载数据(链接携带参数，跳转到指定标签)
     initData (val, action) {
       this.tabName = val
@@ -222,11 +237,6 @@ export default {
       if (val !== 'collect') {
         this.handleReset()
         this.handleQuery(true)
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-          this.$refs.dataCard.getData()
-        })
       }
     },
     // 点击视图卡片触发查询
@@ -248,11 +258,6 @@ export default {
       if (val !== 'collect') {
         this.handleReset()
         this.handleQuery()
-      } else {
-        this.$nextTick(() => {
-          this.$refs.collect.handleQuery()
-          this.$refs.dataCard.getData()
-        })
       }
     },
     // 切换type
@@ -360,7 +365,7 @@ export default {
       // 过滤掉多余时间
       var dateTransferArr = []
       if (this.tabName === 'pending' || this.tabName === 'myPending') {
-        dateTransferArr = ['taskExpectTime', 'taskCreatedTime']
+        dateTransferArr = ['taskExpectTime', 'taskHandleUpdatedTime']
       } else if (this.tabName === 'hasProcessed') {
         dateTransferArr = ['taskExpectTime', 'taskCreatedTime', 'taskApprovalTime']
       } else if (this.tabName === 'submit') {
@@ -384,6 +389,8 @@ export default {
         action: Number(this.actionName),
         type: Number(this.type),
         rollback: Number(this.rollback),
+        queryTimeStart: this.queryTime[0] && this.queryTime[0] + ' 00:00:00',
+        queryTimeEnd: this.queryTime[1] && this.queryTime[1] + ' 23:59:59',
         ...form,
         startIndex: (this.pagination.currentPage - 1) * this.pagination.pageSize,
         pageSize: this.pagination.pageSize
@@ -409,10 +416,10 @@ export default {
       }
       this.loading = false
     },
-    handleQuery (allData = false) {
+    handleQuery (all = false) {
       this.pagination.currentPage = 1
       this.getList()
-      this.$refs.dataCard.getData(allData)
+      this.$refs.dataCard.getData(all)
     },
     changPage (val) {
       this.pagination.currentPage = val
@@ -425,7 +432,6 @@ export default {
     },
     // 表格操作-查看
     hanldeView (row) {
-      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -442,7 +448,6 @@ export default {
     },
     // 表格操作-处理(任务、审批、定版、请求确认)
     async handleEdit (row) {
-      // const path = this.actionName === '1' ? 'detailPublish' : 'detailRequest'
       const path = this.detailRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -489,7 +494,6 @@ export default {
     async handleRepub (row) {
       const { statusCode, data } = await reRequest(row.id)
       if (statusCode === 'OK') {
-        // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
         const path = this.createRouteMap[this.actionName]
         const url = `/taskman/workbench/${path}`
         this.$router.push({
@@ -519,6 +523,8 @@ export default {
               desc: this.$t('successful')
             })
             this.getList()
+            // 刷新本人处理本组处理数量
+            this.$refs.dataCard.getData(false, true)
           }
         },
         onCancel: () => {}
@@ -526,7 +532,6 @@ export default {
     },
     // 表格操作-草稿去发起
     hanldeLaunch (row) {
-      // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const path = this.createRouteMap[this.actionName]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
@@ -567,11 +572,9 @@ export default {
         ['myPending', 'pending'].includes(this.tabName)
       ) {
         this.handleEdit(row)
-      } else if (row.status === 'Draft' && this.tabName !== 'hasProcessed') {
+      } else if (this.tabName === 'draft') {
         this.hanldeLaunch(row)
-      } else if (['Termination', 'Completed', 'Faulted'].includes(row.status) && this.tabName === 'submit') {
-        this.handleRepub(row)
-      } else if (row.status !== 'Draft') {
+      } else {
         this.hanldeView(row)
       }
     }
@@ -582,11 +585,17 @@ export default {
 <style lang="scss" scoped>
 .workbench {
   position: relative;
-  .scene-select {
-    width: 200px;
+  .create-time {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 360px;
     position: absolute;
-    top: -40px;
+    top: -38px;
     right: 0px;
+    span {
+      margin-right: 10px;
+    }
   }
   .header {
     display: flex;

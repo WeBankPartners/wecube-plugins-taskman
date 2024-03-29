@@ -30,10 +30,10 @@ func (d *RequestTemplateDao) AddBasicInfo(session *xorm.Session, template *model
 		defer session.Close()
 	}
 	result, err = session.Exec("insert into request_template(id,`group`,name,status,description,tags,package_name,entity_name,proc_def_key,proc_def_id,"+
-		"proc_def_name,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id,approve_by,check_switch,"+
-		"confirm_switch,back_desc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", template.Id,
+		"proc_def_name,proc_def_version,expire_day,handler,created_by,created_time,updated_by,updated_time,type,operator_obj_type,parent_id,approve_by,check_switch,"+
+		"confirm_switch,back_desc) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", template.Id,
 		template.Group, template.Name, template.Status, template.Description, template.Tags, template.PackageName, template.EntityName, template.ProcDefKey, template.ProcDefId,
-		template.ProcDefName, template.ExpireDay, template.Handler, template.CreatedBy, template.CreatedTime, template.UpdatedBy, template.UpdatedTime, template.Type, template.OperatorObjType,
+		template.ProcDefName, template.ProcDefVersion, template.ExpireDay, template.Handler, template.CreatedBy, template.CreatedTime, template.UpdatedBy, template.UpdatedTime, template.Type, template.OperatorObjType,
 		template.Id, template.ApproveBy, template.CheckSwitch, template.ConfirmSwitch, template.BackDesc)
 	if err != nil {
 		return
@@ -77,4 +77,9 @@ func (d *RequestTemplateDao) Get(requestTemplateId string) (*models.RequestTempl
 		return requestTemplate, nil
 	}
 	return nil, nil
+}
+
+func (d *RequestTemplateDao) QueryListByName(name string) (list []*models.RequestTemplateTable, err error) {
+	err = d.DB.Where("name = ?", name).Find(&list)
+	return
 }

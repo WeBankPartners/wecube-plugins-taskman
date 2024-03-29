@@ -30,7 +30,7 @@ const (
 	pathQueryProcessDefinitionsInstanceTaskNodeContext = "/platform/v1/process/instances/%s/tasknodes/%s/context"
 
 	// pathQueryModel 查询model
-	pathQueryModel = "/platform/v1/models"
+	pathQueryModel = "/platform/v1/models?withAttr=no"
 	// pathQueryEntities 查询entity
 	pathQueryEntities = "/platform/v1/data-model/dme/all-entities"
 	// pathQueryEntityModel
@@ -127,9 +127,9 @@ func QueryAllProcessDefinitionList(userToken, language string) (processList []*m
 }
 
 // QueryAllModels 查询所有模型
-func QueryAllModels(userToken, language string) (nodesList []*models.DataModel, err error) {
+func QueryAllModels(userToken, language string) (modelList []*models.DataModel, err error) {
 	var response models.QueryAllModelsResponse
-	nodesList = make([]*models.DataModel, 0)
+	modelList = make([]*models.DataModel, 0)
 	byteArr, err := HttpGet(models.Config.Wecube.BaseUrl+pathQueryModel, userToken, language)
 	if err != nil {
 		return
@@ -143,7 +143,7 @@ func QueryAllModels(userToken, language string) (nodesList []*models.DataModel, 
 		err = fmt.Errorf(response.Message)
 	}
 	if len(response.Data) > 0 {
-		nodesList = response.Data
+		modelList = response.Data
 	}
 	return
 }
@@ -357,7 +357,7 @@ func QueryEntityExpressionData(expression, rootDataId, userToken, language strin
 	var response models.PluginQueryExpressionDataResponse
 	var byteArr []byte
 	postBytes, _ := json.Marshal(param)
-	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathQueryEntityExpressionData, userToken, "", postBytes)
+	byteArr, err = HttpPost(models.Config.Wecube.BaseUrl+pathQueryEntityExpressionData, userToken, language, postBytes)
 	if err != nil {
 		return
 	}

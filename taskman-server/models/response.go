@@ -56,6 +56,11 @@ type QueryUserResponse struct {
 	Data []*UserDto `json:"data"`
 }
 
+type GetUserResponse struct {
+	HttpResponseMeta
+	Data *UserDto `json:"data"`
+}
+
 type QueryProcessDefinitionResponse struct {
 	HttpResponseMeta
 	Data []*ProcDefQueryDto `json:"data"`

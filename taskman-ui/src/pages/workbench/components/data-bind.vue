@@ -1,41 +1,51 @@
 <template>
-  <div class="workbench-data-bind" style="margin: 0 auto;min-width: 700px">
-    <Tabs v-if="nodes.length">
+  <div class="workbench-data-bind">
+    <Tabs v-if="nodes.length" class="tabs">
       <template v-for="node in nodes">
         <TabPane :label="node.nodeName" :name="node.nodeId" :key="node.nodeId">
-          <ul v-if="node.classification && node.classification.length > 0">
+          <template v-if="node.classification && node.classification.length > 0">
             <CheckboxGroup v-model="node.bindData">
-              <template v-for="(entity, entityIndex) in node.classification">
-                <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider>
-                <template v-for="item in filterBindData(node)">
-                  <li
-                    v-if="item.entityName === entity"
-                    :key="item.id + entityIndex"
-                    style="width: 46%;display: inline-block;margin: 6px"
-                  >
-                    <Checkbox :label="item.id" :disabled="formDisable">
-                      <Tooltip
-                        :content="item.displayName"
-                        :delay="500"
-                        :disabled="item.displayName.length < 30"
-                        max-width="300"
-                      >
-                        <div class="text-ellipsis">
-                          <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
-                          {{ item.displayName }}
+              <div v-for="(entity, entityIndex) in node.classification" :key="entityIndex">
+                <!-- <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider> -->
+                <div class="radio-button">
+                  {{ `${entity}` }}<span class="count">{{ '' }}</span>
+                </div>
+                <Row class="box-wrap">
+                  <div v-for="item in filterBindData(node)" :key="item.id + entityIndex">
+                    <Col v-if="item.entityName === entity" :span="12" class="tabs-item">
+                      <Checkbox :label="item.id" :disabled="formDisable" class="tabs-item-box">
+                        <div class="tabs-item-box-content">
+                          <Tooltip
+                            :content="item.displayName"
+                            :delay="500"
+                            :disabled="item.displayName.length < 30"
+                            max-width="300"
+                          >
+                            <div class="text-ellipsis">
+                              <span v-if="item.id.startsWith('tmp__')" style="color: #338cf0">(new)</span>
+                              {{ item.displayName }}
+                            </div>
+                          </Tooltip>
+                          <Icon
+                            type="md-eye"
+                            size="26"
+                            color="#515a6e"
+                            @click.stop.prevent="handleViewForm(item)"
+                            style="margin-left:15px;cursor:pointer;"
+                          />
                         </div>
-                      </Tooltip>
-                    </Checkbox>
-                  </li>
-                </template>
-              </template>
+                      </Checkbox>
+                    </Col>
+                  </div>
+                </Row>
+              </div>
             </CheckboxGroup>
-          </ul>
+          </template>
           <div v-else>{{ $t('tw_no_data') }}</div>
         </TabPane>
       </template>
     </Tabs>
-    <div v-else class="no-data">暂未关联编排</div>
+    <div v-else class="no-data">{{ $t('tw_unbind_workflow') }}</div>
     <div v-if="showBtn" style="text-align: center;margin-top:12px">
       <!--暂存-->
       <Button @click="saveRequest('save')" :disabled="formDisable">{{ $t('tw_save_draft') }}</Button>
@@ -49,10 +59,22 @@
         $t('pr-vision')
       }}</Button> -->
     </div>
+    <Drawer
+      :title="$t('detail')"
+      v-model="viewVisible"
+      width="600"
+      :mask-closable="true"
+      @on-close="viewVisible = false"
+    >
+      <div class="content" :style="{ maxHeight: maxHeight + 'px' }">
+        <CustomForm v-model="formValue" :options="formOptions" :requestId="requestId" disabled></CustomForm>
+      </div>
+    </Drawer>
   </div>
 </template>
 
 <script>
+import CustomForm from './custom-form.vue'
 import {
   getTemplateNodesForRequest,
   getBindData,
@@ -62,9 +84,11 @@ import {
   startRequestNew,
   requestParent
 } from '@/api/server.js'
-import { deepClone } from '@/pages/util/index'
+import { deepClone, debounce } from '@/pages/util/index'
 export default {
-  name: '',
+  components: {
+    CustomForm
+  },
   data () {
     return {
       nodes: [],
@@ -81,6 +105,10 @@ export default {
       requestHistory: false,
       backReason: this.$t('tw_recall_reason'), // 回退说明
       unCheckData: [], // 没有选中的数据
+      viewVisible: false,
+      formValue: {},
+      formOptions: [],
+      maxHeight: 500,
       columns: [
         {
           title: this.$t('tw_tag'),
@@ -121,6 +149,10 @@ export default {
     actionName: {
       type: String,
       default: '1'
+    },
+    formData: {
+      type: Array,
+      default: () => []
     }
   },
   watch: {
@@ -138,8 +170,30 @@ export default {
       immediate: true
     }
   },
-  mounted () {},
+  mounted () {
+    this.maxHeight = document.body.clientHeight - 150
+    window.addEventListener(
+      'resize',
+      debounce(() => {
+        this.maxHeight = document.body.clientHeight - 150
+      }, 100)
+    )
+  },
   methods: {
+    handleViewForm (item) {
+      this.viewVisible = true
+      this.formData.forEach(data => {
+        if (data.entity === item.entityName) {
+          this.formOptions = data.title || []
+          data.value &&
+            data.value.forEach(value => {
+              if (value.dataId === item.dataId) {
+                this.formValue = value.entityData
+              }
+            })
+        }
+      })
+    },
     async requestParent () {
       const { data } = await requestParent(this.requestId)
       if (data) {
@@ -388,14 +442,41 @@ export default {
         })
       }
     }
-  },
-  components: {}
+  }
 }
 </script>
 
 <style scoped lang="scss">
+.radio-button {
+  padding: 5px 15px;
+  margin-bottom: 10px;
+  width: fit-content;
+  border-radius: 32px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #cba43f;
+  color: #cba43f;
+  // background: #ebdcb4;
+}
+.box-wrap {
+  margin: 10px 0 30px 0;
+}
+.tabs-item {
+  display: flex;
+  align-items: center;
+  flex-direction: flex-start;
+  &-box {
+    display: flex;
+    align-items: center;
+    &-content {
+      display: flex;
+      align-items: center;
+      margin-left: 5px;
+    }
+  }
+}
 .text-ellipsis {
-  width: 100%;
+  max-width: 450px;
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
@@ -410,6 +491,7 @@ export default {
 </style>
 <style lang="scss">
 .workbench-data-bind {
+  width: 100%;
   .ivu-checkbox-group-item {
     width: 100%;
   }

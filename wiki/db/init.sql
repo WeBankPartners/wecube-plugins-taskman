@@ -373,6 +373,7 @@ alter table request_template add column back_desc  text default null COMMENT '�
 alter table request_template modify column proc_def_key  varchar(255) default null COMMENT '编排key';
 alter table request_template modify column proc_def_id  varchar(255) default null COMMENT '编排id';
 alter table request_template modify column proc_def_name  varchar(255) default null COMMENT '编排名称';
+alter table request_template add column proc_def_version  varchar(64) default null COMMENT '编排版本';
 
 alter table request add column custom_form_cache text default null COMMENT '自定义表单cache';
 alter table request add column notes text default null COMMENT '请求确认备注';
@@ -388,6 +389,7 @@ alter table task add column type varchar(64) default null COMMENT '任务类型:
 alter table task add column sort int default '0' COMMENT '任务序号';
 alter table task add column task_result  varchar(64) default null COMMENT '处理结果:approve同意,deny拒绝,redraw打回,complete完成,uncompleted未完成';
 alter table task add column confirm_result varchar(64) default null COMMENT '任务确认结果:任务已完成 complete 未完成 uncompleted';
+alter table task add column request_created_time datetime default null COMMENT '请求创建时间';
 
 alter table form_item_template add column ref_id varchar(64) default null COMMENT '引用ID';
 
@@ -493,7 +495,7 @@ CREATE TABLE IF NOT EXISTS `task_handle` (
     `role` varchar(64)  DEFAULT NULL,
     `handler` varchar(64)  DEFAULT NULL,
     `handler_type` varchar(255)  DEFAULT NULL,
-    `handler_result` varchar(64)  DEFAULT NULL,
+    `handle_result` varchar(64)  DEFAULT NULL,
     `handle_status` varchar(64)  DEFAULT 'uncompleted',
     `parent_id` varchar(64)  DEFAULT NULL,
     `created_time` datetime  NULL,
@@ -520,4 +522,13 @@ alter table form_item add constraint fore_form_item_task_handle foreign key(task
 alter table attach_file add column task_handle varchar(64) default null COMMENT '任务处理';
 alter table attach_file add constraint fore_attach_file_task_handle foreign key(task_handle) REFERENCES task_handle(id);
 alter table form_item_template add column routine_expression text default null COMMENT '表单项计算表达式';
+
+alter table task add index task_request_created_time(request_created_time);
+alter table task add index task_type (type);
+alter table task_handle add index task_handle_latest_flag(latest_flag);
+alter table task_handle add index task_handle_created_time(created_time);
+alter table task_handle add index task_handle_updated_time(updated_time);
+alter table task_handle add index task_handle_result(handle_result);
+alter table task_handle add index task_handle_handler(handler);
+
 #@v1.0.5-end@;

@@ -10,7 +10,9 @@
               :key="index"
               :required="i.required === 'yes'"
               :rules="
-                i.required === 'yes' ? [{ required: true, message: `${i.title}为空`, trigger: ['change', 'blur'] }] : []
+                i.required === 'yes'
+                  ? [{ required: true, message: `${i.title}${$t('can_not_be_empty')}`, trigger: ['change', 'blur'] }]
+                  : []
               "
               style="margin-bottom:20px;"
             >
@@ -36,10 +38,18 @@
                 :objectOption="!!i.entity || i.elementType === 'wecmdbEntity'"
                 :options="entityData[i.name + 'Options']"
                 :disabled="i.isEdit === 'no' || disabled"
-                :multiple="i.multiple === 'Y'"
+                :multiple="i.multiple === 'Y' || i.multiple === 'yes'"
                 style="width:100%;"
               >
               </LimitSelect>
+              <!--自定义分析类型-->
+              <Input
+                v-else-if="i.elementType === 'calculate'"
+                :value="value[i.name]"
+                type="textarea"
+                :disabled="true"
+                style="width:100%;"
+              ></Input>
               <!--日期时间类型-->
               <DatePicker
                 v-else-if="i.elementType === 'datePicker'"

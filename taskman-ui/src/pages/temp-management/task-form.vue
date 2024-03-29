@@ -1,12 +1,18 @@
 <template>
   <div>
     <div v-if="procDefId !== '' && approvalNodes.length === 0" style="margin: 100px 0">
-      <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>该模版关联的编排没有人工节点</Alert>
+      <Alert style="width:400px; margin:0 auto;" type="warning" show-icon>{{
+        $t('tw_workflow_has_no_manual_nodes')
+      }}</Alert>
     </div>
     <Row type="flex" v-else>
       <Col span="24" style="padding: 0 20px">
-        <div style="margin-bottom: 12px">
-          <span v-for="(approval, approvalIndex) in approvalNodes" :key="approval.id" style="margin-right:6px;">
+        <div>
+          <span
+            v-for="(approval, approvalIndex) in approvalNodes"
+            :key="approval.id"
+            style="margin-right:6px;line-height: 40px;"
+          >
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
               :style="nodeStyle(approval)"
@@ -46,7 +52,7 @@
             @nodeStatus="nodeStatus"
             :isCheck="isCheck"
             :procDefId="procDefId"
-            :nodeType="procDefId === '' ? $t('tw_auto') : '编排人工任务'"
+            :nodeType="procDefId === '' ? $t('tw_auto') : $t('tw_workflow_task')"
             @setFormConfigStatus="changeFormConfigStatus"
           ></TaskFormNode>
         </div>
@@ -243,8 +249,12 @@
                   </div>
                   <div style="margin: 12px 0 0 8px;">
                     <Form :label-width="90">
-                      <FormItem :label="$t('判断分支')" v-if="procDefId !== ''">
-                        <Select style="width:94%"> </Select>
+                      <FormItem :label="$t('tw_conditional_branches')" v-if="procDefId !== ''">
+                        <Select style="width:94%" @on-open-change="getWorkflowForkNode">
+                          <Option v-for="(fork, forkIndex) in forkOptions" :value="fork" :key="forkIndex">{{
+                            fork
+                          }}</Option>
+                        </Select>
                       </FormItem>
                       <FormItem :label="$t('t_action')">
                         <Select style="width:94%">
@@ -258,9 +268,9 @@
                     </Form>
                   </div>
                 </div>
-                <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
+                <Modal v-model="showSelectModel" :title="$t('tw_reference_global_forms')" :mask-closable="false">
                   <Form :label-width="120">
-                    <FormItem :label="$t('全局请求表单')">
+                    <FormItem :label="$t('tw_global_forms')">
                       <Select style="width: 80%" v-model="itemGroup" filterable>
                         <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
                           item.itemGroupName
@@ -496,7 +506,8 @@ import {
   deleteRequestGroupForm,
   getAllDataModels,
   saveRequestGroupCustomForm,
-  submitTemplate
+  submitTemplate,
+  getWorkflowForkNode
 } from '@/api/server.js'
 export default {
   name: 'BasicInfo',
@@ -749,7 +760,8 @@ export default {
       itemGroup: '', // 选中的组信息
       nextNodeInfo: {}, // 缓存待切换节点信息
       displayLastGroup: false, // 控制group显示，在新增时显示最后一个，其余显示当前值
-      nextGroupInfo: {}
+      nextGroupInfo: {},
+      forkOptions: [] // 判断分支列表
     }
   },
   computed: {
@@ -838,6 +850,7 @@ export default {
           title: this.$t('confirm_delete'),
           'z-index': 1000000,
           loading: true,
+          okText: this.$t('tw_request_confirm'),
           onOk: async () => {
             this.$Modal.remove()
             const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
@@ -848,6 +861,21 @@ export default {
           onCancel: () => {}
         })
       }
+
+      // this.$Modal.confirm({
+      //   title: this.$t('confirm_delete'),
+      //   'z-index': 1000000,
+      //   loading: true,
+      //   okText: this.$t('tw_request_confirm'),
+      //   onOk: async () => {
+      //     this.$Modal.remove()
+      //     const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
+      //     if (statusCode === 'OK') {
+      //       this.getApprovalNode()
+      //     }
+      //   },
+      //   onCancel: () => {}
+      // })
     },
     // 在弹窗关闭、保存、还原状态下回显group内容
     reloadGroup () {
@@ -1055,6 +1083,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
+        okText: this.$t('tw_request_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
@@ -1063,7 +1092,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.loadPage()
+            this.getApprovalNodeGroups(this.activeEditingNode)
           }
         },
         onCancel: () => {}
@@ -1177,13 +1206,16 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if ([3, 9].includes(nextStep)) {
+        } else if ([3].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
-        } else if (nextStep === 4) {
+        } else if ([4].includes(nextStep)) {
           // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
+          this.getApprovalNodeGroups(this.activeEditingNode)
+        } else if ([9].includes(nextStep)) {
+          // this.updateFinalElement(elememt)
           this.getApprovalNodeGroups(this.activeEditingNode)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)
@@ -1194,7 +1226,7 @@ export default {
         } else if (nextStep === 8) {
           this.$emit('gotoStep', this.requestTemplateId, 'backward')
         } else if (nextStep === 10) {
-          this.loadPage()
+          // this.loadPage()
         }
       }
     },
@@ -1247,13 +1279,13 @@ export default {
       } else {
         const nodeStatus = this.$refs.approvalFormNodeRef.panalStatus()
         if (nodeStatus === 'canSave') {
-          this.$refs.approvalFormNodeRef.saveNode(3)
+          this.$refs.approvalFormNodeRef.saveNode(4)
+          await this.saveGroup(10, {})
           this.submitTemplate()
         }
       }
     },
     async submitTemplate () {
-      await this.saveGroup(10, {})
       this.$Modal.confirm({
         title: `${this.$t('submit_for_review')}`,
         content: `${this.$t('submit_for_review_tip')}`,
@@ -1293,6 +1325,12 @@ export default {
     // 控制配置显示状态
     changeFormConfigStatus (status) {
       this.isShowFormConfig = status
+    },
+    async getWorkflowForkNode () {
+      const { data, statusCode } = await getWorkflowForkNode(this.activeEditingNode.id)
+      if (statusCode === 'OK') {
+        this.forkOptions = data || []
+      }
     }
   },
   components: {

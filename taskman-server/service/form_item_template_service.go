@@ -106,7 +106,6 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 		for _, customItem := range param.CustomItems {
 			customItemExist = false
 			if customItem.Id != "" {
-				refFormItemTemplateList = []*models.FormItemTemplateTable{}
 				existMap[customItem.Id] = true
 				for _, formItemTemplate := range formItemTemplateList {
 					if customItem.Id == formItemTemplate.Id {
@@ -143,7 +142,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 				continue
 			}
 			// 这块只判断,编排类型和 自定义计算类型
-			if existMap[formItemTemplate.Id] == false && existMap[formItemTemplate.AttrDefId] == false {
+			if !existMap[formItemTemplate.Id] && !existMap[formItemTemplate.AttrDefId] {
 				deleteItems = append(deleteItems, formItemTemplate)
 			}
 		}
@@ -173,6 +172,7 @@ func (s *FormItemTemplateService) UpdateFormTemplateItemGroupConfig(param models
 			newGuidList := guid.CreateGuidList(len(insertItems))
 			for i, item := range insertItems {
 				item.Id = "item_tpl_" + newGuidList[i]
+				item.Sort = 0
 				_, err = s.formItemTemplateDao.Add(session, item)
 				if err != nil {
 					return err

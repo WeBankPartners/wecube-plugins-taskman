@@ -57,6 +57,7 @@ func init() {
 		&handlerFuncObj{Url: "/request-template/confirm/:id", Method: "POST", HandlerFunc: form.ConfirmRequestFormTemplate},
 		&handlerFuncObj{Url: "/request-template/confirm_count", Method: "GET", HandlerFunc: template.GetConfirmCount},
 		&handlerFuncObj{Url: "/request-template/fork/:id", Method: "POST", HandlerFunc: template.ForkConfirmRequestTemplate},
+		&handlerFuncObj{Url: "/request-template/copy/:id", Method: "POST", HandlerFunc: template.CopyConfirmRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/tags/:requestTemplateGroup", Method: "GET", HandlerFunc: template.GetRequestTemplateTags},
 		&handlerFuncObj{Url: "/request-template/export/:requestTemplateId", Method: "GET", HandlerFunc: template.ExportRequestTemplate},
 		&handlerFuncObj{Url: "/request-template/import", Method: "POST", HandlerFunc: template.ImportRequestTemplate},
@@ -83,6 +84,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/:id", Method: "GET", HandlerFunc: task.GetTaskTemplate},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate/ids", Method: "GET", HandlerFunc: task.ListTaskTemplateIds},
 		&handlerFuncObj{Url: "/task-template/:requestTemplate", Method: "GET", HandlerFunc: task.ListTaskTemplates},
+		&handlerFuncObj{Url: "/task-template/workflow/options", Method: "GET", HandlerFunc: task.GetTaskTemplateWorkFlowOptions},
 
 		&handlerFuncObj{Url: "/user/template/collect", Method: "POST", HandlerFunc: collect.AddTemplateCollect},
 		&handlerFuncObj{Url: "/user/template/collect/:templateId", Method: "DELETE", HandlerFunc: collect.CancelTemplateCollect},
@@ -143,7 +145,7 @@ func init() {
 		&handlerFuncObj{Url: "/task-handle/update", Method: "POST", HandlerFunc: task.UpdateTaskHandle},
 		&handlerFuncObj{Url: "/task/attach-file/:taskId/upload/:taskHandleId", Method: "POST", HandlerFunc: task.UploadTaskAttachFile},
 
-		// login
+		// 转发auth登录接口
 		&handlerFuncObj{Url: "/login/seed", Method: "GET", HandlerFunc: login.GetSeed},
 		&handlerFuncObj{Url: "/login", Method: "POST", HandlerFunc: login.Login},
 	)
@@ -158,6 +160,20 @@ func init() {
 		&handlerFuncObj{Url: "/request/history/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestHistory},
 		&handlerFuncObj{Url: "/plugin/request/create", Method: "POST", HandlerFunc: requestNew.PluginCreateRequest},
 		&handlerFuncObj{Url: "/request-data/form/save/:requestId", Method: "POST", HandlerFunc: requestNew.SaveRequestFormData},
+		// 转发platform接口
+		&handlerFuncObj{Url: "/platform/models", Method: "GET", HandlerFunc: requestNew.GetPlatformAllModels},
+		&handlerFuncObj{Url: "/platform/:package/entities/:entity/query", Method: "POST", HandlerFunc: requestNew.QueryPlatformEntityData},
+		// 转发auth接口
+		&handlerFuncObj{Url: "/auth/roles", Method: "GET", HandlerFunc: requestNew.TransAuthGetApplyRoles},
+		&handlerFuncObj{Url: "/auth/roles/apply", Method: "POST", HandlerFunc: requestNew.TransAuthStartApply},
+		&handlerFuncObj{Url: "/auth/roles/apply/byhandler", Method: "POST", HandlerFunc: requestNew.TransAuthGetProcessableList},
+		&handlerFuncObj{Url: "/auth/users", Method: "GET", HandlerFunc: requestNew.TransAuthGetAllUser},
+		&handlerFuncObj{Url: "/auth/roles/:roleId/users", Method: "GET", HandlerFunc: requestNew.TransAuthGetUserByRole},
+		&handlerFuncObj{Url: "/auth/roles/:roleId/users/revoke", Method: "POST", HandlerFunc: requestNew.TransAuthRemoveUserFromRole},
+		&handlerFuncObj{Url: "/auth/roles/:roleId/users", Method: "POST", HandlerFunc: requestNew.TransAuthAddUserForRole},
+		&handlerFuncObj{Url: "/auth/roles/apply", Method: "PUT", HandlerFunc: requestNew.TransAuthHandleApplication},
+		&handlerFuncObj{Url: "/auth/roles/apply/byapplier", Method: "POST", HandlerFunc: requestNew.TransAuthGetApplyList},
+		&handlerFuncObj{Url: "/auth/users/register", Method: "POST", HandlerFunc: requestNew.TransAuthUserRegister},
 	)
 }
 

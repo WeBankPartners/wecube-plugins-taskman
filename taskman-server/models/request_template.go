@@ -19,6 +19,7 @@ type RequestTemplateTable struct {
 	ProcDefKey      string `json:"procDefKey" xorm:"proc_def_key"`
 	ProcDefId       string `json:"procDefId" xorm:"proc_def_id"`
 	ProcDefName     string `json:"procDefName" xorm:"proc_def_name"`
+	ProcDefVersion  string `json:"procDefVersion" xorm:"proc_def_version"`
 	CreatedBy       string `json:"createdBy" xorm:"created_by"`
 	CreatedTime     string `json:"createdTime" xorm:"created_time"`
 	UpdatedBy       string `json:"updatedBy" xorm:"updated_by"`
@@ -56,6 +57,7 @@ type RequestTemplateDto struct {
 	ProcDefKey       string `json:"procDefKey"`
 	ProcDefId        string `json:"procDefId"`
 	ProcDefName      string `json:"procDefName"`
+	ProcDefVersion   string `json:"procDefVersion"`
 	CreatedBy        string `json:"createdBy"`
 	CreatedTime      string `json:"createdTime"`
 	UpdatedBy        string `json:"updatedBy"`
@@ -181,9 +183,9 @@ type RequestTemplateExport struct {
 }
 
 type RequestTemplateTmp struct {
-	ProcDefId         string `json:"procDefId" xorm:"proc_def_id`
-	TemplateName      string `json:"templateName" xorm:"template_name`
-	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name`
+	ProcDefId         string `json:"procDefId" xorm:"proc_def_id"`
+	TemplateName      string `json:"templateName" xorm:"template_name"`
+	TemplateGroupName string `json:"templateGroupName" xorm:"template_group_name"`
 	Version           string `json:"version" xorm:"version"`
 	Status            string `json:"status" xorm:"status"`
 	ExpireDay         int    `json:"expireDay" xorm:"expire_day"`
@@ -227,11 +229,11 @@ func ConvertRequestTemplateUpdateParam2RequestTemplate(param RequestTemplateUpda
 		ProcDefKey:      param.ProcDefKey,
 		ProcDefId:       param.ProcDefId,
 		ProcDefName:     param.ProcDefName,
+		ProcDefVersion:  param.ProcDefVersion,
 		CreatedBy:       param.CreatedBy,
 		CreatedTime:     nowTime,
 		UpdatedBy:       param.CreatedBy,
 		UpdatedTime:     nowTime,
-		EntityAttrs:     "",
 		ExpireDay:       param.ExpireDay,
 		Handler:         param.Handler,
 		DelFlag:         0,
@@ -241,7 +243,6 @@ func ConvertRequestTemplateUpdateParam2RequestTemplate(param RequestTemplateUpda
 		ApproveBy:       param.ApproveBy,
 		CheckSwitch:     param.CheckSwitch,
 		ConfirmSwitch:   param.ConfirmSwitch,
-		BackDesc:        "",
 	}
 }
 
@@ -261,6 +262,7 @@ func ConvertRequestTemplateDto2Model(param RequestTemplateDto) *RequestTemplateT
 		ProcDefKey:      param.ProcDefKey,
 		ProcDefId:       param.ProcDefId,
 		ProcDefName:     param.ProcDefName,
+		ProcDefVersion:  param.ProcDefVersion,
 		CreatedBy:       param.CreatedBy,
 		CreatedTime:     param.CreatedTime,
 		UpdatedBy:       param.UpdatedBy,
@@ -295,6 +297,7 @@ func ConvertRequestTemplateModel2Dto(requestTemplate *RequestTemplateTable) *Req
 		ProcDefKey:      requestTemplate.ProcDefKey,
 		ProcDefId:       requestTemplate.ProcDefId,
 		ProcDefName:     requestTemplate.ProcDefName,
+		ProcDefVersion:  requestTemplate.ProcDefVersion,
 		CreatedBy:       requestTemplate.CreatedBy,
 		CreatedTime:     requestTemplate.CreatedTime,
 		UpdatedBy:       requestTemplate.UpdatedBy,
@@ -308,8 +311,6 @@ func ConvertRequestTemplateModel2Dto(requestTemplate *RequestTemplateTable) *Req
 		ParentId:        requestTemplate.ParentId,
 		ApproveBy:       requestTemplate.ApproveBy,
 		CheckSwitch:     requestTemplate.CheckSwitch,
-		CheckRole:       "",
-		CheckHandler:    "",
 		ConfirmSwitch:   requestTemplate.ConfirmSwitch,
 		BackDesc:        requestTemplate.BackDesc,
 	}

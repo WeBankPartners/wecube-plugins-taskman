@@ -20,7 +20,7 @@ func AddTemplateCollect(param *models.CollectTemplateTable) error {
 	_, err := dao.X.Exec("insert into collect_template(id,request_template,type,user,role,created_time) value (?,?,?,?,?,?)",
 		param.Id, param.RequestTemplate, param.Type, param.User, param.Role, nowTime)
 	if err != nil {
-		err = fmt.Errorf("Insert database error:%s ", err.Error())
+		err = fmt.Errorf("insert database error:%s ", err.Error())
 	}
 	return err
 }
@@ -28,7 +28,7 @@ func AddTemplateCollect(param *models.CollectTemplateTable) error {
 func DeleteTemplateCollect(templateId, user string) error {
 	_, err := dao.X.Exec("delete from collect_template where request_template = ? and user = ?", templateId, user)
 	if err != nil {
-		err = fmt.Errorf("Delete database error:%s ", err.Error())
+		err = fmt.Errorf("delete database error:%s ", err.Error())
 	}
 	return err
 }
@@ -116,7 +116,7 @@ func QueryTemplateCollect(param *models.QueryCollectTemplateParam, user, userTok
 			} else {
 				collectObj.Version = template.Version
 			}
-			requestTemplateRoleList, _ := GetRequestTemplateService().getRequestTemplateRole(collectObj.Id)
+			requestTemplateRoleList, _ := GetRequestTemplateService().GetRequestTemplateRole(collectObj.Id)
 			if len(requestTemplateRoleList) == 0 {
 				continue
 			}

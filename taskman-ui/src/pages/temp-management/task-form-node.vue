@@ -24,7 +24,7 @@
             {{ $t('name') }}{{ $t('can_not_be_empty') }}
           </div>
         </FormItem>
-        <FormItem label="时效">
+        <FormItem :label="$t('tw_validity_period')">
           <Select v-model="activeApprovalNode.expireDay" @on-change="paramsChanged" style="width: 160px;">
             <Option v-for="item in expireDayOptions" :value="item" :key="item">{{ item }}{{ $t('day') }}</Option>
           </Select>
@@ -45,7 +45,7 @@
         </FormItem>
       </Form>
       <Form ref="formInline" inline :label-width="100">
-        <FormItem label="分配">
+        <FormItem :label="$t('tw_allocation')">
           <Select v-model="activeApprovalNode.handleMode" @on-change="changeRoleType" style="width: 160px;">
             <Option v-for="item in roleTypeOptions" :value="item.value" :key="item.value">{{ item.label }}</Option>
           </Select>
@@ -58,10 +58,10 @@
         >
           <Row>
             <Col class="cutom-table-border" span="2">{{ $t('index') }}</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">角色设置方式</Col>
-            <Col class="cutom-table-border margin-left--1" span="5">人员设置方式</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">{{ $t('tw_role_based_config') }}</Col>
+            <Col class="cutom-table-border margin-left--1" span="5">{{ $t('tw_user_based_config') }}</Col>
             <Col class="cutom-table-border margin-left--1" span="5">{{ $t('manageRole') }}</Col>
-            <Col class="cutom-table-border margin-left--1" span="4">人员</Col>
+            <Col class="cutom-table-border margin-left--1" span="4">{{ $t('tw_users') }}</Col>
             <!-- <Col class="cutom-table-border margin-left--1" span="2">{{ $t('t_action') }}</Col> -->
           </Row>
           <Row v-for="(roleObj, roleObjIndex) in activeApprovalNode.handleTemplates" :key="roleObjIndex" style="">
@@ -138,13 +138,7 @@
 
 <script>
 // import Vue from 'vue'
-import {
-  getUserRoles,
-  getHandlerRoles,
-  updateApprovalNode,
-  getApprovalNodeById,
-  deleteGroupsByNodeid
-} from '@/api/server'
+import { getUserRoles, getHandlerRoles, updateApprovalNode, getApprovalNodeById } from '@/api/server'
 export default {
   name: '',
   data () {
@@ -162,8 +156,8 @@ export default {
         handleMode: 'custom',
         handleTemplates: [
           {
-            assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-            handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+            assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+            handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
             role: '',
             handler: '',
             handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
@@ -173,27 +167,27 @@ export default {
       expireDayOptions: [1, 2, 3, 4, 5, 6, 7], // 时效
       roleTypeOptions: [
         // custom.单人自定义 any.协同 all.并行 admin.提交人角色管理员 auto.自动通过
-        { label: '单人:自定义', value: 'custom' },
-        { label: '提交人角色管理员', value: 'admin' }
+        { label: this.$t('tw_single'), value: 'custom' },
+        { label: this.$t('tw_roleAdmin'), value: 'admin' }
       ],
       approvalSingle: {
-        assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-        handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+        assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+        handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
         role: '',
         handler: '',
         handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除
       },
       approvalRoleTypeOptions: [
-        { label: '模板指定', value: 'template' },
-        { label: '提交人指定', value: 'custom' }
+        { label: this.$t('tw_template_assign'), value: 'template' },
+        { label: this.$t('tw_reporter_assign'), value: 'custom' }
       ],
       handlerTypeOptions: [
-        { label: '模板指定', value: 'template', used: ['template'] },
-        { label: '模板建议', value: 'template_suggest', used: ['template'] },
-        { label: '提交人指定', value: 'custom', used: ['template', 'custom'] },
-        { label: '提交人建议', value: 'custom_suggest', used: ['template', 'custom'] },
-        { label: '组内系统分配', value: 'system', used: ['template', 'custom'] },
-        { label: '组内主动认领', value: 'claim', used: ['template', 'custom'] }
+        { label: this.$t('tw_template_assign'), value: 'template', used: ['template'] },
+        { label: this.$t('tw_template_suggest'), value: 'template_suggest', used: ['template'] },
+        { label: this.$t('tw_reporter_assign'), value: 'custom', used: ['template', 'custom'] },
+        { label: this.$t('tw_reporter_suggest'), value: 'custom_suggest', used: ['template', 'custom'] },
+        { label: this.$t('tw_group_assign'), value: 'system', used: ['template', 'custom'] },
+        { label: this.$t('tw_group_claim'), value: 'claim', used: ['template', 'custom'] }
       ],
       useRolesOptions: [], // 使用角色
       isSaveNodeDisable: true
@@ -281,31 +275,24 @@ export default {
       const { statusCode } = await updateApprovalNode(tmpData)
       if (statusCode === 'OK') {
         this.isParmasChanged = false
-        if (![2, 3].includes(type)) {
+        if (![2, 3, 4].includes(type)) {
           this.$Notice.success({
             title: this.$t('successful'),
             desc: this.$t('successful')
           })
         }
-        if (type === 1) {
+        if ([1, 4].includes(type)) {
           this.$emit('reloadParentPage', this.activeApprovalNode.id)
         } else if (type === 2) {
           this.$emit('reloadParentPage', nextNodeId)
         }
-        if (['admin'].includes(this.activeApprovalNode.handleMode)) {
-          this.removeNodeGroups()
-        }
       }
-    },
-    // 在无需表单配置的场景下，删除节点下的组
-    async removeNodeGroups () {
-      deleteGroupsByNodeid(this.requestTemplateId, this.activeApprovalNode.id)
     },
     // 为父页面提供状态查询
     panalStatus () {
       const nodeStatus = this.isSaveNodeDisable
       if (nodeStatus) {
-        this.$Message.warning('节点数据不完整')
+        this.$Message.warning(this.$t('tw_node_data_incomplete'))
       }
       return nodeStatus ? 'unableToSave' : 'canSave'
     },
@@ -341,8 +328,8 @@ export default {
     changeRoleType () {
       this.activeApprovalNode.handleTemplates = [
         {
-          assign: 'custom', // 角色设置方式：template.模板指定 custom.提交人指定
-          handlerType: 'custom', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
+          assign: 'template', // 角色设置方式：template.模板指定 custom.提交人指定
+          handlerType: 'template_suggest', // 人员设置方式：template.模板指定 template_suggest.模板建议 custom.提交人指定 custom_suggest.提交人建议 system.组内系统分配 claim.组内主动认领。[template,template_suggest]只当role_type=template才有
           role: '',
           handler: '',
           handlerOptions: [] // 缓存角色下的用户，添加数据时添加，保存时清除

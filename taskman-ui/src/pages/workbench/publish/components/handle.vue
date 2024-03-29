@@ -1,7 +1,7 @@
 <!--当前处理-->
 <template>
   <div class="workbench-current-handle">
-    <!--请求定版-->
+    <!--定版-->
     <HeaderTitle v-if="detail.status === 'Pending'" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
         <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_pending') }}</Tag>
@@ -35,6 +35,7 @@
               :requestId="requestId"
               :formDisable="detail.status !== 'Pending'"
               :actionName="actionName"
+              :formData="detail.formData"
             ></DataBind>
           </div>
         </div>
@@ -46,12 +47,12 @@
         <Tag>{{ approvalTypeName[handleData.handleMode] || '' }}</Tag>
         <Tag style="margin-left:5px;" :color="handleTypeColor[handleData.type]">{{
           `${{
-            approve: '审批',
-            implement_custom: '自定义任务',
-            implement_process: '编排任务'
+            approve: $t('tw_approval'),
+            implement_custom: $t('tw_custom_task'),
+            implement_process: $t('tw_workflow_task')
           }[handleData.type] || '-'}：${handleData.name}`
         }}</Tag>
-        <span class="description">{{ $t('description') }}：{{ handleData.description }}</span>
+        <span class="description">{{ $t('description') }}：{{ handleData.description || '-' }}</span>
       </div>
       <div class="step-item">
         <div class="step-item-left">
@@ -66,7 +67,7 @@
           <div class="content">
             <EntityTable ref="entityTable" :data="handleData.formData" :requestId="requestId"></EntityTable>
             <div v-if="handleData.formData && handleData.formData.length === 0" class="no-data">
-              暂未配置表单
+              {{ $t('tw_no_formConfig') }}
             </div>
           </div>
         </div>
@@ -82,11 +83,8 @@
           </div>
           <div class="content">
             <Form :label-width="80" label-position="left">
-              <!-- <FormItem :label="$t('task') + $t('description')">
-                <Input disabled v-model="handleData.description" type="textarea" :maxlength="200" show-word-limit />
-              </FormItem> -->
               <!--处理结果-审批类型-->
-              <FormItem v-if="handleData.type === 'approve'" required label="操作">
+              <FormItem v-if="handleData.type === 'approve'" required :label="$t('t_action')">
                 <Select v-model="taskForm.choseOption" @on-change="handleChoseOptionChange">
                   <Option v-for="(item, index) in approvalNextOptions" :value="item.value" :key="index">{{
                     item.label
@@ -99,14 +97,17 @@
                   handleData.type === 'implement_process' && handleData.nextOptions && handleData.nextOptions.length > 0
                 "
                 required
-                label="操作"
+                :label="$t('t_action')"
               >
                 <Select v-model="taskForm.choseOption">
                   <Option v-for="option in handleData.nextOptions" :value="option" :key="option">{{ option }}</Option>
                 </Select>
               </FormItem>
               <!--完成状态(只有任务有)-->
-              <FormItem v-if="['implement_custom', 'implement_process'].includes(handleData.type)" label="完成状态">
+              <FormItem
+                v-if="['implement_custom', 'implement_process'].includes(handleData.type)"
+                :label="$t('tw_handleStatus')"
+              >
                 <Select v-model="taskForm.handleStatus">
                   <Option v-for="(item, index) in taskStatusList" :value="item.value" :key="index">{{
                     item.label
@@ -139,20 +140,20 @@
         </div>
       </div>
     </HeaderTitle>
-    <!--确认请求-->
+    <!--确认-->
     <HeaderTitle v-else-if="detail.status === 'Confirm'" :title="$t('tw_cur_handle')">
       <div class="sub-title" slot="sub-title">
-        <Tag class="tag" :color="handleTypeColor[handleData.type]">请求确认</Tag>
+        <Tag class="tag" :color="handleTypeColor[handleData.type]">{{ $t('tw_request_confirm') }}</Tag>
       </div>
       <div style="padding:20px 16px;">
         <Form :label-width="80" label-position="left">
-          <FormItem label="请求状态">
+          <FormItem :label="$t('status')">
             <Select v-model="confirmRequestForm.completeStatus" @on-change="confirmRequestForm.markTaskId = []">
               <Option v-for="(i, index) in completeStatusList" :value="i.value" :key="index">{{ i.label }}</Option>
             </Select>
           </FormItem>
           <template v-if="confirmRequestForm.completeStatus === 'uncompleted'">
-            <FormItem label="未完成任务节点">
+            <FormItem :label="$t('tw_uncompleted_tag')">
               <Select
                 v-model="confirmRequestForm.markTaskId"
                 multiple
@@ -239,21 +240,21 @@ export default {
           value: 'complete'
         },
         {
-          label: '未完成/部分完成',
+          label: this.$t('tw_uncompleted'),
           value: 'uncompleted'
         }
       ],
       approvalNextOptions: [
         {
-          label: '拒绝',
+          label: this.$t('tw_reject'), // 拒绝
           value: 'deny'
         },
         {
-          label: '同意',
+          label: this.$t('tw_approve'), // 同意
           value: 'approve'
         },
         {
-          label: '退回',
+          label: this.$t('tw_send_back'), // 退回
           value: 'redraw'
         }
       ],
@@ -268,11 +269,11 @@ export default {
         }
       ],
       approvalTypeName: {
-        custom: '单人',
-        any: '协同',
-        all: '并行',
-        admin: '提交人角色管理员',
-        auto: '自动通过'
+        custom: this.$t('tw_onlyOne'), // 单人
+        any: this.$t('tw_anyWidth'), // 协同
+        all: this.$t('tw_allWidth'), // 并行
+        admin: this.$t('tw_roleAdmin'), // 提交人角色管理员
+        auto: this.$t('tw_autoWith') // 自动通过
       },
       handleTypeColor: {
         check: '#ffa2d3',
@@ -312,10 +313,35 @@ export default {
             if (item.id === this.taskHandleId) {
               if (['InApproval', 'InProgress'].includes(this.detail.status)) {
                 this.taskForm.comment = item.resultDesc
-                this.taskForm.choseOption = item.handleResult
-                this.taskForm.handleStatus = item.handleStatus
+                // 通过createdTime===updatedTime判断首次编辑时，给默认值
+                if (val.type === 'approve' && item.createdTime === item.updatedTime) {
+                  this.taskForm.choseOption = 'approve'
+                } else {
+                  this.taskForm.choseOption = item.handleResult
+                }
+                if (item.createdTime === item.updatedTime) {
+                  this.taskForm.handleStatus = 'complete'
+                } else {
+                  this.taskForm.handleStatus = item.handleStatus
+                }
                 this.taskForm.attachFiles = item.attachFiles
               }
+            }
+          })
+          // 表单数据默认值赋值
+          val.formData.forEach(item => {
+            if (item.value && item.value.length) {
+              item.value.forEach(v => {
+                item.title.forEach(t => {
+                  // 默认清空标志为false, 且初始值为空，赋值默认值
+                  if (t.defaultClear === 'no' && !v.entityData[t.name]) {
+                    v.entityData[t.name] = t.defaultValue || ''
+                  }
+                  if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
+                    v.entityData[t.name] = ''
+                  }
+                })
+              })
             }
           })
         }
@@ -328,7 +354,7 @@ export default {
       // 给退回操作默认处理意见
       this.taskForm.comment = ''
       if (val === 'redraw') {
-        this.taskForm.comment = '退回'
+        this.taskForm.comment = this.$t('tw_send_back')
       }
     },
     // 任务审批保存

@@ -47,9 +47,9 @@ export default {
           render: (h, params) => {
             const list = [
               { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-              { label: '审批中', value: 'InApproval', color: '#1990ff' },
+              { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
               { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
-              { label: '请求确认', value: 'Confirm', color: '#b886f8' },
+              { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
               { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#ed4014' },
               { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
               { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
@@ -80,7 +80,7 @@ export default {
             const map = {
               waitCommit: this.$t('tw_wait_commit'),
               sendRequest: this.$t('tw_commit_request'),
-              confirm: '请求确认',
+              confirm: this.$t('tw_request_confirm'),
               requestPending: this.$t('tw_request_pending'),
               requestComplete: this.$t('tw_request_complete'),
               Completed: this.$t('tw_request_complete')
@@ -110,8 +110,15 @@ export default {
           minWidth: 170,
           key: 'handler',
           render: (h, params) => {
-            const handlerArr = params.row.handler.split(',') || []
-            const roleArr = params.row.handleRoleDisplay.split(',') || []
+            let handlerArr = []
+            let roleArr = []
+            if (this.tabName === 'draft' || (this.tabName === 'submit' && ['1', '3'].includes(this.rollback))) {
+              handlerArr = params.row.checkHandler.split(',') || []
+              roleArr = params.row.checkHandleRoleDisplay.split(',') || []
+            } else {
+              handlerArr = params.row.handler.split(',') || []
+              roleArr = params.row.handleRoleDisplay.split(',') || []
+            }
             return (
               <div style="display:flex;flex-direction:column;">
                 {handlerArr.map((item, index) => {
@@ -139,8 +146,8 @@ export default {
             return (
               <span>
                 {['myPending', 'pending', 'hasProcessed'].includes(this.tabName)
-                  ? '任务停留/有效期'
-                  : '请求停留/有效期'}
+                  ? this.$t('tw_taskTime_progress')
+                  : this.$t('tw_requestTime_progress')}
               </span>
             )
           },
@@ -179,19 +186,43 @@ export default {
           minWidth: 200,
           key: 'templateName',
           render: (h, params) => {
-            return (
-              <span>
-                {`${params.row.templateName}【${params.row.version}】`}
-                {/* <Tag>{params.row.version}</Tag> */}
-              </span>
-            )
+            if (params.row.templateName) {
+              return (
+                <span>
+                  {`${params.row.templateName}`}
+                  {params.row.version && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.version}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         procDefName: {
           title: this.$t('tw_template_flow'),
           sortable: 'custom',
-          minWidth: 150,
-          key: 'procDefName'
+          minWidth: 180,
+          key: 'procDefName',
+          render: (h, params) => {
+            if (params.row.procDefName) {
+              return (
+                <span>
+                  {`${params.row.procDefName}`}
+                  {params.row.procDefVersion && (
+                    <span style="border:1px solid #e8eaec;border-radius:3px;background:#f7f7f7;padding:1px 4px;">
+                      {params.row.procDefVersion}
+                    </span>
+                  )}
+                </span>
+              )
+            } else {
+              return <span>-</span>
+            }
+          }
         },
         operatorObjType: {
           title: this.$t('tw_operator_type'),
@@ -200,13 +231,17 @@ export default {
           minWidth: 150,
           key: 'operatorObjType',
           render: (h, params) => {
-            return (
-              params.row.operatorObjType && (
-                <Tooltip content={params.row.operatorObjType} placement="top">
-                  <Tag>{params.row.operatorObjType}</Tag>
-                </Tooltip>
+            if (params.row.operatorObjType) {
+              return (
+                params.row.operatorObjType && (
+                  <Tooltip content={params.row.operatorObjType} placement="top">
+                    <Tag>{params.row.operatorObjType}</Tag>
+                  </Tooltip>
+                )
               )
-            )
+            } else {
+              return <span>-</span>
+            }
           }
         },
         operatorObj: {
@@ -214,10 +249,13 @@ export default {
           resizable: true,
           sortable: 'custom',
           minWidth: 150,
-          key: 'operatorObj'
+          key: 'operatorObj',
+          render: (h, params) => {
+            return <span>{params.row.operatorObj || '-'}</span>
+          }
         },
         createdBy: {
-          title: '请求提交人',
+          title: this.$t('tw_reporter'),
           sortable: 'custom',
           minWidth: 170,
           key: 'createdBy',
@@ -275,13 +313,13 @@ export default {
                     !['template', 'custom'].includes(params.row.handlerType)) && (
                     <Tooltip content={this.$t('tw_action_claim')} placement="top">
                       <Button
-                        type="info"
+                        type="primary"
                         size="small"
                         onClick={() => {
                           this.handleTransfer(params.row, 'claim')
                         }}
                       >
-                        <Icon type="ios-hand" size="16"></Icon>
+                        <Icon type="md-person" size="16"></Icon>
                       </Button>
                     </Tooltip>
                   )}
@@ -321,8 +359,10 @@ export default {
                     </Tooltip>
                   )}
                 {// 撤回
-                // 我提交的定版状态可退回
-                  params.row.status === 'Pending' && this.tabName === 'submit' && (
+                // 我提交的定版或审批中revokeBtn为true可退回
+                  ['Pending', 'InApproval'].includes(params.row.status) &&
+                  params.row.revokeBtn &&
+                  this.tabName === 'submit' && (
                     <Tooltip content={this.$t('tw_recall')} placement="top">
                       <Button
                         type="error"
@@ -416,7 +456,7 @@ export default {
         render: (h, params) => {
           const taskNameMap = {
             check: this.$t('tw_pending_tab'),
-            confirm: '请求确认'
+            confirm: this.$t('tw_request_confirm')
           }
           return (
             <span
@@ -431,13 +471,13 @@ export default {
         }
       },
       {
-        title: '任务创建',
+        title: this.$t('tw_taskUpdated'),
         sortable: 'custom',
         minWidth: 150,
-        key: 'taskCreatedTime'
+        key: 'taskHandleUpdatedTime'
       },
       {
-        title: '任务截止',
+        title: this.$t('tw_taskEnd'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
@@ -468,7 +508,7 @@ export default {
         render: (h, params) => {
           const taskNameMap = {
             check: this.$t('tw_pending_tab'),
-            confirm: '请求确认'
+            confirm: this.$t('tw_request_confirm')
           }
           return (
             <span
@@ -483,13 +523,13 @@ export default {
         }
       },
       {
-        title: '任务创建',
+        title: this.$t('tw_taskCreated'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskCreatedTime'
       },
       {
-        title: '任务截止',
+        title: this.$t('tw_taskEnd'),
         sortable: 'custom',
         minWidth: 150,
         key: 'taskExpectTime'
@@ -514,7 +554,7 @@ export default {
           return (
             <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc}
+                {params.row.rollbackDesc || '-'}
               </span>
             </Tooltip>
           )
@@ -551,7 +591,7 @@ export default {
           return (
             <Tooltip max-width="300" content={params.row.rollbackDesc}>
               <span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;">
-                {params.row.rollbackDesc}
+                {params.row.rollbackDesc || '-'}
               </span>
             </Tooltip>
           )

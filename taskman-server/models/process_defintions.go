@@ -20,6 +20,7 @@ type ProcDef struct {
 	CreatedTime   time.Time `json:"createdTime"`   // 创建时间
 	UpdatedBy     string    `json:"updatedBy"`     // 更新人
 	UpdatedTime   time.Time `json:"updatedTime"`   // 更新时间
+	ManageRole    string    `json:"manageRole"`    // 属主
 }
 
 type ProcDefQueryDto struct {
@@ -77,6 +78,7 @@ type ProcDefObj struct {
 	RootEntity  ProcEntity `json:"rootEntity"`
 	CreatedTime string     `json:"createdTime"`
 	Version     string     `json:"version"`
+	ManageRole  string     `json:"manageRole"` // 属主
 }
 
 type ProcAllDefObj struct {
@@ -315,11 +317,7 @@ func (q QueryNodeSort) Len() int {
 }
 
 func (q QueryNodeSort) Less(i, j int) bool {
-	t := strings.Compare(q[i].OrderedNo, q[j].OrderedNo)
-	if t < 0 {
-		return true
-	}
-	return false
+	return strings.Compare(q[i].OrderedNo, q[j].OrderedNo) < 0
 }
 
 func (q QueryNodeSort) Swap(i, j int) {

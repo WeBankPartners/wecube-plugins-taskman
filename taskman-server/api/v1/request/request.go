@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func GetRequestPreviewData(c *gin.Context) {
@@ -31,6 +32,13 @@ func CountPlatform(c *gin.Context) {
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
+	}
+	// 默认三个月前时间
+	if param.QueryTimeStart == "" {
+		param.QueryTimeStart = time.Now().AddDate(0, -3, 0).Format(models.DateTimeFormat)
+	}
+	if param.QueryTimeEnd == "" {
+		param.QueryTimeEnd = time.Now().Format(models.DateTimeFormat)
 	}
 	platformData, err := service.GetPlatformCount(param, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
@@ -70,6 +78,13 @@ func DataList(c *gin.Context) {
 	}
 	if param.PageSize == 0 {
 		param.PageSize = 10
+	}
+	// 默认三个月前时间
+	if param.QueryTimeStart == "" {
+		param.QueryTimeStart = time.Now().AddDate(0, -3, 0).Format(models.DateTimeFormat)
+	}
+	if param.QueryTimeEnd == "" {
+		param.QueryTimeEnd = time.Now().Format(models.DateTimeFormat)
 	}
 	pageInfo, rowData, err := service.DataList(&param, middleware.GetRequestRoles(c), c.GetHeader("Authorization"), middleware.GetRequestUser(c), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
@@ -164,7 +179,7 @@ func Confirm(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, fmt.Errorf("request status not confirm"))
 		return
 	}
-	err = service.RequestConfirm(param, user)
+	err = service.RequestConfirm(param, user, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -421,18 +436,30 @@ func UploadRequestAttachFile(c *gin.Context) {
 }
 
 func DownloadAttachFile(c *gin.Context) {
+	var err error
+	var attachFile models.AttachFileTable
+	var fileContent []byte
+	var fileName string
+	var checkPermission bool
 	fileId := c.Param("fileId")
-	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "download", middleware.GetRequestRoles(c)); err != nil {
+	if attachFile, err = service.GetAttachFileInfo(fileId); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if checkPermission, err = service.CheckDownloadPermission(attachFile, middleware.GetRequestRoles(c)); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if !checkPermission {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
-	fileContent, fileName, err := service.DownloadAttachFile(fileId)
-	if err != nil {
+	if fileContent, fileName, err = service.DownloadAttachFile(attachFile); err != nil {
 		middleware.ReturnServerHandleError(c, err)
-	} else {
-		c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", fileName))
-		c.Data(http.StatusOK, "application/octet-stream", fileContent)
+		return
 	}
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename*=UTF-8''%s", fileName))
+	c.Data(http.StatusOK, "application/octet-stream", fileContent)
 }
 
 // UpdateRequestHandler 更新请求处理人,包括认领&转给我逻辑
@@ -463,7 +490,7 @@ func UpdateRequestHandler(c *gin.Context) {
 
 func RemoveAttachFile(c *gin.Context) {
 	fileId := c.Param("fileId")
-	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), "delete", middleware.GetRequestRoles(c)); err != nil {
+	if err := service.CheckAttachFilePermission(fileId, middleware.GetRequestUser(c), middleware.GetRequestRoles(c)); err != nil {
 		middleware.ReturnDataPermissionDenyError(c)
 		return
 	}
@@ -473,6 +500,8 @@ func RemoveAttachFile(c *gin.Context) {
 	} else {
 		if fileObj.Request != "" {
 			middleware.ReturnData(c, service.GetRequestAttachFileList(fileObj.Request))
+		} else if fileObj.TaskHandle != "" {
+			middleware.ReturnData(c, service.GetAttachFileListByTaskHandleId(fileObj.TaskHandle))
 		} else {
 			middleware.ReturnData(c, service.GetTaskAttachFileList(fileObj.Task))
 		}

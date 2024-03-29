@@ -32,12 +32,24 @@ func QueryRequestTemplate(c *gin.Context) {
 
 func CreateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
-	if err := c.ShouldBindJSON(&param); err != nil {
+	var err error
+	var list []*models.RequestTemplateTable
+	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
 	}
-	if err := validateRequestTemplateParam(&param); err != nil {
+	if err = validateRequestTemplateParam(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	// 校验名称是否重复
+	list, err = service.GetRequestTemplateService().QueryListByName(param.Name)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if len(list) > 0 {
+		middleware.ReturnError(c, exterror.New().RequestTemplateNameRepeatError)
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
@@ -78,7 +90,7 @@ func UpdateRequestTemplateHandler(c *gin.Context) {
 		middleware.ReturnError(c, err)
 		return
 	}
-	if requestTemplate.Status == string(models.RequestTemplateStatusConfirm) {
+	if requestTemplate.Status == string(models.RequestTemplateStatusConfirm) || requestTemplate.Status == string(models.RequestTemplateStatusPending) {
 		middleware.ReturnError(c, fmt.Errorf("request template has deployed"))
 		return
 	}
@@ -99,6 +111,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 	var param models.RequestTemplateStatusUpdateParam
 	var requestTemplate *models.RequestTemplateTable
 	var err error
+	var taskTemplateList []*models.TaskTemplateDto
 	if err = c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -133,10 +146,28 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 	}
 	if requestTemplate.Status == string(models.RequestTemplateStatusCreated) {
 		// 校验是否有修改权限
-		err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c))
-		if err != nil {
+		if err = service.GetRequestTemplateService().CheckPermission(param.RequestTemplateId, middleware.GetRequestUser(c)); err != nil {
 			middleware.ReturnServerHandleError(c, err)
 			return
+		}
+		// 提交审核,需要校验任务角色是否补充完整
+		if param.TargetStatus == string(models.RequestTemplateStatusPending) {
+			if taskTemplateList, err = service.GetTaskTemplateService().QueryTaskTemplateDtoListByRequestTemplate(requestTemplate.Id); err != nil {
+				middleware.ReturnServerHandleError(c, err)
+				return
+			}
+			for _, taskTemplate := range taskTemplateList {
+				if taskTemplate.Type == string(models.TaskTypeApprove) || taskTemplate.Type == string(models.TaskTypeImplement) {
+					if err = service.GetTaskTemplateService().CheckHandleTemplates(taskTemplate); err != nil {
+						if taskTemplate.Type == string(models.TaskTypeApprove) {
+							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
+						} else if taskTemplate.Type == string(models.TaskTypeImplement) {
+							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
+						}
+						return
+					}
+				}
+			}
 		}
 	}
 	err = service.GetRequestTemplateService().UpdateRequestTemplateStatus(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, param.Reason)
@@ -150,7 +181,9 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 func UpdateRequestTemplate(c *gin.Context) {
 	var param models.RequestTemplateUpdateParam
 	var result models.RequestTemplateQueryObj
+	var list []*models.RequestTemplateTable
 	var err error
+	var repeatFlag = true
 	if err := c.ShouldBindJSON(&param); err != nil {
 		middleware.ReturnParamValidateError(c, err)
 		return
@@ -167,6 +200,32 @@ func UpdateRequestTemplate(c *gin.Context) {
 	err = service.GetRequestTemplateService().CheckPermission(param.Id, middleware.GetRequestUser(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	// 校验名称重复
+	list, err = service.GetRequestTemplateService().QueryListByName(param.Name)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if len(list) > 0 {
+		// 只有一条数据,判断是否为当前数据
+		if len(list) == 1 && param.Id == list[0].Id {
+			repeatFlag = false
+		} else {
+			for _, template := range list {
+				// 说明是 相同模版的不同版本
+				if template.Id == param.RecordId {
+					repeatFlag = false
+				}
+			}
+		}
+	} else {
+		// 没有查询到数据repeat为false
+		repeatFlag = false
+	}
+	if repeatFlag {
+		middleware.ReturnError(c, exterror.New().RequestTemplateNameRepeatError)
 		return
 	}
 	param.UpdatedBy = middleware.GetRequestUser(c)
@@ -212,7 +271,7 @@ func DeleteRequestTemplate(c *gin.Context) {
 
 func ListRequestTemplateEntityAttrs(c *gin.Context) {
 	id := c.Param("id")
-	result, err := service.GetRequestTemplateService().ListRequestTemplateEntityAttrs(id, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	result, err := service.GetRequestTemplateService().ListRequestTemplateEntityAttrs(id, "", c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -280,6 +339,17 @@ func ForkConfirmRequestTemplate(c *gin.Context) {
 	middleware.ReturnSuccess(c)
 }
 
+func CopyConfirmRequestTemplate(c *gin.Context) {
+	requestTemplateId := c.Param("id")
+	err := service.GetRequestTemplateService().CopyConfirmRequestTemplate(requestTemplateId, middleware.GetRequestUser(c))
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	service.GetOperationLogService().RecordRequestTemplateLog(requestTemplateId, "", middleware.GetRequestUser(c), "CopyConfirmRequestTemplate", c.Request.RequestURI, "")
+	middleware.ReturnSuccess(c)
+}
+
 func GetConfirmCount(c *gin.Context) {
 	var count int
 	count, err := service.GetRequestTemplateService().GetConfirmCount(middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
@@ -339,7 +409,7 @@ func ImportRequestTemplate(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Json unmarshal fail error:" + err.Error(), Data: nil})
 		return
 	}
-	templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c))
+	templateName, backToken, importErr := service.GetRequestTemplateService().RequestTemplateImport(paramObj, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), "", middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if importErr != nil {
 		middleware.ReturnServerHandleError(c, importErr)
 		return
@@ -353,7 +423,7 @@ func ImportRequestTemplate(c *gin.Context) {
 
 func ConfirmImportRequestTemplate(c *gin.Context) {
 	confirmToken := c.Param("confirmToken")
-	_, _, err := service.GetRequestTemplateService().RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c))
+	_, _, err := service.GetRequestTemplateService().RequestTemplateImport(models.RequestTemplateExport{}, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), confirmToken, middleware.GetRequestUser(c), middleware.GetRequestRoles(c))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

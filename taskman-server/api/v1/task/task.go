@@ -48,16 +48,11 @@ func CreateTask(c *gin.Context) {
 		requestLanguage = "en"
 	}
 	for _, input := range param.Inputs {
-		output, taskId, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
+		output, _, tmpErr := service.PluginTaskCreateNew(input, param.RequestId, param.DueDate, param.AllowedOptions, requestToken, requestLanguage)
 		if tmpErr != nil {
 			output.ErrorCode = "1"
 			output.ErrorMessage = tmpErr.Error()
 			err = tmpErr
-		} else {
-			notifyErr := service.NotifyTaskMail(taskId, requestToken, requestLanguage, "", "")
-			if notifyErr != nil {
-				log.Logger.Error("Notify task mail fail", log.Error(notifyErr))
-			}
 		}
 		response.Results.Outputs = append(response.Results.Outputs, output)
 	}
@@ -257,7 +252,7 @@ func UpdateTaskHandle(c *gin.Context) {
 		middleware.ReturnParamEmptyError(c, "taskId or taskHandleId")
 		return
 	}
-	err = service.UpdateTaskHandle(param, middleware.GetRequestUser(c))
+	err = service.UpdateTaskHandle(param, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
@@ -294,6 +289,6 @@ func UploadTaskAttachFile(c *gin.Context) {
 		middleware.ReturnServerHandleError(c, err)
 	} else {
 		service.GetOperationLogService().RecordTaskLog(taskId, "", middleware.GetRequestUser(c), "uploadTaskFile", c.Request.RequestURI, file.Filename)
-		middleware.ReturnData(c, service.GetTaskAttachFileList(taskId))
+		middleware.ReturnData(c, service.GetAttachFileListByTaskHandleId(taskHandleId))
 	}
 }

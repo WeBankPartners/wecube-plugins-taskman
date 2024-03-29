@@ -34,7 +34,7 @@
           <Divider>{{ $t('tw_preview') }}</Divider>
           <div class="title">
             <div class="title-text">
-              {{ $t('tw_request_title') }}
+              {{ $t('request_form_details') }}
               <span class="underline"></span>
             </div>
           </div>
@@ -321,10 +321,10 @@
         </div>
       </Col>
     </Row>
-    <Modal v-model="showSelectModel" title="创建表单" :mask-closable="false">
+    <Modal v-model="showSelectModel" :title="$t('tw_create_form')" :mask-closable="false">
       <div style="margin: 40px 0 60px 0">
         <Form :label-width="120">
-          <FormItem :label="$t('表单模版类型')">
+          <FormItem :label="$t('tw_form_template_type')">
             <Select style="width: 80%" v-model="itemGroup" v-if="showSelectModel" filterable clearable>
               <OptionGroup v-for="itemGroup in groupOptions" :label="itemGroup.formTypeName" :key="itemGroup.formType">
                 <Option v-for="item in itemGroup.entities" :value="item" :key="item">{{ item }}</Option>
@@ -733,11 +733,11 @@ export default {
               d.formTypeName = this.$t('tw_custom_form')
               d.entities = ['custom']
             } else if (d.formType === 'workflow') {
-              d.formTypeName = this.$t('编排entity表单')
+              d.formTypeName = this.$t('tw_orchestration')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             } else if (d.formType === 'optional') {
-              d.formTypeName = this.$t('自选entity表单')
+              d.formTypeName = this.$t('tw_custom')
               let entities = d.entities || []
               d.entities = entities.filter(entity => !existGroup.includes(entity))
             }
@@ -850,15 +850,25 @@ export default {
       // })
     },
     async confirmRemoveGroupItem () {
-      const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
-      if (statusCode === 'OK') {
-        this.$Notice.success({
-          title: this.$t('successful'),
-          desc: this.$t('successful')
-        })
-        this.cancelGroup()
-        this.loadPage()
-      }
+      this.$Modal.confirm({
+        title: this.$t('confirm_delete'),
+        'z-index': 1000000,
+        loading: true,
+        okText: this.$t('tw_request_confirm'),
+        onOk: async () => {
+          this.$Modal.remove()
+          const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: this.$t('successful'),
+              desc: this.$t('successful')
+            })
+            this.cancelGroup()
+            this.loadPage()
+          }
+        },
+        onCancel: () => {}
+      })
     },
     // 编辑组信息
     editGroupItem (groupItem) {
@@ -1064,6 +1074,30 @@ fieldset[disabled] .ivu-input {
 }
 .ivu-select-dropdown {
   max-height: 300px !important;
+}
+.radio-group {
+  margin-bottom: 15px;
+}
+/* 偶发样式在发布后不存在 */
+.radio-group-radio {
+  padding: 5px 15px;
+  border-radius: 32px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 4px;
+  display: inline-block;
+}
+.radio-group-custom {
+  border: 1px solid #b886f8;
+  color: #b886f8;
+}
+.radio-group-workflow {
+  border: 1px solid #cba43f;
+  color: #cba43f;
+}
+.radio-group-optional {
+  border: 1px solid #81b337;
+  color: #81b337;
 }
 </style>
 <style scoped lang="scss">

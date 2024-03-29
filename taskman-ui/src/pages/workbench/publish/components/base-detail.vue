@@ -14,7 +14,7 @@
     </Row>
     <div class="content">
       <Form :model="form" label-position="right" :label-width="120" style="width:100%;">
-        <!--请求信息-->
+        <!--基础信息-->
         <HeaderTitle :title="$t('tw_request_title')">
           <div style="padding-left:16px;">
             <Row :gutter="20">
@@ -25,7 +25,7 @@
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_request_type') }}：</div>
                 <div class="info-item-value">
-                  {{ { 2: $t('tw_request'), 1: $t('tw_publish') }[detail.requestType] || '-' }}
+                  {{ typeMap[detail.requestType] || '-' }}
                 </div>
               </Col>
             </Row>
@@ -72,7 +72,7 @@
                 <div class="info-item-label">
                   {{ detail.status === 'Draft' ? $t('tw_pending_handler') : $t('tw_cur_handler') }}：
                 </div>
-                <div class="info-item-value">{{ detail.handler || '-' }}</div>
+                <div class="info-item-value">{{ formatHandler || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
@@ -112,38 +112,38 @@
             </Row>
           </div>
         </HeaderTitle>
-        <!--请求表单-->
-        <HeaderTitle title="请求表单">
+        <!--表单详情-->
+        <HeaderTitle :title="$t('tw_form_detail')">
           <div class="request-form">
-            <Divider style="margin: 0 0 30px 0" orientation="left">
-              <span class="sub-header">信息表单</span>
-            </Divider>
-            <CustomForm
-              v-if="detail.customForm && detail.customForm.value"
-              v-model="detail.customForm.value"
-              :options="detail.customForm.title"
-              :requestId="requestId"
-              disabled
-            ></CustomForm>
-            <div v-else class="no-data">暂未配置表单</div>
+            <template v-if="detail.customForm && detail.customForm.value">
+              <Divider style="margin: 0 0 30px 0" orientation="left">
+                <span class="sub-header">{{ $t('tw_information_form') }}</span>
+              </Divider>
+              <CustomForm
+                v-if="detail.customForm && detail.customForm.value"
+                v-model="detail.customForm.value"
+                :options="detail.customForm.title"
+                :requestId="requestId"
+                disabled
+              ></CustomForm>
+            </template>
             <Divider style="margin: 20px 0 30px 0" orientation="left">
-              <span class="sub-header">数据表单</span>
+              <span class="sub-header">{{ $t('tw_data_form') }}</span>
             </Divider>
-            <FormItem v-if="detail.associationWorkflow" :label="$t('tw_choose_object')" required>
+            <FormItem
+              v-if="detail.associationWorkflow"
+              :label="$t('tw_choose_object')"
+              :label-width="lang === 'zh-CN' ? 110 : 150"
+              required
+            >
               <Select v-model="form.rootEntityId" :disabled="true" clearable filterable style="width:300px;">
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
               </Select>
             </FormItem>
-            <EntityTable
-              v-if="form.data.length"
-              :data="form.data"
-              :requestId="requestId"
-              formDisable
-              style="width:calc(100% - 20px);margin-left:16px;"
-            ></EntityTable>
-            <div v-else class="no-data">暂未配置表单</div>
+            <EntityTable v-if="form.data.length" :data="form.data" :requestId="requestId" formDisable></EntityTable>
+            <div v-else class="no-data">{{ $t('tw_no_formConfig') }}</div>
           </div>
         </HeaderTitle>
         <!--处理历史-->
@@ -155,10 +155,10 @@
               :key="index"
               :hide-arrow="['revoke', 'submit'].includes(data.type) ? true : false"
             >
-              <!--提交请求-->
+              <!--提交-->
               <template v-if="data.type === 'submit'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">{{ $t('tw_submit_request') }}</div>
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_submit_request') }}</div>
                   <HeaderTag
                     class="custom-panel-header"
                     :showHeader="index === 0 ? true : false"
@@ -167,14 +167,14 @@
                   ></HeaderTag>
                 </div>
               </template>
-              <!--请求撤回-->
+              <!--撤回-->
               <template v-if="data.type === 'revoke'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title" style="margin-left:30px;">撤回请求</div>
-                  <HeaderTag class="custom-panel-header" :data="data" operation="撤回请求"></HeaderTag>
+                  <div class="custom-panel-title" style="margin-left:24px;">{{ $t('tw_recall') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_recall')"></HeaderTag>
                 </div>
               </template>
-              <!--请求定版-->
+              <!--定版-->
               <template v-else-if="data.type === 'check'">
                 <div class="custom-panel">
                   <div class="custom-panel-title">{{ $t('tw_request_pending') }}</div>
@@ -187,6 +187,7 @@
                     :requestId="requestId"
                     formDisable
                     :showBtn="false"
+                    :formData="detail.formData"
                   ></DataBind>
                 </div>
               </template>
@@ -194,9 +195,14 @@
               <template v-else-if="['approve', 'implement_process', 'implement_custom'].includes(data.type)">
                 <div class="custom-panel">
                   <div class="custom-panel-title">
-                    <span class="type">{{ data.type === 'approve' ? '审批' : '任务' }}</span>
+                    <span class="type">{{
+                      `${{
+                        approve: $t('tw_approval'),
+                        implement_custom: $t('task'),
+                        implement_process: $t('task')
+                      }[data.type] || '-'}: ${data.name}`
+                    }}</span>
                     <span class="mode">{{ approvalTypeName[data.handleMode] || '' }}</span>
-                    {{ data.name }}
                   </div>
                   <HeaderTag class="custom-panel-header" :data="data"></HeaderTag>
                 </div>
@@ -208,22 +214,22 @@
                     :formDisable="true"
                   ></EntityTable>
                   <div v-else class="no-data">
-                    暂未配置表单
+                    {{ $t('tw_no_formConfig') }}
                   </div>
                 </div>
               </template>
-              <!--请求确认-->
+              <!--确认-->
               <template v-else-if="data.type === 'confirm'">
                 <div class="custom-panel">
-                  <div class="custom-panel-title">请求确认</div>
-                  <HeaderTag class="custom-panel-header" :data="data" operation="请求确认"></HeaderTag>
+                  <div class="custom-panel-title">{{ $t('tw_request_confirm') }}</div>
+                  <HeaderTag class="custom-panel-header" :data="data" :operation="$t('tw_request_confirm')"></HeaderTag>
                 </div>
                 <div slot="content" class="history">
                   <Form :label-width="80" label-position="left">
-                    <FormItem label="请求状态">
-                      <Input disabled value="未完成" />
+                    <FormItem :label="$t('status')">
+                      <Input disabled :value="completeStatus" />
                     </FormItem>
-                    <FormItem label="未完成任务节点">
+                    <FormItem :label="$t('tw_uncompleted_tag')">
                       <Input disabled :value="uncompletedTasks.join(', ')" />
                     </FormItem>
                   </Form>
@@ -238,9 +244,12 @@
     </div>
     <div class="footer-btn">
       <!--撤回-->
-      <Button v-if="jumpFrom === 'submit' && detail.status === 'Pending'" type="error" @click="handleRecall">{{
-        $t('tw_recall')
-      }}</Button>
+      <Button
+        v-if="jumpFrom === 'submit' && ['Pending', 'InApproval'].includes(detail.status) && detail.revokeBtn"
+        type="error"
+        @click="handleRecall"
+        >{{ $t('tw_recall') }}</Button
+      >
     </div>
     <!--编排流程图-->
     <template v-if="detail.associationWorkflow">
@@ -249,7 +258,7 @@
         <Icon v-else type="ios-arrow-dropleft-circle" :size="28" />
       </div>
       <div v-if="flowVisible" class="flow-expand">
-        <StaticFlow v-if="['Draft', 'Pending'].includes(detail.status)" :requestTemplate="requestTemplate"></StaticFlow>
+        <StaticFlow v-if="!detail.procInstanceId" :requestTemplate="requestTemplate"></StaticFlow>
         <DynamicFlow v-else :flowId="detail.procInstanceId"></DynamicFlow>
       </div>
     </template>
@@ -315,12 +324,27 @@ export default {
       uncompletedTasks: [], // 请求确认-未完成任务
       flowVisible: false,
       approvalTypeName: {
-        custom: '单人',
-        any: '协同',
-        all: '并行',
-        admin: '提交人角色管理员',
-        auto: '自动通过'
-      }
+        custom: this.$t('tw_onlyOne'), // 单人
+        any: this.$t('tw_anyWidth'), // 协同
+        all: this.$t('tw_allWidth'), // 并行
+        admin: this.$t('tw_roleAdmin'), // 提交人角色管理员
+        auto: this.$t('tw_autoWith') // 自动通过
+      },
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: this.$t('tw_question'),
+        4: this.$t('tw_event'),
+        5: this.$t('fork')
+      },
+      handleTypeColor: {
+        check: '#ffa2d3',
+        approve: '#2d8cf0',
+        implement_process: '#cba43f',
+        implement_custom: '#b886f8',
+        confirm: '#19be6b'
+      },
+      lang: window.localStorage.getItem('lang') || 'zh-CN'
     }
   },
   computed: {
@@ -328,9 +352,9 @@ export default {
       return function (val) {
         const list = [
           { label: this.$t('status_pending'), value: 'Pending', color: '#b886f8' },
-          { label: '审批中', value: 'InApproval', color: '#1990ff' },
+          { label: this.$t('tw_inApproval'), value: 'InApproval', color: '#1990ff' },
           { label: this.$t('status_inProgress'), value: 'InProgress', color: '#1990ff' },
-          { label: '请求确认', value: 'Confirm', color: '#b886f8' },
+          { label: this.$t('tw_request_confirm'), value: 'Confirm', color: '#b886f8' },
           { label: this.$t('status_inProgress_faulted'), value: 'InProgress(Faulted)', color: '#f26161' },
           { label: this.$t('status_termination'), value: 'Termination', color: '#e29836' },
           { label: this.$t('status_complete'), value: 'Completed', color: '#7ac756' },
@@ -341,6 +365,11 @@ export default {
         const item = list.find(i => i.value === val) || {}
         return item.label
       }
+    },
+    formatHandler () {
+      let list = (this.detail.handler && this.detail.handler.split(',')) || []
+      list = list.filter(i => i)
+      return Array.from(new Set(list)).join(', ')
     }
   },
   async created () {
@@ -353,11 +382,15 @@ export default {
   },
   methods: {
     handleToHome () {
-      this.$router.push({
-        path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
-          this.jumpFrom === 'submit' ? 'rollback' : 'type'
-        }=${this.type}`
-      })
+      if (this.$route.query.type) {
+        this.$router.push({
+          path: `/taskman/workbench?tabName=${this.jumpFrom}&actionName=${this.actionName}&${
+            this.jumpFrom === 'submit' ? 'rollback' : 'type'
+          }=${this.type}`
+        })
+      } else {
+        this.$router.back()
+      }
     },
     // 获取详情数据
     async getRequestInfoNew () {
@@ -408,7 +441,7 @@ export default {
     // 撤回
     async handleRecall () {
       this.$Modal.confirm({
-        title: this.$t('tw_confirm') + this.$t('tw_recall'),
+        title: this.$t('confirm'),
         content: this.$t('tw_recall_tips'),
         'z-index': 1000000,
         loading: true,
@@ -496,18 +529,24 @@ export default {
       align-items: flex-start;
       width: 100%;
       &-title {
-        width: 100px;
+        width: 105px;
         font-weight: bold;
-        line-height: 22px;
-        .type {
-          font-size: 12px;
-          display: inline-block;
-          color: #19be6b;
-        }
+        line-height: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        // .type {
+        //   font-size: 12px;
+        //   display: inline-block;
+        //   color: #fff;
+        //   padding: 1px 5px;
+        //   border-radius: 2px;
+        // }
         .mode {
           font-size: 12px;
           display: inline-block;
-          color: #2db7f5;
+          color: #19be6b;
+          margin-top: 2px;
         }
       }
       &-header {
@@ -580,6 +619,7 @@ export default {
     padding-left: 0px !important;
     i {
       margin-top: 4px;
+      margin-right: 8px !important;
     }
   }
   .ivu-collapse-content-box {

@@ -28,7 +28,7 @@ func (d *TaskTemplateDao) Update(session *xorm.Session, taskTemplate *models.Tas
 	if taskTemplate == nil || taskTemplate.Id == "" {
 		return
 	}
-	affected, err := session.ID(taskTemplate.Id).Update(taskTemplate)
+	affected, err := session.ID(taskTemplate.Id).AllCols().Update(taskTemplate)
 	// 打印日志
 	logExecuteSql(session, "TaskTemplateDao", "Update", taskTemplate, affected, err)
 	return

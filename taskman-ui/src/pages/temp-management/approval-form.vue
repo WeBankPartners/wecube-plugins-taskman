@@ -2,8 +2,12 @@
   <div>
     <Row type="flex">
       <Col span="24" style="padding: 0 20px">
-        <div style="margin-bottom: 12px">
-          <span v-for="(approval, approvalIndex) in approvalNodes" :key="approval.id" style="margin-right:6px;">
+        <div>
+          <span
+            v-for="(approval, approvalIndex) in approvalNodes"
+            :key="approval.id"
+            style="margin-right:6px;line-height: 40px;"
+          >
             <div
               :class="approval.id === activeEditingNode.id ? 'node-active' : 'node-normal'"
               @click="editNode(approval, true)"
@@ -253,9 +257,9 @@
                     </Form>
                   </div>
                 </div>
-                <Modal v-model="showSelectModel" title="引用全局表单" :mask-closable="false">
+                <Modal v-model="showSelectModel" :title="$t('tw_reference_global_forms')" :mask-closable="false">
                   <Form :label-width="120">
-                    <FormItem :label="$t('全局请求表单')">
+                    <FormItem :label="$t('tw_global_forms')">
                       <Select style="width: 80%" v-model="itemGroup" filterable>
                         <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{
                           item.itemGroupName
@@ -787,6 +791,7 @@ export default {
         } else {
           this.approvalNodes = data.ids
           this.activeEditingNode = id === '' ? this.approvalNodes[0] : this.approvalNodes.find(node => node.id === id)
+          console.log(this.approvalNodes, id, this.activeEditingNode)
           this.editNode(this.activeEditingNode, false)
         }
       }
@@ -830,6 +835,7 @@ export default {
           title: this.$t('confirm_delete'),
           'z-index': 1000000,
           loading: true,
+          okText: this.$t('tw_request_confirm'),
           onOk: async () => {
             this.$Modal.remove()
             const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
@@ -840,6 +846,21 @@ export default {
           onCancel: () => {}
         })
       }
+
+      // this.$Modal.confirm({
+      //   title: this.$t('confirm_delete'),
+      //   'z-index': 1000000,
+      //   loading: true,
+      //   okText: this.$t('tw_request_confirm'),
+      //   onOk: async () => {
+      //     this.$Modal.remove()
+      //     const { statusCode } = await removeApprovalNode(this.requestTemplateId, node.id)
+      //     if (statusCode === 'OK') {
+      //       this.getApprovalNode(this.activeEditingNode)
+      //     }
+      //   },
+      //   onCancel: () => {}
+      // })
     },
     // 在弹窗关闭、保存、还原状态下回显group内容
     reloadGroup () {
@@ -1045,6 +1066,7 @@ export default {
         title: this.$t('confirm_delete'),
         'z-index': 1000000,
         loading: true,
+        okText: this.$t('tw_request_confirm'),
         onOk: async () => {
           this.$Modal.remove()
           const { statusCode } = await deleteRequestGroupForm(this.nextGroupInfo.itemGroupId, this.requestTemplateId)
@@ -1053,7 +1075,7 @@ export default {
               title: this.$t('successful'),
               desc: this.$t('successful')
             })
-            this.loadPage()
+            this.getApprovalNodeGroups(this.activeEditingNode)
           }
         },
         onCancel: () => {}
@@ -1167,13 +1189,16 @@ export default {
           this.loadPage()
         } else if (nextStep === 2) {
           this.$emit('gotoStep', this.requestTemplateId, 'forward')
-        } else if ([3, 9].includes(nextStep)) {
+        } else if ([3].includes(nextStep)) {
           if (elememt.id) {
             this.loadPage(elememt.id)
           }
-        } else if (nextStep === 4) {
+        } else if ([4].includes(nextStep)) {
           // this.activeEditingNode = elememt
           this.updateFinalElement(elememt)
+          this.getApprovalNodeGroups(this.activeEditingNode)
+        } else if ([9].includes(nextStep)) {
+          // this.updateFinalElement(elememt)
           this.getApprovalNodeGroups(this.activeEditingNode)
         } else if (nextStep === 5) {
           this.openDrawer(elememt)

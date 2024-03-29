@@ -45,6 +45,10 @@ func (s *RoleService) SyncCoreRole(userToken, language string) {
 		return
 	}
 	roleMap, err = rpc.QueryAllRoles("N", userToken, language)
+	if err != nil {
+		log.Logger.Error("sync core role fail", log.Error(err))
+		return
+	}
 	var roleTable, addRoleList, delRoleList []*models.RoleTable
 	err = dao.X.SQL("select * from role").Find(&roleTable)
 	if err != nil {
@@ -162,4 +166,8 @@ func (s *RoleService) GetRoleDisplayName() (displayNameMap map[string]string, er
 		}
 	}
 	return
+}
+
+func (s *RoleService) GetUserInfo(userName, userToken, language string) (dto *models.UserDto, err error) {
+	return rpc.GetUserInfo(userName, userToken, language)
 }

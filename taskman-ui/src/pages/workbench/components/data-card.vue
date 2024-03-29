@@ -49,11 +49,10 @@ export default {
     return {
       active: '', // pending(myPending本人处理/pending本组处理),hasProcessed已处理,submit我提交的,draft我的暂存
       action: '',
-      // pendingType: 'my',
       cardList: [
         {
           type: 'myPending',
-          label: '本人处理',
+          label: this.$t('tw_my_pending'),
           icon: 'ios-person',
           size: '28',
           color: '#ed4014',
@@ -66,7 +65,7 @@ export default {
         },
         {
           type: 'pending',
-          label: '本组处理',
+          label: this.$t('tw_group_pending'),
           icon: 'ios-people',
           size: '28',
           color: '#ff9900',
@@ -120,23 +119,23 @@ export default {
       actionList: [
         {
           type: '1',
-          label: this.$t('tw_publish')
+          label: this.$t('tw_publish') // 发布
         },
         {
           type: '2',
-          label: this.$t('tw_request')
+          label: this.$t('tw_request') // 请求
         },
         {
           type: '3',
-          label: '问题'
+          label: this.$t('tw_question') // 问题
         },
         {
           type: '4',
-          label: '事件'
+          label: this.$t('tw_event') // 事件
         },
         {
           type: '5',
-          label: '变更'
+          label: this.$t('fork') // 变更
         }
       ],
       pendingNumObj: {
@@ -168,13 +167,6 @@ export default {
         }
       }
     }
-    // getPendingNum () {
-    //   return function (type) {
-    //     return this.pendingNumObj[type].reduce((sum, cur) => {
-    //       return Number(sum) + Number(cur || 0)
-    //     }, 0)
-    //   }
-    // }
   },
   watch: {
     initAction: {
@@ -211,13 +203,12 @@ export default {
     }
   },
   methods: {
-    // handlePendGroupChange (val) {
-    //   this.pendingType = val
-    // },
     async getData (init = false, interval = false) {
       // ini为true，初始化拉取所有数据，后续拉取特定场景下的数据
       const params = {
-        tab: init ? 'all' : this.active
+        tab: init ? 'all' : this.active,
+        queryTimeStart: this.$parent.queryTime[0] && this.$parent.queryTime[0] + ' 00:00:00',
+        queryTimeEnd: this.$parent.queryTime[1] && this.$parent.queryTime[1] + ' 23:59:59'
       }
       // 设置每分钟轮询查询本人处理数据
       if (interval) {
@@ -244,15 +235,8 @@ export default {
           for (let tabName in data) {
             this.cardList.forEach(item => {
               if (item.type === tabName) {
-                // 面板数据
-                if (item.type === 'myPending') {
-                  for (let key in data['myPending']) {
-                    item[sceneMapValue[key]] = data['myPending'][key]
-                  }
-                } else {
-                  for (let key in data[tabName]) {
-                    item[sceneMapValue[key]] = data[tabName][key]
-                  }
+                for (let key in data[item.type]) {
+                  item[sceneMapValue[key]] = data[item.type][key]
                 }
               }
             })
@@ -260,15 +244,16 @@ export default {
         } else {
           // 面板数据
           this.cardList.forEach(item => {
+            // 刷新当前tab页签数量
             if (item.type === this.active) {
-              if (item.type === 'myPending') {
-                for (let key in data['myPending']) {
-                  item[sceneMapValue[key]] = data['myPending'][key]
-                }
-              } else {
-                for (let key in data[this.active]) {
-                  item[sceneMapValue[key]] = data[this.active][key]
-                }
+              for (let key in data[item.type]) {
+                item[sceneMapValue[key]] = data[item.type][key]
+              }
+            }
+            // 定时器刷新本人处理/本组处理数量
+            if (interval && ['myPending', 'pending'].includes(item.type)) {
+              for (let key in data[item.type]) {
+                item[sceneMapValue[key]] = data[item.type][key]
               }
             }
           })

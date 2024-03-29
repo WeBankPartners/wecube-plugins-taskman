@@ -33,11 +33,11 @@ func CreateRequest(c *gin.Context) {
 		return
 	}
 	if param.RequestTemplate == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param requestTemplate can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param requestTemplate can not empty "))
 		return
 	}
 	if param.Role == "" {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("Param role can not empty "))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("param role can not empty "))
 		return
 	}
 	param.CreatedBy = middleware.GetRequestUser(c)
@@ -165,7 +165,7 @@ func CheckRequest(c *gin.Context) {
 		return
 	}
 	if task == nil {
-		err = fmt.Errorf("requestId:%s not has check task")
+		err = fmt.Errorf("requestId:%s not has check task", requestId)
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
@@ -184,7 +184,7 @@ func CheckRequest(c *gin.Context) {
 		return
 	}
 	if taskHandle.Handler != operator {
-		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not  permission!"))
+		middleware.ReturnParamValidateError(c, fmt.Errorf("request handler not permission"))
 		return
 	}
 	err = service.CheckRequest(request, task, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
@@ -276,13 +276,13 @@ func handlePluginRequestCreate(input *models.PluginRequestCreateParamObj, callRe
 			break
 		}
 	}
-	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, "approve", token, language); getApproveErr != nil {
+	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, string(models.TaskTypeApprove)); getApproveErr != nil {
 		err = getApproveErr
 		return
 	} else {
 		saveParam.ApprovalList = append(saveParam.ApprovalList, approveList...)
 	}
-	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, "implement", token, language); getApproveErr != nil {
+	if approveList, getApproveErr := service.GetTaskTemplateService().ListTaskTemplates(requestObj.RequestTemplate, string(models.TaskTypeImplement)); getApproveErr != nil {
 		err = getApproveErr
 		return
 	} else {

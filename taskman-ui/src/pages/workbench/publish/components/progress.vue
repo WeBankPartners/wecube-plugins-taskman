@@ -2,23 +2,17 @@
 <template>
   <div class="workbench-base-progress">
     <!--请求进度-->
-    <div class="steps">
-      <span class="title">{{ $t('tw_request_progress') }}：</span>
-      <Steps
-        :current="0"
-        :style="{
-          minWidth: progress.requestProgress.length * 120 + 'px',
-          maxWidth: progress.requestProgress.length * 170 + 'px'
-        }"
-      >
+    <div class="workbench-base-progress-steps">
+      <div class="title">{{ $t('tw_request_progress') }}：</div>
+      <Steps :current="0" :style="{ width: progress.requestProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.requestProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
             <span v-if="i.node === 'task' && status" @click="handleExpand(i.node)" class="expand-btn">
-              {{ taskExpand ? '收起' : '展开' }}
+              {{ taskExpand ? $t('tw_packUp') : $t('tw_expand') }}
             </span>
             <span v-if="i.node === 'approval' && status" @click="handleExpand(i.node)" class="expand-btn">
-              {{ approvalExpand ? '收起' : '展开' }}
+              {{ approvalExpand ? $t('tw_packUp') : $t('tw_expand') }}
             </span>
           </template>
           <div class="role" slot="content">
@@ -32,7 +26,7 @@
           </div>
         </Step>
       </Steps>
-      <div v-if="errorNode" style="margin:0 0 10px -80px;max-width:400px;">
+      <div v-if="errorNode" class="error-node">
         <Alert v-if="errorNode === 'autoExit'" show-icon type="error">
           {{ $t('tw_auto_exit_tips') }}
         </Alert>
@@ -43,15 +37,9 @@
       </div>
     </div>
     <!--审批进度-->
-    <div v-if="approvalExpand" class="steps" style="margin-top:15px;">
-      <span class="title">审批进度：</span>
-      <Steps
-        :current="0"
-        :style="{
-          minWidth: progress.approvalProgress.length * 120 + 'px',
-          maxWidth: progress.approvalProgress.length * 180 + 'px'
-        }"
-      >
+    <div v-if="approvalExpand" class="workbench-base-progress-steps" style="margin-top:15px;">
+      <span class="title">{{ $t('tw_approval_progress') }}：</span>
+      <Steps :current="0" :style="{ width: progress.approvalProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.approvalProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
@@ -70,15 +58,9 @@
       </Steps>
     </div>
     <!--任务进度-->
-    <div v-if="taskExpand" class="steps" style="margin-top:15px;">
-      <span class="title">任务进度：</span>
-      <Steps
-        :current="0"
-        :style="{
-          minWidth: progress.taskProgress.length * 120 + 'px',
-          maxWidth: progress.taskProgress.length * 180 + 'px'
-        }"
-      >
+    <div v-if="taskExpand" class="workbench-base-progress-steps" style="margin-top:15px;">
+      <span class="title">{{ $t('tw_task_progress') }}：</span>
+      <Steps :current="0" :style="{ width: progress.taskProgress.length * 170 + 'px' }">
         <Step v-for="(i, index) in progress.taskProgress" :key="index" :content="i.name">
           <template #icon>
             <Icon style="font-weight:bold" size="22" :type="i.icon" :color="i.color" />
@@ -140,19 +122,19 @@ export default {
       taskExpand: false,
       errorNode: '',
       approvalTypeName: {
-        custom: '单人',
-        any: '协同',
-        all: '并行',
-        admin: '提交人角色管理员',
-        auto: '自动通过'
+        custom: this.$t('tw_onlyOne'), // 单人
+        any: this.$t('tw_anyWidth'), // 协同
+        all: this.$t('tw_allWidth'), // 并行
+        admin: this.$t('tw_roleAdmin'), // 提交人角色管理员
+        auto: this.$t('tw_autoWith') // 自动通过
       },
       handlerType: {
-        template: '模板指定',
-        template_suggest: '模板建议',
-        custom: '提交人指定',
-        custom_suggest: '提交人建议',
-        system: '组内系统分配',
-        claim: '组内主动认领'
+        template: this.$t('tw_template_assign'), // 模板指定
+        template_suggest: this.$t('tw_template_suggest'), // 模板建议
+        custom: this.$t('tw_reporter_assign'), // 提交人指定
+        custom_suggest: this.$t('tw_reporter_suggest'), // 提交人建议
+        system: this.$t('tw_group_assign'), // 组内系统分配
+        claim: this.$t('tw_group_claim') // 组内主动认领
       }
     }
   },
@@ -185,43 +167,43 @@ export default {
           item.color = statusColor[item.status]
           switch (item.node) {
             case 'submit':
-              item.name = this.$t('tw_commit_request') // 提交请求
+              item.name = this.$t('tw_commit_request') // 提交
               break
             case 'check':
-              item.name = this.$t('tw_request_pending') // 请求定版
+              item.name = this.$t('tw_request_pending') // 定版
               break
             case 'approval':
-              item.name = '审批' // 审批
-              item.handler = `${this.progress.approvalProgress.length}个节点`
+              item.name = this.$t('tw_approval') // 审批
+              item.handler = `${this.progress.approvalProgress.length}${this.$t('tw_tags_number')}`
               break
             case 'task':
-              item.name = '任务' // 任务
+              item.name = this.$t('task') // 任务
               // 过滤掉自动节点
               const noAutoTagList = this.progress.taskProgress.filter(i => i.nodeType !== 'auto') || []
-              item.handler = `${noAutoTagList.length}个节点`
+              item.handler = `${noAutoTagList.length}${this.$t('tw_tags_number')}`
               break
             case 'confirm':
-              item.name = '请求确认' // 请求确认
+              item.name = this.$t('tw_request_confirm') // 确认
               break
             case 'requestComplete':
-              item.name = this.$t('tw_request_complete') // 请求完成
+              item.name = this.$t('tw_request_complete') // 完成
               break
-            // case 'autoExit':
-            //   item.name = this.$t('status_faulted') // 自动退出
-            //   this.errorNode = item.node
-            //   break
-            // case 'internallyTerminated':
-            //   item.name = this.$t('status_termination') // 手动终止
-            //   this.errorNode = item.node
-            //   break
+            case 'autoExit':
+              item.name = this.$t('status_faulted') // 自动退出
+              this.errorNode = item.node
+              break
+            case 'internallyTerminated':
+              item.name = this.$t('status_termination') // 手动终止
+              this.errorNode = item.node
+              break
             default:
               item.name = item.node
               break
           }
-          // if (item.handler === 'autoNode') {
-          //   item.handler = this.$t('tw_auto_tag') // 自动节点
-          //   this.errorNode = item.name
-          // }
+          if (item.handler === 'autoNode') {
+            item.handler = this.$t('tw_auto_tag') // 自动节点
+            this.errorNode = item.name
+          }
         })
         this.progress.approvalProgress.forEach(item => {
           item.icon = statusIcon[item.status]
@@ -273,12 +255,16 @@ export default {
     vertical-align: top;
     flex: 1;
     overflow: hidden;
+    width: 170px;
   }
-  .steps .ivu-steps .ivu-steps-tail > i {
+  .ivu-alert.ivu-alert-with-icon {
+    padding: 8px 5px 8px 38px;
+  }
+  &-steps .ivu-steps .ivu-steps-tail > i {
     height: 3px;
     background: #8189a5;
   }
-  .steps {
+  &-steps {
     display: flex;
     align-items: flex-start;
     .title {
@@ -288,13 +274,15 @@ export default {
       font-weight: 500;
       margin-top: 3px;
     }
+    .error-node {
+      flex: 1;
+      margin: 3px 0 0 -90px;
+      max-width: 550px;
+    }
     .mode {
       font-size: 12px;
-      // background: #2d8cf0;
       color: #2d8cf0;
-      // padding: 1px 5px;
       display: inline-block;
-      // border-radius: 2px;
       margin-top: -5px;
     }
     .role {

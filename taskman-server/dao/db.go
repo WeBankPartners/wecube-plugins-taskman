@@ -255,9 +255,7 @@ func Transaction(actions []*ExecAction) error {
 	for _, action := range actions {
 		params := make([]interface{}, 0)
 		params = append(params, action.Sql)
-		for _, v := range action.Param {
-			params = append(params, v)
-		}
+		params = append(params, action.Param...)
 		_, err = session.Exec(params...)
 		if err != nil {
 			session.Rollback()
@@ -290,9 +288,7 @@ func TransactionWithoutForeignCheck(actions []*ExecAction) error {
 	for _, action := range actions {
 		params := make([]interface{}, 0)
 		params = append(params, action.Sql)
-		for _, v := range action.Param {
-			params = append(params, v)
-		}
+		params = append(params, action.Param...)
 		_, err = session.Exec(params...)
 		if err != nil {
 			session.Rollback()

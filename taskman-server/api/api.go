@@ -2,7 +2,7 @@ package api
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"time"
 
 	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/api/middleware"
@@ -195,16 +195,12 @@ func InitHttpServer() {
 		switch funcObj.Method {
 		case "GET":
 			authRouter.GET(funcObj.Url, funcObj.HandlerFunc)
-			break
 		case "POST":
 			authRouter.POST(funcObj.Url, funcObj.HandlerFunc)
-			break
 		case "PUT":
 			authRouter.PUT(funcObj.Url, funcObj.HandlerFunc)
-			break
 		case "DELETE":
 			authRouter.DELETE(funcObj.Url, funcObj.HandlerFunc)
-			break
 		}
 	}
 
@@ -213,16 +209,12 @@ func InitHttpServer() {
 		switch funcObj.Method {
 		case "GET":
 			authRouterV2.GET(funcObj.Url, funcObj.HandlerFunc)
-			break
 		case "POST":
 			authRouterV2.POST(funcObj.Url, funcObj.HandlerFunc)
-			break
 		case "PUT":
 			authRouterV2.PUT(funcObj.Url, funcObj.HandlerFunc)
-			break
 		case "DELETE":
 			authRouterV2.DELETE(funcObj.Url, funcObj.HandlerFunc)
-			break
 		}
 	}
 
@@ -242,11 +234,11 @@ func crossHandler(r *gin.Engine) {
 func httpLogHandle() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		bodyBytes, _ := ioutil.ReadAll(c.Request.Body)
+		bodyBytes, _ := io.ReadAll(c.Request.Body)
 		c.Request.Body.Close()
-		c.Request.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
+		c.Request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
 		c.Set("requestBody", string(bodyBytes))
 		c.Next()
-		log.AccessLogger.Info("request", log.String("url", c.Request.RequestURI), log.String("method", c.Request.Method), log.Int("code", c.Writer.Status()), log.String("operator", c.GetString("user")), log.String("ip", middleware.GetRemoteIp(c)), log.Float64("cost_ms", time.Now().Sub(start).Seconds()*1000), log.String("body", string(bodyBytes)))
+		log.AccessLogger.Info("request", log.String("url", c.Request.RequestURI), log.String("method", c.Request.Method), log.Int("code", c.Writer.Status()), log.String("operator", c.GetString("user")), log.String("ip", middleware.GetRemoteIp(c)), log.Float64("cost_ms", time.Since(start).Seconds()*1000), log.String("body", string(bodyBytes)))
 	}
 }

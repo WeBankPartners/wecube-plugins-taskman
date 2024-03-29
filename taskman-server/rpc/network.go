@@ -3,7 +3,7 @@ package rpc
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -12,17 +12,17 @@ import (
 func HttpGet(url, userToken, language string) (byteArr []byte, err error) {
 	req, newReqErr := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
 	if newReqErr != nil {
-		err = fmt.Errorf("Try to new http request fail,%s ", newReqErr.Error())
+		err = fmt.Errorf("try to new http request fail,%s ", newReqErr.Error())
 		return
 	}
 	req.Header.Set("Authorization", userToken)
 	req.Header.Set("Accept-Language", language)
 	resp, respErr := http.DefaultClient.Do(req)
 	if respErr != nil {
-		err = fmt.Errorf("Try to do http request fail,%s ", respErr.Error())
+		err = fmt.Errorf("try to do http request fail,%s ", respErr.Error())
 		return
 	}
-	byteArr, _ = ioutil.ReadAll(resp.Body)
+	byteArr, _ = io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	return
 }
@@ -42,7 +42,7 @@ func HttpPost(url, userToken, language string, postBytes []byte) (byteArr []byte
 		err = fmt.Errorf("do http reqeust fail,%s ", respErr.Error())
 		return
 	}
-	byteArr, _ = ioutil.ReadAll(resp.Body)
+	byteArr, _ = io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	return
 }
@@ -62,7 +62,7 @@ func HttpPut(url, userToken, language string, postBytes []byte) (byteArr []byte,
 		err = fmt.Errorf("do http reqeust fail,%s ", respErr.Error())
 		return
 	}
-	byteArr, _ = ioutil.ReadAll(resp.Body)
+	byteArr, _ = io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	return
 }

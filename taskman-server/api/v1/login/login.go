@@ -15,7 +15,6 @@ import (
 func GetSeed(c *gin.Context) {
 	md5sum := cipher.Md5Encode(models.Config.EncryptSeed)
 	middleware.ReturnData(c, md5sum[0:16])
-	return
 }
 
 func Login(c *gin.Context) {
@@ -49,5 +48,4 @@ func Login(c *gin.Context) {
 	} else {
 		middleware.ReturnData(c, retData)
 	}
-	return
 }

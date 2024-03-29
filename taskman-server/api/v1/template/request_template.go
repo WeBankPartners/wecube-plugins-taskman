@@ -3,7 +3,7 @@ package template
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -240,13 +240,13 @@ func UpdateRequestTemplate(c *gin.Context) {
 
 func validateRequestTemplateParam(param *models.RequestTemplateUpdateParam) error {
 	if param.Name == "" {
-		return fmt.Errorf("Param name can not empty ")
+		return fmt.Errorf("param name can not empty ")
 	}
 	if param.Group == "" {
-		return fmt.Errorf("Param group can not empty ")
+		return fmt.Errorf("param group can not empty ")
 	}
 	if len(param.MGMTRoles) == 0 {
-		return fmt.Errorf("Param mgmt can not empty ")
+		return fmt.Errorf("param mgmt can not empty ")
 	}
 	return nil
 }
@@ -379,7 +379,7 @@ func ExportRequestTemplate(c *gin.Context) {
 	}
 	b, jsonErr := json.Marshal(result)
 	if jsonErr != nil {
-		middleware.ReturnServerHandleError(c, fmt.Errorf("Export requestTemplate config fail, json marshal object error:%s ", jsonErr.Error()))
+		middleware.ReturnServerHandleError(c, fmt.Errorf("export requestTemplate config fail, json marshal object error:%s ", jsonErr.Error()))
 		return
 	}
 	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s_%s.json", "rt_"+requestTemplateId, time.Now().Format("20060102150405")))
@@ -398,7 +398,7 @@ func ImportRequestTemplate(c *gin.Context) {
 		return
 	}
 	var paramObj models.RequestTemplateExport
-	b, err := ioutil.ReadAll(f)
+	b, err := io.ReadAll(f)
 	defer f.Close()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ResponseErrorJson{StatusCode: "PARAM_HANDLE_ERROR", StatusMessage: "Read content fail error:" + err.Error(), Data: nil})

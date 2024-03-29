@@ -19,19 +19,6 @@ type TaskTemplateService struct {
 	taskHandleTemplateDao *dao.TaskHandleTemplateDao
 }
 
-func getRoleMap() (result map[string]*models.RoleTable, err error) {
-	result = make(map[string]*models.RoleTable)
-	var roleTable []*models.RoleTable
-	err = dao.X.SQL("select id,display_name from `role`").Find(&roleTable)
-	if err != nil {
-		return
-	}
-	for _, v := range roleTable {
-		result[v.Id] = v
-	}
-	return
-}
-
 func (s *TaskTemplateService) CreateTaskTemplate(param *models.TaskTemplateDto, operator string) (*models.TaskTemplateCreateResponse, error) {
 	// 校验参数
 	guidPrefix, err := s.genTaskIdPrefix(param.Type)

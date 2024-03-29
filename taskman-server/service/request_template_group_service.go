@@ -12,7 +12,7 @@ type RequestTemplateGroupService struct {
 	requestTemplateGroupDao *dao.RequestTemplateGroupDao
 }
 
-func (s *RequestTemplateGroupService) QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
+func (s *RequestTemplateGroupService) QueryRequestTemplateGroup(param *models.QueryRequestParam, userRoles []string, userToken, language string) (pageInfo models.PageInfo, rowData []*models.RequestTemplateGroupTable, err error) {
 	rowData = []*models.RequestTemplateGroupTable{}
 	filterSql, queryColumn, queryParam := dao.TransFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateGroupTable{}, PrimaryKey: "id"})
 	userRoleFilterSql, userRoleFilterParams := dao.CreateListParams(userRoles, "")
@@ -28,7 +28,7 @@ func (s *RequestTemplateGroupService) QueryRequestTemplateGroup(param *models.Qu
 	}
 	err = dao.X.SQL(baseSql, queryParam...).Find(&rowData)
 	if len(rowData) > 0 {
-		roleMap, _ := getRoleMap()
+		roleMap, _ := GetRoleService().GetRoleMap(userToken, language)
 		for _, row := range rowData {
 			if row.ManageRole != "" {
 				row.ManageRoleObj = models.RoleTable{Id: row.ManageRole, DisplayName: roleMap[row.ManageRole].DisplayName}

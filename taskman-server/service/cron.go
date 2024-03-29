@@ -92,13 +92,14 @@ func notifyAction() {
 		calcExpireObj(tmpExpireObj)
 		if (tmpExpireObj.Percent >= 75) && (doingNotifyCount == 0) || ((tmpExpireObj.Percent >= 100) && (timeoutNotifyCount == 0)) {
 			tmpErr := NotifyTaskExpireMail(v, tmpExpireObj, models.CoreToken.GetCoreToken(), "")
+			errMsg := tmpErr.Error()
 			if tmpErr != nil {
 				log.Logger.Error("notify task mail fail", log.String("taskId", v.Id), log.Error(tmpErr))
 			}
 			if len(taskNotifyList) > 0 {
-				actions = append(actions, &dao.ExecAction{Sql: "update notity_task set doing_notify_count = ?,timeout_notify_count = ?,err_msg = ?,updated_time = ? where id=?", Param: []interface{}{tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat), taskNotifyList[0].Id}})
+				actions = append(actions, &dao.ExecAction{Sql: "update notity_task set doing_notify_count = ?,timeout_notify_count = ?,err_msg = ?,updated_time = ? where id=?", Param: []interface{}{tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, errMsg, time.Now().Format(models.DateTimeFormat), taskNotifyList[0].Id}})
 			} else {
-				actions = append(actions, &dao.ExecAction{Sql: "insert into notity_task(id,task,doing_notify_count,timeout_notify_count,err_msg,updated_time)values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, tmpErr.Error(), time.Now().Format(models.DateTimeFormat)}})
+				actions = append(actions, &dao.ExecAction{Sql: "insert into notity_task(id,task,doing_notify_count,timeout_notify_count,err_msg,updated_time)values(?,?,?,?,?,?)", Param: []interface{}{guid.CreateGuid(), tmpExpireObj.DoingNotifyCount, tmpExpireObj.TimeoutNotifyCount, errMsg, time.Now().Format(models.DateTimeFormat)}})
 			}
 		}
 	}

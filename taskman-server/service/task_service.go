@@ -134,7 +134,8 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		input.TaskFormInput, callRequestId, task.NextOption, task.ExpireTime, task.Handler, operator, nowTime, operator,
 		nowTime, task.TemplateType, models.TaskTypeImplement, taskSort, requestTable[0].CreatedTime}
 	actions = append(actions, &taskInsertAction)
-	// 新增form
+	// 新增form,form和formItem时间往后加1s,不然任务审批人审批修改表单有bug
+	formNewTime := time.Now().Add(time.Second)
 	var formTemplateRows []*models.FormTemplateTable
 	err = dao.X.SQL("select * from form_template where task_template=? and item_group_type='workflow'", task.TaskTemplate).Find(&formTemplateRows)
 	if err != nil {
@@ -156,11 +157,11 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		}
 		newFormId := "form_" + guid.CreateGuid()
 		actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-			newFormId, task.Request, task.Id, tmpFormTemplateId, formDataEntity.Oid, operator, operator, nowTime, nowTime,
+			newFormId, task.Request, task.Id, tmpFormTemplateId, formDataEntity.Oid, operator, operator, formNewTime, formNewTime,
 		}})
 		for _, formDataItem := range formDataEntity.FormItemValues {
 			actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, task.Request, nowTime,
+				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, task.Request, formNewTime,
 			}})
 		}
 	}
@@ -314,7 +315,7 @@ func ApproveTask(task models.TaskTable, operator, userToken, language string, pa
 	case models.TaskTypeImplement:
 		// 编排任务,走编排逻辑.
 		if task.ProcDefKey != "" && task.ProcDefId != "" {
-			return handleWorkflowTask(task, operator, userToken, param, language, taskSort)
+			return handleWorkflowTask(task, operator, userToken, param, language)
 		}
 		// 处理自定义任务
 		return handleCustomTask(task, operator, userToken, language, param, taskSort)
@@ -458,7 +459,7 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 }
 
 // handleWorkflowTask 处理编排任务
-func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam, language string, taskSort int) error {
+func handleWorkflowTask(task models.TaskTable, operator, userToken string, param models.TaskApproveParam, language string) error {
 	var err error
 	requestParam, callbackUrl, getDataErr := getApproveCallbackParamNew(task.Id)
 	if getDataErr != nil {
@@ -605,7 +606,7 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 				valueString := fmt.Sprintf("%s", v)
 				if _, multipleFlag := isColumnMultiMap[k]; multipleFlag {
 					if vInterfaceList, assertOk := v.([]interface{}); assertOk {
-						tmpV := []string{}
+						var tmpV []string
 						for _, interfaceV := range vInterfaceList {
 							tmpV = append(tmpV, fmt.Sprintf("%s", interfaceV))
 						}

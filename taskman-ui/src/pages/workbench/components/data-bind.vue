@@ -8,7 +8,7 @@
               <div v-for="(entity, entityIndex) in node.classification" :key="entityIndex">
                 <!-- <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider> -->
                 <div class="radio-button">
-                  {{ `${entity}` }}<span class="count">{{ '' }}</span>
+                  {{ `${entity}` }}<span class="count">{{ filterBindDataCount(node) }}</span>
                 </div>
                 <Row class="box-wrap">
                   <div v-for="item in filterBindData(node)" :key="item.id + entityIndex">
@@ -355,6 +355,11 @@ export default {
       const res = this.bindData.filter(bData => oid.includes(bData.id))
       return res
     },
+    filterBindDataCount (node) {
+      if (!node.bindOptions || node.bindOptions.length === 0) return 0
+      const checkedList = this.bindData.filter(item => node.bindData.includes(item.id)) || []
+      return checkedList.length
+    },
     async saveRequest (type) {
       let tmpData = []
       this.nodes.forEach(n => {
@@ -456,7 +461,9 @@ export default {
   cursor: pointer;
   border: 1px solid #cba43f;
   color: #cba43f;
-  // background: #ebdcb4;
+  .count {
+    margin-left: 10px;
+  }
 }
 .box-wrap {
   margin: 10px 0 30px 0;

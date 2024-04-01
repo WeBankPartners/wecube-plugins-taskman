@@ -150,7 +150,7 @@ func init() {
 	// v2 版本
 	httpHandlerFuncV2List = append(httpHandlerFuncV2List,
 		&handlerFuncObj{Url: "/user/request-template", Method: "GET", HandlerFunc: requestNew.GetRequestTemplateByUser},
-		&handlerFuncObj{Url: "/request/detail/:requestId", Method: "GET", HandlerFunc: requestNew.GetRequestDetail},
+		&handlerFuncObj{Url: "/request/detail", Method: "GET", HandlerFunc: requestNew.GetRequestDetail},
 		&handlerFuncObj{Url: "/request", Method: "POST", HandlerFunc: requestNew.CreateRequest},
 		&handlerFuncObj{Url: "/request-data/save/:requestId/:cacheType/:event", Method: "POST", HandlerFunc: requestNew.SaveRequestCache},
 		&handlerFuncObj{Url: "/request-check/confirm/:requestId", Method: "POST", HandlerFunc: requestNew.CheckRequest}, // 确认定版

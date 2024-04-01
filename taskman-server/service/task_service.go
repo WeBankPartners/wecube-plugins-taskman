@@ -1224,13 +1224,21 @@ func (s *TaskService) GetLatestCheckTask(requestId string) (task *models.TaskTab
 	return
 }
 
-// GetDoingTask 任务存在并行情况,按照任务模版排序
-func (s *TaskService) GetDoingTask(requestId, templateId string) (task *models.TaskTable, err error) {
+// GetDoingTask 任务存在并行情况,并行情况传递了taskId就取taskId的任务,没传递按照任务模版排序
+func (s *TaskService) GetDoingTask(requestId, templateId, taskId string) (task *models.TaskTable, err error) {
 	var taskList []*models.TaskTable
 	var taskTemplateList []*models.TaskTemplateTable
 	var doingTaskMap = make(map[string]*models.TaskTable)
-	err = dao.X.SQL("select * from task where request = ? and status <> 'done' and del_flag = 0 order by sort asc", requestId).Find(&taskList)
-	if err != nil {
+	if taskId != "" {
+		if err = dao.X.SQL("select * from task where id = ? and status <> 'done' and del_flag = 0", taskId).Find(&taskList); err != nil {
+			return
+		}
+		if len(taskList) > 0 {
+			task = taskList[0]
+			return
+		}
+	}
+	if err = dao.X.SQL("select * from task where request = ? and status <> 'done' and del_flag = 0 order by sort asc", requestId).Find(&taskList); err != nil {
 		return
 	}
 	if len(taskList) > 0 {

@@ -214,7 +214,7 @@ func RevokeRequest(requestId, user string) (err error) {
 	newTaskId := "re_" + guid.CreateGuid()
 	now := time.Now().Format(models.DateTimeFormat)
 	// 删除正在处理的任务(只可能是定版或者审批)
-	if latestDoingTask, err = GetTaskService().GetDoingTask(requestId, request.RequestTemplate); err != nil {
+	if latestDoingTask, err = GetTaskService().GetDoingTask(requestId, request.RequestTemplate, ""); err != nil {
 		return
 	}
 	if latestDoingTask == nil {
@@ -1548,7 +1548,7 @@ func buildEntityValueAttrData(titles []*models.FormItemTemplateDto, entityData m
 	return
 }
 
-func GetRequestDetailV2(requestId, userToken, language string) (result models.RequestDetail, err error) {
+func GetRequestDetailV2(requestId, taskId, userToken, language string) (result models.RequestDetail, err error) {
 	// get request
 	var requests []*models.RequestTable
 	var actions, confirmActions []*dao.ExecAction
@@ -1583,7 +1583,7 @@ func GetRequestDetailV2(requestId, userToken, language string) (result models.Re
 			}
 		}
 	}
-	result.Request = getRequestForm(requests[0], userToken, language)
+	result.Request = getRequestForm(requests[0], taskId, userToken, language)
 	if err != nil {
 		return
 	}

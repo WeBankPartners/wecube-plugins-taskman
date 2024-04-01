@@ -592,7 +592,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 				}
 			}
 			// 获取当前节点和计算请求进度
-			platformDataObj.Progress, platformDataObj.CurNode = CalcRequestProgressAndCurNode(platformDataObj.Id, platformDataObj.ProcInstanceId, req.UserToken, language)
+			platformDataObj.Progress, platformDataObj.CurNode = CalcRequestProgressAndCurNode(platformDataObj.Id, platformDataObj.TaskId, platformDataObj.ProcInstanceId, req.UserToken, language)
 			if strings.Contains(platformDataObj.Status, "InProgress") && platformDataObj.ProcInstanceId != "" {
 				newStatus := getInstanceStatus(platformDataObj.ProcInstanceId, req.UserToken, language)
 				if newStatus == "InternallyTerminated" {
@@ -660,7 +660,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 					}
 				}
 			}
-			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(models.RequestTable{Id: platformDataObj.Id, Status: platformDataObj.Status, RequestTemplate: platformDataObj.TemplateId, CreatedBy: platformDataObj.CreatedBy, Role: platformDataObj.Role})
+			platformDataObj.HandleRole, platformDataObj.Handler = getRequestHandler(models.RequestTable{Id: platformDataObj.Id, Status: platformDataObj.Status, RequestTemplate: platformDataObj.TemplateId, CreatedBy: platformDataObj.CreatedBy, Role: platformDataObj.Role}, platformDataObj.TaskId)
 			if platformDataObj.Status == string(models.RequestStatusDraft) {
 				// 草稿状态,定版处理人和角色需要读取模版和定版配置
 				platformDataObj.CheckHandleRole, platformDataObj.CheckHandler = GetTaskTemplateService().GetCheckRoleAndHandler(platformDataObj.TemplateId)
@@ -745,7 +745,7 @@ func getInstanceStatus(instanceId, userToken, language string) string {
 }
 
 // CalcRequestProgressAndCurNode 获取当前节点和计算请求进度
-func CalcRequestProgressAndCurNode(requestId, instanceId, userToken, language string) (progress int, curNode string) {
+func CalcRequestProgressAndCurNode(requestId, taskId, instanceId, userToken, language string) (progress int, curNode string) {
 	var taskTemplateList []*models.TaskTemplateTable
 	var doneTaskList []*models.TaskTable
 	var task *models.TaskTable
@@ -772,7 +772,7 @@ func CalcRequestProgressAndCurNode(requestId, instanceId, userToken, language st
 			progress = 100
 		}
 		if curNode == "" {
-			task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate)
+			task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate, taskId)
 			if task != nil {
 				curNode = task.Name
 			}
@@ -1397,7 +1397,7 @@ func GetProcessDefinitions(templateId, userToken, language string) (rowData *mod
 }
 
 // getRequestForm 获取请求信息
-func getRequestForm(request *models.RequestTable, userToken, language string) (form models.RequestForm) {
+func getRequestForm(request *models.RequestTable, taskId, userToken, language string) (form models.RequestForm) {
 	if request == nil {
 		return
 	}
@@ -1444,11 +1444,11 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	if request.Status == "Pending" {
 		form.CurNode = RequestPending
 	}
-	form.Progress, form.CurNode = CalcRequestProgressAndCurNode(request.Id, request.ProcInstanceId, userToken, language)
+	form.Progress, form.CurNode = CalcRequestProgressAndCurNode(request.Id, taskId, request.ProcInstanceId, userToken, language)
 	if template.ProcDefId != "" {
 		form.AssociationWorkflow = true
 	}
-	_, form.Handler = getRequestHandler(*request)
+	_, form.Handler = getRequestHandler(*request, taskId)
 	if request.CustomFormCache != "" {
 		err = json.Unmarshal([]byte(request.CustomFormCache), &customForm)
 		if err != nil {
@@ -1480,7 +1480,7 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 }
 
 // getRequestHandler 获取请求处理人,如果处于任务执行状态
-func getRequestHandler(request models.RequestTable) (role, handler string) {
+func getRequestHandler(request models.RequestTable, taskId string) (role, handler string) {
 	var task *models.TaskTable
 	var taskHandleList []*models.TaskHandleTable
 	var roleArr, handlerArr []string
@@ -1488,7 +1488,7 @@ func getRequestHandler(request models.RequestTable) (role, handler string) {
 		// 草稿状态,当前处理人为自己
 		return request.Role, request.CreatedBy
 	}
-	task, _ = GetTaskService().GetDoingTask(request.Id, request.RequestTemplate)
+	task, _ = GetTaskService().GetDoingTask(request.Id, request.RequestTemplate, taskId)
 	if task != nil {
 		// 根据任务查询 任务处理人
 		dao.X.SQL("select * from task_handle where task = ? and latest_flag = 1", task.Id).Find(&taskHandleList)

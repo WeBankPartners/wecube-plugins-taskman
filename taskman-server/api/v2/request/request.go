@@ -17,8 +17,9 @@ import (
 
 // GetRequestDetail 新版请求详情
 func GetRequestDetail(c *gin.Context) {
-	requestId := c.Param("requestId")
-	result, err := service.GetRequestDetailV2(requestId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
+	requestId := c.Query("requestId")
+	taskId := c.Query("taskId")
+	result, err := service.GetRequestDetailV2(requestId, taskId, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return

@@ -222,9 +222,7 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isCheck: 'Y',
-          isHandle: 'N',
-          jumpFrom: ''
+          taskId: row.taskId
         }
       })
     },
@@ -238,8 +236,7 @@ export default {
           path: url,
           query: {
             requestId: data.id,
-            requestTemplate: data.requestTemplate,
-            jumpFrom: ''
+            requestTemplate: data.requestTemplate
           }
         })
       }

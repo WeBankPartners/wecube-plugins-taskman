@@ -337,15 +337,13 @@ export default {
           desc: this.$t('tw_template_role_tips')
         })
       }
-      // const path = this.type === '2' ? 'createRequest' : 'createPublish'
       const path = this.createRouteMap[this.type]
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestTemplate: row.id,
-          role: role, // 模板创建人角色
-          jumpFrom: ''
+          role: role // 模板创建人角色
         }
       })
     },

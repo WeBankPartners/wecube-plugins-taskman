@@ -442,8 +442,7 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isCheck: 'Y',
-          isHandle: 'N',
+          taskId: row.taskId,
           jumpFrom: this.tabName,
           type: this.tabName === 'submit' ? this.rollback : this.type
         }
@@ -460,7 +459,6 @@ export default {
           requestTemplate: row.templateId,
           taskHandleId: row.taskHandleId, // 任务处理ID
           taskId: row.taskId,
-          isCheck: 'N',
           isHandle: 'Y',
           jumpFrom: this.tabName,
           type: this.tabName === 'submit' ? this.rollback : this.type

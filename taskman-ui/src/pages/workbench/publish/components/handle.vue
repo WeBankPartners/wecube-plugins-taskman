@@ -281,8 +281,7 @@ export default {
         implement_process: '#cba43f',
         implement_custom: '#b886f8',
         confirm: '#19be6b'
-      },
-      hasRunOnce: false
+      }
     }
   },
   computed: {
@@ -305,9 +304,8 @@ export default {
   watch: {
     handleData: {
       handler (val) {
+        // 审批和任务表单数据处理
         if (val && this.taskHandleId) {
-          if (this.hasRunOnce) return
-          this.hasRunOnce = true
           const list = val.taskHandleList || []
           list.forEach(item => {
             if (item.id === this.taskHandleId) {
@@ -335,11 +333,7 @@ export default {
                 item.title.forEach(t => {
                   // 默认清空标志为no, 且初始值为空，赋值默认值
                   if (t.defaultClear === 'no' && !v.entityData[t.name]) {
-                    if (v.entityData.hasOwnProperty(t.name)) {
-                      v.entityData[t.name] = t.defaultValue
-                    } else {
-                      this.$set(v.entityData, t.name, t.defaultValue)
-                    }
+                    v.entityData[t.name] = t.defaultValue
                   }
                   // if (t.defaultClear === 'yes' && !Array.isArray(v.entityData[t.name])) {
                   //   v.entityData[t.name] = ''
@@ -350,7 +344,8 @@ export default {
           })
         }
       },
-      deep: true
+      deep: true,
+      immediate: true
     }
   },
   methods: {

@@ -193,8 +193,12 @@ export default {
     }
   },
   mounted () {
+    // 设置定时器，每分钟刷新本人处理/本组处理数量，刷新列表数据
     this.interval = setInterval(() => {
       this.getData(false, true)
+      if (['myPending', 'pending'].includes(this.active)) {
+        this.$parent && this.$parent.getList()
+      }
     }, 60 * 1000)
   },
   destroyed () {
@@ -314,7 +318,7 @@ export default {
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0 8px;
+        padding: 0 5px;
         span {
           font-size: 12px;
           font-family: PingFangSC-regular;

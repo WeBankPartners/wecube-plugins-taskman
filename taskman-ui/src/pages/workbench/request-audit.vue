@@ -215,9 +215,7 @@ export default {
         query: {
           requestId: row.id,
           requestTemplate: row.templateId,
-          isCheck: 'Y',
-          isHandle: 'N',
-          jumpFrom: ''
+          taskId: row.taskId
         }
       })
     },

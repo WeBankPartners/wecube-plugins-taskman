@@ -8,11 +8,11 @@
               <div v-for="(entity, entityIndex) in node.classification" :key="entityIndex">
                 <!-- <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider> -->
                 <div class="radio-button">
-                  {{ `${entity}` }}<span class="count">{{ filterBindDataCount(node) }}</span>
+                  {{ `${entity}` }}<span class="count">{{ filterBindDataCount(node, entity) }}</span>
                 </div>
                 <Row class="box-wrap">
                   <div v-for="item in filterBindData(node)" :key="item.id + entityIndex">
-                    <Col v-if="`${item.packageName}:${item.entityName}` === entity" :span="12" class="tabs-item">
+                    <div v-if="`${item.packageName}:${item.entityName}` === entity" class="tabs-item">
                       <Checkbox :label="item.id" :disabled="formDisable" class="tabs-item-box">
                         <div class="tabs-item-box-content">
                           <Tooltip
@@ -28,14 +28,14 @@
                           </Tooltip>
                           <Icon
                             type="md-eye"
-                            size="26"
+                            size="22"
                             color="#515a6e"
                             @click.stop.prevent="handleViewForm(item)"
-                            style="margin-left:15px;cursor:pointer;"
+                            style="margin-left:15px;cursor:pointer;padding:20px 20px 20px 0;"
                           />
                         </div>
                       </Checkbox>
-                    </Col>
+                    </div>
                   </div>
                 </Row>
               </div>
@@ -355,9 +355,12 @@ export default {
       const res = this.bindData.filter(bData => oid.includes(bData.id))
       return res
     },
-    filterBindDataCount (node) {
+    filterBindDataCount (node, entity) {
       if (!node.bindOptions || node.bindOptions.length === 0) return 0
-      const checkedList = this.bindData.filter(item => node.bindData.includes(item.id)) || []
+      const checkedList =
+        this.bindData.filter(
+          item => node.bindData.includes(item.id) && `${item.packageName}:${item.entityName}` === entity
+        ) || []
       return checkedList.length
     },
     async saveRequest (type) {
@@ -467,18 +470,21 @@ export default {
 }
 .box-wrap {
   margin: 10px 0 30px 0;
-}
-.tabs-item {
   display: flex;
-  align-items: center;
-  flex-direction: flex-start;
-  &-box {
+  flex-wrap: wrap;
+  .tabs-item {
     display: flex;
     align-items: center;
-    &-content {
+    flex-direction: flex-start;
+    width: fit-content;
+    &-box {
       display: flex;
       align-items: center;
-      margin-left: 5px;
+      &-content {
+        display: flex;
+        align-items: center;
+        margin-left: 5px;
+      }
     }
   }
 }

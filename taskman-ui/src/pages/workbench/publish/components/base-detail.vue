@@ -305,7 +305,7 @@ export default {
   data () {
     return {
       isHandle: this.$route.query.isHandle === 'Y', // 处理标志
-      jumpFrom: this.$route.query.jumpFrom, // 入口tab标记
+      jumpFrom: this.$route.query.jumpFrom || '', // 入口tab标记
       type: this.$route.query.type, // 首页类型type
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
@@ -399,7 +399,13 @@ export default {
     },
     // 获取详情数据
     async getRequestInfoNew () {
-      const { statusCode, data } = await getPublishInfo(this.requestId)
+      const params = {
+        params: {
+          requestId: this.requestId,
+          taskId: this.$route.query.taskId || ''
+        }
+      }
+      const { statusCode, data } = await getPublishInfo(params)
       if (statusCode === 'OK') {
         this.detail = data.request || {}
         const { name, rootEntityId, operatorObj, description, expectTime, formData, attachFiles } = this.detail

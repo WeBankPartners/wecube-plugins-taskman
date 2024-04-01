@@ -148,7 +148,7 @@ export const getProgressInfo = params => req.get(`/taskman/api/v1/request/progre
 export const savePublishData = (requestId, params) =>
   req.post(`/taskman/api/v2/request-data/save/${requestId}/data/save`, params)
 // 新建发布详情数据
-export const getPublishInfo = requestId => req.get(`/taskman/api/v2/request/detail/${requestId}`)
+export const getPublishInfo = params => req.get(`/taskman/api/v2/request/detail`, params)
 // 发布历史页面
 export const getPublishList = params => req.post(`/taskman/api/v1/request/history/list`, params)
 // 确认定版新接口

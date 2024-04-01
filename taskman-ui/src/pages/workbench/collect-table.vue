@@ -473,14 +473,12 @@ export default {
         })
       }
       const path = this.createRouteMap[this.actionName]
-      // const path = this.actionName === '1' ? 'createPublish' : 'createRequest'
       const url = `/taskman/workbench/${path}`
       this.$router.push({
         path: url,
         query: {
           requestTemplate: row.id,
-          role: row.manageRole,
-          jumpFrom: ''
+          role: row.manageRole
         }
       })
     },

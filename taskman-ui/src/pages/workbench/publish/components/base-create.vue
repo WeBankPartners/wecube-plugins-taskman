@@ -66,7 +66,7 @@
           </FormItem>
           <!--附件-->
           <FormItem :label="$t('tw_attach')">
-            <UploadFile :id="requestId" :files="attachFiles" type="request" :formDisable="formDisable"></UploadFile>
+            <UploadFile :id="requestId" :files="attachFiles" type="request"></UploadFile>
           </FormItem>
         </HeaderTitle>
         <!--表单详情-->
@@ -92,7 +92,7 @@
               :label-width="lang === 'zh-CN' ? 110 : 150"
               required
             >
-              <Select v-model="form.rootEntityId" :disabled="formDisable" clearable filterable style="width:300px;">
+              <Select v-model="form.rootEntityId" clearable filterable style="width:300px;">
                 <Option v-for="item in rootEntityOptions" :value="item.guid" :key="item.guid">{{
                   item.key_name
                 }}</Option>
@@ -359,8 +359,7 @@ export default {
   },
   data () {
     return {
-      formDisable: this.$route.query.isCheck === 'Y', // 查看标志
-      jumpFrom: this.$route.query.jumpFrom, // 首页tabName
+      jumpFrom: this.$route.query.jumpFrom || '', // 首页tabName
       type: this.$route.query.type, // 首页类型type
       requestTemplate: this.$route.query.requestTemplate,
       requestId: this.$route.query.requestId,
@@ -472,7 +471,13 @@ export default {
     },
     // 获取请求详情
     async getRequestInfoNew () {
-      const { statusCode, data } = await getPublishInfo(this.requestId)
+      const params = {
+        params: {
+          requestId: this.requestId,
+          taskId: ''
+        }
+      }
+      const { statusCode, data } = await getPublishInfo(params)
       if (statusCode === 'OK') {
         this.detail = data.request || {}
         const { name, description, rootEntityId, expireDay, customForm, attachFiles } = data.request || {}

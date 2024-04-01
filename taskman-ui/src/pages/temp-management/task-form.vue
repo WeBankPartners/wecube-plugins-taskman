@@ -472,6 +472,7 @@
         >
         <Button
           :disabled="isCheck !== 'Y' && isTopButtonDisable"
+          v-if="isCheck !== 'Y'"
           @click="saveApprovalFromNode"
           type="info"
           class="btn-footer-margin"

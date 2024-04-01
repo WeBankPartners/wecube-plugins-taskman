@@ -196,6 +196,7 @@ export default {
       this.group.customItems[index].routineExpression = val
     },
     async loadPage (params) {
+      this.isParmasChanged = false
       await this.getRequestGroupForm(params)
       this.getAllDataModels()
       if (params.isAdd) {

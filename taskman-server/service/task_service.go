@@ -419,13 +419,13 @@ func handleApprove(task models.TaskTable, operator, userToken, language string, 
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeDeny, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeDeny, operator, now, task.Id}})
 		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusFaulted, operator, now, task.Request}})
-		NotifyTaskDenyMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
+		go NotifyTaskDenyMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
 	case string(models.TaskHandleResultTypeRedraw):
 		// 退回,请求变草稿,任务设置为处理完成
 		actions = append(actions, &dao.ExecAction{Sql: "update task_handle set handle_result=?,handle_status=?,result_desc=?,updated_time=? where id = ?", Param: []interface{}{models.TaskHandleResultTypeRedraw, models.TaskHandleResultTypeComplete, param.Comment, now, param.TaskHandleId}})
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result=?,description=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.TaskStatusDone, models.TaskHandleResultTypeRedraw, param.Comment, operator, now, task.Id}})
 		actions = append(actions, &dao.ExecAction{Sql: "update request set status = ?,rollback_desc=?,updated_by=?,updated_time=? where id = ?", Param: []interface{}{models.RequestStatusDraft, param.Comment, operator, now, task.Request}})
-		NotifyTaskBackMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
+		go NotifyTaskBackMail(request.Name, task.Name, request.CreatedBy, operator, userToken, language)
 	}
 	if len(actions) > 0 {
 		err = dao.Transaction(actions)
@@ -727,7 +727,7 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, l
 		}
 		requestName = request.Name
 	}
-	NotifyTaskHandlerUpdateMail(requestName, task.Name, taskHandleList[0].Handler, operator, userToken, language)
+	go NotifyTaskHandlerUpdateMail(requestName, task.Name, taskHandleList[0].Handler, operator, userToken, language)
 	return dao.Transaction(actions)
 }
 

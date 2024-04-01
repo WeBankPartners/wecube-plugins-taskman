@@ -750,6 +750,8 @@ func CalcRequestProgressAndCurNode(requestId, taskId, instanceId, userToken, lan
 	var doneTaskList []*models.TaskTable
 	var task *models.TaskTable
 	var request models.RequestTable
+	// 存在并发情况,多个任务都在执行中
+	var multipleDoingTaskList []string
 	taskTemplateList, _ = GetTaskTemplateService().GetTaskTemplateListByRequestId(requestId)
 	request, _ = GetSimpleRequest(requestId)
 	doneTaskList, _ = GetTaskService().GetDoneTaskByRequestId(request)
@@ -793,10 +795,28 @@ func CalcRequestProgressAndCurNode(requestId, taskId, instanceId, userToken, lan
 		}
 		return
 	case "InProgress":
+		exist := false
 		for _, v := range processInstance.TaskNodeInstances {
-			if v.Status == "InProgress" || v.Status == "Timeouted" || v.Status == "Faulted" {
+			if v.Status == "Timeouted" || v.Status == "Faulted" {
 				curNode = v.NodeName
 				return
+			}
+			if v.Status == "InProgress" {
+				multipleDoingTaskList = append(multipleDoingTaskList, v.NodeName)
+			}
+		}
+		if len(multipleDoingTaskList) == 1 {
+			curNode = multipleDoingTaskList[0]
+		} else if len(multipleDoingTaskList) > 0 {
+			// 有多个节点在执行中,判断是否有taskman当前节点
+			for _, taskNodeName := range multipleDoingTaskList {
+				if curNode == taskNodeName {
+					exist = true
+					break
+				}
+			}
+			if !exist {
+				curNode = multipleDoingTaskList[0]
 			}
 		}
 	case "NotStarted":

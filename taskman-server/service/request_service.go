@@ -1147,6 +1147,8 @@ func UpdateRequestStatus(requestId, status, operator, userToken, language, descr
 			bindCacheBytes, _ := json.Marshal(bindData)
 			bindCache = string(bindCacheBytes)
 		}
+		// 设置bindCache,模版没配置定版,审批自动通过到任务场景用到
+		request.BindCache = bindCache
 		// 请求定版, 根据模板配置开启是否确认定版
 		err = GetRequestService().CreateRequestCheck(request, operator, bindCache, userToken, language)
 	} else if status == "Draft" {

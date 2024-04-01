@@ -1957,8 +1957,16 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskS
 func (s *RequestService) CreateProcessTask(request models.RequestTable, task *models.TaskTable, userToken, language string) (actions []*dao.ExecAction, err error) {
 	log.Logger.Debug("CreateProcessTask", log.String("taskId", task.Id))
 	var workflowActions []*dao.ExecAction
+	var requestTemplate *models.RequestTemplateTable
 	actions = []*dao.ExecAction{}
-	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
+	if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplateName); err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestId:%s requestTemplate is empty", request.Id)
+		return
+	}
+	if requestTemplate.ProcDefId != "" && request.ProcInstanceId == "" && request.BindCache != "" {
 		// 关联编排,调用编排启动
 		var bindCache models.RequestCacheData
 		json.Unmarshal([]byte(request.BindCache), &bindCache)

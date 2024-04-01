@@ -211,7 +211,7 @@
                     v-if="data.formData && data.formData.length"
                     :data="data.formData"
                     :requestId="requestId"
-                    :formDisable="true"
+                    formDisable
                   ></EntityTable>
                   <div v-else class="no-data">
                     {{ $t('tw_no_formConfig') }}

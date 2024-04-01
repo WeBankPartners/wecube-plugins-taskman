@@ -773,8 +773,6 @@ func getRequestPreDataByTemplateId(requestTemplateId string) []*models.RequestPr
 
 func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.RequestPreDataTableObj {
 	var result []*models.RequestPreDataTableObj
-	//var itemGroupType, itemGroupRule string
-	//var formTemplateId string
 	tmpPackageName := items[0].PackageName
 	tmpEntity := items[0].Entity
 	tmpItemGroup := items[0].ItemGroup
@@ -786,13 +784,6 @@ func getItemTemplateTitle(items []*models.FormItemTemplateTable) []*models.Reque
 	existItemMap := make(map[string]int)
 	for _, v := range items {
 		tmpKey := fmt.Sprintf("%s__%s", v.ItemGroup, v.Name)
-		//itemGroup := models.FormTemplateTable{}
-		//if v.FormTemplate != "" {
-		//	dao.X.SQL("select * from form_template where id=?", v.FormTemplate).Get(&itemGroup)
-		//	itemGroupType = itemGroup.ItemGroupType
-		//	itemGroupRule = itemGroup.ItemGroupRule
-		//	formTemplateId = itemGroup.Id
-		//}
 		if _, b := existItemMap[tmpKey]; b {
 			continue
 		} else {
@@ -2117,7 +2108,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 			curTaskForHistory.TaskHandleList = taskHandleForHistoryList
 		}
 
-		formData, err = getTaskFormData(c, curTaskForHistory)
+		formData, err = getTaskFormData(curTaskForHistory)
 		if err != nil {
 			log.Logger.Error(fmt.Sprintf("get task form data for task: %s error", task.Id), log.Error(err))
 			return
@@ -2131,7 +2122,7 @@ func GetRequestHistory(c *gin.Context, requestId string) (result *models.Request
 	return
 }
 
-func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*models.RequestPreDataTableObj, err error) {
+func getTaskFormData(taskObj *models.TaskForHistory) (result []*models.RequestPreDataTableObj, err error) {
 	result = []*models.RequestPreDataTableObj{}
 
 	// 查询 form template
@@ -2262,7 +2253,7 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 
 	formIdMapInfo := make(map[string]*models.FormTable)
 	formTemplateIdMapInfo := make(map[string]*models.FormTemplateTable)
-	formIdMapInfo, formTemplateIdMapInfo, err = getFormAndTemplateMapInfo(c, taskFormItems)
+	formIdMapInfo, formTemplateIdMapInfo, err = getFormAndTemplateMapInfo(taskFormItems)
 	if err != nil {
 		err = fmt.Errorf("get form and form template map info failed: %s", err.Error())
 		return
@@ -2285,11 +2276,11 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 			if tmpFormTemplate, isExisted2 := formTemplateIdMapInfo[tmpForm.FormTemplate]; isExisted2 {
 				itemGroup = tmpFormTemplate.ItemGroup
 			} else {
-				log.Logger.Info(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
+				log.Logger.Debug(fmt.Sprintf("can not find itemGroup for formItem: %s", item.Id))
 				continue
 			}
 		} else {
-			log.Logger.Info(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
+			log.Logger.Debug(fmt.Sprintf("can not find itemDataId for formItem: %s", item.Id))
 			continue
 		}
 
@@ -2335,6 +2326,12 @@ func getTaskFormData(c *gin.Context, taskObj *models.TaskForHistory) (result []*
 						tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
 					}
 				}
+				// 可能当前表单项为当前表单模版独有表单项,需要加特殊处理
+				for _, formItemTemp := range formTable.Title {
+					if _, ok := tmpRowObj.EntityData[formItemTemp.Name]; !ok {
+						tmpRowObj.EntityData[formItemTemp.Name] = formItemTemp.DefaultValue
+					}
+				}
 				formTable.Value = append(formTable.Value, &tmpRowObj)
 			}
 		}
@@ -2372,7 +2369,7 @@ func sortHistoryResult(historyResult []*models.RequestPreDataTableObj, formTempl
 	return
 }
 
-func getFormAndTemplateMapInfo(c *gin.Context, taskFormItems []*models.FormItemTable) (formIdMapInfo map[string]*models.FormTable, formTemplateIdMapInfo map[string]*models.FormTemplateTable, err error) {
+func getFormAndTemplateMapInfo(taskFormItems []*models.FormItemTable) (formIdMapInfo map[string]*models.FormTable, formTemplateIdMapInfo map[string]*models.FormTemplateTable, err error) {
 	formIdMapInfo = make(map[string]*models.FormTable)
 	formTemplateIdMapInfo = make(map[string]*models.FormTemplateTable)
 

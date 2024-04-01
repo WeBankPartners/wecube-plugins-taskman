@@ -233,7 +233,7 @@ export default {
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function (item) {
       // 切换表单组，保存当前表单组数据
-      if (!this.formDisable) {
+      if (this.isAdd) {
         const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
         if (!this.requiredCheck(data)) {
           return this.$Message.warning(`【${data.itemGroup}】${this.$t('required_tip')}`)

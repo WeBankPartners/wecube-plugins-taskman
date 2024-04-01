@@ -69,6 +69,7 @@ export default {
   props: ['isCheck', 'requestTemplateId', 'module'],
   methods: {
     async loadPage (params) {
+      this.isParmasChanged = false
       if (params.isAdd) {
         this.group = {}
         this.group.requestTemplateId = params.requestTemplateId

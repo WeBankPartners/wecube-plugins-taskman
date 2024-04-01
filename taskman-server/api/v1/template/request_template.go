@@ -162,7 +162,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 						if taskTemplate.Type == string(models.TaskTypeApprove) {
 							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
 						} else if taskTemplate.Type == string(models.TaskTypeImplement) {
-							err = exterror.New().TemplateSubmitApproveHandlerEmptyError.WithParam(taskTemplate.Name)
+							err = exterror.New().TemplateSubmitTaskHandlerEmptyError.WithParam(taskTemplate.Name)
 						}
 						middleware.ReturnError(c, err)
 						return

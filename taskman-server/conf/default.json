@@ -1,7 +1,7 @@
 {
   "default_language": "en",
   "http_server": {
-    "port": "",
+    "port": "18080",
     "cross": true,
     "error_template_dir": "./conf/i18n",
     "error_detail_return": true
@@ -17,10 +17,10 @@
     "compress": true
   },
   "database": {
-    "server": "127.0.0.1",
-    "port": "3306",
+    "server": "106.52.160.142",
+    "port": "13307",
     "user": "root",
-    "password": "root",
+    "password": "mF8PnUQ6dK3ppmrKPmGa",
     "database": "taskman",
     "maxOpen": 50,
     "maxIdle": 10,
@@ -28,7 +28,7 @@
   },
   "rsa_key_path": "/data/certs/rsa_key",
   "wecube": {
-    "base_url": "",
+    "base_url": "http://106.52.160.142:19090",
     "jwt_signing_key": "",
     "sub_system_code": "",
     "sub_system_key": ""

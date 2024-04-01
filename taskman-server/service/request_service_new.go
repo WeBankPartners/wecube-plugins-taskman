@@ -759,6 +759,11 @@ func CalcRequestProgressAndCurNode(requestId, taskId, instanceId, userToken, lan
 		// 分母+1,统计已完成节点
 		progress = int(math.Floor(float64(len(doneTaskList))/float64(len(taskTemplateList)+1)*100 + 0.5))
 	}
+	// 查询正在进行的任务节点
+	task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate, taskId)
+	if task != nil {
+		curNode = task.Name
+	}
 	if instanceId == "" {
 		// 无编排实例
 		switch request.Status {
@@ -772,12 +777,6 @@ func CalcRequestProgressAndCurNode(requestId, taskId, instanceId, userToken, lan
 		case string(models.RequestStatusCompleted):
 			curNode = RequestComplete
 			progress = 100
-		}
-		if curNode == "" {
-			task, _ = GetTaskService().GetDoingTask(requestId, request.RequestTemplate, taskId)
-			if task != nil {
-				curNode = task.Name
-			}
 		}
 		return
 	}
@@ -1851,7 +1850,15 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 	var requestConfirmActions, workflowActions []*dao.ExecAction
 	now := time.Now().Format(models.DateTimeFormat)
 	actions = []*dao.ExecAction{}
-	if request.AssociationWorkflow && request.ProcInstanceId == "" && request.BindCache != "" {
+	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
+	if err != nil {
+		return
+	}
+	if requestTemplate == nil {
+		err = fmt.Errorf("requestTemplate is empty")
+		return
+	}
+	if requestTemplate.ProcDefId != "" && request.ProcInstanceId == "" && request.BindCache != "" {
 		// 关联编排,调用编排启动
 		var bindCache models.RequestCacheData
 		json.Unmarshal([]byte(request.BindCache), &bindCache)
@@ -1862,14 +1869,6 @@ func (s *RequestService) CreateRequestTask(request models.RequestTable, curTaskI
 		if len(workflowActions) > 0 {
 			actions = append(actions, workflowActions...)
 		}
-		return
-	}
-	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate)
-	if err != nil {
-		return
-	}
-	if requestTemplate == nil {
-		err = fmt.Errorf("requestTemplate is empty")
 		return
 	}
 	err = dao.X.SQL("select * from task_template where request_template = ? and type = ? order by sort asc", request.RequestTemplate, models.TaskTypeImplement).Find(&taskTemplateList)

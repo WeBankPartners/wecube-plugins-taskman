@@ -620,7 +620,7 @@ func getPlatData(req models.PlatDataParam, newSQL, language string, page bool) (
 						}
 						// 只处理自动退出&手动终止终止情况,需要发邮件
 						if newStatus == string(models.RequestStatusFaulted) || newStatus == string(models.RequestStatusTermination) {
-							NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
+							go NotifyTaskWorkflowFailMail(platformDataObj.Name, platformDataObj.ProcDefName, newStatus, platformDataObj.CreatedBy, req.UserToken, language)
 						}
 						actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?",
 							Param: []interface{}{newStatus, time.Now().Format(models.DateTimeFormat), platformDataObj.Id}})
@@ -1425,12 +1425,10 @@ func getRequestForm(request *models.RequestTable, userToken, language string) (f
 	form.CreatedTime = request.CreatedTime
 	form.ExpectTime = request.ExpectTime
 	form.CreatedBy = request.CreatedBy
+	form.Role = request.Role
 	if v, ok := roleDisplayMap[request.Role]; ok {
-		form.Role = v
-	} else {
-		form.Role = request.Role
+		form.RoleDisplay = v
 	}
-
 	form.Description = request.Description
 	form.Status = request.Status
 	form.ProcInstanceId = request.ProcInstanceId
@@ -1617,7 +1615,7 @@ func RequestConfirm(param models.RequestConfirmParam, user, userToken, language 
 	if request, err = GetSimpleRequest(param.Id); err != nil {
 		return err
 	}
-	NotifyRequestCompleteMail(request.Name, request.CreatedBy, userToken, language)
+	go NotifyRequestCompleteMail(request.Name, request.CreatedBy, userToken, language)
 	return dao.Transaction(actions)
 }
 
@@ -1723,10 +1721,10 @@ func (s *RequestService) CreateRequestCheck(request models.RequestTable, operato
 			}
 			if checkHandler != "" {
 				// 给对应处理人发送邮件
-				NotifyTaskAssignMail(request.Name, RequestPending, checkExpireTime, checkHandler, userToken, language)
+				go NotifyTaskAssignMail(request.Name, RequestPending, checkExpireTime, checkHandler, userToken, language)
 			} else {
 				// 给角色发送邮件
-				NotifyTaskRoleMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
+				go NotifyTaskRoleMail(request.Name, RequestPending, checkExpireTime, checkRole, userToken, language)
 			}
 			action = &dao.ExecAction{Sql: "insert into task_handle(id,task_handle_template,task,role,handler,created_time,updated_time) values (?,?,?,?,?,?,?)"}
 			action.Param = []interface{}{guid.CreateGuid(), taskHandleTemplateList[0].Id, checkTaskId, checkRole, checkHandler, now, now}
@@ -1933,7 +1931,7 @@ func (s *RequestService) CreateRequestConfirm(request models.RequestTable, taskS
 	// 更新请求表状态为请求确认
 	actions = append(actions, &dao.ExecAction{Sql: "update request set status=?,updated_time=? where id=?", Param: []interface{}{string(models.RequestStatusConfirm), now, request.Id}})
 	// 发送请求确认邮件
-	NotifyTaskAssignMail(request.Name, Confirm, taskExpireTime, request.CreatedBy, userToken, language)
+	go NotifyTaskAssignMail(request.Name, Confirm, taskExpireTime, request.CreatedBy, userToken, language)
 	return
 }
 

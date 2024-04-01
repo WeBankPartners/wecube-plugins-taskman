@@ -84,17 +84,20 @@ func SaveRequestCache(c *gin.Context) {
 	cacheType := c.Param("cacheType")
 	event := c.Param("event")
 	user := middleware.GetRequestUser(c)
+	var request models.RequestTable
+	var err error
+	request, err = service.GetSimpleRequest(requestId)
+	if err != nil {
+		middleware.ReturnServerHandleError(c, err)
+		return
+	}
 	if cacheType == "data" {
 		var param models.RequestProDataV2Dto
 		if err := c.ShouldBindJSON(&param); err != nil {
 			middleware.ReturnParamValidateError(c, err)
 			return
 		}
-		request, err := service.GetSimpleRequest(requestId)
-		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
-			return
-		}
+
 		if request.CreatedBy != user {
 			middleware.ReturnReportRequestNotPermissionError(c)
 			return
@@ -110,6 +113,10 @@ func SaveRequestCache(c *gin.Context) {
 		var operator = middleware.GetRequestUser(c)
 		if err := c.ShouldBindJSON(&param); err != nil {
 			middleware.ReturnParamValidateError(c, err)
+			return
+		}
+		if request.Status == string(models.RequestStatusDraft) {
+			middleware.ReturnError(c, exterror.New().RequestHandleError)
 			return
 		}
 		taskHandle, err := service.GetTaskHandleService().GetLatestRequestCheckTaskHandleByRequestId(requestId)
@@ -157,6 +164,10 @@ func CheckRequest(c *gin.Context) {
 	request, err = service.GetSimpleRequest(requestId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
+		return
+	}
+	if request.Status == string(models.RequestStatusDraft) {
+		middleware.ReturnError(c, exterror.New().RequestHandleError)
 		return
 	}
 	task, err = service.GetTaskService().GetLatestCheckTask(requestId)

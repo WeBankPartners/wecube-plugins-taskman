@@ -71,6 +71,9 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
 	isQueryMessage := false
+	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
+		return
+	}
 	if len(param.Filters) > 0 {
 		var newFilters []*models.QueryRequestFilterObj
 		for _, v := range param.Filters {
@@ -135,12 +138,12 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	for _, row := range rowData {
 		rtIds = append(rtIds, row.Id)
 	}
-	queryRoleSql := "select t4.id,GROUP_CONCAT(t4.role_obj) as 'role','mgmt' as 'role_type' from ("
-	queryRoleSql += "select t1.id,CONCAT(t2.role,'::',t3.display_name) as 'role_obj' from request_template t1 left join request_template_role t2 on t1.id=t2.request_template left join role t3 on t2.role=t3.id where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='MGMT'"
+	queryRoleSql := "select t4.id,GROUP_CONCAT(t4.role) as 'role','mgmt' as 'role_type' from ("
+	queryRoleSql += "select t1.id,t2.role from request_template t1 left join request_template_role t2 on t1.id=t2.request_template  where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='MGMT'"
 	queryRoleSql += ") t4 group by t4.id"
 	queryRoleSql += " UNION "
-	queryRoleSql += "select t4.id,GROUP_CONCAT(t4.role_obj) as 'role','use' as 'role_type' from ("
-	queryRoleSql += "select t1.id,CONCAT(t2.role,'::',t3.display_name) as 'role_obj' from request_template t1 left join request_template_role t2 on t1.id=t2.request_template left join role t3 on t2.role=t3.id where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='USE'"
+	queryRoleSql += "select t4.id,GROUP_CONCAT(t4.role) as 'role','use' as 'role_type' from ("
+	queryRoleSql += "select t1.id,t2.role from request_template t1 left join request_template_role t2 on t1.id=t2.request_template  where t1.id in ('" + strings.Join(rtIds, "','") + "') and t2.role_type='USE'"
 	queryRoleSql += ") t4 group by t4.id"
 	var requestTemplateRows []*models.RequestTemplateRoleTable
 	err = dao.X.SQL(queryRoleSql).Find(&requestTemplateRows)
@@ -152,9 +155,8 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	for _, v := range requestTemplateRows {
 		var tmpRoles []*models.RoleTable
 		for _, vv := range strings.Split(v.Role, ",") {
-			tmpSplit := strings.Split(vv, "::")
-			if len(tmpSplit) > 1 {
-				tmpRoles = append(tmpRoles, &models.RoleTable{Id: tmpSplit[0], DisplayName: tmpSplit[1]})
+			if roleDto, ok := roleMap[vv]; ok {
+				tmpRoles = append(tmpRoles, &models.RoleTable{Id: roleDto.Name, DisplayName: roleDto.DisplayName})
 			}
 		}
 		if v.RoleType == "mgmt" {
@@ -176,10 +178,6 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 		if err != nil {
 			return
 		}
-	}
-	roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language)
-	if err != nil {
-		return
 	}
 	for _, v := range rowData {
 		tmpObj := models.RequestTemplateQueryObj{RequestTemplateDto: *s.GetDtoByRequestTemplate(v), MGMTRoles: []*models.RoleTable{}, USERoles: []*models.RoleTable{}}
@@ -821,18 +819,18 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	if requestTemplate.ParentId == "" {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
-			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) select '%s' as id,`group`,name,description,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,approve_by,check_switch,confirm_switch,proc_def_version) select '%s' as id,`group`,name,description,"+
 			"tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,"+
 			"'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler, "+
-			"type,operator_obj_type,approve_by,check_switch,confirm_switch,back_desc,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator, nowTime, operator, nowTime,
+			"type,operator_obj_type,approve_by,check_switch,confirm_switch,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator, nowTime, operator, nowTime,
 			requestTemplate.Id, version, requestTemplate.Id)})
 	} else {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
-			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id,approve_by,check_switch,confirm_switch,back_desc,proc_def_version) select '%s' as id,`group`,name,"+
+			"entity_attrs,record_id,`version`,confirm_time,expire_day,handler,type,operator_obj_type,parent_id,approve_by,check_switch,confirm_switch,proc_def_version) select '%s' as id,`group`,name,"+
 			"description,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,"+
 			"'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,"+
-			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id,approve_by,check_switch,confirm_switch,back_desc,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator,
+			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id,approve_by,check_switch,confirm_switch,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator,
 			nowTime, operator, nowTime, requestTemplate.Id, version, requestTemplate.Id, requestTemplate.ParentId)})
 	}
 
@@ -1418,6 +1416,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		}
 	} else {
 		// 删除冲突模板数据
+		var tempTemplateIdMap = make(map[string]bool)
 		confirmTokenList := strings.Split(confirmToken, ",")
 		for _, ct := range confirmTokenList {
 			if inputCache, b := models.RequestTemplateImportMap[ct]; b {
@@ -1426,6 +1425,7 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 				err = fmt.Errorf("Fetch input cache fail,please refersh and try again ")
 				return
 			}
+			tempTemplateIdMap[ct] = true
 			delete(models.RequestTemplateImportMap, ct)
 			delActions, delErr := s.DeleteRequestTemplate(ct, true)
 			if delErr != nil {
@@ -1436,6 +1436,23 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 		}
 		// 新建模板&模板相关表属性
 		input = s.createNewImportTemplate(input, operator, input.RequestTemplate.RecordId, userToken, language)
+		// 查询 当前最新模版,记录recordId
+		templateName = input.RequestTemplate.Name
+		templateList, _ = s.getTemplateListByName(input.RequestTemplate.Name)
+		if len(templateList) > 0 {
+			for _, template := range templateList {
+				if _, ok := tempTemplateIdMap[template.Id]; ok {
+					continue
+				}
+				version := s.getTemplateVersion(template)
+				if maxVersion < version {
+					maxVersion = version
+					maxVersionRecordId = template.Id
+				}
+			}
+			// 有重复数据,但是新导入模板版本最高,直接当成新建处理,需要记录最新发布版本Id
+			input.RequestTemplate.RecordId = maxVersionRecordId
+		}
 	}
 	if input.RequestTemplate.Id == "" {
 		err = fmt.Errorf("RequestTemplate id illegal ")
@@ -1609,6 +1626,7 @@ func (s *RequestTemplateService) createNewImportTemplate(input models.RequestTem
 	input.RequestTemplate.UpdatedBy = operator
 	input.RequestTemplate.UpdatedTime = now
 	input.RequestTemplate.Handler = operator
+	input.RequestTemplate.BackDesc = ""
 	// 模版导入,模版使用角色和属主角色取当前操作人角色
 	roleList, _ = rpc.QueryUserRoles(operator, userToken, language)
 	if len(roleList) > 0 {

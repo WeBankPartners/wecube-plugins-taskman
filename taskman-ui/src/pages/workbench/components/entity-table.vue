@@ -96,15 +96,13 @@
         </div>
       </div>
     </div>
-    <div class="add-row">
+    <div v-if="isAdd" class="add-row">
       <!--添加一行-->
-      <Button v-if="isAdd && activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{
-        $t('tw_add_row')
-      }}</Button>
+      <Button v-if="activeItem.itemGroupRule === 'new'" type="primary" @click="addRow">{{ $t('tw_add_row') }}</Button>
       <!--选择已有数据添加一行-->
       <Select
         ref="addRowSelect"
-        v-if="isAdd && activeItem.itemGroupRule === 'exist'"
+        v-else-if="activeItem.itemGroupRule === 'exist'"
         v-model="addRowSource"
         filterable
         clearable
@@ -232,17 +230,9 @@ export default {
     async saveCurrentTabData (item) {
       await saveFormData(this.requestId, item)
     },
-    // 时间选择器默认填充当前时分秒
-    handleTimeChange (e, value, name) {
-      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
-        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
-      } else {
-        value[name] = e
-      }
-    },
     // 切换tab刷新表格数据，加上防抖避免切换过快显示异常问题
     handleTabChange: debounce(function (item) {
-      // 每次切换保存之前的tab表单
+      // 切换表单组，保存当前表单组数据
       if (this.isAdd) {
         const data = this.requestData.find(r => r.entity === this.activeTab || r.itemGroup === this.activeTab)
         if (!this.requiredCheck(data)) {
@@ -523,7 +513,7 @@ export default {
       })
       return result
     },
-    // 提交时，定位到没有填写必填项的页签
+    // 表单组必填校验
     validTable (index) {
       if (index !== '') {
         if (this.activeTab === (this.requestData[index].entity || this.requestData[index].itemGroup)) {
@@ -534,6 +524,14 @@ export default {
         this.initTableData()
         this.addRowSource = ''
         this.addRowSourceOptions = []
+      }
+    },
+    // 时间选择器默认填充当前时分秒
+    handleTimeChange (e, value, name) {
+      if (e && e.split(' ') && e.split(' ')[1] === '00:00:00') {
+        value[name] = `${e.split(' ')[0]} ${dayjs().format('HH:mm:ss')}`
+      } else {
+        value[name] = e
       }
     }
   }

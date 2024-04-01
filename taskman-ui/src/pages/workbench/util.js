@@ -44,7 +44,9 @@ export const requiredCheck = (data, entityTable) => {
       })
     })
   })
-  tabIndex && entityTable && entityTable.validTable(tabIndex)
+  if (entityTable) {
+    entityTable.validTable(tabIndex)
+  }
   return result
 }
 

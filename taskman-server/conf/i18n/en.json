@@ -136,8 +136,16 @@
     "code": 20100025,
     "message": "Submission failed: The handler for task node %s was not filled in completely. Please supplement and try again"
   },
-  "template_submit_handler_empty_error": {
+  "template_submit_approve_handler_empty_error": {
     "code": 20100026,
     "message": "Submission failed: The handler for  approval node %s was not filled in completely. Please supplement and try again"
+  },
+  "template_approve_complete_error": {
+    "code": 20100027,
+    "message": "The current approval has been completed, please refresh the list and try again."
+  },
+  "request_handle_error": {
+    "code": 20100028,
+    "message": "Failed to process the request: The request was withdrawn by the submitter, please refresh and try again"
   }
 }

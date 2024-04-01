@@ -3,6 +3,7 @@ package task
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/common/exterror"
 	"io"
 	"net/http"
 
@@ -141,6 +142,7 @@ func ApproveTask(c *gin.Context) {
 	var err error
 	var operator = middleware.GetRequestUser(c)
 	var taskHandle *models.TaskHandleTable
+	var request models.RequestTable
 	for _, v := range param.FormData {
 		tmpErr := validateFormRequire(v)
 		if tmpErr != nil {
@@ -160,27 +162,37 @@ func ApproveTask(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, getTaskErr)
 		return
 	}
-	if taskTable.Request == "" {
-		err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param)
-		if err != nil {
-			middleware.ReturnServerHandleError(c, err)
-		} else {
-			middleware.ReturnSuccess(c)
-		}
+	if taskTable.Status == string(models.TaskStatusDone) {
+		middleware.ReturnError(c, exterror.New().TemplateApproveCompleteError)
 		return
 	}
-	taskHandle, err = service.GetTaskHandleService().Get(param.TaskHandleId)
+	if taskTable.Request == "" {
+		if err = service.ApproveCustomTask(taskTable, operator, c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader), param); err != nil {
+			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		middleware.ReturnSuccess(c)
+		return
+	}
+	if request, err = service.GetSimpleRequest(taskTable.Request); err != nil {
+		middleware.ReturnServerHandleError(c, err)
+	}
+	if request.Status == string(models.RequestStatusDraft) {
+		middleware.ReturnError(c, exterror.New().RequestHandleError)
+		return
+	}
+	if param.TaskHandleId == "" {
+		err = fmt.Errorf("param taskHandleId is empty")
+		middleware.ReturnParamValidateError(c, err)
+		return
+	}
+	taskHandle, err = service.GetTaskHandleService().GetIgnoreDeleted(param.TaskHandleId)
 	if err != nil {
 		middleware.ReturnServerHandleError(c, err)
 		return
 	}
 	if taskHandle == nil {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("taskHandleId is invalid"))
-		return
-	}
-	if param.TaskHandleId == "" {
-		err = fmt.Errorf("param taskHandleId is empty")
-		middleware.ReturnParamValidateError(c, err)
 		return
 	}
 	if taskHandle.LatestFlag == 0 {

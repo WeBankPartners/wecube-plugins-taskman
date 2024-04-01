@@ -136,8 +136,16 @@
     "code": 20100025,
     "message": "提交失败:任务节点%s的处理人未填写完整,请补充后重试"
   },
-  "template_submit_handler_empty_error": {
+  "template_submit_approve_handler_empty_error": {
     "code": 20100026,
     "message": "提交失败:审批节点%s的处理人未填写完整,请补充后重试"
+  },
+  "template_approve_complete_error": {
+    "code": 20100027,
+    "message": "当前审批已完成,请刷新列表重试"
+  },
+  "request_handle_error": {
+    "code": 20100028,
+    "message": "处理请求失败：请求已被提交人撤回，请刷新重试"
   }
 }

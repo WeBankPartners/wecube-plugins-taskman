@@ -82,7 +82,7 @@
               </Col>
               <Col :span="12" class="info-item">
                 <div class="info-item-label">{{ $t('tw_creatby_role') }}：</div>
-                <div class="info-item-value">{{ detail.role || '-' }}</div>
+                <div class="info-item-value">{{ detail.roleDisplay || '-' }}</div>
               </Col>
             </Row>
             <Row style="margin-top:10px;" :gutter="20">
@@ -211,7 +211,7 @@
                     v-if="data.formData && data.formData.length"
                     :data="data.formData"
                     :requestId="requestId"
-                    :formDisable="true"
+                    formDisable
                   ></EntityTable>
                   <div v-else class="no-data">
                     {{ $t('tw_no_formConfig') }}

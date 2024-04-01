@@ -97,6 +97,10 @@ type ErrorTemplate struct {
 	TemplateSubmitTaskHandlerEmptyError CustomError `json:"template_submit_task_handler_empty_error"`
 	//  模版提交审核,审批角色没有选择，拒绝提交
 	TemplateSubmitApproveHandlerEmptyError CustomError `json:"template_submit_approve_handler_empty_error"`
+	// 审批已完成
+	TemplateApproveCompleteError CustomError `json:"template_approve_complete_error"`
+	// 请求定版，审批失败,请求已被提交人撤回
+	RequestHandleError CustomError `json:"request_handle_error"`
 }
 
 var (

@@ -544,10 +544,12 @@ func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateRe
 func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.TaskApproveParam) (err error) {
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	actions = append(actions, &dao.ExecAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, task.Id}})
-	if task.Request == "" {
-		// 编排单独触发任务型
-		return dao.Transaction(actions)
+	if param.ChoseOption != "" {
+		actions = append(actions, &dao.ExecAction{Sql: "update task set `result`=?,chose_option=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{param.Comment, param.ChoseOption, operator, nowTime, task.Id}})
+		if task.Request == "" {
+			// 编排单独触发任务型
+			return dao.Transaction(actions)
+		}
 	}
 	// 查请求数据池里的数据(里面的数据可能包含当前任务之前保存的数据)
 	requestPoolRows := models.RequestPoolDataQueryRows{}

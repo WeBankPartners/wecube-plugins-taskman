@@ -590,7 +590,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    width: 360px;
+    width: 420px;
     position: absolute;
     right: 0px;
     span {

@@ -71,7 +71,7 @@ const implicitRoute = {
   },
   'taskman/workbench/publishHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '发布历史', 'en-US': 'Publish History' }
+    childBreadcrumb: { 'zh-CN': '历史(本组)', 'en-US': 'History(Group)' }
   },
   'taskman/workbench/createRequest': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
@@ -83,7 +83,7 @@ const implicitRoute = {
   },
   'taskman/workbench/requestHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '请求历史', 'en-US': 'Request History' }
+    childBreadcrumb: { 'zh-CN': '历史(本组)', 'en-US': 'History(Group)' }
   },
   'taskman/workbench/createProblem': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
@@ -95,7 +95,7 @@ const implicitRoute = {
   },
   'taskman/workbench/problemHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '问题历史', 'en-US': 'Problem History' }
+    childBreadcrumb: { 'zh-CN': '历史(本组)', 'en-US': 'History(Group)' }
   },
   'taskman/workbench/createEvent': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
@@ -107,7 +107,7 @@ const implicitRoute = {
   },
   'taskman/workbench/eventHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '事件历史', 'en-US': 'Event History' }
+    childBreadcrumb: { 'zh-CN': '历史(本组)', 'en-US': 'History(Group)' }
   },
   'taskman/workbench/createChange': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
@@ -119,7 +119,7 @@ const implicitRoute = {
   },
   'taskman/workbench/changeHistory': {
     parentBreadcrumb: { 'zh-CN': '任务', 'en-US': 'Tasks' },
-    childBreadcrumb: { 'zh-CN': '变更历史', 'en-US': 'Change History' }
+    childBreadcrumb: { 'zh-CN': '历史(本组)', 'en-US': 'History(Group)' }
   },
   'taskman/requestHistory': {
     parentBreadcrumb: { 'zh-CN': '系统', 'en-US': 'System' },

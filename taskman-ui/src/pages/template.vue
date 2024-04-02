@@ -258,7 +258,7 @@ export default {
         },
         {
           title: this.$t('tw_template_owner_role'),
-          minWidth: 100,
+          minWidth: 120,
           key: 'mgmtRoles',
           render: (h, params) => {
             return params.row.mgmtRoles.map(item => {
@@ -268,7 +268,7 @@ export default {
         },
         {
           title: this.$t('useRoles'),
-          minWidth: 140,
+          minWidth: 120,
           key: 'mgmtRoles',
           render: (h, params) => {
             const list = params.row.useRoles.map(item => {

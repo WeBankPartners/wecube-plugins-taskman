@@ -1430,7 +1430,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		return
 	}
 	if len(tmpTemplate) == 0 {
-		err = fmt.Errorf("can not find request_template with id:%s ", request.Id)
+		log.Logger.Error("can not find request_template with id", log.String("id", request.Id))
 		return
 	}
 	roleDisplayMap, err = GetRoleService().GetRoleDisplayName(userToken, language)
@@ -1469,8 +1469,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 	}
 	_, form.Handler = getRequestHandler(*request, taskId)
 	if request.CustomFormCache != "" {
-		err = json.Unmarshal([]byte(request.CustomFormCache), &customForm)
-		if err != nil {
+		if err = json.Unmarshal([]byte(request.CustomFormCache), &customForm); err != nil {
 			log.Logger.Error("json Unmarshal", log.Error(err), log.String("CustomFormCache", request.CustomFormCache))
 			return
 		}
@@ -1487,7 +1486,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		var cacheObj models.RequestPreDataDto
 		err = json.Unmarshal([]byte(request.Cache), &cacheObj)
 		if err != nil {
-			err = fmt.Errorf("try to json unmarshal cache data fail,%s ", err.Error())
+			log.Logger.Error("try to json unmarshal cache data fail ", log.Error(err))
 			return
 		}
 		form.FormData = cacheObj.Data

@@ -62,7 +62,7 @@ func QueryAllRolesSimple(requiredAll, userToken, language string) (roleMap map[s
 	}
 	err = json.Unmarshal(byteArr, &response)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if response.Status != "OK" {

@@ -61,7 +61,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	var requestTable []*models.RequestTable
 	err = dao.X.SQL("select * from request where proc_instance_id=?", input.ProcInstId).Find(&requestTable)
 	if err != nil {
-		return result, models.TaskTable{}, fmt.Errorf("Try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
+		return result, models.TaskTable{}, fmt.Errorf("try to check proc_instance_id:%s is in request fail,%s ", input.ProcInstId, err.Error())
 	}
 	var actions []*dao.ExecAction
 	var taskSort int
@@ -73,7 +73,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 	if input.TaskFormInput != "" {
 		err = json.Unmarshal([]byte(input.TaskFormInput), &taskFormInput)
 		if err != nil {
-			return result, task, fmt.Errorf("Try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
+			return result, task, fmt.Errorf("try to json unmarshal taskFormInput to json data fail,%s ", err.Error())
 		}
 		if task.Reporter == "" {
 			task.Reporter = "taskman"
@@ -121,8 +121,8 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		task.ReportTime = nowTime
 		task.Handler = taskTemplateTable[0].Handler
 	} else {
-		log.Logger.Warn("Can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
-		err = fmt.Errorf("Can not find any taskTemplate in request:%s with nodeDefId:%s ", task.Request, taskFormInput.TaskNodeDefId)
+		log.Logger.Warn("can not find any taskTemplate", log.String("requestTemplate", requestTable[0].RequestTemplate), log.String("nodeDefId", taskFormInput.TaskNodeDefId))
+		err = fmt.Errorf("can not find any taskTemplate in request:%s with nodeDefId:%s ", task.Request, taskFormInput.TaskNodeDefId)
 		return
 	}
 	taskInsertAction := dao.ExecAction{Sql: "insert into task(id,name,description,form,status,request,task_template,proc_def_id,proc_def_key,node_def_id," +
@@ -183,110 +183,6 @@ func remakeTaskReportRole(reportRoles string) string {
 	return ""
 }
 
-func queryTaskForm(taskObj *models.TaskTable) (taskForm models.TaskQueryObj, err error) {
-	taskForm = models.TaskQueryObj{TaskId: taskObj.Id, TaskName: taskObj.Name, Description: taskObj.Description, RequestId: taskObj.Request, Reporter: taskObj.Reporter, ReportTime: taskObj.ReportTime, Comment: taskObj.Result, Status: taskObj.Status, NextOption: []string{}, ExpireTime: taskObj.ExpireTime, FormData: []*models.RequestPreDataTableObj{}}
-	taskForm.AttachFiles = GetTaskAttachFileList(taskObj.Id)
-	if taskObj.Status != "done" {
-		taskForm.Editable = true
-	} else {
-		taskForm.Handler = taskObj.UpdatedBy
-		taskForm.HandleTime = taskObj.UpdatedTime
-	}
-	if taskObj.NextOption != "" {
-		taskForm.NextOption = strings.Split(taskObj.NextOption, ",")
-		taskForm.ChoseOption = taskObj.ChoseOption
-	}
-	if taskObj.Request == "" {
-		return
-	}
-	var itemTemplates []*models.FormItemTemplateTable
-	//err = dao.X.SQL("select * from form_item_template where form_template in (select form_template from task_template where id=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
-	err = dao.X.SQL("select * from form_item_template where form_template in (select id from form_template where task_template=?) order by item_group,sort", taskObj.TaskTemplate).Find(&itemTemplates)
-	if err != nil {
-		return
-	}
-	if len(itemTemplates) == 0 {
-		taskForm.FormData = []*models.RequestPreDataTableObj{}
-		//return taskForm, fmt.Errorf("Can not find any form item template with task:%s ", taskObj.Id)
-		return
-	}
-	formResult := getItemTemplateTitle(itemTemplates)
-	taskForm.FormData = formResult
-	var items []*models.FormItemTable
-	dao.X.SQL("select * from form_item where form=? order by item_group,row_data_id", taskObj.Form).Find(&items)
-	if len(items) == 0 {
-		return
-	}
-	itemRowMap := make(map[string][]string)
-	rowItemMap := make(map[string][]*models.FormItemTable)
-	for _, item := range items {
-		if tmpRows, b := itemRowMap[item.ItemGroup]; b {
-			existFlag := false
-			for _, v := range tmpRows {
-				if item.RowDataId == v {
-					existFlag = true
-					break
-				}
-			}
-			if !existFlag {
-				itemRowMap[item.ItemGroup] = append(itemRowMap[item.ItemGroup], item.RowDataId)
-			}
-		} else {
-			itemRowMap[item.ItemGroup] = []string{item.RowDataId}
-		}
-		if _, b := rowItemMap[item.RowDataId]; b {
-			rowItemMap[item.RowDataId] = append(rowItemMap[item.RowDataId], item)
-		} else {
-			rowItemMap[item.RowDataId] = []*models.FormItemTable{item}
-		}
-	}
-	for _, formTable := range formResult {
-		if rows, b := itemRowMap[formTable.ItemGroup]; b {
-			for _, row := range rows {
-				tmpRowObj := models.EntityTreeObj{Id: row, DataId: row, PackageName: formTable.PackageName, EntityName: formTable.Entity}
-				tmpRowObj.EntityData = make(map[string]interface{})
-				for _, rowItem := range rowItemMap[row] {
-					isMulti := false
-					for _, tmpTitle := range formTable.Title {
-						if tmpTitle.Name == rowItem.Name {
-							if tmpTitle.Multiple == "Y" {
-								isMulti = true
-								break
-							}
-						}
-					}
-					if isMulti {
-						tmpRowObj.EntityData[rowItem.Name] = strings.Split(rowItem.Value, ",")
-					} else {
-						tmpRowObj.EntityData[rowItem.Name] = rowItem.Value
-					}
-				}
-				formTable.Value = append(formTable.Value, &tmpRowObj)
-			}
-		}
-	}
-	taskForm.FormData = formResult
-	return
-}
-
-func getRequestTimeStep(requestTemplateId string) (result []*models.TaskQueryTimeStep, err error) {
-	var requestTemplateTable []*models.RequestTemplateTable
-	err = dao.X.SQL("select id,name from request_template where id=?", requestTemplateId).Find(&requestTemplateTable)
-	if err != nil {
-		return
-	}
-	if len(requestTemplateTable) == 0 {
-		return result, fmt.Errorf("Can not find requestTemplate with id:%s ", requestTemplateId)
-	}
-	result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateTable[0].Id, Name: "Start", Active: false})
-	var taskTemplateTable []*models.TaskTemplateTable
-	dao.X.SQL("select id,name from task_template where request_template=?", requestTemplateId).Find(&taskTemplateTable)
-	for _, v := range taskTemplateTable {
-		result = append(result, &models.TaskQueryTimeStep{RequestTemplateId: requestTemplateId, TaskTemplateId: v.Id, Name: v.Name, Active: false})
-	}
-	return
-}
-
 func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 	var taskTable []*models.TaskTable
 	err = dao.X.SQL("select * from task where id=?", taskId).Find(&taskTable)
@@ -294,7 +190,7 @@ func getSimpleTask(taskId string) (result models.TaskTable, err error) {
 		return
 	}
 	if len(taskTable) == 0 {
-		return result, fmt.Errorf("Can not find any task with id:%s ", taskId)
+		return result, fmt.Errorf("can not find any task with id:%s ", taskId)
 	}
 	result = *taskTable[0]
 	return
@@ -339,11 +235,11 @@ func ApproveCustomTask(task models.TaskTable, operator, userToken, language stri
 	log.Logger.Info("Custom Callback response", log.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
-		err = fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		err = fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 		return
 	}
 	if respResult.Status != "OK" {
-		err = fmt.Errorf("Callback fail,%s ", respResult.Message)
+		err = fmt.Errorf("callback fail,%s ", respResult.Message)
 		return
 	}
 	var actions []*dao.ExecAction
@@ -449,7 +345,9 @@ func handleCustomTask(task models.TaskTable, operator, userToken, language strin
 	} else {
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status = ?,task_result = ?,updated_by =?,updated_time =? where id = ?", Param: []interface{}{models.TaskStatusDone, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), operator, now, task.Id}})
 	}
-	newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language, taskSort)
+	if newApproveActions, err = GetRequestService().CreateRequestTask(request, task.Id, userToken, language, taskSort); err != nil {
+		return
+	}
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
@@ -476,11 +374,11 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 	log.Logger.Info("Callback response", log.String("body", string(b)))
 	err = json.Unmarshal(b, &respResult)
 	if err != nil {
-		return fmt.Errorf("Try to json unmarshal response body fail,%s ", err.Error())
+		return fmt.Errorf("try to json unmarshal response body fail,%s ", err.Error())
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	if respResult.Status != "OK" {
-		return fmt.Errorf("Callback fail,%s ", respResult.Message)
+		return fmt.Errorf("callback fail,%s ", respResult.Message)
 	}
 	request, getRequestErr := GetSimpleRequest(task.Request)
 	if getRequestErr != nil {
@@ -497,12 +395,13 @@ func handleWorkflowTask(task models.TaskTable, operator, userToken string, param
 			string(requestBytes), param.Comment, GetTaskHandleService().CalcTaskResult(task.Id, param.TaskHandleId), param.ChoseOption, "done", operator, nowTime, task.Id,
 		}})
 	}
-	newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language)
+	if newApproveActions, err = GetRequestService().CreateProcessTask(request, &task, userToken, language); err != nil {
+		return err
+	}
 	if len(newApproveActions) > 0 {
 		actions = append(actions, newApproveActions...)
 	}
-	err = dao.Transaction(actions)
-	return err
+	return dao.Transaction(actions)
 }
 
 func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateResp, callbackUrl string, err error) {
@@ -521,12 +420,12 @@ func getApproveCallbackParamNew(taskId string) (result models.PluginTaskCreateRe
 	var taskFormOutput models.PluginTaskFormDto
 	err = json.Unmarshal([]byte(taskObj.Cache), &taskFormOutput)
 	if err != nil {
-		return result, callbackUrl, fmt.Errorf("Try to json unmarshal cache data fail:%s ", err.Error())
+		return result, callbackUrl, fmt.Errorf("try to json unmarshal cache data fail:%s ", err.Error())
 	}
 	taskDataRows := models.RequestPoolDataQueryRows{}
 	err = dao.X.SQL("select t1.id as form_id,t1.form_template,t3.item_group,t3.item_group_type ,t1.data_id,t2.id as form_item_id,t2.form_item_template,t2.name,t2.value,t2.updated_time from form t1 left join form_item t2 on t1.id=t2.form left join form_template t3 on t1.form_template=t3.id where t1.task=?", taskId).Find(&taskDataRows)
 	if err != nil {
-		return result, callbackUrl, fmt.Errorf("Try to query form item fail:%s ", err.Error())
+		return result, callbackUrl, fmt.Errorf("try to query form item fail:%s ", err.Error())
 	}
 	poolForms := taskDataRows.DataParse()
 	for _, formEntity := range taskFormOutput.FormDataEntities {
@@ -659,9 +558,10 @@ func SaveTaskFormNew(task *models.TaskTable, operator string, param *models.Task
 			}
 		}
 	}
-	err = dao.Transaction(actions)
-	if err != nil {
-		err = fmt.Errorf("save task:%s form data fail,%s ", task.Id, err.Error())
+	if len(actions) > 0 {
+		if err = dao.Transaction(actions); err != nil {
+			err = fmt.Errorf("save task:%s form data fail,%s ", task.Id, err.Error())
+		}
 	}
 	return
 }
@@ -703,7 +603,7 @@ func UpdateTaskHandle(param models.TaskHandleUpdateParam, operator, userToken, l
 		return
 	}
 	if task.Status == string(models.TaskStatusDone) {
-		err = fmt.Errorf("Task already done with %s %s ", task.UpdatedBy, task.UpdatedTime)
+		err = fmt.Errorf("task already done with %s %s ", task.UpdatedBy, task.UpdatedTime)
 		return
 	}
 	dao.X.SQL("select * from task_handle where id = ?", param.TaskHandleId).Find(&taskHandleList)
@@ -747,7 +647,7 @@ func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (tas
 		return
 	}
 	if taskObj.Status == "done" {
-		return taskObj, fmt.Errorf("Task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
+		return taskObj, fmt.Errorf("task aleary done with %s %s ", taskObj.UpdatedBy, taskObj.UpdatedTime)
 	}
 	var actions []*dao.ExecAction
 	nowTime := time.Now().Format(models.DateTimeFormat)
@@ -755,18 +655,18 @@ func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (tas
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	} else if operation == "start" {
 		if operator != taskObj.Handler {
-			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
+			return taskObj, fmt.Errorf("task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"doing", operator, nowTime, taskId}})
 	} else if operation == "quit" {
 		if operator != taskObj.Handler {
-			return taskObj, fmt.Errorf("Task handler is %s ", taskObj.Handler)
+			return taskObj, fmt.Errorf("task handler is %s ", taskObj.Handler)
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, nowTime, taskId}})
 	} else if operation == "give" {
 		// 转给我
 		if taskObj.Status == "done" {
-			return taskObj, fmt.Errorf("Task status:%s is not marked ", taskObj.Status)
+			return taskObj, fmt.Errorf("task status:%s is not marked ", taskObj.Status)
 		}
 		actions = append(actions, &dao.ExecAction{Sql: "update task set status=?,handler=?,updated_by=?,updated_time=? where id=?", Param: []interface{}{"marked", operator, operator, nowTime, taskId}})
 	}
@@ -789,20 +689,6 @@ func ChangeTaskStatus(taskId, operator, operation, lastedUpdateTime string) (tas
 	return taskObj, nil
 }
 
-func buildTaskOperation(taskObj *models.TaskListObj, operator string) {
-	if taskObj.Status == "created" {
-		taskObj.OperationOptions = []string{"mark"}
-	} else if taskObj.Status == "marked" || taskObj.Status == "doing" {
-		if taskObj.Handler == operator {
-			taskObj.OperationOptions = []string{"start"}
-		} else {
-			taskObj.OperationOptions = []string{"mark"}
-		}
-	} else {
-		taskObj.OperationOptions = []string{}
-	}
-}
-
 func GetSimpleTask(taskId string) (task models.TaskTable, err error) {
 	var taskTable []*models.TaskTable
 	err = dao.X.SQL("select * from task where id=?", taskId).Find(&taskTable)
@@ -810,7 +696,7 @@ func GetSimpleTask(taskId string) (task models.TaskTable, err error) {
 		return
 	}
 	if len(taskTable) == 0 {
-		return task, fmt.Errorf("Can not find any task with id:%s ", taskId)
+		return task, fmt.Errorf("can not find any task with id:%s ", taskId)
 	}
 	task = *taskTable[0]
 	return

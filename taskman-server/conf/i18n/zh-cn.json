@@ -142,7 +142,7 @@
   },
   "template_approve_complete_error": {
     "code": 20100027,
-    "message": "当前审批已完成,请刷新列表重试"
+    "message": "提交失败:当前审批已被其他用户提交,请刷新重试"
   },
   "request_handle_error": {
     "code": 20100028,

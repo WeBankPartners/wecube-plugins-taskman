@@ -142,7 +142,7 @@
   },
   "template_approve_complete_error": {
     "code": 20100027,
-    "message": "The current approval has been completed, please refresh the list and try again."
+    "message": "Submission failed: The current approval has been submitted by another user, please refresh and try again."
   },
   "request_handle_error": {
     "code": 20100028,

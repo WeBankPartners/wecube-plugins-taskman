@@ -1518,14 +1518,14 @@ func (s *RequestTemplateService) RequestTemplateImport(input models.RequestTempl
 
 		nodeList, _ := GetProcDefService().GetProcessDefineTaskNodes(models.ConvertRequestTemplateDto2Model(input.RequestTemplate), userToken, language, "template")
 		for i, v := range input.TaskTemplate {
-			if v.NodeId == "" {
+			if v.NodeDefId == "" {
 				continue
 			}
 			existFlag := false
 			for _, node := range nodeList {
-				if v.NodeId == node.NodeId {
+				if v.NodeDefId == node.NodeDefId {
 					existFlag = true
-					input.TaskTemplate[i].NodeDefId = node.NodeDefId
+					input.TaskTemplate[i].NodeId = node.NodeId
 					break
 				}
 			}

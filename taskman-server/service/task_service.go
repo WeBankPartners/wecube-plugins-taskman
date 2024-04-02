@@ -134,8 +134,7 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		input.TaskFormInput, callRequestId, task.NextOption, task.ExpireTime, task.Handler, operator, nowTime, operator,
 		nowTime, task.TemplateType, models.TaskTypeImplement, taskSort, requestTable[0].CreatedTime}
 	actions = append(actions, &taskInsertAction)
-	// 新增form,form和formItem时间往后加1s,不然任务审批人审批修改表单有bug
-	formNewTime := time.Now().Add(time.Second)
+
 	var formTemplateRows []*models.FormTemplateTable
 	err = dao.X.SQL("select * from form_template where task_template=? and item_group_type='workflow'", task.TaskTemplate).Find(&formTemplateRows)
 	if err != nil {
@@ -157,11 +156,11 @@ func PluginTaskCreateNew(input *models.PluginTaskCreateRequestObj, callRequestId
 		}
 		newFormId := "form_" + guid.CreateGuid()
 		actions = append(actions, &dao.ExecAction{Sql: "insert into form(id,request,task,form_template,data_id,created_by,updated_by,created_time,updated_time) values (?,?,?,?,?,?,?,?,?)", Param: []interface{}{
-			newFormId, task.Request, task.Id, tmpFormTemplateId, formDataEntity.Oid, operator, operator, formNewTime, formNewTime,
+			newFormId, task.Request, task.Id, tmpFormTemplateId, formDataEntity.Oid, operator, operator, nowTime, nowTime,
 		}})
 		for _, formDataItem := range formDataEntity.FormItemValues {
 			actions = append(actions, &dao.ExecAction{Sql: "insert into form_item(id,form,form_item_template,name,value,request,updated_time) values (?,?,?,?,?,?,?)", Param: []interface{}{
-				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, task.Request, formNewTime,
+				"item_" + guid.CreateGuid(), newFormId, formDataItem.FormItemMetaId, formDataItem.AttrName, formDataItem.AttrValue, task.Request, nowTime,
 			}})
 		}
 	}

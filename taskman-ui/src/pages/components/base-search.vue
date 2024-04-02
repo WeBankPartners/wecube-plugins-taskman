@@ -223,14 +223,16 @@ export default {
 .taskman-base-search {
   display: flex;
   &-form {
-    width: calc(100% - 145px);
+    width: calc(100% - 146px);
     transition: all 0.2s;
     overflow: hidden;
+    padding-right: 10px;
   }
   &-button {
     display: flex;
     align-items: center;
-    width: 126px;
+    justify-content: flex-end;
+    width: 146px;
     height: 30px;
     box-sizing: content-box;
     button {

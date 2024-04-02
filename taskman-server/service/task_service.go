@@ -676,6 +676,10 @@ func getRequestPoolLatestItem(poolForms []*models.RequestPoolForm, dataId, name 
 					} else {
 						if item.UpdatedTime.UnixMilli() > poolItem.UpdatedTime.UnixMilli() {
 							poolItem = item
+						} else if item.UpdatedTime.UnixMilli() == poolItem.UpdatedTime.UnixMilli() {
+							if item.FormItemId > poolItem.FormItemId {
+								poolItem = item
+							}
 						}
 					}
 				}

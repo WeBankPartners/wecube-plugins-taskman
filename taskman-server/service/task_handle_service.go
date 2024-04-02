@@ -44,12 +44,12 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 						if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeSystem) {
 							if handleTemplate.Role != "" {
 								//将 roleName =>roleId
-								roleTableList, err := GetRoleService().QueryRoleList(userToken, language)
+								roleMap, err := GetRoleService().GetRoleMap(userToken, language)
 								if err != nil {
 									log.Logger.Error("QueryRoleList fail", log.Error(err))
 								}
-								if len(roleTableList) > 0 {
-									userList, err := rpc.QueryRolesUsers(roleTableList[0].CoreId, userToken, language)
+								if len(roleMap) > 0 && roleMap[handleTemplate.Role] != nil {
+									userList, err := rpc.QueryRolesUsers(roleMap[handleTemplate.Role].CoreId, userToken, language)
 									if err != nil {
 										log.Logger.Error("rpcQueryRolesUsers fail", log.Error(err))
 									}
@@ -58,6 +58,8 @@ func (s *TaskHandleService) CreateTaskHandleByTemplate(taskId, userToken, langua
 										handleTemplate.Handler = userList[rand.Intn(len(userList))].UserName
 									}
 									go NotifyTaskAssignMail(request.Name, taskTemplate.Name, calcExpireTime(now, taskTemplate.ExpireDay), handleTemplate.Handler, userToken, language)
+								} else {
+									log.Logger.Error("not find taskHandle role", log.String("handleTemplateId", handleTemplate.Id), log.String("role", handleTemplate.Role), log.JsonObj("roleMap", roleMap))
 								}
 							}
 						} else if handleTemplate.HandlerType == string(models.TaskHandleTemplateHandlerTypeClaim) {

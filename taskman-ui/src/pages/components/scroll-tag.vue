@@ -1,5 +1,5 @@
 <template>
-  <div class="taskman-scroll-column">
+  <div class="taskman-scroll-column" @mouseenter="handleMouseEnter($event)" @mouseleave="handleMouseLeave($event)">
     <div v-for="(i, index) in list" :key="index" class="tag">
       {{ i }}
     </div>
@@ -13,6 +13,14 @@ export default {
       type: Array,
       default: () => []
     }
+  },
+  methods: {
+    handleMouseEnter (e) {
+      e.target.style.overflowY = 'scroll'
+    },
+    handleMouseLeave (e) {
+      e.target.style.overflowY = 'hidden'
+    }
   }
 }
 </script>
@@ -20,7 +28,6 @@ export default {
 <style lang="scss" scoped>
 .taskman-scroll-column {
   max-height: 72px;
-  overflow-y: scroll;
   padding-right: 3px;
   padding: 6px 0;
   .tag {

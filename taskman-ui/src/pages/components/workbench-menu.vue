@@ -159,6 +159,9 @@ export default {
   .ivu-menu-dark.ivu-menu-vertical .ivu-menu-submenu-title {
     background: #10192b;
     padding: 10px;
+    i {
+      margin-right: 0px;
+    }
   }
   .ivu-menu-item {
     padding-left: 32px !important;

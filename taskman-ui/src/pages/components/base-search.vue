@@ -1,6 +1,6 @@
 <template>
   <div class="taskman-base-search">
-    <div class="form" :style="{ maxHeight: expand ? '200px' : '45px' }">
+    <div class="taskman-base-search-form" :style="{ maxHeight: expand ? '200px' : '45px' }">
       <Form :inline="true" :model="value" label-position="right">
         <template v-for="(i, index) in options">
           <FormItem v-if="!i.hidden" :prop="i.key" :key="index">
@@ -96,7 +96,7 @@
         </template>
       </Form>
     </div>
-    <div class="button-group">
+    <div class="taskman-base-search-button">
       <Icon
         v-show="!expand"
         @click="handleExpand"
@@ -222,6 +222,24 @@ export default {
 <style lang="scss">
 .taskman-base-search {
   display: flex;
+  &-form {
+    width: calc(100% - 145px);
+    transition: all 0.2s;
+    overflow: hidden;
+  }
+  &-button {
+    display: flex;
+    align-items: center;
+    width: 126px;
+    height: 30px;
+    box-sizing: content-box;
+    button {
+      width: auto;
+      height: 28px;
+      line-height: 28px;
+      font-size: 13px;
+    }
+  }
   .ivu-form-item {
     margin-bottom: 15px !important;
     display: inline-block !important;
@@ -241,26 +259,6 @@ export default {
   }
   .ivu-select-multiple .ivu-tag {
     max-width: 90px;
-  }
-  .form {
-    flex: 1;
-    transition: all 0.2s;
-    overflow: hidden;
-  }
-  .button-group {
-    display: flex;
-    align-items: center;
-    width: 126px;
-    height: 30px;
-    // border-left: 1px solid #0000000f;
-    // padding-left: 20px;
-    box-sizing: content-box;
-    button {
-      width: auto;
-      height: 28px;
-      line-height: 28px;
-      font-size: 13px;
-    }
   }
 }
 </style>

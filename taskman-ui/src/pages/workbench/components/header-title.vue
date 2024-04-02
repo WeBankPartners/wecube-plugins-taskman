@@ -4,9 +4,7 @@
       <Icon v-if="expand" size="26" type="md-arrow-dropdown" @click="handleExpand" style="cursor:pointer" />
       <Icon v-else size="26" type="md-arrow-dropright" @click="handleExpand" style="cursor:pointer" />
       <div class="title">{{ title }}<span class="underline"></span></div>
-      <span class="sub-title">
-        <slot name="sub-title"></slot>
-      </span>
+      <slot name="sub-title"></slot>
     </div>
     <div v-show="expand" class="content">
       <slot></slot>
@@ -60,9 +58,6 @@ export default {
         background-color: #c6eafe;
         box-sizing: content-box;
       }
-    }
-    .sub-title {
-      font-size: 15px;
     }
   }
   .content {

@@ -74,7 +74,7 @@ export default new Router({
               path: '/taskman/workbench/publishHistory',
               name: '/taskman/workbench/publishHistory',
               component: () => import('@/pages/workbench/publish/list'),
-              meta: { en: 'Publish History', zh: '发布历史' }
+              meta: { en: 'History(Group)', zh: '历史(本组)' }
             },
             {
               path: '/taskman/workbench/createRequest',
@@ -92,7 +92,7 @@ export default new Router({
               path: '/taskman/workbench/requestHistory',
               name: '/taskman/workbench/requestHistory',
               component: () => import('@/pages/workbench/request/list'),
-              meta: { en: 'Request History', zh: '请求历史' }
+              meta: { en: 'History(Group)', zh: '历史(本组)' }
             },
             {
               path: '/taskman/workbench/createProblem',
@@ -110,7 +110,7 @@ export default new Router({
               path: '/taskman/workbench/problemHistory',
               name: '/taskman/workbench/problemHistory',
               component: () => import('@/pages/workbench/problem/list'),
-              meta: { en: 'Problem History', zh: '问题历史' }
+              meta: { en: 'History(Group)', zh: '历史(本组)' }
             },
             {
               path: '/taskman/workbench/createEvent',
@@ -128,7 +128,7 @@ export default new Router({
               path: '/taskman/workbench/eventHistory',
               name: '/taskman/workbench/eventHistory',
               component: () => import('@/pages/workbench/event/list'),
-              meta: { en: 'Event History', zh: '事件历史' }
+              meta: { en: 'History(Group)', zh: '历史(本组)' }
             },
             {
               path: '/taskman/workbench/createChange',
@@ -146,7 +146,7 @@ export default new Router({
               path: '/taskman/workbench/changeHistory',
               name: '/taskman/workbench/changeHistory',
               component: () => import('@/pages/workbench/change/list'),
-              meta: { en: 'Change History', zh: '变更历史' }
+              meta: { en: 'History(Group)', zh: '历史(本组)' }
             }
           ]
         }

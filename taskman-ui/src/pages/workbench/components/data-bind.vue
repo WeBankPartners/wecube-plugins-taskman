@@ -6,10 +6,11 @@
           <template v-if="node.classification && node.classification.length > 0">
             <CheckboxGroup v-model="node.bindData">
               <div v-for="(entity, entityIndex) in node.classification" :key="entityIndex">
-                <!-- <Divider orientation="left" :key="entityIndex">{{ entity }}</Divider> -->
-                <div class="radio-button">
-                  {{ `${entity}` }}<span class="count">{{ filterBindDataCount(node, entity) }}</span>
-                </div>
+                <Divider orientation="left" :key="entityIndex">
+                  <div class="radio-button">
+                    {{ `${entity}` }}<span class="count">{{ filterBindDataCount(node, entity) }}</span>
+                  </div>
+                </Divider>
                 <Row class="box-wrap">
                   <div v-for="item in filterBindData(node)" :key="item.id + entityIndex">
                     <div v-if="`${item.packageName}:${item.entityName}` === entity" class="tabs-item">
@@ -457,7 +458,6 @@ export default {
 <style scoped lang="scss">
 .radio-button {
   padding: 5px 15px;
-  margin-bottom: 10px;
   width: fit-content;
   border-radius: 32px;
   font-size: 14px;
@@ -469,7 +469,7 @@ export default {
   }
 }
 .box-wrap {
-  margin: 10px 0 30px 0;
+  padding-left: 5px;
   display: flex;
   flex-wrap: wrap;
   .tabs-item {
@@ -510,6 +510,9 @@ export default {
   }
   .ivu-tooltip {
     width: 100% !important;
+  }
+  .ivu-divider-horizontal {
+    margin: 15px 0 5px 0;
   }
 }
 </style>

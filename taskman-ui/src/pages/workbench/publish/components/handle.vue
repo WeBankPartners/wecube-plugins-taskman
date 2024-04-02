@@ -495,7 +495,7 @@ export default {
     }
   }
   .sub-title {
-    width: calc(100% - 150px);
+    width: calc(100% - 200px);
     font-size: 14px;
     margin-left: 5px;
     display: flex;
@@ -503,7 +503,7 @@ export default {
     .description {
       margin-left: 10px;
       color: #808695;
-      max-width: calc(100% - 300px);
+      max-width: calc(100% - 320px);
       display: inline-block;
       white-space: nowrap;
       overflow: hidden;

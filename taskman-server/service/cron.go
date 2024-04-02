@@ -29,11 +29,11 @@ func notifyAction() {
 	var taskTable []*models.TaskTable
 	var actions []*dao.ExecAction
 	var taskNotifyList []*models.TaskNotifyTable
-	var yesterday time.Time
 	var doingNotifyCount, timeoutNotifyCount int
 	now := time.Now().Format(models.DateTimeFormat)
-	yesterday = time.Now().AddDate(0, 0, -1)
-	err := dao.X.SQL("select id,name,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", yesterday.Format(models.DateTimeFormat), now).Find(&taskTable)
+	// 由于任务过期时间最长7天,定时任务扫描配置范围设置成8天内
+	var beforeEightDay = time.Now().AddDate(0, 0, -8)
+	err := dao.X.SQL("select id,name,created_time,expire_time,notify_count,type,request from task where status<>'done' and created_time >= ? and created_time <= ?", beforeEightDay.Format(models.DateTimeFormat), now).Find(&taskTable)
 	if err != nil {
 		log.Logger.Error("notify action fail,query task error", log.Error(err))
 		return

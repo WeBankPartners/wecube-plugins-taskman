@@ -719,8 +719,8 @@ func (s *TaskTemplateService) GetCheckRoleAndHandler(requestTemplateId string) (
 		// 没有找到定版模版,说明不需要定版,直接返回空
 		return
 	}
-	// 定版没配置处理人,查找模版属主
-	if handler == "" {
+	// 定版没配置定版角色,查找模版属主
+	if role == "" {
 		requestTemplate, _ = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
 		if requestTemplate != nil {
 			handler = requestTemplate.Handler

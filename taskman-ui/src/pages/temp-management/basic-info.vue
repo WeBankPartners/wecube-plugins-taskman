@@ -36,7 +36,7 @@
                       style="width: 96%;"
                       filterable
                       @on-change="paramsChanged"
-                      @on-open-change="getGroupOptions"
+                      @on-open-change="getGroupOptions(false)"
                     >
                       <Option v-for="item in groupOptions" :value="item.id" :key="item.id">{{ item.name }}</Option>
                     </Select>
@@ -369,7 +369,7 @@ export default {
       this.getProcess()
       await this.getManagementRoles(true)
       this.getTemplateData()
-      this.getGroupOptions()
+      this.getGroupOptions(true)
       this.getUserRoles(true)
     },
     // 控制保存按钮
@@ -466,7 +466,7 @@ export default {
       this.createTemp(true)
     },
     // 获取模版组信息
-    async getGroupOptions () {
+    async getGroupOptions (type) {
       const params = {
         filters: [],
         paging: false
@@ -474,7 +474,7 @@ export default {
       const { statusCode, data } = await getTempGroupList(params)
       if (statusCode === 'OK') {
         this.groupOptions = data.contents
-        if (this.basicInfo.id === '' && this.groupOptions.length > 0) {
+        if (type && this.basicInfo.id === '' && this.groupOptions.length > 0) {
           this.basicInfo.group = this.groupOptions[0].id
         }
       }

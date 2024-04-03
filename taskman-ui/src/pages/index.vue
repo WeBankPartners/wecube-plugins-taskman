@@ -53,9 +53,10 @@ export default {
     }
   },
   created () {
-    this.$bus.$on('expand-menu', val => {
-      this.expandSideMenu = val
-    })
+    this.$bus &&
+      this.$bus.$on('expand-menu', val => {
+        this.expandSideMenu = val
+      })
   },
   methods: {
     setBreadcrumb () {

@@ -18,14 +18,16 @@
         <Col :span="2" class="line">{{ getHandleStatus(i) }}</Col>
         <Col :span="3" class="line">{{ i.updatedTime || '-' }}</Col>
         <Col :span="3" class="line">{{ getDiffTime(i) || '-' }}</Col>
-        <Col :span="5" class="line"
-          ><div class="text-overflow">{{ i.resultDesc || '-' }}</div></Col
-        >
+        <Col :span="5" class="line">
+          <Tooltip max-width="300" :content="i.resultDesc">
+            <span class="text-overflow">{{ i.resultDesc || '-' }}</span>
+          </Tooltip>
+        </Col>
         <Col :span="4" class="line">
           <div v-for="file in i.attachFiles" style="display:inline-block;" :key="file.id">
-            <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
-              file.name
-            }}</Tag>
+            <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">
+              {{ file.name }}
+            </Tag>
           </div>
         </Col>
       </Row>
@@ -37,14 +39,16 @@
       <Col :span="2" class="line">{{ '-' }}</Col>
       <Col :span="3" class="line">{{ data.updatedTime || '-' }}</Col>
       <Col :span="3" class="line">{{ getDiffTime(data) || '-' }}</Col>
-      <Col :span="5" class="line"
-        ><div class="text-overflow">{{ data.comment }}</div></Col
-      >
+      <Col :span="5" class="line">
+        <Tooltip max-width="300" :content="data.comment">
+          <span style="text-overflow">{{ data.comment }}</span>
+        </Tooltip>
+      </Col>
       <Col :span="4" class="line">
         <div v-for="file in data.attachFiles" style="display:inline-block;" :key="file.id">
-          <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">{{
-            file.name
-          }}</Tag>
+          <Tag type="border" :closable="false" checkable @on-change="downloadFile(file)" color="primary">
+            {{ file.name }}
+          </Tag>
         </div>
       </Col>
     </Row>
@@ -199,12 +203,17 @@ export default {
     min-height: 50px;
     .text-overflow {
       overflow: hidden;
-      white-space: nowrap;
       text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
     }
   }
   .line {
     line-height: 32px;
+  }
+  .ivu-tooltip {
+    display: flex;
   }
 }
 </style>

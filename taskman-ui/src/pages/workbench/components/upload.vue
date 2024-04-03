@@ -24,7 +24,7 @@
         @on-close="removeFile(file)"
         @on-change="downloadFile(file)"
         color="primary"
-        style="margin-right:15px;"
+        style="margin-right:15px;cursor:pointer;"
         >{{ file.name }}</Tag
       >
     </div>

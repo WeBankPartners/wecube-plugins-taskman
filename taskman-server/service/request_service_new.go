@@ -1958,7 +1958,7 @@ func (s *RequestService) CreateProcessTask(request models.RequestTable, task *mo
 	var workflowActions []*dao.ExecAction
 	var requestTemplate *models.RequestTemplateTable
 	actions = []*dao.ExecAction{}
-	if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplateName); err != nil {
+	if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(request.RequestTemplate); err != nil {
 		return
 	}
 	if requestTemplate == nil {

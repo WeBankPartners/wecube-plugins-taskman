@@ -49,6 +49,7 @@
 <script>
 import CryptoJS from 'crypto-js'
 import { login, getApplyRoles, registerUser, getEncryptKey } from '@/api/server'
+import { setCookie } from '@/pages/util/cookie'
 export default {
   data () {
     return {
@@ -98,12 +99,9 @@ export default {
       }
       const { statusCode, data } = await login(payload)
       if (statusCode === 'OK') {
+        let localStorage = window.localStorage
         localStorage.setItem('username', this.username)
-        const accessTokenObj = data.tokens.find(d => d.tokenType === 'accessToken')
-        const refreshTokenObj = data.tokens.find(d => d.tokenType === 'refreshToken')
-        localStorage.setItem('taskman-accessToken', accessTokenObj.token)
-        localStorage.setItem('taskman-refreshToken', refreshTokenObj.token)
-        localStorage.setItem('taskman-expiration', refreshTokenObj.expiration)
+        setCookie(data.tokens)
         const needRegister = data.needRegister || false
         if (needRegister) {
           this.showRoleApply = true

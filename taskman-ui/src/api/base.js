@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 // import exportFile from '@/const/export-file'
-// import { getCookie } from '../pages/util/cookie'
+import { setCookie, getCookie, clearCookie } from '../pages/util/cookie'
 
 export const baseURL = ''
 export const req = axios.create({
@@ -27,7 +27,7 @@ req.interceptors.request.use(
       } else {
         config.headers['Accept-Language'] = 'en-US,en;q=0.9,zh;q=0.8'
       }
-      const accessToken = localStorage.getItem('taskman-accessToken')
+      const accessToken = getCookie('accessToken')
       if (accessToken && config.url !== '/auth/v1/api/login') {
         config.headers.Authorization = 'Bearer ' + accessToken
         resolve(config)
@@ -66,7 +66,7 @@ req.interceptors.response.use(
   err => {
     const { response } = err
     if (response.status === 401 && err.config.url !== '/auth/v1/api/login') {
-      let refreshToken = localStorage.getItem('taskman-refreshToken')
+      let refreshToken = getCookie('refreshToken')
       if (refreshToken.length > 0) {
         let refreshRequest = axios.get('/auth/v1/api/token', {
           headers: {
@@ -75,14 +75,9 @@ req.interceptors.response.use(
         })
         return refreshRequest.then(
           resRefresh => {
-            const data = resRefresh.data.data
-            const accessTokenObj = data.find(d => d.tokenType === 'accessToken')
-            const refreshTokenObj = data.find(d => d.tokenType === 'refreshToken')
-            localStorage.setItem('taskman-accessToken', accessTokenObj.token)
-            localStorage.setItem('taskman-refreshToken', refreshTokenObj.token)
-            localStorage.setItem('taskman-expiration', refreshTokenObj.expiration)
+            setCookie(resRefresh.data.data)
             // replace token with new one and replay request
-            err.config.headers.Authorization = 'Bearer ' + localStorage.getItem('taskman-accessToken')
+            err.config.headers.Authorization = 'Bearer ' + getCookie('accessToken')
             let retryRequest = axios(err.config)
             return retryRequest.then(
               res => {
@@ -117,9 +112,7 @@ req.interceptors.response.use(
           },
           // eslint-disable-next-line handle-callback-err
           errRefresh => {
-            localStorage.removeItem('taskman-accessToken')
-            localStorage.removeItem('taskman-refreshToken')
-            localStorage.removeItem('taskman-expiration')
+            clearCookie('refreshToken')
             window.location.href = window.location.origin + window.location.pathname + '#/login'
             return {
               data: {} // throwError(errRefresh.response)

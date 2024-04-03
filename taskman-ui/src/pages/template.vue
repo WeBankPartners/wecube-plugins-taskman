@@ -115,7 +115,7 @@
 
 <script>
 import axios from 'axios'
-import { getAccessToken } from '@/pages/util/token'
+import { getCookie } from '@/pages/util/cookie'
 import {
   getTemplateList,
   deleteTemplate,
@@ -505,7 +505,7 @@ export default {
   },
   mounted () {
     this.status = this.$route.query.status || 'confirm'
-    const accessToken = getAccessToken()
+    const accessToken = getCookie('accessToken')
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }

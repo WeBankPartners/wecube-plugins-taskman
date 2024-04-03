@@ -57,7 +57,7 @@
 
 <script>
 import axios from 'axios'
-import { getAccessToken } from '@/pages/util/token'
+import { getCookie } from '@/pages/util/cookie'
 import dayjs from 'dayjs'
 export default {
   props: {
@@ -131,7 +131,7 @@ export default {
     }
   },
   mounted () {
-    const accessToken = getAccessToken()
+    const accessToken = getCookie('accessToken')
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }

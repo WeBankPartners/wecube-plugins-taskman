@@ -81,6 +81,7 @@
 import { getProcessableList } from '@/api/server.js'
 import UserMgmt from './user-mgmt.vue'
 import RoleApply from './role-apply.vue'
+import { clearAllCookie } from '@/pages/util/cookie'
 import Vue from 'vue'
 export default {
   data () {
@@ -155,10 +156,8 @@ export default {
     },
     logout () {
       clearInterval(this.timer)
-      localStorage.removeItem('username')
-      localStorage.removeItem('taskman-accessToken')
-      localStorage.removeItem('taskman-refreshToken')
-      localStorage.removeItem('taskman-expiration')
+      localStorage.clear()
+      clearAllCookie()
       window.location.href = window.location.origin + window.location.pathname + '#/login'
     },
     changeLanguage (lan) {

@@ -146,7 +146,7 @@
 <script>
 import { getTaskDetail, saveTaskData, commitTaskData, deleteAttach } from '@/api/server.js'
 import TaskData from './task-data'
-import { getAccessToken } from '@/pages/util/token'
+import { getCookie } from '@/pages/util/cookie'
 import axios from 'axios'
 export default {
   name: '',
@@ -169,7 +169,7 @@ export default {
     this.taskId = this.$route.query.taskId
     this.enforceDisable = this.$route.query.enforceDisable === 'Y'
     this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${this.taskId}`
-    const accessToken = getAccessToken()
+    const accessToken = getCookie('accessToken')
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }

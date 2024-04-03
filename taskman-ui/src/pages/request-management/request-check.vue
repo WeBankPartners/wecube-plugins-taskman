@@ -107,7 +107,7 @@
 
 <script>
 import { getRequestDetail } from '@/api/server.js'
-import { getAccessToken } from '@/pages/util/token'
+import { getCookie } from '@/pages/util/cookie'
 import axios from 'axios'
 import RequestCheckData from './request-check-data'
 export default {
@@ -128,7 +128,7 @@ export default {
     this.requestId = this.$route.query.requestId
     this.jumpFrom = this.$route.query.jumpFrom
     this.uploadUrl = `/taskman/api/v1/task/attach-file/upload/${this.taskId}`
-    const accessToken = getAccessToken()
+    const accessToken = getCookie('accessToken')
     this.headers = {
       Authorization: 'Bearer ' + accessToken
     }

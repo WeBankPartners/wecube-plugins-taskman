@@ -9,6 +9,7 @@ import locale from 'view-design/dist/locale/en-US'
 import './locale/i18n'
 import { ValidationProvider } from 'vee-validate'
 import './vee-validate-local-config'
+import { getCookie } from '@/pages/util/cookie'
 Vue.component('ValidationProvider', ValidationProvider)
 
 Vue.config.productionTip = false
@@ -21,8 +22,8 @@ Vue.use(ViewUI, {
 })
 
 router.beforeEach((to, from, next) => {
-  const ls = localStorage.getItem('taskman-accessToken')
-  if (ls !== null || to.path === '/login') {
+  const ls = getCookie('accessToken')
+  if (ls || to.path === '/login') {
     next()
   } else {
     next('/login')

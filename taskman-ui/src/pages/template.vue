@@ -2,7 +2,7 @@
   <div>
     <div>
       <Row>
-        <Tabs v-model="status" @on-click="getTemplateList()">
+        <Tabs v-model="status" @on-click="onSearch">
           <!--已发布-->
           <TabPane :label="$t('status_confirm')" name="confirm"></TabPane>
           <!--草稿-->
@@ -11,6 +11,8 @@
           <TabPane :label="pendingLabel" name="pending"></TabPane>
           <!--已禁用-->
           <TabPane :label="$t('tw_template_status_disable')" name="disable"></TabPane>
+          <!--已作废-->
+          <TabPane :label="$t('tw_template_status_cancel')" name="cancel"></TabPane>
         </Tabs>
       </Row>
       <Row>
@@ -293,7 +295,7 @@ export default {
           title: this.$t('t_action'),
           key: 'action',
           fixed: 'right',
-          width: 205,
+          width: 325,
           align: 'center',
           render: (h, params) => {
             return (
@@ -334,7 +336,7 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
-                {/* 查看 */ ['pending', 'confirm', 'disable'].includes(this.status) && (
+                {/* 查看 */ ['pending', 'confirm', 'disable', 'cancel'].includes(this.status) && (
                   <Tooltip content={this.$t('detail')} placement="top">
                     <Button
                       size="small"
@@ -418,6 +420,18 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
+                {/* 作废 */ this.status === 'confirm' && (
+                  <Tooltip content={this.$t('void')} placement="top">
+                    <Button
+                      size="small"
+                      type="warning"
+                      style="margin-right:5px;"
+                      onClick={() => this.cancelTemplate(params.row)}
+                    >
+                      <Icon type="md-cut" size="16"></Icon>
+                    </Button>
+                  </Tooltip>
+                )}
                 {/* 启用 */ this.status === 'disable' && (
                   <Tooltip content={this.$t('enable')} placement="top">
                     <Button
@@ -474,10 +488,26 @@ export default {
       ]
     }
   },
+  computed: {
+    actionWidth () {
+      if (this.status === 'confirm') {
+        return 235
+      } else if (this.status === 'pending') {
+        return 140
+      } else {
+        return 120
+      }
+    }
+  },
   watch: {
     // 给草稿页签动态插入退回原因
     status: {
       handler (val) {
+        this.tableColumns.forEach(item => {
+          if (item.key === 'action') {
+            item.width = this.actionWidth
+          }
+        })
         if (val === 'created') {
           const index = this.tableColumns.findIndex(i => i.key === 'mgmtRoles')
           this.tableColumns.splice(index, 0, {
@@ -623,6 +653,32 @@ export default {
         onCancel: () => {}
       })
     },
+    // 作废
+    async cancelTemplate (row) {
+      this.$Modal.confirm({
+        title: this.$t('tw_confirmCancel'),
+        'z-index': 1000000,
+        loading: true,
+        onOk: async () => {
+          this.$Modal.remove()
+          const params = {
+            requestTemplateId: row.id,
+            status: 'confirm',
+            targetStatus: 'cancel'
+          }
+          const { statusCode } = await updateTemplateStatus(params)
+          if (statusCode === 'OK') {
+            this.$Notice.success({
+              title: 'Successful',
+              desc: 'Successful'
+            })
+            this.status = 'cancel'
+            this.getTemplateList()
+          }
+        },
+        onCancel: () => {}
+      })
+    },
     handleUpload (file) {
       if (!file.name.endsWith('.json')) {
         this.$Notice.warning({
@@ -733,6 +789,7 @@ export default {
         desc: this.$t('successful')
       })
     },
+    // 变更
     forkTemplate (row) {
       this.$Modal.confirm({
         title: this.$t('confirm_change'),

@@ -215,6 +215,12 @@ export default {
           this.activeTab = this.requestData[0].entity || this.requestData[0].itemGroup
           this.activeItem = this.requestData[0]
           this.initTableData()
+        } else {
+          this.requestData = []
+          this.activeTab = ''
+          this.activeItem = {}
+          this.formOptions = []
+          this.tableData = []
         }
       },
       deep: true,

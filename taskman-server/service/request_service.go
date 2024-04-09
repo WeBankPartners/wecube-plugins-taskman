@@ -395,8 +395,8 @@ func SaveRequestCacheV2(requestId, operator, userToken string, param *models.Req
 	if buildActionErr != nil {
 		return fmt.Errorf("build update request form data action fail,%s ", buildActionErr.Error())
 	}
-	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?" +
-		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, requestId}})
+	actions = append(actions, &dao.ExecAction{Sql: "update request set cache=?,updated_by=?,updated_time=?,name=?,description=?,expect_time=?,operator_obj=?,custom_form_cache=?,task_approval_cache=?,ref_id=?" +
+		" where id=?", Param: []interface{}{string(paramBytes), operator, nowTime, param.Name, param.Description, param.ExpectTime, param.EntityName, string(customFormCache), taskApprovalCache, param.RefId, requestId}})
 	return dao.Transaction(actions)
 }
 

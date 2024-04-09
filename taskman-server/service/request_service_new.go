@@ -1494,6 +1494,7 @@ func getRequestForm(request *models.RequestTable, taskId, userToken, language st
 		form.OperatorObj = cacheObj.EntityName
 	}
 	form.RevokeBtn = calcShowRequestRevokeButton(request.Id, request.Status)
+	form.RefId = request.RefId
 	return
 }
 

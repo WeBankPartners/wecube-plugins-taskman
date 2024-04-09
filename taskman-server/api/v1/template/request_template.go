@@ -15,6 +15,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var requestTemplateStatusMap = map[models.RequestTemplateStatus]bool{
+	models.RequestTemplateStatusCreated:  true,
+	models.RequestTemplateStatusDisabled: true,
+	models.RequestTemplateStatusPending:  true,
+	models.RequestTemplateStatusConfirm:  true,
+	models.RequestTemplateStatusCancel:   true,
+}
+
 func QueryRequestTemplate(c *gin.Context) {
 	var param models.QueryRequestParam
 	if err := c.ShouldBindJSON(&param); err != nil {
@@ -129,8 +137,7 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("param status invalid"))
 		return
 	}
-	if param.TargetStatus != string(models.RequestTemplateStatusCreated) && param.TargetStatus != string(models.RequestTemplateStatusDisabled) &&
-		param.TargetStatus != string(models.RequestTemplateStatusPending) && param.TargetStatus != string(models.RequestTemplateStatusConfirm) {
+	if _, ok := requestTemplateStatusMap[models.RequestTemplateStatus(param.TargetStatus)]; !ok {
 		middleware.ReturnParamValidateError(c, fmt.Errorf("param targetStatus invalid"))
 		return
 	}

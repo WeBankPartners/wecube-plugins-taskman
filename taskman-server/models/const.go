@@ -34,7 +34,8 @@ type RequestTemplateStatus string
 
 const (
 	RequestTemplateStatusCreated  RequestTemplateStatus = "created" // 创建
-	RequestTemplateStatusDisabled RequestTemplateStatus = "disable" // 禁用
+	RequestTemplateStatusDisabled RequestTemplateStatus = "disable" // 禁用,所有版本不可用
+	RequestTemplateStatusCancel   RequestTemplateStatus = "cancel"  // 作废,当前版本失效
 	RequestTemplateStatusPending  RequestTemplateStatus = "pending" // 待发布
 	RequestTemplateStatusConfirm  RequestTemplateStatus = "confirm" // 已发布
 )

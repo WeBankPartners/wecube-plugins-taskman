@@ -41,6 +41,7 @@ type RequestTable struct {
 	Notes               string             `json:"notes" xorm:"notes"`                           // 请求确认备注
 	TaskApprovalCache   string             `json:"taskApprovalCache" xorm:"task_approval_cache"` // 任务审批cache
 	CompleteStatus      string             `json:"completeStatus" xorm:"complete_status"`        // 任务完成状态
+	RefId               string             `json:"refId" xorm:"ref_id"`                          // 引用ID
 	ExpireDay           int                `json:"expireDay" xorm:"-"`                           // 模板过期时间
 	TemplateVersion     string             `json:"templateVersion" xorm:"-"`                     // 模板版本
 	CustomForm          CustomForm         `json:"customForm" xorm:"-"`                          // 自定义表单
@@ -277,6 +278,7 @@ type RequestProDataV2Dto struct {
 	Name         string                    `json:"name"`
 	Description  string                    `json:"description"`
 	ExpectTime   string                    `json:"expectTime"` // 期望完成时间
+	RefId        string                    `json:"ref_id"`     // 引用ID
 	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`
@@ -310,6 +312,7 @@ type RequestForm struct {
 	FormData            []*RequestPreDataTableObj `json:"formData"`
 	RootEntityId        string                    `json:"rootEntityId"`
 	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
+	RefId               string                    `json:"refId"`     // 引用ID
 }
 
 type CustomForm struct {

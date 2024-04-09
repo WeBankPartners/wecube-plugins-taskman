@@ -1302,8 +1302,8 @@ func (s *RequestTemplateService) getLatestVersionTemplate(requestTemplateList, a
 			latestTemplate = requestTemplate
 		}
 		resultMap[requestTemplate.Id] = latestTemplate
-		// 如果最新版本是创建状态,需要记录上一个版本模板
-		if (latestTemplate.Status == string(models.RequestTemplateStatusCreated) || latestTemplate.Status == string(models.RequestTemplateStatusPending)) && latestTemplate.RecordId != "" {
+		// 如果最新版本是创建状态或者待发布状态,以及作废状态,需要记录上一个版本模板
+		if (latestTemplate.Status == string(models.RequestTemplateStatusCreated) || latestTemplate.Status == string(models.RequestTemplateStatusPending) || latestTemplate.Status == string(models.RequestTemplateStatusCancel)) && latestTemplate.RecordId != "" {
 			resultMap[latestTemplate.RecordId] = allTemplateMap[latestTemplate.RecordId]
 		}
 	}

@@ -98,6 +98,7 @@ type RequestConfirmParam struct {
 type CommonRequestParam struct {
 	Id                         string               `json:"id"`                          // ID
 	Name                       string               `json:"name"`                        // Name
+	Query                      string               `json:"query"`                       // Id and Name 通用查询
 	TemplateId                 []string             `json:"templateId"`                  // 模版id
 	Status                     []string             `json:"status"`                      // 请求状态 Pending InProgress(Faulted)
 	OperatorObj                string               `json:"operatorObj"`                 // 操作对象
@@ -124,6 +125,7 @@ type CommonRequestParam struct {
 	TaskExpectEndTime          string               `json:"taskExpectTimeEnd" `          // 任务期望结束时间
 	TaskHandleUpdatedStartTime string               `json:"taskHandleUpdatedTimeStart" ` // 处理节点更新开始时间
 	TaskHandleUpdatedEndTime   string               `json:"taskHandleUpdatedTimeEnd" `   // 处理结束时间
+	RequestRefId               string               `json:"requestRefId" `               // 请求RefId
 	StartIndex                 int                  `json:"startIndex"`
 	PageSize                   int                  `json:"pageSize"`
 	Sorting                    *QueryRequestSorting `json:"sorting"` // 排序字段

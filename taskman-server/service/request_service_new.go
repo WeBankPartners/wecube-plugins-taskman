@@ -178,11 +178,11 @@ func GetMyPendingCountByScene(param models.CountPlatformParam, scene int, user s
 func getPlatRequestSQL(where, sql string) string {
 	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,"+
 		"r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.handler,r.created_time,r.updated_time,rt.proc_def_name,rt.proc_def_version,"+
-		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time,rt.expire_day from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
+		"r.expect_time,r.revoke_flag,r.confirm_time as approval_time,rt.expire_day,r.ref_id as request_ref_id from request r join request_template rt on r.request_template = rt.id ) t %s and id in (%s) ", where, sql)
 }
 
 func getPlatTaskSQL(where, sql string) string {
-	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id,t.task_handle_created_time,t.task_handle_updated_time from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
+	return fmt.Sprintf("select * from (select r.id,r.name,r.cache,r.report_time,r.del_flag,rt.id as template_id,rt.name as template_name,rt.parent_id,r.proc_instance_id,r.operator_obj,rt.proc_def_id,r.type as type,rt.proc_def_key,rt.operator_obj_type,r.role,r.status,r.rollback_desc,r.created_by,r.created_time,r.updated_time,rt.proc_def_name,r.expect_time,r.revoke_flag,t.id as task_id,t.name as task_name,t.task_handle_role,t.task_created_time,t.task_approval_time as task_approval_time,t.updated_time as task_updated_time,t.status as task_status,t.expire_time as task_expect_time,t.task_handler as task_handler,t.task_handle_id,t.task_handle_created_time,t.task_handle_updated_time,,r.ref_id as request_ref_id from (%s) t left join request r on t.request=r.id join request_template rt on r.request_template = rt.id) temp %s", sql, where)
 }
 
 func pendingTaskSQL(queryTimeStart, queryTimeEnd string, templateType int, userRolesFilterSql string, userRolesFilterParam []interface{}, taskType models.TaskType) (sql string, queryParam []interface{}) {
@@ -905,6 +905,9 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	if param.Name != "" {
 		where = where + " and ( name like '%" + param.Name + "%') "
 	}
+	if param.Query != "" {
+		where = where + " and ( id like '%" + param.Query + "%' or name like '%" + param.Query + "%') "
+	}
 	if len(param.TemplateId) > 0 {
 		where = where + " and template_id in (" + getSQL(param.TemplateId) + ")"
 	}
@@ -955,6 +958,13 @@ func transCommonRequestToSQL(param models.CommonRequestParam) (where string) {
 	}
 	if param.TaskHandleUpdatedStartTime != "" && param.TaskHandleUpdatedEndTime != "" {
 		where = where + " and task_handle_updated_time >= '" + param.TaskHandleUpdatedStartTime + "' and task_handle_updated_time <= '" + param.TaskHandleUpdatedEndTime + "'"
+	}
+	if param.RequestRefId != "" {
+		if param.RequestRefId == models.WeCubeEmptySearch {
+			where = where + " and ( request_ref_id is null or request_ref_id = '')"
+		} else {
+			where = where + " and ( request_ref_id like '%" + param.RequestRefId + "%') "
+		}
 	}
 	return
 }

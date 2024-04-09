@@ -9,6 +9,7 @@ const (
 	AdminRole            = "SUPER_ADMIN"
 	UploadFileMaxSize    = 10485760
 	DefaultHttpErrorCode = "ERROR"
+	WeCubeEmptySearch    = "WeCube-empty-search" //查询空数据
 )
 
 // RequestStatus 定义请求状态

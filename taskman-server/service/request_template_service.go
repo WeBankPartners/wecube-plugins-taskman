@@ -68,10 +68,16 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 
 func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
+	var specIdList []string
+	var baseSql string
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
 	isQueryMessage := false
 	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
+		return
+	}
+	// 查询最新版本废弃,上一个发布版本模版ID集合
+	if err = dao.X.SQL("select id from request_template where del_flag=2 and status= ? and id in (select record_id from request_template where del_flag=2 and status=? and id not in (select record_id from request_template where del_flag=2 and record_id<>''))", models.RequestTemplateStatusConfirm, models.RequestTemplateStatusCancel).Find(&specIdList); err != nil {
 		return
 	}
 	if len(param.Filters) > 0 {
@@ -121,7 +127,12 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	filterSql, queryColumn, queryParam := dao.TransFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(commonParam.Roles, "")
 	queryParam = append(userRolesFilterParam, queryParam...)
-	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
+	if len(specIdList) == 0 {
+		baseSql = fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
+	} else {
+		specSql := strings.Join(specIdList, ",")
+		baseSql = fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>'')) or (id in ("+specSql+"))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
+	}
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -787,15 +798,18 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	// 新表单项ID和老表单项ID映射
 	var newFormItemTemplateIdMap = make(map[string]string)
 	var requestTemplate *models.RequestTemplateTable
+	// 当前模版版本
+	var curVersion, recordId string
 
-	requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId)
-	if err != nil {
+	if requestTemplate, err = GetRequestTemplateService().GetRequestTemplate(requestTemplateId); err != nil {
 		return
 	}
 	if requestTemplate == nil {
 		err = fmt.Errorf("requestTemplateId invalid")
 		return
 	}
+	recordId = requestTemplate.Id
+	curVersion = requestTemplate.Version
 	existQuery, tmpErr := dao.X.QueryString("select id,name,version,status from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
 	if tmpErr != nil {
 		return fmt.Errorf("query database fail,%s ", tmpErr.Error())
@@ -805,12 +819,29 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 			err = exterror.New().RequestTemplateHasDraftError
 		} else if existQuery[0]["status"] == string(models.RequestTemplateStatusPending) {
 			err = exterror.New().RequestTemplateHasPendingError
+		} else if existQuery[0]["status"] == string(models.RequestTemplateStatusCancel) {
+			curVersion = existQuery[0]["version"]
 		}
-		return err
+		if err != nil {
+			return err
+		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
-	version := common.BuildVersionNum(requestTemplate.Version)
+	version := common.BuildVersionNum(curVersion)
 	newRequestTemplateId := guid.CreateGuid()
+	// 已废版本变更,新的版本指向上一个已发布版本
+	if requestTemplate.Status == string(models.RequestTemplateStatusCancel) {
+		recordId = ""
+		if requestTemplate.RecordId != "" {
+			var requestTemplateTemp *models.RequestTemplateTable
+			if requestTemplateTemp, err = GetRequestTemplateService().GetRequestTemplate(requestTemplate.RecordId); err != nil {
+				return
+			}
+			if requestTemplateTemp != nil && requestTemplateTemp.Status == string(models.RequestTemplateStatusConfirm) {
+				recordId = requestTemplateTemp.Id
+			}
+		}
+	}
 	if requestTemplate.ParentId == "" {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
@@ -818,7 +849,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 			"tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,'%s' as created_by,'%s' as created_time,"+
 			"'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,'' as confirm_time,expire_day,handler, "+
 			"type,operator_obj_type,approve_by,check_switch,confirm_switch,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator, nowTime, operator, nowTime,
-			requestTemplate.Id, version, requestTemplate.Id)})
+			recordId, version, requestTemplate.Id)})
 	} else {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+
@@ -826,7 +857,7 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 			"description,tags,'created' as status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,"+
 			"'%s' as created_by,'%s' as created_time,'%s' as updated_by,'%s' as updated_time,entity_attrs,'%s' as record_id,'%s' as `version`,"+
 			"'' as confirm_time,expire_day,handler,type,operator_obj_type,'%s' as parent_id,approve_by,check_switch,confirm_switch,proc_def_version from request_template where id='%s'", newRequestTemplateId, operator,
-			nowTime, operator, nowTime, requestTemplate.Id, version, requestTemplate.Id, requestTemplate.ParentId)})
+			nowTime, operator, nowTime, requestTemplate.Id, version, recordId, requestTemplate.ParentId)})
 	}
 
 	dao.X.SQL("select * from request_template_role where request_template=?", requestTemplate.Id).Find(&requestTemplateRoles)
@@ -1098,7 +1129,7 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 	if err != nil {
 		return
 	}
-	err = dao.X.SQL("select * from request_template where del_flag=2 and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))  order by `group`,tags,status,id", userRolesFilterParam...).Find(&requestTemplateTable)
+	err = dao.X.SQL("select * from request_template where del_flag=2 and status <> 'cancel' and id in (select request_template from request_template_role where role_type='USE' and `role` in ("+userRolesFilterSql+"))  order by `group`,tags,status,id", userRolesFilterParam...).Find(&requestTemplateTable)
 	if err != nil {
 		return
 	}
@@ -1116,7 +1147,7 @@ func (s *RequestTemplateService) GetRequestTemplateByUserV2(user, userToken, lan
 	recordIdMap := make(map[string]int)
 	disableNameMap := make(map[string]int)
 	for _, v := range requestTemplateTable {
-		if v.Status == "disable" {
+		if v.Status == string(models.RequestTemplateStatusDisabled) {
 			if v.Version == "" {
 				disableNameMap[v.Name] = 1
 			} else {
@@ -1275,7 +1306,7 @@ func (s *RequestTemplateService) getLatestVersionTemplate(requestTemplateList, a
 		allTemplateMap[requestTemplate.Id] = requestTemplate
 	}
 	for _, requestTemplate := range allRequestTemplateList {
-		if requestTemplate.RecordId != "" {
+		if requestTemplate.RecordId != "" && requestTemplate.Status != string(models.RequestTemplateStatusCancel) {
 			allTemplateRecordMap[requestTemplate.RecordId] = requestTemplate
 		}
 	}
@@ -1302,8 +1333,8 @@ func (s *RequestTemplateService) getLatestVersionTemplate(requestTemplateList, a
 			latestTemplate = requestTemplate
 		}
 		resultMap[requestTemplate.Id] = latestTemplate
-		// 如果最新版本是创建状态或者待发布状态,以及作废状态,需要记录上一个版本模板
-		if (latestTemplate.Status == string(models.RequestTemplateStatusCreated) || latestTemplate.Status == string(models.RequestTemplateStatusPending) || latestTemplate.Status == string(models.RequestTemplateStatusCancel)) && latestTemplate.RecordId != "" {
+		// 如果最新版本是创建状态或者待发布状态,需要记录上一个版本模板
+		if (latestTemplate.Status == string(models.RequestTemplateStatusCreated) || latestTemplate.Status == string(models.RequestTemplateStatusPending)) && latestTemplate.RecordId != "" {
 			resultMap[latestTemplate.RecordId] = allTemplateMap[latestTemplate.RecordId]
 		}
 	}

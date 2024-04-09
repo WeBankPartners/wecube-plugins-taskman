@@ -278,7 +278,7 @@ type RequestProDataV2Dto struct {
 	Name         string                    `json:"name"`
 	Description  string                    `json:"description"`
 	ExpectTime   string                    `json:"expectTime"` // 期望完成时间
-	RefId        string                    `json:"ref_id"`     // 引用ID
+	RefId        string                    `json:"refId"`      // 引用ID
 	EntityName   string                    `json:"entityName"` // 操作单元
 	RootEntityId string                    `json:"rootEntityId"`
 	Data         []*RequestPreDataTableObj `json:"data"`

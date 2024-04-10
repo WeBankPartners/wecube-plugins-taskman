@@ -2,11 +2,11 @@
   <div class="taskman-base-search">
     <div class="taskman-base-search-form" :style="{ maxHeight: expand ? '200px' : '45px' }">
       <Form :inline="true" :model="value" label-position="right">
-        <template v-for="(i, index) in options">
+        <template v-for="(i, index) in configList">
           <FormItem v-if="!i.hidden" :prop="i.key" :key="index">
             <div style="display:flex;align-items:center;">
-              <!--输入框-->
               <span v-if="i.label">{{ i.label }}：</span>
+              <!--输入框-->
               <Input
                 v-if="i.component === 'input'"
                 v-model.trim="value[i.key]"
@@ -14,6 +14,26 @@
                 clearable
                 :style="{ width: i.width || 200 + 'px' }"
               ></Input>
+              <!--输入框(支持空值搜索)-->
+              <div v-if="i.component === 'null-input'" class="null-input">
+                <Select
+                  v-model="i.nullType"
+                  slot="prepend"
+                  style="width:90px;margin-right:-4px;"
+                  @on-change="handleNullTypeChange($event, i)"
+                >
+                  <Option value="yes">空值搜索</Option>
+                  <Option value="no">正常搜索</Option>
+                </Select>
+                <Input
+                  v-if="i.nullType === 'no'"
+                  v-model.trim="value[i.key]"
+                  :placeholder="i.placeholder"
+                  clearable
+                  :style="{ width: 200 + 'px' }"
+                ></Input>
+                <Input v-else value="" :placeholder="i.placeholder" disabled :style="{ width: 200 + 'px' }"></Input>
+              </div>
               <!--下拉选择-->
               <Select
                 v-else-if="i.component === 'select'"
@@ -49,7 +69,7 @@
               <RadioGroup
                 v-else-if="i.component === 'radio-group'"
                 v-model="value[i.key]"
-                @on-change="$emit('search')"
+                @on-change="handleSearch"
                 style="margin-right:32px;"
               >
                 <Radio v-for="(j, idx) in i.list" :label="j.value" :key="idx" border>{{ j.label }}</Radio>
@@ -121,6 +141,7 @@
 
 <script>
 import dayjs from 'dayjs'
+import { deepClone } from '../util'
 export default {
   props: {
     value: {
@@ -137,6 +158,17 @@ export default {
       return this.value
     }
   },
+  watch: {
+    options: {
+      handler (val) {
+        if (val && val.length) {
+          this.configList = val
+        }
+      },
+      immediate: true,
+      deep: true
+    }
+  },
   data () {
     return {
       expand: false,
@@ -145,7 +177,8 @@ export default {
         { label: this.$t('tw_recent_half_year'), value: 2 },
         { label: this.$t('tw_recent_one_year'), value: 3 },
         { label: this.$t('tw_auto'), value: 4 }
-      ]
+      ],
+      configList: []
     }
   },
   methods: {
@@ -153,6 +186,14 @@ export default {
       this.expand = !this.expand
     },
     handleSearch () {
+      this.configList.forEach(i => {
+        // 支持空值搜索处理
+        if (i.component === 'null-input' && i.nullType === 'yes') {
+          const obj = deepClone(this.value)
+          obj[i.key] = 'WeCube-empty-search'
+          this.$emit('input', obj)
+        }
+      })
       this.$emit('search')
     },
     // 重置表单
@@ -164,16 +205,20 @@ export default {
         } else {
           resetObj[key] = ''
         }
-        // 处理时间类型默认值
-        this.options.forEach(i => {
+        this.configList.forEach(i => {
+          // 处理时间类型默认值
           if (i.component === 'custom-time' && i.initValue) {
             i.dateType = 1
           } else {
             i.dateType = 4
           }
+          // 处理空值搜索类型
+          if (i.component === 'null-input') {
+            i.nullType = 'no'
+          }
         })
         // 点击清空按钮需要给默认值的表单选项
-        const initOptions = this.options.filter(i => i.initValue !== undefined)
+        const initOptions = this.configList.filter(i => i.initValue !== undefined)
         initOptions.forEach(i => {
           resetObj[i.key] = i.initValue
         })
@@ -214,6 +259,14 @@ export default {
     async getRemoteData (i) {
       const res = await i.remote()
       this.$set(i, 'list', res)
+    },
+    handleNullTypeChange (type, i) {
+      // '正常模式'需要清除'空值模式'的默认值
+      if (type === 'no' && this.value[i.key] === 'WeCube-empty-search') {
+        const obj = deepClone(this.value)
+        obj[i.key] = ''
+        this.$emit('input', obj)
+      }
     }
   }
 }

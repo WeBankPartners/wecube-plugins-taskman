@@ -110,6 +110,16 @@
                 </div>
               </Col>
             </Row>
+            <Row style="margin-top:10px;" :gutter="20">
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ '关联单ID' }}：</div>
+                <div class="info-item-value">{{ detail.refId || '-' }}</div>
+              </Col>
+              <Col :span="12" class="info-item">
+                <div class="info-item-label">{{ '关联单名称' }}：</div>
+                <div class="info-item-value">{{ detail.refName || '-' }}</div>
+              </Col>
+            </Row>
           </div>
         </HeaderTitle>
         <!--表单详情-->
@@ -271,16 +281,16 @@
 </template>
 
 <script>
-import HeaderTitle from '../../components/header-title.vue'
-import HeaderTag from '../../components/header-tag.vue'
-import StaticFlow from '../../components/flow/static-flow.vue'
-import DynamicFlow from '../../components/flow/dynamic-flow.vue'
-import EntityTable from '../../components/entity-table.vue'
-import DataBind from '../../components/data-bind.vue'
-import UploadFile from '../../components/upload.vue'
-import BaseProgress from './progress.vue'
-import CustomForm from '../../components/custom-form.vue'
-import CurrentHandle from './handle.vue'
+import HeaderTitle from './header-title.vue'
+import HeaderTag from './header-tag.vue'
+import StaticFlow from './flow/static-flow.vue'
+import DynamicFlow from './flow/dynamic-flow.vue'
+import EntityTable from './entity-table.vue'
+import DataBind from './data-bind.vue'
+import UploadFile from './upload.vue'
+import BaseProgress from './base-progress.vue'
+import CustomForm from './custom-form.vue'
+import CurrentHandle from './base-handle.vue'
 import { getPublishInfo, recallRequest, getRequestHistory } from '@/api/server'
 export default {
   components: {

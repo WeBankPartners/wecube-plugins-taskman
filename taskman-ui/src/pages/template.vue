@@ -384,7 +384,7 @@ export default {
                     </Button>
                   </Tooltip>
                 )}
-                {/* 变更 */ this.status === 'confirm' && (
+                {/* 变更 */ (this.status === 'confirm' || (this.status === 'cancel' && params.row.cancelEdit)) && (
                   <Tooltip content={this.$t('fork')} placement="top">
                     <Button
                       size="small"

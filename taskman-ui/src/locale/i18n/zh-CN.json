@@ -444,5 +444,6 @@
   "tw_role_based_config": "角色设置方式",
   "tw_allocation": "分配",
   "tw_validity_period": "时效",
-  "tw_home": "首页"
+  "tw_home": "首页",
+  "tw_ref_id": "关联单ID"
 }

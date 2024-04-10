@@ -184,13 +184,13 @@
 </template>
 
 <script>
-import HeaderTitle from '../../components/header-title.vue'
-import EntityTable from '../../components/entity-table.vue'
-import DataBind from '../../components/data-bind.vue'
-import UploadFile from '../../components/upload.vue'
+import HeaderTitle from './header-title.vue'
+import EntityTable from './entity-table.vue'
+import DataBind from './data-bind.vue'
+import UploadFile from './upload.vue'
 import { deepClone } from '@/pages/util/index'
 import { commitTaskData, geTaskTagList, confirmRequest } from '@/api/server'
-import { requiredCheck, noChooseCheck } from '../../util'
+import { requiredCheck, noChooseCheck } from '../util'
 export default {
   components: {
     HeaderTitle,

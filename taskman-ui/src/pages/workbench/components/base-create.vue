@@ -64,6 +64,23 @@
               style="width:60%;"
             />
           </FormItem>
+          <!--关联单-->
+          <FormItem label="关联单">
+            <Select
+              ref="refSelect"
+              v-model="form.refId"
+              filterable
+              :remote-method="() => {}"
+              @on-query-change="remoteRefData"
+              :loading="refLoading"
+              clearable
+              style="width:60%;"
+            >
+              <Option v-for="item in refOptions" :value="item.id" :key="item.id">{{
+                `【${item.id}】${item.name}【${typeMap[item.type]}】`
+              }}</Option>
+            </Select>
+          </FormItem>
           <!--附件-->
           <FormItem :label="$t('tw_attach')">
             <UploadFile :id="requestId" :files="attachFiles" type="request"></UploadFile>
@@ -314,17 +331,17 @@
 </template>
 
 <script>
-import HeaderTitle from '../../components/header-title.vue'
-import HeaderTag from '../../components/header-tag.vue'
-import StaticFlow from '../../components/flow/static-flow.vue'
-import DynamicFlow from '../../components/flow/dynamic-flow.vue'
-import EntityTable from '../../components/entity-table.vue'
-import DataBind from '../../components/data-bind.vue'
-import UploadFile from '../../components/upload.vue'
-import CustomForm from '../../components/custom-form.vue'
-import BaseProgress from './progress.vue'
-import { deepClone } from '@/pages/util/index'
-import { requiredCheck, noChooseCheck, approvalCheck } from '../../util'
+import HeaderTitle from './header-title.vue'
+import HeaderTag from './header-tag.vue'
+import StaticFlow from './flow/static-flow.vue'
+import DynamicFlow from './flow/dynamic-flow.vue'
+import EntityTable from './entity-table.vue'
+import DataBind from './data-bind.vue'
+import UploadFile from './upload.vue'
+import CustomForm from './custom-form.vue'
+import BaseProgress from './base-progress.vue'
+import { debounce, deepClone } from '@/pages/util'
+import { requiredCheck, noChooseCheck, approvalCheck } from '../util'
 import {
   getCreateInfo,
   getPublishInfo,
@@ -335,7 +352,8 @@ import {
   getTaskConfig,
   getUserRoles,
   getHandlerRoles,
-  getAdminUserByRole
+  getAdminUserByRole,
+  getPublishList
 } from '@/api/server'
 import dayjs from 'dayjs'
 export default {
@@ -373,9 +391,12 @@ export default {
           title: [],
           value: {}
         }, // 自定义表单
-        data: [],
-        approvalList: [] // 审批列表
+        data: [], // 数据表单
+        approvalList: [], // 审批列表
+        refId: '' // 关联单Id
       },
+      refLoading: false,
+      refOptions: [],
       detail: {},
       initExpectTime: '', // 记录初始期望完成时间
       expireDay: '',
@@ -394,7 +415,14 @@ export default {
       },
       userRoleList: [], // 用户角色列表
       noRequestForm: false, // 请求表单为空标识
-      lang: window.localStorage.getItem('lang') || 'zh-CN'
+      lang: window.localStorage.getItem('lang') || 'zh-CN',
+      typeMap: {
+        1: this.$t('tw_publish'),
+        2: this.$t('tw_request'),
+        3: this.$t('tw_question'),
+        4: this.$t('tw_event'),
+        5: this.$t('fork')
+      }
     }
   },
   watch: {
@@ -424,6 +452,33 @@ export default {
     })
   },
   methods: {
+    // 获取关联单下拉列表
+    remoteRefData: debounce(async function (query) {
+      const cur = dayjs().format('YYYY-MM-DD')
+      const pre = dayjs()
+        .subtract(3, 'month')
+        .format('YYYY-MM-DD')
+      const params = {
+        tab: 'commit', // 已提交数据，不包括草稿
+        action: 0, // 所有
+        permission: 'all',
+        reportTimeStart: pre + ' 00:00:00',
+        reportTimeEnd: cur + ' 23:59:59',
+        query: query,
+        startIndex: 0,
+        pageSize: 50,
+        sorting: {
+          asc: false,
+          field: 'reportTime'
+        }
+      }
+      this.refLoading = true
+      const { statusCode, data } = await getPublishList(params)
+      this.refLoading = false
+      if (statusCode === 'OK') {
+        this.refOptions = data.contents || []
+      }
+    }, 500),
     handleToHome () {
       if (this.$route.query.requestId) {
         this.$router.push({
@@ -480,10 +535,11 @@ export default {
       const { statusCode, data } = await getPublishInfo(params)
       if (statusCode === 'OK') {
         this.detail = data.request || {}
-        const { name, description, rootEntityId, expireDay, customForm, attachFiles } = data.request || {}
+        const { name, description, rootEntityId, expireDay, customForm, attachFiles, refId } = data.request || {}
         this.form.name = (name && name.substr(0, 70)) || ''
         this.form.description = description
         this.form.rootEntityId = rootEntityId
+        this.form.refId = refId
         this.attachFiles = attachFiles
         this.role = data.request.role
         // 初始化customForm

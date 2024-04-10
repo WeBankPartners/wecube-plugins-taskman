@@ -34,8 +34,8 @@
 <script>
 import BaseSearch from '@/pages/components/base-search.vue'
 import { getPublishList, reRequest, recallRequest, deleteRequest } from '@/api/server'
-import column from '../../column'
-import search from '../../search'
+import column from '../column'
+import search from '../search'
 import { deepClone } from '@/pages/util/index'
 export default {
   components: {

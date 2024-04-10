@@ -19,6 +19,7 @@
                       maxlength="30"
                       show-word-limit
                       @on-change="paramsChanged"
+                      :disabled="basicInfo.modifyType === false"
                       style="width: 96%"
                     />
                     <!-- <Input v-model="basicInfo.name" style="width: 96%" @on-change="paramsChanged"></Input> -->
@@ -46,7 +47,13 @@
                     </div>
                   </FormItem>
                   <FormItem :label="$t('scene_type')">
-                    <Select v-model="basicInfo.type" style="width: 96%;" filterable @on-change="paramsChanged">
+                    <Select
+                      v-model="basicInfo.type"
+                      style="width: 96%;"
+                      filterable
+                      @on-change="paramsChanged"
+                      :disabled="basicInfo.modifyType === false"
+                    >
                       <Option v-for="item in typeOptions" :value="item.value" :key="item.label">{{
                         item.label
                       }}</Option>

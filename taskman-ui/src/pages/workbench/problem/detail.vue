@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import BaseDetail from '../publish/components/base-detail.vue'
+import BaseDetail from '../components/base-detail.vue'
 export default {
   components: {
     BaseDetail

@@ -58,12 +58,32 @@ func (d *RequestTemplateDao) Update(session *xorm.Session, requestTemplate *mode
 	// 版本作废,需要清除掉 record_id属性
 	if requestTemplate.Status == string(models.RequestTemplateStatusCancel) {
 		requestTemplate.RecordId = ""
-		affected, err = session.ID(requestTemplate.Id).Cols("record_id").Update(requestTemplate)
+		affected, err = session.ID(requestTemplate.Id).MustCols("record_id").Update(requestTemplate)
 	} else {
 		affected, err = session.ID(requestTemplate.Id).Update(requestTemplate)
 	}
 	// 打印日志
 	logExecuteSql(session, "RequestTemplateDao", "Update", requestTemplate, affected, err)
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (d *RequestTemplateDao) UpdateRecordId(session *xorm.Session, requestTemplate *models.RequestTemplateTable) (err error) {
+	var affected int64
+	if session == nil {
+		session = d.DB.NewSession()
+		defer session.Close()
+	}
+	if requestTemplate == nil || requestTemplate.Id == "" {
+		return
+	}
+	// 由于RequestTemplateTable里面包含version字段,此处需要去掉xorm自带版本校验
+	session.NoVersionCheck()
+	affected, err = session.ID(requestTemplate.Id).MustCols("record_id").Update(requestTemplate)
+	// 打印日志
+	logExecuteSql(session, "RequestTemplateDao", "UpdateRecordId", requestTemplate, affected, err)
 	if err != nil {
 		return
 	}

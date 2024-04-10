@@ -219,6 +219,12 @@ func (s *RequestTemplateService) UpdateRequestTemplateStatus(requestTemplateId, 
 	return s.requestTemplateDao.Update(nil, requestTemplate)
 }
 
+func (s *RequestTemplateService) UpdateRequestTemplateStatusAndRecordId(requestTemplateId, user, status, recordId string) (err error) {
+	requestTemplate := &models.RequestTemplateTable{Id: requestTemplateId, Status: status, UpdatedBy: user,
+		UpdatedTime: time.Now().Format(models.DateTimeFormat), RecordId: recordId}
+	return s.requestTemplateDao.UpdateRecordId(nil, requestTemplate)
+}
+
 func (s *RequestTemplateService) UpdateRequestTemplateHandler(requestTemplateId, handler string) (err error) {
 	return s.requestTemplateDao.Update(nil, &models.RequestTemplateTable{Id: requestTemplateId, Handler: handler, UpdatedBy: handler,
 		UpdatedTime: time.Now().Format(models.DateTimeFormat)})
@@ -390,7 +396,9 @@ func (s *RequestTemplateService) GetAllCoreProcess(userToken, language string) m
 
 // getRequestTemplateModifyType 模板版本 > v1表示 模板有多个版本,不允许多个版本都去修改模板类型,要求保持一致
 func (s *RequestTemplateService) getRequestTemplateModifyType(requestTemplate *models.RequestTemplateTable) bool {
-	return strings.Compare(requestTemplate.Version, "v1") <= 0
+	var requestTemplateList []*models.RequestTemplateTable
+	dao.X.SQL("select * from request_template where name = ?", requestTemplate.Name).Find(&requestTemplateList)
+	return len(requestTemplateList) <= 1 && strings.Compare(requestTemplate.Version, "v1") <= 0
 }
 
 func (s *RequestTemplateService) getUpdateNodeDefIdActions(requestTemplateId, userToken, language string) (actions []*dao.ExecAction) {
@@ -799,39 +807,34 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	}
 	recordId = requestTemplate.Id
 	curVersion = requestTemplate.Version
-	existQuery, tmpErr := dao.X.QueryString("select id,name,version,status from request_template where del_flag!=1 and record_id=?", requestTemplate.Id)
-	if tmpErr != nil {
-		return fmt.Errorf("query database fail,%s ", tmpErr.Error())
-	}
-	if len(existQuery) > 0 {
-		if existQuery[0]["status"] == string(models.RequestTemplateStatusCreated) {
-			err = exterror.New().RequestTemplateHasDraftError
-		} else if existQuery[0]["status"] == string(models.RequestTemplateStatusPending) {
-			err = exterror.New().RequestTemplateHasPendingError
-		} else if existQuery[0]["status"] == string(models.RequestTemplateStatusCancel) {
-			curVersion = existQuery[0]["version"]
+	var requestTemplateList []*models.RequestTemplateTable
+	dao.X.SQL("select id,name,version,status,record_id from request_template where name = ? order by id asc", requestTemplate.Name).Find(&requestTemplateList)
+	if len(requestTemplateList) > 0 {
+		var latestReleaseTemplate *models.RequestTemplateTable
+		for _, templateTemp := range requestTemplateList {
+			if templateTemp.Status == string(models.RequestTemplateStatusCreated) {
+				err = exterror.New().RequestTemplateHasDraftError
+			} else if templateTemp.Status == string(models.RequestTemplateStatusPending) {
+				err = exterror.New().RequestTemplateHasPendingError
+			} else if templateTemp.Status == string(models.RequestTemplateStatusConfirm) {
+				latestReleaseTemplate = templateTemp
+			}
+			if err != nil {
+				return
+			}
 		}
-		if err != nil {
-			return err
+		curVersion = requestTemplateList[len(requestTemplateList)-1].Version
+		// 已废版本变更,新的版本指向最新发布版本
+		if requestTemplate.Status == string(models.RequestTemplateStatusCancel) {
+			recordId = ""
+			if latestReleaseTemplate != nil {
+				recordId = latestReleaseTemplate.Id
+			}
 		}
 	}
 	nowTime := time.Now().Format(models.DateTimeFormat)
 	version := common.BuildVersionNum(curVersion)
 	newRequestTemplateId := guid.CreateGuid()
-	// 已废版本变更,新的版本指向上一个已发布版本
-	if requestTemplate.Status == string(models.RequestTemplateStatusCancel) {
-		recordId = ""
-		var requestTemplateTempList []*models.RequestTemplateTable
-		// 模版Id 是递增的
-		dao.X.SQL("select id,name,version,status,record_id from request_template where name = ? order by id asc", requestTemplate.Name).Find(&requestTemplateTempList)
-		if len(requestTemplateTempList) > 0 {
-			for i, templateTemp := range requestTemplateTempList {
-				if templateTemp.Id == requestTemplateId && i >= 1 {
-					recordId = requestTemplateTempList[i-1].RecordId
-				}
-			}
-		}
-	}
 	if requestTemplate.ParentId == "" {
 		actions = append(actions, &dao.ExecAction{Sql: fmt.Sprintf("insert into request_template(id,`group`,name,description,"+
 			"tags,status,package_name,entity_name,proc_def_key,proc_def_id,proc_def_name,created_by,created_time,updated_by,updated_time,"+

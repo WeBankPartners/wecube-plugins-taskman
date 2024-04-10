@@ -3,6 +3,7 @@ package template
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/WeBankPartners/wecube-plugins-taskman/taskman-server/dao"
 	"io"
 	"net/http"
 	"time"
@@ -146,6 +147,34 @@ func UpdateRequestTemplateStatus(c *gin.Context) {
 		err = service.GetRequestTemplateService().ConfirmRequestTemplate(param.RequestTemplateId, middleware.GetRequestUser(c), c.GetHeader("Authorization"), c.GetHeader(middleware.AcceptLanguageHeader))
 		if err != nil {
 			middleware.ReturnServerHandleError(c, err)
+			return
+		}
+		middleware.ReturnSuccess(c)
+		return
+	}
+	// 版本弃用,需要删除 recordId以及引用该版本的recordId需要使用上一个版本的recordId
+	if param.TargetStatus == string(models.RequestTemplateStatusCancel) {
+		var requestTemplateTempList []*models.RequestTemplateTable
+		var newRecordId string
+		dao.X.SQL("select * from request_template where name = ? order by id asc", requestTemplate.Name).Find(&requestTemplateTempList)
+		if len(requestTemplateTempList) > 0 {
+			for i, templateTemp := range requestTemplateTempList {
+				if templateTemp.Id == requestTemplate.Id && i >= 1 {
+					newRecordId = requestTemplateTempList[i-1].Id
+				}
+			}
+			for _, templateTemp := range requestTemplateTempList {
+				if templateTemp.RecordId == requestTemplate.Id {
+					templateTemp.RecordId = newRecordId
+					if err = service.GetRequestTemplateService().UpdateRequestTemplateStatusAndRecordId(templateTemp.Id, middleware.GetRequestUser(c), templateTemp.Status, templateTemp.RecordId); err != nil {
+						middleware.ReturnError(c, err)
+						return
+					}
+				}
+			}
+		}
+		if err = service.GetRequestTemplateService().UpdateRequestTemplateStatusAndRecordId(param.RequestTemplateId, middleware.GetRequestUser(c), param.TargetStatus, ""); err != nil {
+			middleware.ReturnError(c, err)
 			return
 		}
 		middleware.ReturnSuccess(c)

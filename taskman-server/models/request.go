@@ -139,6 +139,7 @@ type PlatformDataObj struct {
 	HandlerType            string `json:"handlerType" xorm:"-"`                                  // 人员设置方式,template.模板指定，custom 提交人指定等
 	RoleAdministrator      string `json:"roleAdministrator" xorm:"-"`                            // 角色管理员
 	ExpireDay              int    `json:"expireDay" xorm:"expire_day"`                           // 过期时间
+	RequestRefId           int    `json:"requestRefId" xorm:"request_ref_id"`                    // 请求关联ID
 }
 
 // RequestProgress 请求进度
@@ -313,6 +314,7 @@ type RequestForm struct {
 	RootEntityId        string                    `json:"rootEntityId"`
 	RevokeBtn           bool                      `json:"revokeBtn"` // 是否出撤回按钮
 	RefId               string                    `json:"refId"`     // 引用ID
+	RefName             string                    `json:"refName"`   // 引用请求名称
 }
 
 type CustomForm struct {

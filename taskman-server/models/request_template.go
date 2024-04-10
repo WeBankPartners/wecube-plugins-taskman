@@ -115,6 +115,7 @@ type RequestTemplateQueryObj struct {
 	OperateOptions []string     `json:"operateOptions"`
 	ModifyType     bool         `json:"modifyType"`    // 是否能够修改模板类型
 	Administrator  string       `json:"administrator"` // 角色管理员
+	CancelEdit     bool         `json:"cancelEdit"`    // 废弃版本是否可以编辑,有禁用不能编辑
 }
 
 type RequestTemplateStatusUpdateParam struct {

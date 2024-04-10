@@ -199,6 +199,20 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 		if len(tmpObj.MGMTRoles) > 0 && roleMap[tmpObj.MGMTRoles[0].Id] != nil {
 			tmpObj.Administrator = roleMap[tmpObj.MGMTRoles[0].Id].Administrator
 		}
+		// 废弃版本,有禁用版本不能变更
+		tmpObj.CancelEdit = true
+		if v.Status == string(models.RequestTemplateStatusCancel) {
+			var requestTemplateTemp []*models.RequestTemplateTable
+			dao.X.SQL("select id,status from request_template where name=?", v.Name).Find(&requestTemplateTemp)
+			if len(requestTemplateTemp) > 0 {
+				for _, templateTemp := range requestTemplateTemp {
+					if templateTemp.Status == string(models.RequestTemplateStatusDisabled) {
+						tmpObj.CancelEdit = false
+						break
+					}
+				}
+			}
+		}
 		result = append(result, &tmpObj)
 	}
 	return

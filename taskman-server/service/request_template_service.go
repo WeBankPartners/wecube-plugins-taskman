@@ -68,16 +68,10 @@ func (s *RequestTemplateService) GetDtoByRequestTemplate(requestTemplate *models
 
 func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequestParam, commonParam models.CommonParam) (pageInfo models.PageInfo, result []*models.RequestTemplateQueryObj, err error) {
 	var roleMap = make(map[string]*models.SimpleLocalRoleDto)
-	var specIdList []string
-	var baseSql string
 	extFilterSql := ""
 	result = []*models.RequestTemplateQueryObj{}
 	isQueryMessage := false
 	if roleMap, err = rpc.QueryAllRoles("Y", commonParam.Token, commonParam.Language); err != nil {
-		return
-	}
-	// 查询最新版本废弃,上一个发布版本模版ID集合
-	if err = dao.X.SQL("select id from request_template where del_flag=2 and status= ? and id in (select record_id from request_template where del_flag=2 and status=? and id not in (select record_id from request_template where del_flag=2 and record_id<>''))", models.RequestTemplateStatusConfirm, models.RequestTemplateStatusCancel).Find(&specIdList); err != nil {
 		return
 	}
 	if len(param.Filters) > 0 {
@@ -127,12 +121,7 @@ func (s *RequestTemplateService) QueryRequestTemplate(param *models.QueryRequest
 	filterSql, queryColumn, queryParam := dao.TransFiltersToSQL(param, &models.TransFiltersParam{IsStruct: true, StructObj: models.RequestTemplateTable{}, PrimaryKey: "id", Prefix: "t1"})
 	userRolesFilterSql, userRolesFilterParam := dao.CreateListParams(commonParam.Roles, "")
 	queryParam = append(userRolesFilterParam, queryParam...)
-	if len(specIdList) == 0 {
-		baseSql = fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
-	} else {
-		specSql := strings.Join(specIdList, ",")
-		baseSql = fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>'')) or (id in ("+specSql+"))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
-	}
+	baseSql := fmt.Sprintf("SELECT %s FROM (select * from request_template where del_flag=0 or (del_flag=2 and id not in (select record_id from request_template where del_flag=2 and record_id<>''))) t1 WHERE t1.id in (select request_template from request_template_role where role_type='MGMT' and `role` in ("+userRolesFilterSql+")) %s %s ", queryColumn, extFilterSql, filterSql)
 	if param.Paging {
 		pageInfo.StartIndex = param.Pageable.StartIndex
 		pageInfo.PageSize = param.Pageable.PageSize
@@ -832,13 +821,14 @@ func (s *RequestTemplateService) ForkConfirmRequestTemplate(requestTemplateId, o
 	// 已废版本变更,新的版本指向上一个已发布版本
 	if requestTemplate.Status == string(models.RequestTemplateStatusCancel) {
 		recordId = ""
-		if requestTemplate.RecordId != "" {
-			var requestTemplateTemp *models.RequestTemplateTable
-			if requestTemplateTemp, err = GetRequestTemplateService().GetRequestTemplate(requestTemplate.RecordId); err != nil {
-				return
-			}
-			if requestTemplateTemp != nil && requestTemplateTemp.Status == string(models.RequestTemplateStatusConfirm) {
-				recordId = requestTemplateTemp.Id
+		var requestTemplateTempList []*models.RequestTemplateTable
+		// 模版Id 是递增的
+		dao.X.SQL("select id,name,version,status,record_id from request_template where name = ? order by id asc", requestTemplate.Name).Find(&requestTemplateTempList)
+		if len(requestTemplateTempList) > 0 {
+			for i, templateTemp := range requestTemplateTempList {
+				if templateTemp.Id == requestTemplateId && i >= 1 {
+					recordId = requestTemplateTempList[i-1].RecordId
+				}
 			}
 		}
 	}
